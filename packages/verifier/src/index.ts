@@ -2336,11 +2336,15 @@ function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): bool
   const targetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'target'));
   if (targetValue !== '_blank') return false;
 
-  const hrefValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href'));
+  const hrefValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'href', 'to'));
   if (!hrefValue || !/^(?:https?:)?\/\//i.test(hrefValue)) return false;
 
   const relValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'rel')) ?? '';
   return !/\bnoopener\b/i.test(relValue) || !/\bnoreferrer\b/i.test(relValue);
+}
+
+function isLinkLikeTag(tagName: string | null): boolean {
+  return tagName === 'a' || tagName === 'Link' || tagName === 'NavLink';
 }
 
 function isInsecureExternalImage(attributes: ts.JsxAttributes): boolean {
@@ -3530,7 +3534,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'button' && !hasAccessibleLabel(node.attributes, '')) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
-      if (tagName === 'a' && !hasAccessibleLabel(node.attributes, '')) {
+      if (isLinkLikeTag(tagName) && !hasAccessibleLabel(node.attributes, '')) {
         signals.iconOnlyLinkWithoutLabelCount += 1;
       }
       if (isImageLikeTag(tagName) && !getJsxAttribute(node.attributes, 'alt')) {
@@ -3572,7 +3576,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ) {
         signals.clickableNonSemanticCount += 1;
       }
-      if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.attributes)) {
+      if (isLinkLikeTag(tagName) && isExternalLinkTargetBlankWithoutRel(node.attributes)) {
         signals.externalBlankLinkWithoutRelCount += 1;
       }
       if (hasPlaceholderNavigationTarget(node.attributes)) {
@@ -3638,7 +3642,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (tagName === 'button' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
-      if (tagName === 'a' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
+      if (isLinkLikeTag(tagName) && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
         signals.iconOnlyLinkWithoutLabelCount += 1;
       }
       if (isImageLikeTag(tagName) && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
@@ -3693,7 +3697,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       ) {
         signals.clickableNonSemanticCount += 1;
       }
-      if (tagName === 'a' && isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)) {
+      if (isLinkLikeTag(tagName) && isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)) {
         signals.externalBlankLinkWithoutRelCount += 1;
       }
       if (hasPlaceholderNavigationTarget(node.openingElement.attributes)) {

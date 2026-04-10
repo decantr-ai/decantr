@@ -3450,6 +3450,47 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-target-blank-rel-missing')).toBe(true);
   });
 
+  it('flags external Link targets without rel protections during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/DocsLink.tsx',
+      code: `
+        import { Link } from 'react-router-dom';
+
+        export function DocsLink() {
+          return <Link to="https://example.com/docs" target="_blank">Docs</Link>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['docs'], patternIds: ['nav'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'docs', path: '/', patternIds: ['nav'] }],
+          focusAreas: ['security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-target-blank-rel-missing')).toBe(true);
+  });
+
   it('flags insecure remote image transport during critique', () => {
     const report = critiqueSource({
       filePath: 'src/components/LegacyHero.tsx',
@@ -3626,6 +3667,51 @@ describe('verifier', () => {
           return (
             <nav>
               <a href="/settings"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M0 0h16v16H0z" /></svg></a>
+            </nav>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['nav'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: [],
+          routes: [{ pageId: 'nav', path: '/settings', patternIds: ['sidebar'] }],
+          focusAreas: ['accessibility'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'accessibility-icon-link-label-missing')).toBe(true);
+  });
+
+  it('flags unlabeled icon-only Link components during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/AppNav.tsx',
+      code: `
+        import { Link } from 'react-router-dom';
+
+        export function AppNav() {
+          return (
+            <nav>
+              <Link to="/settings"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M0 0h16v16H0z" /></svg></Link>
             </nav>
           );
         }
