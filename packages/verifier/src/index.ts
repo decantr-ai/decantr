@@ -382,6 +382,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     mainLandmarkSignals: createSourceAuditBucket(),
     mainLandmarkIds: [],
     authEntrySignals: createSourceAuditBucket(),
+    signInFlowSignals: createSourceAuditBucket(),
+    signUpFlowSignals: createSourceAuditBucket(),
+    recoveryFlowSignals: createSourceAuditBucket(),
     authSessionSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
@@ -390,6 +393,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authHeaderWrites: createSourceAuditBucket(),
     authGuardSignals: createSourceAuditBucket(),
     authExitSignals: createSourceAuditBucket(),
+    signInRouteSignals: createSourceAuditBucket(),
+    registrationRouteSignals: createSourceAuditBucket(),
+    recoveryRouteSignals: createSourceAuditBucket(),
     accessibilityIssues: createSourceAuditBucket(),
     interactionSafetyIssues: createSourceAuditBucket(),
     authInputHintIssues: createSourceAuditBucket(),
@@ -452,6 +458,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       }
     }
     recordSourceAudit(summary.authEntrySignals, relativePath, signals.authEntrySignalCount);
+    recordSourceAudit(summary.signInFlowSignals, relativePath, countSignInFlowSignals(code, relativePath));
+    recordSourceAudit(summary.signUpFlowSignals, relativePath, countSignUpFlowSignals(code, relativePath));
+    recordSourceAudit(summary.recoveryFlowSignals, relativePath, countRecoveryFlowSignals(code, relativePath));
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
@@ -460,6 +469,9 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
+    recordSourceAudit(summary.signInRouteSignals, relativePath, countSignInRouteSignals(code));
+    recordSourceAudit(summary.registrationRouteSignals, relativePath, countRegistrationRouteSignals(code));
+    recordSourceAudit(summary.recoveryRouteSignals, relativePath, countAuthRecoveryRouteSignals(code));
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
     recordSourceAudit(
       summary.interactionSafetyIssues,
@@ -597,6 +609,9 @@ interface SourceAuditSummary {
   mainLandmarkSignals: SourceAuditBucket;
   mainLandmarkIds: string[];
   authEntrySignals: SourceAuditBucket;
+  signInFlowSignals: SourceAuditBucket;
+  signUpFlowSignals: SourceAuditBucket;
+  recoveryFlowSignals: SourceAuditBucket;
   authSessionSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
@@ -605,6 +620,9 @@ interface SourceAuditSummary {
   authHeaderWrites: SourceAuditBucket;
   authGuardSignals: SourceAuditBucket;
   authExitSignals: SourceAuditBucket;
+  signInRouteSignals: SourceAuditBucket;
+  registrationRouteSignals: SourceAuditBucket;
+  recoveryRouteSignals: SourceAuditBucket;
   accessibilityIssues: SourceAuditBucket;
   interactionSafetyIssues: SourceAuditBucket;
   authInputHintIssues: SourceAuditBucket;
@@ -1634,6 +1652,70 @@ function appendSourceAuditFindings(
         `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
       ],
       suggestedFix: 'Add a real login, registration, or recovery surface with credential inputs or explicit auth entry actions on the gateway routes.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && topology.gatewayRoutes.some(route => isRecoveryLikeRoute(route))
+    && sourceAudit.signInFlowSignals.count > 0
+    && sourceAudit.recoveryRouteSignals.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-recovery-route-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Sign-in surfaces exist and a recovery route is declared, but the source tree does not show an obvious path into that recovery flow.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Sign-in flow files: ${sourceAudit.signInFlowSignals.files.join(', ') || 'none'}`,
+        'Recovery route signals: 0',
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Link sign-in users to the declared recovery route, such as `/forgot-password` or `/reset-password`, somewhere in the reviewed auth entry surfaces.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && topology.gatewayRoutes.some(route => isRegistrationLikeRoute(route))
+    && sourceAudit.signInFlowSignals.count > 0
+    && sourceAudit.registrationRouteSignals.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-registration-route-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Sign-in surfaces exist and a registration route is declared, but the source tree does not show an obvious path into that registration flow.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Sign-in flow files: ${sourceAudit.signInFlowSignals.files.join(', ') || 'none'}`,
+        'Registration route signals: 0',
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Link sign-in users to the declared registration route, such as `/register` or `/sign-up`, somewhere in the reviewed auth entry surfaces.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
+    && topology.gatewayRoutes.some(route => isSignInLikeRoute(route))
+    && (sourceAudit.signUpFlowSignals.count > 0 || sourceAudit.recoveryFlowSignals.count > 0)
+    && sourceAudit.signInRouteSignals.count === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-signin-route-missing',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Registration or recovery surfaces exist and a sign-in route is declared, but the source tree does not show an obvious path back into sign-in.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Sign-up flow files: ${sourceAudit.signUpFlowSignals.files.join(', ') || 'none'}`,
+        `Recovery flow files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
+        'Sign-in route signals: 0',
+        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Link registration and recovery users back to the declared sign-in route, such as `/login` or `/sign-in`, somewhere in the reviewed gateway surfaces.',
     }));
   }
 

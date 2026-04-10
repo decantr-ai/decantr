@@ -2058,6 +2058,293 @@ describe('verifier', () => {
     }
   });
 
+  it('flags project auth surfaces when a declared recovery route is never linked from sign-in flows', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [
+                  { id: 'login', route: '/login', layout: ['hero'] },
+                  { id: 'forgot-password', route: '/forgot-password', layout: ['form'] },
+                ],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginPage.tsx'),
+        `
+          export function LoginPage() {
+            return (
+              <form>
+                <input type="email" autoComplete="email" />
+                <input type="password" autoComplete="current-password" />
+                <button type="submit">Sign in</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-recovery-route-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag project auth recovery gaps when sign-in flows link to the declared recovery route', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [
+                  { id: 'login', route: '/login', layout: ['hero'] },
+                  { id: 'forgot-password', route: '/forgot-password', layout: ['form'] },
+                ],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginPage.tsx'),
+        `
+          export function LoginPage() {
+            return (
+              <form>
+                <input type="email" autoComplete="email" />
+                <input type="password" autoComplete="current-password" />
+                <a href="/forgot-password">Forgot password?</a>
+                <button type="submit">Sign in</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-recovery-route-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('flags project auth surfaces when a declared registration route is never linked from sign-in flows', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [
+                  { id: 'login', route: '/login', layout: ['hero'] },
+                  { id: 'register', route: '/register', layout: ['form'] },
+                ],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginPage.tsx'),
+        `
+          export function LoginPage() {
+            return (
+              <form>
+                <input type="email" autoComplete="email" />
+                <input type="password" autoComplete="current-password" />
+                <button type="submit">Sign in</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-registration-route-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('flags project auth surfaces when registration or recovery flows never link back to a declared sign-in route', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [
+                  { id: 'login', route: '/login', layout: ['hero'] },
+                  { id: 'register', route: '/register', layout: ['form'] },
+                  { id: 'forgot-password', route: '/forgot-password', layout: ['form'] },
+                ],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'RegisterPage.tsx'),
+        `
+          export function RegisterPage() {
+            return (
+              <form>
+                <input type="email" autoComplete="email" />
+                <input type="password" autoComplete="new-password" />
+                <button type="submit">Create account</button>
+              </form>
+            );
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'ForgotPasswordPage.tsx'),
+        `
+          export function ForgotPasswordPage() {
+            return (
+              <form>
+                <input type="email" autoComplete="email" />
+                <button type="submit">Send reset link</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-signin-route-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('does not flag auth entry surfaces when success redirects into the protected app', async () => {
     const projectRoot = createProjectRoot();
     try {
