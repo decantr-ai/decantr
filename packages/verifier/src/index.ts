@@ -397,6 +397,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authUnauthenticatedBranchSignals: createSourceAuditBucket(),
     authLoadingSignals: createSourceAuditBucket(),
     authProtectedLoadingRenderSignals: createSourceAuditBucket(),
+    authBlankLoadingRenderSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
@@ -508,6 +509,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authUnauthenticatedBranchSignals, relativePath, countAuthUnauthenticatedBranchSignals(code));
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authProtectedLoadingRenderSignals, relativePath, signals.authProtectedLoadingRenderCount);
+    recordSourceAudit(summary.authBlankLoadingRenderSignals, relativePath, signals.authBlankLoadingRenderCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
@@ -687,6 +689,7 @@ interface SourceAuditSummary {
   authUnauthenticatedBranchSignals: SourceAuditBucket;
   authLoadingSignals: SourceAuditBucket;
   authProtectedLoadingRenderSignals: SourceAuditBucket;
+  authBlankLoadingRenderSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
@@ -1875,6 +1878,27 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && sourceAudit.authSessionSignals.count > 0
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
+    && sourceAudit.authBlankLoadingRenderSignals.count > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-loading-blank-render',
+      category: 'Source Audit',
+      severity: 'info',
+      message: 'Auth/session loading branches exist, but some of them return nothing instead of an explicit pending boundary.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+        `Blank loading files: ${sourceAudit.authBlankLoadingRenderSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'When auth/session state is loading, render a spinner, skeleton, suspense fallback, or another explicit pending UI instead of returning `null` or an empty fragment.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
     && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
   ) {
@@ -2762,6 +2786,7 @@ interface AstCritiqueSignals {
   authSessionSignalCount: number;
   authLoadingSignalCount: number;
   authProtectedLoadingRenderCount: number;
+  authBlankLoadingRenderCount: number;
   authProtectedRedirectSignalCount: number;
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
@@ -3724,6 +3749,15 @@ function countAuthProtectedLoadingRenderSignals(code: string): number {
   return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countAuthBlankLoadingRenderSignals(code: string): number {
+  const patterns = [
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*{[\s\S]{0,220}?return\s*(?:null|<>\s*<\/>)\s*;?/gi,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*(?:null|<>\s*<\/>)\s*;?/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthErrorSignals(code: string): number {
   const patterns = [
     /\bstatus\s*===?\s*['"`]error['"`]/,
@@ -4234,6 +4268,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authSessionSignalCount: countAuthSessionSignals(code),
     authLoadingSignalCount: countAuthLoadingSignals(code),
     authProtectedLoadingRenderCount: countAuthProtectedLoadingRenderSignals(code),
+    authBlankLoadingRenderCount: countAuthBlankLoadingRenderSignals(code),
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
@@ -5611,6 +5646,27 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
+    }));
+  }
+
+  if (
+    astSignals.authSessionSignalCount > 0
+    && astSignals.authLoadingSignalCount > 0
+    && astSignals.authBlankLoadingRenderCount > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-loading-blank-render',
+      category: 'State Handling',
+      severity: 'info',
+      message: 'The reviewed auth/session loading branch returns nothing instead of an explicit pending boundary.',
+      evidence: [
+        filePath,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+        `Blank loading renders: ${astSignals.authBlankLoadingRenderCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Render a spinner, skeleton, suspense fallback, or another explicit pending UI while auth/session state resolves instead of returning `null` or an empty fragment.',
     }));
   }
 
