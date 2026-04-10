@@ -381,6 +381,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authProtectedRedirectSignals: createSourceAuditBucket(),
     authAnonymousRedirectSignals: createSourceAuditBucket(),
     authOpenRedirectSignals: createSourceAuditBucket(),
+    authExternalRedirectSignals: createSourceAuditBucket(),
     skipNavSignals: createSourceAuditBucket(),
     skipNavTargetIds: [],
     mainLandmarkSignals: createSourceAuditBucket(),
@@ -441,6 +442,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.insecureExternalImageCount
       + signals.authCookieMissingHardeningCount
       + signals.authOpenRedirectSignalCount
+      + signals.authExternalRedirectSignalCount
       + signals.externalBlankLinkWithoutRelCount;
     const authInputHintIssueCount = signals.emailAutocompleteMissingCount
       + signals.passwordAutocompleteMissingCount
@@ -457,6 +459,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
     recordSourceAudit(summary.authAnonymousRedirectSignals, relativePath, signals.authAnonymousRedirectSignalCount);
     recordSourceAudit(summary.authOpenRedirectSignals, relativePath, signals.authOpenRedirectSignalCount);
+    recordSourceAudit(summary.authExternalRedirectSignals, relativePath, signals.authExternalRedirectSignalCount);
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -621,6 +624,7 @@ interface SourceAuditSummary {
   authProtectedRedirectSignals: SourceAuditBucket;
   authAnonymousRedirectSignals: SourceAuditBucket;
   authOpenRedirectSignals: SourceAuditBucket;
+  authExternalRedirectSignals: SourceAuditBucket;
   skipNavSignals: SourceAuditBucket;
   skipNavTargetIds: string[];
   mainLandmarkSignals: SourceAuditBucket;
@@ -1814,6 +1818,27 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (
+    topology.hasAuthFeature
+    && sourceAudit.authExternalRedirectSignals.count > 0
+    && (
+      sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.authEntrySignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.signInFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.signUpFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.recoveryFlowSignals)
+      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.authExitSignals)
+    )
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-external-redirect-risk',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files appear to redirect auth-related flows directly to external URLs.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authExternalRedirectSignals, 'Auth external redirects'),
+      suggestedFix: 'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
+    }));
+  }
+
   if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
     findings.push(makeFinding({
       id: 'source-auth-entry-surface-missing',
@@ -2297,6 +2322,7 @@ interface AstCritiqueSignals {
   authProtectedRedirectSignalCount: number;
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
+  authExternalRedirectSignalCount: number;
   authStorageWriteCount: number;
   authStorageClearCount: number;
   authCookieWriteCount: number;
@@ -3473,6 +3499,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
+    authExternalRedirectSignalCount: 0,
     authStorageWriteCount: 0,
     authStorageClearCount: countAuthStorageClearSignals(code),
     authCookieWriteCount: 0,
@@ -3523,6 +3550,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       && isInsecureTransportUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.insecureTransportEndpointCount += 1;
+    }
+
+    if (
+      ts.isBinaryExpression(node)
+      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      && isLocationAssignmentTarget(node.left)
+      && isExternalUrl(getExpressionLiteralValue(node.right))
+    ) {
+      signals.authExternalRedirectSignalCount += 1;
     }
 
     if (
@@ -3638,6 +3674,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.authOpenRedirectSignalCount += 1;
       }
 
+      if (isRouteTransitionCall(node) && isExternalUrl(firstArgumentLiteral)) {
+        signals.authExternalRedirectSignalCount += 1;
+      }
+
       if (
         isAxiosConfigCall(node)
         && isInsecureTransportUrl(getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'))
@@ -3652,6 +3692,15 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         && isInsecureTransportUrl(firstArgumentLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
+      }
+
+      if (
+        ts.isPropertyAccessExpression(node.expression)
+        && isLocationObjectExpression(node.expression.expression)
+        && isPropertyNamed(node.expression.name, 'assign', 'replace')
+        && isExternalUrl(firstArgumentLiteral)
+      ) {
+        signals.authExternalRedirectSignalCount += 1;
       }
 
       if (
@@ -4779,6 +4828,7 @@ export function critiqueSource({
   const insecureExternalImageCount = astSignals.insecureExternalImageCount;
   const externalBlankLinkWithoutRelCount = astSignals.externalBlankLinkWithoutRelCount;
   const authOpenRedirectSignalCount = astSignals.authOpenRedirectSignalCount;
+  const authExternalRedirectSignalCount = astSignals.authExternalRedirectSignalCount;
   const emailAutocompleteMissingCount = astSignals.emailAutocompleteMissingCount;
   const passwordAutocompleteMissingCount = astSignals.passwordAutocompleteMissingCount;
   const otpAutocompleteMissingCount = astSignals.otpAutocompleteMissingCount;
@@ -4803,6 +4853,7 @@ export function critiqueSource({
   const hasInsecureExternalImage = insecureExternalImageCount > 0;
   const hasExternalBlankLinkWithoutRel = externalBlankLinkWithoutRelCount > 0;
   const hasAuthOpenRedirectSignals = authOpenRedirectSignalCount > 0;
+  const hasAuthExternalRedirectSignals = authExternalRedirectSignalCount > 0;
   const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
     || passwordAutocompleteMissingCount > 0
     || otpAutocompleteMissingCount > 0
@@ -4846,13 +4897,14 @@ export function critiqueSource({
       - (hasInsecureExternalIframe ? 1 : 0)
       - (hasExternalBlankLinkWithoutRel ? 1 : 0)
       - (hasAuthOpenRedirectSignals ? 2 : 0)
+      - (hasAuthExternalRedirectSignals ? 2 : 0)
       - (hasAuthAutocompleteIssues ? 1 : 0)
       - (hasAuthStorageWrites ? 2 : 0)
       - (hasAuthCookieWrites ? 2 : 0)
       - (hasAuthCookieMissingHardening ? 2 : 0)
       - (hasAuthHeaderWrites ? 2 : 0),
     ),
-    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
+    details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}`,
     suggestions: [
       ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
       ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
@@ -4870,6 +4922,7 @@ export function critiqueSource({
       ...(hasInsecureExternalImage ? ['Avoid loading remote images over plain HTTP; use HTTPS or move the image behind a reviewed trusted asset boundary.'] : []),
       ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
       ...(hasAuthOpenRedirectSignals ? ['Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.'] : []),
+      ...(hasAuthExternalRedirectSignals ? ['Avoid hard-redirecting auth flows to external URLs from app code. Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration.'] : []),
       ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
       ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
       ...(hasAuthStorageClearGap ? ['If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.'] : []),
@@ -5082,6 +5135,21 @@ export function critiqueSource({
       evidence: [filePath, `Auth/query redirect signals: ${authOpenRedirectSignalCount}`],
       file: filePath,
       suggestedFix: 'Resolve post-auth and route-transition redirects through a reviewed internal allowlist instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
+    }));
+  }
+
+  if (
+    hasAuthExternalRedirectSignals
+    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+  ) {
+    findings.push(makeFinding({
+      id: 'security-auth-external-redirect-risk',
+      category: 'Security Hygiene',
+      severity: 'warn',
+      message: 'The reviewed auth flow redirects users directly to an external URL.',
+      evidence: [filePath, `Auth external redirects: ${authExternalRedirectSignalCount}`],
+      file: filePath,
+      suggestedFix: 'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
     }));
   }
 
