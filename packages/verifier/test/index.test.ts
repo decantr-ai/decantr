@@ -3977,6 +3977,117 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'route-auth-recovery-link-missing')).toBe(false);
   });
 
+  it('flags sign-in critique files that omit a route to the declared registration flow', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'register', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'register', path: '/register', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-registration-link-missing')).toBe(true);
+  });
+
+  it('does not flag registration-link gaps when the sign-in flow links to the declared registration route', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginPage.tsx',
+      code: `
+        export function LoginPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signIn();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="current-password" />
+              <a href="/register">Create account</a>
+              <button type="submit">Sign in</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'register', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'register', path: '/register', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-registration-link-missing')).toBe(false);
+  });
+
   it('flags recovery critique files that omit a route back to the declared anonymous entry flow', () => {
     const report = critiqueSource({
       filePath: 'src/routes/ForgotPasswordPage.tsx',
@@ -4082,6 +4193,117 @@ describe('verifier', () => {
     });
 
     expect(report.findings.some(finding => finding.id === 'route-auth-entry-return-missing')).toBe(false);
+  });
+
+  it('flags registration critique files that omit a route back to the declared sign-in flow', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/RegisterPage.tsx',
+      code: `
+        export function RegisterPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signUp();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="new-password" />
+              <button type="submit">Create account</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'register', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'register', path: '/register', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-signin-link-missing')).toBe(true);
+  });
+
+  it('does not flag sign-in return gaps when the registration flow links back to the declared sign-in route', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/RegisterPage.tsx',
+      code: `
+        export function RegisterPage() {
+          async function handleSubmit(event) {
+            event.preventDefault();
+            await auth.signUp();
+            return redirect('/dashboard');
+          }
+
+          return (
+            <form onSubmit={handleSubmit}>
+              <input type="email" name="email" autoComplete="email" />
+              <input type="password" name="password" autoComplete="new-password" />
+              <a href="/login">Back to sign in</a>
+              <button type="submit">Create account</button>
+            </form>
+          );
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login', 'register', 'dashboard'], patternIds: ['form', 'panel'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [
+            { pageId: 'login', path: '/login', patternIds: ['form'] },
+            { pageId: 'register', path: '/register', patternIds: ['form'] },
+            { pageId: 'dashboard', path: '/dashboard', patternIds: ['panel'] },
+          ],
+          focusAreas: ['route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'route-auth-signin-link-missing')).toBe(false);
   });
 
   it('flags auth entry critique files that omit a failure state', () => {

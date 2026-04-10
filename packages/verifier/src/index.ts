@@ -647,6 +647,14 @@ function isRecoveryLikeRoute(route: string): boolean {
   return /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|$)/i.test(route);
 }
 
+function isSignInLikeRoute(route: string): boolean {
+  return /(?:^|\/)(?:auth|login|log-in|signin|sign-in)(?:\/|$)/i.test(route);
+}
+
+function isRegistrationLikeRoute(route: string): boolean {
+  return /(?:^|\/)(?:signup|sign-up|register)(?:\/|$)/i.test(route);
+}
+
 function isAnonymousEntryLikeRoute(route: string): boolean {
   return route === '/' || /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register)(?:\/|$)/i.test(route);
 }
@@ -2866,6 +2874,16 @@ function countRecoveryFlowSignals(code: string, filePath: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
 }
 
+function countSignUpFlowSignals(code: string, filePath: string): number {
+  const patterns = [
+    /\b(?:signUp|signup|register|createAccount)\s*\(/i,
+    />\s*(?:sign up|register|create account)\s*</i,
+    /(?:^|\/)(?:signup|sign-up|register)(?:\/|\.|$)/i,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
+}
+
 function countProtectedSurfaceSignals(code: string): number {
   const patterns = [
     /['"`]\/(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/[^'"`]*)?['"`]/i,
@@ -2915,11 +2933,33 @@ function countAuthRecoveryRouteSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countRegistrationRouteSignals(code: string): number {
+  const patterns = [
+    /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:signup|sign-up|register)(?:[/?#][^'"`]*)?['"`]/gi,
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:signup|sign-up|register)(?:[/?#][^'"`]*)?['"`]/gi,
+    /\bwindow\.location(?:\.href)?\s*=\s*['"`]\/(?:signup|sign-up|register)(?:[/?#][^'"`]*)?['"`]/gi,
+    />\s*(?:sign up|register|create account)\s*</gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAnonymousEntryRouteSignals(code: string): number {
   const patterns = [
     /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register)?(?:[/?#][^'"`]*)?['"`]/gi,
     /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register)?(?:[/?#][^'"`]*)?['"`]/gi,
     /\bwindow\.location(?:\.href)?\s*=\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register)?(?:[/?#][^'"`]*)?['"`]/gi,
+    />\s*(?:back to sign in|back to login|return to sign in|return to login|sign in|log in)\s*</gi,
+  ];
+
+  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
+}
+
+function countSignInRouteSignals(code: string): number {
+  const patterns = [
+    /\b(?:href|to|route|path)\s*[:=]\s*['"`]\/(?:auth|login|log-?in|sign-?in)(?:[/?#][^'"`]*)?['"`]/gi,
+    /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in)(?:[/?#][^'"`]*)?['"`]/gi,
+    /\bwindow\.location(?:\.href)?\s*=\s*['"`]\/(?:auth|login|log-?in|sign-?in)(?:[/?#][^'"`]*)?['"`]/gi,
     />\s*(?:back to sign in|back to login|return to sign in|return to login|sign in|log in)\s*</gi,
   ];
 
@@ -3878,11 +3918,16 @@ export function critiqueSource({
 
   const hasProtectedRouteInReview = reviewPack?.data.routes.some(route => isProtectedLikeRoute(route.path)) ?? false;
   const hasRecoveryRouteInReview = reviewPack?.data.routes.some(route => isRecoveryLikeRoute(route.path)) ?? false;
+  const hasSignInRouteInReview = reviewPack?.data.routes.some(route => isSignInLikeRoute(route.path)) ?? false;
+  const hasRegistrationRouteInReview = reviewPack?.data.routes.some(route => isRegistrationLikeRoute(route.path)) ?? false;
   const hasAnonymousEntryRouteInReview = reviewPack?.data.routes.some(route => isAnonymousEntryLikeRoute(route.path)) ?? false;
   const signInFlowSignals = countSignInFlowSignals(code, filePath);
   const recoveryFlowSignals = countRecoveryFlowSignals(code, filePath);
+  const signUpFlowSignals = countSignUpFlowSignals(code, filePath);
   const authRecoveryRouteSignalCount = countAuthRecoveryRouteSignals(code);
+  const registrationRouteSignalCount = countRegistrationRouteSignals(code);
   const anonymousEntryRouteSignalCount = countAnonymousEntryRouteSignals(code);
+  const signInRouteSignalCount = countSignInRouteSignals(code);
   if (
     astSignals.authEntrySignalCount > 0
     && hasProtectedRouteInReview
@@ -3925,6 +3970,27 @@ export function critiqueSource({
   }
 
   if (
+    signInFlowSignals > 0
+    && hasRegistrationRouteInReview
+    && registrationRouteSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-registration-link-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'The reviewed sign-in flow does not show an obvious path into the declared registration route.',
+      evidence: [
+        filePath,
+        `Sign-in flow signals: ${signInFlowSignals}`,
+        `Reviewed registration routes: ${reviewPack?.data.routes.filter(route => isRegistrationLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
+        `Registration route signals: ${registrationRouteSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Link sign-in users to the reviewed registration route, such as `/register` or `/sign-up`, whenever the compiled route contract declares one.',
+    }));
+  }
+
+  if (
     recoveryFlowSignals > 0
     && hasAnonymousEntryRouteInReview
     && anonymousEntryRouteSignalCount === 0
@@ -3942,6 +4008,27 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Link recovery users back to a reviewed anonymous entry route, such as `/login`, `/register`, or `/`, whenever the compiled route contract declares one.',
+    }));
+  }
+
+  if (
+    signUpFlowSignals > 0
+    && hasSignInRouteInReview
+    && signInRouteSignalCount === 0
+  ) {
+    findings.push(makeFinding({
+      id: 'route-auth-signin-link-missing',
+      category: 'Route Topology',
+      severity: 'info',
+      message: 'The reviewed registration flow does not show an obvious path back into the declared sign-in route.',
+      evidence: [
+        filePath,
+        `Registration flow signals: ${signUpFlowSignals}`,
+        `Reviewed sign-in routes: ${reviewPack?.data.routes.filter(route => isSignInLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
+        `Sign-in route signals: ${signInRouteSignalCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'Link registration users back to the reviewed sign-in route, such as `/login` or `/sign-in`, whenever the compiled route contract declares one.',
     }));
   }
 
