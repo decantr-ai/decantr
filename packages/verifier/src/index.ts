@@ -4479,7 +4479,7 @@ function countAuthAnonymousRedirectSignals(code: string): number {
 }
 
 const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To|[_-]to)?|return(?:To|[_-]to)?|callback(?:Url|[_-]url)?|continue(?:Url|[_-]url)?|from`;
-const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|request\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\bnew\s+URL\(\s*(?:request|req)\.url\s*\)\.searchParams\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
+const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|(?:request|req)\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:window\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\bnew\s+URL\(\s*(?:request|req)\.url\s*\)\.searchParams\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
 const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:searchParams|router\.query|route\.query|query)\b/i;
