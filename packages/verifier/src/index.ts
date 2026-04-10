@@ -4866,6 +4866,15 @@ function expressionLooksLikeLocationQuerySource(
   }
 
   if (
+    ts.isCallExpression(expression)
+    && (ts.isPropertyAccessExpression(expression.expression) || ts.isElementAccessExpression(expression.expression))
+    && isMemberAccessNamed(expression.expression, 'slice', 'substring', 'replace', 'trim')
+    && expressionLooksLikeLocationQuerySource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
     (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
     && isMemberAccessNamed(expression, 'search', 'hash')
     && (
