@@ -5156,7 +5156,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'trim', 'replace', 'toLowerCase', 'toUpperCase', 'toLocaleLowerCase')
+    && isMemberAccessNamed(expression.expression, 'trim', 'replace', 'toLowerCase', 'toUpperCase', 'toLocaleLowerCase', 'toLocaleUpperCase')
     && expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
