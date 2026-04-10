@@ -470,6 +470,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Protected auth-loss and auth-loading detection now also catches protected route links nested inside otherwise generic markup, so reviewed gateway branches cannot keep advertising `/dashboard` or other privileged destinations from a neutral `<section>` container.
 - Protected auth-loss and auth-loading detection now also catches protected route actions hidden behind nested buttons or callback handlers, so reviewed gateway branches cannot keep a stale “continue to dashboard” button alive just by replacing a link with `navigate('/dashboard')`.
 - Protected auth-loss and auth-loading detection now also catches nested form submissions into protected routes like `action="/dashboard"`, so reviewed gateway branches cannot preserve privileged navigation by swapping a link or button callback for a form post.
+- Protected auth-loss and auth-loading detection now also catches browser redirects like `window.location.assign('/dashboard')` inside nested callbacks, so reviewed gateway branches cannot preserve privileged navigation by bypassing router helpers entirely.
 
 ## Highest-Value Next Streams
 
