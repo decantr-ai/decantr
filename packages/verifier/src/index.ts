@@ -398,6 +398,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authLoadingSignals: createSourceAuditBucket(),
     authProtectedLoadingRenderSignals: createSourceAuditBucket(),
     authBlankLoadingRenderSignals: createSourceAuditBucket(),
+    authAnonymousLoadingRedirectSignals: createSourceAuditBucket(),
     authErrorSignals: createSourceAuditBucket(),
     authSuccessSignals: createSourceAuditBucket(),
     authCallbackTokenSignals: createSourceAuditBucket(),
@@ -510,6 +511,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
     recordSourceAudit(summary.authProtectedLoadingRenderSignals, relativePath, signals.authProtectedLoadingRenderCount);
     recordSourceAudit(summary.authBlankLoadingRenderSignals, relativePath, signals.authBlankLoadingRenderCount);
+    recordSourceAudit(summary.authAnonymousLoadingRedirectSignals, relativePath, signals.authAnonymousLoadingRedirectCount);
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
     recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
@@ -690,6 +692,7 @@ interface SourceAuditSummary {
   authLoadingSignals: SourceAuditBucket;
   authProtectedLoadingRenderSignals: SourceAuditBucket;
   authBlankLoadingRenderSignals: SourceAuditBucket;
+  authAnonymousLoadingRedirectSignals: SourceAuditBucket;
   authErrorSignals: SourceAuditBucket;
   authSuccessSignals: SourceAuditBucket;
   authCallbackTokenSignals: SourceAuditBucket;
@@ -1899,6 +1902,27 @@ function appendSourceAuditFindings(
 
   if (
     topology.hasAuthFeature
+    && sourceAudit.authSessionSignals.count > 0
+    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
+    && sourceAudit.authAnonymousLoadingRedirectSignals.count > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'source-auth-loading-anonymous-redirect',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Auth/session loading branches redirect users to anonymous routes before session resolution finishes.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+        `Anonymous loading redirect files: ${sourceAudit.authAnonymousLoadingRedirectSignals.files.join(', ') || 'none'}`,
+      ],
+      suggestedFix: 'Do not redirect to `/login`, `/`, or another anonymous route while session state is still loading. Render a pending boundary first, then redirect only after the session resolves as unauthenticated.',
+    }));
+  }
+
+  if (
+    topology.hasAuthFeature
     && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
     && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
   ) {
@@ -2787,6 +2811,7 @@ interface AstCritiqueSignals {
   authLoadingSignalCount: number;
   authProtectedLoadingRenderCount: number;
   authBlankLoadingRenderCount: number;
+  authAnonymousLoadingRedirectCount: number;
   authProtectedRedirectSignalCount: number;
   authAnonymousRedirectSignalCount: number;
   authOpenRedirectSignalCount: number;
@@ -3758,6 +3783,15 @@ function countAuthBlankLoadingRenderSignals(code: string): number {
   return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
 }
 
+function countAuthAnonymousLoadingRedirectSignals(code: string): number {
+  const patterns = [
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*{[\s\S]{0,260}?\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register|forgot-password|reset-password)?(?:[/?#][^'"`]*)?['"`]/gi,
+    /\bif\s*\(\s*[^)]*(?:status\s*===?\s*['"`]loading['"`]|isLoading|loading|isPending|pending|sessionLoading|authLoading)[^)]*\)\s*return\s*\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register|forgot-password|reset-password)?(?:[/?#][^'"`]*)?['"`]/gi,
+  ];
+
+  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+}
+
 function countAuthErrorSignals(code: string): number {
   const patterns = [
     /\bstatus\s*===?\s*['"`]error['"`]/,
@@ -4269,6 +4303,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     authLoadingSignalCount: countAuthLoadingSignals(code),
     authProtectedLoadingRenderCount: countAuthProtectedLoadingRenderSignals(code),
     authBlankLoadingRenderCount: countAuthBlankLoadingRenderSignals(code),
+    authAnonymousLoadingRedirectCount: countAuthAnonymousLoadingRedirectSignals(code),
     authProtectedRedirectSignalCount: countAuthProtectedRedirectSignals(code),
     authAnonymousRedirectSignalCount: countAuthAnonymousRedirectSignals(code),
     authOpenRedirectSignalCount: countAuthOpenRedirectSignals(code),
@@ -5667,6 +5702,27 @@ export function critiqueSource({
       ],
       file: filePath,
       suggestedFix: 'Render a spinner, skeleton, suspense fallback, or another explicit pending UI while auth/session state resolves instead of returning `null` or an empty fragment.',
+    }));
+  }
+
+  if (
+    astSignals.authSessionSignalCount > 0
+    && astSignals.authLoadingSignalCount > 0
+    && astSignals.authAnonymousLoadingRedirectCount > 0
+  ) {
+    findings.push(makeFinding({
+      id: 'state-auth-loading-anonymous-redirect',
+      category: 'State Handling',
+      severity: 'warn',
+      message: 'The reviewed auth/session loading branch redirects users to an anonymous route before session state is resolved.',
+      evidence: [
+        filePath,
+        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+        `Anonymous loading redirects: ${astSignals.authAnonymousLoadingRedirectCount}`,
+      ],
+      file: filePath,
+      suggestedFix: 'While auth/session state is still loading, render a pending boundary instead of redirecting to `/login`, `/`, or another anonymous route. Only redirect after the session resolves as unauthenticated.',
     }));
   }
 
