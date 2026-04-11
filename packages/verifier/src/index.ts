@@ -5186,6 +5186,28 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   if (
     isCallLikeExpression(expression)
     && expression.arguments.length > 0
+    && expressionLooksLikeBrowserGlobalBigIntHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && expression.arguments.length > 0
     && expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.expression,
       sourceFile,
@@ -7391,6 +7413,68 @@ function expressionLooksLikeStructuredCloneHelper(
     if (
       propertyAlias
       && propertyAlias.propertyName === 'structuredClone'
+      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function expressionLooksLikeBrowserGlobalBigIntHelper(
+  expression: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+  seenIdentifiers: Set<string>,
+): boolean {
+  if (!expression) return false;
+
+  if (ts.isIdentifier(expression) && expression.text === 'BigInt') {
+    return true;
+  }
+
+  if (
+    isMemberAccessExpression(expression)
+    && isMemberAccessNamed(expression, 'BigInt')
+    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'bind')
+    && expressionLooksLikeBrowserGlobalBigIntHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+    return expressionLooksLikeBrowserGlobalBigIntHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  }
+
+  if (ts.isIdentifier(expression)) {
+    if (seenIdentifiers.has(expression.text)) return false;
+    const initializer = namedExpressions.get(expression.text);
+    if (initializer) {
+      seenIdentifiers.add(expression.text);
+      const result = expressionLooksLikeBrowserGlobalBigIntHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      seenIdentifiers.delete(expression.text);
+      if (result) return true;
+    }
+    const propertyAlias = namedPropertyAliases.get(expression.text);
+    if (
+      propertyAlias
+      && propertyAlias.propertyName === 'BigInt'
       && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
     ) {
       return true;
