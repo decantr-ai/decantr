@@ -5322,6 +5322,79 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
   if (
     isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && expression.arguments.length > 2
+    && expressionLooksLikeStructuredCloneHelper(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'call')
+    && expression.arguments.length > 1
+    && expressionLooksLikeStructuredCloneHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[1],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && expressionLooksLikeStructuredCloneHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
     && expression.arguments.length > 0
     && expressionLooksLikeBrowserGlobalStringHelper(
       expression.expression,
