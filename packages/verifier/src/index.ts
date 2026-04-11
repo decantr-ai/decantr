@@ -5587,6 +5587,79 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
   if (
     isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && ts.isIdentifier(expression.expression.expression)
+    && expression.expression.expression.text === 'Reflect'
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && expression.arguments.length > 2
+    && expressionLooksLikeBrowserGlobalObjectHelper(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'call')
+    && expression.arguments.length > 1
+    && expressionLooksLikeBrowserGlobalObjectHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[1],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
+    && isMemberAccessExpression(expression.expression)
+    && isMemberAccessNamed(expression.expression, 'apply')
+    && expressionLooksLikeBrowserGlobalObjectHelper(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
     && ['String', 'atob', 'btoa', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(expression.expression.text)
     && expression.arguments.length > 0
