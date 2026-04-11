@@ -39011,6 +39011,51 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'security-auth-open-redirect-risk')).toBe(true);
   });
 
+  it('flags auth redirects that trust bound JSON.stringify repeated-query returned helper closures during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/routes/LoginRedirect.tsx',
+      code: `
+        function createReadRedirect(params) {
+          const stringifyRedirect = JSON.stringify.bind(JSON);
+          return (key) => stringifyRedirect(params.getAll(key)[0]);
+        }
+
+        export function LoginRedirect({ searchParams }) {
+          const readRedirect = createReadRedirect(searchParams);
+          return redirect(readRedirect.call(null, 'next'));
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['login'], patternIds: ['form'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'login', path: '/login', patternIds: ['form'] }],
+          focusAreas: ['security-hygiene', 'route-topology'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'security-auth-open-redirect-risk')).toBe(true);
+  });
+
   it('flags auth redirects that trust reflected JSON.stringify repeated-query returned helper closures during critique', () => {
     const report = critiqueSource({
       filePath: 'src/routes/LoginRedirect.tsx',
