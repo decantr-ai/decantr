@@ -5092,6 +5092,29 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
+    ts.isNewExpression(expression)
+    && expression.arguments
+    && expression.arguments.length > 0
+    && expressionLooksLikeBrowserGlobalStringHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
+    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
+  ) {
+    return true;
+  }
+
+  if (
     isCallLikeExpression(expression)
     && ts.isIdentifier(expression.expression)
     && ['String', 'atob', 'btoa', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(expression.expression.text)
