@@ -819,6 +819,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Project-audit coverage now explicitly locks down the existing `useLocation()` hook carrier path with regressions for patterns like `const routeLocation = useLocation()` and `const { search } = useLocation()`, so the verifier’s already-modeled hook-backed location-carrier behavior stays pinned in place alongside the earlier auth tracing work.
 - Critique coverage now explicitly locks down the existing `useLocation()` hook carrier path with regressions for patterns like `const routeLocation = useLocation()` and `const { search } = useLocation()`, so the verifier’s already-modeled hook-backed location-carrier behavior stays pinned in place alongside the earlier project-audit coverage.
 - Project-audit coverage now explicitly locks down the existing cloned `req.nextUrl` carrier path with regressions for patterns like `const nextUrl = req.nextUrl.clone()` and `const params = req.nextUrl.clone().searchParams`, so the verifier’s already-modeled cloned request-URL behavior stays pinned in place alongside the earlier auth tracing work.
+- Critique coverage now explicitly locks down the existing cloned `req.nextUrl` carrier path with regressions for patterns like `const nextUrl = req.nextUrl.clone()` and `const params = req.nextUrl.clone().searchParams`, so the verifier’s already-modeled cloned request-URL behavior stays pinned in place alongside the earlier project-audit coverage.
 
 ## Highest-Value Next Streams
 
