@@ -816,6 +816,7 @@ The verifier layer has also moved beyond heuristic-only critique in this branch:
 - Critique coverage now explicitly locks down the existing bound History API sink path with regressions for patterns like `history.replaceState.bind(history)` and `pushState.bind(window.history)`, so the verifier’s already-modeled bound browser-history sink behavior stays pinned in place alongside the earlier project-audit coverage.
 - Project-audit coverage now explicitly locks down the existing `useSearchParams()` hook carrier path with regressions for patterns like `const params = useSearchParams()` and `const [params] = useSearchParams()`, so the verifier’s already-modeled hook-backed query-carrier behavior stays pinned in place alongside the earlier auth tracing work.
 - Critique coverage now explicitly locks down the existing `useSearchParams()` hook carrier path with regressions for patterns like `const params = useSearchParams()` and `const [params] = useSearchParams()`, so the verifier’s already-modeled hook-backed query-carrier behavior stays pinned in place alongside the earlier project-audit coverage.
+- Project-audit coverage now explicitly locks down the existing `useLocation()` hook carrier path with regressions for patterns like `const routeLocation = useLocation()` and `const { search } = useLocation()`, so the verifier’s already-modeled hook-backed location-carrier behavior stays pinned in place alongside the earlier auth tracing work.
 
 ## Highest-Value Next Streams
 
