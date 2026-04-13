@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
+import { buildGuardRegistryContext } from '../guard-context.js';
 import { isOptedIn, optIn, collectMetrics, sendGuardMetrics } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
@@ -50,7 +51,7 @@ export async function cmdHeal(projectRoot: string = process.cwd(), options: Chec
 
   // Run guard rules
   try {
-    const violations = evaluateGuard(essence, { themeRegistry: new Map(), patternRegistry: new Map() });
+    const violations = evaluateGuard(essence, buildGuardRegistryContext(projectRoot));
     for (const v of violations) {
       issues.push({
         type: v.severity === 'error' ? 'error' : 'warning',

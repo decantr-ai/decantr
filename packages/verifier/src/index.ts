@@ -374,6 +374,7 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
   const summary: SourceAuditSummary = {
     filesChecked: sourceFiles.length,
     inlineStyles: createSourceAuditBucket(),
+    localCssRuntimeSignals: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
     localhostEndpointSignals: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
@@ -478,8 +479,14 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       + signals.authAutocompleteDisabledCount
       + signals.authAutocompleteSemanticMismatchCount
       + signals.authInputTypeMismatchCount;
+    const localCssRuntimeCount = (
+      /(?:^|\/)(?:lib|utils)\/css\.(?:[cm]?[jt]sx?)$/i.test(relativePath)
+      || /(?:^|\/)styles\/atoms\.css$/i.test(relativePath)
+      || /Lightweight @decantr\/css atom runtime/i.test(code)
+    ) ? 1 : 0;
 
     recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
+    recordSourceAudit(summary.localCssRuntimeSignals, relativePath, localCssRuntimeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.localhostEndpointSignals, relativePath, signals.localhostEndpointCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
@@ -670,6 +677,7 @@ interface SourceAuditBucket {
 interface SourceAuditSummary {
   filesChecked: number;
   inlineStyles: SourceAuditBucket;
+  localCssRuntimeSignals: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
   localhostEndpointSignals: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
@@ -782,7 +790,7 @@ function isAnonymousEntryLikeRoute(route: string): boolean {
 }
 
 function isProtectedLikeRoute(route: string): boolean {
-  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin)(?:\/|$)/i.test(route);
+  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin|agents?|marketplace|transparency|logs?|metrics|config|console|studio|pipelines?|projects?|monitoring|overview)(?:\/|$)/i.test(route);
 }
 
 function essenceRequiresFocusVisible(essence: EssenceFile | null): boolean {
@@ -1079,6 +1087,7 @@ function appendRuntimeAuditFindings(
   runtimeAudit: RuntimeAudit,
   projectRoot: string,
   topology?: TopologySummary,
+  sourceAudit?: SourceAuditSummary,
 ): void {
   const distPath = join(projectRoot, 'dist');
   const indexPath = join(distPath, 'index.html');
@@ -1305,7 +1314,15 @@ function appendRuntimeAuditFindings(
     }));
   }
 
-  if (runtimeAudit.jsHtmlInjectionSignalCount > 0) {
+  const hasSourceCorroboration = (sourceAudit?.filesChecked ?? 0) > 0;
+  const sourceSecurityCorroborates = (sourceAudit?.securityRiskPatterns.count ?? 0) > 0;
+  const sourceLocalhostCorroborates = (sourceAudit?.localhostEndpointSignals.count ?? 0) > 0;
+  const htmlInjectionShouldWarn = runtimeAudit.jsHtmlInjectionSignalCount > 0
+    && (!hasSourceCorroboration || sourceSecurityCorroborates || runtimeAudit.jsHtmlInjectionSignalCount >= 25);
+  const insecureTransportShouldWarn = runtimeAudit.jsInsecureTransportSignalCount > 0
+    && (!hasSourceCorroboration || sourceSecurityCorroborates || sourceLocalhostCorroborates || runtimeAudit.jsInsecureTransportSignalCount >= 25);
+
+  if (htmlInjectionShouldWarn) {
     findings.push(makeFinding({
       id: 'runtime-js-html-injection-signals',
       category: 'Security Hygiene',
@@ -1316,7 +1333,7 @@ function appendRuntimeAuditFindings(
     }));
   }
 
-  if (runtimeAudit.jsInsecureTransportSignalCount > 0) {
+  if (insecureTransportShouldWarn) {
     findings.push(makeFinding({
       id: 'runtime-js-insecure-transport-signals',
       category: 'Security Hygiene',
@@ -1550,6 +1567,17 @@ function appendSourceAuditFindings(
       message: 'Source files still contain inline style attributes, which undermines the compiled treatment contract.',
       evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.inlineStyles, 'Inline style attributes'),
       suggestedFix: 'Move inline styling into treatments, atoms, or design-token-backed classes so generation stays aligned with the Decantr contract.',
+    }));
+  }
+
+  if (sourceAudit.localCssRuntimeSignals.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-local-css-runtime-stub-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files include a local css() runtime or hand-written atoms stylesheet instead of the first-party `@decantr/css` runtime path.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.localCssRuntimeSignals, 'Local css() runtime signals'),
+      suggestedFix: 'Use the real `@decantr/css` runtime for atom classes and remove local `css()` stubs or hand-written `atoms.css` fallbacks unless the project is deliberately running in an explicit fallback mode.',
     }));
   }
 
@@ -2725,10 +2753,12 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     }));
   }
 
+  const sourceAudit = auditProjectSourceTree(projectRoot);
+  const styleAudit = auditProjectStyleContracts(projectRoot);
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
-  appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot, summarizeTopology(essence, reviewPack));
-  appendSourceAuditFindings(findings, auditProjectSourceTree(projectRoot), essence, reviewPack);
-  appendStyleContractFindings(findings, auditProjectStyleContracts(projectRoot), essence);
+  appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot, summarizeTopology(essence, reviewPack), sourceAudit);
+  appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack);
+  appendStyleContractFindings(findings, styleAudit, essence);
 
   const summary = {
     errorCount: findings.filter(finding => finding.severity === 'error').length,

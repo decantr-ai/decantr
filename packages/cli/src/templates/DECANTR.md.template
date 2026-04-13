@@ -102,8 +102,12 @@ Read `.decantr/context/page-{name}-pack.md` for the most local compiled route co
 
 ### Editing rules
 
+- Use the real `@decantr/css` runtime for atoms. If `package.json` does not already include `@decantr/css`, add it before implementation.
+- Do **not** create local atom-runtime substitutes such as `src/lib/css.js`, `src/lib/css.ts`, or hand-written `src/styles/atoms.css` files unless the task explicitly asks for a fallback runtime.
 - Import `src/styles/global.css`, `src/styles/tokens.css`, and `src/styles/treatments.css`.
 - Reuse the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.
+- If `dna.accessibility.skip_nav = true`, add a visible-on-focus skip link and a matching main landmark target such as `<main id="main-content">`.
+- If `dna.motion.reduce_motion = true`, add an explicit `prefers-reduced-motion: reduce` path in project CSS.
 - Do not modify generated context files unless you are explicitly regenerating or refreshing Decantr context.
 - If a required context file is missing or inconsistent, stop and report which file is missing before continuing.
 

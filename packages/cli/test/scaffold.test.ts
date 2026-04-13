@@ -163,6 +163,18 @@ describe('generateGlobalCSS', () => {
     expect(css).toContain('.sr-only');
   });
 
+  it('includes skip-link base styles', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('.skip-link');
+    expect(css).toContain('transform: translateY(-150%)');
+  });
+
+  it('includes reduced-motion override', () => {
+    const css = generateGlobalCSS([]);
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(css).toContain('animation-duration: 0.01ms !important;');
+  });
+
   it('extracts font family from personality when mentioned', () => {
     const css = generateGlobalCSS(['Polished UI with Inter typeface and monospace for code']);
     expect(css).toContain('Inter');

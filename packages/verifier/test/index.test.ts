@@ -503,6 +503,71 @@ describe('verifier', () => {
     }
   });
 
+  it('suppresses built-js risk markers when source files are present but do not corroborate them', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'carbon-neon', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'workspace',
+                role: 'primary',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Workspace',
+                pages: [{ id: 'agents', route: '/agents', layout: ['hero'] }],
+              },
+            ],
+            features: [],
+            routes: {
+              '/agents': { section: 'workspace', page: 'agents' },
+            },
+          },
+          meta: {
+            archetype: 'agent-marketplace',
+            target: 'react',
+            platform: { type: 'spa', routing: 'hash' },
+            guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'App.tsx'),
+        'export function App() { return <main id="main-content">ok</main>; }\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>App</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'assets', 'app.js'),
+        'const vendorNoise = "innerHTML http://www.w3.org/2000/svg http://www.w3.org/1999/xlink localhost"; console.log("/agents");\n',
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'runtime-js-html-injection-signals')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'runtime-js-insecure-transport-signals')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports partial runtime route coverage when only some compiled routes survive the build output', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -749,6 +814,63 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-security-risk-patterns-present')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports local css runtime stubs and atoms.css fallbacks in source audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'lib'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'styles'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'carbon-neon', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['operational'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'workspace',
+                role: 'primary',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Workspace',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
+            features: [],
+            routes: {
+              '/': { section: 'workspace', page: 'home' },
+            },
+          },
+          meta: {
+            archetype: 'agent-marketplace',
+            target: 'react',
+            platform: { type: 'spa', routing: 'hash' },
+            guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'lib', 'css.js'),
+        '/** Lightweight @decantr/css atom runtime for scaffold builds. */\nexport function css(...parts) { return parts.filter(Boolean).join(" "); }\n',
+      );
+      writeFileSync(join(projectRoot, 'src', 'styles', 'atoms.css'), '._flex{display:flex}\n');
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-local-css-runtime-stub-present')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -1612,6 +1734,65 @@ describe('verifier', () => {
 
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'auth-gateway-primary-route-overlap')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag app-like primary routes such as /agents as missing post-auth destinations', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'carbon-neon', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['operational'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                shell: 'centered',
+                features: ['auth'],
+                description: 'Auth entry',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'agents',
+                role: 'primary',
+                shell: 'sidebar-main',
+                features: ['auth'],
+                description: 'Agent workspace',
+                pages: [{ id: 'agents', route: '/agents', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+            routes: {
+              '/login': { section: 'gateway', page: 'login' },
+              '/agents': { section: 'agents', page: 'agents' },
+            },
+          },
+          meta: {
+            archetype: 'agent-marketplace',
+            target: 'react',
+            platform: { type: 'spa', routing: 'hash' },
+            guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'auth-primary-routes-not-app-like')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
