@@ -3,8 +3,10 @@
 > Superseded on 2026-04-08 by `docs/programs/2026-04-08-decantr-vnext-master-program.md`.
 >
 > This file is retained as historical context. The active strategic planning source of truth for the reset branch is the vNext master program and its companion audits/specs.
+>
+> Core vNext reset implementation was merged into `main` on 2026-04-13. Remaining work now lives primarily in commercialization depth, package graduation, release hardening, and final documentation/operator polish tracked in the active vNext program and checkpoint docs.
 
-**MASTER PLAN MODE ACTIVE — Current Phase: 0 (Validation & Foundation)**
+**HISTORICAL SNAPSHOT ONLY — do not use this file as the active execution checklist.**
 
 ---
 

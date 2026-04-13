@@ -1,8 +1,9 @@
 # Decantr vNext Master Program
 
-Status: Draft
+Status: Active
 Date: 2026-04-08
-Branch: `codex/decantr-vnext-reset`
+Updated: 2026-04-13
+Branch: `main` (core reset merged from `codex/decantr-vnext-reset`)
 Owner: Founder + Codex
 
 ## 1. Purpose
@@ -302,9 +303,27 @@ Primary outputs:
 - explicit UI-specific adapters
 - migration notes for a future `decantr-meta` convergence path
 
+## 6.1 Track Status Snapshot (2026-04-13)
+
+| Track | Status | Notes |
+|---|---|---|
+| A: Reset Governance and Surface Pruning | Complete | Product boundary reset, archive boundaries, and legacy UI-surface removals are merged into `main`. |
+| B: Contract Compiler | Complete | Execution-pack schemas, compiler/runtime selection, CLI/MCP/API pack flows, and pack-first guidance are in place. |
+| C: Target Adapters | Foundation complete | React/Vite and Next.js-oriented flows are working; broader adapter expansion remains future work, not a blocker to the current product. |
+| D: Verification Engine | Complete | Shared verifier, report schemas, hosted critique/audit, and expanded route/auth/runtime/accessibility coverage are merged. |
+| E: Registry and Platform Contract | Largely complete | Registry taxonomy, schema ownership, package/API contract alignment, and hosted schema serving are stabilized. |
+| F: Registry Intelligence and Content Operations | Largely complete | Intelligence metadata, public ranking, content audits, and rollout visibility are operational. |
+| G: Docs, Portal, and Positioning Rewrite | Largely complete | Public framing, registry dogfooding, top-level docs, and operator guidance are substantially refreshed; exhaustive package/app README polish remains. |
+| H: Showcase Corpus and Golden Apps | Largely complete | Showcase is reclassified as benchmark corpus with shortlist verification and benchmark evidence. |
+| I: Hosted Commercial Platform | In progress | Billing/auth/org foundations exist, but private registries, deeper entitlements, approvals, and enterprise governance are still ahead. |
+| J: Package and Release Governance | Largely complete | Support matrix, release audits, dry-run paths, and npm surface governance are in place; package graduation/publish execution remains. |
+| K: Meta Compatibility Guardrail | Deferred but preserved | The current reset keeps room for future `decantr-meta` convergence without expanding present scope. |
+
 ## 7. Phase Order
 
 ### Phase 0: Baseline and Pruning
+
+Status: Complete
 
 Goals:
 - document the current system
@@ -316,12 +335,16 @@ Must complete before broad code changes.
 
 ### Phase 1: Core Product Re-foundation
 
+Status: Complete
+
 Goals:
 - tighten package and product boundaries
 - clean content and API contracts
 - strip or archive off-strategy surfaces
 
 ### Phase 2: Compiler and Adapter Foundation
+
+Status: Largely complete
 
 Goals:
 - ship pack schema
@@ -330,12 +353,16 @@ Goals:
 
 ### Phase 3: Verification Foundation
 
+Status: Complete
+
 Goals:
 - move beyond string heuristics
 - establish build, route, treatment, and a11y verification
 - make CI evidence-driven
 
 ### Phase 4: Content Intelligence and Goldens
+
+Status: Largely complete
 
 Goals:
 - score content quality
@@ -344,12 +371,16 @@ Goals:
 
 ### Phase 5: Portal, Docs, and Packaging Cleanup
 
+Status: Largely complete
+
 Goals:
 - align public messaging
 - update package docs and release surfaces
 - eliminate stale promises and dead product lines
 
 ### Phase 6: Hosted Commercialization
+
+Status: In progress
 
 Goals:
 - add team / enterprise governance once the product core is trustworthy

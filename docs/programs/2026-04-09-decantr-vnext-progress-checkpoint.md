@@ -1,15 +1,21 @@
 # Decantr vNext Progress Checkpoint
 
 Date: 2026-04-09
+Updated: 2026-04-13
 
-This checkpoint records what is already implemented on the `codex/decantr-vnext-reset`
-branch so the reset program can continue from a known-good state instead of relying on
+This checkpoint records what was implemented on the `codex/decantr-vnext-reset`
+branch so the reset program could continue from a known-good state instead of relying on
 commit archaeology.
 
-## Branch State
+That core reset work was merged into `main` on 2026-04-13. This document now serves as
+both the original branch checkpoint and a merged-state ledger of what the vNext reset
+already delivered before the remaining commercialization and release-hardening work.
 
-- `decantr-monorepo`: `codex/decantr-vnext-reset`
-- `decantr-content`: `codex/decantr-vnext-resetmai`
+## Current State
+
+- `decantr-monorepo`: `main` (merged from `codex/decantr-vnext-reset` on 2026-04-13)
+- historical integration branch: `codex/decantr-vnext-reset`
+- `decantr-content`: official content rollout previously synced from `codex/decantr-vnext-resetmai`
 
 ## Completed Streams
 
@@ -427,6 +433,26 @@ commit archaeology.
 - Package-surface validation now also enforces semver intent directly, so stable packages cannot silently keep prerelease versions and beta packages must keep prerelease semver until they intentionally graduate.
 - Graduation and release-plan output now also surface each package's current version and stable target version, making beta-to-latest planning more operational than a pure status label.
 - Cleared the remaining workspace dependency advisories by upgrading `hono`, `@hono/node-server`, and `@modelcontextprotocol/sdk`, then pinning patched `vite` and `path-to-regexp` resolutions through root `pnpm` overrides so `pnpm audit` now returns zero vulnerabilities.
+
+## Remaining Major Work
+
+The core reset tracks are no longer the primary risk. The remaining initiative now centers on depth, graduation, and commercialization:
+
+- Hosted commercialization depth:
+  - private registries
+  - richer org/team governance
+  - stronger entitlement and approval workflows
+  - deeper billing lifecycle and metering confidence
+- Package graduation and release execution:
+  - move selected `beta-blocked` packages toward intentional publish readiness
+  - run real release waves instead of only readiness audits
+- Final documentation completeness:
+  - sweep remaining package/app READMEs
+  - keep operator docs aligned with the merged `main` workflow
+- Optional but recommended hardening:
+  - post-merge cold-start scaffold smoke tests from `main`
+  - route inventory/meta coverage so test drift is caught automatically
+  - deeper billing/admin/publish branch coverage where business logic is now present but not exhaustively exercised
 
 ## Verification Baseline
 
