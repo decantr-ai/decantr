@@ -20,6 +20,7 @@ import { rateLimiter } from './middleware/rate-limit.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { logger } from './lib/logger.js';
 import { isAdminSyncRoute, isPublicReadOnlyRoute } from './lib/public-route-access.js';
+import { recordUsageEvent } from './lib/usage-metering.js';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
@@ -113,6 +114,32 @@ export function createApp(): Hono<Env> {
       return next();
     }
     await rateLimiter()(c, next);
+  });
+
+  // Durable usage metering for authenticated hosted product traffic.
+  app.use('/v1/*', async (c, next) => {
+    const path = c.req.path;
+    const method = c.req.method;
+    if (isAdminSyncRoute(method, path) || isPublicReadOnlyRoute(method, path)) {
+      return next();
+    }
+
+    await next();
+
+    const auth = c.get('auth');
+    if (!auth?.isAuthenticated || !auth.user) {
+      return;
+    }
+
+    await recordUsageEvent({
+      user_id: auth.user.id,
+      org_id: auth.apiKeyOrgId ?? null,
+      metric: 'api_request',
+      quantity: 1,
+      source: auth.authSource === 'api_key' ? 'api_key' : 'jwt',
+      path,
+      method,
+    });
   });
 
   // Mount route modules (admin first — its sync endpoint uses admin-key-only auth)

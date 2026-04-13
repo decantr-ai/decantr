@@ -382,6 +382,86 @@ export interface Database {
           },
         ];
       };
+      usage_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          org_id: string | null;
+          metric: 'api_request';
+          quantity: number;
+          source: 'jwt' | 'api_key';
+          path: string | null;
+          method: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          org_id?: string | null;
+          metric: 'api_request';
+          quantity?: number;
+          source?: 'jwt' | 'api_key';
+          path?: string | null;
+          method?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          org_id?: string | null;
+          metric?: 'api_request';
+          quantity?: number;
+          source?: 'jwt' | 'api_key';
+          path?: string | null;
+          method?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'usage_events_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'usage_events_org_id_fkey';
+            columns: ['org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      organization_policies: {
+        Row: {
+          org_id: string;
+          require_public_content_approval: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          org_id: string;
+          require_public_content_approval?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          org_id?: string;
+          require_public_content_approval?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'organization_policies_org_id_fkey';
+            columns: ['org_id'];
+            isOneToOne: true;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

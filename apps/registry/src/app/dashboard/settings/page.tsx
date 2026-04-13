@@ -1,4 +1,5 @@
 import { AccountSettings } from '@/components/account-settings';
+import { OrgGovernancePanel } from '@/components/org-governance-panel';
 
 export default function SettingsPage() {
   return (
@@ -7,6 +8,10 @@ export default function SettingsPage() {
 
       <section className="d-section" data-density="compact">
         <AccountSettings />
+      </section>
+
+      <section className="d-section" data-density="compact">
+        <OrgGovernancePanel />
       </section>
     </div>
   );

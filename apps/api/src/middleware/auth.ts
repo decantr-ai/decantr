@@ -16,6 +16,8 @@ export interface AuthContext {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  apiKeyOrgId?: string | null;
+  authSource?: 'jwt' | 'api_key' | null;
 }
 
 function hashApiKey(key: string): string {
@@ -53,6 +55,8 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
           },
           isAuthenticated: true,
           isAdmin: false,
+          apiKeyOrgId: null,
+          authSource: 'jwt',
         };
       }
     }
@@ -78,26 +82,30 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
         .eq('id', apiKey.id);
 
       const profile = apiKey.users as unknown as AuthUser;
-      return {
-        user: {
-          id: profile.id,
+        return {
+          user: {
+            id: profile.id,
           email: profile.email,
           username: profile.username,
           display_name: profile.display_name,
           tier: profile.tier,
           trusted: profile.trusted,
           reputation_score: profile.reputation_score,
-        },
-        isAuthenticated: true,
-        isAdmin: false,
-      };
-    }
+          },
+          isAuthenticated: true,
+          isAdmin: false,
+          apiKeyOrgId: apiKey.org_id ?? null,
+          authSource: 'api_key',
+        };
+      }
   }
 
   return {
     user: null,
     isAuthenticated: false,
     isAdmin: false,
+    apiKeyOrgId: null,
+    authSource: null,
   };
 }
 

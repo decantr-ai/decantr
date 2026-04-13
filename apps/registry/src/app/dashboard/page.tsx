@@ -154,9 +154,9 @@ export default async function DashboardPage() {
   let totalDownloads = 0;
 
   try {
-    const [me, keys, myContent] = await Promise.all([
+    const [me, billing, myContent] = await Promise.all([
       api.getMe(token),
-      api.getApiKeys(token).catch(() => null),
+      api.getBillingStatus(token).catch(() => null),
       api.getMyContent(token).catch(() => null),
     ]);
     if (me) {
@@ -166,11 +166,7 @@ export default async function DashboardPage() {
       };
     }
 
-    const keyItems = Array.isArray(keys) ? keys : keys?.items ?? [];
-    apiCallsLast30d = keyItems.reduce(
-      (acc: number, k: { usage_30d?: number }) => acc + (k.usage_30d ?? 0),
-      0
-    );
+    apiCallsLast30d = billing?.usage?.api_requests_30d ?? 0;
 
     const contentItems = Array.isArray(myContent)
       ? myContent

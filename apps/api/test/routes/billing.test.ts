@@ -97,6 +97,7 @@ type BillingAdminClientOptions = {
   personalContentCount?: number;
   personalPrivateCount?: number;
   orgContentCount?: number;
+  usageRows?: any[];
   stripeEventInsertError?: any;
 };
 
@@ -150,6 +151,13 @@ function createBillingAdminClient(options: BillingAdminClientOptions = {}) {
         }),
         is: vi.fn((field: string, value: unknown) => {
           state.filters[field] = value;
+          return chain;
+        }),
+        gte: vi.fn((field: string, value: unknown) => {
+          state.filters[field] = value;
+          if (table === 'usage_events') {
+            return Promise.resolve({ data: options.usageRows ?? [], error: null });
+          }
           return chain;
         }),
         order: vi.fn(() => chain),
@@ -314,6 +322,7 @@ describe('Billing routes', () => {
     expect(json.subscription).toBeNull();
     expect(json.entitlements.personal_private_packages).toBe(false);
     expect(json.limits.personal_private_packages).toBe(0);
+    expect(json.usage.api_requests_30d).toBe(0);
   });
 
   it('returns active billing status when a subscription exists', async () => {
@@ -335,6 +344,7 @@ describe('Billing routes', () => {
       ],
       memberCount: 3,
       orgContentCount: 12,
+      usageRows: [{ quantity: 41 }, { quantity: 9 }],
     }));
     mockStripe.subscriptions.list.mockResolvedValue({
       data: [
@@ -363,6 +373,7 @@ describe('Billing routes', () => {
     expect(json.tier).toBe('team');
     expect(json.entitlements.org_collaboration).toBe(true);
     expect(json.usage.org_content_items).toBe(12);
+    expect(json.usage.api_requests_30d).toBe(50);
     expect(json.usage.seats_used).toBe(3);
     expect(json.usage.seats_limit).toBe(4);
     expect(json.organizations[0].slug).toBe('acme');

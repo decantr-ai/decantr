@@ -72,6 +72,7 @@ export interface BillingStatus {
   entitlements: CommercialEntitlements;
   limits: CommercialLimits;
   usage: {
+    api_requests_30d: number;
     personal_content_items: number;
     personal_private_packages: number;
     org_content_items: number;
@@ -116,6 +117,11 @@ export interface OrgAuditEntry {
   target_id: string | null;
   details: Record<string, unknown>;
   created_at: string;
+}
+
+export interface OrgPolicy {
+  org_id: string;
+  require_public_content_approval: boolean;
 }
 
 export interface ModerationQueueItem {
@@ -265,6 +271,21 @@ export const api = {
     const query = searchParams.toString();
     return apiFetch<{ total: number; limit: number; offset: number; items: OrgAuditEntry[] }>(`/orgs/${orgSlug}/audit${query ? `?${query}` : ''}`, { token });
   },
+  getOrgPolicy: (token: string, orgSlug: string) =>
+    apiFetch<OrgPolicy>(`/orgs/${orgSlug}/policy`, { token }),
+  updateOrgPolicy: (token: string, orgSlug: string, body: { require_public_content_approval: boolean }) =>
+    apiFetch<OrgPolicy>(`/orgs/${orgSlug}/policy`, { token, method: 'PATCH', body: JSON.stringify(body) }),
+  getOrgApprovals: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    const query = searchParams.toString();
+    return apiFetch<ContentListResponse<DashboardContentItem>>(`/orgs/${orgSlug}/approvals${query ? `?${query}` : ''}`, { token });
+  },
+  approveOrgContent: (token: string, orgSlug: string, contentId: string) =>
+    apiFetch<any>(`/orgs/${orgSlug}/approvals/${contentId}/approve`, { token, method: 'POST' }),
+  rejectOrgContent: (token: string, orgSlug: string, contentId: string) =>
+    apiFetch<any>(`/orgs/${orgSlug}/approvals/${contentId}/reject`, { token, method: 'POST' }),
 
   // Admin
   getModerationQueue: (

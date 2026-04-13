@@ -11,29 +11,40 @@ export const orgRoutes = new Hono<Env>();
 
 orgRoutes.use('/*', requireAuth());
 
-// GET /v1/orgs/:slug
-orgRoutes.get('/orgs/:slug', async (c) => {
-  const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+async function requireOrgMembership(
+  auth: AuthContext,
+  slug: string,
+) {
   const client = createAdminClient();
-
-  const { data: org, error } = await client
+  const { data: org } = await client
     .from('organizations')
-    .select('*')
+    .select('id, name, slug, tier, seat_limit')
     .eq('slug', slug)
     .single();
 
-  if (error || !org) {
-    return c.json({ error: 'Organization not found' }, 404);
+  if (!org) {
+    return { client, org: null, membership: null };
   }
 
-  // Check membership
   const { data: membership } = await client
     .from('org_members')
     .select('role')
     .eq('org_id', org.id)
     .eq('user_id', auth.user!.id)
     .single();
+
+  return { client, org, membership };
+}
+
+// GET /v1/orgs/:slug
+orgRoutes.get('/orgs/:slug', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
 
   if (!membership) {
     return c.json({ error: 'Not a member of this organization' }, 403);
@@ -61,25 +72,11 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
-  const client = createAdminClient();
-
-  const { data: org } = await client
-    .from('organizations')
-    .select('id')
-    .eq('slug', slug)
-    .single();
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
     return c.json({ error: 'Organization not found' }, 404);
   }
-
-  // Check membership
-  const { data: membership } = await client
-    .from('org_members')
-    .select('role')
-    .eq('org_id', org.id)
-    .eq('user_id', auth.user!.id)
-    .single();
 
   if (!membership) {
     return c.json({ error: 'Not a member of this organization' }, 403);
@@ -118,24 +115,11 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
 orgRoutes.get('/orgs/:slug/members', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug');
-  const client = createAdminClient();
-
-  const { data: org } = await client
-    .from('organizations')
-    .select('id, name, slug, tier, seat_limit')
-    .eq('slug', slug)
-    .single();
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
     return c.json({ error: 'Organization not found' }, 404);
   }
-
-  const { data: membership } = await client
-    .from('org_members')
-    .select('role')
-    .eq('org_id', org.id)
-    .eq('user_id', auth.user!.id)
-    .single();
 
   if (!membership) {
     return c.json({ error: 'Not a member of this organization' }, 403);
@@ -171,30 +155,86 @@ orgRoutes.get('/orgs/:slug/members', async (c) => {
   });
 });
 
-// POST /v1/orgs/:slug/content
-orgRoutes.post('/orgs/:slug/content', async (c) => {
+// GET /v1/orgs/:slug/policy
+orgRoutes.get('/orgs/:slug/policy', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug');
-  const body = await c.req.json();
-  const client = createAdminClient();
-
-  const { data: org } = await client
-    .from('organizations')
-    .select('id, slug')
-    .eq('slug', slug)
-    .single();
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
     return c.json({ error: 'Organization not found' }, 404);
   }
 
-  // Check admin/owner role
-  const { data: membership } = await client
-    .from('org_members')
-    .select('role')
+  if (!membership) {
+    return c.json({ error: 'Not a member of this organization' }, 403);
+  }
+
+  const { data: policy } = await client
+    .from('organization_policies')
+    .select('org_id, require_public_content_approval')
     .eq('org_id', org.id)
-    .eq('user_id', auth.user!.id)
     .single();
+
+  return c.json({
+    org_id: org.id,
+    require_public_content_approval: policy?.require_public_content_approval ?? false,
+  });
+});
+
+// PATCH /v1/orgs/:slug/policy
+orgRoutes.patch('/orgs/:slug/policy', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const body = await c.req.json();
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  if (!membership || !['owner', 'admin'].includes(membership.role)) {
+    return c.json({ error: 'Requires admin or owner role' }, 403);
+  }
+
+  const { data, error } = await client
+    .from('organization_policies')
+    .upsert({
+      org_id: org.id,
+      require_public_content_approval: body.require_public_content_approval === true,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return c.json({ error: 'Failed to update organization policy' }, 500);
+  }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'organization',
+    action: 'policy.updated',
+    target_type: 'organization_policy',
+    target_id: org.id,
+    details: {
+      require_public_content_approval: data.require_public_content_approval,
+    },
+  });
+
+  return c.json(data);
+});
+
+// POST /v1/orgs/:slug/content
+orgRoutes.post('/orgs/:slug/content', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const body = await c.req.json();
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
 
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
     return c.json({ error: 'Requires admin or owner role' }, 403);
@@ -223,6 +263,13 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
 
   const namespace = `@org:${org.slug}`;
   const visibility = body.visibility === 'public' ? 'public' : 'private';
+  const { data: policy } = await client
+    .from('organization_policies')
+    .select('require_public_content_approval')
+    .eq('org_id', org.id)
+    .single();
+  const requiresPublicApproval = policy?.require_public_content_approval === true;
+  const status = visibility === 'public' && requiresPublicApproval ? 'pending' : 'published';
 
   const { data, error } = await client
     .from('content')
@@ -233,10 +280,10 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
       owner_id: auth.user!.id,
       org_id: org.id,
       visibility,
-      status: 'published',
+      status,
       version: body.version,
       data: body.data,
-      published_at: new Date().toISOString(),
+      published_at: status === 'published' ? new Date().toISOString() : null,
     })
     .select()
     .single();
@@ -259,11 +306,18 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
       slug: body.slug,
       namespace,
       visibility,
+      status,
       version: body.version,
     },
   });
 
-  return c.json(data, 201);
+  return c.json({
+    ...data,
+    message:
+      status === 'pending'
+        ? 'Organization content submitted for approval.'
+        : 'Organization content published successfully.',
+  }, 201);
 });
 
 // POST /v1/orgs/:slug/members
@@ -481,24 +535,11 @@ orgRoutes.get('/orgs/:slug/audit', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
-  const client = createAdminClient();
-
-  const { data: org } = await client
-    .from('organizations')
-    .select('id')
-    .eq('slug', slug)
-    .single();
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
     return c.json({ error: 'Organization not found' }, 404);
   }
-
-  const { data: membership } = await client
-    .from('org_members')
-    .select('role')
-    .eq('org_id', org.id)
-    .eq('user_id', auth.user!.id)
-    .single();
 
   if (!membership) {
     return c.json({ error: 'Not a member of this organization' }, 403);
@@ -521,4 +562,134 @@ orgRoutes.get('/orgs/:slug/audit', async (c) => {
     offset,
     items: data ?? [],
   });
+});
+
+// GET /v1/orgs/:slug/approvals
+orgRoutes.get('/orgs/:slug/approvals', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  if (!membership || !['owner', 'admin'].includes(membership.role)) {
+    return c.json({ error: 'Requires admin or owner role' }, 403);
+  }
+
+  const { data, error, count } = await client
+    .from('content')
+    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at', { count: 'exact' })
+    .eq('org_id', org.id)
+    .eq('status', 'pending')
+    .order('updated_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch approval queue' }, 500);
+  }
+
+  return c.json({
+    total: count ?? 0,
+    limit,
+    offset,
+    items: data ?? [],
+  });
+});
+
+// POST /v1/orgs/:slug/approvals/:content_id/approve
+orgRoutes.post('/orgs/:slug/approvals/:content_id/approve', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const contentId = c.req.param('content_id');
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  if (!membership || !['owner', 'admin'].includes(membership.role)) {
+    return c.json({ error: 'Requires admin or owner role' }, 403);
+  }
+
+  const { data, error } = await client
+    .from('content')
+    .update({
+      status: 'published',
+      published_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('org_id', org.id)
+    .eq('id', contentId)
+    .eq('status', 'pending')
+    .select()
+    .single();
+
+  if (error || !data) {
+    return c.json({ error: 'Pending content not found' }, 404);
+  }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'content',
+    action: 'org_content.approved',
+    target_type: data.type,
+    target_id: contentId,
+    details: {
+      slug: data.slug,
+      namespace: data.namespace,
+    },
+  });
+
+  return c.json(data);
+});
+
+// POST /v1/orgs/:slug/approvals/:content_id/reject
+orgRoutes.post('/orgs/:slug/approvals/:content_id/reject', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const contentId = c.req.param('content_id');
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  if (!membership || !['owner', 'admin'].includes(membership.role)) {
+    return c.json({ error: 'Requires admin or owner role' }, 403);
+  }
+
+  const { data, error } = await client
+    .from('content')
+    .update({
+      status: 'rejected',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('org_id', org.id)
+    .eq('id', contentId)
+    .eq('status', 'pending')
+    .select()
+    .single();
+
+  if (error || !data) {
+    return c.json({ error: 'Pending content not found' }, 404);
+  }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'content',
+    action: 'org_content.rejected',
+    target_type: data.type,
+    target_id: contentId,
+    details: {
+      slug: data.slug,
+      namespace: data.namespace,
+    },
+  });
+
+  return c.json(data);
 });

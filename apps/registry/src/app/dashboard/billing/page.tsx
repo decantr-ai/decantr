@@ -256,8 +256,8 @@ export default function BillingPage() {
       icon: <CreditCardIcon size={18} />,
     },
     {
-      label: 'API Limit / Min',
-      value: billing?.limits?.api_requests_per_minute ?? 0,
+      label: 'API Calls (30d)',
+      value: billing?.usage?.api_requests_30d ?? 0,
       icon: <ActivityIcon size={18} />,
     },
     {
@@ -372,12 +372,18 @@ export default function BillingPage() {
                 ? 'Personal private packages are enabled.'
                 : 'Personal private packages are not enabled on this plan.'}
             </div>
-            <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
-              {billing?.entitlements?.org_collaboration
-                ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
-                : 'Organization collaboration is not enabled on this plan.'}
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                {billing?.entitlements?.org_collaboration
+                  ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
+                  : 'Organization collaboration is not enabled on this plan.'}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                API usage in the last 30 days: {billing?.usage?.api_requests_30d ?? 0} requests.
+                {billing?.limits?.api_requests_per_minute != null
+                  ? ` Current live limit: ${billing.limits.api_requests_per_minute}/minute.`
+                  : ' Unlimited per-minute usage on this plan.'}
+              </div>
             </div>
-          </div>
 
           {activeOrg && (
             <div

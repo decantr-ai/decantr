@@ -229,6 +229,14 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
         .select('*', { count: 'exact', head: true })
         .eq('org_id', activeOrg.id)
     : { count: 0 };
+  const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000)).toISOString();
+  const { data: usageRows } = await adminClient
+    .from('usage_events')
+    .select('quantity')
+    .eq('user_id', user.id)
+    .eq('metric', 'api_request')
+    .gte('created_at', thirtyDaysAgo);
+  const apiRequests30d = (usageRows ?? []).reduce((total: number, row: any) => total + (row.quantity ?? 0), 0);
 
   // Base response for free users or users without Stripe
   if (!userRow.stripe_customer_id) {
@@ -237,6 +245,7 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
       entitlements,
       limits,
       usage: {
+        api_requests_30d: apiRequests30d,
         personal_content_items: personalContentItems ?? 0,
         personal_private_packages: personalPrivatePackages ?? 0,
         org_content_items: orgContentItems ?? 0,
@@ -263,6 +272,7 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
       entitlements,
       limits,
       usage: {
+        api_requests_30d: apiRequests30d,
         personal_content_items: personalContentItems ?? 0,
         personal_private_packages: personalPrivatePackages ?? 0,
         org_content_items: orgContentItems ?? 0,
@@ -281,6 +291,7 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
     entitlements,
     limits,
     usage: {
+      api_requests_30d: apiRequests30d,
       personal_content_items: personalContentItems ?? 0,
       personal_private_packages: personalPrivatePackages ?? 0,
       org_content_items: orgContentItems ?? 0,

@@ -31,6 +31,7 @@ export interface CommercialLimits {
 }
 
 export interface CommercialUsage {
+  api_requests_30d: number;
   personal_content_items: number;
   personal_private_packages: number;
   org_content_items: number;
