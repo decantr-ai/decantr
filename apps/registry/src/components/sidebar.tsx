@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { CommercialEntitlements } from '@/lib/api';
 
 /* ── Inline SVG Icons (16x16, Lucide-style, stroke-based) ── */
 
@@ -227,36 +228,50 @@ interface NavGroup {
   items: NavItem[];
 }
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    group: 'Dashboard',
-    items: [
-      { href: '/dashboard', icon: LayoutDashboardIcon, label: 'Overview' },
-      { href: '/dashboard/content', icon: PackageIcon, label: 'Content' },
-      { href: '/dashboard/api-keys', icon: KeyIcon, label: 'API Keys' },
-      { href: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' },
-      { href: '/dashboard/billing', icon: CreditCardIcon, label: 'Billing' },
-      { href: '/dashboard/team', icon: UsersIcon, label: 'Team' },
-    ],
-  },
-  {
-    group: 'Admin',
-    items: [
-      { href: '/admin/moderation', icon: ShieldIcon, label: 'Moderation' },
-    ],
-  },
-];
-
 interface SidebarProps {
-  user: { email: string; display_name?: string };
+  user: {
+    email: string;
+    display_name?: string;
+    tier: 'free' | 'pro' | 'team' | 'enterprise';
+    organizations: Array<{ id: string; slug: string; name: string }>;
+    entitlements: CommercialEntitlements;
+  };
+}
+
+function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
+  const dashboardItems: NavItem[] = [
+    { href: '/dashboard', icon: LayoutDashboardIcon, label: 'Overview' },
+    { href: '/dashboard/content', icon: PackageIcon, label: 'Content' },
+    { href: '/dashboard/api-keys', icon: KeyIcon, label: 'API Keys' },
+    { href: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' },
+    { href: '/dashboard/billing', icon: CreditCardIcon, label: 'Billing' },
+  ];
+
+  if (user.entitlements.org_collaboration || user.organizations.length > 0) {
+    dashboardItems.push({ href: '/dashboard/team', icon: UsersIcon, label: 'Team' });
+  }
+
+  return [
+    {
+      group: 'Dashboard',
+      items: dashboardItems,
+    },
+    {
+      group: 'Admin',
+      items: [
+        { href: '/admin/moderation', icon: ShieldIcon, label: 'Moderation' },
+      ],
+    },
+  ];
 }
 
 /* ── Component ── */
 
-export function Sidebar({ user: _user }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const sidebarWidth = collapsed ? 64 : 240;
+  const navGroups = buildNavGroups(user);
 
   async function handleSignOut() {
     try {
@@ -310,7 +325,7 @@ export function Sidebar({ user: _user }: SidebarProps) {
         className="flex flex-col flex-1"
         style={{ padding: '0.5rem', overflowY: 'auto', gap: '0.5rem' }}
       >
-        {NAV_GROUPS.map((group) => (
+        {navGroups.map((group) => (
           <div key={group.group} className="flex flex-col" style={{ gap: 2 }}>
             {!collapsed && (
               <span
@@ -367,6 +382,29 @@ export function Sidebar({ user: _user }: SidebarProps) {
           marginTop: 'auto',
         }}
       >
+        {!collapsed && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.125rem',
+              padding: '0.5rem 0.75rem 0.625rem',
+              borderBottom: '1px solid var(--d-border)',
+              marginBottom: '0.5rem',
+            }}
+          >
+            <span className="text-sm" style={{ fontWeight: 600 }}>
+              {user.display_name || user.email.split('@')[0]}
+            </span>
+            <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
+              {user.tier === 'team'
+                ? 'Team workspace'
+                : user.tier === 'pro'
+                ? 'Pro private packages'
+                : 'Free plan'}
+            </span>
+          </div>
+        )}
         <button
           type="button"
           className="d-interactive"

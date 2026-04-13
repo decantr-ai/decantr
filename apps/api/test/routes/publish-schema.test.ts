@@ -9,8 +9,12 @@ vi.mock('../../src/middleware/auth.js', () => ({
     c.set('auth', {
       user: {
         id: 'user-1',
+        email: 'pro@example.com',
+        username: 'pro-user',
+        display_name: 'Pro User',
         tier: 'pro',
         trusted: false,
+        reputation_score: 0,
       },
       isAuthenticated: true,
       isAdmin: false,

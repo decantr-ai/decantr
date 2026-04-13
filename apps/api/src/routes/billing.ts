@@ -11,6 +11,12 @@ import {
   STRIPE_TEAM_PRICE_ID,
 } from '../stripe/index.js';
 import { handleStripeWebhook } from '../stripe/webhooks.js';
+import {
+  getCommercialEntitlements,
+  getCommercialLimits,
+  type OrganizationEntitlementSummary,
+} from '../lib/entitlements.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 
 export const billingRoutes = new Hono<Env>();
 
@@ -86,9 +92,22 @@ billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
     metadata: {
       supabase_user_id: user.id,
       plan: body.plan,
+      quantity: String(quantity),
     },
     success_url: body.success_url,
     cancel_url: body.cancel_url,
+  });
+
+  await recordAuditEvent({
+    actor_user_id: user.id,
+    scope: 'billing',
+    action: 'checkout.started',
+    target_type: 'checkout_session',
+    target_id: session.id,
+    details: {
+      plan: body.plan,
+      quantity,
+    },
   });
 
   return c.json({ checkout_url: session.url, session_id: session.id });
@@ -124,6 +143,17 @@ billingRoutes.post('/billing/portal', requireAuth(), async (c) => {
     return_url: body.return_url,
   });
 
+  await recordAuditEvent({
+    actor_user_id: user.id,
+    scope: 'billing',
+    action: 'portal.started',
+    target_type: 'billing_portal',
+    target_id: userRow.stripe_customer_id,
+    details: {
+      return_url: body.return_url,
+    },
+  });
+
   return c.json({ portal_url: session.url });
 });
 
@@ -138,7 +168,7 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
   const adminClient = createAdminClient();
   const { data: userRow } = await adminClient
     .from('users')
-    .select('tier, stripe_customer_id')
+    .select('id, username, display_name, tier, stripe_customer_id')
     .eq('id', user.id)
     .single();
 
@@ -146,10 +176,74 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
     return c.json({ error: 'User not found.' }, 404);
   }
 
+  const { data: memberships } = await adminClient
+    .from('org_members')
+    .select('org_id, role, organizations(id, name, slug, tier, stripe_subscription_id, seat_limit)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true });
+
+  const organizationLists = await Promise.all(
+    (memberships ?? []).map(async (membership: any) => {
+      const org = membership.organizations;
+      if (!org?.id || !org?.slug || !org?.name || !org?.tier) return [];
+
+      const { count } = await adminClient
+        .from('org_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('org_id', org.id);
+
+      return [{
+        id: org.id,
+        slug: org.slug,
+        name: org.name,
+        tier: org.tier,
+        role: membership.role,
+        seat_limit: org.seat_limit ?? 1,
+        member_count: count ?? 0,
+        stripe_subscription_id: org.stripe_subscription_id ?? null,
+      }];
+    }),
+  );
+  const organizations: OrganizationEntitlementSummary[] = organizationLists.flat();
+
+  const activeOrg = organizations[0] ?? null;
+  const entitlements = getCommercialEntitlements(userRow.tier);
+  const limits = getCommercialLimits(userRow.tier, activeOrg);
+
+  const { count: personalContentItems } = await adminClient
+    .from('content')
+    .select('*', { count: 'exact', head: true })
+    .eq('owner_id', user.id)
+    .is('org_id', null);
+
+  const { count: personalPrivatePackages } = await adminClient
+    .from('content')
+    .select('*', { count: 'exact', head: true })
+    .eq('owner_id', user.id)
+    .is('org_id', null)
+    .eq('visibility', 'private');
+
+  const { count: orgContentItems } = activeOrg
+    ? await adminClient
+        .from('content')
+        .select('*', { count: 'exact', head: true })
+        .eq('org_id', activeOrg.id)
+    : { count: 0 };
+
   // Base response for free users or users without Stripe
   if (!userRow.stripe_customer_id) {
     return c.json({
       tier: userRow.tier,
+      entitlements,
+      limits,
+      usage: {
+        personal_content_items: personalContentItems ?? 0,
+        personal_private_packages: personalPrivatePackages ?? 0,
+        org_content_items: orgContentItems ?? 0,
+        seats_used: activeOrg?.member_count ?? 0,
+        seats_limit: activeOrg?.seat_limit ?? 0,
+      },
+      organizations,
       subscription: null,
     });
   }
@@ -166,6 +260,16 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
   if (!subscription) {
     return c.json({
       tier: userRow.tier,
+      entitlements,
+      limits,
+      usage: {
+        personal_content_items: personalContentItems ?? 0,
+        personal_private_packages: personalPrivatePackages ?? 0,
+        org_content_items: orgContentItems ?? 0,
+        seats_used: activeOrg?.member_count ?? 0,
+        seats_limit: activeOrg?.seat_limit ?? 0,
+      },
+      organizations,
       subscription: null,
     });
   }
@@ -174,6 +278,16 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
 
   return c.json({
     tier: userRow.tier,
+    entitlements,
+    limits,
+    usage: {
+      personal_content_items: personalContentItems ?? 0,
+      personal_private_packages: personalPrivatePackages ?? 0,
+      org_content_items: orgContentItems ?? 0,
+      seats_used: activeOrg?.member_count ?? 0,
+      seats_limit: activeOrg?.seat_limit ?? 0,
+    },
+    organizations,
     subscription: {
       id: subscription.id,
       status: subscription.status,

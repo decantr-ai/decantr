@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 
 export const orgRoutes = new Hono<Env>();
 
@@ -113,6 +114,63 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
   });
 });
 
+// GET /v1/orgs/:slug/members
+orgRoutes.get('/orgs/:slug/members', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const client = createAdminClient();
+
+  const { data: org } = await client
+    .from('organizations')
+    .select('id, name, slug, tier, seat_limit')
+    .eq('slug', slug)
+    .single();
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  const { data: membership } = await client
+    .from('org_members')
+    .select('role')
+    .eq('org_id', org.id)
+    .eq('user_id', auth.user!.id)
+    .single();
+
+  if (!membership) {
+    return c.json({ error: 'Not a member of this organization' }, 403);
+  }
+
+  const { data: members, error } = await client
+    .from('org_members')
+    .select('user_id, role, created_at, users(email, display_name, username)')
+    .eq('org_id', org.id)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch members' }, 500);
+  }
+
+  return c.json({
+    organization: {
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      tier: org.tier,
+      seat_limit: org.seat_limit ?? 1,
+    },
+    your_role: membership.role,
+    members: (members ?? []).map((member: any) => ({
+      user_id: member.user_id,
+      email: member.users?.email ?? '',
+      display_name: member.users?.display_name ?? null,
+      username: member.users?.username ?? null,
+      role: member.role,
+      created_at: member.created_at,
+    })),
+  });
+});
+
 // POST /v1/orgs/:slug/content
 orgRoutes.post('/orgs/:slug/content', async (c) => {
   const auth = c.get('auth') as AuthContext;
@@ -190,6 +248,21 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
     return c.json({ error: 'Failed to publish content' }, 500);
   }
 
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'content',
+    action: 'org_content.published',
+    target_type: body.type,
+    target_id: data.id,
+    details: {
+      slug: body.slug,
+      namespace,
+      visibility,
+      version: body.version,
+    },
+  });
+
   return c.json(data, 201);
 });
 
@@ -266,6 +339,19 @@ orgRoutes.post('/orgs/:slug/members', async (c) => {
     return c.json({ error: 'Failed to add member' }, 500);
   }
 
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'membership',
+    action: 'member.invited',
+    target_type: 'org_member',
+    target_id: userId,
+    details: {
+      role,
+      org_slug: slug,
+    },
+  });
+
   return c.json(data, 201);
 });
 
@@ -307,6 +393,19 @@ orgRoutes.patch('/orgs/:slug/members/:user_id', async (c) => {
   if (error || !data) {
     return c.json({ error: 'Member not found' }, 404);
   }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'membership',
+    action: 'member.role_updated',
+    target_type: 'org_member',
+    target_id: targetUserId,
+    details: {
+      role: body.role,
+      org_slug: slug,
+    },
+  });
 
   return c.json(data);
 });
@@ -362,5 +461,64 @@ orgRoutes.delete('/orgs/:slug/members/:user_id', async (c) => {
     return c.json({ error: 'Failed to remove member' }, 500);
   }
 
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'membership',
+    action: 'member.removed',
+    target_type: 'org_member',
+    target_id: targetUserId,
+    details: {
+      org_slug: slug,
+    },
+  });
+
   return c.json({ message: 'Member removed' });
+});
+
+// GET /v1/orgs/:slug/audit
+orgRoutes.get('/orgs/:slug/audit', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const client = createAdminClient();
+
+  const { data: org } = await client
+    .from('organizations')
+    .select('id')
+    .eq('slug', slug)
+    .single();
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  const { data: membership } = await client
+    .from('org_members')
+    .select('role')
+    .eq('org_id', org.id)
+    .eq('user_id', auth.user!.id)
+    .single();
+
+  if (!membership) {
+    return c.json({ error: 'Not a member of this organization' }, 403);
+  }
+
+  const { data, error, count } = await client
+    .from('audit_logs')
+    .select('id, actor_user_id, org_id, scope, action, target_type, target_id, details, created_at', { count: 'exact' })
+    .eq('org_id', org.id)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch audit log' }, 500);
+  }
+
+  return c.json({
+    total: count ?? 0,
+    limit,
+    offset,
+    items: data ?? [],
+  });
 });

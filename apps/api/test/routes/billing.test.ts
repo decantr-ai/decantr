@@ -18,6 +18,8 @@ const {
       user: {
         id: 'user-1',
         email: 'billing@example.com',
+        username: 'billing-user',
+        display_name: 'Billing User',
         tier: 'free',
         trusted: false,
         reputation_score: 0,
@@ -90,6 +92,11 @@ vi.mock('../../src/lib/logger.js', () => ({
 
 type BillingAdminClientOptions = {
   userRow?: any;
+  memberships?: any[];
+  memberCount?: number;
+  personalContentCount?: number;
+  personalPrivateCount?: number;
+  orgContentCount?: number;
   stripeEventInsertError?: any;
 };
 
@@ -100,18 +107,52 @@ function createBillingAdminClient(options: BillingAdminClientOptions = {}) {
         filters: Record<string, unknown>;
         updatePayload: Record<string, unknown> | null;
         insertPayload: Record<string, unknown> | null;
+        selectArgs: unknown[];
       } = {
         filters: {},
         updatePayload: null,
         insertPayload: null,
+        selectArgs: [],
+      };
+
+      const resolveChainResult = async () => {
+        const headCount = Boolean((state.selectArgs[1] as { head?: boolean } | undefined)?.head);
+        if (headCount) {
+          if (table === 'org_members') {
+            return { count: options.memberCount ?? 0, error: null };
+          }
+          if (table === 'content') {
+            if ('org_id' in state.filters && state.filters.org_id != null) {
+              return { count: options.orgContentCount ?? 0, error: null };
+            }
+            if (state.filters.visibility === 'private') {
+              return { count: options.personalPrivateCount ?? 0, error: null };
+            }
+            return { count: options.personalContentCount ?? 0, error: null };
+          }
+        }
+
+        if (table === 'org_members' && state.selectArgs[0] === 'org_id, role, organizations(id, name, slug, tier, stripe_subscription_id, seat_limit)') {
+          return { data: options.memberships ?? [], error: null };
+        }
+
+        return { data: [], error: null };
       };
 
       const chain: any = {
-        select: vi.fn(() => chain),
+        select: vi.fn((...args: unknown[]) => {
+          state.selectArgs = args;
+          return chain;
+        }),
         eq: vi.fn((field: string, value: unknown) => {
           state.filters[field] = value;
           return chain;
         }),
+        is: vi.fn((field: string, value: unknown) => {
+          state.filters[field] = value;
+          return chain;
+        }),
+        order: vi.fn(() => chain),
         single: vi.fn(async () => {
           if (table === 'users') {
             return { data: options.userRow ?? null, error: null };
@@ -138,6 +179,8 @@ function createBillingAdminClient(options: BillingAdminClientOptions = {}) {
             })),
           };
         }),
+        then: (resolve: (value: unknown) => unknown, reject?: (reason?: unknown) => unknown) =>
+          resolveChainResult().then(resolve, reject),
       };
 
       return chain;
@@ -163,6 +206,8 @@ describe('Billing routes', () => {
       user: {
         id: 'user-1',
         email: 'billing@example.com',
+        username: 'billing-user',
+        display_name: 'Billing User',
         tier: 'free',
         trusted: false,
         reputation_score: 0,
@@ -229,6 +274,7 @@ describe('Billing routes', () => {
       metadata: {
         supabase_user_id: 'user-1',
         plan: 'team',
+        quantity: '3',
       },
     }));
   });
@@ -264,15 +310,31 @@ describe('Billing routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual({
-      tier: 'free',
-      subscription: null,
-    });
+    expect(json.tier).toBe('free');
+    expect(json.subscription).toBeNull();
+    expect(json.entitlements.personal_private_packages).toBe(false);
+    expect(json.limits.personal_private_packages).toBe(0);
   });
 
   it('returns active billing status when a subscription exists', async () => {
     mockCreateAdminClient.mockReturnValue(createBillingAdminClient({
-      userRow: { tier: 'team', stripe_customer_id: 'cus_existing' },
+      userRow: { id: 'user-1', tier: 'team', stripe_customer_id: 'cus_existing' },
+      memberships: [
+        {
+          org_id: 'org-1',
+          role: 'owner',
+          organizations: {
+            id: 'org-1',
+            name: 'Acme',
+            slug: 'acme',
+            tier: 'team',
+            stripe_subscription_id: 'sub_123',
+            seat_limit: 4,
+          },
+        },
+      ],
+      memberCount: 3,
+      orgContentCount: 12,
     }));
     mockStripe.subscriptions.list.mockResolvedValue({
       data: [
@@ -298,17 +360,20 @@ describe('Billing routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json).toEqual({
-      tier: 'team',
-      subscription: {
-        id: 'sub_123',
-        status: 'active',
-        price_id: 'price_team',
-        quantity: 4,
-        current_period_start: 100,
-        current_period_end: 200,
-        cancel_at_period_end: false,
-      },
+    expect(json.tier).toBe('team');
+    expect(json.entitlements.org_collaboration).toBe(true);
+    expect(json.usage.org_content_items).toBe(12);
+    expect(json.usage.seats_used).toBe(3);
+    expect(json.usage.seats_limit).toBe(4);
+    expect(json.organizations[0].slug).toBe('acme');
+    expect(json.subscription).toEqual({
+      id: 'sub_123',
+      status: 'active',
+      price_id: 'price_team',
+      quantity: 4,
+      current_period_start: 100,
+      current_period_end: 200,
+      cancel_at_period_end: false,
     });
   });
 

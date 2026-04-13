@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useTransition } from 'react';
+import { useState, useMemo, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { JsonViewer } from '@/components/json-viewer';
-import { api } from '@/lib/api';
+import { api, type MeResponse } from '@/lib/api';
 import { CONTENT_TYPES } from '@/lib/content-types';
 
 function toSlug(name: string): string {
@@ -17,12 +17,15 @@ export default function ContentNewPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [me, setMe] = useState<MeResponse | null>(null);
 
   const [form, setForm] = useState({
     type: 'patterns',
     name: '',
     slug: '',
-    namespace: '@official',
+    target: 'community',
+    org_slug: '',
+    visibility: 'public',
     description: '',
     version: '1.0.0',
     tags: '',
@@ -41,6 +44,34 @@ export default function ContentNewPage() {
     });
   }
 
+  useEffect(() => {
+    async function loadMe() {
+      try {
+        const { createBrowserClient } = await import('@supabase/ssr');
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        const token = session?.access_token ?? '';
+        if (!token) return;
+
+        const result = await api.getMe(token);
+        setMe(result);
+        setForm((prev) => ({
+          ...prev,
+          org_slug: prev.org_slug || result.organizations[0]?.slug || '',
+        }));
+      } catch {
+        // ignore
+      }
+    }
+
+    loadMe();
+  }, []);
+
   function handleJsonChange(value: string) {
     setJsonData(value);
     try {
@@ -58,11 +89,19 @@ export default function ContentNewPage() {
     } catch {
       parsedData = undefined;
     }
+    const personalNamespace = me?.username ? `@${me.username}` : '@personal';
+    const namespace =
+      form.target === 'organization' && form.org_slug
+        ? `@org:${form.org_slug}`
+        : form.target === 'personal'
+        ? personalNamespace
+        : '@community';
     return {
       type: form.type,
       name: form.name || undefined,
       slug: form.slug || undefined,
-      namespace: form.namespace,
+      namespace,
+      visibility: form.target === 'community' ? 'public' : form.visibility,
       description: form.description || undefined,
       version: form.version || undefined,
       tags: form.tags
@@ -73,14 +112,33 @@ export default function ContentNewPage() {
         : undefined,
       data: parsedData,
     };
-  }, [form, jsonData]);
+  }, [form, jsonData, me]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!form.namespace.trim() || !form.slug.trim()) {
-      setError('Namespace and slug are required.');
+    if (!form.slug.trim()) {
+      setError('Slug is required.');
+      return;
+    }
+
+    if (form.target === 'organization' && !form.org_slug.trim()) {
+      setError('Select an organization before publishing an organization package.');
+      return;
+    }
+
+    if (form.target === 'personal' && !me?.username) {
+      setError('Set a username before publishing personal packages.');
+      return;
+    }
+
+    if (
+      form.target === 'personal' &&
+      form.visibility === 'private' &&
+      !me?.entitlements.personal_private_packages
+    ) {
+      setError('Private personal packages require the Pro plan or higher.');
       return;
     }
 
@@ -104,13 +162,25 @@ export default function ContentNewPage() {
         } = await supabase.auth.getSession();
         const token = session?.access_token ?? '';
 
-        await api.publishContent(token, {
+        const payload = {
           type: form.type,
-          namespace: form.namespace,
           slug: form.slug,
           version: form.version,
+          visibility: form.target === 'community' ? 'public' : form.visibility,
           data: parsed,
-        });
+        };
+
+        if (form.target === 'organization') {
+          await api.publishOrgContent(token, form.org_slug, payload);
+        } else {
+          await api.publishContent(token, {
+            ...payload,
+            namespace:
+              form.target === 'personal' && me?.username
+                ? `@${me.username}`
+                : '@community',
+          });
+        }
 
         router.push('/dashboard/content');
         router.refresh();
@@ -204,18 +274,66 @@ export default function ContentNewPage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold" htmlFor="namespace">
-                Namespace
+              <label className="text-sm font-semibold" htmlFor="target">
+                Package Target
               </label>
               <select
-                id="namespace"
+                id="target"
                 className="d-control"
-                value={form.namespace}
-                onChange={(e) => update('namespace', e.target.value)}
+                value={form.target}
+                onChange={(e) => update('target', e.target.value)}
               >
-                <option value="@official">@official</option>
-                <option value="@community">@community</option>
+                <option value="community">Community package (@community)</option>
+                <option value="personal">
+                  Personal package{me?.username ? ` (@${me.username})` : ''}
+                </option>
+                {me?.organizations.length ? (
+                  <option value="organization">Organization package</option>
+                ) : null}
               </select>
+            </div>
+
+            {form.target === 'organization' && me?.organizations.length ? (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold" htmlFor="org_slug">
+                  Organization
+                </label>
+                <select
+                  id="org_slug"
+                  className="d-control"
+                  value={form.org_slug}
+                  onChange={(e) => update('org_slug', e.target.value)}
+                >
+                  {me.organizations.map((org) => (
+                    <option key={org.id} value={org.slug}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-semibold" htmlFor="visibility">
+                Visibility
+              </label>
+              <select
+                id="visibility"
+                className="d-control"
+                value={form.target === 'community' ? 'public' : form.visibility}
+                onChange={(e) => update('visibility', e.target.value)}
+                disabled={form.target === 'community'}
+              >
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+              <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                {form.target === 'community'
+                  ? 'Community packages are always public.'
+                  : form.target === 'personal'
+                  ? 'Personal private packages are unlocked on Pro and above.'
+                  : 'Organization packages can be public or private to the org.'}
+              </p>
             </div>
           </section>
 

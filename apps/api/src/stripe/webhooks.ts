@@ -2,6 +2,7 @@ import type Stripe from 'stripe';
 import { STRIPE_PRO_PRICE_ID, STRIPE_TEAM_PRICE_ID } from './client.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 
 type UserTier = 'free' | 'pro' | 'team' | 'enterprise';
 
@@ -60,6 +61,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     return;
   }
 
+  const subscriptionQuantity =
+    typeof session.metadata?.quantity === 'string'
+      ? Number.parseInt(session.metadata.quantity, 10) || 1
+      : 1;
+
   const newTier: UserTier = plan === 'team' ? 'team' : 'pro';
 
   // Update user tier and stripe_customer_id
@@ -100,6 +106,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
           owner_id: userId,
           tier: 'team',
           stripe_subscription_id: subscriptionId,
+          seat_limit: subscriptionQuantity,
         })
         .select('id')
         .single();
@@ -118,11 +125,26 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         .from('organizations')
         .update({
           stripe_subscription_id: subscriptionId,
+          seat_limit: subscriptionQuantity,
           updated_at: new Date().toISOString(),
         })
         .eq('owner_id', userId);
     }
   }
+
+  await recordAuditEvent({
+    actor_user_id: userId,
+    scope: 'billing',
+    action: 'checkout.completed',
+    target_type: 'subscription',
+    target_id: subscriptionId,
+    details: {
+      plan,
+      tier: newTier,
+      customer_id: stripeCustomerId,
+      seat_limit: plan === 'team' ? subscriptionQuantity : null,
+    },
+  });
 
   logger.info({ userId, tier: newTier }, 'checkout.session.completed: user upgraded');
 }
@@ -183,12 +205,26 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
       .from('organizations')
       .update({
         stripe_subscription_id: subscription.id,
+        seat_limit: seatQuantity,
         updated_at: new Date().toISOString(),
       })
       .eq('owner_id', userRow.id);
 
     logger.info({ userId: userRow.id, seats: seatQuantity }, 'subscription.updated: team seats synced');
   }
+
+  await recordAuditEvent({
+    actor_user_id: userRow.id,
+    scope: 'billing',
+    action: 'subscription.updated',
+    target_type: 'subscription',
+    target_id: subscription.id,
+    details: {
+      tier: newTier,
+      price_id: priceId,
+      seat_limit: item.quantity ?? 1,
+    },
+  });
 
   logger.info({ userId: userRow.id, tier: newTier }, 'subscription.updated: tier synced');
 }
@@ -234,10 +270,23 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
       .from('organizations')
       .update({
         stripe_subscription_id: null,
+        seat_limit: 1,
         updated_at: new Date().toISOString(),
       })
       .eq('owner_id', userRow.id);
   }
+
+  await recordAuditEvent({
+    actor_user_id: userRow.id,
+    scope: 'billing',
+    action: 'subscription.deleted',
+    target_type: 'subscription',
+    target_id: subscription.id,
+    details: {
+      previous_tier: userRow.tier,
+      new_tier: 'free',
+    },
+  });
 
   logger.info({ userId: userRow.id }, 'subscription.deleted: user downgraded to free');
 }

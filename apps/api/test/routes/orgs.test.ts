@@ -9,6 +9,8 @@ const { mockCreateAdminClient, mockAuthState } = vi.hoisted(() => ({
       user: {
         id: 'user-1',
         email: 'member@example.com',
+        username: 'member-user',
+        display_name: 'Member User',
         tier: 'free',
         trusted: false,
         reputation_score: 0,
@@ -40,6 +42,7 @@ type AdminClientOptions = {
   membershipResult?: { data: any; error: any };
   targetMembershipResult?: { data: any; error: any };
   memberCount?: number;
+  membersListResult?: { data: any[]; error: any };
   contentListResult?: { data: any[]; error: any; count: number | null };
   userLookupResult?: { data: any; error: any };
   deleteMemberResult?: { error: any };
@@ -107,7 +110,12 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
 
           return { data: null, error: null };
         }),
-        order: vi.fn(() => chain),
+        order: vi.fn(() => {
+          if (table === 'org_members' && options.membersListResult) {
+            return Promise.resolve(options.membersListResult);
+          }
+          return chain;
+        }),
         range: vi.fn(async () => options.contentListResult ?? { data: [], error: null, count: 0 }),
         insert: vi.fn((payload: Record<string, unknown>) => {
           state.insertPayload = payload;
@@ -143,6 +151,8 @@ describe('Org routes', () => {
       user: {
         id: 'user-1',
         email: 'member@example.com',
+        username: 'member-user',
+        display_name: 'Member User',
         tier: 'free',
         trusted: false,
         reputation_score: 0,
@@ -242,6 +252,72 @@ describe('Org routes', () => {
       version: '1.0.0',
       name: 'Clean',
       description: 'Minimal org theme',
+    });
+  });
+
+  it('lists organization members for authorized users', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: {
+          id: 'org-1',
+          name: 'Acme',
+          slug: 'acme',
+          tier: 'team',
+          seat_limit: 5,
+        },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'owner' },
+        error: null,
+      },
+      membersListResult: {
+        data: [
+          {
+            user_id: 'user-1',
+            role: 'owner',
+            created_at: '2026-04-01T00:00:00.000Z',
+            users: {
+              email: 'owner@example.com',
+              display_name: 'Owner',
+              username: 'owner',
+            },
+          },
+          {
+            user_id: 'user-2',
+            role: 'member',
+            created_at: '2026-04-02T00:00:00.000Z',
+            users: {
+              email: 'member@example.com',
+              display_name: 'Member',
+              username: 'member',
+            },
+          },
+        ],
+        error: null,
+      },
+    }));
+
+    const res = await app.request('/v1/orgs/acme/members');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.organization).toEqual({
+      id: 'org-1',
+      name: 'Acme',
+      slug: 'acme',
+      tier: 'team',
+      seat_limit: 5,
+    });
+    expect(json.your_role).toBe('owner');
+    expect(json.members).toHaveLength(2);
+    expect(json.members[1]).toEqual({
+      user_id: 'user-2',
+      email: 'member@example.com',
+      display_name: 'Member',
+      username: 'member',
+      role: 'member',
+      created_at: '2026-04-02T00:00:00.000Z',
     });
   });
 

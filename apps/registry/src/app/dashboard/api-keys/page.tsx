@@ -3,11 +3,13 @@
 import { useEffect, useState, useCallback, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createApiKeyAction, revokeApiKeyAction } from './actions';
+import { api, type MeResponse } from '@/lib/api';
 
 interface ApiKeyDisplay {
   id: string;
   name: string;
   scopes: string[];
+  org_id?: string | null;
   created_at: string;
   last_used_at: string | null;
   revoked_at: string | null;
@@ -94,9 +96,12 @@ function CopyButton({ text }: { text: string }) {
 
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKeyDisplay[]>([]);
+  const [me, setMe] = useState<MeResponse | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
   const [name, setName] = useState('');
+  const [keyTarget, setKeyTarget] = useState<'personal' | 'organization'>('personal');
+  const [orgId, setOrgId] = useState('');
   const [scopes, setScopes] = useState<Set<string>>(new Set(['read']));
   const [error, setError] = useState<string | null>(null);
   const [isCreating, startCreate] = useTransition();
@@ -113,6 +118,11 @@ export default function ApiKeysPage() {
       if (res.ok) {
         const data = await res.json();
         setKeys(Array.isArray(data) ? data : data?.items ?? []);
+      }
+      const profile = await api.getMe(token).catch(() => null);
+      setMe(profile);
+      if (profile?.organizations[0]?.id) {
+        setOrgId((current) => current || profile.organizations[0]!.id);
       }
     } catch {
       // silently fail
@@ -141,12 +151,17 @@ export default function ApiKeysPage() {
       return;
     }
     startCreate(async () => {
-      const result = await createApiKeyAction(name.trim(), Array.from(scopes));
+      const result = await createApiKeyAction(
+        name.trim(),
+        Array.from(scopes),
+        keyTarget === 'organization' ? orgId : null,
+      );
       if ('error' in result && result.error) {
         setError(result.error);
       } else if ('key' in result && result.key) {
         setNewKeyValue(result.key);
         setName('');
+        setKeyTarget('personal');
         setShowForm(false);
         await loadKeys();
       }
@@ -253,6 +268,37 @@ export default function ApiKeysPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium" htmlFor="key-target">Key Scope</label>
+              <select
+                id="key-target"
+                className="d-control"
+                value={keyTarget}
+                onChange={(e) => setKeyTarget(e.target.value as 'personal' | 'organization')}
+              >
+                <option value="personal">Personal key</option>
+                {me?.entitlements.org_collaboration && me.organizations.length > 0 ? (
+                  <option value="organization">Organization key</option>
+                ) : null}
+              </select>
+            </div>
+            {keyTarget === 'organization' && me?.organizations.length ? (
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium" htmlFor="org-id">Organization</label>
+                <select
+                  id="org-id"
+                  className="d-control"
+                  value={orgId}
+                  onChange={(e) => setOrgId(e.target.value)}
+                >
+                  {me.organizations.map((org) => (
+                    <option key={org.id} value={org.id}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+            <div className="flex flex-col gap-1">
               <span className="text-sm font-medium">Scopes</span>
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-1.5 text-sm cursor-pointer">
@@ -332,6 +378,11 @@ export default function ApiKeysPage() {
                     }}
                   >
                     {apiKey.name}
+                    {apiKey.org_id ? (
+                      <span className="d-annotation" data-status="info" style={{ marginLeft: '0.5rem' }}>
+                        Org
+                      </span>
+                    ) : null}
                   </span>
                 </div>
 
