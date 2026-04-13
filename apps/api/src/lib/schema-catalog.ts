@@ -5,43 +5,65 @@ import type { ContentType } from '../types.js';
 export type JsonSchema = Record<string, unknown>;
 
 const require = createRequire(import.meta.url);
+const schemaCache = new Map<string, JsonSchema>();
 
 function loadPackageSchema(specifier: string): JsonSchema {
-  return JSON.parse(readFileSync(require.resolve(specifier), 'utf8')) as JsonSchema;
+  const cached = schemaCache.get(specifier);
+  if (cached) return cached;
+
+  const schema = JSON.parse(readFileSync(require.resolve(specifier), 'utf8')) as JsonSchema;
+  schemaCache.set(specifier, schema);
+  return schema;
 }
 
-const commonSchema = loadPackageSchema('@decantr/registry/schema/common.v1.json');
-const contentIntelligenceSchema = loadPackageSchema('@decantr/registry/schema/content-intelligence.v1.json');
-const patternSchema = loadPackageSchema('@decantr/registry/schema/pattern.v2.json');
-const themeSchema = loadPackageSchema('@decantr/registry/schema/theme.v1.json');
-const blueprintSchema = loadPackageSchema('@decantr/registry/schema/blueprint.v1.json');
-const archetypeSchema = loadPackageSchema('@decantr/registry/schema/archetype.v2.json');
-const shellSchema = loadPackageSchema('@decantr/registry/schema/shell.v1.json');
-const publicContentSummarySchema = loadPackageSchema('@decantr/registry/schema/public-content-summary.v1.json');
-const publicContentRecordSchema = loadPackageSchema('@decantr/registry/schema/public-content-record.v1.json');
-const publicContentListSchema = loadPackageSchema('@decantr/registry/schema/public-content-list.v1.json');
-const searchResponseSchema = loadPackageSchema('@decantr/registry/schema/search-response.v1.json');
-const showcaseManifestEntrySchema = loadPackageSchema('@decantr/registry/schema/showcase-manifest-entry.v1.json');
-const showcaseManifestSchema = loadPackageSchema('@decantr/registry/schema/showcase-manifest.v1.json');
-const showcaseShortlistSchema = loadPackageSchema('@decantr/registry/schema/showcase-shortlist.v1.json');
-const registryIntelligenceSummarySchema = loadPackageSchema('@decantr/registry/schema/registry-intelligence-summary.v1.json');
-const essenceV2Schema = loadPackageSchema('@decantr/essence-spec/schema/essence.v2.json');
-const essenceV3Schema = loadPackageSchema('@decantr/essence-spec/schema/essence.v3.json');
-const executionPackCommonSchema = loadPackageSchema('@decantr/core/schema/execution-pack.common.v1.json');
-const scaffoldPackSchema = loadPackageSchema('@decantr/core/schema/scaffold-pack.v1.json');
-const sectionPackSchema = loadPackageSchema('@decantr/core/schema/section-pack.v1.json');
-const pagePackSchema = loadPackageSchema('@decantr/core/schema/page-pack.v1.json');
-const mutationPackSchema = loadPackageSchema('@decantr/core/schema/mutation-pack.v1.json');
-const reviewPackSchema = loadPackageSchema('@decantr/core/schema/review-pack.v1.json');
-const packManifestSchema = loadPackageSchema('@decantr/core/schema/pack-manifest.v1.json');
-const executionPackBundleSchema = loadPackageSchema('@decantr/core/schema/execution-pack-bundle.v1.json');
-const selectedExecutionPackSchema = loadPackageSchema('@decantr/core/schema/selected-execution-pack.v1.json');
-const verificationReportCommonSchema = loadPackageSchema('@decantr/verifier/schema/verification-report.common.v1.json');
-const projectAuditReportSchema = loadPackageSchema('@decantr/verifier/schema/project-audit-report.v1.json');
-const fileCritiqueReportSchema = loadPackageSchema('@decantr/verifier/schema/file-critique-report.v1.json');
-const showcaseShortlistReportSchema = loadPackageSchema('@decantr/verifier/schema/showcase-shortlist-report.v1.json');
+function loadSchemaCatalog<const T extends Record<string, string>>(specs: T): { [K in keyof T]: JsonSchema } {
+  return Object.fromEntries(
+    Object.entries(specs).map(([key, specifier]) => [key, loadPackageSchema(specifier)]),
+  ) as { [K in keyof T]: JsonSchema };
+}
 
-export const COMMON_SCHEMA = commonSchema as JsonSchema;
+const registrySchemaSpecs: Record<ContentType, string> = {
+  pattern: '@decantr/registry/schema/pattern.v2.json',
+  theme: '@decantr/registry/schema/theme.v1.json',
+  blueprint: '@decantr/registry/schema/blueprint.v1.json',
+  archetype: '@decantr/registry/schema/archetype.v2.json',
+  shell: '@decantr/registry/schema/shell.v1.json',
+};
+
+const publicSchemaSpecs = {
+  'common.v1.json': '@decantr/registry/schema/common.v1.json',
+  'content-intelligence.v1.json': '@decantr/registry/schema/content-intelligence.v1.json',
+  'pattern.v2.json': '@decantr/registry/schema/pattern.v2.json',
+  'theme.v1.json': '@decantr/registry/schema/theme.v1.json',
+  'blueprint.v1.json': '@decantr/registry/schema/blueprint.v1.json',
+  'archetype.v2.json': '@decantr/registry/schema/archetype.v2.json',
+  'shell.v1.json': '@decantr/registry/schema/shell.v1.json',
+  'public-content-summary.v1.json': '@decantr/registry/schema/public-content-summary.v1.json',
+  'public-content-record.v1.json': '@decantr/registry/schema/public-content-record.v1.json',
+  'public-content-list.v1.json': '@decantr/registry/schema/public-content-list.v1.json',
+  'search-response.v1.json': '@decantr/registry/schema/search-response.v1.json',
+  'showcase-manifest-entry.v1.json': '@decantr/registry/schema/showcase-manifest-entry.v1.json',
+  'showcase-manifest.v1.json': '@decantr/registry/schema/showcase-manifest.v1.json',
+  'showcase-shortlist.v1.json': '@decantr/registry/schema/showcase-shortlist.v1.json',
+  'registry-intelligence-summary.v1.json': '@decantr/registry/schema/registry-intelligence-summary.v1.json',
+  'essence.v2.json': '@decantr/essence-spec/schema/essence.v2.json',
+  'essence.v3.json': '@decantr/essence-spec/schema/essence.v3.json',
+  'execution-pack.common.v1.json': '@decantr/core/schema/execution-pack.common.v1.json',
+  'scaffold-pack.v1.json': '@decantr/core/schema/scaffold-pack.v1.json',
+  'section-pack.v1.json': '@decantr/core/schema/section-pack.v1.json',
+  'page-pack.v1.json': '@decantr/core/schema/page-pack.v1.json',
+  'mutation-pack.v1.json': '@decantr/core/schema/mutation-pack.v1.json',
+  'review-pack.v1.json': '@decantr/core/schema/review-pack.v1.json',
+  'pack-manifest.v1.json': '@decantr/core/schema/pack-manifest.v1.json',
+  'execution-pack-bundle.v1.json': '@decantr/core/schema/execution-pack-bundle.v1.json',
+  'selected-execution-pack.v1.json': '@decantr/core/schema/selected-execution-pack.v1.json',
+  'verification-report.common.v1.json': '@decantr/verifier/schema/verification-report.common.v1.json',
+  'project-audit-report.v1.json': '@decantr/verifier/schema/project-audit-report.v1.json',
+  'file-critique-report.v1.json': '@decantr/verifier/schema/file-critique-report.v1.json',
+  'showcase-shortlist-report.v1.json': '@decantr/verifier/schema/showcase-shortlist-report.v1.json',
+} as const;
+
+export const COMMON_SCHEMA = loadPackageSchema('@decantr/registry/schema/common.v1.json');
 
 export const EXPECTED_REGISTRY_SCHEMA_URLS: Record<ContentType, string> = {
   pattern: 'https://decantr.ai/schemas/pattern.v2.json',
@@ -51,43 +73,6 @@ export const EXPECTED_REGISTRY_SCHEMA_URLS: Record<ContentType, string> = {
   shell: 'https://decantr.ai/schemas/shell.v1.json',
 };
 
-export const REGISTRY_SCHEMAS: Record<ContentType, JsonSchema> = {
-  pattern: patternSchema as JsonSchema,
-  theme: themeSchema as JsonSchema,
-  blueprint: blueprintSchema as JsonSchema,
-  archetype: archetypeSchema as JsonSchema,
-  shell: shellSchema as JsonSchema,
-};
+export const REGISTRY_SCHEMAS: Record<ContentType, JsonSchema> = loadSchemaCatalog(registrySchemaSpecs);
 
-export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = {
-  'common.v1.json': COMMON_SCHEMA,
-  'content-intelligence.v1.json': contentIntelligenceSchema as JsonSchema,
-  'pattern.v2.json': REGISTRY_SCHEMAS.pattern,
-  'theme.v1.json': REGISTRY_SCHEMAS.theme,
-  'blueprint.v1.json': REGISTRY_SCHEMAS.blueprint,
-  'archetype.v2.json': REGISTRY_SCHEMAS.archetype,
-  'shell.v1.json': REGISTRY_SCHEMAS.shell,
-  'public-content-summary.v1.json': publicContentSummarySchema as JsonSchema,
-  'public-content-record.v1.json': publicContentRecordSchema as JsonSchema,
-  'public-content-list.v1.json': publicContentListSchema as JsonSchema,
-  'search-response.v1.json': searchResponseSchema as JsonSchema,
-  'showcase-manifest-entry.v1.json': showcaseManifestEntrySchema as JsonSchema,
-  'showcase-manifest.v1.json': showcaseManifestSchema as JsonSchema,
-  'showcase-shortlist.v1.json': showcaseShortlistSchema as JsonSchema,
-  'registry-intelligence-summary.v1.json': registryIntelligenceSummarySchema as JsonSchema,
-  'essence.v2.json': essenceV2Schema as JsonSchema,
-  'essence.v3.json': essenceV3Schema as JsonSchema,
-  'execution-pack.common.v1.json': executionPackCommonSchema as JsonSchema,
-  'scaffold-pack.v1.json': scaffoldPackSchema as JsonSchema,
-  'section-pack.v1.json': sectionPackSchema as JsonSchema,
-  'page-pack.v1.json': pagePackSchema as JsonSchema,
-  'mutation-pack.v1.json': mutationPackSchema as JsonSchema,
-  'review-pack.v1.json': reviewPackSchema as JsonSchema,
-  'pack-manifest.v1.json': packManifestSchema as JsonSchema,
-  'execution-pack-bundle.v1.json': executionPackBundleSchema as JsonSchema,
-  'selected-execution-pack.v1.json': selectedExecutionPackSchema as JsonSchema,
-  'verification-report.common.v1.json': verificationReportCommonSchema as JsonSchema,
-  'project-audit-report.v1.json': projectAuditReportSchema as JsonSchema,
-  'file-critique-report.v1.json': fileCritiqueReportSchema as JsonSchema,
-  'showcase-shortlist-report.v1.json': showcaseShortlistReportSchema as JsonSchema,
-};
+export const PUBLIC_SCHEMAS: Record<string, JsonSchema> = loadSchemaCatalog(publicSchemaSpecs);
