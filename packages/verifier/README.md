@@ -17,6 +17,7 @@ npm install @decantr/verifier@beta
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - schema-backed report types for project audits, file critiques, and showcase verification
+- published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:
   - root document
   - document title
@@ -37,6 +38,7 @@ const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
 
 ## Schema Exports
 
+- `@decantr/verifier/schema/verification-report.common.v1.json`
 - `@decantr/verifier/schema/project-audit-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
