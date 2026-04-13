@@ -761,6 +761,26 @@ body {
   min-height: 100dvh;
 }
 
+.skip-link {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--d-radius);
+  background: var(--d-surface-raised);
+  color: var(--d-text);
+  text-decoration: none;
+  border: 1px solid var(--d-border);
+  transform: translateY(-150%);
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 img, picture, video, canvas, svg {
   display: block;
   max-width: 100%;
@@ -786,6 +806,15 @@ input, button, textarea, select {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 }
@@ -1053,6 +1082,14 @@ import './styles/treatments.css';            // Treatments + theme decorators
 import './styles/global.css';                // Resets
 \`\`\`
 
+### Runtime Rules
+
+- Use the real \`@decantr/css\` runtime for atoms. If \`package.json\` does not already depend on \`@decantr/css\`, add it before building.
+- Do **not** create local atom-runtime substitutes such as \`src/lib/css.js\`, \`src/lib/css.ts\`, or hand-written \`src/styles/atoms.css\` files unless the task explicitly asks for a fallback runtime.
+- Keep atoms in \`css(...)\`, treatments as semantic classes, and theme decorators as additive classes. Do not blur those roles together.
+- Use \`d-control\` as the default semantic treatment for inputs, selects, and textareas. Theme decorators such as \`carbon-input\` are additive and should only layer on when the section or theme contract explicitly calls for them.
+- Use loading decorators such as \`carbon-skeleton\` as optional enhancement on top of a structurally correct loading state — they do not replace the need for a real loading/skeleton branch.
+
 ### Visual Treatments
 
 Six base treatment classes provide semantic styling. Combine with atoms for layout:
@@ -1318,6 +1355,13 @@ Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and list
 4. **d-section spacing is self-contained.** Each d-section owns its padding. The d-section + d-section rule adds a separator. Do NOT add extra margin between adjacent sections.
 5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.
 
+### Accessibility Defaults
+
+- If \`dna.accessibility.skip_nav = true\`, add a visible-on-focus skip link such as \`<a href="#main-content" className="skip-link">Skip to content</a>\`.
+- Pair that skip link with a real main landmark target such as \`<main id="main-content">\`.
+- Keep keyboard focus visible with \`:focus-visible\` treatments on custom interactive surfaces, not just browser defaults.
+- Implement shell-level accessibility and routing behaviors as reusable structure or shared helpers, not one-off inline patches. Compact header sizing, responsive sidebar collapse, and skip-nav targets should be consistent across the shell, not re-solved page by page.
+
 ### Motion Philosophy
 
 Every interaction should feel responsive and polished. Apply motion by default, not as an afterthought:
@@ -1328,6 +1372,8 @@ Every interaction should feel responsive and polished. Apply motion by default, 
 - **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
 - **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
 - **Reduced motion:** Wrap all animations in \`prefers-reduced-motion\` media query — skip animation, keep state changes instant
+
+Never leave this to implication when \`dna.motion.reduce_motion = true\`. The scaffold should include a reviewed reduced-motion path in project CSS, even when the app initially runs on mock data.
 
 ### Interactivity Philosophy
 

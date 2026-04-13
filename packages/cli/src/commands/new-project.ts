@@ -1,6 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -15,6 +16,76 @@ function success(text: string): string { return `${GREEN}${text}${RESET}`; }
 function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
+
+function detectRoutingMode(projectDir: string): 'hash' | 'history' {
+  try {
+    const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf-8')) as {
+      meta?: { platform?: { routing?: string } };
+    };
+    return essence.meta?.platform?.routing === 'history' ? 'history' : 'hash';
+  } catch {
+    return 'hash';
+  }
+}
+
+function writeStarterRuntimeFiles(projectDir: string, title: string, routingMode: 'hash' | 'history'): void {
+  const srcDir = join(projectDir, 'src');
+  const routerImport = routingMode === 'history' ? 'BrowserRouter' : 'HashRouter';
+
+  const mainTsx = `import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ${routerImport} } from 'react-router-dom';
+import { App } from './App';
+import './styles/global.css';
+import './styles/tokens.css';
+import './styles/treatments.css';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <${routerImport}>
+      <App />
+    </${routerImport}>
+  </StrictMode>,
+);
+`;
+  writeFileSync(join(srcDir, 'main.tsx'), mainTsx);
+
+  const appTsx = `import { css } from '@decantr/css';
+import { Routes, Route } from 'react-router-dom';
+
+function WelcomePage() {
+  return (
+    <>
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <main id="main-content" className={css('_minh[100vh] _flex _col _aic _jcc _p6 _gap4')}>
+        <section className={css('_wfull _mw[42rem]') + ' d-section'} data-density="comfortable">
+          <div className={css('_flex _col _aic _gap4 _textc') + ' d-surface'} data-elevation="raised">
+            <p className="d-label" data-anchor>Decantr starter</p>
+            <h1 className={css('_heading2')}>${title}</h1>
+            <p className={css('_textsm _fgmuted _mw[32rem]')}>
+              Scaffolded with Decantr. Read DECANTR.md and the compiled packs in .decantr/context before building routes.
+            </p>
+            <div className={css('_flex _gap3 _wrap _jcc')}>
+              <span className="d-annotation" data-status="info">Runtime: @decantr/css</span>
+              <span className="d-annotation" data-status="success">Routing: ${routingMode}</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<WelcomePage />} />
+    </Routes>
+  );
+}
+`;
+  writeFileSync(join(srcDir, 'App.tsx'), appTsx);
+}
 
 export interface NewProjectOptions {
   blueprint?: string;
@@ -162,46 +233,7 @@ export default defineConfig({
   const srcDir = join(projectDir, 'src');
   mkdirSync(srcDir, { recursive: true });
 
-  // src/main.tsx
-  const mainTsx = `import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { App } from './App';
-import './styles/tokens.css';
-import './styles/treatments.css';
-import './styles/global.css';
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>,
-);
-`;
-  writeFileSync(join(srcDir, 'main.tsx'), mainTsx);
-
-  // src/App.tsx
-  const appTsx = `import { Routes, Route } from 'react-router-dom';
-
-function WelcomePage() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '1rem' }}>
-      <h1>${title}</h1>
-      <p style={{ opacity: 0.6 }}>Scaffolded with Decantr. Run <code>decantr status</code> to check project health.</p>
-    </div>
-  );
-}
-
-export function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<WelcomePage />} />
-    </Routes>
-  );
-}
-`;
-  writeFileSync(join(srcDir, 'App.tsx'), appTsx);
+  writeStarterRuntimeFiles(projectDir, title, 'hash');
 
   // src/vite-env.d.ts
   writeFileSync(join(srcDir, 'vite-env.d.ts'), '/// <reference types="vite/client" />\n');
@@ -235,10 +267,16 @@ export function App() {
   if (options.registry) initFlags.push(`--registry=${options.registry}`);
 
   try {
-    // Use the CLI's own binary to run init in the new project directory
-    const cliBin = join(__dirname, '..', 'bin', 'decantr.js');
-    const cliPath = existsSync(cliBin) ? `node ${cliBin}` : 'npx decantr';
+    // Reuse the currently-running CLI entrypoint when available.
+    const bundledCliEntrypoint = fileURLToPath(new URL('./bin.js', import.meta.url));
+    const cliEntrypoint = existsSync(bundledCliEntrypoint)
+      ? bundledCliEntrypoint
+      : process.argv[1] && existsSync(process.argv[1]) ? process.argv[1] : null;
+    const cliPath = cliEntrypoint
+      ? `"${process.execPath}" "${cliEntrypoint}"`
+      : 'npx decantr';
     execSync(`${cliPath} init ${initFlags.join(' ')}`, { cwd: projectDir, stdio: 'inherit' });
+    writeStarterRuntimeFiles(projectDir, title, detectRoutingMode(projectDir));
   } catch {
     console.log(`\n${YELLOW}Decantr init encountered issues. Run \`decantr init\` manually inside ${projectName}/.${RESET}`);
   }

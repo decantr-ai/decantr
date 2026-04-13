@@ -35,6 +35,14 @@ These issues were real and have already been repaired:
    - `registry-platform`
    - `terminal-dashboard`
 3. The matrix command now builds the package dependencies it actually relies on (`@decantr/essence-spec`, `@decantr/registry`, `@decantr/core`, `@decantr/cli`) so stale workspace dist output does not produce misleading results.
+4. Cold-start scaffold guidance and defaults are materially stronger now.
+   - Generated `DECANTR.md` and CSS guidance now explicitly require the real `@decantr/css` runtime and forbid silent local `css()` / `atoms.css` substitutes.
+   - Generated `global.css` now includes baseline skip-link styling and a `prefers-reduced-motion: reduce` path.
+   - The first-party `decantr new` starter now uses `@decantr/css`, emits a skip link plus matching main landmark target, and chooses `HashRouter`/`BrowserRouter` from the generated essence routing mode.
+5. Verifier/source-audit signal quality is stronger now.
+   - The verifier no longer misclassifies primary routes like `/agents` as missing a post-auth destination.
+   - Built-JS HTML-injection and insecure-transport warnings are now suppressed when a real source tree exists and does not corroborate those bundle-only markers.
+   - The source audit now flags local `css()` runtimes and hand-written `atoms.css` fallbacks as Decantr contract drift.
 
 ## 3. Triage Principles
 
