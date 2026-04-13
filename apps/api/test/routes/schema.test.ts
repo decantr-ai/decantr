@@ -12,8 +12,34 @@ function createTestApp() {
 
 describe('GET /v1/schema/:name', () => {
   it.each([
+    ['common.v1.json', 'https://decantr.ai/schemas/common.v1.json'],
+    ['content-intelligence.v1.json', 'https://decantr.ai/schemas/content-intelligence.v1.json'],
+    ['pattern.v2.json', 'https://decantr.ai/schemas/pattern.v2.json'],
+    ['theme.v1.json', 'https://decantr.ai/schemas/theme.v1.json'],
+    ['blueprint.v1.json', 'https://decantr.ai/schemas/blueprint.v1.json'],
+    ['archetype.v2.json', 'https://decantr.ai/schemas/archetype.v2.json'],
+    ['shell.v1.json', 'https://decantr.ai/schemas/shell.v1.json'],
+    ['public-content-summary.v1.json', 'https://decantr.ai/schemas/public-content-summary.v1.json'],
+    ['public-content-list.v1.json', 'https://decantr.ai/schemas/public-content-list.v1.json'],
+    ['search-response.v1.json', 'https://decantr.ai/schemas/search-response.v1.json'],
+    ['showcase-manifest-entry.v1.json', 'https://decantr.ai/schemas/showcase-manifest-entry.v1.json'],
+    ['showcase-shortlist.v1.json', 'https://decantr.ai/schemas/showcase-shortlist.v1.json'],
+  ])('serves registry/public schema %s', async (name, schemaId) => {
+    const app = createTestApp();
+    const res = await app.request(`/v1/schema/${name}`);
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe(schemaId);
+  });
+
+  it.each([
+    ['essence.v2.json', 'https://decantr.ai/schemas/essence.v2.json'],
     ['essence.v3.json', 'https://decantr.ai/schemas/essence.v3.json'],
     ['execution-pack.common.v1.json', 'https://decantr.ai/schemas/execution-pack.common.v1.json'],
+    ['section-pack.v1.json', 'https://decantr.ai/schemas/section-pack.v1.json'],
+    ['page-pack.v1.json', 'https://decantr.ai/schemas/page-pack.v1.json'],
+    ['mutation-pack.v1.json', 'https://decantr.ai/schemas/mutation-pack.v1.json'],
     ['review-pack.v1.json', 'https://decantr.ai/schemas/review-pack.v1.json'],
     ['pack-manifest.v1.json', 'https://decantr.ai/schemas/pack-manifest.v1.json'],
     ['selected-execution-pack.v1.json', 'https://decantr.ai/schemas/selected-execution-pack.v1.json'],
@@ -89,6 +115,15 @@ describe('GET /v1/schema/:name', () => {
     expect(json.$id).toBe('https://decantr.ai/schemas/showcase-manifest.v1.json');
   });
 
+  it('serves registry intelligence summary schemas', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/schema/registry-intelligence-summary.v1.json');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe('https://decantr.ai/schemas/registry-intelligence-summary.v1.json');
+  });
+
   it('serves hosted execution pack bundle schemas', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/schema/execution-pack-bundle.v1.json');
@@ -115,8 +150,24 @@ describe('GET /v1/schema/:name', () => {
     const json = await res.json();
     expect(json.error).toBe('Schema not found');
     expect(Array.isArray(json.available)).toBe(true);
+    expect(json.available).toContain('common.v1.json');
+    expect(json.available).toContain('content-intelligence.v1.json');
+    expect(json.available).toContain('pattern.v2.json');
+    expect(json.available).toContain('theme.v1.json');
+    expect(json.available).toContain('blueprint.v1.json');
+    expect(json.available).toContain('archetype.v2.json');
+    expect(json.available).toContain('shell.v1.json');
+    expect(json.available).toContain('public-content-summary.v1.json');
+    expect(json.available).toContain('public-content-list.v1.json');
+    expect(json.available).toContain('search-response.v1.json');
+    expect(json.available).toContain('showcase-manifest-entry.v1.json');
+    expect(json.available).toContain('showcase-shortlist.v1.json');
+    expect(json.available).toContain('essence.v2.json');
     expect(json.available).toContain('essence.v3.json');
     expect(json.available).toContain('execution-pack.common.v1.json');
+    expect(json.available).toContain('section-pack.v1.json');
+    expect(json.available).toContain('page-pack.v1.json');
+    expect(json.available).toContain('mutation-pack.v1.json');
     expect(json.available).toContain('review-pack.v1.json');
     expect(json.available).toContain('pack-manifest.v1.json');
     expect(json.available).toContain('selected-execution-pack.v1.json');
