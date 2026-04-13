@@ -82,6 +82,17 @@ For more details on @decantr/css, see the [package README](../packages/css/READM
 - Pair that skip link with a real main landmark target such as `<main id="main-content">`.
 - Always include a `prefers-reduced-motion: reduce` path in project CSS when the Decantr contract requires reduced motion.
 
+### SEO Expectations by Platform
+
+- For hash-routed SPA scaffolds, keep SEO expectations focused on the root document: title, description, share metadata, and any root-level JSON-LD required by the contract.
+- Do **not** invent SSR-style per-route metadata systems for a clearly hash-routed project.
+- For history/SSR-style projects, richer route metadata is appropriate, but it still needs to stay aligned with the declared route contract.
+
+### Complex Pattern Rule
+
+- When a pattern implies advanced interaction depth (for example minimaps, drag/drop, force-directed layout, or live streaming), implement the required structure and states first.
+- Treat those richer capabilities as optional scaffold-tier enhancement unless the section/page pack explicitly makes them mandatory.
+
 ---
 
 ## Advanced: Manual CSS Implementation

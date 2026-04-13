@@ -1347,6 +1347,12 @@ Check \`decantr.essence.json\` → \`meta.platform.routing\` for the routing str
 
 Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and listed in \`.decantr/context/scaffold.md\`.
 
+### SEO Expectations by Platform
+
+- For hash-routed SPA scaffolds, focus SEO work on the root document: document title, description, Open Graph/Twitter meta, and any root-level JSON-LD that the contract calls for.
+- Do **not** invent SSR-only per-route metadata systems for a clearly hash-routed scaffold.
+- For history/SSR-style projects, per-route metadata can be richer, but it still needs to follow the declared route contract instead of introducing off-contract marketing pages.
+
 ### Layout Rules
 
 1. **Never nest d-surface inside d-surface.** Inner sections use plain containers with padding atoms.
@@ -3521,6 +3527,9 @@ export function generateSectionContext(input: SectionContextInput): string {
   // Pattern Reference — each pattern spec listed once
   if (uniquePatterns.size > 0) {
     lines.push('## Pattern Reference');
+    lines.push('');
+    lines.push('Scaffold-tier rule: implement the core visual structure, states, and required slots first.');
+    lines.push('Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simulated live streaming as optional unless the slot guidance or section contract makes them explicitly required.');
     lines.push('');
     for (const [patternName, spec] of uniquePatterns) {
       lines.push(`### ${patternName}`);

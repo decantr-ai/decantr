@@ -39,6 +39,7 @@ These issues were real and have already been repaired:
    - Generated `DECANTR.md` and CSS guidance now explicitly require the real `@decantr/css` runtime and forbid silent local `css()` / `atoms.css` substitutes.
    - Generated `global.css` now includes baseline skip-link styling and a `prefers-reduced-motion: reduce` path.
    - The first-party `decantr new` starter now uses `@decantr/css`, emits a skip link plus matching main landmark target, and chooses `HashRouter`/`BrowserRouter` from the generated essence routing mode.
+   - `decantr new --offline --blueprint=...` now seeds local offline content when a parent workspace cache/custom surface or local `decantr-content` source is available, and otherwise stops with an explicit message instead of silently degrading to a default scaffold.
 5. Verifier/source-audit signal quality is stronger now.
    - The verifier no longer misclassifies primary routes like `/agents` as missing a post-auth destination.
    - Built-JS HTML-injection and insecure-transport warnings are now suppressed when a real source tree exists and does not corroborate those bundle-only markers.
