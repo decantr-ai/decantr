@@ -101,6 +101,8 @@ commit archaeology.
 
 - Added shared verifier package: `@decantr/verifier`
 - Added schema-backed verifier report contracts.
+- Verifier tests now explicitly assert every finding id currently defined in the shared verifier source, so source-defined coverage no longer silently outruns the exercised test surface when new audit or critique findings are added.
+- Verifier now also validates real emitted `auditProject()` output, real `critiqueSource()` output, and the checked-in showcase shortlist artifact against the published verifier JSON schemas via AJV-backed round-trip tests, so report contracts are enforced by executable schema checks instead of only by TypeScript interfaces and downstream consumer expectations.
 - CLI and MCP now share the verifier engine.
 - Review packs now inform critique behavior.
 - Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
