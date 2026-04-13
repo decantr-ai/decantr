@@ -1,5 +1,9 @@
 # MASTER PLAN — Decantr
 
+> Superseded on 2026-04-08 by `docs/programs/2026-04-08-decantr-vnext-master-program.md`.
+>
+> This file is retained as historical context. The active strategic planning source of truth for the reset branch is the vNext master program and its companion audits/specs.
+
 **MASTER PLAN MODE ACTIVE — Current Phase: 0 (Validation & Foundation)**
 
 ---

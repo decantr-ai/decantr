@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
-import type { EssenceV3 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV3, ThemeMode, ThemeShape } from '@decantr/essence-spec';
 import { refreshDerivedFiles } from '../scaffold.js';
 import { RegistryClient } from '../registry.js';
 
@@ -10,6 +10,9 @@ const RED = '\x1b[31m';
 const YELLOW = '\x1b[33m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
+
+const VALID_THEME_SHAPES: ThemeShape[] = ['sharp', 'rounded', 'pill'];
+const VALID_THEME_MODES: ThemeMode[] = ['light', 'dark', 'auto'];
 
 /**
  * `decantr theme switch <themeName>` [--shape <shape>] [--mode <mode>]
@@ -33,22 +36,22 @@ export async function cmdThemeSwitch(
     return;
   }
 
-  let parsed: unknown;
+  let parsed: EssenceFile;
   try {
-    parsed = JSON.parse(readFileSync(essencePath, 'utf-8'));
+    parsed = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
   } catch (e) {
     console.error(`${RED}Could not read essence: ${(e as Error).message}${RESET}`);
     process.exitCode = 1;
     return;
   }
 
-  if (!isV3(parsed as any)) {
+  if (!isV3(parsed)) {
     console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
     process.exitCode = 1;
     return;
   }
 
-  const essence = migrateV30ToV31(parsed as EssenceV3);
+  const essence = migrateV30ToV31(parsed);
 
   // Parse optional flags
   let shape: string | undefined;
@@ -67,20 +70,28 @@ export async function cmdThemeSwitch(
     }
   }
 
+  if (shape && !VALID_THEME_SHAPES.includes(shape as ThemeShape)) {
+    console.error(`${RED}Invalid shape "${shape}". Must be one of: ${VALID_THEME_SHAPES.join(', ')}.${RESET}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  if (mode && !VALID_THEME_MODES.includes(mode as ThemeMode)) {
+    console.error(`${RED}Invalid mode "${mode}". Must be one of: ${VALID_THEME_MODES.join(', ')}.${RESET}`);
+    process.exitCode = 1;
+    return;
+  }
+
   // Update dna.theme
-  const oldThemeId = (essence.dna.theme as any).id || (essence.dna.theme as any).style;
-  (essence.dna.theme as any).id = themeName;
-  // Remove legacy style field if present
-  delete (essence.dna.theme as any).style;
-  // Remove legacy recipe field if present
-  delete (essence.dna.theme as any).recipe;
+  const oldThemeId = essence.dna.theme.id;
+  essence.dna.theme.id = themeName;
 
   if (shape) {
-    essence.dna.theme.shape = shape as any;
+    essence.dna.theme.shape = shape as ThemeShape;
   }
 
   if (mode) {
-    essence.dna.theme.mode = mode as any;
+    essence.dna.theme.mode = mode as ThemeMode;
   }
 
   // Fetch theme to get radius hints
@@ -91,13 +102,11 @@ export async function cmdThemeSwitch(
   try {
     const themeResult = await registryClient.fetchTheme(themeName);
     if (themeResult?.data) {
-      const raw = themeResult.data as Record<string, unknown>;
-      const inner = (raw.data ?? raw) as Record<string, any>;
-      if (inner.radius) {
+      if (themeResult.data.radius) {
         essence.dna.radius = {
           ...essence.dna.radius,
-          philosophy: inner.radius.philosophy || essence.dna.radius.philosophy,
-          base: inner.radius.base ?? essence.dna.radius.base,
+          philosophy: themeResult.data.radius.philosophy || essence.dna.radius.philosophy,
+          base: themeResult.data.radius.base ?? essence.dna.radius.base,
         };
       }
     }

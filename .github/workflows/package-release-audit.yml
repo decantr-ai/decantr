@@ -1,0 +1,83 @@
+name: Package Release Audit
+
+on:
+  schedule:
+    - cron: '0 14 * * 2'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm audit:package-surface
+      - run: pnpm audit:release-readiness
+
+      - name: Audit npm authentication state
+        continue-on-error: true
+        run: pnpm audit:npm-auth 2>&1 | tee package-npm-auth.log
+
+      - name: Audit live npm surface
+        continue-on-error: true
+        run: pnpm audit:npm-surface 2>&1 | tee package-npm-surface.log
+
+      - name: Preview npm dist-tag normalization
+        run: pnpm npm-surface:normalize:dry-run 2>&1 | tee package-npm-normalize-dry-run.log
+
+      - name: Generate package release audit
+        run: node scripts/audit-release-surface.mjs --report-json=package-release-audit.json --summary-markdown=package-release-audit.md
+
+      - name: Generate package graduation plan
+        run: node scripts/graduation-plan.mjs --report-json=package-graduation-plan.json --summary-markdown=package-graduation-plan.md
+
+      - name: Run foundation publish preflight
+        run: node scripts/publish-packages.mjs --publish-dry-run --wave=foundation | tee package-preflight-foundation.log
+
+      - name: Run delivery publish preflight
+        run: node scripts/publish-packages.mjs --publish-dry-run --wave=delivery | tee package-preflight-delivery.log
+
+      - name: Publish package release audit summary
+        run: |
+          cat package-release-audit.md >> "$GITHUB_STEP_SUMMARY"
+          printf "\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-graduation-plan.md >> "$GITHUB_STEP_SUMMARY"
+          printf "\n## npm Auth Audit\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-npm-auth.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
+          printf "\n## Live npm Surface Audit\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-npm-surface.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n\n## npm Dist-Tag Normalization Preview\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-npm-normalize-dry-run.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n\n## Publish Preflight (Foundation)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-preflight-foundation.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n\n## Publish Preflight (Delivery)\n\n\`\`\`text\n" >> "$GITHUB_STEP_SUMMARY"
+          cat package-preflight-delivery.log >> "$GITHUB_STEP_SUMMARY"
+          printf "\n\`\`\`\n" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload package release audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-release-audit
+          path: |
+            package-release-audit.json
+            package-release-audit.md
+            package-graduation-plan.json
+            package-graduation-plan.md
+            package-npm-auth.log
+            package-npm-surface.log
+            package-npm-normalize-dry-run.log
+            package-preflight-foundation.log
+            package-preflight-delivery.log
+          if-no-files-found: error

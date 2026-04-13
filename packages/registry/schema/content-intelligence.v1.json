@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/content-intelligence.v1.json",
+  "title": "Decantr Content Intelligence Metadata",
+  "type": "object",
+  "required": [
+    "source",
+    "verification_status",
+    "target_coverage",
+    "benchmark_confidence",
+    "confidence_tier",
+    "golden_usage",
+    "quality_score",
+    "confidence_score",
+    "recommended",
+    "evidence",
+    "recommendation_reasons",
+    "recommendation_blockers"
+  ],
+  "properties": {
+    "source": {
+      "enum": [
+        "authored",
+        "benchmark",
+        "hybrid"
+      ]
+    },
+    "verification_status": {
+      "enum": [
+        "unknown",
+        "pending",
+        "build-green",
+        "build-red",
+        "smoke-green",
+        "smoke-red"
+      ]
+    },
+    "last_verified_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target_coverage": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "benchmark_confidence": {
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "confidence_tier": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "verified"
+      ]
+    },
+    "golden_usage": {
+      "enum": [
+        "none",
+        "showcase",
+        "shortlisted"
+      ]
+    },
+    "quality_score": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "confidence_score": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "recommended": {
+      "type": "boolean"
+    },
+    "evidence": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "recommendation_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommendation_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "benchmark": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "enum": [
+            "pending",
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        },
+        "target": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "drift_signal": {
+          "enum": [
+            "lower",
+            "moderate",
+            "elevated"
+          ]
+        },
+        "build_passed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "smoke_passed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -4,6 +4,11 @@ import type { Env } from './types.js';
 import { healthRoutes } from './routes/health.js';
 import { contentRoutes } from './routes/content.js';
 import { searchRoutes } from './routes/search.js';
+import { schemaRoutes } from './routes/schema.js';
+import { showcaseRoutes } from './routes/showcase.js';
+import { intelligenceRoutes } from './routes/intelligence.js';
+import { packRoutes } from './routes/packs.js';
+import { critiqueRoutes } from './routes/critique.js';
 import { authRoutes } from './routes/auth.js';
 import { publishRoutes } from './routes/publish.js';
 import { orgRoutes } from './routes/orgs.js';
@@ -14,6 +19,7 @@ import { optionalAuth } from './middleware/auth.js';
 import { rateLimiter } from './middleware/rate-limit.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { logger } from './lib/logger.js';
+import { isAdminSyncRoute, isPublicReadOnlyRoute } from './lib/public-route-access.js';
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
@@ -81,13 +87,13 @@ export function createApp(): Hono<Env> {
     const method = c.req.method;
 
     // Skip auth for admin sync (uses X-Admin-Key)
-    if (path === '/v1/admin/sync' && method === 'POST') {
+    if (isAdminSyncRoute(method, path)) {
       return next();
     }
 
     // Skip auth for public read-only content endpoints (GET only)
     // These don't need auth — auth is only for publishing, moderation, billing
-    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
+    if (isPublicReadOnlyRoute(method, path)) {
       c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
       return next();
     }
@@ -100,10 +106,10 @@ export function createApp(): Hono<Env> {
   app.use('/v1/*', async (c, next) => {
     const path = c.req.path;
     const method = c.req.method;
-    if (path === '/v1/admin/sync' && method === 'POST') {
+    if (isAdminSyncRoute(method, path)) {
       return next();
     }
-    if (method === 'GET' && /^\/v1\/(patterns|themes|blueprints|archetypes|shells|search|health)/.test(path)) {
+    if (isPublicReadOnlyRoute(method, path)) {
       return next();
     }
     await rateLimiter()(c, next);
@@ -114,6 +120,11 @@ export function createApp(): Hono<Env> {
   app.route('/v1', adminRoutes);
   app.route('/v1', contentRoutes);
   app.route('/v1', searchRoutes);
+  app.route('/v1', schemaRoutes);
+  app.route('/v1', showcaseRoutes);
+  app.route('/v1', intelligenceRoutes);
+  app.route('/v1', packRoutes);
+  app.route('/v1', critiqueRoutes);
   app.route('/v1', authRoutes);
   app.route('/v1', publishRoutes);
   app.route('/v1', orgRoutes);

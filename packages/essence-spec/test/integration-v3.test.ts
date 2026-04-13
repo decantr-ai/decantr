@@ -8,7 +8,7 @@ import { validateEssence } from '../src/validate.js';
 import { evaluateGuard } from '../src/guard.js';
 import { migrateV2ToV3 } from '../src/migrate.js';
 import { isV3, isSimple } from '../src/types.js';
-import { VALID_V3, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
+import { VALID_V3, VALID_V31, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
 
 describe('v3 integration: full lifecycle', () => {
   it('v3 document passes through normalize → validate → guard without corruption', () => {
@@ -25,10 +25,10 @@ describe('v3 integration: full lifecycle', () => {
     // Step 3: Guard evaluation reads from correct paths
     if (!isV3(normalized)) throw new Error('Expected v3');
     const violations = evaluateGuard(normalized, {
-      style: 'luminarum',  // matches dna.theme.id
+      theme: 'luminarum',  // matches dna.theme.id
       pageId: 'main',      // exists in blueprint.pages
     });
-    expect(violations.filter(v => v.rule === 'style')).toHaveLength(0);
+    expect(violations.filter(v => v.rule === 'theme')).toHaveLength(0);
     expect(violations.filter(v => v.rule === 'structure')).toHaveLength(0);
   });
 
@@ -44,21 +44,21 @@ describe('v3 integration: full lifecycle', () => {
 
     // Step 3: Guard should work the same as with v2
     const v2Violations = evaluateGuard(VALID_V2_SIMPLE, {
-      style: 'glassmorphism', // wrong style
+      theme: 'glassmorphism', // wrong theme
       pageId: 'overview',     // exists
     });
     const v3Violations = evaluateGuard(v3, {
-      style: 'glassmorphism', // wrong style
+      theme: 'glassmorphism', // wrong theme
       pageId: 'overview',     // exists in blueprint.pages
     });
 
-    // Both should flag style mismatch
-    expect(v2Violations.some(v => v.rule === 'style')).toBe(true);
-    expect(v3Violations.some(v => v.rule === 'style')).toBe(true);
+    // Both should flag theme mismatch
+    expect(v2Violations.some(v => v.rule === 'theme')).toBe(true);
+    expect(v3Violations.some(v => v.rule === 'theme')).toBe(true);
 
     // v3 violation should have layer metadata
-    const v3Style = v3Violations.find(v => v.rule === 'style');
-    expect(v3Style!.layer).toBe('dna');
+    const v3Theme = v3Violations.find(v => v.rule === 'theme');
+    expect(v3Theme!.layer).toBe('dna');
   });
 
   it('v2 sectioned → migrate → validate succeeds', () => {
@@ -74,7 +74,7 @@ describe('v3 integration: full lifecycle', () => {
 
   it('v3 guard correctly classifies DNA vs Blueprint violations', () => {
     const violations = evaluateGuard(VALID_V3, {
-      style: 'wrong-style',       // DNA violation
+      theme: 'wrong-theme',       // DNA violation
       pageId: 'nonexistent-page', // Blueprint violation
     });
 
@@ -88,6 +88,19 @@ describe('v3 integration: full lifecycle', () => {
     expect(dnaViolations.every(v => v.severity === 'error')).toBe(true);
     // Blueprint violations are warnings for v3
     expect(blueprintViolations.every(v => v.severity === 'warning')).toBe(true);
+  });
+
+  it('v3.1 sectioned documents validate and flatten correctly for guard evaluation', () => {
+    const validation = validateEssence(VALID_V31);
+    expect(validation.valid).toBe(true);
+
+    const violations = evaluateGuard(VALID_V31, {
+      theme: 'luminarum',
+      pageId: 'settings',
+    });
+
+    expect(violations.filter(v => v.rule === 'theme')).toHaveLength(0);
+    expect(violations.filter(v => v.rule === 'structure')).toHaveLength(0);
   });
 
   it('normalize does NOT use structural fallback for v3 detection', () => {

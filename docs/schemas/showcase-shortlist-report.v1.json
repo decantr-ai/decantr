@@ -1,0 +1,378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
+  "title": "Decantr Showcase Shortlist Verification Report",
+  "type": "object",
+  "required": ["$schema", "generatedAt", "dryRun", "summary", "results"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json"
+    },
+    "generatedAt": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+    },
+    "dryRun": {
+      "type": "boolean"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "appCount",
+        "passedBuilds",
+        "failedBuilds",
+        "averageDurationMs",
+        "passedSmokes",
+        "failedSmokes",
+        "averageSmokeDurationMs",
+        "appsWithTitleOkCount",
+        "appsWithLangOkCount",
+        "appsWithViewportOkCount",
+        "appsWithCharsetOkCount",
+        "appsWithoutInlineScriptsCount",
+        "appsWithoutInlineEventHandlersCount",
+        "appsWithCspSignalCount",
+        "appsWithExternalScriptIntegrityCount",
+        "appsWithExternalScriptCrossoriginCount",
+        "appsWithoutInsecureRemoteAssetTransportCount",
+        "appsWithSafeExternalBlankLinksCount",
+        "appsWithSandboxedExternalIframesCount",
+        "appsWithoutInsecureExternalIframesCount",
+        "appsWithExternalStylesheetIntegrityCount",
+        "appsWithExternalStylesheetCrossoriginCount",
+        "appsWithRouteCoverageCount",
+        "appsWithRouteDocumentHardeningCount",
+        "appsWithFullRouteCoverageCount",
+        "averageTotalAssetBytes",
+        "averageJsAssetBytes",
+        "averageCssAssetBytes",
+        "lowerDriftCount",
+        "moderateDriftCount",
+        "elevatedDriftCount",
+        "withPackManifestCount"
+      ],
+      "properties": {
+        "appCount": { "type": "number", "minimum": 0 },
+        "passedBuilds": { "type": "number", "minimum": 0 },
+        "failedBuilds": { "type": "number", "minimum": 0 },
+        "averageDurationMs": { "type": "number", "minimum": 0 },
+        "passedSmokes": { "type": "number", "minimum": 0 },
+        "failedSmokes": { "type": "number", "minimum": 0 },
+        "averageSmokeDurationMs": { "type": "number", "minimum": 0 },
+        "appsWithTitleOkCount": { "type": "number", "minimum": 0 },
+        "appsWithLangOkCount": { "type": "number", "minimum": 0 },
+        "appsWithViewportOkCount": { "type": "number", "minimum": 0 },
+        "appsWithCharsetOkCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInlineScriptsCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInlineEventHandlersCount": { "type": "number", "minimum": 0 },
+        "appsWithCspSignalCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalScriptIntegrityCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalScriptCrossoriginCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInsecureRemoteAssetTransportCount": { "type": "number", "minimum": 0 },
+        "appsWithSafeExternalBlankLinksCount": { "type": "number", "minimum": 0 },
+        "appsWithSandboxedExternalIframesCount": { "type": "number", "minimum": 0 },
+        "appsWithoutInsecureExternalIframesCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalStylesheetIntegrityCount": { "type": "number", "minimum": 0 },
+        "appsWithExternalStylesheetCrossoriginCount": { "type": "number", "minimum": 0 },
+        "appsWithRouteCoverageCount": { "type": "number", "minimum": 0 },
+        "appsWithRouteDocumentHardeningCount": { "type": "number", "minimum": 0 },
+        "appsWithFullRouteCoverageCount": { "type": "number", "minimum": 0 },
+        "averageTotalAssetBytes": { "type": "number", "minimum": 0 },
+        "averageJsAssetBytes": { "type": "number", "minimum": 0 },
+        "averageCssAssetBytes": { "type": "number", "minimum": 0 },
+        "lowerDriftCount": { "type": "number", "minimum": 0 },
+        "moderateDriftCount": { "type": "number", "minimum": 0 },
+        "elevatedDriftCount": { "type": "number", "minimum": 0 },
+        "withPackManifestCount": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/showcaseShortlistEntry"
+      }
+    }
+  },
+  "$defs": {
+    "showcaseShortlistEntry": {
+      "type": "object",
+      "required": ["slug", "target", "classification", "verificationStatus", "build", "smoke", "drift"],
+      "properties": {
+        "slug": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "target": {
+          "type": ["string", "null"]
+        },
+        "classification": {
+          "type": "string",
+          "enum": ["pending", "A", "B", "C", "D"]
+        },
+        "verificationStatus": {
+          "type": "string",
+          "enum": ["pending", "build-green", "build-red", "smoke-green", "smoke-red"]
+        },
+        "build": {
+          "type": "object",
+          "required": ["passed", "durationMs"],
+          "properties": {
+            "passed": {
+              "type": ["boolean", "null"]
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "smoke": {
+          "type": "object",
+          "required": [
+            "passed",
+            "durationMs",
+            "rootDocumentOk",
+            "titleOk",
+            "langOk",
+            "viewportOk",
+            "charsetOk",
+            "cspSignalOk",
+            "inlineScriptCount",
+            "inlineEventHandlerCount",
+            "externalScriptsWithoutIntegrityCount",
+            "externalScriptsWithIntegrityMissingCrossoriginCount",
+            "externalStylesheetsWithoutIntegrityCount",
+            "externalStylesheetsWithIntegrityMissingCrossoriginCount",
+            "externalScriptsWithInsecureTransportCount",
+            "externalStylesheetsWithInsecureTransportCount",
+            "externalMediaSourcesWithInsecureTransportCount",
+            "externalBlankLinksWithoutRelCount",
+            "externalIframesWithoutSandboxCount",
+            "externalIframesWithInsecureTransportCount",
+            "jsEvalSignalCount",
+            "jsHtmlInjectionSignalCount",
+            "jsInsecureTransportSignalCount",
+            "jsSecretSignalCount",
+            "assetCount",
+            "assetsPassed",
+            "routeHintsChecked",
+            "routeHintsMatched",
+            "routeHintsCoverageOk",
+            "routeDocumentsChecked",
+            "routeDocumentsPassed",
+            "routeDocumentsHardenedCount",
+            "routeDocumentsCoverageOk",
+            "routeDocumentsHardeningOk",
+            "fullRouteCoverageOk",
+            "totalAssetBytes",
+            "jsAssetBytes",
+            "cssAssetBytes",
+            "largestAssetPath",
+            "largestAssetBytes",
+            "failures"
+          ],
+          "properties": {
+            "passed": {
+              "type": ["boolean", "null"]
+            },
+            "durationMs": {
+              "type": "number",
+              "minimum": 0
+            },
+            "rootDocumentOk": {
+              "type": "boolean"
+            },
+            "titleOk": {
+              "type": "boolean"
+            },
+            "langOk": {
+              "type": "boolean"
+            },
+            "viewportOk": {
+              "type": "boolean"
+            },
+            "charsetOk": {
+              "type": "boolean"
+            },
+            "cspSignalOk": {
+              "type": "boolean"
+            },
+            "inlineScriptCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "inlineEventHandlerCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalScriptsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalScriptsWithIntegrityMissingCrossoriginCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithoutIntegrityCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithIntegrityMissingCrossoriginCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalScriptsWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalStylesheetsWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalMediaSourcesWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalBlankLinksWithoutRelCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalIframesWithoutSandboxCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "externalIframesWithInsecureTransportCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsEvalSignalCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsHtmlInjectionSignalCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsInsecureTransportSignalCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsSecretSignalCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "assetCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "assetsPassed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeHintsChecked": {
+              "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+            },
+            "routeHintsMatched": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeHintsCoverageOk": {
+              "type": "boolean"
+            },
+            "routeDocumentsChecked": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeDocumentsPassed": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeDocumentsHardenedCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "routeDocumentsCoverageOk": {
+              "type": "boolean"
+            },
+            "routeDocumentsHardeningOk": {
+              "type": "boolean"
+            },
+            "fullRouteCoverageOk": {
+              "type": "boolean"
+            },
+            "totalAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "jsAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "cssAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "largestAssetPath": {
+              "type": ["string", "null"]
+            },
+            "largestAssetBytes": {
+              "type": "number",
+              "minimum": 0
+            },
+            "failures": {
+              "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+            }
+          },
+          "additionalProperties": false
+        },
+        "drift": {
+          "type": "object",
+          "required": [
+            "signal",
+            "penalty",
+            "inlineStyleCount",
+            "hardcodedColorCount",
+            "utilityLeakageCount",
+            "decantrTreatmentCount",
+            "hasPackManifest",
+            "hasDist"
+          ],
+          "properties": {
+            "signal": {
+              "type": "string",
+              "enum": ["lower", "moderate", "elevated"]
+            },
+            "penalty": {
+              "type": "number"
+            },
+            "inlineStyleCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "hardcodedColorCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "utilityLeakageCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "decantrTreatmentCount": {
+              "type": "number",
+              "minimum": 0
+            },
+            "hasPackManifest": {
+              "type": "boolean"
+            },
+            "hasDist": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

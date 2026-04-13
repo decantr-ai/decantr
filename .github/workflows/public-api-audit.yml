@@ -1,0 +1,35 @@
+name: Audit Public API
+
+on:
+  schedule:
+    - cron: '0 15 * * 3'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit hosted public API
+        env:
+          REGISTRY_URL: ${{ vars.REGISTRY_URL || 'https://api.decantr.ai/v1' }}
+          CONTENT_NAMESPACE: ${{ vars.CONTENT_NAMESPACE || '@official' }}
+          FAIL_ON_PUBLIC_API_ERROR: ${{ vars.FAIL_ON_PUBLIC_API_ERROR || 'false' }}
+        run: node scripts/audit-public-api.mjs --include-hosted-pack-select --include-hosted-critique --include-hosted-project-audit --report-json=public-api-report.json --summary-markdown=public-api-summary.md
+
+      - name: Publish audit summary
+        run: cat public-api-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-api-audit
+          path: |
+            public-api-report.json
+            public-api-summary.md
+          if-no-files-found: error

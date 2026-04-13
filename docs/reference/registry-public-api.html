@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decantr Registry Public API</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --fg: #f5f7fb;
+      --muted: #a7b0c0;
+      --accent: #59d8ff;
+      --accent-2: #ff6d99;
+      --border: rgba(255,255,255,0.12);
+      --panel: rgba(255,255,255,0.04);
+      --code: rgba(255,255,255,0.06);
+      --mono: "SF Mono", "Fira Code", "Consolas", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top left, rgba(89, 216, 255, 0.14), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(255, 109, 153, 0.12), transparent 28%),
+        var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 72px 24px 96px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.25rem, 4vw, 3.25rem);
+      line-height: 1.05;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 1.5rem;
+    }
+
+    p, li {
+      color: var(--muted);
+    }
+
+    code, pre {
+      font-family: var(--mono);
+    }
+
+    .lede {
+      max-width: 66ch;
+      margin-bottom: 28px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 22px;
+      backdrop-filter: blur(18px);
+      margin-bottom: 20px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 20px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.92rem;
+    }
+
+    .endpoint {
+      margin-top: 28px;
+    }
+
+    pre {
+      margin: 14px 0 18px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--code);
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      color: var(--fg);
+    }
+
+    ul {
+      margin: 10px 0 0 20px;
+    }
+
+    .meta {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta strong {
+      color: var(--fg);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 28px;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--accent-2);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    .button:hover {
+      border-color: rgba(255,255,255,0.28);
+      color: var(--fg);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Registry Public API</h1>
+    <p class="lede">
+      The public registry and hosted compiler contract for Decantr browse, search, detail, intelligence-summary, and execution-pack flows.
+      These are the hosted endpoints used by the registry portal, CLI, MCP consumers, and external tooling.
+    </p>
+
+    <section class="panel">
+      <h2>Base URL</h2>
+      <pre>https://api.decantr.ai/v1</pre>
+      <p>Canonical response schemas are published at <a href="/schemas/">/schemas/</a>.</p>
+      <ul class="pill-row">
+        <li class="pill"><code>namespace</code></li>
+        <li class="pill"><code>sort=recommended|recent|name</code></li>
+        <li class="pill"><code>recommended=true</code></li>
+        <li class="pill"><code>intelligence_source=authored|benchmark|hybrid</code></li>
+        <li class="pill"><code>limit</code></li>
+        <li class="pill"><code>offset</code></li>
+      </ul>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Search</h2>
+      <pre>GET /search?q=portfolio&amp;type=blueprint&amp;sort=recommended&amp;recommended=true&amp;intelligence_source=hybrid</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Full-text search across public registry content.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/search-response.v1.json"><code>search-response.v1.json</code></a></div>
+        <div><strong>Key fields:</strong> <code>total</code>, <code>results[]</code>, <code>results[].intelligence</code></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Public Lists</h2>
+      <pre>GET /blueprints?namespace=@official&amp;sort=recommended&amp;recommended=true
+GET /patterns?namespace=@official&amp;limit=50&amp;offset=0
+GET /archetypes?namespace=@official&amp;intelligence_source=authored</pre>
+      <div class="meta">
+        <div><strong>Supported endpoints:</strong> <code>/patterns</code>, <code>/themes</code>, <code>/blueprints</code>, <code>/archetypes</code>, <code>/shells</code></div>
+        <div><strong>Purpose:</strong> Browse one public content type with shared ranking and intelligence filters.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/public-content-list.v1.json"><code>public-content-list.v1.json</code></a></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Public Detail</h2>
+      <pre>GET /blueprints/@official/portfolio
+GET /patterns/@official/hero</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Fetch a single public content record, including its typed <code>data</code> payload and attached intelligence metadata.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/public-content-record.v1.json"><code>public-content-record.v1.json</code></a></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Public Schema Discovery</h2>
+      <pre>GET /schema/search-response.v1.json
+GET /schema/registry-intelligence-summary.v1.json</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Fetch the published JSON Schemas behind public Decantr contracts.</div>
+        <div><strong>Browse all schemas:</strong> <a href="/schemas/">/schemas/</a></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Hosted Execution Pack Compile</h2>
+      <pre>POST /packs/compile?namespace=@official
+Content-Type: application/json
+
+{
+  "version": "2.0.0",
+  "archetype": "dashboard",
+  "theme": { "id": "clean", "mode": "light" },
+  "personality": ["professional"],
+  "platform": { "type": "spa", "routing": "history" },
+  "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+  "features": ["auth"],
+  "density": { "level": "comfortable", "content_gap": "1.5rem" },
+  "guard": { "mode": "guided" },
+  "target": "react"
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Compile a schema-backed execution-pack bundle from an essence document using hosted public registry content.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/execution-pack-bundle.v1.json"><code>execution-pack-bundle.v1.json</code></a></div>
+        <div><strong>Notes:</strong> <code>namespace</code> is optional and defaults to <code>@official</code>. The API prefers the requested namespace first, then falls back to <code>@official</code> for public content resolution.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Hosted Selected Execution Pack</h2>
+      <pre>POST /packs/select?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "pack_type": "page",
+  "id": "home"
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Compile and return one schema-backed execution pack plus the manifest metadata needed to place it in the broader bundle.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/selected-execution-pack.v1.json"><code>selected-execution-pack.v1.json</code></a></div>
+        <div><strong>Notes:</strong> Include a valid Decantr essence document on <code>essence</code>. <code>pack_type</code> must be one of <code>scaffold</code>, <code>review</code>, <code>section</code>, <code>page</code>, or <code>mutation</code>, and <code>id</code> is required for <code>section</code>, <code>page</code>, and <code>mutation</code> selection.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Hosted File Critique</h2>
+      <pre>POST /critique/file?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "filePath": "src/pages/Home.tsx",
+  "code": "&lt;button style={{ color: &quot;#ff00ff&quot; }}&gt;Click me&lt;/button&gt;",
+  "treatmentsCss": ".brand-accent { color: var(--d-primary); }"
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Critique inline file contents against a hosted review-pack contract compiled from the posted essence document.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/file-critique-report.v1.json"><code>file-critique-report.v1.json</code></a></div>
+        <div><strong>Shared Definitions:</strong> <a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code></a></div>
+        <div><strong>Notes:</strong> Include a valid Decantr essence document on <code>essence</code> and a non-empty source string on <code>code</code>. <code>filePath</code> and <code>treatmentsCss</code> are optional but help the hosted critique stay aligned with local project context.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Hosted Project Audit</h2>
+      <pre>POST /audit/project?namespace=@official
+Content-Type: application/json
+
+{
+  "essence": {
+    "version": "2.0.0",
+    "archetype": "dashboard",
+    "theme": { "id": "clean", "mode": "light" },
+    "personality": ["professional"],
+    "platform": { "type": "spa", "routing": "history" },
+    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
+    "features": ["auth"],
+    "density": { "level": "comfortable", "content_gap": "1.5rem" },
+    "guard": { "mode": "guided" },
+    "target": "react"
+  },
+  "dist": {
+    "indexHtml": "&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;title&gt;Audit&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;&lt;script type=&quot;module&quot; src=&quot;/assets/app.js&quot;&gt;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;",
+    "assets": {
+      "/assets/app.js": "console.log(&quot;/&quot;);"
+    }
+  },
+  "sources": {
+    "files": {
+      "src/pages/Home.tsx": "export function Home() { return &lt;button style={{ color: '#ff00ff' }}&gt;Hi&lt;/button&gt;; }"
+    }
+  }
+}</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Run the shared Decantr project audit remotely by compiling hosted execution packs from the posted essence and optionally replaying runtime verification against posted dist and source snapshots.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/project-audit-report.v1.json"><code>project-audit-report.v1.json</code></a></div>
+        <div><strong>Shared Definitions:</strong> <a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code></a></div>
+        <div><strong>Notes:</strong> The <code>dist</code> object is optional. Without it, hosted audit still checks schema, topology, and compiled-pack presence, but runtime verification remains pending. The <code>sources</code> object is also optional and lets hosted audit aggregate source-level verifier findings from posted source files.</div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Showcase Benchmark Surfaces</h2>
+      <pre>GET /showcase/manifest
+GET /showcase/shortlist
+GET /showcase/shortlist-verification</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Inspect the audited showcase corpus, shortlist metadata, and the schema-backed shortlist verification report.</div>
+        <div><strong>Schemas:</strong> <a href="/schemas/showcase-manifest.v1.json"><code>showcase-manifest.v1.json</code></a>, <a href="/schemas/showcase-shortlist.v1.json"><code>showcase-shortlist.v1.json</code></a>, <a href="/schemas/showcase-shortlist-report.v1.json"><code>showcase-shortlist-report.v1.json</code></a></div>
+        <div><strong>Shared Definitions:</strong> <a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code></a></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>Registry Intelligence Summary</h2>
+      <pre>GET /intelligence/summary?namespace=@official</pre>
+      <div class="meta">
+        <div><strong>Purpose:</strong> Read a schema-backed aggregate rollup of public registry intelligence coverage without crawling every item.</div>
+        <div><strong>Schema:</strong> <a href="/schemas/registry-intelligence-summary.v1.json"><code>registry-intelligence-summary.v1.json</code></a></div>
+        <div><strong>Key totals:</strong> <code>total_public_items</code>, <code>with_intelligence</code>, <code>recommended</code>, <code>authored</code>, <code>benchmark</code>, <code>hybrid</code>, <code>smoke_green</code>, <code>build_green</code>, <code>high_confidence</code></div>
+        <div><strong>Per-type rollups:</strong> <code>by_type.pattern</code>, <code>theme</code>, <code>blueprint</code>, <code>archetype</code>, <code>shell</code></div>
+      </div>
+    </section>
+
+    <section class="panel endpoint">
+      <h2>CLI and MCP Equivalents</h2>
+      <pre>decantr search portfolio --type blueprint --sort recommended --recommended --source hybrid
+decantr list blueprints --source authored
+decantr registry summary --namespace @official --json
+decantr registry compile-packs decantr.essence.json --namespace @official --json
+decantr registry get-pack manifest --namespace @official --json
+decantr registry get-pack page home --namespace @official --json
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+decantr registry audit-project --namespace @official --json
+pnpm audit:public-api</pre>
+      <ul>
+        <li><code>decantr_search_registry</code></li>
+        <li><code>decantr_get_registry_intelligence_summary</code></li>
+        <li><code>decantr_get_showcase_benchmarks</code></li>
+        <li><code>decantr_get_execution_pack</code></li>
+        <li><code>decantr_compile_execution_packs</code></li>
+        <li><code>decantr_critique</code></li>
+        <li><code>decantr_audit_project</code></li>
+      </ul>
+    </section>
+
+    <div class="links">
+      <a class="button" href="/schemas/">Browse Schemas</a>
+      <a class="button" href="https://registry.decantr.ai" target="_blank" rel="noopener">Open Registry</a>
+      <a class="button" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">View Repo</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,26 +1,70 @@
-import { cpSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+  getActiveShowcaseEntries,
+  loadShortlistVerificationReport,
+  showcaseRoot,
+  repoRoot,
+} from './showcase-manifest.mjs';
 
-const showcaseRoot = join(import.meta.dirname, '..', 'apps', 'showcase');
-const targetRoot = join(import.meta.dirname, '..', 'apps', 'registry', 'public', 'showcase');
+const dryRun = process.argv.includes('--dry-run');
+const targetRoot = join(repoRoot, 'apps', 'registry', 'public', 'showcase');
+const activeEntries = getActiveShowcaseEntries();
+const verificationReport = loadShortlistVerificationReport();
+const verificationBySlug = new Map(verificationReport.results.map(entry => [entry.slug, entry]));
 
-const entries = readdirSync(showcaseRoot, { withFileTypes: true });
-
-for (const entry of entries) {
-  if (!entry.isDirectory()) continue;
-
-  const distDir = join(showcaseRoot, entry.name, 'dist');
+for (const entry of activeEntries) {
+  const distDir = join(showcaseRoot, entry.slug, 'dist');
   if (!existsSync(distDir)) continue;
 
-  const targetDir = join(targetRoot, entry.name);
+  const targetDir = join(targetRoot, entry.slug);
 
   // Clean target directory
-  if (existsSync(targetDir)) {
+  if (!dryRun && existsSync(targetDir)) {
     rmSync(targetDir, { recursive: true });
   }
-  mkdirSync(targetDir, { recursive: true });
+  if (!dryRun) {
+    mkdirSync(targetDir, { recursive: true });
+  }
 
   // Copy dist contents
-  cpSync(distDir, targetDir, { recursive: true });
-  console.log(`Copied ${entry.name}/dist -> apps/registry/public/showcase/${entry.name}/`);
+  if (!dryRun) {
+    cpSync(distDir, targetDir, { recursive: true });
+    console.log(`Copied ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
+  } else {
+    console.log(`[dry-run] copy ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
+  }
+}
+
+const publicManifest = {
+  generatedAt: new Date().toISOString(),
+  apps: activeEntries.map(entry => ({
+    slug: entry.slug,
+    status: entry.status,
+    classification: entry.classification,
+    target: entry.target ?? null,
+    goldenCandidate: entry.goldenCandidate ?? false,
+    notes: entry.notes ?? null,
+    verification: verificationBySlug.get(entry.slug) ?? null,
+    url: `/showcase/${entry.slug}/`,
+  })),
+};
+
+const shortlistManifest = {
+  generatedAt: publicManifest.generatedAt,
+  apps: publicManifest.apps.filter(entry => entry.goldenCandidate),
+};
+
+if (!dryRun) {
+  mkdirSync(targetRoot, { recursive: true });
+  writeFileSync(join(targetRoot, 'manifest.json'), JSON.stringify(publicManifest, null, 2));
+  writeFileSync(join(targetRoot, 'shortlist.json'), JSON.stringify(shortlistManifest, null, 2));
+  writeFileSync(join(targetRoot, 'shortlist-verification.json'), JSON.stringify(verificationReport, null, 2));
+  console.log(`Wrote showcase metadata manifest -> apps/registry/public/showcase/manifest.json`);
+  console.log(`Wrote showcase shortlist manifest -> apps/registry/public/showcase/shortlist.json`);
+  console.log(`Wrote showcase verification report -> apps/registry/public/showcase/shortlist-verification.json`);
+} else {
+  console.log(`[dry-run] write showcase metadata manifest -> apps/registry/public/showcase/manifest.json`);
+  console.log(`[dry-run] write showcase shortlist manifest -> apps/registry/public/showcase/shortlist.json`);
+  console.log(`[dry-run] write showcase verification report -> apps/registry/public/showcase/shortlist-verification.json`);
 }

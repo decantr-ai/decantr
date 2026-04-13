@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/theme.v1.json",
+  "title": "Decantr Theme",
+  "type": "object",
+  "required": [
+    "$schema",
+    "id",
+    "name",
+    "description"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/theme.v1.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "name": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "description": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "tags": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "personality": {
+      "type": "string"
+    },
+    "seed": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+    },
+    "palette": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "modes": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "shapes": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "decantr_compat": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "decorators": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+    },
+    "treatments": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "spatial": {
+      "type": "object",
+      "properties": {
+        "density_bias": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "content_gap_shift": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "section_padding": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "card_wrapping": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "surface_override": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "effects": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "compositions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "radius": {
+      "type": "object",
+      "properties": {
+        "philosophy": {
+          "type": "string"
+        },
+        "base": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true
+    },
+    "pattern_preferences": {
+      "type": "object",
+      "properties": {
+        "prefer": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "avoid": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "default_presets": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+        }
+      },
+      "additionalProperties": true
+    },
+    "shell": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "typography": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "decorator_definitions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "intent": {
+            "type": "string"
+          },
+          "suggested_properties": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+          },
+          "pairs_with": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+          },
+          "usage": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

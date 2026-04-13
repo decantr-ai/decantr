@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/common.v1.json",
+  "title": "Decantr Common Content Definitions",
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonEmptyStringArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "dependencyVersionMap": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "patternRefObject": {
+      "type": "object",
+      "required": [
+        "pattern"
+      ],
+      "properties": {
+        "pattern": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "preset": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "as": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "patternReference": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "$ref": "#/$defs/patternRefObject"
+        }
+      ]
+    },
+    "layoutGroup": {
+      "type": "object",
+      "required": [
+        "cols"
+      ],
+      "properties": {
+        "cols": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/patternReference"
+          }
+        },
+        "at": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "span": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "layoutItem": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/patternReference"
+        },
+        {
+          "$ref": "#/$defs/layoutGroup"
+        }
+      ]
+    },
+    "patternLayoutSpec": {
+      "type": "object",
+      "required": [
+        "layout",
+        "atoms"
+      ],
+      "properties": {
+        "layout": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "atoms": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "slots": {
+          "$ref": "#/$defs/stringMap"
+        }
+      },
+      "additionalProperties": true
+    },
+    "codeSpec": {
+      "type": "object",
+      "properties": {
+        "imports": {
+          "type": "string"
+        },
+        "example": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "themeRef": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "mode": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "shape": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "suggestedTheme": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "modes": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "shapes": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "seoHints": {
+      "type": "object",
+      "properties": {
+        "schema_org": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "meta_priorities": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      },
+      "additionalProperties": true
+    },
+    "navigationHotkey": {
+      "type": "object",
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "route": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "action": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "label": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "navigation": {
+      "type": "object",
+      "properties": {
+        "command_palette": {
+          "type": "boolean"
+        },
+        "hotkeys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/navigationHotkey"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "tone": {
+          "type": "string"
+        },
+        "cta_verbs": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "avoid": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "empty_states": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "string"
+        },
+        "loading": {
+          "type": "string"
+        },
+        "metrics_format": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "triggers": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "$ref": "#/$defs/nonEmptyStringArray"
+            },
+            "secondary": {
+              "$ref": "#/$defs/nonEmptyStringArray"
+            },
+            "negative": {
+              "$ref": "#/$defs/nonEmptyStringArray"
+            }
+          },
+          "required": [
+            "primary",
+            "secondary",
+            "negative"
+          ],
+          "additionalProperties": false
+        },
+        "implies": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "tier": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "required": [
+        "triggers",
+        "implies",
+        "weight",
+        "tier"
+      ],
+      "additionalProperties": true
+    }
+  }
+}

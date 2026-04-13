@@ -1,11 +1,11 @@
 {
   "name": "@decantr/registry",
   "version": "1.0.0-beta.12",
-  "description": "Registry format, content resolver, and wiring rules for Decantr",
+  "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/decantr-ai/decantr.git",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
     "directory": "packages/registry"
   },
   "homepage": "https://decantr.ai",
@@ -16,9 +16,32 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./content-types": {
+      "import": "./dist/content-types.js",
+      "types": "./dist/content-types.d.ts"
+    },
+    "./schema/common.v1.json": "./schema/common.v1.json",
+    "./schema/content-intelligence.v1.json": "./schema/content-intelligence.v1.json",
+    "./schema/pattern.v2.json": "./schema/pattern.v2.json",
+    "./schema/theme.v1.json": "./schema/theme.v1.json",
+    "./schema/blueprint.v1.json": "./schema/blueprint.v1.json",
+    "./schema/archetype.v2.json": "./schema/archetype.v2.json",
+    "./schema/shell.v1.json": "./schema/shell.v1.json",
+    "./schema/public-content-summary.v1.json": "./schema/public-content-summary.v1.json",
+    "./schema/public-content-record.v1.json": "./schema/public-content-record.v1.json",
+    "./schema/public-content-list.v1.json": "./schema/public-content-list.v1.json",
+    "./schema/search-response.v1.json": "./schema/search-response.v1.json",
+    "./schema/showcase-manifest-entry.v1.json": "./schema/showcase-manifest-entry.v1.json",
+    "./schema/showcase-manifest.v1.json": "./schema/showcase-manifest.v1.json",
+    "./schema/showcase-shortlist.v1.json": "./schema/showcase-shortlist.v1.json",
+    "./schema/registry-intelligence-summary.v1.json": "./schema/registry-intelligence-summary.v1.json"
   },
-  "files": ["dist"],
+  "files": ["dist", "schema"],
   "publishConfig": {
     "access": "public"
   },

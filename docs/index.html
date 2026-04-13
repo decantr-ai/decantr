@@ -740,6 +740,10 @@
     .tool-item:nth-child(13)::before { background: var(--green); }
     .tool-item:nth-child(14)::before { background: var(--yellow); }
     .tool-item:nth-child(15)::before { background: var(--orange); }
+    .tool-item:nth-child(16)::before { background: var(--purple); }
+    .tool-item:nth-child(17)::before { background: var(--pink); }
+    .tool-item:nth-child(18)::before { background: var(--crimson); }
+    .tool-item:nth-child(19)::before { background: var(--coral); }
 
     .tool-item:hover {
       background: rgba(255,255,255,0.05);
@@ -769,6 +773,10 @@
     .tool-item:nth-child(13) .tool-name { color: var(--green); }
     .tool-item:nth-child(14) .tool-name { color: var(--yellow); }
     .tool-item:nth-child(15) .tool-name { color: var(--orange); }
+    .tool-item:nth-child(16) .tool-name { color: var(--purple); }
+    .tool-item:nth-child(17) .tool-name { color: var(--pink); }
+    .tool-item:nth-child(18) .tool-name { color: var(--crimson); }
+    .tool-item:nth-child(19) .tool-name { color: var(--coral); }
 
     .tool-icon {
       width: 16px;
@@ -827,6 +835,10 @@
     .tool-item:nth-child(13) .tool-dot { background: var(--green); }
     .tool-item:nth-child(14) .tool-dot { background: var(--yellow); }
     .tool-item:nth-child(15) .tool-dot { background: var(--orange); }
+    .tool-item:nth-child(16) .tool-dot { background: var(--purple); }
+    .tool-item:nth-child(17) .tool-dot { background: var(--pink); }
+    .tool-item:nth-child(18) .tool-dot { background: var(--crimson); }
+    .tool-item:nth-child(19) .tool-dot { background: var(--coral); }
 
     .tool-desc {
       font-size: 0.82rem;
@@ -1950,7 +1962,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="section" id="tools">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>15 tools for your AI assistant</h2>
+    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>20 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
     <div class="tools-list reveal">
@@ -1973,10 +1985,6 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="layout-template" class="tool-icon" style="color:var(--yellow)"></i>decantr_resolve_blueprint</div>
         <p class="tool-desc">Composed templates with topology, zones, and transitions</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="cooking-pot" class="tool-icon" style="color:var(--orange)"></i>decantr_resolve_recipe</div>
-        <p class="tool-desc">Visual decoration rules and spatial hints</p>
       </div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="shield-check" class="tool-icon" style="color:var(--purple)"></i>decantr_check_drift</div>
@@ -2007,12 +2015,36 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="tool-desc">Get scoped context for a specific app section</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><i data-lucide="component" class="tool-icon" style="color:var(--yellow)"></i>decantr_component_api</div>
-        <p class="tool-desc">Query component specs and usage patterns</p>
-      </div>
-      <div class="tool-item">
         <div class="tool-name"><i data-lucide="star" class="tool-icon" style="color:var(--orange)"></i>decantr_critique</div>
         <p class="tool-desc">Evaluate generated code for visual quality scoring</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="layout-grid" class="tool-icon" style="color:var(--purple)"></i>decantr_get_scaffold_context</div>
+        <p class="tool-desc">Read the top-level scaffold context for the whole app</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-stack" class="tool-icon" style="color:var(--pink)"></i>decantr_get_page_context</div>
+        <p class="tool-desc">Get page-scoped context for one route or page id</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="package-search" class="tool-icon" style="color:var(--crimson)"></i>decantr_get_execution_pack</div>
+        <p class="tool-desc">Read compiled scaffold, page, section, review, or mutation packs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="gallery-vertical-end" class="tool-icon" style="color:var(--coral)"></i>decantr_get_showcase_benchmarks</div>
+        <p class="tool-desc">Inspect shortlist, manifest, and showcase verification metadata</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="bar-chart-3" class="tool-icon" style="color:var(--amber)"></i>decantr_get_registry_intelligence_summary</div>
+        <p class="tool-desc">Read hosted aggregate intelligence coverage without crawling the registry</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="server-cog" class="tool-icon" style="color:var(--green)"></i>decantr_compile_execution_packs</div>
+        <p class="tool-desc">Compile a hosted execution-pack bundle from a local or inline essence document</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="clipboard-check" class="tool-icon" style="color:var(--cyan)"></i>decantr_audit_project</div>
+        <p class="tool-desc">Run a schema-backed project audit against packs, guard rules, and drift checks</p>
       </div>
     </div>
 
@@ -2109,34 +2141,35 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== REGISTRY ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>116 patterns. 20 themes. 19 blueprints.</h2>
+    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>190+ patterns. 30+ themes. 35+ blueprints.</h2>
     <p class="section-sub reveal">A growing library of community-contributed design intelligence. Browse what's available — or publish your own patterns, themes, and blueprints for others to use.</p>
 
     <div class="stats-grid">
       <div class="stat-card stat-card-1 reveal reveal-d1">
         <div class="stat-icon"><i data-lucide="puzzle" style="width:24px;height:24px;color:var(--coral)"></i></div>
-        <div class="stat-number">116</div>
+        <div class="stat-number">190+</div>
         <div class="stat-label">Patterns</div>
       </div>
       <div class="stat-card stat-card-2 reveal reveal-d2">
         <div class="stat-icon"><i data-lucide="palette" style="width:24px;height:24px;color:var(--amber)"></i></div>
-        <div class="stat-number">20</div>
+        <div class="stat-number">30+</div>
         <div class="stat-label">Themes</div>
       </div>
       <div class="stat-card stat-card-3 reveal reveal-d3">
         <div class="stat-icon"><i data-lucide="layout-template" style="width:24px;height:24px;color:var(--cyan)"></i></div>
-        <div class="stat-number">19</div>
+        <div class="stat-number">35+</div>
         <div class="stat-label">Blueprints</div>
       </div>
       <div class="stat-card stat-card-4 reveal reveal-d4">
         <div class="stat-icon"><i data-lucide="boxes" style="width:24px;height:24px;color:var(--green)"></i></div>
-        <div class="stat-number">60</div>
+        <div class="stat-number">200+</div>
         <div class="stat-label">Archetypes</div>
       </div>
     </div>
 
-    <div style="text-align:center; margin-top:3rem;" class="reveal">
+    <div style="text-align:center; margin-top:3rem; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;" class="reveal">
       <a href="https://registry.decantr.ai" target="_blank" rel="noopener" class="btn-primary" style="font-size:1.05rem; padding:14px 32px;">Browse the Registry →</a>
+      <a href="/reference/registry-public-api.html" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Read the Public API</a>
     </div>
   </div>
 </section>
@@ -2148,7 +2181,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="package" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Open source. MIT licensed.</h2>
-    <p class="section-sub reveal">Six packages, one mission: make AI-generated UI not suck.</p>
+    <p class="section-sub reveal">Seven packages, one mission: make AI-generated UI not suck.</p>
 
     <div class="packages-grid">
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
@@ -2158,7 +2191,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing 15 design intelligence tools to AI assistants</p>
+        <p class="pkg-desc">MCP server exposing 19 design intelligence tools to AI assistants</p>
         <div class="pkg-version">v1.0.0-beta.12</div>
       </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
@@ -2168,7 +2201,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/registry</div>
-        <p class="pkg-desc">Content resolver for patterns, archetypes, themes, and recipes</p>
+        <p class="pkg-desc">Content resolver for patterns, archetypes, themes, blueprints, and shells</p>
         <div class="pkg-version">v1.0.0-beta.12</div>
       </div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
@@ -2180,6 +2213,11 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="pkg-name">@decantr/css</div>
         <p class="pkg-desc">Framework-agnostic CSS atoms runtime for layout utilities</p>
         <div class="pkg-version">v1.0.2</div>
+      </div>
+      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
+        <div class="pkg-name">@decantr/verifier</div>
+        <p class="pkg-desc">Shared audit and critique engine with schema-backed project and file reports</p>
+        <div class="pkg-version">v1.0.0-beta.1</div>
       </div>
     </div>
   </div>
@@ -2220,6 +2258,7 @@ Start with the shell layouts, then build each section's pages.</div>
   <div class="footer-links">
     <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
     <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">npm</a>
+    <a href="/reference/registry-public-api.html">Public API</a>
     <a href="#tools">API</a>
   </div>
   <p class="footer-copy">MIT License. Built by Decantr AI.</p>

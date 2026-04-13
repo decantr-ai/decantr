@@ -1,17 +1,17 @@
 {
   "name": "@decantr/cli",
   "version": "1.7.5",
-  "description": "Decantr CLI — search the registry, validate essence files, and access design intelligence from the terminal",
+  "description": "Decantr CLI — scaffold, audit, and maintain Decantr projects from the terminal",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/decantr-ai/decantr.git",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
     "directory": "packages/cli"
   },
   "homepage": "https://decantr.ai",
   "type": "module",
   "bin": {
-    "decantr": "./dist/bin.js"
+    "decantr": "dist/bin.js"
   },
   "main": "dist/index.js",
   "files": [
@@ -28,7 +28,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
-    "@decantr/registry": "workspace:*"
+    "@decantr/registry": "workspace:*",
+    "@decantr/verifier": "workspace:*"
   }
 }

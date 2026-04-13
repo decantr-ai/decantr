@@ -1,0 +1,43 @@
+name: Normalize npm Surface
+
+on:
+  workflow_dispatch:
+    inputs:
+      write_changes:
+        description: "Apply executable npm dist-tag repairs instead of reporting only"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Normalize npm surface (dry run)
+        if: ${{ !inputs.write_changes }}
+        run: node scripts/normalize-npm-dist-tags.mjs | tee npm-surface-normalize.txt
+
+      - name: Normalize npm surface (write)
+        if: ${{ inputs.write_changes }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/normalize-npm-dist-tags.mjs --write | tee npm-surface-normalize.txt
+
+      - name: Publish npm surface normalization summary
+        run: cat npm-surface-normalize.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload npm surface normalization artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-surface-normalize
+          path: npm-surface-normalize.txt
+          if-no-files-found: error

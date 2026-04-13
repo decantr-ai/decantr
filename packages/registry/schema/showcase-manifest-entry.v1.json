@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/showcase-manifest-entry.v1.json",
+  "title": "Decantr Showcase Manifest Entry",
+  "type": "object",
+  "required": [
+    "slug",
+    "status",
+    "classification"
+  ],
+  "properties": {
+    "slug": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "status": {
+      "type": "string"
+    },
+    "classification": {
+      "type": "string"
+    },
+    "origin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "target": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "goldenCandidate": {
+      "type": [
+        "string",
+        "boolean"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "verification": {
+      "anyOf": [
+        {
+          "$ref": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json#/$defs/showcaseShortlistEntry"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

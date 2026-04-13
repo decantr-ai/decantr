@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ContentItem } from '@/lib/api';
+import { getShowcaseUrl, type ShowcaseMetadata } from '@/lib/showcase';
 
 const TYPE_COLORS: Record<string, string> = {
   pattern: 'var(--d-coral)',
@@ -23,10 +24,84 @@ function formatId(id: string): string {
   return id.length > 12 ? id.slice(0, 12) : id;
 }
 
-export function ContentCard({ item, editable }: { item: ContentItem; editable?: boolean }) {
+function formatVerificationStatus(status?: string | null): string | null {
+  switch (status) {
+    case 'smoke-green':
+      return 'smoke verified';
+    case 'build-green':
+      return 'build verified';
+    case 'smoke-red':
+      return 'smoke failed';
+    case 'build-red':
+      return 'build failed';
+    case 'pending':
+      return 'verification pending';
+    default:
+      return null;
+  }
+}
+
+function verificationBadgeStatus(status?: string | null): 'success' | 'warning' | undefined {
+  if (status === 'smoke-green' || status === 'build-green') return 'success';
+  if (status === 'smoke-red' || status === 'build-red') return 'warning';
+  return undefined;
+}
+
+function getIntelligenceSourceLabel(
+  source?: NonNullable<ContentItem['intelligence']>['source'],
+): string | null {
+  switch (source) {
+    case 'authored':
+      return 'authored intelligence';
+    case 'benchmark':
+      return 'benchmark-backed';
+    case 'hybrid':
+      return 'hybrid intelligence';
+    default:
+      return null;
+  }
+}
+
+function getConfidenceTierLabel(
+  tier?: NonNullable<ContentItem['intelligence']>['confidence_tier'],
+): string | null {
+  switch (tier) {
+    case 'verified':
+      return 'verified confidence';
+    case 'high':
+      return 'high confidence';
+    case 'medium':
+      return 'medium confidence';
+    default:
+      return null;
+  }
+}
+
+export function ContentCard({
+  item,
+  editable,
+  showcaseMetadata,
+}: {
+  item: ContentItem;
+  editable?: boolean;
+  showcaseMetadata?: ShowcaseMetadata | null;
+}) {
   const singular = singularType(item.type);
   const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
+  const showcaseMeta = singular === 'blueprint' ? (showcaseMetadata ?? null) : null;
+  const intelligence = item.intelligence ?? null;
+  const intelligenceSourceLabel = getIntelligenceSourceLabel(intelligence?.source);
+  const confidenceTierLabel = getConfidenceTierLabel(intelligence?.confidence_tier);
+  const hasShortlistedShowcase = Boolean(showcaseMeta?.goldenCandidate);
+  const showcaseVerification = showcaseMeta?.verification ?? null;
+  const verificationLabel =
+    formatVerificationStatus(intelligence?.verification_status) ??
+    (showcaseVerification?.smoke.passed
+      ? 'smoke verified'
+      : showcaseVerification?.build.passed
+        ? 'build verified'
+        : null);
 
   return (
     <div className="lum-card-outlined" data-type={singular}>
@@ -42,6 +117,34 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
           {singular}
         </span>
         <span className="d-annotation">{item.namespace}</span>
+        {intelligence?.recommended && (
+          <span className="d-annotation" data-status="success">
+            recommended
+          </span>
+        )}
+        {intelligenceSourceLabel && (
+          <span className="d-annotation">
+            {intelligenceSourceLabel}
+          </span>
+        )}
+        {showcaseMeta && (
+          <span className="d-annotation" data-status={hasShortlistedShowcase ? 'success' : undefined}>
+            {hasShortlistedShowcase ? 'shortlisted showcase' : 'live showcase'}
+          </span>
+        )}
+        {verificationLabel && (
+          <span
+            className="d-annotation"
+            data-status={verificationBadgeStatus(intelligence?.verification_status)}
+          >
+            {verificationLabel}
+          </span>
+        )}
+        {confidenceTierLabel && (
+          <span className="d-annotation">
+            {confidenceTierLabel}
+          </span>
+        )}
       </div>
 
       {/* Title */}
@@ -103,6 +206,42 @@ export function ContentCard({ item, editable }: { item: ContentItem; editable?: 
             <span className="flex items-center gap-1">
               <span className="opacity-40">|</span>
               <span>{formatDate(item.published_at)}</span>
+            </span>
+          )}
+          {showcaseMeta && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <Link
+                href={getShowcaseUrl(item.slug)}
+                className="no-underline transition-colors hover:text-d-primary"
+                style={{ color: 'var(--d-text)' }}
+              >
+                Open showcase
+              </Link>
+            </span>
+          )}
+          {showcaseVerification && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span className="d-annotation">
+                smoke {showcaseVerification.smoke.passed ? 'green' : showcaseVerification.build.passed ? 'red' : 'pending'}
+              </span>
+            </span>
+          )}
+          {showcaseVerification && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span className="d-annotation">
+                drift {showcaseVerification.drift.signal}
+              </span>
+            </span>
+          )}
+          {intelligence?.quality_score != null && (
+            <span className="flex items-center gap-1">
+              <span className="opacity-40">|</span>
+              <span className="d-annotation">
+                quality {intelligence.quality_score}
+              </span>
             </span>
           )}
         </div>

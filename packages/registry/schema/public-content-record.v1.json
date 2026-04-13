@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/public-content-record.v1.json",
+  "title": "Decantr Public Content Record",
+  "type": "object",
+  "required": [
+    "id",
+    "slug",
+    "namespace",
+    "type",
+    "version",
+    "data",
+    "visibility",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "visibility": {
+      "enum": [
+        "public",
+        "private"
+      ]
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "published"
+      ]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "published_at": {
+      "type": "string"
+    },
+    "owner_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_username": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "intelligence": {
+      "anyOf": [
+        {
+          "$ref": "https://decantr.ai/schemas/content-intelligence.v1.json"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

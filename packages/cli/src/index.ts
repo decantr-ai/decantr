@@ -1,13 +1,58 @@
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { basename, join, dirname, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { RegistryAPIClient } from '@decantr/registry';
-import type { ApiContentType, ComposeEntry } from '@decantr/registry';
+import type { ExecutionPackBundle } from '@decantr/core';
+import {
+  RegistryAPIClient,
+  CONTENT_TYPES as GET_CONTENT_TYPES,
+  API_CONTENT_TYPES as LIST_CONTENT_TYPES,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  isContentType as isGetContentType,
+  isApiContentType,
+  isContentIntelligenceSource,
+} from '@decantr/registry';
+import type {
+  ApiContentType,
+  Blueprint as RegistryBlueprint,
+  ComposeEntry,
+  ContentIntelligenceSource,
+  ContentIntelligenceMetadata,
+  RegistryIntelligenceSummaryResponse,
+  ShowcaseManifestResponse,
+  ShowcaseShortlistReport,
+  ShowcaseShortlistResponse,
+  ExecutionPackBundleResponse,
+  SelectedExecutionPackResponse,
+} from '@decantr/registry';
 import { detectProject, formatDetection } from './detect.js';
 import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
-import { scaffoldProject, scaffoldMinimal, refreshDerivedFiles, composeArchetypes, composeSections, generateSectionContext, generateScaffoldContext, deriveZones, deriveTransitions, generateTopologySection, type ThemeData, type LayoutItem, type ZoneInput, type TopologyData, type ComposeSectionsResult, type PatternSpecSummary, type BlueprintOverrides, type RefreshResult } from './scaffold.js';
+import {
+  scaffoldProject,
+  scaffoldMinimal,
+  refreshDerivedFiles,
+  composeArchetypes,
+  composeSections,
+  generateSectionContext,
+  generateScaffoldContext,
+  deriveZones,
+  deriveTransitions,
+  generateTopologySection,
+  mapRegistryArchetypeToArchetypeData,
+  mapRegistryThemeToThemeData,
+  mapRegistryPatternToPatternSpecSummary,
+  collectPatternIdsFromItems,
+  writeExecutionPackBundleArtifacts,
+  type ThemeData,
+  type LayoutItem,
+  type ZoneInput,
+  type TopologyData,
+  type ComposeSectionsResult,
+  type PatternSpecSummary,
+  type BlueprintOverrides,
+  type RefreshResult,
+} from './scaffold.js';
 import { RegistryClient, syncRegistry } from './registry.js';
 import {
   createTheme,
@@ -17,6 +62,13 @@ import {
   validateCustomTheme
 } from './theme-commands.js';
 import { saveCredentials, clearCredentials, getCredentials } from './auth.js';
+import {
+  auditProject,
+  critiqueFile as critiqueProjectFile,
+  type FileCritiqueReport,
+  type ProjectAuditReport,
+  type VerificationFinding,
+} from '@decantr/verifier';
 import { cmdPublish } from './commands/publish.js';
 import { cmdCreate } from './commands/create.js';
 import { cmdMigrate } from './commands/migrate.js';
@@ -48,6 +100,75 @@ function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
 
+function formatIntelligenceSummary(
+  intelligence?: ContentIntelligenceMetadata | null,
+): string | null {
+  if (!intelligence) {
+    return null;
+  }
+
+  const parts: string[] = [];
+  const recommendationReasons = intelligence.recommendation_reasons ?? [];
+  const recommendationBlockers = intelligence.recommendation_blockers ?? [];
+
+  if (intelligence.recommended) {
+    parts.push('recommended');
+  }
+
+  switch (intelligence.source) {
+    case 'authored':
+      parts.push('authored intelligence');
+      break;
+    case 'hybrid':
+      parts.push('hybrid intelligence');
+      break;
+    case 'benchmark':
+      parts.push('benchmark-backed');
+      break;
+    default:
+      break;
+  }
+
+  switch (intelligence.verification_status) {
+    case 'smoke-green':
+      parts.push('smoke verified');
+      break;
+    case 'build-green':
+      parts.push('build verified');
+      break;
+    case 'smoke-red':
+      parts.push('smoke failed');
+      break;
+    case 'build-red':
+      parts.push('build failed');
+      break;
+    default:
+      break;
+  }
+
+  if (intelligence.confidence_tier === 'verified') {
+    parts.push('verified confidence');
+  } else if (intelligence.confidence_tier === 'high') {
+    parts.push('high confidence');
+  } else if (intelligence.confidence_tier === 'medium') {
+    parts.push('medium confidence');
+  } else if (intelligence.benchmark_confidence !== 'none') {
+    parts.push(`${intelligence.benchmark_confidence} confidence`);
+  }
+
+  if (intelligence.quality_score != null) {
+    parts.push(`quality ${intelligence.quality_score}`);
+  }
+
+  if (intelligence.recommended && recommendationReasons.length > 0) {
+    parts.push(`because ${recommendationReasons[0]}`);
+  } else if (!intelligence.recommended && recommendationBlockers.length > 0) {
+    parts.push(`held back by ${recommendationBlockers[0]}`);
+  }
+
+  return parts.length > 0 ? parts.join(' | ') : null;
+}
+
 interface PromptContext {
   archetype: string;
   blueprint?: string;
@@ -78,12 +199,29 @@ function generateCuratedPrompt(ctx: PromptContext): string {
 
   lines.push('Build this application using the Decantr design system.');
   lines.push('');
-  lines.push('Read DECANTR.md for the design spec, CSS approach, and guard rules.');
-  lines.push('Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.');
-  lines.push('Read each .decantr/context/section-*.md file before building that section\'s pages.');
-  lines.push('Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
+  lines.push('Treat the compiled execution-pack files as the primary source of truth.');
+  lines.push('Use narrative docs only as secondary explanation when the compiled packs are not enough.');
   lines.push('');
-  lines.push('Start with the shell layouts, then build each section\'s pages.');
+  lines.push('Read in this order:');
+  lines.push('1. DECANTR.md for the design spec, CSS approach, and guard rules.');
+  lines.push('2. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.');
+  lines.push('3. .decantr/context/scaffold.md for the broader app overview, topology, route map, and voice guidance.');
+  lines.push('4. Before working on any section, read its matching .decantr/context/section-*-pack.md and then .decantr/context/section-*.md files.');
+  lines.push('5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file.');
+  lines.push('');
+  lines.push('Implementation rules:');
+  lines.push('- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.');
+  lines.push('- Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.');
+  lines.push('- Start with the shell layouts and route structure first, then build section pages route by route.');
+  lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
+  lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.');
+  lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
+  lines.push('');
+  lines.push('Execution flow:');
+  lines.push('- Build the shell and shared layout first.');
+  lines.push('- Then implement each section\'s pages using the matching section and page packs.');
+  lines.push('- After implementation, run decantr check and decantr audit and fix any contract or drift issues.');
+  lines.push('- If a required context file is missing or inconsistent, stop and report exactly which file is missing before continuing.');
 
   return lines.join('\n');
 }
@@ -113,12 +251,599 @@ function getAPIClient(): RegistryAPIClient {
   });
 }
 
+function getPublicAPIClient(): RegistryAPIClient {
+  return new RegistryAPIClient({
+    baseUrl: process.env.DECANTR_API_URL || undefined,
+  });
+}
+
+function resolveUserPath(inputPath: string, cwd: string = process.cwd()): string {
+  return isAbsolute(inputPath) ? inputPath : resolve(cwd, inputPath);
+}
+
+function extractHostedAssetPaths(indexHtml: string): string[] {
+  const assetPaths = new Set<string>();
+
+  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
+    const assetPath = match[1];
+    const assetsIndex = assetPath.indexOf('/assets/');
+    if (assetsIndex === -1) continue;
+    assetPaths.add(assetPath.slice(assetsIndex));
+  }
+
+  return [...assetPaths];
+}
+
+function readHostedDistSnapshot(distPath?: string): { indexHtml: string; assets?: Record<string, string> } | undefined {
+  const resolvedDistPath = distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist');
+  const indexPath = join(resolvedDistPath, 'index.html');
+  if (!existsSync(indexPath)) {
+    return undefined;
+  }
+
+  const indexHtml = readFileSync(indexPath, 'utf-8');
+  const assetPaths = extractHostedAssetPaths(indexHtml);
+  const assets: Record<string, string> = {};
+
+  for (const assetPath of assetPaths) {
+    const assetFilePath = join(resolvedDistPath, assetPath.replace(/^[/\\]+/, ''));
+    if (existsSync(assetFilePath)) {
+      assets[assetPath] = readFileSync(assetFilePath, 'utf-8');
+    }
+  }
+
+  return {
+    indexHtml,
+    assets,
+  };
+}
+
+function isHostedSourceSnapshotFile(path: string): boolean {
+  if (/\.d\.ts$/i.test(path)) return false;
+  return /\.(?:[cm]?[jt]sx?)$/i.test(path);
+}
+
+function readHostedSourceSnapshot(sourcePath?: string): { files: Record<string, string> } | undefined {
+  if (!sourcePath) return undefined;
+
+  const resolvedSourcePath = resolveUserPath(sourcePath);
+  if (!existsSync(resolvedSourcePath)) {
+    return undefined;
+  }
+
+  const files: Record<string, string> = {};
+  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const rootPrefix = basename(resolvedSourcePath);
+
+  const walk = (absoluteDir: string, relativeDir: string) => {
+    for (const entry of readdirSync(absoluteDir, { withFileTypes: true })) {
+      if (ignoredDirNames.has(entry.name)) continue;
+      const absolutePath = join(absoluteDir, entry.name);
+      const relativePath = join(relativeDir, entry.name).replace(/\\/g, '/');
+      if (entry.isDirectory()) {
+        walk(absolutePath, relativePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!isHostedSourceSnapshotFile(relativePath)) continue;
+      files[relativePath] = readFileSync(absolutePath, 'utf-8');
+    }
+  };
+
+  walk(resolvedSourcePath, rootPrefix);
+  return Object.keys(files).length > 0 ? { files } : undefined;
+}
+
+async function getShowcaseBenchmarkView(
+  view: 'manifest' | 'shortlist' | 'verification' = 'shortlist',
+) {
+  const client = getPublicAPIClient();
+
+  if (view === 'manifest') {
+    return client.getShowcaseManifest();
+  }
+
+  if (view === 'verification') {
+    return client.getShowcaseShortlistVerification();
+  }
+
+  return client.getShowcaseShortlist();
+}
+
+async function printShowcaseBenchmarks(
+  view: 'manifest' | 'shortlist' | 'verification',
+  jsonOutput: boolean,
+) {
+  const fmtBytes = (bytes: number) => bytes >= 1_000_000
+    ? `${(bytes / 1_000_000).toFixed(2)} MB`
+    : `${Math.round(bytes / 1_000)} KB`;
+  const data = await getShowcaseBenchmarkView(view);
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(data, null, 2));
+    return;
+  }
+
+  if (view === 'manifest') {
+    const manifest = data as ShowcaseManifestResponse;
+    console.log(heading('Showcase Corpus'));
+    console.log(`  Active apps: ${manifest.total}`);
+    console.log(`  Shortlisted apps: ${manifest.shortlisted}`);
+    console.log('');
+    for (const entry of manifest.apps) {
+      const verification = entry.verification;
+      const verificationSummary = verification
+        ? ` | ${verification.verificationStatus} | drift ${verification.drift.signal}`
+        : '';
+      console.log(`  ${cyan(entry.slug)}  class ${entry.classification}${verificationSummary}`);
+    }
+    return;
+  }
+
+  if (view === 'verification') {
+    const report = data as ShowcaseShortlistReport;
+    console.log(heading('Showcase Verification'));
+    if (report.generatedAt) {
+      console.log(`  Generated: ${report.generatedAt}`);
+    }
+    if (report.summary) {
+      console.log(`  Passed builds: ${report.summary.passedBuilds}/${report.summary.appCount}`);
+      console.log(`  Avg build: ${report.summary.averageDurationMs} ms`);
+      console.log(`  Passed smokes: ${report.summary.passedSmokes}/${report.summary.appCount}`);
+      console.log(`  Avg smoke: ${report.summary.averageSmokeDurationMs} ms`);
+      console.log(`  Title checks: ${report.summary.appsWithTitleOkCount}/${report.summary.appCount}`);
+      console.log(`  Lang checks: ${report.summary.appsWithLangOkCount}/${report.summary.appCount}`);
+      console.log(`  Viewport checks: ${report.summary.appsWithViewportOkCount}/${report.summary.appCount}`);
+      console.log(`  Charset checks: ${report.summary.appsWithCharsetOkCount}/${report.summary.appCount}`);
+      console.log(`  No inline scripts: ${report.summary.appsWithoutInlineScriptsCount}/${report.summary.appCount}`);
+      console.log(`  CSP signals: ${report.summary.appsWithCspSignalCount}/${report.summary.appCount}`);
+      console.log(`  External script integrity ok: ${report.summary.appsWithExternalScriptIntegrityCount}/${report.summary.appCount}`);
+      console.log(`  External stylesheet integrity ok: ${report.summary.appsWithExternalStylesheetIntegrityCount}/${report.summary.appCount}`);
+      console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
+      console.log(`  Full route coverage: ${report.summary.appsWithFullRouteCoverageCount}/${report.summary.appCount}`);
+      console.log(`  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`);
+      console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
+      console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
+      console.log('');
+    }
+    for (const entry of report.results) {
+      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked}${entry.smoke.fullRouteCoverageOk ? ' full' : ' partial'} | js ${fmtBytes(entry.smoke.jsAssetBytes)} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
+    }
+    return;
+  }
+
+  const shortlist = data as ShowcaseShortlistResponse;
+
+  console.log(heading('Showcase Shortlist'));
+  if (shortlist.generatedAt) {
+    console.log(`  Generated: ${shortlist.generatedAt}`);
+  }
+  if (shortlist.summary) {
+    console.log(`  Passed builds: ${shortlist.summary.passedBuilds}/${shortlist.summary.appCount}`);
+    console.log(`  Passed smokes: ${shortlist.summary.passedSmokes}/${shortlist.summary.appCount}`);
+    console.log(`  Route coverage: ${shortlist.summary.appsWithRouteCoverageCount}/${shortlist.summary.appCount}`);
+    console.log(`  Full route coverage: ${shortlist.summary.appsWithFullRouteCoverageCount}/${shortlist.summary.appCount}`);
+    console.log(`  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`);
+    console.log('');
+  }
+  for (const entry of shortlist.apps) {
+    const verification = entry.verification;
+    const verificationSummary = verification
+      ? `${verification.verificationStatus} | smoke ${verification.smoke.passed ? 'green' : verification.build.passed ? 'red' : 'pending'} | drift ${verification.drift.signal}`
+      : 'verification pending';
+    console.log(`  ${cyan(entry.slug)}  class ${entry.classification} | ${verificationSummary}`);
+  }
+}
+
+async function printRegistryIntelligenceSummary(
+  namespace?: string,
+  jsonOutput: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const summary = await client.getRegistryIntelligenceSummary(
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(summary, null, 2));
+    return;
+  }
+
+  const typedSummary = summary as RegistryIntelligenceSummaryResponse;
+  console.log(heading('Registry Intelligence Summary'));
+  console.log(`  Namespace: ${typedSummary.namespace ?? 'all public content'}`);
+  console.log(`  Generated: ${typedSummary.generated_at}`);
+  console.log(`  Public items: ${typedSummary.totals.total_public_items}`);
+  console.log(`  With intelligence: ${typedSummary.totals.with_intelligence}`);
+  console.log(`  Recommended: ${typedSummary.totals.recommended}`);
+  console.log(
+    `  Sources: authored ${typedSummary.totals.authored}, benchmark ${typedSummary.totals.benchmark}, hybrid ${typedSummary.totals.hybrid}, missing ${typedSummary.totals.missing_source}`,
+  );
+  console.log(
+    `  Verification: smoke green ${typedSummary.totals.smoke_green}, build green ${typedSummary.totals.build_green}, high confidence ${typedSummary.totals.high_confidence}, verified ${typedSummary.totals.verified_confidence}`,
+  );
+  console.log('');
+
+  for (const [type, bucket] of Object.entries(typedSummary.by_type)) {
+    console.log(
+      `  ${cyan(type.padEnd(10))} total ${bucket.total_public_items} | intelligence ${bucket.with_intelligence} | recommended ${bucket.recommended} | authored ${bucket.authored} | benchmark ${bucket.benchmark} | hybrid ${bucket.hybrid}`,
+    );
+  }
+}
+
+async function printHostedExecutionPackBundle(
+  essencePath?: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+  writeContext: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const bundle = await client.compileExecutionPacks(
+    essence,
+    namespace ? { namespace } : undefined,
+  );
+
+  let writtenContextPaths: string[] = [];
+  if (writeContext) {
+    const contextDir = join(process.cwd(), '.decantr', 'context');
+    mkdirSync(contextDir, { recursive: true });
+    const written = writeExecutionPackBundleArtifacts(
+      contextDir,
+      bundle as unknown as ExecutionPackBundle,
+    );
+    writtenContextPaths = written.paths;
+  }
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(bundle, null, 2));
+    return;
+  }
+
+  const typedBundle = bundle as ExecutionPackBundleResponse;
+  console.log(heading('Hosted Execution Packs'));
+  console.log(`  Source essence: ${resolvedPath}`);
+  console.log(`  Essence version: ${typedBundle.sourceEssenceVersion}`);
+  console.log(`  Generated: ${typedBundle.generatedAt}`);
+  console.log(`  Adapter: ${typedBundle.scaffold.target.adapter}`);
+  console.log(`  Shell: ${typedBundle.scaffold.data.shell}`);
+  console.log(`  Theme: ${typedBundle.scaffold.data.theme.id} (${typedBundle.scaffold.data.theme.mode})`);
+  console.log(`  Pages: ${typedBundle.pages.length}`);
+  console.log(`  Sections: ${typedBundle.sections.length}`);
+  console.log(`  Mutations: ${typedBundle.mutations.length}`);
+  if (writeContext) {
+    console.log(`  Context bundle: ${join(process.cwd(), '.decantr', 'context')}`);
+    console.log(`  Files written: ${writtenContextPaths.length}`);
+  }
+  console.log('');
+  console.log(`${BOLD}Route Plan:${RESET}`);
+  for (const route of typedBundle.scaffold.data.routes) {
+    const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+    console.log(`  ${cyan(route.path)} -> ${route.pageId} [${patterns}]`);
+  }
+}
+
+async function printHostedSelectedExecutionPack(
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+  essencePath?: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+  writeContext: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  if ((packType === 'section' || packType === 'page' || packType === 'mutation') && !id) {
+    throw new Error(`Pack type "${packType}" requires an id.`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const selected = await client.selectExecutionPack(
+    {
+      essence,
+      pack_type: packType,
+      ...(id ? { id } : {}),
+    },
+    namespace ? { namespace } : undefined,
+  );
+
+  let writtenContextDir: string | null = null;
+  if (writeContext) {
+    const contextDir = join(process.cwd(), '.decantr', 'context');
+    mkdirSync(contextDir, { recursive: true });
+    writeFileSync(join(contextDir, 'pack-manifest.json'), JSON.stringify(selected.manifest, null, 2) + '\n');
+
+    const manifestEntry = selected.selector.packType === 'scaffold'
+      ? selected.manifest.scaffold
+      : selected.selector.packType === 'review'
+        ? selected.manifest.review
+        : selected.selector.packType === 'section'
+          ? selected.manifest.sections.find((entry) => entry.id === selected.selector.id)
+          : selected.selector.packType === 'page'
+            ? selected.manifest.pages.find((entry) => entry.id === selected.selector.id)
+            : selected.manifest.mutations.find((entry) => entry.id === selected.selector.id);
+
+    const markdownFile = manifestEntry?.markdown ?? `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.md`;
+    const jsonFile = manifestEntry?.json ?? `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.json`;
+    writeFileSync(join(contextDir, markdownFile), selected.pack.renderedMarkdown);
+    writeFileSync(join(contextDir, jsonFile), JSON.stringify(selected.pack, null, 2) + '\n');
+    writtenContextDir = contextDir;
+  }
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(selected, null, 2));
+    return;
+  }
+
+  const typedSelected = selected as SelectedExecutionPackResponse;
+  console.log(heading('Hosted Execution Pack'));
+  console.log(`  Source essence: ${resolvedPath}`);
+  console.log(`  Generated: ${typedSelected.generatedAt}`);
+  console.log(`  Pack type: ${typedSelected.selector.packType}`);
+  if (typedSelected.selector.id) {
+    console.log(`  Pack id: ${typedSelected.selector.id}`);
+  }
+  console.log(`  Adapter: ${typedSelected.pack.target.adapter}`);
+  console.log(`  Objective: ${typedSelected.pack.objective}`);
+  if (writtenContextDir) {
+    console.log(`  Context artifact: ${writtenContextDir}`);
+  }
+  console.log('');
+  process.stdout.write(typedSelected.pack.renderedMarkdown);
+}
+
+async function printHostedExecutionPackManifest(
+  essencePath?: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+  writeContext: boolean = false,
+) {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const manifest = await client.getExecutionPackManifest(
+    essence,
+    namespace ? { namespace } : undefined,
+  );
+
+  let writtenContextDir: string | null = null;
+  if (writeContext) {
+    const contextDir = join(process.cwd(), '.decantr', 'context');
+    mkdirSync(contextDir, { recursive: true });
+    writeFileSync(join(contextDir, 'pack-manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+    writtenContextDir = contextDir;
+  }
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(manifest, null, 2));
+    return;
+  }
+
+  console.log(heading('Hosted Pack Manifest'));
+  console.log(`  Source essence: ${resolvedPath}`);
+  console.log(`  Generated: ${manifest.generatedAt}`);
+  console.log(`  Version: ${manifest.version}`);
+  console.log(`  Scaffold: ${manifest.scaffold ? 'present' : 'missing'}`);
+  console.log(`  Review: ${manifest.review ? 'present' : 'missing'}`);
+  console.log(`  Sections: ${manifest.sections.length}`);
+  console.log(`  Pages: ${manifest.pages.length}`);
+  console.log(`  Mutations: ${manifest.mutations.length}`);
+  if (writtenContextDir) {
+    console.log(`  Context artifact: ${writtenContextDir}`);
+  }
+}
+
+interface HostedPackHydrationResult {
+  attempted: boolean;
+  hydrated: boolean;
+  scope?: 'review' | 'bundle';
+}
+
+async function hydrateHostedExecutionPacksIfMissing(
+  projectRoot: string,
+  namespace: string = '@official',
+): Promise<HostedPackHydrationResult> {
+  const contextDir = join(projectRoot, '.decantr', 'context');
+  const reviewPackPath = join(contextDir, 'review-pack.json');
+  const manifestPath = join(contextDir, 'pack-manifest.json');
+
+  if (existsSync(reviewPackPath) && existsSync(manifestPath)) {
+    return { attempted: false, hydrated: false };
+  }
+
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  if (!existsSync(essencePath)) {
+    return { attempted: false, hydrated: false };
+  }
+
+  const reviewHydration = await hydrateHostedReviewPackIfMissing(projectRoot, namespace);
+  if (reviewHydration.hydrated || !reviewHydration.attempted) {
+    return reviewHydration;
+  }
+
+  try {
+    const client = getPublicAPIClient();
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+    const bundle = await client.compileExecutionPacks(essence, { namespace });
+    mkdirSync(contextDir, { recursive: true });
+    writeExecutionPackBundleArtifacts(
+      contextDir,
+      bundle as unknown as ExecutionPackBundle,
+    );
+    return { attempted: true, hydrated: true, scope: 'bundle' };
+  } catch {
+    return { attempted: true, hydrated: false };
+  }
+}
+
+async function hydrateHostedReviewPackIfMissing(
+  projectRoot: string,
+  namespace: string = '@official',
+): Promise<HostedPackHydrationResult> {
+  const contextDir = join(projectRoot, '.decantr', 'context');
+  const reviewPackPath = join(contextDir, 'review-pack.json');
+  const manifestPath = join(contextDir, 'pack-manifest.json');
+
+  if (existsSync(reviewPackPath) && existsSync(manifestPath)) {
+    return { attempted: false, hydrated: false };
+  }
+
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  if (!existsSync(essencePath)) {
+    return { attempted: false, hydrated: false };
+  }
+
+  try {
+    const client = getPublicAPIClient();
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+    const selected = await client.selectExecutionPack(
+      {
+        essence,
+        pack_type: 'review',
+      },
+      { namespace },
+    ) as SelectedExecutionPackResponse;
+
+    mkdirSync(contextDir, { recursive: true });
+    writeFileSync(join(contextDir, 'review-pack.md'), selected.pack.renderedMarkdown);
+    writeFileSync(join(contextDir, 'review-pack.json'), JSON.stringify(selected.pack, null, 2) + '\n');
+    if (!existsSync(manifestPath)) {
+      writeFileSync(manifestPath, JSON.stringify(selected.manifest, null, 2) + '\n');
+    }
+    return { attempted: true, hydrated: true, scope: 'review' };
+  } catch {
+    return { attempted: true, hydrated: false };
+  }
+}
+
+async function printHostedFileCritique(
+  sourcePath: string,
+  namespace?: string,
+  jsonOutput: boolean = false,
+  essencePath?: string,
+  treatmentsPath?: string,
+) {
+  const client = getPublicAPIClient();
+  const resolvedSourcePath = resolveUserPath(sourcePath);
+  const resolvedEssencePath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
+  const resolvedTreatmentsPath = treatmentsPath
+    ? resolveUserPath(treatmentsPath)
+    : join(process.cwd(), 'src', 'styles', 'treatments.css');
+
+  if (!existsSync(resolvedSourcePath)) {
+    throw new Error(`Source file not found at ${resolvedSourcePath}`);
+  }
+
+  if (!existsSync(resolvedEssencePath)) {
+    throw new Error(`Essence file not found at ${resolvedEssencePath}`);
+  }
+
+  const code = readFileSync(resolvedSourcePath, 'utf-8');
+  const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
+  const treatmentsCss = existsSync(resolvedTreatmentsPath)
+    ? readFileSync(resolvedTreatmentsPath, 'utf-8')
+    : undefined;
+
+  const report = await client.critiqueFile(
+    {
+      essence,
+      filePath: sourcePath,
+      code,
+      treatmentsCss,
+    },
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  console.log(heading('Hosted File Critique'));
+  console.log(`  Source file: ${resolvedSourcePath}`);
+  console.log(`  Essence: ${resolvedEssencePath}`);
+  if (treatmentsCss) {
+    console.log(`  Treatments: ${resolvedTreatmentsPath}`);
+  }
+  printFileCritiqueReport(report);
+}
+
+async function printHostedProjectAudit(
+  namespace?: string,
+  jsonOutput: boolean = false,
+  essencePath?: string,
+  distPath?: string,
+  sourcesPath?: string,
+) {
+  const client = getPublicAPIClient();
+  const resolvedEssencePath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedEssencePath)) {
+    throw new Error(`Essence file not found at ${resolvedEssencePath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedEssencePath, 'utf-8')) as EssenceFile;
+  const dist = readHostedDistSnapshot(distPath);
+  const sources = readHostedSourceSnapshot(sourcesPath);
+  const report = await client.auditProject(
+    {
+      essence,
+      dist,
+      sources,
+    },
+    namespace ? { namespace } : undefined,
+  );
+
+  if (jsonOutput) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  console.log(heading('Hosted Project Audit'));
+  console.log(`  Essence: ${resolvedEssencePath}`);
+  console.log(`  Dist snapshot: ${dist ? (distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist')) : 'none'}`);
+  console.log(`  Source snapshot: ${sources && sourcesPath ? resolveUserPath(sourcesPath) : 'none'}`);
+  printProjectAuditReport(report as unknown as ProjectAuditReport);
+}
+
 // ── Commands ──
 
-async function cmdSearch(query: string, type?: string) {
+async function cmdSearch(
+  query: string,
+  type?: string,
+  sort?: string,
+  recommended?: boolean,
+  intelligenceSource?: ContentIntelligenceSource,
+) {
   const apiClient = getAPIClient();
   try {
-    const response = await apiClient.search({ q: query, type });
+    const response = await apiClient.search({
+      q: query,
+      type,
+      sort,
+      recommended,
+      intelligenceSource,
+    });
     const results = response.results;
 
     if (results.length === 0) {
@@ -130,6 +855,10 @@ async function cmdSearch(query: string, type?: string) {
     for (const r of results) {
       console.log(`  ${cyan(r.type.padEnd(12))} ${BOLD}${r.slug}${RESET}`);
       console.log(`  ${dim(r.description || '')}`);
+      const intelligenceSummary = formatIntelligenceSummary(r.intelligence);
+      if (intelligenceSummary) {
+        console.log(`  ${dim(intelligenceSummary)}`);
+      }
       console.log('');
     }
   } catch {
@@ -183,22 +912,13 @@ async function cmdSuggest(query: string, type?: string) {
 }
 
 async function cmdGet(type: string, id: string) {
-  const validTypes = ['pattern', 'archetype', 'theme', 'blueprint', 'shell'] as const;
-  if (!validTypes.includes(type as any)) {
-    console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
+  if (!isGetContentType(type)) {
+    console.error(error(`Invalid type "${type}". Must be one of: ${GET_CONTENT_TYPES.join(', ')}`));
     process.exitCode = 1;
     return;
   }
 
-  // Map singular type names to API plural form
-  const typeMap: Record<string, string> = {
-    pattern: 'patterns',
-    archetype: 'archetypes',
-    theme: 'themes',
-    blueprint: 'blueprints',
-    shell: 'shells',
-  };
-  const apiType = typeMap[type] as ApiContentType;
+  const apiType = CONTENT_TYPE_TO_API_CONTENT_TYPE[type];
 
   const registryClient = new RegistryClient({
     cacheDir: join(process.cwd(), '.decantr', 'cache'),
@@ -339,10 +1059,14 @@ async function cmdValidate(path?: string) {
   } catch { /* guard is optional */ }
 }
 
-async function cmdList(type: string) {
-  const validTypes = ['patterns', 'archetypes', 'themes', 'blueprints', 'shells'] as const;
-  if (!validTypes.includes(type as any)) {
-    console.error(error(`Invalid type "${type}". Must be one of: ${validTypes.join(', ')}`));
+async function cmdList(
+  type: string,
+  sort?: string,
+  recommended?: boolean,
+  intelligenceSource?: ContentIntelligenceSource,
+) {
+  if (!isApiContentType(type)) {
+    console.error(error(`Invalid type "${type}". Must be one of: ${LIST_CONTENT_TYPES.join(', ')}`));
     process.exitCode = 1;
     return;
   }
@@ -351,7 +1075,13 @@ async function cmdList(type: string) {
     cacheDir: join(process.cwd(), '.decantr', 'cache'),
   });
 
-  const result = await registryClient.fetchContentList(type as ApiContentType);
+  const result = await registryClient.fetchContentList(
+    type,
+    undefined,
+    sort,
+    recommended,
+    intelligenceSource,
+  );
   const items = result.data.items;
 
   if (items.length === 0) {
@@ -384,6 +1114,12 @@ async function cmdList(type: string) {
     console.log(heading(`${items.length} ${type} found`));
     for (const item of items) {
       console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      const intelligenceSummary = formatIntelligenceSummary(
+        (item as { intelligence?: ContentIntelligenceMetadata | null }).intelligence,
+      );
+      if (intelligenceSummary) {
+        console.log(`  ${dim(intelligenceSummary)}`);
+      }
     }
   }
 }
@@ -461,8 +1197,9 @@ async function cmdInit(args: InitArgs) {
       console.log('');
       console.log('  Next steps:');
       console.log(`    1. Run ${cyan('decantr sync')} when online`);
-      console.log(`    2. Use ${cyan('decantr create <type> <name>')} to create custom content`);
-      console.log(`    3. Review DECANTR.md for methodology`);
+      console.log(`    2. Run ${cyan('decantr refresh')} after syncing to generate scaffold, section, and page packs`);
+      console.log(`    3. Read ${cyan('DECANTR.md')} and the generated ${cyan('.decantr/context/*')} files before implementation`);
+      console.log(`    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`);
       return;
     }
 
@@ -534,35 +1271,18 @@ async function cmdInit(args: InitArgs) {
   let composedSections: ComposeSectionsResult | undefined;
   let routeMap: Record<string, { section: string; page: string }> | undefined;
   let patternSpecs: Record<string, PatternSpecSummary> | undefined;
-  let blueprintData: Record<string, any> | undefined;
+  let blueprintData: RegistryBlueprint | undefined;
 
   if (options.blueprint) {
     // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
-      const blueprint = blueprintResult.data as {
-        id: string;
-        description?: string;
-        compose?: ComposeEntry[];
-        features?: string[];
-        theme?: { style?: string; id?: string; mode?: string; shape?: string };
-        personality?: string | string[];
-        routes?: Record<string, { shell?: string; archetype?: string; page?: string }>;
-        overrides?: {
-          features_add?: string[];
-          features_remove?: string[];
-          pages_remove?: string[];
-          pages?: Record<string, any>;
-        };
-        seo_hints?: { schema_org?: string[]; meta_priorities?: string[] };
-        navigation?: { hotkeys?: any[]; command_palette?: boolean };
-        design_constraints?: Record<string, string>;
-      };
+      const blueprint = blueprintResult.data as RegistryBlueprint;
 
       // Apply blueprint theme settings (unless user explicitly provided flags)
       if (blueprint.theme) {
-        if (!userExplicit.theme && (blueprint.theme.id || blueprint.theme.style)) {
-          options.theme = blueprint.theme.id || blueprint.theme.style!;
+        if (!userExplicit.theme && blueprint.theme.id) {
+          options.theme = blueprint.theme.id;
         }
         if (!userExplicit.mode && blueprint.theme.mode) {
           options.mode = blueprint.theme.mode as 'dark' | 'light' | 'auto';
@@ -584,13 +1304,13 @@ async function cmdInit(args: InitArgs) {
         // Fetch all archetypes in parallel
         const entries = blueprint.compose;
         // Fetch archetypes sequentially to avoid overwhelming the API
-        const results: (readonly [string, unknown])[] = [];
+        const results: Array<readonly [string, ReturnType<typeof mapRegistryArchetypeToArchetypeData> | null]> = [];
         for (const entry of entries) {
           const id = typeof entry === 'string' ? entry : entry.archetype;
           const r = await registryClient.fetchArchetype(id);
-          results.push([id, r?.data ?? null] as const);
+          results.push([id, r?.data ? mapRegistryArchetypeToArchetypeData(r.data) : null] as const);
         }
-        const archetypeMap = new Map(results.map(([id, data]) => [id, (data || null) as any]));
+        const archetypeMap = new Map(results);
 
         // Compose pages from all archetypes
         const composed = composeArchetypes(entries, archetypeMap);
@@ -611,7 +1331,7 @@ async function cmdInit(args: InitArgs) {
         composedSections = composeSections(entries, archetypeMap, blueprint.overrides);
 
         // Store blueprint data for V3.1 essence enrichment
-        blueprintData = blueprint as Record<string, any>;
+        blueprintData = blueprint;
 
         // Map blueprint routes to section pages
         routeMap = {};
@@ -636,9 +1356,7 @@ async function cmdInit(args: InitArgs) {
             if (page.patterns) {
               for (const ref of page.patterns) allPatternIds.add(ref.pattern);
             }
-            for (const item of page.layout) {
-              if (typeof item === 'string') allPatternIds.add(item);
-            }
+            for (const patternId of collectPatternIdsFromItems(page.layout)) allPatternIds.add(patternId);
           }
         }
 
@@ -649,14 +1367,7 @@ async function cmdInit(args: InitArgs) {
             try {
               const result = await registryClient.fetchPattern(pid);
               if (result) {
-                const inner = result.data as Record<string, any>;
-                const defaultPreset = inner.default_preset || 'standard';
-                const preset = inner.presets?.[defaultPreset];
-                patternSpecs[pid] = {
-                  description: (inner.description as string) || '',
-                  components: (inner.components as string[]) || [],
-                  slots: preset?.layout?.slots || {},
-                };
+                patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(result.data, undefined, false);
               }
             } catch { /* pattern not found — skip */ }
           }
@@ -666,15 +1377,15 @@ async function cmdInit(args: InitArgs) {
         const zoneInputs: ZoneInput[] = [];
         for (const entry of entries) {
           const arcId = typeof entry === 'string' ? entry : entry.archetype;
-          const explicitRole = typeof entry === 'object' && 'role' in entry ? (entry as any).role : undefined;
-          const archData = archetypeMap.get(arcId) as Record<string, unknown> | null;
+          const explicitRole = typeof entry === 'string' ? undefined : entry.role;
+          const archData = archetypeMap.get(arcId);
           if (archData) {
             zoneInputs.push({
               archetypeId: arcId,
-              role: explicitRole || (archData.role as string) || 'auxiliary',
-              shell: ((archData.pages as any[])?.[0]?.shell) || options.shell || 'sidebar-main',
-              features: (archData.features as string[]) || [],
-              description: (archData.description as string) || '',
+              role: explicitRole || archData.role || 'auxiliary',
+              shell: archData.pages?.[0]?.shell || options.shell || 'sidebar-main',
+              features: archData.features || [],
+              description: archData.description || '',
             });
           }
         }
@@ -688,7 +1399,7 @@ async function cmdInit(args: InitArgs) {
         topologyMarkdown = zones.length > 0
           ? generateTopologySection(
               {
-                intent: (archetypeMap.get(primaryId) as any)?.description || options.blueprint || 'Application',
+                intent: archetypeMap.get(primaryId)?.description || options.blueprint || 'Application',
                 zones,
                 transitions,
                 entryPoints: {
@@ -707,7 +1418,7 @@ async function cmdInit(args: InitArgs) {
     // Direct archetype selection
     const archetypeResult = await registryClient.fetchArchetype(options.archetype);
     if (archetypeResult) {
-      archetypeData = archetypeResult.data as typeof archetypeData;
+      archetypeData = mapRegistryArchetypeToArchetypeData(archetypeResult.data);
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
     }
@@ -719,23 +1430,7 @@ async function cmdInit(args: InitArgs) {
   if (options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
-      const theme = themeResult.data as Record<string, any>;
-      themeData = {
-        seed: theme.seed,
-        palette: theme.palette,
-        tokens: theme.tokens,
-        cvd_support: theme.cvd_support,
-        typography: theme.typography,
-        motion: theme.motion,
-        decorators: theme.decorators,
-        treatments: theme.treatments,
-        spatial: theme.spatial,
-        radius: theme.radius,
-        shell: theme.shell,
-        effects: theme.effects,
-        compositions: theme.compositions,
-        pattern_preferences: theme.pattern_preferences,
-      };
+      themeData = mapRegistryThemeToThemeData(themeResult.data);
     } else {
       console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
     }
@@ -773,8 +1468,12 @@ async function cmdInit(args: InitArgs) {
 
   console.log('');
   console.log('  Next steps:');
-  console.log('    1. Review DECANTR.md for methodology');
-  console.log('    2. Explore more at decantr.ai/registry');
+  console.log('    1. Read DECANTR.md for methodology, CSS approach, and guard rules');
+  console.log('    2. Read .decantr/context/scaffold-pack.md first, then .decantr/context/scaffold.md');
+  console.log('    3. Read the matching section and page packs before implementing each route');
+  console.log('    4. Build the shell and route structure first, then implement the pages');
+  console.log('    5. Run decantr check and decantr audit after implementation');
+  console.log('    6. Explore more at decantr.ai/registry');
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);
@@ -872,7 +1571,7 @@ async function cmdStatus() {
       const v3 = essence as EssenceV3;
       // DNA axioms
       console.log(`  ${BOLD}DNA:${RESET}`);
-      console.log(`    Theme: ${v3.dna.theme.style} (${v3.dna.theme.mode})`);
+      console.log(`    Theme: ${v3.dna.theme.id} (${v3.dna.theme.mode})`);
       console.log(`    Spacing: ${v3.dna.spacing.density} density, ${v3.dna.spacing.content_gap} gap`);
       console.log(`    Typography: ${v3.dna.typography.scale} scale`);
       console.log(`    Radius: ${v3.dna.radius.philosophy} (base ${v3.dna.radius.base}px)`);
@@ -895,7 +1594,7 @@ async function cmdStatus() {
       const theme = e.theme as Record<string, string> | undefined;
       const guard = e.guard as Record<string, string> | undefined;
       const structure = e.structure as unknown[] | undefined;
-      console.log(`  Theme: ${theme?.style || 'unknown'} (${theme?.mode || 'unknown'})`);
+      console.log(`  Theme: ${theme?.id || 'unknown'} (${theme?.mode || 'unknown'})`);
       console.log(`  Guard: ${guard?.mode || 'unknown'}`);
       console.log(`  Pages: ${(structure || []).length}`);
       console.log(`  ${YELLOW}Tip: Run \`decantr migrate\` to upgrade to v3.${RESET}`);
@@ -954,58 +1653,132 @@ async function cmdSync() {
 
 // ── Audit command ──
 
-async function cmdAudit() {
-  const projectRoot = process.cwd();
-  const essencePath = join(projectRoot, 'decantr.essence.json');
-
-  console.log(heading('Auditing project...'));
-
-  if (!existsSync(essencePath)) {
-    console.log(`${RED}No decantr.essence.json found.${RESET}`);
-    process.exitCode = 1;
+function printVerificationFindings(findings: VerificationFinding[]) {
+  if (findings.length === 0) {
+    console.log(success('No findings.'));
     return;
   }
 
-  try {
-    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+  for (const finding of findings) {
+    const color = finding.severity === 'error'
+      ? RED
+      : finding.severity === 'warn'
+        ? YELLOW
+        : CYAN;
+    console.log(`  ${color}[${finding.severity.toUpperCase()}]${RESET} ${finding.category}: ${finding.message}`);
+    for (const evidence of finding.evidence) {
+      console.log(`    ${DIM}${evidence}${RESET}`);
+    }
+    if (finding.suggestedFix) {
+      console.log(`    ${DIM}Fix: ${finding.suggestedFix}${RESET}`);
+    }
+  }
+}
 
-    // Validate essence
-    const validation = validateEssence(essence);
-    if (!validation.valid) {
-      console.log(`${RED}Essence validation failed:${RESET}`);
-      for (const err of validation.errors) {
-        console.log(`  ${RED}${err}${RESET}`);
+function printProjectAuditReport(report: ProjectAuditReport) {
+  if (report.valid) {
+    console.log(success('Project contract is valid.'));
+  } else {
+    console.log(`${RED}Project audit found blocking issues.${RESET}`);
+  }
+
+  console.log('');
+  console.log(`${BOLD}Summary:${RESET}`);
+  console.log(`  Essence version: ${report.summary.essenceVersion ?? 'missing'}`);
+  console.log(`  Pages defined: ${report.summary.pageCount}`);
+  console.log(`  Pack manifest: ${report.summary.packManifestPresent ? 'present' : 'missing'}`);
+  console.log(`  Review pack: ${report.summary.reviewPackPresent ? 'present' : 'missing'}`);
+  const runtimeStatus = report.summary.runtimeAuditChecked
+    ? (report.summary.runtimePassed ? 'passed' : 'failed')
+    : (report.runtimeAudit.distPresent ? 'incomplete' : 'pending (no dist/)');
+  console.log(`  Runtime audit: ${runtimeStatus}`);
+  if (report.summary.runtimeAuditChecked && report.runtimeAudit.assetCount > 0) {
+    const fmt = (bytes: number) => bytes >= 1_000_000
+      ? `${(bytes / 1_000_000).toFixed(2)} MB`
+      : `${Math.round(bytes / 1_000)} KB`;
+    console.log(
+      `  Built assets: total ${fmt(report.runtimeAudit.totalAssetBytes)} | js ${fmt(report.runtimeAudit.jsAssetBytes)} | css ${fmt(report.runtimeAudit.cssAssetBytes)}`,
+    );
+    console.log(
+      `  Document hardening: lang ${report.runtimeAudit.langOk ? 'ok' : 'missing'} | viewport ${report.runtimeAudit.viewportOk ? 'ok' : 'missing'} | charset ${report.runtimeAudit.charsetOk ? 'ok' : 'missing'} | csp ${report.runtimeAudit.cspSignalOk ? 'present' : 'missing'}`,
+    );
+    console.log(
+      `  Route document shell: root docs ${report.runtimeAudit.routeDocumentsPassed}/${report.runtimeAudit.routeDocumentsChecked} | hardened docs ${report.runtimeAudit.routeDocumentsHardenedCount}/${report.runtimeAudit.routeDocumentsChecked}`,
+    );
+    console.log(
+      `  Script hygiene: inline scripts ${report.runtimeAudit.inlineScriptCount} | inline event handlers ${report.runtimeAudit.inlineEventHandlerCount} | scripts without integrity ${report.runtimeAudit.externalScriptsWithoutIntegrityCount} | scripts missing crossorigin ${report.runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount} | stylesheets without integrity ${report.runtimeAudit.externalStylesheetsWithoutIntegrityCount} | stylesheets missing crossorigin ${report.runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount} | insecure external scripts ${report.runtimeAudit.externalScriptsWithInsecureTransportCount} | insecure external stylesheets ${report.runtimeAudit.externalStylesheetsWithInsecureTransportCount} | insecure external media ${report.runtimeAudit.externalMediaSourcesWithInsecureTransportCount} | external blank links missing rel ${report.runtimeAudit.externalBlankLinksWithoutRelCount} | external iframes missing sandbox ${report.runtimeAudit.externalIframesWithoutSandboxCount} | insecure external iframes ${report.runtimeAudit.externalIframesWithInsecureTransportCount}`,
+    );
+    console.log(
+      `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount} | insecure/dev transport ${report.runtimeAudit.jsInsecureTransportSignalCount} | secret markers ${report.runtimeAudit.jsSecretSignalCount}`,
+    );
+  }
+  console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
+
+  console.log('');
+  console.log(`${BOLD}Findings:${RESET}`);
+  printVerificationFindings(report.findings);
+}
+
+function printFileCritiqueReport(report: FileCritiqueReport) {
+  console.log(success(`Critiqued ${report.file}`));
+  console.log('');
+  console.log(`${BOLD}Summary:${RESET}`);
+  console.log(`  Overall score: ${report.overall}/5`);
+  console.log(`  Focus areas: ${report.focusAreas.join(', ')}`);
+  console.log(`  Review pack: ${report.reviewPack ? 'present' : 'missing'}`);
+
+  console.log('');
+  console.log(`${BOLD}Scores:${RESET}`);
+  for (const score of report.scores) {
+    console.log(`  ${cyan(score.category.padEnd(20))} ${score.score}/5  ${dim(score.details)}`);
+  }
+
+  console.log('');
+  console.log(`${BOLD}Findings:${RESET}`);
+  printVerificationFindings(report.findings);
+}
+
+async function cmdAudit(filePath?: string) {
+  const projectRoot = process.cwd();
+
+  try {
+    if (filePath) {
+      const hydration = await hydrateHostedReviewPackIfMissing(projectRoot);
+      console.log(heading(`Critiquing ${filePath}...`));
+      if (hydration.hydrated) {
+        console.log(dim('Hydrated missing review pack from hosted registry.'));
+        console.log('');
       }
+      const report = await critiqueProjectFile(filePath, projectRoot);
+      printFileCritiqueReport(report);
+      if (report.findings.some(finding => finding.severity === 'error')) {
+        process.exitCode = 1;
+      }
+      return;
+    }
+
+    const hydration = await hydrateHostedExecutionPacksIfMissing(projectRoot);
+    console.log(heading('Auditing project...'));
+    if (hydration.hydrated) {
+      console.log(dim(
+        hydration.scope === 'bundle'
+          ? 'Hydrated missing execution packs from hosted registry.'
+          : 'Hydrated missing review pack and manifest from hosted registry.',
+      ));
+      console.log('');
+    }
+    const report = await auditProject(projectRoot);
+    printProjectAuditReport(report);
+
+    if (!report.valid) {
       process.exitCode = 1;
       return;
     }
 
-    console.log(success('Essence is valid.'));
-
-    // Build registry context for guard validation
-    const { themeRegistry, patternRegistry } = buildRegistryContext();
-    const violations = evaluateGuard(essence, { themeRegistry, patternRegistry });
-    if (violations.length > 0) {
+    if (report.findings.length > 0) {
       console.log('');
-      console.log(`${YELLOW}Guard violations:${RESET}`);
-      for (const v of violations) {
-        const vr = v as Record<string, string>;
-        console.log(`  ${YELLOW}[${vr.rule}]${RESET} ${vr.message}`);
-        if (vr.suggestion) {
-          console.log(`    ${DIM}Suggestion: ${vr.suggestion}${RESET}`);
-        }
-      }
-    } else {
-      console.log(success('No guard violations.'));
+      console.log(dim('Project audit completed with advisory findings.'));
     }
-
-    // Summary
-    console.log('');
-    console.log(`${BOLD}Summary:${RESET}`);
-    console.log(`  Pages defined: ${(essence.structure as Array<unknown>).length}`);
-    console.log(`  Guard mode: ${(essence.guard as Record<string, string>).mode}`);
-    console.log(`  Theme: ${(essence.theme as Record<string, string>).style}`);
-
   } catch (e) {
     console.log(`${RED}Error: ${(e as Error).message}${RESET}`);
     process.exitCode = 1;
@@ -1054,7 +1827,7 @@ ${BOLD}Examples:${RESET}
         console.log(success(`Created custom theme "${name}"`));
         console.log(dim(`  Path: ${result.path}`));
         console.log('');
-        console.log(`Use in essence: ${cyan(`"style": "custom:${name}"`)}`);
+        console.log(`Use in essence: ${cyan(`"id": "custom:${name}"`)}`);
       } else {
         console.error(error(result.error || 'Failed to create theme'));
         process.exitCode = 1;
@@ -1175,14 +1948,20 @@ ${BOLD}Usage:${RESET}
   decantr init [options]
   decantr status
   decantr sync
-  decantr audit
+  decantr audit [file]
   decantr migrate
   decantr check
   decantr sync-drift
-  decantr search <query> [--type <type>]
+  decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr suggest <query> [--type <type>]
   decantr get <type> <id>
-  decantr list <type>
+  decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
+  decantr showcase [manifest|shortlist|verification] [--json]
+  decantr registry summary [--namespace <namespace>] [--json]
+  decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
+  decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
+  decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
+  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -1212,7 +1991,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('init')}        Initialize Decantr in an existing project (v3 essence by default)
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('sync')}        Sync registry content from API
-  ${cyan('audit')}       Validate essence and check for drift
+  ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
   ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
   ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry]
   ${cyan('sync-drift')}  Review and resolve drift log entries
@@ -1220,6 +1999,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
   ${cyan('get')}         Get full details of a registry item
   ${cyan('list')}        List items by type
+  ${cyan('showcase')}    Inspect audited showcase benchmark metadata
   ${cyan('validate')}    Validate essence file (v2 and v3)
   ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
   ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
@@ -1228,7 +2008,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('logout')}      Remove stored credentials
   ${cyan('analyze')}     Scan existing project and produce analysis report
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
-  ${cyan('registry')}    Registry management (mirror)
+  ${cyan('registry')}    Registry management and intelligence summary
   ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
@@ -1238,12 +2018,24 @@ ${BOLD}Examples:${RESET}
   decantr init
   decantr init --blueprint=saas-dashboard --theme=luminarum --yes
   decantr status
+  decantr audit
+  decantr audit src/pages/HomePage.tsx
   decantr migrate
   decantr check
   decantr sync-drift
   decantr search dashboard
   decantr suggest leaderboard
   decantr list patterns
+  decantr showcase shortlist
+  decantr showcase verification --json
+  decantr registry summary --namespace @official
+  decantr registry compile-packs decantr.essence.json --json
+  decantr registry compile-packs decantr.essence.json --write-context
+  decantr registry get-pack manifest --namespace @official --json
+  decantr registry get-pack review --namespace @official --write-context
+  decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+  decantr registry audit-project --namespace @official --json
+  decantr registry audit-project --namespace @official --dist dist --sources src
   decantr create pattern my-card
 `);
 }
@@ -1381,20 +2173,30 @@ async function main() {
     }
 
     case 'audit': {
-      await cmdAudit();
+      await cmdAudit(args[1]);
       break;
     }
 
     case 'search': {
       const query = args[1];
       if (!query) {
-        console.error(error('Usage: decantr search <query> [--type <type>]'));
+        console.error(error('Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]'));
         process.exitCode = 1;
         return;
       }
       const typeIdx = args.indexOf('--type');
       const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
-      await cmdSearch(query, type);
+      const sortIdx = args.indexOf('--sort');
+      const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
+      const sourceIdx = args.indexOf('--source');
+      const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
+      if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
+        console.error(error(`Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`));
+        process.exitCode = 1;
+        return;
+      }
+      const recommended = args.includes('--recommended');
+      await cmdSearch(query, type, sort, recommended, intelligenceSource);
       break;
     }
 
@@ -1426,11 +2228,43 @@ async function main() {
     case 'list': {
       const type = args[1];
       if (!type) {
-        console.error(error('Usage: decantr list <type>'));
+        console.error(error('Usage: decantr list <type> [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]'));
         process.exitCode = 1;
         return;
       }
-      await cmdList(type);
+      const sortIdx = args.indexOf('--sort');
+      const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
+      const sourceIdx = args.indexOf('--source');
+      const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
+      if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
+        console.error(error(`Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`));
+        process.exitCode = 1;
+        return;
+      }
+      const recommended = args.includes('--recommended');
+      await cmdList(type, sort, recommended, intelligenceSource);
+      break;
+    }
+
+    case 'showcase': {
+      const requestedView = args[1];
+      const view = (requestedView === 'manifest' || requestedView === 'shortlist' || requestedView === 'verification')
+        ? requestedView
+        : 'shortlist';
+      const jsonOutput = args.includes('--json');
+
+      if (requestedView && requestedView.startsWith('--')) {
+        await printShowcaseBenchmarks('shortlist', jsonOutput);
+        break;
+      }
+
+      if (requestedView && !['manifest', 'shortlist', 'verification'].includes(requestedView)) {
+        console.error(error('Usage: decantr showcase [manifest|shortlist|verification] [--json]'));
+        process.exitCode = 1;
+        break;
+      }
+
+      await printShowcaseBenchmarks(view, jsonOutput);
       break;
     }
 
@@ -1515,8 +2349,72 @@ async function main() {
         const typeIdx = args.indexOf('--type');
         const mirrorType = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
         await cmdRegistryMirror(process.cwd(), { type: mirrorType });
+      } else if (subcommand === 'summary') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        await printRegistryIntelligenceSummary(namespace, jsonOutput);
+      } else if (subcommand === 'compile-packs') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const writeContext = args.includes('--write-context');
+        const essencePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+        await printHostedExecutionPackBundle(essencePath, namespace, jsonOutput, writeContext);
+      } else if (subcommand === 'get-pack') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const writeContext = args.includes('--write-context');
+        const essenceIdx = args.indexOf('--essence');
+        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+        const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+        const id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
+        if (!packType || !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)) {
+          console.error(`${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`);
+          process.exitCode = 1;
+          break;
+        }
+        if (packType === 'manifest') {
+          await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput, writeContext);
+          break;
+        }
+        await printHostedSelectedExecutionPack(
+          packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+          id,
+          essencePath,
+          namespace,
+          jsonOutput,
+          writeContext,
+        );
+      } else if (subcommand === 'critique-file') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const essenceIdx = args.indexOf('--essence');
+        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+        const treatmentsIdx = args.indexOf('--treatments');
+        const treatmentsPath = treatmentsIdx !== -1 ? args[treatmentsIdx + 1] : undefined;
+        const sourcePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
+        if (!sourcePath) {
+          console.error(`${RED}Usage: decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]${RESET}`);
+          process.exitCode = 1;
+          break;
+        }
+        await printHostedFileCritique(sourcePath, namespace, jsonOutput, essencePath, treatmentsPath);
+      } else if (subcommand === 'audit-project') {
+        const namespaceIdx = args.indexOf('--namespace');
+        const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
+        const jsonOutput = args.includes('--json');
+        const essenceIdx = args.indexOf('--essence');
+        const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
+        const distIdx = args.indexOf('--dist');
+        const distPath = distIdx !== -1 ? args[distIdx + 1] : undefined;
+        const sourcesIdx = args.indexOf('--sources');
+        const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
+        await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>]${RESET}`);
+        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
         process.exitCode = 1;
       }
       break;
@@ -1619,7 +2517,11 @@ async function main() {
 
     case 'magic': {
       // Collect all non-flag args after 'magic' as the prompt
-      const magicFlags: Record<string, boolean> = {};
+      const magicFlags: {
+        dryRun?: boolean;
+        offline?: boolean;
+        registry?: string;
+      } = {};
       const promptParts: string[] = [];
       for (let i = 1; i < args.length; i++) {
         if (args[i] === '--dry-run') {
@@ -1627,9 +2529,9 @@ async function main() {
         } else if (args[i] === '--offline') {
           magicFlags.offline = true;
         } else if (args[i].startsWith('--registry=')) {
-          magicFlags.registry = args[i].split('=')[1] as any;
+          magicFlags.registry = args[i].split('=')[1];
         } else if (args[i].startsWith('--registry') && args[i + 1]) {
-          magicFlags.registry = args[++i] as any;
+          magicFlags.registry = args[++i];
         } else {
           promptParts.push(args[i]);
         }
@@ -1646,7 +2548,7 @@ async function main() {
       await cmdMagic(magicPrompt, process.cwd(), {
         dryRun: magicFlags.dryRun,
         offline: magicFlags.offline,
-        registry: magicFlags.registry as any as string | undefined,
+        registry: magicFlags.registry,
       });
       break;
     }

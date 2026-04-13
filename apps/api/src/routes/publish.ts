@@ -6,6 +6,8 @@ import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { validateEssence } from '@decantr/essence-spec';
+import { validateRegistryContent } from '../lib/content-validation.js';
+import { getContentIntelligence } from '../lib/content-intelligence.js';
 
 export const publishRoutes = new Hono<Env>();
 
@@ -54,6 +56,15 @@ publishRoutes.get('/my/content', async (c) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       published_at: item.published_at,
+      intelligence:
+        item.visibility === 'public' && item.status === 'published'
+          ? getContentIntelligence(
+            item.type,
+            item.namespace,
+            item.slug,
+            item.data as Record<string, unknown> | null | undefined,
+          )
+          : null,
     })),
   });
 });
@@ -75,6 +86,14 @@ publishRoutes.post('/content', async (c) => {
   }
   if (!body.data || typeof body.data !== 'object') {
     return c.json({ error: 'data is required and must be an object' }, 400);
+  }
+
+  const contentValidation = validateRegistryContent(body.type, body.data);
+  if (!contentValidation.valid) {
+    return c.json({
+      error: 'Content data failed registry schema validation',
+      validationErrors: contentValidation.errors,
+    }, 400);
   }
 
   // Validate essence content data if the type is an essence document
@@ -178,7 +197,7 @@ publishRoutes.patch('/content/:id', async (c) => {
   // Verify ownership
   const { data: existing } = await client
     .from('content')
-    .select('id, owner_id')
+    .select('id, owner_id, type')
     .eq('id', contentId)
     .single();
 
@@ -191,7 +210,16 @@ publishRoutes.patch('/content/:id', async (c) => {
   }
 
   const updates: Record<string, unknown> = {};
-  if (body.data && typeof body.data === 'object') updates.data = body.data;
+  if (body.data && typeof body.data === 'object') {
+    const contentValidation = validateRegistryContent(existing.type as ContentType, body.data);
+    if (!contentValidation.valid) {
+      return c.json({
+        error: 'Content data failed registry schema validation',
+        validationErrors: contentValidation.errors,
+      }, 400);
+    }
+    updates.data = body.data;
+  }
   if (body.version && typeof body.version === 'string') updates.version = body.version;
   if (body.visibility === 'public' || body.visibility === 'private') updates.visibility = body.visibility;
 

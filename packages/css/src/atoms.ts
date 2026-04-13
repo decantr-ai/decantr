@@ -1,6 +1,5 @@
 /**
  * Decantr CSS Atoms - Direct atom definitions and algorithmic resolution.
- * Ported from decantr-framework/src/css/atoms.js
  */
 
 /** Direct atom -> CSS declaration mapping */

@@ -2,6 +2,14 @@
 
 Do not add Co-Authored-By lines to commits.
 
+> Reset-branch note: on `codex/decantr-vnext-reset`, the active strategic source of truth is
+> `docs/programs/2026-04-08-decantr-vnext-master-program.md`.
+>
+> Treat the Decantr product nucleus as `decantr-content`, `apps/api`, `apps/registry`, `docs/`,
+> `@decantr/essence-spec`, `@decantr/registry`, `@decantr/mcp-server`, `@decantr/cli`,
+> `@decantr/css`, and `@decantr/core`. The legacy standalone UI runtime line has been removed
+> from this reset branch and should not shape product planning or implementation decisions here.
+
 ## Project
 
 Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI for UI) and design intelligence layer that AI coding assistants use to generate consistent, production-quality web applications. Decantr does not generate code.
@@ -15,10 +23,7 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants |
 | `@decantr/css` | `packages/css/` | Framework-agnostic CSS atoms runtime for layout utilities |
-| `@decantr/ui` | `packages/ui/` | UI framework — signal-based reactivity, atomic CSS, components (TypeScript, tree-scoped context) |
-| `@decantr/ui-chart` | `packages/ui-chart/` | Charting library — SVG, Canvas, WebGPU renderers |
 | `@decantr/vite-plugin` | `packages/vite-plugin/` | Vite plugin for real-time design drift detection |
-| `@decantr/ui-catalog` | `packages/ui-catalog/` | Component stories, demo definitions, and metadata |
 | `decantr` | `packages/cli/` | CLI for project initialization, registry queries, validation |
 
 ## Apps
@@ -27,7 +32,6 @@ Decantr is a Design Intelligence API. It is a structured schema (like OpenAPI fo
 |-----|------|-------------|
 | `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
 | `decantr-registry` | `apps/registry/` | Registry web app (Next.js + Supabase) |
-| `decantr-workbench` | `apps/workbench/` | Component dev workbench (Decantr-native SPA) |
 
 ## Terminology
 
@@ -157,14 +161,10 @@ Guard modes: `creative` (no enforcement), `guided` (rules 1, 3, 4, 5, 7), `stric
 
 ```bash
 pnpm install        # Install all dependencies
-pnpm build          # Build all packages (essence-spec and registry first, then core and mcp-server)
+pnpm build          # Build active packages and product apps
 pnpm test           # Run all tests via vitest
-pnpm lint           # Type-check with tsc --noEmit
+pnpm lint           # Type-check active product surfaces
 pnpm clean          # Remove all dist/ directories
-
-pnpm --filter @decantr/ui build    # Build @decantr/ui (TypeScript → JS + .d.ts)
-pnpm --filter @decantr/ui test     # Run @decantr/ui tests
-pnpm --filter @decantr/ui typecheck # Type-check without emit
 ```
 
 Requires Node.js >= 20 and pnpm >= 9.
@@ -186,7 +186,7 @@ All generated CSS uses `@layer` declarations for deterministic cascade ordering:
 
 ## MCP Server Tools
 
-The MCP server (`@decantr/mcp-server`) exposes 14 tools:
+The MCP server (`@decantr/mcp-server`) exposes 13 tools:
 
 | Tool | Description |
 |------|-------------|
@@ -202,7 +202,6 @@ The MCP server (`@decantr/mcp-server`) exposes 14 tools:
 | `decantr_accept_drift` | Resolve drift violations by accepting, scoping, rejecting, or deferring |
 | `decantr_update_essence` | Apply structured updates to DNA or Blueprint layers |
 | `decantr_get_section_context` | Get self-contained context for a specific blueprint section (guard rules, theme tokens, visual treatments, pattern specs) |
-| `decantr_component_api` | Query @decantr/ui component API (props, usage, examples) |
 | `decantr_critique` | Evaluate generated code for visual quality (treatment usage, decorator coverage, personality alignment, motion, a11y, responsiveness) |
 
 ## CLI Commands

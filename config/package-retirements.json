@@ -1,0 +1,22 @@
+{
+  "packages": [
+    {
+      "name": "@decantr/ui",
+      "status": "retired",
+      "replacement": "@decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces",
+      "message": "@decantr/ui has been retired from the active Decantr vNext product surface. Use @decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces instead."
+    },
+    {
+      "name": "@decantr/ui-chart",
+      "status": "retired",
+      "replacement": "@decantr/css, @decantr/cli, and compiled execution packs",
+      "message": "@decantr/ui-chart has been retired from the active Decantr vNext product surface. Use @decantr/css, @decantr/cli, and compiled execution-pack workflows instead."
+    },
+    {
+      "name": "@decantr/ui-catalog",
+      "status": "retired",
+      "replacement": "registry.decantr.ai and the hosted registry/API surfaces",
+      "message": "@decantr/ui-catalog has been retired from the active Decantr vNext product surface. Use registry.decantr.ai and the hosted registry/API surfaces instead."
+    }
+  ]
+}

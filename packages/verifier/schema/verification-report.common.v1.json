@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/verification-report.common.v1.json",
+  "title": "Decantr Verification Report Common Definitions",
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verificationFinding": {
+      "type": "object",
+      "required": ["id", "category", "severity", "message", "evidence"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "category": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warn", "info"]
+        },
+        "message": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "evidence": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "target": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string"
+        },
+        "suggestedFix": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "verificationScore": {
+      "type": "object",
+      "required": ["category", "focusArea", "score", "details", "suggestions"],
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "focusArea": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "details": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "suggestions": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,30 +1,22 @@
+import type {
+  ContentItem as AuthenticatedContentItem,
+  ContentIntelligenceSource,
+  ContentListResponse,
+  PublicContentRecord,
+  PublicContentSummary,
+  PublicUserProfile,
+  RegistryIntelligenceSummaryResponse,
+  SearchResponse,
+  OwnedContentSummary,
+} from '@decantr/registry/client';
+import { getPublicRegistryClient, normalizeApiContentType } from '@/lib/public-registry-client';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
-export interface ContentItem {
-  id: string;
-  type: string;
-  namespace: string;
-  slug: string;
-  version: string;
-  status?: string;
-  visibility?: string;
-  name?: string;
-  description?: string;
-  owner_name?: string;
-  owner_username?: string;
-  published_at?: string;
-  data?: Record<string, unknown>;
-}
-
-export interface UserProfile {
-  username: string;
-  display_name: string | null;
-  reputation_score: number;
-  tier: 'free' | 'pro' | 'team' | 'enterprise';
-  created_at: string;
-  content_count: number;
-  content_counts: Record<string, number>;
-}
+export type ContentItem = PublicContentSummary;
+export type ContentRecord<TData = Record<string, unknown>> = PublicContentRecord<TData>;
+export type UserProfile = PublicUserProfile;
+export type DashboardContentItem = OwnedContentSummary;
 
 export interface ApiKey {
   id: string;
@@ -127,25 +119,30 @@ async function adminFetch<T>(
 
 export const api = {
   // Public
-  getUserProfile: (username: string) => apiFetch<UserProfile>(`/users/${username}`),
-  getUserContent: (username: string, params?: Record<string, string>) => {
-    const query = params ? `?${new URLSearchParams(params)}` : '';
-    return apiFetch<{ total: number; items: ContentItem[] }>(`/users/${username}/content${query}`);
-  },
-  listContent: (type: string, params?: Record<string, string>) => {
-    const query = params ? `?${new URLSearchParams(params)}` : '';
-    return apiFetch<{ total: number; items: any[] }>(`/${type}${query}`);
-  },
+  getUserProfile: (username: string) => getPublicRegistryClient().getPublicUserProfile(username),
+  getUserContent: (username: string, params?: Record<string, string>) =>
+    getPublicRegistryClient().getPublicUserContent(username, params),
+  listContent: (type: string, params?: Record<string, string>) =>
+    getPublicRegistryClient().listContent<ContentItem>(normalizeApiContentType(type), params),
   getContent: (type: string, namespace: string, slug: string) =>
-    apiFetch<any>(`/${type}/${namespace}/${slug}`),
-  search: (q: string, params?: Record<string, string>) => {
-    const query = new URLSearchParams({ q, ...params });
-    return apiFetch<{ total: number; results: any[] }>(`/search?${query}`);
-  },
+    getPublicRegistryClient().getPublicContentRecord(normalizeApiContentType(type), namespace, slug),
+  search: (q: string, params?: Record<string, string>) =>
+    getPublicRegistryClient()
+      .search({
+        q,
+        type: params?.type,
+        namespace: params?.namespace,
+        sort: params?.sort,
+        recommended: params?.recommended === 'true',
+        intelligenceSource: (params?.intelligence_source as ContentIntelligenceSource | undefined) ?? undefined,
+      })
+      .then((result): SearchResponse => ({ total: result.total, results: result.results })),
+  getRegistryIntelligenceSummary: (params?: { namespace?: string }) =>
+    getPublicRegistryClient().getRegistryIntelligenceSummary(params),
 
   // Authenticated
   getMe: (token: string) => apiFetch<any>('/me', { token }),
-  getMyContent: (token: string) => apiFetch<any>('/my/content', { token }),
+  getMyContent: (token: string) => apiFetch<ContentListResponse<DashboardContentItem>>('/my/content', { token }),
   getApiKeys: (token: string) => apiFetch<any>('/api-keys', { token }),
   createApiKey: (token: string, body: any) =>
     apiFetch<any>('/api-keys', { token, method: 'POST', body: JSON.stringify(body) }),
@@ -203,48 +200,75 @@ export const api = {
 // Standalone exports for server components
 export function listContent(
   type: string,
-  params?: { namespace?: string; limit?: number; offset?: number }
+  params?: {
+    namespace?: string;
+    sort?: string;
+    recommended?: boolean;
+    intelligenceSource?: ContentIntelligenceSource;
+    limit?: number;
+    offset?: number;
+  }
 ) {
-  const query: Record<string, string> = {};
-  if (params?.namespace) query.namespace = params.namespace;
-  if (params?.limit != null) query.limit = String(params.limit);
-  if (params?.offset != null) query.offset = String(params.offset);
-  return apiFetch<{ total: number; items: ContentItem[] }>(
-    `/${type}${Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''}`
+  return getPublicRegistryClient().listContent<ContentItem>(
+    normalizeApiContentType(type),
+    params,
   );
 }
 
 export function searchContent(
   q: string,
-  params?: { type?: string; namespace?: string }
+  params?: {
+    type?: string;
+    namespace?: string;
+    sort?: string;
+    recommended?: boolean;
+    intelligenceSource?: ContentIntelligenceSource;
+    limit?: number;
+    offset?: number;
+  }
 ) {
-  const query: Record<string, string> = { q };
-  if (params?.type) query.type = params.type;
-  if (params?.namespace) query.namespace = params.namespace;
-  return apiFetch<{ total: number; results: ContentItem[] }>(
-    `/search?${new URLSearchParams(query)}`
-  ).then(data => ({ total: data.total, items: data.results }));
+  return getPublicRegistryClient()
+    .search({
+      q,
+      type: params?.type,
+      namespace: params?.namespace,
+      sort: params?.sort,
+      recommended: params?.recommended,
+      intelligenceSource: params?.intelligenceSource,
+      limit: params?.limit,
+      offset: params?.offset,
+    })
+    .then((data) => ({ total: data.total, items: data.results }));
 }
 
 export function getContent(type: string, namespace: string, slug: string) {
-  // API uses plural routes (/patterns, /themes, etc.)
-  const plural = type.endsWith('s') ? type : `${type}s`;
-  return apiFetch<ContentItem>(`/${plural}/${namespace}/${slug}`);
+  return getPublicRegistryClient().getPublicContentRecord(
+    normalizeApiContentType(type),
+    namespace,
+    slug,
+  );
 }
 
 export function getUserProfile(username: string) {
-  return apiFetch<UserProfile>(`/users/${username}`);
+  return getPublicRegistryClient().getPublicUserProfile(username);
+}
+
+export function getRegistryIntelligenceSummary(
+  params?: { namespace?: string },
+): Promise<RegistryIntelligenceSummaryResponse> {
+  return getPublicRegistryClient().getRegistryIntelligenceSummary(params);
 }
 
 export function getUserContent(
   username: string,
-  params?: { type?: string; limit?: number; offset?: number }
+  params?: {
+    type?: string;
+    sort?: string;
+    recommended?: boolean;
+    intelligenceSource?: ContentIntelligenceSource;
+    limit?: number;
+    offset?: number;
+  }
 ) {
-  const query: Record<string, string> = {};
-  if (params?.type) query.type = params.type;
-  if (params?.limit != null) query.limit = String(params.limit);
-  if (params?.offset != null) query.offset = String(params.offset);
-  return apiFetch<{ total: number; items: ContentItem[] }>(
-    `/users/${username}/content${Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''}`
-  );
+  return getPublicRegistryClient().getPublicUserContent(username, params);
 }

@@ -625,7 +625,7 @@ When scaffolding a new project, generate the HTML with theme attributes:
 
 ```html
 <!DOCTYPE html>
-<html lang="en" data-theme="{{THEME_STYLE}}" data-mode="{{THEME_MODE}}" data-cvd="none">
+<html lang="en" data-theme="{{THEME_ID}}" data-mode="{{THEME_MODE}}" data-cvd="none">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -644,8 +644,8 @@ When scaffolding a new project, generate the HTML with theme attributes:
 
 | Placeholder | Source | Example |
 |-------------|--------|---------|
-| `{{THEME_STYLE}}` | `essence.theme.style` | `luminarum` |
-| `{{THEME_MODE}}` | `essence.theme.mode` | `dark` |
+| `{{THEME_ID}}` | `essence.dna.theme.id` | `luminarum` |
+| `{{THEME_MODE}}` | `essence.dna.theme.mode` | `dark` |
 | `{{PROJECT_NAME}}` | Project name | `My App` |
 
 The `data-cvd` attribute defaults to `"none"`. If the theme supports CVD modes and the essence declares `accessibility.cvd_preference`, initialize accordingly.

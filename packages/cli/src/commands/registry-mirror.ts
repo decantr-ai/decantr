@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient } from '@decantr/registry';
+import { RegistryAPIClient, API_CONTENT_TYPES } from '@decantr/registry';
 import type { ApiContentType } from '@decantr/registry';
 
 const GREEN = '\x1b[32m';
@@ -10,9 +10,7 @@ const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 const RESET = '\x1b[0m';
 
-const ALL_CONTENT_TYPES: ApiContentType[] = [
-  'patterns', 'archetypes', 'themes', 'blueprints', 'shells',
-];
+const ALL_CONTENT_TYPES: ApiContentType[] = [...API_CONTENT_TYPES];
 
 interface MirrorManifest {
   mirrored_at: string;

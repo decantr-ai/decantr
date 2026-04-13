@@ -119,7 +119,7 @@
     "styles": {}
   },
   "suggested_theme": {
-    "styles": [
+    "ids": [
       "auradecantism",
       "clean"
     ],

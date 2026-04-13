@@ -1,38 +1,42 @@
-FROM node:24-slim AS builder
+FROM node:24-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+FROM base AS builder
 WORKDIR /app
 
-# Copy API package manifest — replace workspace dep with local path
-COPY apps/api/package.json ./package.json
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY packages/essence-spec/package.json ./packages/essence-spec/package.json
+COPY packages/registry/package.json ./packages/registry/package.json
+COPY packages/core/package.json ./packages/core/package.json
+COPY packages/verifier/package.json ./packages/verifier/package.json
 
-# Copy pre-built essence-spec as a local package
-COPY packages/essence-spec/dist/ ./local-deps/essence-spec/dist/
-COPY packages/essence-spec/schema/ ./local-deps/essence-spec/schema/
-COPY packages/essence-spec/package.json ./local-deps/essence-spec/package.json
+RUN pnpm install --frozen-lockfile --filter ./apps/api...
 
-# Rewrite workspace:* to local file path for npm install
-RUN sed -i 's|"@decantr/essence-spec": "workspace:\*"|"@decantr/essence-spec": "file:./local-deps/essence-spec"|' package.json
-RUN npm install
+COPY apps/api/ ./apps/api/
+COPY apps/showcase/manifest.json ./apps/showcase/manifest.json
+COPY apps/showcase/reports/shortlist-verification.json ./apps/showcase/reports/shortlist-verification.json
+COPY packages/essence-spec/ ./packages/essence-spec/
+COPY packages/registry/ ./packages/registry/
+COPY packages/core/ ./packages/core/
+COPY packages/verifier/ ./packages/verifier/
 
-# Copy build config and source
-COPY apps/api/tsconfig.json apps/api/tsup.config.ts ./
-COPY apps/api/src/ ./src/
+RUN pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/verifier --filter ./apps/api build
+RUN pnpm --filter ./apps/api --prod deploy --legacy /prod/api
 
-# Build with tsup
-RUN npx tsup
-
-# Production
 FROM node:24-slim
 WORKDIR /app
 
-# Create non-root user
+ENV NODE_ENV=production
+ENV PORT=3000
+
 RUN groupadd -r appuser && useradd -r -g appuser -d /app appuser
 
-COPY --from=builder --chown=appuser:appuser /app/dist/ ./dist/
-COPY --from=builder --chown=appuser:appuser /app/node_modules/ ./node_modules/
-COPY --from=builder --chown=appuser:appuser /app/package.json ./
-
-# Ensure essence-spec is available with its schema files
-COPY --from=builder --chown=appuser:appuser /app/local-deps/essence-spec/ ./node_modules/@decantr/essence-spec/
+COPY --from=builder --chown=appuser:appuser /prod/api/dist/ ./dist/
+COPY --from=builder --chown=appuser:appuser /prod/api/node_modules/ ./node_modules/
+COPY --from=builder --chown=appuser:appuser /prod/api/package.json ./package.json
 
 USER appuser
 EXPOSE 3000

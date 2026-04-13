@@ -10,7 +10,7 @@ You are modifying existing code in a Decantr project. ALL 7 guard rules are enfo
 
 | # | Layer | Rule | Enforcement | Consequence of Violation |
 |---|-------|------|-------------|--------------------------|
-| 1 | DNA | **Style** | STRICT | ERROR — Code rejected |
+| 1 | DNA | **Theme** | STRICT | ERROR — Code rejected |
 | 2 | DNA | **Density** | STRICT | WARNING — Flagged for review |
 | 3 | DNA | **Accessibility** | STRICT | ERROR — Code rejected |
 | 4 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
@@ -34,11 +34,11 @@ When ANY rule would be violated:
 **Theme violation:**
 ```
 STOP: I cannot use theme "glassmorphism" because the essence specifies
-"{{THEME_STYLE}}". This would violate the Style guard rule.
+"{{THEME_ID}}". This would violate the Theme guard rule.
 
 Would you like me to:
 1. Update the essence to use "glassmorphism" instead?
-2. Keep the current theme "{{THEME_STYLE}}"?
+2. Keep the current theme "{{THEME_ID}}"?
 ```
 
 **Layout violation:**
@@ -73,7 +73,7 @@ For the page you're modifying, verify:
 - Page ID exists in `blueprint.sections[].pages[]`
 - Shell matches the page's `shell` property
 - Patterns match the page's `layout[]` in order
-- Theme matches `theme.style`
+- Theme matches `theme.id`
 - Theme decorators match `theme.id`
 
 ### 3. Plan Changes
@@ -91,7 +91,7 @@ Before modifying:
 
 - [ ] Page exists in essence structure
 - [ ] I know the layout order for the target page (check `blueprint.sections[].pages[]`)
-- [ ] I will use theme: `{{THEME_STYLE}}`
+- [ ] I will use theme: `{{THEME_ID}}`
 - [ ] I will follow density: `{{DENSITY}}`
 
 During modification:
@@ -139,10 +139,10 @@ Swapping `chart-grid` and `data-table` is a Layout guard violation.
 
 | Violation | What Happened | Fix |
 |-----------|---------------|-----|
-| "Theme mismatch" | Used different theme | Revert to `{{THEME_STYLE}}` |
+| "Theme mismatch" | Used different theme | Revert to `{{THEME_ID}}` |
 | "Page undefined" | Edited undeclared page | Add page to essence first |
 | "Layout order wrong" | Patterns out of order | Match `layout[]` exactly |
-| "Theme mismatch" | Wrong decoration style | Use `{{THEME_RECIPE}}` |
+| "Theme mismatch" | Wrong treatments or decorators | Use `{{THEME_ID}}` theme styling |
 | "Density drift" | Wrong spacing values | Use `{{CONTENT_GAP}}` tokens |
 
 ## Proposing Essence Changes

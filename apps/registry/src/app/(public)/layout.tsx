@@ -106,9 +106,33 @@ export default async function PublicLayout({
             </div>
             <div className="flex flex-col gap-2">
               <span className="d-label">Resources</span>
-              <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>Documentation</span>
-              <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>API Reference</span>
-              <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>Changelog</span>
+              <a
+                href="https://decantr.ai"
+                target="_blank"
+                rel="noopener"
+                className="text-sm no-underline"
+                style={{ color: 'var(--d-text-muted)' }}
+              >
+                Documentation
+              </a>
+              <a
+                href="https://decantr.ai/reference/registry-public-api.html"
+                target="_blank"
+                rel="noopener"
+                className="text-sm no-underline"
+                style={{ color: 'var(--d-text-muted)' }}
+              >
+                API Reference
+              </a>
+              <a
+                href="https://decantr.ai/schemas/"
+                target="_blank"
+                rel="noopener"
+                className="text-sm no-underline"
+                style={{ color: 'var(--d-text-muted)' }}
+              >
+                Schemas
+              </a>
             </div>
             <div className="flex flex-col gap-2">
               <span className="d-label">Company</span>

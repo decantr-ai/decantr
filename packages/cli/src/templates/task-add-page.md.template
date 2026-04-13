@@ -10,7 +10,7 @@ You are adding new pages or features to an existing Decantr project. Guided mode
 
 | # | Layer | Rule | Enforcement | What It Means |
 |---|-------|------|-------------|---------------|
-| 1 | DNA | **Style** | ENFORCED | You MUST use theme `{{THEME_STYLE}}` |
+| 1 | DNA | **Theme** | ENFORCED | You MUST use theme `{{THEME_ID}}` |
 | 2 | DNA | **Density** | ENFORCED | You MUST follow density `{{DENSITY}}` |
 | 3 | DNA | **Accessibility** | ENFORCED | You MUST meet WCAG level from essence |
 | 4 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
@@ -67,8 +67,8 @@ Before adding a page:
 
 During code generation:
 
-- [ ] Use theme `{{THEME_STYLE}}` for all styling
-- [ ] Use theme `{{THEME_RECIPE}}` decorators for decoration
+- [ ] Use theme `{{THEME_ID}}` for all styling
+- [ ] Use theme `{{THEME_ID}}` treatments and decorators for visual identity
 - [ ] Follow the shell structure for the target section (see section context file for shell notes)
 - [ ] Include patterns from the layout array
 

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
-import type { EssenceV3 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { refreshDerivedFiles } from '../scaffold.js';
 import { RegistryClient } from '../registry.js';
 
@@ -19,22 +19,22 @@ function readAndMigrate(projectRoot: string): { essence: EssenceV3; essencePath:
     return null;
   }
 
-  let parsed: unknown;
+  let parsed: EssenceFile;
   try {
-    parsed = JSON.parse(readFileSync(essencePath, 'utf-8'));
+    parsed = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
   } catch (e) {
     console.error(`${RED}Could not read essence: ${(e as Error).message}${RESET}`);
     process.exitCode = 1;
     return null;
   }
 
-  if (!isV3(parsed as any)) {
+  if (!isV3(parsed)) {
     console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
     process.exitCode = 1;
     return null;
   }
 
-  const essence = migrateV30ToV31(parsed as EssenceV3);
+  const essence = migrateV30ToV31(parsed);
   return { essence, essencePath };
 }
 

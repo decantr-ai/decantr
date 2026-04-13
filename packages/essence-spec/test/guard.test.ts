@@ -24,15 +24,15 @@ function makeEssence(overrides: Partial<Essence> = {}): Essence {
 describe('evaluateGuard', () => {
   it('returns no violations for valid changes in creative mode', () => {
     const essence = makeEssence({ guard: { mode: 'creative' } });
-    const violations = evaluateGuard(essence, { pageId: 'new-page', style: 'glassmorphism' });
+    const violations = evaluateGuard(essence, { pageId: 'new-page', theme: 'glassmorphism' });
     expect(violations).toEqual([]);
   });
 
-  it('flags style mismatch in strict mode', () => {
+  it('flags theme mismatch in strict mode', () => {
     const essence = makeEssence();
-    const violations = evaluateGuard(essence, { style: 'glassmorphism' });
+    const violations = evaluateGuard(essence, { theme: 'glassmorphism' });
     expect(violations).toEqual([
-      expect.objectContaining({ rule: 'style', message: expect.stringContaining('glassmorphism') }),
+      expect.objectContaining({ rule: 'theme', message: expect.stringContaining('glassmorphism') }),
     ]);
   });
 

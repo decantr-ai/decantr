@@ -1,197 +1,169 @@
 # Decantr
 
-**OpenAPI for AI-generated UI.** The design intelligence layer that makes every AI coding assistant produce consistent, production-quality interfaces.
+**Design intelligence and governance for AI-generated UI.**
 
-> AI generates code. Decantr ensures it's coherent, consistent, and visually stunning.
+Decantr helps AI coding assistants produce coherent, production-grade interfaces by giving them a structured design contract, scoped execution context, registry-backed UI knowledge, and drift checks.
 
-## The Problem
+> AI generates code. Decantr keeps the output aligned.
 
-Every AI coding tool (Cursor, v0, Claude, Copilot) generates UI that:
-- Looks different every time you ask
-- Drifts from your design system after 3 prompts
-- Requires manual cleanup to look production-ready
-- Has no memory of your design decisions
+## What Decantr Is
 
-## The Fix
+Decantr is the control plane between:
 
-```bash
-npx @decantr/cli init --blueprint=agent-marketplace --yes
-```
+- your app intent
+- curated design intelligence
+- AI coding assistants
+- verification and drift prevention
 
-Decantr gives your AI a structured design contract (`decantr.essence.json`) that enforces:
-- **Theme consistency** — tokens, colors, typography locked to your palette
-- **Layout coherence** — shell implementation specs, patterns, topology define the structure
-- **Visual personality** — "glassmorphic depth, neon accents, think Linear meets mission control"
-- **Motion & interactivity** — animations, drag/drop, pan/zoom built by default
-- **Voice & copy** — consistent tone, CTA verbs, error messages, loading states
-- **Drift prevention** — guard rules catch violations before they ship
+It is built around a few core ideas:
 
----
+- `decantr.essence.json` captures durable design intent
+- registry content provides reusable shells, blueprints, archetypes, patterns, and themes
+- the CLI and MCP server expose that intelligence to humans and agents
+- validation and critique help catch drift before it ships
+
+## What Decantr Is Not
+
+Decantr is not:
+
+- a code generator
+- a frontend framework
+- a React competitor
+- a component library first product
 
 ## Quick Start
 
-### 1. Scaffold
-
 ```bash
 npx @decantr/cli init --blueprint=agent-marketplace --yes
 ```
 
-### 2. Paste the prompt
+Typical workflow:
 
-The CLI outputs a prompt for your AI assistant. Paste it into Claude Code, Cursor, or any AI coding tool:
+1. Scaffold a project from a blueprint or natural-language prompt.
+2. Let your AI assistant read the generated Decantr context files.
+3. Build with guardrails instead of improvising every design decision.
+4. Run `decantr audit` and `decantr check` to catch contract issues and drift.
 
-```
-Build this application using the Decantr design system.
+## Core Surfaces
 
-Read DECANTR.md for the design spec, CSS approach, and guard rules.
-Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.
-Read each .decantr/context/section-*.md file before building that section's pages.
-Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.
-
-Start with the shell layouts, then build each section's pages.
-```
-
-### 3. Build
-
-The AI reads three tiers of context and builds a production-quality app:
-
-| Tier | File | What the AI Gets |
-|------|------|-----------------|
-| 1 | `DECANTR.md` | Design rules, guard system, CSS atoms, Layout Rules, Motion Philosophy, Interactivity Philosophy, Development Workflow |
-| 2 | `scaffold.md` | App topology, route map, voice & copy, shared components, zone transitions, development mode |
-| 3 | `section-*.md` | Quick Start summary, shell implementation (dimensions, regions, anti-patterns), spacing guide, decorator table, token palette, visual direction, pattern specs (composition algebra, motion, responsive, accessibility) |
-
-### 4. Guard
+### CLI
 
 ```bash
-npx @decantr/cli check
+decantr init --blueprint=agent-marketplace
+decantr magic "describe your app"
+decantr check
+decantr refresh
+decantr status
+decantr registry summary --namespace @official --json
+decantr registry compile-packs decantr.essence.json --json
+decantr registry get-pack manifest --namespace @official --json
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json --essence decantr.essence.json
+decantr registry audit-project --namespace @official --json --essence decantr.essence.json
+decantr registry compile-packs decantr.essence.json --write-context
+decantr showcase verification --json
 ```
 
-Catches design drift before it ships.
+### MCP Server
 
----
-
-## Registry
-
-Browse the community registry at [registry.decantr.ai](https://registry.decantr.ai).
-
-| Content | Count | Highlights |
-|---------|-------|-----------|
-| Patterns | 116 | visual_brief, composition algebra, motion specs, responsive strategies, accessibility patterns |
-| Archetypes | 60 | page_briefs, role-based topology (primary/gateway/public/auxiliary) |
-| Blueprints | 19 | personality narratives (100+ chars), voice & copy blocks, routes, navigation |
-| Themes | 20 | decorator_definitions (structured: intent, suggested CSS, usage, pairs_with) |
-| Shells | 13 | internal_layout (semantic spatial specs: dimensions, scroll, position, anti-patterns) |
-
-All content passes quality validation with **0 warnings**.
-
----
-
-## MCP Server (15 tools)
-
-Add to **Claude Desktop** (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "decantr": {
-      "command": "npx",
-      "args": ["@decantr/mcp-server"]
-    }
-  }
-}
-```
-
-Add to **Claude Code**:
+Add to Claude Code:
 
 ```bash
 claude mcp add decantr -- npx @decantr/mcp-server
 ```
 
-| Tool | Purpose |
-|------|---------|
-| `decantr_create_essence` | Generate spec from natural language description |
-| `decantr_resolve_blueprint` | Get full blueprint with topology and routes |
-| `decantr_resolve_pattern` | Get pattern layout spec, components, presets |
-| `decantr_resolve_archetype` | Get archetype pages, features, suggested theme |
-| `decantr_suggest_patterns` | Suggest patterns for a page description |
-| `decantr_get_section_context` | Get scoped context for a blueprint section |
-| `decantr_critique` | Evaluate generated code for visual quality scoring |
-| `decantr_check_drift` | Check code against the design spec |
-| `decantr_accept_drift` | Resolve drift by accepting, scoping, or deferring |
-| `decantr_update_essence` | Apply structured mutations to DNA or blueprint |
-| `decantr_validate` | Validate essence against schema + guard rules |
-| `decantr_read_essence` | Read the current essence file |
-| `decantr_search_registry` | Search the content registry |
-| `decantr_component_api` | Query @decantr/ui component API |
+The MCP server exposes Decantr’s design intelligence directly to AI tools, including:
 
----
+- essence read and validation
+- registry search and content resolution
+- registry intelligence summaries
+- scoped context generation
+- showcase benchmark metadata
+- drift and critique tools
 
-## CLI
+### Registry
 
-```bash
-# Scaffold
-decantr init --blueprint=agent-marketplace    # From a blueprint
-decantr magic "describe your app"             # From natural language
+Browse the registry at [registry.decantr.ai](https://registry.decantr.ai).
 
-# Build progressively
-decantr add section billing-portal            # Compose new archetype
-decantr add page settings/webhooks            # Add page to section
-decantr add feature payments                  # Enable a feature
-decantr theme switch terminal                 # Change visual direction
+The official curated content source lives in `decantr-content` and syncs to the hosted registry API. The registry currently centers on:
 
-# Validate & sync
-decantr check                                 # Guard validation
-decantr refresh                               # Regenerate all context files
-decantr upgrade --apply                       # Pull registry updates
-decantr status                                # Project health
-```
+- patterns
+- themes
+- blueprints
+- archetypes
+- shells
 
----
+Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
+Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `@decantr/essence-spec/schema/*`, execution-pack schemas by `@decantr/core/schema/*`, and verification report schemas by `@decantr/verifier/schema/*`.
+Hosted registry intelligence rollup data is available at `https://api.decantr.ai/v1/intelligence/summary`.
+Hosted execution-pack compilation is available at `https://api.decantr.ai/v1/packs/compile`.
+Hosted selected execution-pack reads are available at `https://api.decantr.ai/v1/packs/select`.
+Hosted file critique is available at `https://api.decantr.ai/v1/critique/file`.
+Hosted project audit is available at `https://api.decantr.ai/v1/audit/project`, with optional dist-snapshot input for runtime verification.
+Public registry API/filter examples live in `docs/reference/registry-public-api.md`, with a static docs page at `https://decantr.ai/reference/registry-public-api.html`.
 
 ## Packages
 
-| Package | npm | Description |
-|---------|-----|-------------|
-| `@decantr/cli` | [![npm](https://img.shields.io/npm/v/@decantr/cli)](https://www.npmjs.com/package/@decantr/cli) | CLI for init, scaffold, mutations, and validation |
-| `@decantr/mcp-server` | [![npm](https://img.shields.io/npm/v/@decantr/mcp-server)](https://www.npmjs.com/package/@decantr/mcp-server) | 15 MCP tools for AI coding assistants |
-| `@decantr/essence-spec` | [![npm](https://img.shields.io/npm/v/@decantr/essence-spec)](https://www.npmjs.com/package/@decantr/essence-spec) | Schema, validator, guard rules, TypeScript types |
-| `@decantr/registry` | [![npm](https://img.shields.io/npm/v/@decantr/registry)](https://www.npmjs.com/package/@decantr/registry) | Content resolver and API client |
-| `@decantr/core` | [![npm](https://img.shields.io/npm/v/@decantr/core)](https://www.npmjs.com/package/@decantr/core) | Design Pipeline IR engine |
-| `@decantr/css` | [![npm](https://img.shields.io/npm/v/@decantr/css)](https://www.npmjs.com/package/@decantr/css) | Framework-agnostic CSS atoms runtime |
-| `@decantr/ui` | [![npm](https://img.shields.io/npm/v/@decantr/ui)](https://www.npmjs.com/package/@decantr/ui) | Signal-based UI framework |
-| `@decantr/ui-chart` | [![npm](https://img.shields.io/npm/v/@decantr/ui-chart)](https://www.npmjs.com/package/@decantr/ui-chart) | Chart library (SVG, Canvas, WebGPU renderers) |
-| `@decantr/vite-plugin` | [![npm](https://img.shields.io/npm/v/@decantr/vite-plugin)](https://www.npmjs.com/package/@decantr/vite-plugin) | Real-time design drift detection |
+Support matrix: [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)
 
----
+### Core packages
 
-## Guard Rules
+| Package | Description |
+|---|---|
+| `@decantr/cli` | Local scaffold, validation, and maintenance workflows |
+| `@decantr/mcp-server` | MCP surface for AI coding assistants |
+| `@decantr/essence-spec` | Schema, validation, and core Decantr types |
+| `@decantr/registry` | Registry model, resolution, and content access, with `@decantr/registry/client` as the web-safe API client entrypoint |
+| `@decantr/core` | Internal pipeline and compiler-adjacent foundation |
+| `@decantr/verifier` | Shared audit and critique engine with schema-backed reports |
+| `@decantr/css` | Framework-agnostic CSS atom runtime |
 
-Seven rules in two tiers prevent design drift:
+### Secondary surfaces
 
-**DNA guards (errors):** style, density, accessibility, theme-mode compatibility
-**Blueprint guards (warnings):** structure, layout, pattern existence
+| Package | Current status |
+|---|---|
+| `@decantr/vite-plugin` | Verification-adjacent and still evolving |
 
-Three modes: **creative** (off) → **guided** (core rules) → **strict** (all rules)
+Release policy and dist-tag strategy live in [docs/runbooks/2026-04-09-package-release-strategy.md](docs/runbooks/2026-04-09-package-release-strategy.md).
+Registry portal deployment and health checks live in [docs/runbooks/2026-04-09-registry-portal-deploy.md](docs/runbooks/2026-04-09-registry-portal-deploy.md).
 
----
+## Repo Layout
+
+| Path | Role |
+|---|---|
+| `apps/api` | Hosted API and registry backend |
+| `apps/registry` | Registry portal |
+| `docs/` | Public docs and product documentation |
+| `apps/showcase/*` | Benchmark and evidence corpus of generated blueprint scaffolds |
+| `packages/*` | Core packages and supporting runtime surfaces |
 
 ## Development
 
 ```bash
-pnpm install    # Install dependencies
-pnpm build      # Build all packages
-pnpm test       # Run all tests
-pnpm lint       # Type-check
+pnpm install
+pnpm build
+pnpm test
+pnpm lint
+pnpm audit:public-api
+pnpm audit:registry-dogfood
 ```
 
-Requires Node.js >= 20 and pnpm >= 9.
+Requires:
 
----
+- Node.js >= 20
+- pnpm >= 9
+
+## Status
+
+The repo is currently being refocused around the Decantr vNext product boundary:
+
+- control plane for AI-generated UI
+- registry and content intelligence
+- MCP and CLI delivery
+- verification and drift prevention
 
 ## Contributing
 
-Contributions welcome. See [docs/](docs/) for architecture, specs, and plans.
+Contributions are welcome. See [docs/](docs/) for the current audits, specs, and program documents.
 
 ## License
 

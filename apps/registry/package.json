@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm --filter @decantr/registry build && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "pnpm --filter @decantr/registry build && tsc --noEmit"
   },
   "dependencies": {
+    "@decantr/registry": "workspace:*",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.100.1",
     "next": "16.2.1",

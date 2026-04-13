@@ -14,9 +14,9 @@ describe('loadEssence', () => {
   it('loads and returns a valid v3 essence file', () => {
     const essencePath = join(TMP, 'decantr.essence.json');
     writeFileSync(essencePath, JSON.stringify({
-      version: '3.0.0',
+      version: '3.1.0',
       dna: {
-        theme: { style: 'clean', mode: 'dark', recipe: 'clean' },
+        theme: { id: 'clean', mode: 'dark', shape: 'rounded' },
         spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
         typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
         color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
@@ -41,7 +41,7 @@ describe('loadEssence', () => {
 
     const result = loadEssence(essencePath);
     expect(result).not.toBeNull();
-    expect(result!.version).toBe('3.0.0');
+    expect(result!.version).toBe('3.1.0');
   });
 
   it('returns null for missing file', () => {

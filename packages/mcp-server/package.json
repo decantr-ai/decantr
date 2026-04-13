@@ -1,21 +1,23 @@
 {
   "name": "@decantr/mcp-server",
   "version": "1.0.0-beta.12",
-  "description": "MCP server for Decantr — exposes design intelligence tools to AI coding assistants",
+  "description": "MCP server for Decantr — exposes design intelligence, packs, and verification to AI coding assistants",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/decantr-ai/decantr.git",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
     "directory": "packages/mcp-server"
   },
   "homepage": "https://decantr.ai",
   "type": "module",
   "bin": {
-    "decantr-mcp": "./dist/bin.js"
+    "decantr-mcp": "dist/bin.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -25,8 +27,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
     "@decantr/essence-spec": "workspace:*",
-    "@decantr/registry": "workspace:*"
+    "@decantr/registry": "workspace:*",
+    "@decantr/verifier": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0"
   }
 }

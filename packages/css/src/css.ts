@@ -1,6 +1,5 @@
 /**
  * Decantr CSS - Main css() function.
- * Ported from decantr-framework/src/css/index.js
  */
 
 import { resolveAtomDecl } from './atoms.js';

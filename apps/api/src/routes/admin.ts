@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
+import { validateRegistryContent } from '../lib/content-validation.js';
 
 export const adminRoutes = new Hono<Env>();
 
@@ -52,6 +53,7 @@ function requireAdminKeyOnly() {
 
 // Admin sync endpoint uses admin-key-only auth (no user required, for CI/CD)
 adminRoutes.use('/admin/sync', requireAdminKeyOnly());
+adminRoutes.use('/admin/content/*', requireAdminKeyOnly());
 
 // All other admin endpoints require both user auth + admin key
 adminRoutes.use('/admin/moderation/*', requireAuth());
@@ -268,6 +270,14 @@ adminRoutes.post('/admin/sync', async (c) => {
     return c.json({ error: 'item must have id or slug' }, 400);
   }
 
+  const contentValidation = validateRegistryContent(body.type, item);
+  if (!contentValidation.valid) {
+    return c.json({
+      error: 'Official content failed registry schema validation',
+      validationErrors: contentValidation.errors,
+    }, 400);
+  }
+
   // Upsert into content table
   const { data, error } = await client
     .from('content')
@@ -296,4 +306,45 @@ adminRoutes.post('/admin/sync', async (c) => {
   }
 
   return c.json({ message: 'Synced', id: data.id, slug });
+});
+
+// DELETE /v1/admin/content/:type/:namespace/:slug - Delete official content (used by CI/CD prune)
+adminRoutes.delete('/admin/content/:type/:namespace/:slug', async (c) => {
+  const type = c.req.param('type');
+  const namespace = c.req.param('namespace');
+  const slug = c.req.param('slug');
+
+  if (!CONTENT_TYPES.includes(type as typeof CONTENT_TYPES[number])) {
+    return c.json({ error: `type must be one of: ${CONTENT_TYPES.join(', ')}` }, 400);
+  }
+  const contentType = type as typeof CONTENT_TYPES[number];
+
+  if (namespace !== '@official') {
+    return c.json({ error: 'Only @official content can be pruned via admin content sync' }, 403);
+  }
+
+  const client = createAdminClient();
+  const { data: existing, error: fetchError } = await client
+    .from('content')
+    .select('id')
+    .eq('type', contentType)
+    .eq('namespace', namespace)
+    .eq('slug', slug)
+    .single();
+
+  if (fetchError || !existing) {
+    return c.json({ error: 'Content not found' }, 404);
+  }
+
+  const { error: deleteError } = await client
+    .from('content')
+    .delete()
+    .eq('id', existing.id);
+
+  if (deleteError) {
+    logger.error({ error: deleteError.message, type, namespace, slug }, 'Admin prune error');
+    return c.json({ error: 'Prune failed' }, 500);
+  }
+
+  return c.json({ message: 'Deleted', id: existing.id, slug });
 });

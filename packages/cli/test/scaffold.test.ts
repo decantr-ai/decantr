@@ -204,7 +204,6 @@ describe('generateSectionContext pattern deduplication', () => {
       guardConfig: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
       personality: ['clean', 'modern'],
       themeName: 'luminarum',
-      recipeName: 'carbon',
       zoneContext: '',
       patternSpecs: {
         'form': {

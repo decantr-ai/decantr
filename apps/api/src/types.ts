@@ -1,4 +1,12 @@
 import type { AuthContext } from './middleware/auth.js';
+import {
+  CONTENT_TYPES as REGISTRY_CONTENT_TYPES,
+  API_CONTENT_TYPES as REGISTRY_API_CONTENT_TYPES,
+  API_CONTENT_TYPE_TO_CONTENT_TYPE,
+  isContentType as isRegistryContentType,
+  isApiContentType as isRegistryApiContentType,
+} from '@decantr/registry';
+import type { ContentType, ApiContentType } from '@decantr/registry';
 
 export type Env = {
   Variables: {
@@ -6,23 +14,13 @@ export type Env = {
   };
 };
 
-export type ContentType = 'pattern' | 'theme' | 'blueprint' | 'archetype' | 'shell';
+export type { ContentType, ApiContentType };
 
-export const CONTENT_TYPES: ContentType[] = [
-  'pattern',
-  'theme',
-  'blueprint',
-  'archetype',
-  'shell',
-];
-
-export const PLURAL_TO_SINGULAR: Record<string, ContentType> = {
-  patterns: 'pattern',
-  themes: 'theme',
-  blueprints: 'blueprint',
-  archetypes: 'archetype',
-  shells: 'shell',
-};
+export const CONTENT_TYPES: ContentType[] = [...REGISTRY_CONTENT_TYPES];
+export const API_CONTENT_TYPES: ApiContentType[] = [...REGISTRY_API_CONTENT_TYPES];
+export const PLURAL_TO_SINGULAR: Record<ApiContentType, ContentType> = { ...API_CONTENT_TYPE_TO_CONTENT_TYPE };
+export const isContentType = isRegistryContentType;
+export const isApiContentType = isRegistryApiContentType;
 
 export interface PaginationParams {
   limit: number;

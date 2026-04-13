@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/pack-manifest.v1.json",
+  "title": "Decantr Execution Pack Manifest",
+  "type": "object",
+  "required": ["$schema", "version", "generatedAt", "scaffold", "review", "sections", "pages", "mutations"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/pack-manifest.v1.json"
+    },
+    "version": {
+      "const": "1.0.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scaffold": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/manifestEntry"
+        }
+      ]
+    },
+    "review": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/manifestEntry"
+        }
+      ]
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "markdown", "json", "pageIds"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "markdown": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "json": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "pageIds": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "markdown", "json", "sectionId", "sectionRole"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "markdown": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "json": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "sectionId": {
+            "type": ["string", "null"]
+          },
+          "sectionRole": {
+            "type": ["string", "null"]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "mutations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "markdown", "json", "mutationType"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "markdown": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "json": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+          },
+          "mutationType": {
+            "type": "string",
+            "enum": ["add-page", "modify"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

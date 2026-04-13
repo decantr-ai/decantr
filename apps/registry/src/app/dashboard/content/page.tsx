@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
-import type { ContentItem } from '@/lib/api';
+import type { DashboardContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 
 function PlusIcon({ size = 16 }: { size?: number }) {
@@ -49,7 +49,7 @@ export default async function ContentPage() {
   } = await supabase.auth.getSession();
   const token = session?.access_token ?? '';
 
-  let items: ContentItem[] = [];
+  let items: DashboardContentItem[] = [];
   try {
     const result = await api.getMyContent(token);
     items = Array.isArray(result) ? result : result?.items ?? [];

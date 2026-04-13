@@ -15,6 +15,27 @@ describe('validateEssence - v3', () => {
     expect(result.errors).toEqual([]);
   });
 
+  it('accepts optional v3.1 seo and navigation metadata', () => {
+    const result = validateEssence({
+      ...VALID_V31,
+      meta: {
+        ...VALID_V31.meta,
+        seo: {
+          schema_org: ['WebApplication', 'SoftwareApplication'],
+          meta_priorities: ['description', 'twitter:card'],
+        },
+        navigation: {
+          command_palette: true,
+          hotkeys: [
+            { key: 'g d', label: 'Dashboard', route: '/dashboard' },
+            { key: 'g ?', label: 'Help', action: 'open-help' },
+          ],
+        },
+      },
+    });
+    expect(result.valid).toBe(true);
+  });
+
   it('rejects v3 with missing dna', () => {
     const { dna, ...noData } = VALID_V3;
     const result = validateEssence(noData);
@@ -102,12 +123,53 @@ describe('validateEssence - v3', () => {
     expect(result.valid).toBe(false);
   });
 
+  it('rejects v3.1 with empty sections array', () => {
+    const bad = {
+      ...VALID_V31,
+      blueprint: { ...VALID_V31.blueprint, sections: [] },
+    };
+    const result = validateEssence(bad);
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects v3.1 navigation hotkeys without key and label', () => {
+    const bad = {
+      ...VALID_V31,
+      meta: {
+        ...VALID_V31.meta,
+        navigation: {
+          command_palette: true,
+          hotkeys: [{ route: '/dashboard' }],
+        },
+      },
+    };
+    const result = validateEssence(bad);
+    expect(result.valid).toBe(false);
+  });
+
   it('rejects v3 with invalid page id format', () => {
     const bad = {
       ...VALID_V3,
       blueprint: {
         ...VALID_V3.blueprint,
         pages: [{ id: 'My Page', layout: ['hero'] }],
+      },
+    };
+    const result = validateEssence(bad);
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects v3.1 with invalid section role', () => {
+    const bad = {
+      ...VALID_V31,
+      blueprint: {
+        ...VALID_V31.blueprint,
+        sections: [
+          {
+            ...VALID_V31.blueprint.sections![0],
+            role: 'secondary',
+          },
+        ],
       },
     };
     const result = validateEssence(bad);

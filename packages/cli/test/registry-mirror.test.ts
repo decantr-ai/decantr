@@ -15,7 +15,6 @@ const mockListContent = vi.fn().mockImplementation((type: string) => {
     themes: [
       { slug: 'carbon', id: 'carbon', name: 'Carbon' },
     ],
-    recipes: [],
     blueprints: [],
     shells: [
       { slug: 'top-nav-footer', id: 'top-nav-footer', name: 'Top Nav Footer' },
@@ -32,6 +31,7 @@ const mockGetContent = vi.fn().mockImplementation((_type: string, _ns: string, s
 });
 
 vi.mock('@decantr/registry', () => ({
+  API_CONTENT_TYPES: ['patterns', 'themes', 'blueprints', 'archetypes', 'shells'],
   RegistryAPIClient: vi.fn().mockImplementation(() => ({
     checkHealth: mockCheckHealth,
     listContent: mockListContent,

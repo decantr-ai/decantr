@@ -1,0 +1,50 @@
+.pageShellBreakpoint {
+  margin: 0 auto;
+  max-width: 72rem;
+  padding: 2rem 1.5rem;
+}
+
+.heroCopy {
+  margin-bottom: 1.5rem;
+  max-width: 44rem;
+  color: var(--d-text-muted);
+}
+
+.sectionLabelAccent {
+  display: block;
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--d-accent);
+}
+
+.sectionLabelSuccess {
+  display: block;
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--d-success);
+}
+
+.sectionCopy {
+  margin-bottom: 1rem;
+  max-width: 48rem;
+  color: var(--d-text-muted);
+}
+
+.metricsSection {
+  padding-block: 2rem;
+}
+
+@media (max-width: 768px) {
+  .pageShellBreakpoint {
+    padding: 1.5rem 1rem;
+  }
+
+  .heroCopy,
+  .sectionCopy {
+    max-width: none;
+  }
+
+  .metricsSection {
+    padding-block: 1.5rem;
+  }
+}

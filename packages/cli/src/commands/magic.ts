@@ -11,6 +11,10 @@ import {
   deriveZones,
   deriveTransitions,
   generateTopologySection,
+  mapRegistryArchetypeToArchetypeData,
+  mapRegistryThemeToThemeData,
+  mapRegistryPatternToPatternSpecSummary,
+  collectPatternIdsFromItems,
   type ArchetypeData,
   type ThemeData,
   type ComposeSectionsResult,
@@ -18,7 +22,7 @@ import {
   type ZoneInput,
   type LayoutItem,
 } from '../scaffold.js';
-import type { ComposeEntry } from '@decantr/registry';
+import type { Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
 
 // ── ANSI helpers ──
 
@@ -170,7 +174,7 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
 async function resolveTheme(
   intent: MagicIntent,
   registryClient?: any,
-): Promise<{ style: string; mode: 'dark' | 'light' | 'auto' }> {
+): Promise<{ id: string; mode: 'dark' | 'light' | 'auto' }> {
   const hints = intent.themeHints;
 
   // Try registry-based scoring first
@@ -195,7 +199,7 @@ async function resolveTheme(
           const mode: 'dark' | 'light' | 'auto' = intent.themeHints.includes('light') ? 'light'
             : intent.themeHints.includes('dark') ? 'dark'
             : scored[0].modes?.includes('dark') ? 'dark' : 'light';
-          return { style: scored[0].id, mode };
+          return { id: scored[0].id, mode };
         }
       }
     } catch { /* fall through to hardcoded map */ }
@@ -206,16 +210,16 @@ async function resolveTheme(
   if (hints.includes('light')) mode = 'light';
 
   // Map hints to known theme IDs
-  if (hints.includes('neon') || hints.includes('glass')) return { style: 'obsidianite', mode };
-  if (hints.includes('warm') || hints.includes('elegant')) return { style: 'aurealis', mode };
-  if (hints.includes('cool') || hints.includes('minimal')) return { style: 'glacialis', mode };
-  if (hints.includes('brutalist')) return { style: 'ferrocrete', mode };
-  if (hints.includes('corporate')) return { style: 'luminarum', mode };
-  if (hints.includes('playful')) return { style: 'solstice', mode };
-  if (hints.includes('retro')) return { style: 'oxidian', mode };
+  if (hints.includes('neon') || hints.includes('glass')) return { id: 'obsidianite', mode };
+  if (hints.includes('warm') || hints.includes('elegant')) return { id: 'aurealis', mode };
+  if (hints.includes('cool') || hints.includes('minimal')) return { id: 'glacialis', mode };
+  if (hints.includes('brutalist')) return { id: 'ferrocrete', mode };
+  if (hints.includes('corporate')) return { id: 'luminarum', mode };
+  if (hints.includes('playful')) return { id: 'solstice', mode };
+  if (hints.includes('retro')) return { id: 'oxidian', mode };
 
   // Default
-  return { style: 'luminarum', mode };
+  return { id: 'luminarum', mode };
 }
 
 /**
@@ -238,8 +242,8 @@ function buildPersonality(intent: MagicIntent): string[] {
  */
 function buildRichPersonality(
   intent: MagicIntent,
-  blueprintData?: any,
-  themeData?: any,
+  blueprintData?: RegistryBlueprint,
+  themeData?: ThemeData,
 ): string {
   const parts: string[] = [];
   if (blueprintData?.personality && typeof blueprintData.personality === 'string')
@@ -307,7 +311,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   // 4. Try to match a blueprint
   let matchedBlueprint: string | undefined;
-  let blueprintData: Record<string, any> | undefined;
+  let blueprintData: RegistryBlueprint | undefined;
 
   if (apiAvailable) {
     console.log(dim('  Searching registry for matching blueprints...'));
@@ -355,8 +359,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       // Fetch the full blueprint
       const bpResult = await registryClient.fetchBlueprint(best.id);
       if (bpResult) {
-        const rawBp = bpResult.data as Record<string, unknown>;
-        blueprintData = (rawBp.data ?? rawBp) as Record<string, any>;
+        blueprintData = bpResult.data;
       }
     } else {
       console.log(dim('  No strong blueprint match found. Using archetype-based scaffold.'));
@@ -372,7 +375,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   const initOptions: InitOptions = {
     blueprint: matchedBlueprint,
     archetype: intent.archetype || blueprintData?.compose?.[0]?.archetype || blueprintData?.compose?.[0] || 'dashboard-analytics',
-    theme: themeResolved.style,
+    theme: themeResolved.id,
     mode: themeResolved.mode,
     shape: 'rounded',
     target: 'react',
@@ -386,7 +389,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   // Apply blueprint overrides
   if (blueprintData) {
-    if (blueprintData.theme?.id || blueprintData.theme?.style) initOptions.theme = blueprintData.theme.id || blueprintData.theme.style;
+    if (blueprintData.theme?.id) initOptions.theme = blueprintData.theme.id;
     if (blueprintData.theme?.mode) initOptions.mode = blueprintData.theme.mode;
     if (blueprintData.theme?.shape) initOptions.shape = blueprintData.theme.shape;
     if (blueprintData.personality) {
@@ -452,8 +455,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       const id = typeof entry === 'string' ? entry : entry.archetype;
       const result = await registryClient.fetchArchetype(id);
       if (result) {
-        const raw = result.data as Record<string, unknown>;
-        archetypeMap.set(id, (raw.data ?? raw) as ArchetypeData);
+        archetypeMap.set(id, mapRegistryArchetypeToArchetypeData(result.data));
       } else {
         archetypeMap.set(id, null);
       }
@@ -486,7 +488,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     // Map routes
     routeMap = {};
     if (blueprintData.routes) {
-      for (const [path, entry] of Object.entries(blueprintData.routes as Record<string, any>)) {
+      for (const [path, entry] of Object.entries(blueprintData.routes)) {
         if (entry.archetype && entry.page) {
           routeMap[path] = { section: entry.archetype, page: entry.page };
           const section = composedSections.sections.find(s => s.id === entry.archetype);
@@ -503,9 +505,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
         if (page.patterns) {
           for (const ref of page.patterns) allPatternIds.add(ref.pattern);
         }
-        for (const item of page.layout) {
-          if (typeof item === 'string') allPatternIds.add(item);
-        }
+        for (const patternId of collectPatternIdsFromItems(page.layout)) allPatternIds.add(patternId);
       }
     }
 
@@ -514,15 +514,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       try {
         const result = await registryClient.fetchPattern(pid);
         if (result) {
-          const raw = result.data as Record<string, unknown>;
-          const inner = (raw.data ?? raw) as Record<string, any>;
-          const defaultPreset = inner.default_preset || 'standard';
-          const preset = inner.presets?.[defaultPreset];
-          patternSpecs[pid] = {
-            description: (inner.description as string) || '',
-            components: (inner.components as string[]) || [],
-            slots: preset?.layout?.slots || {},
-          };
+          patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(result.data, undefined, false);
         }
       } catch { /* skip */ }
     }
@@ -533,11 +525,11 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       const arcId = typeof entry === 'string' ? entry : entry.archetype;
       const archData = archetypeMap.get(arcId);
       if (archData) {
-        const explicitRole = typeof entry === 'object' && 'role' in entry ? (entry as any).role : undefined;
+        const explicitRole = typeof entry === 'string' ? undefined : entry.role;
         zoneInputs.push({
           archetypeId: arcId,
-          role: explicitRole || (archData as any).role || 'auxiliary',
-          shell: (archData.pages as any)?.[0]?.shell || initOptions.shell,
+          role: explicitRole || archData.role || 'auxiliary',
+          shell: archData.pages?.[0]?.shell || initOptions.shell,
           features: archData.features || [],
           description: archData.description || '',
         });
@@ -573,8 +565,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     // No blueprint match — try direct archetype fetch
     const archResult = await registryClient.fetchArchetype(initOptions.archetype!);
     if (archResult) {
-      const raw = archResult.data as Record<string, unknown>;
-      archetypeData = (raw.data ?? raw) as ArchetypeData;
+      archetypeData = mapRegistryArchetypeToArchetypeData(archResult.data);
     }
   }
 
@@ -582,24 +573,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   if (apiAvailable && initOptions.theme) {
     const themeResult = await registryClient.fetchTheme(initOptions.theme);
     if (themeResult) {
-      const rawTheme = themeResult.data as Record<string, unknown>;
-      const theme = (rawTheme.data ?? rawTheme) as Record<string, any>;
-      themeData = {
-        seed: theme.seed,
-        palette: theme.palette,
-        tokens: theme.tokens,
-        cvd_support: theme.cvd_support,
-        typography: theme.typography,
-        motion: theme.motion,
-        decorators: theme.decorators,
-        treatments: theme.treatments,
-        spatial: theme.spatial,
-        radius: theme.radius,
-        shell: theme.shell,
-        effects: theme.effects,
-        compositions: theme.compositions,
-        pattern_preferences: theme.pattern_preferences,
-      };
+      themeData = mapRegistryThemeToThemeData(themeResult.data);
     }
   }
 
@@ -672,14 +646,18 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   } catch {}
 
   console.log(`\n${GREEN}${BOLD}Quality summary:${RESET}`);
-  console.log(`  Context files:   ${sectionCount} sections + scaffold.md + DECANTR.md`);
+  console.log(`  Context files:   ${sectionCount} sections + page packs + section packs + scaffold-pack.md + scaffold.md + DECANTR.md`);
   console.log(`  CSS:             tokens.css + treatments.css + global.css`);
   console.log(`  @layer cascade:  ${hasLayers ? GREEN + 'yes' + RESET : YELLOW + 'missing' + RESET}`);
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
-  console.log(`   1. Read ${cyan('DECANTR.md')} to understand the design system`);
-  console.log(`   2. Read ${cyan('.decantr/context/scaffold.md')} for the full app overview`);
-  console.log(`   3. Start building pages from the route map`);
+  console.log(`   1. Read ${cyan('DECANTR.md')} for guard rules, CSS approach, and workflow`);
+  console.log(`   2. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`);
+  console.log(`   3. Read ${cyan('.decantr/context/scaffold.md')} second for broader topology and voice guidance`);
+  console.log(`   4. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/section-*.md')} files before section work`);
+  console.log(`   5. Read the matching ${cyan('.decantr/context/page-*-pack.md')} file before route work`);
+  console.log(`   6. Build the shell and route structure first, then implement each page`);
+  console.log(`   7. Run ${cyan('decantr check')} and ${cyan('decantr audit')} before you ship`);
   console.log('');
 }

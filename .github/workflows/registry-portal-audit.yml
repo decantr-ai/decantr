@@ -1,0 +1,36 @@
+name: Audit Registry Portal
+
+on:
+  schedule:
+    - cron: '0 16 * * 3'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Audit hosted registry portal
+        env:
+          REGISTRY_PORTAL_URL: ${{ vars.REGISTRY_PORTAL_URL || 'https://registry.decantr.ai' }}
+          REGISTRY_PORTAL_EXPECTED_BLUEPRINT: ${{ vars.REGISTRY_PORTAL_EXPECTED_BLUEPRINT || 'ai-copilot-shell' }}
+          REGISTRY_PORTAL_EXPECTED_NAMESPACE: ${{ vars.REGISTRY_PORTAL_EXPECTED_NAMESPACE || '@official' }}
+          FAIL_ON_REGISTRY_PORTAL_ERROR: ${{ vars.FAIL_ON_REGISTRY_PORTAL_ERROR || 'false' }}
+        run: node scripts/audit-registry-portal.mjs --report-json=registry-portal-report.json --summary-markdown=registry-portal-summary.md
+
+      - name: Publish audit summary
+        run: cat registry-portal-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: registry-portal-audit
+          path: |
+            registry-portal-report.json
+            registry-portal-summary.md
+          if-no-files-found: error

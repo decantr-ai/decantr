@@ -105,7 +105,7 @@ describe('validateEssence', () => {
   });
 
   it('accepts $schema field', () => {
-    const withSchema = { $schema: 'https://decantr.ai/schema/essence/2.0.json', ...VALID_SIMPLE };
+    const withSchema = { $schema: 'https://decantr.ai/schemas/essence.v2.json', ...VALID_SIMPLE };
     const result = validateEssence(withSchema);
     expect(result.valid).toBe(true);
   });

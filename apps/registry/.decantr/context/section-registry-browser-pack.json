@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the registry-browser section using the compiled top-nav-main shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "nextjs",
+    "runtime": "spa",
+    "adapter": "nextjs"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "homepage",
+      "browse",
+      "browse-type",
+      "detail",
+      "profile"
+    ],
+    "patternIds": [
+      "search-filter-bar",
+      "content-card-grid",
+      "kpi-grid",
+      "content-detail-hero",
+      "json-viewer",
+      "detail-header",
+      "activity-feed"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "registry-browser",
+    "primary",
+    "top-nav-main",
+    "luminarum",
+    "dark",
+    "search",
+    "pagination",
+    "search-filter-bar",
+    "content-card-grid",
+    "kpi-grid",
+    "content-detail-hero",
+    "json-viewer",
+    "detail-header",
+    "activity-feed"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "registry-browser",
+    "role": "primary",
+    "shell": "top-nav-main",
+    "description": "Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.",
+    "features": [
+      "search",
+      "pagination"
+    ],
+    "theme": {
+      "id": "luminarum",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "homepage",
+        "path": "/",
+        "patternIds": [
+          "search-filter-bar",
+          "content-card-grid",
+          "kpi-grid"
+        ]
+      },
+      {
+        "pageId": "browse",
+        "path": "/browse",
+        "patternIds": [
+          "search-filter-bar",
+          "content-card-grid"
+        ]
+      },
+      {
+        "pageId": "browse-type",
+        "path": "/browse-type",
+        "patternIds": [
+          "search-filter-bar",
+          "content-card-grid"
+        ]
+      },
+      {
+        "pageId": "detail",
+        "path": "/detail",
+        "patternIds": [
+          "content-detail-hero",
+          "json-viewer"
+        ]
+      },
+      {
+        "pageId": "profile",
+        "path": "/profile",
+        "patternIds": [
+          "detail-header",
+          "content-card-grid",
+          "activity-feed"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the registry-browser section using the compiled top-nav-main shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=homepage, browse, browse-type, detail, profile | patterns=search-filter-bar, content-card-grid, kpi-grid, content-detail-hero, json-viewer, detail-header, activity-feed\n\n## Section Contract\n- Section: registry-browser\n- Role: primary\n- Shell: top-nav-main\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Description: Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.\n\n## Section Routes\n- / -> homepage [search-filter-bar, content-card-grid, kpi-grid]\n- /browse -> browse [search-filter-bar, content-card-grid]\n- /browse-type -> browse-type [search-filter-bar, content-card-grid]\n- /detail -> detail [content-detail-hero, json-viewer]\n- /profile -> profile [detail-header, content-card-grid, activity-feed]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- registry-browser\n- primary\n- top-nav-main\n- luminarum\n- dark\n- search\n- pagination\n- search-filter-bar\n- content-card-grid\n- kpi-grid\n- content-detail-hero\n- json-viewer\n- detail-header\n- activity-feed\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

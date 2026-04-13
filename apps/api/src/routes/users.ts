@@ -1,9 +1,25 @@
 import { Hono } from 'hono';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry';
 import type { Env } from '../types.js';
 import { parsePagination } from '../types.js';
+import { CONTENT_TYPES } from '../types.js';
+import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
+import { getContentIntelligence } from '../lib/content-intelligence.js';
+import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
 
 export const userRoutes = new Hono<Env>();
+
+function getSummaryText(
+  data: Record<string, unknown> | null | undefined,
+  key: 'name' | 'description',
+): string | undefined {
+  const value = data?.[key];
+  return typeof value === 'string' ? value : undefined;
+}
 
 // GET /v1/users/:username - Public profile
 userRoutes.get('/users/:username', async (c) => {
@@ -51,8 +67,25 @@ userRoutes.get('/users/:username', async (c) => {
 // GET /v1/users/:username/content - User's published public content (paginated)
 userRoutes.get('/users/:username/content', async (c) => {
   const username = c.req.param('username').toLowerCase();
-  const typeFilter = c.req.query('type');
+  const rawTypeFilter = c.req.query('type');
+  const sort = c.req.query('sort') ?? undefined;
+  const recommendedOnly = c.req.query('recommended') === 'true';
+  const rawIntelligenceSource = c.req.query('intelligence_source');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+
+  if (rawTypeFilter && !CONTENT_TYPES.includes(rawTypeFilter as ContentType)) {
+    return c.json({ error: `Invalid type filter: ${rawTypeFilter}` }, 400);
+  }
+
+  if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
+    return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
+  }
+
+  const typeFilter = rawTypeFilter as ContentType | undefined;
+  const intelligenceSource: ContentIntelligenceSource | undefined =
+    rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
+      ? rawIntelligenceSource
+      : undefined;
 
   const client = createAdminClient();
 
@@ -73,8 +106,7 @@ userRoutes.get('/users/:username/content', async (c) => {
     .eq('owner_id', user.id)
     .eq('visibility', 'public')
     .eq('status', 'published')
-    .order('published_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    .order('published_at', { ascending: false });
 
   if (typeFilter) {
     query = query.eq('type', typeFilter);
@@ -86,19 +118,38 @@ userRoutes.get('/users/:username/content', async (c) => {
     return c.json({ error: 'Failed to fetch content' }, 500);
   }
 
-  return c.json({
-    total: count ?? 0,
-    limit,
-    offset,
-    items: (data ?? []).map((item) => ({
+  const mappedItems = (data ?? []).map((item) => {
+    const itemData = item.data as Record<string, unknown> | null | undefined;
+    return {
       id: item.id,
       type: item.type,
       slug: item.slug,
       namespace: item.namespace,
       version: item.version,
-      name: (item.data as Record<string, unknown>)?.name,
-      description: (item.data as Record<string, unknown>)?.description,
-      published_at: item.published_at,
-    })),
+      name: getSummaryText(itemData, 'name'),
+      description: getSummaryText(itemData, 'description'),
+      published_at: item.published_at ?? undefined,
+      intelligence: getContentIntelligence(
+        item.type as ContentType,
+        item.namespace,
+        item.slug,
+        itemData,
+      ),
+    };
+  });
+  const ordered = applyPublicContentOrdering(
+    mappedItems,
+    sort,
+    recommendedOnly,
+    intelligenceSource,
+    limit,
+    offset,
+  );
+
+  return c.json({
+    total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : (count ?? 0),
+    limit,
+    offset,
+    items: ordered.items,
   });
 });

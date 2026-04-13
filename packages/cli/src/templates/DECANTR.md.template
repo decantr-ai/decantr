@@ -68,6 +68,11 @@ When a user request would violate guard rules:
 - `decantr_check_drift` -- Check if planned changes violate rules
 - `decantr_accept_drift` -- Accept a detected drift as intentional
 - `decantr_update_essence` -- Update the essence spec to match desired changes
+- `decantr_audit_project` -- Audit the current project against the essence contract and compiled packs
+- `decantr_get_scaffold_context` -- Read the top-level scaffold task, scaffold overview, compiled scaffold pack, and review pack together
+- `decantr_get_page_context` -- Read a route-local page pack together with its parent section context when available
+- `decantr_get_execution_pack` -- Read compiled scaffold, review, mutation, section, and page packs
+- `decantr_get_section_context` -- Read the richer section context with compiled pack data when available
 
 ---
 
@@ -79,15 +84,32 @@ When a user request would violate guard rules:
 
 ### Initial scaffolding
 
-Read `.decantr/context/scaffold.md` for the full app overview, topology, and route map.
+Treat the compiled execution-pack files as the primary source of truth.
+Use narrative docs only as secondary explanation when the compiled packs are not enough.
+
+Read `.decantr/context/scaffold-pack.md` first for the compact compiled shell, theme, feature, and route contract.
+Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, route map, and voice guidance.
+Start implementation from the shell layouts and shared route structure before filling in section pages.
 
 ### Working on a section
 
-Read `.decantr/context/section-{name}.md` for that section's complete context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
+Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract.
+Then read `.decantr/context/section-{name}.md` for the fuller context. Prefer the compiled section pack if the two sources differ, and do not invent section features, shells, or themes that are not present in the compiled contract.
+
+### Working on a route
+
+Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page. Route-local packs should win over broader narrative docs when there is any mismatch.
+
+### Editing rules
+
+- Import `src/styles/global.css`, `src/styles/tokens.css`, and `src/styles/treatments.css`.
+- Reuse the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.
+- Do not modify generated context files unless you are explicitly regenerating or refreshing Decantr context.
+- If a required context file is missing or inconsistent, stop and report which file is missing before continuing.
 
 ### Validation
 
-Run `decantr check` to validate code against the spec.
+Run `decantr check` to detect drift violations while editing and `decantr audit` to audit the whole project contract after implementation.
 
 ### Quick Commands
 

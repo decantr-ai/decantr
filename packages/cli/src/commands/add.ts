@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceV31Section } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV3, EssenceV31Section } from '@decantr/essence-spec';
 import { refreshDerivedFiles } from '../scaffold.js';
 import { RegistryClient } from '../registry.js';
 
@@ -20,22 +20,22 @@ function readAndMigrate(projectRoot: string): { essence: EssenceV3; essencePath:
     return null;
   }
 
-  let parsed: unknown;
+  let parsed: EssenceFile;
   try {
-    parsed = JSON.parse(readFileSync(essencePath, 'utf-8'));
+    parsed = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
   } catch (e) {
     console.error(`${RED}Could not read essence: ${(e as Error).message}${RESET}`);
     process.exitCode = 1;
     return null;
   }
 
-  if (!isV3(parsed as any)) {
+  if (!isV3(parsed)) {
     console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
     process.exitCode = 1;
     return null;
   }
 
-  const essence = migrateV30ToV31(parsed as EssenceV3);
+  const essence = migrateV30ToV31(parsed);
   return { essence, essencePath };
 }
 
@@ -82,17 +82,15 @@ export async function cmdAddSection(
     return;
   }
 
-  // Unwrap API wrapper
-  const raw = result.data as Record<string, unknown>;
-  const inner = (raw.data ?? raw) as Record<string, any>;
+  const archetype = result.data;
 
   const newSection: EssenceV31Section = {
-    id: inner.id || archetypeId,
-    role: inner.role || 'auxiliary',
-    shell: inner.pages?.[0]?.shell || essence.blueprint.shell || 'top-nav-main',
-    features: inner.features || [],
-    description: inner.description || '',
-    pages: (inner.pages || []).map((p: any) => ({
+    id: archetype.id || archetypeId,
+    role: archetype.role || 'auxiliary',
+    shell: archetype.pages?.[0]?.shell || essence.blueprint.shell || 'top-nav-main',
+    features: archetype.features || [],
+    description: archetype.description || '',
+    pages: (archetype.pages || []).map(p => ({
       id: p.id,
       layout: p.default_layout?.length ? p.default_layout : ['hero'],
     })),

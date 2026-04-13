@@ -1,22 +1,26 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { basename, join, dirname, isAbsolute, resolve } from 'node:path';
 import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
-import { resolvePatternPreset } from '@decantr/registry';
-import type { Pattern, ArchetypeRole } from '@decantr/registry';
+import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
+import type {
+  ContentIntelligenceSource,
+  Pattern,
+  ArchetypeRole,
+  ComposeEntry,
+} from '@decantr/registry';
 import {
   validateStringArg,
   fuzzyScore,
   getAPIClient,
+  getPublicAPIClient,
   readEssenceFile,
   mutateEssenceFile,
   readDriftLog,
   writeDriftLog,
 } from './helpers.js';
 import type { DriftLogEntry } from './helpers.js';
-import { COMPONENT_MANIFEST, getComponentsByCategory } from './component-manifest.js';
-import type { ComponentManifestEntry } from './component-manifest.js';
 
 // ── Inline topology derivation (lightweight version of cli/scaffold.ts) ──
 
@@ -41,6 +45,379 @@ interface ZoneTransition {
   to: string;
   type: string;
   trigger: string;
+}
+
+interface RegistryPatternListItem {
+  slug?: string;
+  name?: string;
+  description?: string;
+}
+
+interface PackManifestEntry {
+  id: string;
+  markdown: string;
+  json: string;
+}
+
+interface PackManifest {
+  $schema?: string;
+  version: string;
+  generatedAt: string;
+  scaffold: PackManifestEntry | null;
+  review?: PackManifestEntry | null;
+  sections: Array<PackManifestEntry & { pageIds: string[] }>;
+  pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
+  mutations?: Array<PackManifestEntry & { mutationType: string }>;
+}
+
+async function getShowcaseBenchmarkPayload(view: string) {
+  const client = getPublicAPIClient();
+
+  if (view === 'manifest') {
+    return client.getShowcaseManifest();
+  }
+
+  if (view === 'verification') {
+    return client.getShowcaseShortlistVerification();
+  }
+
+  return client.getShowcaseShortlist();
+}
+
+async function getRegistryIntelligenceSummaryPayload(namespace?: string) {
+  const client = getPublicAPIClient();
+  return client.getRegistryIntelligenceSummary(namespace ? { namespace } : undefined);
+}
+
+async function getHostedExecutionPackBundlePayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const essence = (() => {
+    if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
+      return args.essence as EssenceFile;
+    }
+    return readEssenceFile(args.path as string | undefined);
+  })();
+
+  return client.compileExecutionPacks(
+    essence,
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
+async function getHostedSelectedExecutionPackPayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const essence = (() => {
+    if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
+      return args.essence as EssenceFile;
+    }
+    return readEssenceFile(args.path as string | undefined);
+  })();
+
+  return client.selectExecutionPack(
+    {
+      essence,
+      pack_type: args.pack_type as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+      ...(typeof args.id === 'string' ? { id: args.id } : {}),
+    },
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
+async function getHostedExecutionPackManifestPayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const essence = (() => {
+    if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
+      return args.essence as EssenceFile;
+    }
+    return readEssenceFile(args.path as string | undefined);
+  })();
+
+  return client.getExecutionPackManifest(
+    essence,
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
+async function getHostedFileCritiquePayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const filePath = args.file_path as string;
+  const resolvedFilePath = isAbsolute(filePath) ? filePath : resolve(process.cwd(), filePath);
+  const code = await readFile(resolvedFilePath, 'utf-8');
+  const { essence } = await readEssenceFile(args.path as string | undefined);
+  const treatmentsPath = typeof args.treatments_path === 'string'
+    ? (isAbsolute(args.treatments_path) ? args.treatments_path : resolve(process.cwd(), args.treatments_path))
+    : join(process.cwd(), 'src', 'styles', 'treatments.css');
+  const treatmentsCss = existsSync(treatmentsPath)
+    ? readFileSync(treatmentsPath, 'utf-8')
+    : undefined;
+
+  return client.critiqueFile(
+    {
+      essence,
+      filePath,
+      code,
+      treatmentsCss,
+    },
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
+function extractHostedAssetPaths(indexHtml: string): string[] {
+  const assetPaths = new Set<string>();
+
+  for (const match of indexHtml.matchAll(/<(?:script|link)[^>]+(?:src|href)="([^"]+)"/g)) {
+    const assetPath = match[1];
+    const assetsIndex = assetPath.indexOf('/assets/');
+    if (assetsIndex === -1) continue;
+    assetPaths.add(assetPath.slice(assetsIndex));
+  }
+
+  return [...assetPaths];
+}
+
+async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: string) {
+  const distRoot = distPathArg
+    ? (isAbsolute(distPathArg) ? distPathArg : resolve(projectRoot, distPathArg))
+    : join(projectRoot, 'dist');
+  const indexPath = join(distRoot, 'index.html');
+
+  if (!existsSync(indexPath)) {
+    return undefined;
+  }
+
+  const indexHtml = readFileSync(indexPath, 'utf-8');
+  const assets: Record<string, string> = {};
+
+  for (const assetPath of extractHostedAssetPaths(indexHtml)) {
+    const assetFilePath = join(distRoot, assetPath.replace(/^[/\\]+/, ''));
+    if (existsSync(assetFilePath)) {
+      assets[assetPath] = readFileSync(assetFilePath, 'utf-8');
+    }
+  }
+
+  return {
+    indexHtml,
+    assets,
+  };
+}
+
+function isHostedSourceSnapshotFile(path: string): boolean {
+  if (/\.d\.ts$/i.test(path)) return false;
+  return /\.(?:[cm]?[jt]sx?)$/i.test(path);
+}
+
+async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?: string) {
+  if (!sourcesPathArg) {
+    return undefined;
+  }
+
+  const sourcesRoot = isAbsolute(sourcesPathArg) ? sourcesPathArg : resolve(projectRoot, sourcesPathArg);
+  if (!existsSync(sourcesRoot)) {
+    return undefined;
+  }
+
+  const files: Record<string, string> = {};
+  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const rootPrefix = basename(sourcesRoot);
+
+  const walk = (absoluteDir: string, relativeDir: string) => {
+    for (const entry of readdirSync(absoluteDir, { withFileTypes: true })) {
+      if (ignoredDirNames.has(entry.name)) continue;
+      const absolutePath = join(absoluteDir, entry.name);
+      const relativePath = join(relativeDir, entry.name).replace(/\\/g, '/');
+      if (entry.isDirectory()) {
+        walk(absolutePath, relativePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!isHostedSourceSnapshotFile(relativePath)) continue;
+      files[relativePath] = readFileSync(absolutePath, 'utf-8');
+    }
+  };
+
+  walk(sourcesRoot, rootPrefix);
+  return Object.keys(files).length > 0 ? { files } : undefined;
+}
+
+async function getHostedProjectAuditPayload(
+  args: Record<string, unknown>,
+) {
+  const client = getPublicAPIClient();
+  const { essence } = await readEssenceFile(args.path as string | undefined);
+  const dist = await captureHostedDistSnapshot(process.cwd(), args.dist_path as string | undefined);
+  const sources = await captureHostedSourceSnapshot(process.cwd(), args.sources_path as string | undefined);
+
+  return client.auditProject(
+    {
+      essence,
+      dist,
+      sources,
+    },
+    typeof args.namespace === 'string' ? { namespace: args.namespace } : undefined,
+  );
+}
+
+type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
+type HostedSelectedExecutionPack = Awaited<ReturnType<typeof getHostedSelectedExecutionPackPayload>>;
+type HostedExecutionPackManifest = Awaited<ReturnType<typeof getHostedExecutionPackManifestPayload>>;
+type PackSource = 'local' | 'hosted_fallback';
+
+async function loadHostedExecutionPackBundleFallback(args: Record<string, unknown>): Promise<{
+  bundle: HostedExecutionPackBundle | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      bundle: await getHostedExecutionPackBundlePayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      bundle: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedExecutionPackManifestFallback(args: Record<string, unknown>): Promise<{
+  manifest: HostedExecutionPackManifest | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      manifest: await getHostedExecutionPackManifestPayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      manifest: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedSelectedExecutionPackFallback(args: Record<string, unknown>): Promise<{
+  selected: HostedSelectedExecutionPack | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      selected: await getHostedSelectedExecutionPackPayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      selected: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedSelectedExecutionPackByType(
+  args: Record<string, unknown>,
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+): Promise<{
+  selected: HostedSelectedExecutionPack | null;
+  error: string | null;
+}> {
+  const selectedArgs: Record<string, unknown> = {
+    ...args,
+    pack_type: packType,
+  };
+
+  delete selectedArgs.id;
+  if (typeof id === 'string') {
+    selectedArgs.id = id;
+  }
+
+  return loadHostedSelectedExecutionPackFallback(selectedArgs);
+}
+
+async function loadHostedFileCritiqueFallback(args: Record<string, unknown>): Promise<{
+  report: Awaited<ReturnType<typeof getHostedFileCritiquePayload>> | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      report: await getHostedFileCritiquePayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      report: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+async function loadHostedProjectAuditFallback(args: Record<string, unknown>): Promise<{
+  report: Awaited<ReturnType<typeof getHostedProjectAuditPayload>> | null;
+  error: string | null;
+}> {
+  try {
+    return {
+      report: await getHostedProjectAuditPayload(args),
+      error: null,
+    };
+  } catch (error) {
+    return {
+      report: null,
+      error: (error as Error).message,
+    };
+  }
+}
+
+function hasExecutionPackPayload(payload: { markdown: string | null; json: unknown | null }): boolean {
+  return payload.markdown !== null || payload.json !== null;
+}
+
+function toHostedExecutionPackPayload(pack: { renderedMarkdown?: string } | null | undefined) {
+  return {
+    markdown: pack && typeof pack.renderedMarkdown === 'string' ? pack.renderedMarkdown : null,
+    json: pack ?? null,
+  };
+}
+
+function findHostedSectionPack(bundle: HostedExecutionPackBundle, sectionId: string) {
+  return bundle.sections.find(section => section.data.sectionId === sectionId) ?? null;
+}
+
+function findHostedPagePack(bundle: HostedExecutionPackBundle, pageId: string) {
+  return bundle.pages.find(page => page.data.pageId === pageId) ?? null;
+}
+
+function findHostedMutationPack(bundle: HostedExecutionPackBundle, mutationId: string) {
+  return bundle.mutations.find(mutation => mutation.data.mutationType === mutationId) ?? null;
+}
+
+function findManifestEntryForPack(
+  manifest: PackManifest,
+  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+  id?: string,
+): PackManifestEntry | null {
+  switch (packType) {
+    case 'scaffold':
+      return manifest.scaffold;
+    case 'review':
+      return manifest.review ?? null;
+    case 'section':
+      return id ? manifest.sections.find(section => section.id === id) ?? null : null;
+    case 'page':
+      return id ? manifest.pages.find(page => page.id === id) ?? null : null;
+    case 'mutation':
+      return id ? (manifest.mutations ?? []).find(mutation => mutation.id === id) ?? null : null;
+    default:
+      return null;
+  }
 }
 
 const ZONE_ORDER: ArchetypeRole[] = ['public', 'gateway', 'primary', 'auxiliary'];
@@ -184,6 +561,9 @@ export const TOOLS = [
       properties: {
         query: { type: 'string', description: 'Search query (e.g. "kanban", "neon", "dashboard")' },
         type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
+        sort: { type: 'string', description: 'Optional sort: recommended, recent, or name.' },
+        recommended: { type: 'boolean', description: 'When true, only return recommended items.' },
+        source: { type: 'string', description: 'Optional intelligence source filter: authored, benchmark, or hybrid.' },
       },
       required: ['query'],
     },
@@ -264,7 +644,7 @@ export const TOOLS = [
           items: { type: 'string' },
           description: 'List of component names used in the generated code. Checked against page layout patterns.',
         },
-        theme_used: { type: 'string', description: 'Theme/style name used in the generated code' },
+        theme_used: { type: 'string', description: 'Theme id used in the generated code' },
       },
     },
     annotations: READ_ONLY,
@@ -341,55 +721,193 @@ export const TOOLS = [
     },
     annotations: WRITE_TOOL,
   },
-  // 13. decantr_get_section_context — local read
+  // 13. decantr_get_scaffold_context — local read
+  {
+    name: 'decantr_get_scaffold_context',
+    title: 'Get Scaffold Context',
+    description: 'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, compiled review pack, and pack manifest when available. Falls back to hosted execution-pack compilation when local context artifacts are missing.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+        },
+        namespace: {
+          type: 'string',
+          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 14. decantr_get_section_context — local read
   {
     name: 'decantr_get_section_context',
     title: 'Get Section Context',
-    description: 'Get the self-contained context for a specific section of the project. Returns guard rules, theme tokens, visual treatments, pattern specs, zone context, and pages — everything an AI needs to work on that section.',
+    description: 'Get the self-contained context for a specific section of the project. Returns the richer section context file and, when available, the compiled section execution pack for a more compact contract-first view. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         section_id: { type: 'string', description: 'Section ID (archetype ID, e.g., "ai-chatbot", "auth-full", "settings-full")' },
+        path: {
+          type: 'string',
+          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+        },
+        namespace: {
+          type: 'string',
+          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+        },
       },
       required: ['section_id'],
     },
     annotations: READ_ONLY,
   },
-  // 14. decantr_component_api — local read (static manifest)
+  // 15. decantr_get_page_context — local read
   {
-    name: 'decantr_component_api',
-    title: 'Component API',
-    description: 'Query the @decantr/ui component API. Pass a component name to get its full props, usage examples, and related components. Pass "list" to see all available components grouped by category.',
+    name: 'decantr_get_page_context',
+    title: 'Get Page Context',
+    description: 'Get the route-local context for a specific page. Returns the compiled page execution pack plus its parent section pack and section context when available. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        component: {
+        page_id: { type: 'string', description: 'Page ID (for example "overview", "settings", or "home").' },
+        path: {
           type: 'string',
-          description: "Component name (e.g., 'Button', 'Modal', 'Card') or 'list' to see all available components.",
+          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
         },
-        category: {
+        namespace: {
           type: 'string',
-          description: "Filter by category when listing components.",
-          enum: ['original', 'general', 'layout', 'navigation', 'form', 'data-display', 'feedback', 'media', 'utility', 'all'],
+          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
         },
       },
-      required: ['component'],
+      required: ['page_id'],
     },
     annotations: READ_ONLY,
   },
-  // 15. decantr_critique — local read
+  // 16. decantr_get_execution_pack — local read
+  {
+    name: 'decantr_get_execution_pack',
+    title: 'Get Execution Pack',
+    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, review, mutation, section, or page pack in markdown, JSON, or both. Falls back to the hosted selected-pack surface for targeted reads when local pack artifacts are missing.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        pack_type: {
+          type: 'string',
+          enum: ['manifest', 'scaffold', 'review', 'mutation', 'section', 'page'],
+          description: 'Pack type to fetch. Defaults to manifest.',
+        },
+        id: {
+          type: 'string',
+          description: 'Required for section/page/mutation packs (for example "dashboard", "overview", or "modify").',
+        },
+        format: {
+          type: 'string',
+          enum: ['json', 'markdown', 'both'],
+          description: 'Return format for a specific pack. Defaults to both.',
+        },
+        path: {
+          type: 'string',
+          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+        },
+        namespace: {
+          type: 'string',
+          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 17. decantr_get_showcase_benchmarks — network read
+  {
+    name: 'decantr_get_showcase_benchmarks',
+    title: 'Get Showcase Benchmarks',
+    description: 'Read the audited Decantr showcase corpus metadata. Returns the active manifest, shortlisted benchmark set, or the schema-backed shortlist verification report.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        view: {
+          type: 'string',
+          enum: ['manifest', 'shortlist', 'verification'],
+          description: 'Which showcase benchmark view to return. Defaults to shortlist.',
+        },
+      },
+    },
+    annotations: READ_ONLY_NETWORK,
+  },
+  // 18. decantr_get_registry_intelligence_summary — network read
+  {
+    name: 'decantr_get_registry_intelligence_summary',
+    title: 'Get Registry Intelligence Summary',
+    description: 'Read the hosted schema-backed registry intelligence summary. Useful for checking overall intelligence/recommendation coverage without crawling every item.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        namespace: {
+          type: 'string',
+          description: 'Optional namespace to scope the summary to, for example "@official".',
+        },
+      },
+    },
+    annotations: READ_ONLY_NETWORK,
+  },
+  // 19. decantr_compile_execution_packs — network read
+  {
+    name: 'decantr_compile_execution_packs',
+    title: 'Compile Execution Packs',
+    description: 'Compile a hosted execution-pack bundle from an essence document using the public Decantr API. Reads the local essence file by default, or accepts an inline essence object.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Optional path to an essence file. Defaults to ./decantr.essence.json when essence is not provided.',
+        },
+        essence: {
+          type: 'object' as const,
+          description: 'Optional inline essence document to compile instead of reading from disk.',
+        },
+        namespace: {
+          type: 'string',
+          description: 'Optional preferred public namespace for content resolution. Defaults to "@official".',
+        },
+      },
+    },
+    annotations: READ_ONLY_NETWORK,
+  },
+  // 20. decantr_audit_project — local read with hosted fallback
+  {
+    name: 'decantr_audit_project',
+    title: 'Audit Project',
+    description: 'Audit the current project against the essence contract, guard rules, and compiled execution packs. Falls back to the hosted verifier when local compiled pack artifacts are missing. Returns a schema-backed project audit report.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        path: { type: 'string' as const, description: 'Optional path to the essence file for hosted fallback. Defaults to ./decantr.essence.json.' },
+        namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
+        dist_path: { type: 'string' as const, description: 'Optional path to a local dist directory to snapshot for hosted runtime verification. Defaults to ./dist.' },
+        sources_path: { type: 'string' as const, description: 'Optional path to a local source directory to snapshot for hosted source-level verification. For example `src` or `app`.' },
+      },
+    },
+    annotations: READ_ONLY_NETWORK,
+  },
+  // 21. decantr_critique — local read with hosted fallback
   {
     name: 'decantr_critique',
     title: 'Design Critique',
-    description: 'Evaluate generated code against the essence spec for visual quality. Returns a scorecard covering treatment usage, decorator coverage, personality alignment, motion, accessibility, and responsiveness.',
+    description: 'Critique a file against the compiled review contract and Decantr verification heuristics. Falls back to the hosted verifier when local review packs are missing. Returns a schema-backed file critique report with scores, findings, and focus areas.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         file_path: { type: 'string' as const, description: 'Path to the component file to critique' },
+        path: { type: 'string' as const, description: 'Optional path to the essence file when using hosted fallback. Defaults to ./decantr.essence.json.' },
+        namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
+        treatments_path: { type: 'string' as const, description: 'Optional path to treatments.css when using hosted fallback. Defaults to ./src/styles/treatments.css.' },
       },
       required: ['file_path'],
     },
-    annotations: READ_ONLY,
+    annotations: READ_ONLY_NETWORK,
   },
 ];
 
@@ -450,10 +968,16 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     case 'decantr_search_registry': {
       const err = validateStringArg(args, 'query');
       if (err) return { error: err };
+      if (args.source && (typeof args.source !== 'string' || !isContentIntelligenceSource(args.source))) {
+        return { error: 'Invalid source. Must be one of: authored, benchmark, hybrid.' };
+      }
       try {
         const response = await apiClient.search({
           q: args.query as string,
           type: args.type as string | undefined,
+          sort: args.sort as string | undefined,
+          recommended: args.recommended === true,
+          intelligenceSource: args.source as ContentIntelligenceSource | undefined,
         });
         return {
           total: response.total,
@@ -464,6 +988,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             name: r.name,
             description: r.description,
             install: `decantr get ${r.type} ${r.slug}`,
+            intelligence: r.intelligence ?? null,
           })),
         };
       } catch (e) {
@@ -509,15 +1034,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
         // Derive topology from composed archetypes
         let topology = null;
-        const composeEntries = (blueprint as any).compose;
+        const composeEntries = blueprint.compose;
         if (composeEntries && Array.isArray(composeEntries) && composeEntries.length > 0) {
           const zoneInputs: ZoneInput[] = [];
-          const archetypePromises = composeEntries.map(async (entry: any) => {
+          const archetypePromises = composeEntries.map(async (entry: ComposeEntry) => {
             const arcId = typeof entry === 'string' ? entry : entry.archetype;
             try {
-              const arch = await apiClient.getContent('archetypes', namespace, arcId);
-              const archData = arch as any;
-              const explicitRole = typeof entry === 'object' ? entry.role : undefined;
+              const archData = await apiClient.getArchetype(namespace, arcId);
+              const explicitRole = typeof entry === 'string' ? undefined : entry.role;
               zoneInputs.push({
                 archetypeId: arcId,
                 role: explicitRole || archData.role || 'auxiliary',
@@ -564,7 +1088,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const desc = (args.description as string).toLowerCase();
 
       try {
-        const patternsResponse = await apiClient.listContent<Record<string, unknown>>('patterns', {
+        const patternsResponse = await apiClient.listContent<RegistryPatternListItem>('patterns', {
           namespace: '@official',
           limit: 100,
         });
@@ -573,9 +1097,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const prelimScores: { slug: string; score: number; name: string; description: string }[] = [];
 
         for (const p of patternsResponse.items) {
-          const slug = (p as any).slug || '';
-          const name = (p as any).name || slug;
-          const description = (p as any).description || '';
+          const slug = p.slug || '';
+          const name = p.name || slug;
+          const description = p.description || '';
           const searchable = [name, description].join(' ').toLowerCase();
 
           let score = 0;
@@ -673,18 +1197,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const violations: { rule: string; severity: string; message: string; layer?: string; autoFixable?: boolean; autoFix?: unknown }[] = [];
 
       if (args.theme_used && typeof args.theme_used === 'string') {
-        let expectedStyle: string | undefined;
+        let expectedThemeId: string | undefined;
         if (isV3(essence)) {
-          expectedStyle = essence.dna.theme.id;
+          expectedThemeId = essence.dna.theme.id;
         } else {
           const expectedTheme = (essence as Record<string, unknown>).theme as Record<string, string> | undefined;
-          expectedStyle = expectedTheme?.id ?? expectedTheme?.style;
+          expectedThemeId = expectedTheme?.id ?? expectedTheme?.style;
         }
-        if (expectedStyle && args.theme_used !== expectedStyle) {
+        if (expectedThemeId && args.theme_used !== expectedThemeId) {
           violations.push({
             rule: 'theme-match',
             severity: 'critical',
-            message: `Theme drift: code uses "${args.theme_used}" but Essence specifies "${expectedStyle}". Do not switch themes.`,
+            message: `Theme drift: code uses "${args.theme_used}" but Essence specifies "${expectedThemeId}". Do not switch themes.`,
             ...(isV3(essence) ? { layer: 'dna', autoFixable: false } : {}),
           });
         }
@@ -808,7 +1332,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const archetypeIds = [
         'saas-dashboard', 'ecommerce', 'portfolio', 'content-site',
         'financial-dashboard', 'cloud-platform', 'gaming-platform',
-        'ecommerce-admin', 'workbench',
+        'ecommerce-admin',
       ];
 
       for (const id of archetypeIds) {
@@ -825,7 +1349,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         if (desc.includes('game') && id.includes('gaming')) score += 15;
         if (desc.includes('admin') && id.includes('admin')) score += 15;
         if (desc.includes('analytics') && id.includes('dashboard')) score += 10;
-        if (desc.includes('tool') && id === 'workbench') score += 10;
         if (score > 0) archetypeScores.push({ id, score });
       }
 
@@ -937,16 +1460,16 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       // Check if any violations are DNA-layer; if so, require confirm_dna
       const hasDnaViolation = violations.some(v => {
         const rule = v.rule;
-        // DNA-layer rules: style, density, theme-mode, accessibility
-        return ['style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
+        // DNA-layer rules: theme, density, theme-mode, accessibility
+        return ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
       });
 
       if (hasDnaViolation && resolution !== 'reject' && resolution !== 'defer' && !args.confirm_dna) {
         return {
-          error: 'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, style, density, etc.).',
+          error: 'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, density, accessibility, etc.).',
           requires_confirmation: true,
           dna_rules_affected: violations.filter(v =>
-            ['style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
+            ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
           ).map(v => v.rule),
         };
       }
@@ -1032,6 +1555,105 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
     }
 
+    case 'decantr_get_scaffold_context': {
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifestPath = join(contextDir, 'pack-manifest.json');
+      const scaffoldContextPath = join(contextDir, 'scaffold.md');
+      const taskContextPath = join(contextDir, 'task-scaffold.md');
+      const packMarkdownPath = join(contextDir, 'scaffold-pack.md');
+      const packJsonPath = join(contextDir, 'scaffold-pack.json');
+
+      const hasAnyContext = existsSync(scaffoldContextPath)
+        || existsSync(taskContextPath)
+        || existsSync(packMarkdownPath)
+        || existsSync(packJsonPath)
+        || existsSync(manifestPath);
+
+      if (!hasAnyContext) {
+        const [hostedScaffold, hostedReview] = await Promise.all([
+          loadHostedSelectedExecutionPackFallback({
+            ...args,
+            pack_type: 'scaffold',
+          }),
+          loadHostedSelectedExecutionPackFallback({
+            ...args,
+            pack_type: 'review',
+          }),
+        ]);
+
+        const scaffoldSelected = hostedScaffold.selected;
+        const reviewSelected = hostedReview.selected;
+        if (scaffoldSelected && reviewSelected) {
+          const scaffoldPayload = toHostedExecutionPackPayload(scaffoldSelected.pack);
+          const reviewPayload = toHostedExecutionPackPayload(reviewSelected.pack);
+          return {
+            source: 'hosted_fallback' as PackSource,
+            task_context: null,
+            scaffold_context: scaffoldPayload.markdown,
+            execution_pack: scaffoldPayload,
+            review_pack: reviewPayload,
+            pack_manifest: scaffoldSelected.manifest,
+            available_sections: scaffoldSelected.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
+            available_pages: scaffoldSelected.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
+            available_mutations: (scaffoldSelected.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
+            note: 'Using hosted selected execution packs because local scaffold context artifacts were not found; scaffold pack markdown is being reused as readable scaffold context.',
+          };
+        }
+
+        const hosted = await loadHostedExecutionPackBundleFallback(args);
+        if (!hosted.bundle) {
+          return {
+            error: 'Scaffold context not found. Run `decantr refresh` or `decantr registry compile-packs --write-context` to materialize scaffold context and execution packs.',
+            hosted_fallback_error: hosted.error ?? hostedScaffold.error ?? hostedReview.error,
+          };
+        }
+
+        const scaffoldPayload = toHostedExecutionPackPayload(hosted.bundle.scaffold);
+        const reviewPayload = toHostedExecutionPackPayload(hosted.bundle.review);
+        return {
+          source: 'hosted_fallback' as PackSource,
+          task_context: null,
+          scaffold_context: scaffoldPayload.markdown,
+          execution_pack: scaffoldPayload,
+          review_pack: reviewPayload,
+          pack_manifest: hosted.bundle.manifest,
+          available_sections: hosted.bundle.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
+          available_pages: hosted.bundle.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
+          available_mutations: (hosted.bundle.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
+          note: 'Using hosted compiled execution packs because local scaffold context artifacts were not found; scaffold pack markdown is being reused as readable scaffold context.',
+        };
+      }
+
+      let manifest: PackManifest | null = null;
+      if (existsSync(manifestPath)) {
+        try {
+          manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PackManifest;
+        } catch (e) {
+          return { error: `Failed to read pack manifest: ${(e as Error).message}` };
+        }
+      }
+
+      return {
+        source: 'local' as PackSource,
+        task_context: existsSync(taskContextPath) ? readFileSync(taskContextPath, 'utf-8') : null,
+        scaffold_context: existsSync(scaffoldContextPath)
+          ? readFileSync(scaffoldContextPath, 'utf-8')
+          : (existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null),
+        execution_pack: {
+          markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
+          json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
+        },
+        review_pack: {
+          markdown: existsSync(join(contextDir, 'review-pack.md')) ? readFileSync(join(contextDir, 'review-pack.md'), 'utf-8') : null,
+          json: existsSync(join(contextDir, 'review-pack.json')) ? JSON.parse(readFileSync(join(contextDir, 'review-pack.json'), 'utf-8')) : null,
+        },
+        pack_manifest: manifest,
+        available_sections: manifest?.sections.map(section => ({ id: section.id, page_ids: section.pageIds })) ?? [],
+        available_pages: manifest?.pages.map(page => ({ id: page.id, section_id: page.sectionId })) ?? [],
+        available_mutations: manifest?.mutations?.map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })) ?? [],
+      };
+    }
+
     case 'decantr_get_section_context': {
       const err = validateStringArg(args, 'section_id');
       if (err) return { error: err };
@@ -1060,6 +1682,30 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         };
       }
 
+      const packBasePath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}-pack`);
+      const packMarkdownPath = `${packBasePath}.md`;
+      const packJsonPath = `${packBasePath}.json`;
+      const localExecutionPack = {
+        markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
+        json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
+      };
+      let executionPack = localExecutionPack;
+      let executionPackSource: PackSource | null = hasExecutionPackPayload(localExecutionPack) ? 'local' : null;
+      let hostedFallbackError: string | null = null;
+
+      if (!executionPackSource) {
+        const hosted = await loadHostedSelectedExecutionPackFallback({
+          ...args,
+          pack_type: 'section',
+          id: sectionId,
+        });
+        hostedFallbackError = hosted.error;
+        if (hosted.selected) {
+          executionPack = toHostedExecutionPackPayload(hosted.selected.pack);
+          executionPackSource = 'hosted_fallback';
+        }
+      }
+
       // Read the section context file if it exists
       const contextPath = join(process.cwd(), '.decantr', 'context', `section-${sectionId}.md`);
       if (existsSync(contextPath)) {
@@ -1070,10 +1716,13 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           features: section.features,
           pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
           context: readFileSync(contextPath, 'utf-8'),
+          execution_pack_source: executionPackSource,
+          execution_pack: executionPack,
         };
       }
 
       // Fallback: return structured section data
+      const derivedContext = executionPack.markdown;
       return {
         section_id: sectionId,
         role: section.role,
@@ -1081,100 +1730,435 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         features: section.features,
         description: section.description,
         pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
-        note: 'Section context file not found. Run decantr refresh to generate it.',
+        context: derivedContext,
+        execution_pack_source: executionPackSource,
+        execution_pack: executionPack,
+        note: executionPackSource === 'hosted_fallback'
+          ? 'Section context file not found. Using hosted compiled execution pack fallback as the readable section context.'
+          : `Section context file not found. Run \`decantr refresh\` or \`decantr registry get-pack section ${sectionId} --write-context\` to generate it.`,
+        hosted_fallback_error: executionPackSource ? undefined : hostedFallbackError,
       };
     }
 
-    case 'decantr_component_api': {
-      const componentName = args.component as string;
-      const category = args.category as string | undefined;
+    case 'decantr_get_page_context': {
+      const err = validateStringArg(args, 'page_id');
+      if (err) return { error: err };
+      const pageId = args.page_id as string;
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifestPath = join(contextDir, 'pack-manifest.json');
+      let manifest: PackManifest | null = null;
+      let manifestSource: PackSource | null = null;
+      let hostedPageSelection: HostedSelectedExecutionPack | null = null;
+      let hostedSectionSelection: HostedSelectedExecutionPack | null = null;
+      let hostedFallbackError: string | null = null;
 
-      if (!componentName) {
-        return { error: 'The "component" argument is required.' };
+      const loadHostedPageSelection = async () => {
+        if (hostedPageSelection) {
+          return hostedPageSelection;
+        }
+        const hosted = await loadHostedSelectedExecutionPackFallback({
+          ...args,
+          pack_type: 'page',
+          id: pageId,
+        });
+        hostedFallbackError = hosted.error;
+        hostedPageSelection = hosted.selected;
+        return hostedPageSelection;
+      };
+
+      const loadHostedSectionSelection = async (sectionId: string) => {
+        if (hostedSectionSelection && hostedSectionSelection.selector.id === sectionId) {
+          return hostedSectionSelection;
+        }
+        const hosted = await loadHostedSelectedExecutionPackFallback({
+          ...args,
+          pack_type: 'section',
+          id: sectionId,
+        });
+        hostedFallbackError = hosted.error;
+        hostedSectionSelection = hosted.selected;
+        return hostedSectionSelection;
+      };
+
+      if (existsSync(manifestPath)) {
+        try {
+          manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PackManifest;
+          manifestSource = 'local';
+        } catch (e) {
+          return { error: `Failed to read pack manifest: ${(e as Error).message}` };
+        }
       }
 
-      if (componentName === 'list') {
-        const grouped = getComponentsByCategory(category);
-        const lines: string[] = ['# @decantr/ui Components\n'];
+      if (!manifest) {
+        const hosted = await loadHostedPageSelection();
+        if (!hosted) {
+          return {
+            error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+            hosted_fallback_error: hostedFallbackError,
+          };
+        }
+        manifest = hosted.manifest as PackManifest;
+        manifestSource = 'hosted_fallback';
+      }
 
-        for (const [cat, entries] of Object.entries(grouped)) {
-          lines.push(`## ${cat}`);
-          for (const entry of entries) {
-            lines.push(`- **${entry.name}** — ${entry.description}`);
+      let pageEntry = manifest.pages.find(page => page.id === pageId) ?? null;
+      if (!pageEntry) {
+        if (manifestSource === 'local') {
+          const hosted = await loadHostedPageSelection();
+          if (hosted) {
+            manifest = hosted.manifest as PackManifest;
+            manifestSource = 'hosted_fallback';
+            pageEntry = manifest.pages.find(page => page.id === pageId) ?? null;
           }
-          lines.push('');
         }
 
-        return { content: lines.join('\n'), total: Object.keys(COMPONENT_MANIFEST).length };
+        if (!pageEntry) {
+          return {
+            error: `Page "${pageId}" not found in execution pack manifest.`,
+            available_pages: manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
+            hosted_fallback_error: manifestSource === 'hosted_fallback' ? undefined : hostedFallbackError,
+          };
+        }
       }
 
-      // Look up the specific component (case-insensitive)
-      const entry: ComponentManifestEntry | undefined =
-        COMPONENT_MANIFEST[componentName] ||
-        Object.values(COMPONENT_MANIFEST).find(
-          e => e.name.toLowerCase() === componentName.toLowerCase()
-        );
+      let resolvedPageEntry = pageEntry;
+      let sectionEntry = resolvedPageEntry.sectionId
+        ? manifest.sections.find(section => section.id === resolvedPageEntry.sectionId) ?? null
+        : null;
+      const pageMarkdownPath = join(contextDir, resolvedPageEntry.markdown);
+      const pageJsonPath = join(contextDir, resolvedPageEntry.json);
+      const sectionMarkdownPath = sectionEntry ? join(contextDir, sectionEntry.markdown) : null;
+      const sectionJsonPath = sectionEntry ? join(contextDir, sectionEntry.json) : null;
+      const sectionContextPath = resolvedPageEntry.sectionId
+        ? join(contextDir, `section-${resolvedPageEntry.sectionId}.md`)
+        : null;
 
-      if (!entry) {
-        // Fuzzy suggest
-        const candidates = Object.keys(COMPONENT_MANIFEST);
-        const scored = candidates
-          .map(name => ({ name, score: fuzzyScore(componentName.toLowerCase(), name.toLowerCase()) }))
-          .filter(s => s.score > 0)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 5);
+      const localPagePack = {
+        markdown: existsSync(pageMarkdownPath) ? readFileSync(pageMarkdownPath, 'utf-8') : null,
+        json: existsSync(pageJsonPath) ? JSON.parse(readFileSync(pageJsonPath, 'utf-8')) : null,
+      };
+      let executionPack = localPagePack;
+      let executionPackSource: PackSource | null = hasExecutionPackPayload(localPagePack) ? 'local' : null;
 
+      if (!executionPackSource) {
+        const hosted = await loadHostedPageSelection();
+        if (hosted) {
+          manifest = hosted.manifest as PackManifest;
+          manifestSource = 'hosted_fallback';
+          resolvedPageEntry = manifest.pages.find(page => page.id === pageId) ?? resolvedPageEntry;
+          sectionEntry = resolvedPageEntry.sectionId
+            ? manifest.sections.find(section => section.id === resolvedPageEntry.sectionId) ?? sectionEntry
+            : null;
+          executionPack = toHostedExecutionPackPayload(hosted.pack);
+          executionPackSource = 'hosted_fallback';
+        }
+      }
+
+      const localSectionPack = sectionEntry
+        ? {
+            markdown: sectionMarkdownPath && existsSync(sectionMarkdownPath) ? readFileSync(sectionMarkdownPath, 'utf-8') : null,
+            json: sectionJsonPath && existsSync(sectionJsonPath) ? JSON.parse(readFileSync(sectionJsonPath, 'utf-8')) : null,
+          }
+        : null;
+      let sectionExecutionPack = localSectionPack;
+      let sectionExecutionPackSource: PackSource | null = localSectionPack && hasExecutionPackPayload(localSectionPack) ? 'local' : null;
+
+      if (sectionEntry && !sectionExecutionPackSource) {
+        const hosted = await loadHostedSectionSelection(sectionEntry.id);
+        if (hosted) {
+          sectionExecutionPack = toHostedExecutionPackPayload(hosted.pack);
+          sectionExecutionPackSource = 'hosted_fallback';
+        }
+      }
+
+      return {
+        page_id: pageId,
+        page_context: executionPack.markdown,
+        section_id: resolvedPageEntry.sectionId,
+        section_role: resolvedPageEntry.sectionRole,
+        manifest_source: manifestSource,
+        execution_pack_source: executionPackSource,
+        section_execution_pack_source: sectionExecutionPackSource,
+        execution_pack: executionPack,
+        section_execution_pack: sectionExecutionPack,
+        section_context: sectionContextPath && existsSync(sectionContextPath)
+          ? readFileSync(sectionContextPath, 'utf-8')
+          : sectionExecutionPack?.markdown ?? null,
+        manifest: {
+          page: resolvedPageEntry,
+          section: sectionEntry,
+        },
+        note: manifestSource === 'hosted_fallback'
+          ? 'Using hosted compiled execution-pack data because local page pack artifacts were missing or incomplete.'
+          : undefined,
+        hosted_fallback_error: hostedFallbackError ?? undefined,
+      };
+    }
+
+    case 'decantr_get_execution_pack': {
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifestPath = join(contextDir, 'pack-manifest.json');
+      let manifest: PackManifest | null = null;
+      let manifestSource: PackSource | null = null;
+      let hostedBundle: HostedExecutionPackBundle | null = null;
+      let hostedSelectedPack: HostedSelectedExecutionPack | null = null;
+      let hostedFallbackError: string | null = null;
+      const packType = (args.pack_type as string | undefined) ?? 'manifest';
+
+      if (existsSync(manifestPath)) {
+        try {
+          manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PackManifest;
+          manifestSource = 'local';
+        } catch (e) {
+          return { error: `Failed to read pack manifest: ${(e as Error).message}` };
+        }
+      }
+
+      if (!manifest && packType === 'manifest') {
+        const hostedManifest = await loadHostedExecutionPackManifestFallback(args);
+        hostedFallbackError = hostedManifest.error;
+
+        if (hostedManifest.manifest) {
+          manifest = hostedManifest.manifest as PackManifest;
+          manifestSource = 'hosted_fallback';
+        } else {
+          const hosted = await loadHostedExecutionPackBundleFallback(args);
+          hostedBundle = hosted.bundle;
+          hostedFallbackError = hosted.error;
+          if (!hosted.bundle) {
+            return {
+              error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+              hosted_fallback_error: hosted.error,
+            };
+          }
+          manifest = hosted.bundle.manifest as PackManifest;
+          manifestSource = 'hosted_fallback';
+        }
+      }
+
+      if (packType === 'manifest') {
         return {
-          error: `Component "${componentName}" not found in manifest.`,
-          suggestions: scored.map(s => s.name),
-          hint: 'Use component: "list" to see all available components.',
+          ...manifest,
+          source: manifestSource,
         };
       }
 
-      // Format as markdown
-      const lines: string[] = [
-        `# ${entry.name}`,
-        `**Category:** ${entry.category}`,
-        '',
-        entry.description,
-        '',
-        '## Props',
-        '',
-        '| Prop | Type | Required | Default | Description |',
-        '|------|------|----------|---------|-------------|',
-      ];
-
-      for (const p of entry.props) {
-        const req = p.required ? 'Yes' : 'No';
-        const def = p.default || '—';
-        const escapedType = p.type.replace(/\|/g, '\\|');
-        lines.push(`| \`${p.name}\` | \`${escapedType}\` | ${req} | ${def} | ${p.description} |`);
+      if (!manifest) {
+        const hosted = await loadHostedSelectedExecutionPackFallback(args);
+        hostedSelectedPack = hosted.selected;
+        hostedFallbackError = hosted.error;
+        if (!hosted.selected) {
+          return {
+            error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+            hosted_fallback_error: hosted.error,
+          };
+        }
+        manifest = hosted.selected.manifest as PackManifest;
+        manifestSource = 'hosted_fallback';
       }
 
-      lines.push('');
-      lines.push('## Usage');
-      lines.push('');
-      lines.push('```ts');
-      lines.push(entry.usage);
-      lines.push('```');
+      const format = (args.format as string | undefined) ?? 'both';
+      let entry: PackManifestEntry | null = null;
+      let availableIds: string[] = [];
 
-      if (entry.subComponents?.length) {
-        lines.push('');
-        lines.push(`**Sub-components:** ${entry.subComponents.join(', ')}`);
+      if (packType === 'scaffold') {
+        entry = manifest.scaffold;
+      } else if (packType === 'review') {
+        entry = manifest.review ?? null;
+      } else if (packType === 'mutation') {
+        availableIds = (manifest.mutations ?? []).map(mutation => mutation.id);
+        const idErr = validateStringArg(args, 'id');
+        if (idErr) return { error: idErr, available_ids: availableIds };
+        entry = (manifest.mutations ?? []).find(mutation => mutation.id === args.id) ?? null;
+      } else if (packType === 'section') {
+        availableIds = manifest.sections.map(section => section.id);
+        const idErr = validateStringArg(args, 'id');
+        if (idErr) return { error: idErr, available_ids: availableIds };
+        entry = manifest.sections.find(section => section.id === args.id) ?? null;
+      } else if (packType === 'page') {
+        availableIds = manifest.pages.map(page => page.id);
+        const idErr = validateStringArg(args, 'id');
+        if (idErr) return { error: idErr, available_ids: availableIds };
+        entry = manifest.pages.find(page => page.id === args.id) ?? null;
+      } else {
+        return { error: `Unsupported pack type: ${packType}` };
       }
 
-      if (entry.relatedComponents?.length) {
-        lines.push('');
-        lines.push(`**Related:** ${entry.relatedComponents.join(', ')}`);
+      if (!entry) {
+        if (manifestSource === 'local') {
+          const hosted = await loadHostedSelectedExecutionPackFallback(args);
+          hostedSelectedPack = hosted.selected;
+          hostedFallbackError = hosted.error;
+          if (hosted.selected) {
+            manifest = hosted.selected.manifest as PackManifest;
+            manifestSource = 'hosted_fallback';
+            entry = findManifestEntryForPack(
+              manifest,
+              packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
+              args.id as string | undefined,
+            );
+          }
+        }
+
+        if (!entry) {
+          return {
+            error: `Execution pack not found for type "${packType}"${args.id ? ` and id "${args.id as string}"` : ''}.`,
+            available_ids: availableIds,
+            hosted_fallback_error: hostedFallbackError ?? undefined,
+          };
+        }
       }
 
-      return { content: lines.join('\n') };
+      const result: Record<string, unknown> = {
+        pack_type: packType,
+        id: entry.id,
+        manifest: entry,
+        source: manifestSource,
+      };
+
+      const localPayload = {
+        markdown: null as string | null,
+        json: null as unknown,
+      };
+
+      if (manifestSource === 'local') {
+        if (format === 'markdown' || format === 'both') {
+          const markdownPath = join(contextDir, entry.markdown);
+          if (existsSync(markdownPath)) {
+            localPayload.markdown = readFileSync(markdownPath, 'utf-8');
+          }
+        }
+
+        if (format === 'json' || format === 'both') {
+          const jsonPath = join(contextDir, entry.json);
+          if (existsSync(jsonPath)) {
+            localPayload.json = JSON.parse(readFileSync(jsonPath, 'utf-8'));
+          }
+        }
+      }
+
+      if (hasExecutionPackPayload(localPayload)) {
+        if (format === 'markdown' || format === 'both') {
+          result.markdown = localPayload.markdown;
+        }
+        if (format === 'json' || format === 'both') {
+          result.json = localPayload.json;
+        }
+        return result;
+      }
+
+      if (!hostedSelectedPack) {
+        const hosted = await loadHostedSelectedExecutionPackFallback(args);
+        hostedSelectedPack = hosted.selected;
+        hostedFallbackError = hosted.error;
+      }
+
+      if (!hostedSelectedPack) {
+        return {
+          ...result,
+          hosted_fallback_error: hostedFallbackError ?? undefined,
+        };
+      }
+
+      manifest = hostedSelectedPack.manifest as PackManifest;
+      manifestSource = 'hosted_fallback';
+      const hostedPayload = toHostedExecutionPackPayload(hostedSelectedPack.pack);
+
+      if (format === 'markdown' || format === 'both') {
+        result.markdown = hostedPayload.markdown;
+      }
+      if (format === 'json' || format === 'both') {
+        result.json = hostedPayload.json;
+      }
+
+      return result;
+    }
+
+    case 'decantr_get_showcase_benchmarks': {
+      const view = (args.view as string | undefined) ?? 'shortlist';
+      if (!['manifest', 'shortlist', 'verification'].includes(view)) {
+        return { error: `Unsupported showcase benchmark view: ${view}` };
+      }
+
+      return getShowcaseBenchmarkPayload(view);
+    }
+
+    case 'decantr_get_registry_intelligence_summary': {
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+
+      return getRegistryIntelligenceSummaryPayload(args.namespace as string | undefined);
+    }
+
+    case 'decantr_compile_execution_packs': {
+      if (args.path != null && typeof args.path !== 'string') {
+        return { error: 'Invalid path. Must be a string when provided.' };
+      }
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+      if (args.essence != null && (typeof args.essence !== 'object' || Array.isArray(args.essence))) {
+        return { error: 'Invalid essence. Must be an object when provided.' };
+      }
+
+      return getHostedExecutionPackBundlePayload(args);
     }
 
     case 'decantr_critique': {
+      const err = validateStringArg(args, 'file_path');
+      if (err) return { error: err };
+      if (args.path != null && typeof args.path !== 'string') {
+        return { error: 'Invalid path. Must be a string when provided.' };
+      }
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+      if (args.treatments_path != null && typeof args.treatments_path !== 'string') {
+        return { error: 'Invalid treatments_path. Must be a string when provided.' };
+      }
       const { critiqueFile } = await import('./critique.js');
-      const result = await critiqueFile(args.file_path as string, process.cwd());
-      return result;
+      const localReviewPackPath = join(process.cwd(), '.decantr', 'context', 'review-pack.json');
+      if (existsSync(localReviewPackPath)) {
+        return critiqueFile(args.file_path as string, process.cwd());
+      }
+
+      const hosted = await loadHostedFileCritiqueFallback(args);
+      if (hosted.report) {
+        return hosted.report;
+      }
+
+      return critiqueFile(args.file_path as string, process.cwd());
+    }
+
+    case 'decantr_audit_project': {
+      if (args.path != null && typeof args.path !== 'string') {
+        return { error: 'Invalid path. Must be a string when provided.' };
+      }
+      if (args.namespace != null && typeof args.namespace !== 'string') {
+        return { error: 'Invalid namespace. Must be a string when provided.' };
+      }
+      if (args.dist_path != null && typeof args.dist_path !== 'string') {
+        return { error: 'Invalid dist_path. Must be a string when provided.' };
+      }
+      if (args.sources_path != null && typeof args.sources_path !== 'string') {
+        return { error: 'Invalid sources_path. Must be a string when provided.' };
+      }
+      const { auditProject } = await import('@decantr/verifier');
+      const projectRoot = process.cwd();
+      const hasReviewPack = existsSync(join(projectRoot, '.decantr', 'context', 'review-pack.json'));
+      const hasPackManifest = existsSync(join(projectRoot, '.decantr', 'context', 'pack-manifest.json'));
+
+      if (hasReviewPack && hasPackManifest) {
+        return auditProject(projectRoot);
+      }
+
+      const hosted = await loadHostedProjectAuditFallback(args);
+      if (hosted.report) {
+        return hosted.report;
+      }
+
+      return auditProject(projectRoot);
     }
 
     default:
@@ -1192,6 +2176,7 @@ function applyDriftAcceptance(
 ): void {
   switch (violation.rule) {
     case 'theme-match':
+    case 'theme':
     case 'style': {
       // Accept a theme change: update the DNA theme id
       if (violation.details) {

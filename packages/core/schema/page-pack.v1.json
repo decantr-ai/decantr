@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/page-pack.v1.json",
+  "title": "Decantr Page Execution Pack",
+  "type": "object",
+  "required": ["$schema", "packVersion", "packType", "objective", "target", "preset", "scope", "requiredSetup", "allowedVocabulary", "examples", "antiPatterns", "successChecks", "tokenBudget", "data", "renderedMarkdown"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/page-pack.v1.json"
+    },
+    "packVersion": {
+      "const": "1.0.0"
+    },
+    "packType": {
+      "const": "page"
+    },
+    "objective": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+    },
+    "target": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackTarget"
+    },
+    "preset": {
+      "type": ["string", "null"]
+    },
+    "scope": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackScope"
+    },
+    "requiredSetup": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+    },
+    "allowedVocabulary": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackExample"
+      }
+    },
+    "antiPatterns": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackAntiPattern"
+      }
+    },
+    "successChecks": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackSuccessCheck"
+      }
+    },
+    "tokenBudget": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/executionPackTokenBudget"
+    },
+    "data": {
+      "type": "object",
+      "required": ["pageId", "path", "shell", "sectionId", "sectionRole", "features", "surface", "theme", "wiringSignals", "patterns"],
+      "properties": {
+        "pageId": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "path": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "shell": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+        },
+        "sectionId": {
+          "type": ["string", "null"]
+        },
+        "sectionRole": {
+          "type": ["string", "null"]
+        },
+        "features": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+        },
+        "surface": {
+          "type": "string"
+        },
+        "theme": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/themeRef"
+        },
+        "wiringSignals": {
+          "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
+        },
+        "patterns": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/pagePattern"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "renderedMarkdown": {
+      "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
+    }
+  },
+  "additionalProperties": false
+}

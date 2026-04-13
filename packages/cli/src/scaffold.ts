@@ -3,11 +3,25 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
 import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides, SpatialTokenHints } from '@decantr/essence-spec';
+import { compileExecutionPackBundle } from '@decantr/core';
+import type { ExecutionPackBase, ExecutionPackBundle, ExecutionPackManifest, ScaffoldExecutionPack } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
-import type { ComposeEntry, ArchetypeRole } from '@decantr/registry';
+import type {
+  ComposeEntry,
+  ArchetypeRole,
+  Archetype as RegistryArchetype,
+  Blueprint as RegistryBlueprint,
+  Theme as RegistryTheme,
+  Pattern as RegistryPattern,
+  Shell as RegistryShell,
+  PatternReference,
+  PatternReferenceObject,
+  LayoutItem as RegistryLayoutItem,
+} from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
+import { API_CONTENT_TYPES } from '@decantr/registry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -17,48 +31,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  * - A pattern object: { pattern: "hero", preset: "landing", as?: "guild-hero" }
  * - A column layout: { cols: ["a", "b"], at: "lg" }
  */
-export type LayoutItem = string | Record<string, unknown>;
-
-/**
- * V2 EssenceFile shape (kept for backward compatibility of buildEssence signature).
- * New code generates v3 EssenceV3 via buildEssenceV3().
- */
-export interface EssenceFile {
-  version: string;
-  archetype: string;
-  blueprint?: string;
-  theme: {
-    style: string;
-    mode: string;
-    recipe: string;
-    shape: string;
-  };
-  personality: string[];
-  platform: {
-    type: string;
-    routing: string;
-  };
-  structure: Array<{
-    id: string;
-    shell: string;
-    layout: LayoutItem[];
-  }>;
-  features: string[];
-  guard: {
-    enforce_style: boolean;
-    enforce_recipe: boolean;
-    mode: string;
-  };
-  density: {
-    level: string;
-    content_gap: string;
-  };
-  target: string;
-  accessibility?: {
-    wcag_level?: string;
-    cvd_preference?: string;
-  };
-}
+export type LayoutItem = RegistryLayoutItem | Record<string, unknown>;
 
 export interface ArchetypeData {
   id: string;
@@ -69,16 +42,74 @@ export interface ArchetypeData {
     id: string;
     shell: string;
     default_layout: LayoutItem[];
-    patterns?: Array<{
-      pattern: string;
-      preset?: string;
-      as?: string;
-    }>;
+    patterns?: PatternReferenceObject[];
   }>;
   features?: string[];
   seo_hints?: {
     schema_org?: string[];
     meta_priorities?: string[];
+  };
+}
+
+type LegacyMetaCompat = EssenceV3['meta'] & {
+  blueprint?: string;
+};
+
+function getLegacyBlueprintId(meta: EssenceV3['meta']): string | undefined {
+  return (meta as LegacyMetaCompat).blueprint;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function getStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+}
+
+function toPatternReferenceObject(ref: PatternReference): PatternReferenceObject {
+  return typeof ref === 'string' ? { pattern: ref } : ref;
+}
+
+function collectPatternIdsFromValue(value: unknown, ids: Set<string>): void {
+  if (typeof value === 'string') {
+    ids.add(value);
+    return;
+  }
+
+  if (!value || typeof value !== 'object') return;
+
+  if ('pattern' in value && typeof value.pattern === 'string') {
+    ids.add(value.pattern);
+  }
+
+  if ('cols' in value && Array.isArray(value.cols)) {
+    for (const col of value.cols) collectPatternIdsFromValue(col, ids);
+  }
+}
+
+export function collectPatternIdsFromItems(items: unknown[]): string[] {
+  const ids = new Set<string>();
+  for (const item of items) collectPatternIdsFromValue(item, ids);
+  return [...ids];
+}
+
+export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype): ArchetypeData {
+  return {
+    id: archetype.id,
+    name: archetype.name,
+    role: archetype.role,
+    description: archetype.description,
+    pages: archetype.pages?.map(page => ({
+      id: page.id,
+      shell: page.shell,
+      default_layout: page.default_layout?.length ? page.default_layout : ['hero'],
+      patterns: page.patterns?.map(toPatternReferenceObject),
+    })),
+    features: archetype.features,
+    seo_hints: archetype.seo_hints,
   };
 }
 
@@ -498,6 +529,25 @@ export interface ThemeData {
   pattern_preferences?: { prefer?: string[]; avoid?: string[] };
 }
 
+export function mapRegistryThemeToThemeData(theme: RegistryTheme): ThemeData {
+  return {
+    seed: theme.seed,
+    palette: theme.palette,
+    tokens: theme.tokens,
+    cvd_support: theme.cvd_support,
+    typography: theme.typography,
+    motion: theme.motion,
+    decorators: theme.decorators,
+    treatments: theme.treatments,
+    spatial: theme.spatial,
+    radius: theme.radius,
+    shell: theme.shell,
+    effects: theme.effects,
+    compositions: theme.compositions,
+    pattern_preferences: theme.pattern_preferences,
+  };
+}
+
 /**
  * Generate tokens.css from theme data.
  */
@@ -860,81 +910,6 @@ function resolvePatternAlias(
 }
 
 /**
- * Build the essence file from options and blueprint data.
- */
-export function buildEssence(options: InitOptions, archetypeData?: ArchetypeData): EssenceFile {
-  // Default structure if no archetype - must have at least one pattern in layout
-  let structure: EssenceFile['structure'] = [
-    { id: 'home', shell: options.shell, layout: ['hero'] }
-  ];
-  let features: string[] = options.features;
-
-  // Use archetype structure if available
-  if (archetypeData?.pages) {
-    structure = archetypeData.pages.map(p => {
-      // Resolve aliases to actual pattern IDs
-      const resolvedLayout = (p.default_layout?.length ? p.default_layout : ['hero'])
-        .map(item => resolvePatternAlias(item, p.patterns));
-
-      return {
-        id: p.id,
-        shell: p.shell || options.shell,
-        layout: resolvedLayout,
-      };
-    });
-  }
-
-  if (archetypeData?.features) {
-    features = [...new Set([...features, ...archetypeData.features])];
-  }
-
-  // Map density to content gap
-  const contentGapMap: Record<string, string> = {
-    compact: '_gap2',
-    comfortable: '_gap4',
-    spacious: '_gap6',
-  };
-
-  // Use resolved archetype (from blueprint's compose or direct selection)
-  const archetype = options.archetype || 'custom';
-
-  const essence: EssenceFile = {
-    version: '2.0.0',
-    archetype,
-    theme: {
-      style: options.theme,
-      mode: options.mode,
-      recipe: options.theme, // Legacy v2 field — kept for backward compatibility
-      shape: options.shape,
-    },
-    personality: options.personality,
-    platform: {
-      type: 'spa',
-      routing: 'hash',
-    },
-    structure,
-    features,
-    guard: {
-      enforce_style: true,
-      enforce_recipe: true, // Legacy v2 field — kept for backward compatibility
-      mode: options.guard,
-    },
-    density: {
-      level: options.density,
-      content_gap: contentGapMap[options.density] || '_gap4',
-    },
-    target: options.target,
-  };
-
-  // Add accessibility if specified in options
-  if (options.accessibility) {
-    essence.accessibility = options.accessibility;
-  }
-
-  return essence;
-}
-
-/**
  * Build a v3 essence from options, producing DNA/Blueprint/Meta structure.
  */
 export function buildEssenceV3(
@@ -1049,232 +1024,6 @@ export function buildEssenceV3(
     blueprint,
     meta,
   };
-}
-
-/**
- * Generate the accessibility section for DECANTR.md.
- */
-function generateAccessibilitySection(
-  essence: EssenceFile,
-  themeData?: ThemeData
-): string {
-  const accessibility = essence.accessibility;
-
-  if (!accessibility?.wcag_level || accessibility.wcag_level === 'none') {
-    return '';
-  }
-
-  const wcagLevel = accessibility.wcag_level;
-  const cvdPreference = accessibility.cvd_preference || 'none';
-  const cvdSupport = themeData?.cvd_support || [];
-
-  let section = `---
-
-## Accessibility
-
-**WCAG Level:** ${wcagLevel}
-`;
-
-  if (cvdSupport.length > 0) {
-    section += `**CVD Support:** Theme supports ${cvdSupport.join(', ')}
-**CVD Preference:** ${cvdPreference}
-`;
-  }
-
-  section += `
-### What This Means
-
-This project requires WCAG 2.1 Level ${wcagLevel} compliance. You already know these rules — apply them:
-
-- Semantic HTML structure
-- Sufficient color contrast (4.5:1 for normal text, 3:1 for large text)
-- Keyboard navigability for all interactive elements
-- Visible focus indicators
-- Meaningful alt text for images
-- Proper heading hierarchy
-`;
-
-  if (cvdSupport.length > 0) {
-    section += `
-### CVD Implementation
-
-The theme provides these data attributes:
-
-\`\`\`html
-<html data-theme="${essence.theme.style}" data-mode="${essence.theme.mode}" data-cvd="none">
-\`\`\`
-
-Valid \`data-cvd\` values for this theme: \`none\`, ${cvdSupport.map(m => `\`${m}\``).join(', ')}
-`;
-
-    if (cvdPreference === 'auto') {
-      section += `
-Detect user preference via \`prefers-contrast\` or user settings and apply accordingly.
-`;
-    }
-  }
-
-  section += `
----
-`;
-
-  return section;
-}
-
-/**
- * Generate the SEO guidance section for DECANTR.md.
- */
-function generateSeoSection(
-  essence: EssenceFile,
-  archetypeData?: ArchetypeData
-): string {
-  const seoHints = archetypeData?.seo_hints;
-
-  if (!seoHints) {
-    return '';
-  }
-
-  const schemaOrg = seoHints.schema_org || [];
-  const metaPriorities = seoHints.meta_priorities || [];
-
-  if (schemaOrg.length === 0 && metaPriorities.length === 0) {
-    return '';
-  }
-
-  let section = `---
-
-## SEO Guidance
-
-This archetype (\`${essence.archetype}\`) typically benefits from:
-
-`;
-
-  if (schemaOrg.length > 0) {
-    section += `- **Schema.org:** ${schemaOrg.join(', ')}
-`;
-  }
-
-  if (metaPriorities.length > 0) {
-    section += `- **Meta priorities:** ${metaPriorities.join(', ')}
-`;
-  }
-
-  section += `
-These are suggestions, not requirements. Apply where appropriate for the page content.
-
----
-`;
-
-  return section;
-}
-
-/**
- * Generate the DECANTR.md file from template and essence.
- */
-function generateDecantrMd(
-  essence: EssenceFile,
-  detected: DetectedProject,
-  themeData?: ThemeData,
-  archetypeData?: ArchetypeData,
-  topologyMarkdown?: string
-): string {
-  const template = loadTemplate('DECANTR.md.template');
-
-  // Build pages table with proper serialization of layout items
-  const pagesTable = essence.structure.map(p => {
-    const layoutStr = p.layout.map(serializeLayoutItem).join(', ') || 'none';
-    return `| ${p.id} | ${p.shell} | ${layoutStr} |`;
-  }).join('\n');
-
-  // Build patterns list - extract unique pattern names
-  const allPatternNames = [...new Set(essence.structure.flatMap(p => p.layout.flatMap(extractPatternNames)))];
-  const patternsList = allPatternNames.length > 0
-    ? allPatternNames.map(p => `- \`${p}\``).join('\n')
-    : '- No patterns specified yet';
-
-  // Build project summary
-  const projectSummary = [
-    `**Archetype:** ${essence.archetype || 'custom'}`,
-    `**Target:** ${essence.target}`,
-    `**Theme:** ${essence.theme.style} (${essence.theme.mode} mode)`,
-    `**Guard Mode:** ${essence.guard.mode}`,
-    `**Pages:** ${essence.structure.map(s => s.id).join(', ')}`,
-  ].join('\n');
-
-  // Shell structure description
-  const shellStructures: Record<string, string> = {
-    'sidebar-main': 'nav (left) | header (top) | body (scrollable)',
-    'top-nav-main': 'header (full width) | body (scrollable)',
-    'centered': 'body (centered card)',
-    'full-bleed': 'header (floating) | body (full page sections)',
-    'minimal-header': 'header (slim) | body (centered)',
-  };
-
-  const defaultShell = essence.structure[0]?.shell || 'sidebar-main';
-  const shellStructure = shellStructures[defaultShell] || 'Custom shell layout';
-
-  // Build theme quick reference
-  let themeQuickRef = '';
-  if (themeData?.seed) {
-    const colors = Object.entries(themeData.seed)
-      .map(([name, hex]) => `- **${name}:** \`${hex}\``)
-      .join('\n');
-    themeQuickRef = `**Seed Colors:**\n${colors}`;
-  }
-
-  // Add key treatments (base treatments + theme decorators)
-  const baseTreatments = '- `d-interactive`, `d-surface`, `d-data`, `d-control`, `d-section`, `d-annotation`';
-  if (themeData?.decorators) {
-    const themeDecorators = Object.entries(themeData.decorators)
-      .slice(0, 5)  // Top 5 theme decorators
-      .map(([name, desc]) => `- \`${name}\` — ${desc}`)
-      .join('\n');
-    const treatments = `${baseTreatments}\n${themeDecorators}`;
-    if (themeQuickRef) {
-      themeQuickRef += `\n\n**Key Treatments:**\n${treatments}`;
-    } else {
-      themeQuickRef = `**Key Treatments:**\n${treatments}`;
-    }
-  } else {
-    if (themeQuickRef) {
-      themeQuickRef += `\n\n**Key Treatments:**\n${baseTreatments}`;
-    } else {
-      themeQuickRef = `**Key Treatments:**\n${baseTreatments}`;
-    }
-  }
-
-  // Default if no theme data
-  if (!themeQuickRef) {
-    themeQuickRef = `See \`decantr get theme ${essence.theme.style}\` for details.`;
-  }
-
-  const accessibilitySection = generateAccessibilitySection(essence, themeData);
-  const seoSection = generateSeoSection(essence, archetypeData);
-
-  const vars: Record<string, string> = {
-    GUARD_MODE: essence.guard.mode,
-    PROJECT_SUMMARY: projectSummary,
-    THEME_STYLE: essence.theme.style,
-    THEME_MODE: essence.theme.mode,
-    THEME_RECIPE: essence.theme.style,
-    TARGET: essence.target,
-    PAGES_TABLE: `| Page | Shell | Layout |\n|------|-------|--------|\n${pagesTable}`,
-    PATTERNS_LIST: patternsList,
-    DEFAULT_SHELL: defaultShell,
-    SHELL_STRUCTURE: shellStructure,
-    PERSONALITY: essence.personality.join(', '),
-    DENSITY: essence.density.level,
-    AVAILABLE_PATTERNS: '(See registry or .decantr/cache/patterns/)',
-    AVAILABLE_THEMES: '(See registry or .decantr/cache/themes/)',
-    AVAILABLE_SHELLS: 'sidebar-main, top-nav-main, centered, full-bleed, minimal-header',
-    VERSION: CLI_VERSION,
-    THEME_QUICK_REFERENCE: themeQuickRef,
-    ACCESSIBILITY_SECTION: accessibilitySection,
-    SEO_SECTION: seoSection,
-    COMPOSITION_TOPOLOGY: topologyMarkdown || '',
-  };
-
-  return renderTemplate(template, vars);
 }
 
 /**
@@ -1741,42 +1490,6 @@ function buildFlagsString(options: InitOptions): string {
 }
 
 /**
- * Generate a task context file.
- */
-function generateTaskContext(
-  templateName: string,
-  essence: EssenceFile
-): string {
-  const template = loadTemplate(templateName);
-
-  const defaultShell = essence.structure[0]?.shell || 'sidebar-main';
-  const layout = essence.structure[0]?.layout.map(serializeLayoutItem).join(', ') || 'none';
-
-  // Build scaffold structure description
-  const scaffoldStructure = essence.structure.map(p => {
-    const patterns = p.layout.length > 0
-      ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
-      : '';
-    return `- **${p.id}** (${p.shell})${patterns}`;
-  }).join('\n');
-
-  const vars: Record<string, string> = {
-    TARGET: essence.target,
-    THEME_STYLE: essence.theme.style,
-    THEME_MODE: essence.theme.mode,
-    THEME_RECIPE: essence.theme.style,
-    DEFAULT_SHELL: defaultShell,
-    GUARD_MODE: essence.guard.mode,
-    LAYOUT: layout,
-    DENSITY: essence.density.level,
-    CONTENT_GAP: essence.density.content_gap,
-    SCAFFOLD_STRUCTURE: scaffoldStructure,
-  };
-
-  return renderTemplate(template, vars);
-}
-
-/**
  * Generate task context from a V3 essence (used by refreshDerivedFiles).
  * Extracts the same template variables as the v2 version.
  */
@@ -1790,7 +1503,7 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
     ? sections.flatMap(s => s.pages)
     : essence.blueprint.pages || [];
   const defaultShell = sections[0]?.shell
-    || (essence.blueprint as any).shell
+    || essence.blueprint.shell
     || 'sidebar-main';
   const layout = pages[0]?.layout?.map(serializeLayoutItem).join(', ') || 'none';
 
@@ -1815,9 +1528,8 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
 
   const vars: Record<string, string> = {
     TARGET: essence.meta.target || 'react',
-    THEME_STYLE: (essence.dna.theme as any).id || (essence.dna.theme as any).style || '',
+    THEME_ID: essence.dna.theme.id || '',
     THEME_MODE: essence.dna.theme.mode,
-    THEME_RECIPE: (essence.dna.theme as any).id || (essence.dna.theme as any).style || '',
     DEFAULT_SHELL: defaultShell as string,
     GUARD_MODE: essence.meta.guard.mode,
     LAYOUT: layout,
@@ -1829,49 +1541,215 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
   return renderTemplate(template, vars);
 }
 
-/**
- * Generate essence summary markdown.
- */
-function generateEssenceSummary(essence: EssenceFile): string {
-  const template = loadTemplate('essence-summary.md.template');
+function renderPackReferenceList(
+  title: string,
+  entries: string[],
+  fallback: string,
+  summaryPath = '.decantr/context/pack-manifest.json',
+): string {
+  if (entries.length === 0) {
+    return `### ${title}\n\n- ${fallback}`;
+  }
 
-  // Build pages table with proper serialization
-  const pagesTable = `| Page | Shell | Layout |
-|------|-------|--------|
-${essence.structure.map(p => `| ${p.id} | ${p.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`).join('\n')}`;
+  if (entries.length <= 6) {
+    return `### ${title}\n\n${entries.map(entry => `- ${entry}`).join('\n')}`;
+  }
 
-  // Build features list
-  const featuresList = essence.features.length > 0
-    ? essence.features.map(f => `- ${f}`).join('\n')
-    : '- No features specified';
+  return `### ${title}\n\n- ${entries.length} compiled references available. Use \`${summaryPath}\` to resolve the exact files for this scope.`;
+}
 
-  // Derive enforcement levels from guard config
-  // V2 essences have enforce_style/enforce_recipe booleans, map to v3 enforcement strings
-  const dnaEnforcement = essence.guard.enforce_style ? 'error' : 'off';
-  const blueprintEnforcement = essence.guard.enforce_recipe ? 'warn' : 'off';
+function generateScaffoldTaskContext(
+  essence: EssenceV3,
+  scaffoldPack: ScaffoldExecutionPack | null,
+  manifest: PackManifest | null,
+): string {
+  if (!scaffoldPack) {
+    return generateTaskContextV3('task-scaffold.md.template', essence);
+  }
 
-  const vars: Record<string, string> = {
-    ARCHETYPE: essence.archetype || 'custom',
-    BLUEPRINT: essence.blueprint || 'none',
-    PERSONALITY: essence.personality.join(', '),
-    TARGET: essence.target,
-    THEME_STYLE: essence.theme.style,
-    THEME_MODE: essence.theme.mode,
-    THEME_RECIPE: essence.theme.style,
-    SHAPE: essence.theme.shape,
-    PAGES_TABLE: pagesTable,
-    FEATURES_LIST: featuresList,
-    GUARD_MODE: essence.guard.mode,
-    ENFORCE_STYLE: String(essence.guard.enforce_style),
-    ENFORCE_RECIPE: String(essence.guard.enforce_recipe),
-    DNA_ENFORCEMENT: dnaEnforcement,
-    BLUEPRINT_ENFORCEMENT: blueprintEnforcement,
-    DENSITY: essence.density.level,
-    CONTENT_GAP: essence.density.content_gap,
-    LAST_UPDATED: new Date().toISOString(),
-  };
+  const themeShape = scaffoldPack.data.theme.shape || 'default';
+  const features = scaffoldPack.data.features.length > 0
+    ? scaffoldPack.data.features.join(', ')
+    : 'none';
+  const routePlan = scaffoldPack.data.routes.length > 0
+    ? scaffoldPack.data.routes.map(route => {
+        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+      }).join('\n')
+    : '- No routes declared';
+  const successChecks = scaffoldPack.successChecks.map(check => `- [${check.severity}] ${check.label}`).join('\n');
+  const tokenStrategy = scaffoldPack.tokenBudget.strategy.map(item => `- ${item}`).join('\n');
+  const sectionRefs = manifest?.sections.map(section =>
+    `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``
+  ) ?? [];
+  const pageRefs = manifest?.pages.map(page =>
+    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
+  ) ?? [];
 
-  return renderTemplate(template, vars);
+  return `# Task Context: Scaffolding
+
+**Enforcement Tier: Creative** — Guard rules are advisory during initial scaffolding.
+
+## Primary Compiled Contract
+
+- Start with \`.decantr/context/scaffold-pack.md\` for the compact route, shell, and theme contract.
+- Use \`.decantr/context/scaffold.md\` only as secondary detail when the compiled pack is not enough.
+- Read the route-local page packs before building each page so layout and wiring stay aligned with the compiled plan.
+
+## Generate This Application
+
+- Target: \`${scaffoldPack.target.adapter}\` (${scaffoldPack.target.framework || 'unknown framework'})
+- Shell: \`${scaffoldPack.data.shell}\`
+- Theme: \`${scaffoldPack.data.theme.id}\` (${scaffoldPack.data.theme.mode}, ${themeShape})
+- Routing: \`${scaffoldPack.data.routing}\`
+- Features: ${features}
+
+## Route Plan
+
+${routePlan}
+
+${renderPackReferenceList('Section Packs', sectionRefs, 'No section packs were generated for this scaffold.')}
+
+${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated for this scaffold.')}
+
+## Success Checks
+
+${successChecks}
+
+## Token Budget
+
+- Target: ${scaffoldPack.tokenBudget.target} tokens
+- Max: ${scaffoldPack.tokenBudget.max} tokens
+${tokenStrategy}
+
+Post-scaffold enforcement mode: **${essence.meta.guard.mode.toUpperCase()}**.
+
+---
+
+*Task context generated from Decantr execution packs*`;
+}
+
+function generateAddPageTaskContext(
+  essence: EssenceV3,
+  scaffoldPack: ScaffoldExecutionPack | null,
+  manifest: PackManifest | null,
+): string {
+  if (!scaffoldPack) {
+    return generateTaskContextV3('task-add-page.md.template', essence);
+  }
+
+  const routePlan = scaffoldPack.data.routes.length > 0
+    ? scaffoldPack.data.routes.map(route => {
+        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+      }).join('\n')
+    : '- No routes declared';
+  const sectionRefs = manifest?.sections.map(section =>
+    `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``
+  ) ?? [];
+  const pageRefs = manifest?.pages.map(page =>
+    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
+  ) ?? [];
+
+  return `# Task Context: Adding Pages
+
+**Enforcement Tier: Guided**
+
+## Primary Compiled Contract
+
+- Start with \`.decantr/context/mutation-add-page-pack.md\` for the add-page workflow contract.
+- Use \`.decantr/context/scaffold-pack.md\` for the current route, shell, and theme contract.
+- Use \`.decantr/context/pack-manifest.json\` to choose the target section before you add a route.
+- After updating the essence, run \`npx @decantr/cli refresh\` so the new section/page packs exist before code generation.
+
+## Current Scaffold Contract
+
+- Target: \`${scaffoldPack.target.adapter}\` (${scaffoldPack.target.framework || 'unknown framework'})
+- Shell: \`${scaffoldPack.data.shell}\`
+- Theme: \`${scaffoldPack.data.theme.id}\` (${scaffoldPack.data.theme.mode})
+- Existing routes: ${scaffoldPack.data.routes.length}
+
+## Existing Routes
+
+${routePlan}
+
+${renderPackReferenceList('Section Packs', sectionRefs, 'No section packs were generated for this scaffold.')}
+
+${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated for this scaffold.')}
+
+## Required Workflow
+
+1. Add the new page to the essence before generating any code.
+2. Keep the new page inside a declared section and shell contract.
+3. Refresh derived files so Decantr recompiles the section and page packs.
+4. Read the relevant section pack and the new page pack before implementation.
+
+## Guided Checks
+
+- [error] Theme identity remains \`${scaffoldPack.data.theme.id}\` until the essence changes.
+- [error] The new page exists in the essence before code generation begins.
+- [error] New layouts only use registry-backed patterns.
+- [warn] New routes should fit the current shell and section topology instead of creating off-contract filler pages.
+
+---
+
+*Task context generated from Decantr execution packs*`;
+}
+
+function generateModifyTaskContext(
+  essence: EssenceV3,
+  scaffoldPack: ScaffoldExecutionPack | null,
+  manifest: PackManifest | null,
+): string {
+  if (!scaffoldPack) {
+    return generateTaskContextV3('task-modify.md.template', essence);
+  }
+
+  const routePlan = scaffoldPack.data.routes.length > 0
+    ? scaffoldPack.data.routes.map(route => {
+        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+      }).join('\n')
+    : '- No routes declared';
+  const pageRefs = manifest?.pages.map(page =>
+    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
+  ) ?? [];
+  const successChecks = scaffoldPack.successChecks.map(check => `- [${check.severity}] ${check.label}`).join('\n');
+
+  return `# Task Context: Modifying Code
+
+**Enforcement Tier: Strict**
+
+## Primary Compiled Contract
+
+- Start with \`.decantr/context/mutation-modify-pack.md\` for the strict modification workflow contract.
+- Start with \`decantr_get_page_context\` or the matching \`.decantr/context/page-*-pack.md\` file for the route you are editing.
+- Use \`decantr_get_section_context\` when you need the richer section contract behind that route.
+- If a change would alter route identity, shell identity, theme identity, or pattern contract, update the essence first and then refresh the packs.
+
+## Current Route Topology
+
+${routePlan}
+
+${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated for this scaffold.')}
+
+## Strict Workflow
+
+1. Identify the target page and read its compiled page pack first.
+2. Compare the planned edit against the compiled route, shell, and pattern contract.
+3. If the edit changes that contract, stop and update the essence before writing code.
+4. Run \`npx @decantr/cli validate\` and \`npx @decantr/cli check\` after the modification.
+
+## Strict Checks
+
+${successChecks}
+- [error] The page you modify must already exist in the compiled topology.
+- [error] Pattern order and shell usage should stay aligned with the page pack unless the essence changes first.
+- [warn] Use section context only as supporting detail; the page pack is the primary contract for route-local work.
+
+---
+
+*Task context generated from Decantr execution packs*`;
 }
 
 /**
@@ -1909,9 +1787,8 @@ function generateEssenceSummaryV3(essence: EssenceV3): string {
     BLUEPRINT: '',
     PERSONALITY: (essence.dna.personality || []).join(', '),
     TARGET: (essence.meta.target ?? '') as string,
-    THEME_STYLE: ((essence.dna.theme as any).id ?? (essence.dna.theme as any).style ?? '') as string,
+    THEME_ID: (essence.dna.theme.id ?? '') as string,
     THEME_MODE: essence.dna.theme.mode as string,
-    THEME_RECIPE: ((essence.dna.theme as any).id ?? (essence.dna.theme as any).style ?? '') as string,
     SHAPE: (essence.dna.theme.shape ?? '') as string,
     PAGES_TABLE: pagesTable,
     FEATURES_LIST: featuresList,
@@ -1967,7 +1844,7 @@ export async function scaffoldProject(
   composedSections?: ComposeSectionsResult,
   routeMap?: Record<string, { section: string; page: string }>,
   patternSpecs?: Record<string, PatternSpecSummary>,
-  blueprintData?: Record<string, any>,
+  blueprintData?: RegistryBlueprint,
 ): Promise<ScaffoldResult> {
   // Build v3 essence (v2 build removed — Spec 5.9)
   const essenceV3 = buildEssenceV3(options, archetypeData, themeData);
@@ -1994,18 +1871,13 @@ export async function scaffoldProject(
   }
   writeFileSync(projectJsonPath, JSON.stringify(projectJsonObj, null, 2));
 
-  // Write task context files using v3 essence directly
-  // Note: task-modify.md and task-add-page.md are skipped during initial scaffold
-  // (0% token usage during scaffolding). They are generated on first refresh/add/remove.
+  // Derived task/context files are generated during refreshDerivedFiles so the
+  // scaffold task can incorporate compiled execution packs after blueprint upgrades.
   const contextFiles: string[] = [];
-
-  const scaffoldPath = join(contextDir, 'task-scaffold.md');
-  writeFileSync(scaffoldPath, generateTaskContextV3('task-scaffold.md.template', essenceV3));
-  contextFiles.push(scaffoldPath);
 
   // V3.1 upgrade: if composedSections is provided, upgrade the essence
   if (composedSections) {
-    essenceV3.version = '3.1.0' as any;
+    essenceV3.version = '3.1.0';
     essenceV3.blueprint = {
       sections: composedSections.sections,
       features: composedSections.features,
@@ -2059,7 +1931,7 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
   const customDir = join(decantrDir, 'custom');
 
   // Create .decantr/custom/ directories for all 6 content types
-  const contentTypes = ['patterns', 'themes', 'blueprints', 'archetypes', 'shells'];
+  const contentTypes = API_CONTENT_TYPES;
   for (const type of contentTypes) {
     mkdirSync(join(customDir, type), { recursive: true });
   }
@@ -2264,6 +2136,114 @@ export interface RefreshResult {
   cssFiles: string[];
 }
 
+export interface WrittenPackBundleArtifacts {
+  paths: string[];
+  scaffoldPackPath: string;
+  reviewPackPath: string;
+  manifestPath: string;
+}
+
+function writeExecutionPackArtifacts(
+  basePathWithoutExtension: string,
+  pack: ExecutionPackBase<unknown>,
+): string {
+  const markdownPath = `${basePathWithoutExtension}.md`;
+  const jsonPath = `${basePathWithoutExtension}.json`;
+  writeFileSync(markdownPath, pack.renderedMarkdown);
+  writeFileSync(jsonPath, JSON.stringify(pack, null, 2) + '\n');
+  return markdownPath;
+}
+
+export function writeExecutionPackBundleArtifacts(
+  contextDir: string,
+  bundle: ExecutionPackBundle,
+): WrittenPackBundleArtifacts {
+  mkdirSync(contextDir, { recursive: true });
+
+  const outputPaths: string[] = [];
+  const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), bundle.scaffold);
+  outputPaths.push(scaffoldPackPath);
+
+  const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), bundle.review);
+  outputPaths.push(reviewPackPath);
+
+  for (const sectionPack of bundle.sections) {
+    const sectionPackPath = writeExecutionPackArtifacts(
+      join(contextDir, `section-${sectionPack.data.sectionId}-pack`),
+      sectionPack,
+    );
+    outputPaths.push(sectionPackPath);
+  }
+
+  for (const pagePack of bundle.pages) {
+    const pagePackPath = writeExecutionPackArtifacts(
+      join(contextDir, `page-${pagePack.data.pageId}-pack`),
+      pagePack,
+    );
+    outputPaths.push(pagePackPath);
+  }
+
+  for (const mutationPack of bundle.mutations) {
+    const mutationPackPath = writeExecutionPackArtifacts(
+      join(contextDir, `mutation-${mutationPack.data.mutationType}-pack`),
+      mutationPack,
+    );
+    outputPaths.push(mutationPackPath);
+  }
+
+  const manifestPath = join(contextDir, 'pack-manifest.json');
+  writeFileSync(manifestPath, JSON.stringify(bundle.manifest, null, 2) + '\n');
+  outputPaths.push(manifestPath);
+
+  return {
+    paths: outputPaths,
+    scaffoldPackPath,
+    reviewPackPath,
+    manifestPath,
+  };
+}
+
+interface GeneratedPackContexts {
+  paths: string[];
+  scaffoldPack: ScaffoldExecutionPack | null;
+  manifest: ExecutionPackManifest | null;
+}
+
+async function generatePackContexts(
+  projectRoot: string,
+  contextDir: string,
+  essence: EssenceV3,
+): Promise<GeneratedPackContexts> {
+  const emptyResult: GeneratedPackContexts = {
+    paths: [],
+    scaffoldPack: null,
+    manifest: null,
+  };
+
+  const cacheRoot = join(projectRoot, '.decantr', 'cache', '@official');
+  if (!existsSync(cacheRoot)) return emptyResult;
+
+  const customRoot = join(projectRoot, '.decantr', 'custom');
+  const overridePaths = existsSync(customRoot) ? [customRoot] : undefined;
+
+  try {
+    const bundle: ExecutionPackBundle = await compileExecutionPackBundle(essence, {
+      contentRoot: cacheRoot,
+      overridePaths,
+    });
+
+    const writtenArtifacts = writeExecutionPackBundleArtifacts(contextDir, bundle);
+
+    return {
+      paths: writtenArtifacts.paths,
+      scaffoldPack: bundle.scaffold,
+      manifest: bundle.manifest,
+    };
+  } catch {
+    return emptyResult;
+  }
+}
+
 /**
  * Resolve a single pattern spec: use prefetched data if available and complete,
  * otherwise fetch from registry and enrich. Falls back to synthetic generation.
@@ -2296,35 +2276,7 @@ async function resolvePatternSpec(
   try {
     const patResult = await registry.fetchPattern(name);
     if (patResult?.data) {
-      const inner = patResult.data as Record<string, any>;
-      const defaultPreset = inner.default_preset || 'standard';
-      const preset = inner.presets?.[defaultPreset];
-      let slots = preset?.layout?.slots || {};
-
-      if (Object.keys(slots).length === 0) {
-        const synthetic = generateSyntheticSlots(name, (inner.description as string) || '');
-        if (Object.keys(synthetic).length > 0) slots = synthetic;
-      }
-
-      const spec: PatternSpecSummary = {
-        description: (inner.description as string) || prefetched?.description || '',
-        components: (inner.components as string[]) || prefetched?.components || [],
-        slots,
-        layout_hints: inner.layout_hints as Record<string, string> | undefined,
-        ...(includeExtendedFields ? {
-          visual_brief: inner.visual_brief as string | undefined,
-          composition: inner.composition as Record<string, string> | undefined,
-          motion: inner.motion as PatternSpecSummary['motion'],
-          responsive: inner.responsive as PatternSpecSummary['responsive'],
-          accessibility: inner.accessibility as PatternSpecSummary['accessibility'],
-        } : {}),
-      };
-
-      if (!spec.components || spec.components.length === 0) {
-        const syntheticComps = generateSyntheticComponents(name, spec.description);
-        if (syntheticComps.length > 0) spec.components = syntheticComps;
-      }
-      return spec;
+      return mapRegistryPatternToPatternSpecSummary(patResult.data, prefetched, includeExtendedFields);
     }
   } catch { /* fetch failed */ }
 
@@ -2373,13 +2325,19 @@ export async function refreshDerivedFiles(
   mkdirSync(contextDir, { recursive: true });
 
   // ── Read project.json for stored metadata (blueprintId, voice) ──
+  type StoredProjectJson = {
+    blueprintId?: string;
+    voice?: RegistryBlueprint['voice'];
+    [key: string]: unknown;
+  };
+
   let storedBlueprintId: string | undefined;
   let storedVoice: ScaffoldContextInput['voice'] | undefined;
   const projectJsonFilePath = join(decantrDir, 'project.json');
-  let projectJsonData: Record<string, any> = {};
+  let projectJsonData: StoredProjectJson = {};
   if (existsSync(projectJsonFilePath)) {
     try {
-      projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8'));
+      projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8')) as StoredProjectJson;
       if (projectJsonData.blueprintId) storedBlueprintId = projectJsonData.blueprintId;
       if (projectJsonData.voice) storedVoice = projectJsonData.voice;
     } catch { /* ignore parse errors */ }
@@ -2390,11 +2348,10 @@ export async function refreshDerivedFiles(
     try {
       const bpResult = await registry.fetchBlueprint(storedBlueprintId);
       if (bpResult?.data) {
-        const bpData = bpResult.data as Record<string, any>;
-        if (bpData.voice) {
-          storedVoice = bpData.voice;
+        if (bpResult.data.voice) {
+          storedVoice = bpResult.data.voice;
           // Persist voice to project.json for future refreshes
-          projectJsonData.voice = bpData.voice;
+          projectJsonData.voice = bpResult.data.voice;
           writeFileSync(projectJsonFilePath, JSON.stringify(projectJsonData, null, 2));
         }
       }
@@ -2402,7 +2359,7 @@ export async function refreshDerivedFiles(
   }
 
   // ── Extract info from essence ──
-  const themeName = ((essence.dna.theme as any).id || (essence.dna.theme as any).style || 'default') as string;
+  const themeName = essence.dna.theme.id || 'default';
   const mode = essence.dna.theme.mode as string;
   const guardMode = essence.meta.guard.mode;
   const guardConfig = {
@@ -2419,30 +2376,14 @@ export async function refreshDerivedFiles(
   if (!themeData) try {
     const themeResult = await registry.fetchTheme(themeName);
     if (themeResult?.data) {
-      const t = themeResult.data as Record<string, unknown>;
-      themeData = {
-        seed: t.seed as ThemeData['seed'],
-        palette: t.palette as ThemeData['palette'],
-        cvd_support: t.cvd_support as ThemeData['cvd_support'],
-        tokens: t.tokens as ThemeData['tokens'],
-        typography: t.typography as ThemeData['typography'],
-        motion: t.motion as ThemeData['motion'],
-        decorators: t.decorators as ThemeData['decorators'],
-        treatments: t.treatments as ThemeData['treatments'],
-        spatial: t.spatial as ThemeData['spatial'],
-        radius: t.radius as ThemeData['radius'],
-        shell: t.shell as ThemeData['shell'],
-        effects: t.effects as ThemeData['effects'],
-        compositions: t.compositions as ThemeData['compositions'],
-        pattern_preferences: t.pattern_preferences as ThemeData['pattern_preferences'],
-      };
+      themeData = mapRegistryThemeToThemeData(themeResult.data);
     }
   } catch { /* continue without theme data */ }
 
   // Fallback: direct API fetch if registry client returned incomplete data
   if (!themeData?.seed?.primary) {
     try {
-      const apiUrl = (registry as any).apiUrl || 'https://api.decantr.ai/v1';
+      const apiUrl = registry.getApiUrl();
       const resp = await fetch(`${apiUrl}/themes/@official/${themeName}`);
       if (resp.ok) {
         const apiData = await resp.json() as Record<string, unknown>;
@@ -2541,10 +2482,10 @@ export async function refreshDerivedFiles(
   writeFileSync(decantrMdPath, generateDecantrMdV31({
     guardMode,
     cssApproach: CSS_APPROACH_CONTENT,
-    blueprintId: storedBlueprintId || (essence.meta as any).blueprint || undefined,
+    blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
     themeName,
     themeMode: mode,
-    themeShape: (essence.dna.theme as any).shape || undefined,
+    themeShape: essence.dna.theme.shape || undefined,
     personality,
     sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
     features: allFeatures.length > 0 ? allFeatures : undefined,
@@ -2563,18 +2504,29 @@ export async function refreshDerivedFiles(
     contextFiles.push(summaryPath);
   }
 
+  const packContexts = await generatePackContexts(projectRoot, contextDir, essence);
+
+  const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
+  writeFileSync(
+    scaffoldTaskPath,
+    generateScaffoldTaskContext(essence, packContexts.scaffoldPack, packContexts.manifest),
+  );
+  contextFiles.push(scaffoldTaskPath);
+
   // ── Generate mutation task contexts (skipped during init, generated on refresh/add/remove) ──
   if (!options?.isInitialScaffold) {
-    const scaffoldTaskPath = join(contextDir, 'task-scaffold.md');
-    writeFileSync(scaffoldTaskPath, generateTaskContextV3('task-scaffold.md.template', essence));
-    contextFiles.push(scaffoldTaskPath);
-
     const addPagePath = join(contextDir, 'task-add-page.md');
-    writeFileSync(addPagePath, generateTaskContextV3('task-add-page.md.template', essence));
+    writeFileSync(
+      addPagePath,
+      generateAddPageTaskContext(essence, packContexts.scaffoldPack, packContexts.manifest),
+    );
     contextFiles.push(addPagePath);
 
     const modifyPath = join(contextDir, 'task-modify.md');
-    writeFileSync(modifyPath, generateTaskContextV3('task-modify.md.template', essence));
+    writeFileSync(
+      modifyPath,
+      generateModifyTaskContext(essence, packContexts.scaffoldPack, packContexts.manifest),
+    );
     contextFiles.push(modifyPath);
   }
 
@@ -2665,16 +2617,7 @@ export async function refreshDerivedFiles(
         try {
           const shellResult = await registry.fetchShell(shellId);
           if (shellResult?.data) {
-            const inner = shellResult.data as Record<string, any>;
-            shellInfoCache[shellId] = {
-              description: (inner.description as string) || '',
-              regions: (inner.config?.regions as string[]) || [],
-              layout: (inner.layout as string) || undefined,
-              guidance: (inner.guidance as Record<string, string>) || undefined,
-              atoms: (inner.atoms as string) || undefined,
-              config: inner.config || undefined,
-              internal_layout: inner.internal_layout || undefined,
-            };
+            shellInfoCache[shellId] = mapRegistryShellToShellInfo(shellResult.data);
           }
         } catch { /* continue without shell info */ }
       }
@@ -2752,7 +2695,7 @@ export async function refreshDerivedFiles(
     const routes = blueprint.routes || {};
     const scaffoldContent = generateScaffoldContext({
       appName: essence.meta.archetype || 'Application',
-      blueprintId: storedBlueprintId || (essence.meta as any).blueprint || '',
+      blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || '',
       themeName,
       personality,
       topologyMarkdown,
@@ -2814,16 +2757,7 @@ export async function refreshDerivedFiles(
     try {
       const shellResult = await registry.fetchShell(shell);
       if (shellResult?.data) {
-        const inner = shellResult.data as Record<string, any>;
-        v30ShellInfo = {
-          description: (inner.description as string) || '',
-          regions: (inner.config?.regions as string[]) || [],
-          layout: (inner.layout as string) || undefined,
-          guidance: (inner.guidance as Record<string, string>) || undefined,
-          atoms: (inner.atoms as string) || undefined,
-          config: inner.config || undefined,
-          internal_layout: inner.internal_layout || undefined,
-        };
+        v30ShellInfo = mapRegistryShellToShellInfo(shellResult.data);
       }
     } catch { /* continue without shell info */ }
 
@@ -2865,6 +2799,10 @@ export async function refreshDerivedFiles(
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
     writeFileSync(sectionContextPath, contextContent);
     contextFiles.push(sectionContextPath);
+  }
+
+  if (packContexts.paths.length > 0) {
+    contextFiles.push(...packContexts.paths);
   }
 
   return {
@@ -2992,6 +2930,47 @@ export interface PatternSpecSummary {
   accessibility?: { role?: string; keyboard?: string[]; announcements?: string[]; focus_management?: string };
 }
 
+export function mapRegistryPatternToPatternSpecSummary(
+  pattern: RegistryPattern,
+  prefetched?: PatternSpecSummary,
+  includeExtendedFields = true,
+): PatternSpecSummary {
+  const defaultPreset = pattern.default_preset || 'standard';
+  const preset = pattern.presets?.[defaultPreset];
+  let slots = preset?.layout?.slots || pattern.default_layout?.slots || prefetched?.slots || {};
+
+  if (Object.keys(slots).length === 0) {
+    const synthetic = generateSyntheticSlots(pattern.id, pattern.description || prefetched?.description || '');
+    if (Object.keys(synthetic).length > 0) slots = synthetic;
+  }
+
+  const spec: PatternSpecSummary = {
+    description: pattern.description || prefetched?.description || '',
+    components: pattern.components || prefetched?.components || [],
+    slots,
+    layout_hints: pattern.layout_hints,
+    ...(includeExtendedFields ? {
+      visual_brief: pattern.visual_brief,
+      composition: pattern.composition,
+      motion: pattern.motion,
+      responsive: pattern.responsive,
+      accessibility: pattern.accessibility ? {
+        role: pattern.accessibility.role,
+        keyboard: pattern.accessibility.keyboard,
+        announcements: pattern.accessibility.announcements,
+        focus_management: pattern.accessibility.focus_management,
+      } : undefined,
+    } : {}),
+  };
+
+  if (!spec.components || spec.components.length === 0) {
+    const syntheticComps = generateSyntheticComponents(pattern.id, spec.description);
+    if (syntheticComps.length > 0) spec.components = syntheticComps;
+  }
+
+  return spec;
+}
+
 export interface ShellInfo {
   description: string;
   regions: string[];
@@ -3005,7 +2984,20 @@ export interface ShellInfo {
     body?: { scroll?: boolean; inputAnchored?: boolean };
     footer?: { height?: string; sticky?: boolean };
   };
-  internal_layout?: Record<string, any>;
+  internal_layout?: Record<string, unknown>;
+}
+
+export function mapRegistryShellToShellInfo(shell: RegistryShell): ShellInfo {
+  const config = isRecord(shell.config) ? shell.config : undefined;
+  return {
+    description: shell.description || '',
+    regions: getStringArray(config?.regions),
+    layout: shell.layout || undefined,
+    guidance: shell.guidance,
+    atoms: shell.atoms,
+    config: config as ShellInfo['config'] | undefined,
+    internal_layout: isRecord(shell.internal_layout) ? shell.internal_layout : undefined,
+  };
 }
 
 export interface SectionContextInput {
@@ -3020,7 +3012,7 @@ export interface SectionContextInput {
   themeHints?: { preferred?: string[]; compositions?: string; spatialHints?: string };
   constraints?: Record<string, unknown>;
   shellInfo?: ShellInfo;
-  themeData?: any;
+  themeData?: ThemeData;
   themeMode?: string;
   voiceTone?: string;
   spatialHints?: SpatialTokenHints;
@@ -3037,15 +3029,7 @@ export interface ScaffoldContextInput {
   constraints?: Record<string, unknown>;
   seo?: { schema_org?: string[]; meta_priorities?: string[] };
   navigation?: { hotkeys?: unknown[]; command_palette?: boolean };
-  voice?: {
-    tone?: string;
-    cta_verbs?: string[];
-    avoid?: string[];
-    empty_states?: string;
-    errors?: string;
-    loading?: string;
-    metrics_format?: string;
-  };
+  voice?: RegistryBlueprint['voice'];
 }
 
 // ── Shell Implementation Generator ──
@@ -3066,12 +3050,12 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
     for (const [region, props] of Object.entries(shellInfo.internal_layout)) {
       lines.push(`### ${region}`);
       lines.push('');
-      if (typeof props === 'object' && props !== null) {
-        for (const [key, value] of Object.entries(props as Record<string, any>)) {
-          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      if (isRecord(props)) {
+        for (const [key, value] of Object.entries(props)) {
+          if (isRecord(value)) {
             // Nested sub-region (e.g., sidebar.brand, sidebar.nav)
             lines.push(`- **${key}:**`);
-            for (const [subKey, subValue] of Object.entries(value as Record<string, any>)) {
+            for (const [subKey, subValue] of Object.entries(value)) {
               lines.push(`  - ${subKey}: ${subValue}`);
             }
           } else {
@@ -3402,7 +3386,7 @@ export function generateSectionContext(input: SectionContextInput): string {
   if (themeHints) {
     if (themeHints.preferred && themeHints.preferred.length > 0) {
       // Filter to patterns relevant to this section
-      const sectionPatterns = new Set(section.pages.flatMap(p => p.layout.map((l: LayoutItem) => typeof l === 'string' ? l : (l as Record<string, unknown>).pattern as string)));
+      const sectionPatterns = new Set(section.pages.flatMap(p => p.layout.flatMap(extractPatternNames)));
       const relevant = themeHints.preferred.filter(p => sectionPatterns.has(p));
       if (relevant.length > 0) {
         lines.push(`**Preferred:** ${relevant.join(', ')}`);

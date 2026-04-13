@@ -1,54 +1,145 @@
 import { Suspense } from 'react';
-import { listContent } from '@/lib/api';
+import { getRegistryIntelligenceSummary, listContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { KPIGrid } from '@/components/kpi-grid';
+import { compareContentItems } from '@/lib/content-ranking';
+import {
+  getShowcaseShortlistVerificationSummary,
+  listShortlistedShowcases,
+} from '@/lib/showcase';
+import styles from './page.module.css';
+import {
+  CONTENT_TYPES,
+  CONTENT_TYPE_LABELS,
+  type RegistryContentType,
+  toSingularRegistryContentType,
+} from '@/lib/content-types';
 
 async function FeaturedContent() {
   let items: ContentItem[] = [];
 
   try {
-    const result = await listContent('patterns', { limit: 9 });
-    items = result.items;
+    const results = await Promise.allSettled(
+      CONTENT_TYPES.map((type) => listContent(type, { limit: 6 })),
+    );
+
+    const featuredItems: ContentItem[] = [];
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        featuredItems.push(...result.value.items);
+      }
+    });
+
+    items = featuredItems
+      .sort(compareContentItems)
+      .slice(0, 9);
   } catch {
     // API unavailable
   }
 
-  return <ContentCardGrid items={items} emptyMessage="No patterns published yet." />;
+  return <ContentCardGrid items={items} emptyMessage="No featured registry content yet." />;
+}
+
+async function ShowcaseShortlist() {
+  const shortlist = await listShortlistedShowcases();
+  if (shortlist.length === 0) {
+    return null;
+  }
+
+  let items: ContentItem[] = [];
+
+  try {
+    const result = await listContent('blueprints', { limit: 100 });
+    const shortlistOrder = new Map(shortlist.map((entry, index) => [entry.slug, index]));
+    items = result.items
+      .filter((item) => shortlistOrder.has(item.slug))
+      .sort((a, b) => (shortlistOrder.get(a.slug) ?? 999) - (shortlistOrder.get(b.slug) ?? 999));
+  } catch {
+    // API unavailable
+  }
+
+  return (
+    <ContentCardGrid
+      items={items}
+      emptyMessage="No shortlisted showcase blueprints are available yet."
+    />
+  );
+}
+
+async function ShowcaseShortlistSummary() {
+  const summary = await getShowcaseShortlistVerificationSummary();
+  if (!summary) {
+    return null;
+  }
+
+  return (
+    <KPIGrid
+      items={[
+        { label: 'Build Verified', value: summary.passedBuilds },
+        { label: 'Smoke Verified', value: summary.passedSmokes },
+        { label: 'Route Coverage', value: summary.appsWithRouteCoverageCount },
+        { label: 'Full Route Coverage', value: summary.appsWithFullRouteCoverageCount },
+        { label: 'No Inline Scripts', value: summary.appsWithoutInlineScriptsCount },
+        { label: 'CSP Signals', value: summary.appsWithCspSignalCount },
+        { label: 'External CSS Integrity', value: summary.appsWithExternalStylesheetIntegrityCount },
+        { label: 'Lower Drift', value: summary.lowerDriftCount },
+        { label: 'Elevated Drift', value: summary.elevatedDriftCount },
+      ]}
+    />
+  );
 }
 
 async function RegistryStats() {
-  const counts = { patterns: 0, themes: 0, blueprints: 0, shells: 0 };
+  const counts = Object.fromEntries(
+    CONTENT_TYPES.map((type) => [type, 0])
+  ) as Record<RegistryContentType, number>;
+  let intelligenceSummary: Awaited<ReturnType<typeof getRegistryIntelligenceSummary>> | null = null;
 
   try {
-    const results = await Promise.allSettled([
-      listContent('patterns', { limit: 1 }),
-      listContent('themes', { limit: 1 }),
-      listContent('blueprints', { limit: 1 }),
-      listContent('shells', { limit: 1 }),
-    ]);
-
-    const types = ['patterns', 'themes', 'blueprints', 'shells'] as const;
-    results.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        counts[types[i]] = r.value.total;
-      }
+    intelligenceSummary = await getRegistryIntelligenceSummary({ namespace: '@official' });
+    CONTENT_TYPES.forEach((type) => {
+      counts[type] = intelligenceSummary?.by_type?.[toSingularRegistryContentType(type)]?.total_public_items ?? 0;
     });
   } catch {
-    // Silently fail
+    try {
+      const results = await Promise.allSettled(
+        CONTENT_TYPES.map((type) => listContent(type, { limit: 1 }))
+      );
+
+      results.forEach((r, i) => {
+        if (r.status === 'fulfilled') {
+          counts[CONTENT_TYPES[i]] = r.value.total;
+        }
+      });
+    } catch {
+      // Silently fail
+    }
   }
 
-  const total = counts.patterns + counts.themes + counts.blueprints + counts.shells;
+  const total = CONTENT_TYPES.reduce((sum, type) => sum + counts[type], 0);
+  const intelligenceItems = intelligenceSummary?.totals.with_intelligence ?? 0;
+  const recommendedItems = intelligenceSummary?.totals.recommended ?? 0;
+  const buildGreenItems = intelligenceSummary?.totals.build_green ?? 0;
+  const smokeGreenItems = intelligenceSummary?.totals.smoke_green ?? 0;
+  const highConfidenceItems = intelligenceSummary?.totals.high_confidence ?? 0;
 
   return (
     <KPIGrid
       items={[
         { label: 'Total Items', value: total },
-        { label: 'Patterns', value: counts.patterns },
-        { label: 'Themes', value: counts.themes },
-        { label: 'Blueprints', value: counts.blueprints },
-      ]}
+        { label: 'With Intelligence', value: intelligenceItems },
+        { label: 'Recommended', value: recommendedItems },
+        { label: 'Build Verified', value: buildGreenItems },
+        { label: 'Smoke Verified', value: smokeGreenItems },
+        { label: 'High Confidence', value: highConfidenceItems },
+      ].concat(
+        CONTENT_TYPES.map((type) => ({
+          label: CONTENT_TYPE_LABELS[type],
+          value: counts[type],
+        }))
+      )}
     />
   );
 }
@@ -73,27 +164,25 @@ function CardGridSkeleton() {
 
 export default function HomePage() {
   return (
-    <div className="lum-canvas" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
-      {/* Search section */}
-      <section className="entrance-fade">
-        <h2 className="font-semibold" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+    <main className={`lum-canvas ${styles.pageShellBreakpoint}`}>
+      <section className="entrance-fade" aria-labelledby="registry-home-heading">
+        <h1 id="registry-home-heading" className="mb-2 text-2xl font-semibold">
           Explore the Registry
-        </h2>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>
-          Browse, install, and publish patterns, themes, blueprints, and shells.
+        </h1>
+        <p className={`${styles.heroCopy} text-[var(--d-text-muted)]`}>
+          Browse, install, and publish patterns, themes, blueprints, archetypes, and shells.
         </p>
         <Suspense>
-          <SearchFilterBar baseUrl="/browse" showSort={false} />
+          <SearchFilterBar baseUrl="/browse" showSort={false} showRecommendedToggle={false} activeType="all" />
         </Suspense>
       </section>
 
       <div className="lum-divider" />
 
-      {/* Featured Content */}
-      <section>
+      <section aria-labelledby="featured-registry-heading">
         <span
-          className="d-label block mb-4"
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
+          id="featured-registry-heading"
+          className={`d-label ${styles.sectionLabelAccent} border-l-[var(--d-accent)]`}
         >
           Featured
         </span>
@@ -104,18 +193,41 @@ export default function HomePage() {
 
       <div className="lum-divider" />
 
-      {/* Registry Stats */}
-      <section className="d-section" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <section aria-labelledby="showcase-shortlist-heading">
         <span
-          className="d-label block mb-4"
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
+          id="showcase-shortlist-heading"
+          className={`d-label ${styles.sectionLabelSuccess} border-l-[var(--d-success)]`}
+        >
+          Showcase Shortlist
+        </span>
+        <p className={`${styles.sectionCopy} text-[var(--d-text-muted)]`}>
+          Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and a passing served-output smoke baseline.
+        </p>
+        <Suspense>
+          <ShowcaseShortlistSummary />
+        </Suspense>
+        <div className="h-4" />
+        <Suspense fallback={<CardGridSkeleton />}>
+          <ShowcaseShortlist />
+        </Suspense>
+      </section>
+
+      <div className="lum-divider" />
+
+      <section className={`d-section ${styles.metricsSection}`} aria-labelledby="registry-stats-heading">
+        <span
+          id="registry-stats-heading"
+          className={`d-label ${styles.sectionLabelAccent} border-l-[var(--d-accent)]`}
         >
           Registry Stats
         </span>
+        <p className={`${styles.sectionCopy} text-[var(--d-text-muted)]`}>
+          Live totals are sourced from the hosted public registry contracts, including aggregate intelligence and verification coverage where available.
+        </p>
         <Suspense>
           <RegistryStats />
         </Suspense>
       </section>
-    </div>
+    </main>
   );
 }

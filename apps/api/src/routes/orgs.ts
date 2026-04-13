@@ -4,6 +4,7 @@ import { CONTENT_TYPES, parsePagination } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import { validateRegistryContent } from '../lib/content-validation.js';
 
 export const orgRoutes = new Hono<Env>();
 
@@ -152,6 +153,14 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
   }
   if (!body.data || typeof body.data !== 'object') {
     return c.json({ error: 'data is required' }, 400);
+  }
+
+  const contentValidation = validateRegistryContent(body.type, body.data);
+  if (!contentValidation.valid) {
+    return c.json({
+      error: 'Content data failed registry schema validation',
+      validationErrors: contentValidation.errors,
+    }, 400);
   }
 
   const namespace = `@org:${org.slug}`;

@@ -58,7 +58,7 @@ describe('decantr_accept_drift', () => {
 
   it('should reject with invalid resolution', async () => {
     const result = await handleTool('decantr_accept_drift', {
-      violations: [{ rule: 'style' }],
+      violations: [{ rule: 'theme' }],
       resolution: 'invalid',
     }) as { error: string };
     expect(result.error).toBeDefined();
@@ -66,7 +66,7 @@ describe('decantr_accept_drift', () => {
 
   it('should require confirm_dna for DNA violations', async () => {
     const result = await handleTool('decantr_accept_drift', {
-      violations: [{ rule: 'style', details: 'glassmorphism' }],
+      violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'accept',
     }) as { error: string; requires_confirmation: boolean };
     expect(result.error).toBeDefined();
@@ -75,7 +75,7 @@ describe('decantr_accept_drift', () => {
 
   it('should allow reject without confirm_dna', async () => {
     const result = await handleTool('decantr_accept_drift', {
-      violations: [{ rule: 'style', details: 'glassmorphism' }],
+      violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'reject',
     }) as { status: string };
     expect(result.status).toBe('rejected');
@@ -104,7 +104,7 @@ describe('decantr_accept_drift', () => {
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
     const result = await handleTool('decantr_accept_drift', {
-      violations: [{ rule: 'style', details: 'glassmorphism' }],
+      violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'accept',
       path: essencePath,
       confirm_dna: true,

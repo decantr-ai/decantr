@@ -30,7 +30,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   try {
     [profile, { items }] = await Promise.all([
       getUserProfile(username),
-      getUserContent(username, { limit: 12 }),
+      getUserContent(username, { limit: 12, sort: 'recommended' }),
     ]);
   } catch {
     notFound();

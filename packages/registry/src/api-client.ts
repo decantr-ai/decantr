@@ -6,13 +6,30 @@ import type {
   Shell,
   ApiContentType,
   ContentListResponse,
+  PublicContentSummary,
+  PublicContentRecord,
   ContentItem,
+  OwnedContentSummary,
   PublishPayload,
   PublishResponse,
   SearchParams,
   SearchResponse,
+  RegistryIntelligenceSummaryResponse,
   UserProfile,
+  PublicUserProfile,
+  ShowcaseManifestResponse,
+  ShowcaseShortlistResponse,
+  ShowcaseShortlistReport,
+  HostedFileCritiqueRequest,
+  HostedProjectAuditRequest,
+  FileCritiqueReport,
+  ProjectAuditReport,
+  ExecutionPackManifest,
+  ExecutionPackBundleResponse,
+  HostedSelectedExecutionPackRequest,
+  SelectedExecutionPackResponse,
 } from './types.js';
+import type { EssenceFile } from '@decantr/essence-spec';
 
 const DEFAULT_BASE_URL = 'https://api.decantr.ai/v1';
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -23,11 +40,34 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
+function unwrapDataEnvelope<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && 'data' in value) {
+    return value.data as T;
+  }
+  return value;
+}
+
 export interface RegistryAPIClientOptions {
   baseUrl?: string;
   apiKey?: string;
   timeoutMs?: number;
   cacheTtlMs?: number;
+}
+
+export class RegistryAPIError extends Error {
+  status: number;
+  details?: unknown;
+
+  constructor(status: number, message: string, details?: unknown) {
+    super(message);
+    this.name = 'RegistryAPIError';
+    this.status = status;
+    this.details = details;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 export class RegistryAPIClient {
@@ -73,8 +113,24 @@ export class RegistryAPIClient {
       headers: { ...this.buildHeaders(), ...init?.headers },
     });
     if (!response.ok) {
-      const body = await response.text().catch(() => '');
-      throw new Error(`API ${response.status}: ${body || response.statusText}`);
+      const bodyText = await response.text().catch(() => '');
+      let details: unknown;
+      let message = response.statusText;
+
+      if (bodyText) {
+        try {
+          details = JSON.parse(bodyText) as unknown;
+          if (isRecord(details) && typeof details.error === 'string') {
+            message = details.error;
+          } else {
+            message = bodyText;
+          }
+        } catch {
+          message = bodyText;
+        }
+      }
+
+      throw new RegistryAPIError(response.status, `API ${response.status}: ${message}`, details);
     }
     return response.json() as Promise<T>;
   }
@@ -115,7 +171,14 @@ export class RegistryAPIClient {
 
   async listContent<T = Record<string, unknown>>(
     type: ApiContentType,
-    params?: { namespace?: string; limit?: number; offset?: number }
+    params?: {
+      namespace?: string;
+      sort?: string;
+      recommended?: boolean;
+      intelligenceSource?: SearchParams['intelligenceSource'];
+      limit?: number;
+      offset?: number;
+    }
   ): Promise<ContentListResponse<T>> {
     const cacheKey = `list:${type}:${JSON.stringify(params ?? {})}`;
     const cached = this.getCached<ContentListResponse<T>>(cacheKey);
@@ -123,6 +186,9 @@ export class RegistryAPIClient {
 
     const searchParams = new URLSearchParams();
     if (params?.namespace) searchParams.set('namespace', params.namespace);
+    if (params?.sort) searchParams.set('sort', params.sort);
+    if (params?.recommended) searchParams.set('recommended', 'true');
+    if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.offset) searchParams.set('offset', String(params.offset));
 
@@ -144,9 +210,23 @@ export class RegistryAPIClient {
 
     const raw = await this.request<T>(`/${type}/${namespace}/${slug}`);
     // API returns { id, type, slug, data: {...actual content...} } — unwrap
-    const unwrapped = ((raw as any).data ?? raw) as T;
+    const unwrapped = unwrapDataEnvelope(raw);
     this.setCache(cacheKey, unwrapped);
     return unwrapped;
+  }
+
+  async getPublicContentRecord<TData = Record<string, unknown>>(
+    type: ApiContentType,
+    namespace: string,
+    slug: string,
+  ): Promise<PublicContentRecord<TData>> {
+    const cacheKey = `public-record:${type}:${namespace}:${slug}`;
+    const cached = this.getCached<PublicContentRecord<TData>>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<PublicContentRecord<TData>>(`/${type}/${namespace}/${slug}`);
+    this.setCache(cacheKey, result);
+    return result;
   }
 
   // ── Typed convenience methods ──
@@ -177,10 +257,54 @@ export class RegistryAPIClient {
     const searchParams = new URLSearchParams({ q: params.q });
     if (params.type) searchParams.set('type', params.type);
     if (params.namespace) searchParams.set('namespace', params.namespace);
+    if (params.sort) searchParams.set('sort', params.sort);
+    if (params.recommended) searchParams.set('recommended', 'true');
+    if (params.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
     if (params.limit) searchParams.set('limit', String(params.limit));
     if (params.offset) searchParams.set('offset', String(params.offset));
 
     return this.request<SearchResponse>(`/search?${searchParams}`);
+  }
+
+  async getPublicUserProfile(username: string): Promise<PublicUserProfile> {
+    const cacheKey = `public-user:${username}`;
+    const cached = this.getCached<PublicUserProfile>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<PublicUserProfile>(`/users/${encodeURIComponent(username)}`);
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getPublicUserContent(
+    username: string,
+    params?: {
+      type?: string;
+      sort?: string;
+      recommended?: boolean;
+      intelligenceSource?: SearchParams['intelligenceSource'];
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<ContentListResponse<PublicContentSummary>> {
+    const cacheKey = `public-user-content:${username}:${JSON.stringify(params ?? {})}`;
+    const cached = this.getCached<ContentListResponse<PublicContentSummary>>(cacheKey);
+    if (cached) return cached;
+
+    const searchParams = new URLSearchParams();
+    if (params?.type) searchParams.set('type', params.type);
+    if (params?.sort) searchParams.set('sort', params.sort);
+    if (params?.recommended) searchParams.set('recommended', 'true');
+    if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+
+    const query = searchParams.toString();
+    const result = await this.request<ContentListResponse<PublicContentSummary>>(
+      `/users/${encodeURIComponent(username)}/content${query ? `?${query}` : ''}`,
+    );
+    this.setCache(cacheKey, result);
+    return result;
   }
 
   // ── Authenticated endpoints ──
@@ -197,14 +321,150 @@ export class RegistryAPIClient {
     });
   }
 
-  async getMyContent(): Promise<ContentListResponse<ContentItem>> {
-    return this.request<ContentListResponse<ContentItem>>('/my/content');
+  async getMyContent(): Promise<ContentListResponse<OwnedContentSummary>> {
+    return this.request<ContentListResponse<OwnedContentSummary>>('/my/content');
   }
 
   // ── Schema ──
 
   async getSchema(name: string = 'essence.v3.json'): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>(`/schema/${name}`);
+  }
+
+  // ── Showcase benchmarks ──
+
+  async getShowcaseManifest(): Promise<ShowcaseManifestResponse> {
+    const cacheKey = 'showcase:manifest';
+    const cached = this.getCached<ShowcaseManifestResponse>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<ShowcaseManifestResponse>('/showcase/manifest');
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getShowcaseShortlist(): Promise<ShowcaseShortlistResponse> {
+    const cacheKey = 'showcase:shortlist';
+    const cached = this.getCached<ShowcaseShortlistResponse>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<ShowcaseShortlistResponse>('/showcase/shortlist');
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getShowcaseShortlistVerification(): Promise<ShowcaseShortlistReport> {
+    const cacheKey = 'showcase:shortlist-verification';
+    const cached = this.getCached<ShowcaseShortlistReport>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<ShowcaseShortlistReport>('/showcase/shortlist-verification');
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getRegistryIntelligenceSummary(
+    params?: { namespace?: string },
+  ): Promise<RegistryIntelligenceSummaryResponse> {
+    const cacheKey = `registry-intelligence-summary:${JSON.stringify(params ?? {})}`;
+    const cached = this.getCached<RegistryIntelligenceSummaryResponse>(cacheKey);
+    if (cached) return cached;
+
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+    const result = await this.request<RegistryIntelligenceSummaryResponse>(
+      `/intelligence/summary${query ? `?${query}` : ''}`,
+    );
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async compileExecutionPacks(
+    essence: EssenceFile,
+    params?: { namespace?: string },
+  ): Promise<ExecutionPackBundleResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<ExecutionPackBundleResponse>(
+      `/packs/compile${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(essence),
+      },
+    );
+  }
+
+  async selectExecutionPack(
+    input: HostedSelectedExecutionPackRequest,
+    params?: { namespace?: string },
+  ): Promise<SelectedExecutionPackResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<SelectedExecutionPackResponse>(
+      `/packs/select${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  async getExecutionPackManifest(
+    essence: EssenceFile,
+    params?: { namespace?: string },
+  ): Promise<ExecutionPackManifest> {
+    const selected = await this.selectExecutionPack(
+      {
+        essence,
+        pack_type: 'scaffold',
+      },
+      params,
+    );
+
+    return selected.manifest;
+  }
+
+  async critiqueFile(
+    input: HostedFileCritiqueRequest,
+    params?: { namespace?: string },
+  ): Promise<FileCritiqueReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<FileCritiqueReport>(
+      `/critique/file${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    );
+  }
+
+  async auditProject(
+    input: HostedProjectAuditRequest,
+    params?: { namespace?: string },
+  ): Promise<ProjectAuditReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.namespace) searchParams.set('namespace', params.namespace);
+    const query = searchParams.toString();
+
+    return this.request<ProjectAuditReport>(
+      `/audit/project${query ? `?${query}` : ''}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    );
   }
 }
 

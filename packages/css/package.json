@@ -1,14 +1,14 @@
 {
   "name": "@decantr/css",
   "version": "1.0.2",
-  "description": "Framework-agnostic CSS atoms runtime for Decantr projects",
+  "description": "Framework-agnostic CSS atom runtime for Decantr projects",
   "author": "Decantr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/decantr/decantr-monorepo",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
     "directory": "packages/css"
   },
-  "homepage": "https://github.com/decantr/decantr-monorepo/tree/main/packages/css",
+  "homepage": "https://decantr.ai",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,6 +21,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts",
     "test": "vitest run",
@@ -31,7 +34,8 @@
     "decantr",
     "css",
     "atoms",
-    "utility-css"
+    "utility-css",
+    "design-intelligence"
   ],
   "license": "MIT",
   "devDependencies": {

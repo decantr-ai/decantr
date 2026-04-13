@@ -128,11 +128,8 @@ export function KPIGrid({ items }: KPIGridProps) {
       <style>{`
         .kpi-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
           gap: 1rem;
-        }
-        @media (min-width: 1024px) {
-          .kpi-grid { grid-template-columns: repeat(4, 1fr); }
         }
       `}</style>
     </>

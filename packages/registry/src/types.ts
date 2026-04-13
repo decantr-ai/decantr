@@ -1,8 +1,22 @@
+import type { EssenceFile } from '@decantr/essence-spec';
+
 // --- Pattern ---
+export interface PatternLayoutSpec {
+  layout: string;
+  atoms: string;
+  slots?: Record<string, string>;
+}
+
+export interface PatternCodeSpec {
+  imports?: string;
+  example?: string;
+}
+
 export interface PatternPreset {
   description: string;
-  layout: { layout: 'row' | 'column' | 'grid' | 'hero'; atoms: string };
-  code: { imports: string; example: string };
+  components?: string[];
+  layout: PatternLayoutSpec;
+  code?: PatternCodeSpec;
 }
 
 export interface PatternIO {
@@ -22,7 +36,8 @@ export interface Pattern {
   presets: Record<string, PatternPreset>;
   contained?: boolean;
   io?: PatternIO;
-  code?: { imports: string; example: string };
+  code?: PatternCodeSpec;
+  default_layout?: PatternLayoutSpec;
   visual_brief?: string;
   composition?: Record<string, string>;
   motion?: {
@@ -49,10 +64,32 @@ export interface Pattern {
 // --- Archetype ---
 export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
 
+export interface PatternReferenceObject {
+  pattern: string;
+  preset?: string;
+  as?: string;
+}
+
+export type PatternReference = string | PatternReferenceObject;
+
+export interface LayoutGroup {
+  cols: PatternReference[];
+  at?: string;
+  span?: Record<string, number>;
+}
+
+export type LayoutItem = PatternReference | LayoutGroup;
+
+export interface ContentDependencies {
+  [kind: string]: Record<string, string>;
+}
+
 export interface ArchetypePage {
   id: string;
-  default_layout: (string | { pattern: string; preset?: string; as?: string })[];
+  default_layout: LayoutItem[];
   shell: string;
+  description?: string;
+  patterns?: PatternReference[];
 }
 
 export interface SeoHints {
@@ -60,16 +97,31 @@ export interface SeoHints {
   meta_priorities?: string[];
 }
 
+export interface ArchetypeSuggestedTheme {
+  ids?: string[];
+  modes?: string[];
+  shapes?: string[];
+}
+
+export interface ArchetypeHeroCustomization {
+  style?: string;
+  elements?: string[];
+  background?: string;
+  [key: string]: unknown;
+}
+
 export interface Archetype {
+  $schema?: string;
   id: string;
   version: string;
+  decantr_compat?: string;
   name: string;
   description: string;
   tags: string[];
   role: ArchetypeRole;
   pages: ArchetypePage[];
   features: string[];
-  dependencies: { patterns: Record<string, string> };
+  dependencies?: ContentDependencies;
   seo_hints?: SeoHints;
   classification?: {
     triggers: { primary: string[]; secondary: string[]; negative: string[] };
@@ -78,6 +130,10 @@ export interface Archetype {
     tier: string;
   };
   page_briefs?: Record<string, string>;
+  suggested_theme?: ArchetypeSuggestedTheme;
+  shells?: Record<string, string>;
+  personality?: string[];
+  hero_customization?: ArchetypeHeroCustomization;
 }
 
 // --- Theme substructures (absorbed from former Recipe type) ---
@@ -109,21 +165,50 @@ export interface ThemeShell {
 // --- Blueprint ---
 export type ComposeEntry = string | { archetype: string; prefix: string; role?: ArchetypeRole };
 
+export interface BlueprintRoute {
+  shell?: string;
+  archetype?: string;
+  page?: string;
+}
+
+export interface BlueprintNavigationHotkey {
+  key: string;
+  route?: string;
+  label?: string;
+}
+
+export interface BlueprintNavigation {
+  command_palette?: boolean;
+  hotkeys?: BlueprintNavigationHotkey[];
+}
+
+export interface BlueprintOverrides {
+  features_add?: string[];
+  features_remove?: string[];
+  pages_remove?: string[];
+  pages?: Record<string, Record<string, unknown>>;
+}
+
 export interface Blueprint {
+  $schema?: string;
   id: string;
+  version?: string;
+  decantr_compat?: string;
   name: string;
   description?: string;
-  archetype: string;
+  tags?: string[];
+  archetype?: string;
   compose?: ComposeEntry[];
   theme: { id: string; mode?: string; shape?: string };
-  personality?: string;
-  pages: Array<{
-    id: string;
-    layout: string[];
-    shell?: string;
-  }>;
+  personality?: string | string[];
   features?: string[];
-  version?: string;
+  routes?: Record<string, BlueprintRoute>;
+  overrides?: BlueprintOverrides;
+  seo_hints?: SeoHints;
+  navigation?: BlueprintNavigation;
+  dependencies?: ContentDependencies;
+  suggested_themes?: string[];
+  design_constraints?: Record<string, unknown>;
   voice?: {
     tone?: string;
     cta_verbs?: string[];
@@ -153,16 +238,58 @@ export interface Shell {
     navWidth?: string;
     headerHeight?: string;
   };
-  internal_layout?: Record<string, any>;
+  internal_layout?: Record<string, unknown>;
   layout?: string;
   atoms?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   guidance?: Record<string, string>;
   code?: { imports?: string; example?: string };
 }
 
 // --- Content Resolution ---
-export type ContentType = 'pattern' | 'archetype' | 'theme' | 'blueprint' | 'shell';
+export const CONTENT_TYPES = [
+  'pattern',
+  'theme',
+  'blueprint',
+  'archetype',
+  'shell',
+] as const;
+
+export type ContentType = (typeof CONTENT_TYPES)[number];
+
+export const API_CONTENT_TYPES = [
+  'patterns',
+  'themes',
+  'blueprints',
+  'archetypes',
+  'shells',
+] as const;
+
+export type ApiContentType = (typeof API_CONTENT_TYPES)[number];
+
+export const CONTENT_TYPE_TO_API_CONTENT_TYPE: Record<ContentType, ApiContentType> = {
+  pattern: 'patterns',
+  theme: 'themes',
+  blueprint: 'blueprints',
+  archetype: 'archetypes',
+  shell: 'shells',
+};
+
+export const API_CONTENT_TYPE_TO_CONTENT_TYPE: Record<ApiContentType, ContentType> = {
+  patterns: 'pattern',
+  themes: 'theme',
+  blueprints: 'blueprint',
+  archetypes: 'archetype',
+  shells: 'shell',
+};
+
+export function isContentType(value: string): value is ContentType {
+  return CONTENT_TYPES.includes(value as ContentType);
+}
+
+export function isApiContentType(value: string): value is ApiContentType {
+  return API_CONTENT_TYPES.includes(value as ApiContentType);
+}
 
 export interface ResolvedContent<T> {
   item: T;
@@ -215,25 +342,109 @@ export interface Theme {
 
 // --- API Client Types ---
 
-export type ApiContentType = 'patterns' | 'themes' | 'blueprints' | 'archetypes' | 'shells';
-
 export interface ContentListResponse<T = Record<string, unknown>> {
   items: T[];
   total: number;
+  limit?: number;
+  offset?: number;
 }
 
-export interface ContentItem {
+export type ContentVerificationStatus =
+  | 'unknown'
+  | 'pending'
+  | 'build-green'
+  | 'build-red'
+  | 'smoke-green'
+  | 'smoke-red';
+
+export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
+export type ContentConfidenceTier = 'low' | 'medium' | 'high' | 'verified';
+
+export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
+
+export const CONTENT_INTELLIGENCE_SOURCES = [
+  'authored',
+  'benchmark',
+  'hybrid',
+] as const;
+
+export type ContentIntelligenceSource = 'authored' | 'benchmark' | 'hybrid';
+
+export function isContentIntelligenceSource(value: string): value is ContentIntelligenceSource {
+  return CONTENT_INTELLIGENCE_SOURCES.includes(value as ContentIntelligenceSource);
+}
+
+export interface ContentIntelligenceMetadata {
+  source: ContentIntelligenceSource;
+  verification_status: ContentVerificationStatus;
+  last_verified_at?: string | null;
+  target_coverage: string[];
+  benchmark_confidence: ContentBenchmarkConfidence;
+  confidence_tier: ContentConfidenceTier;
+  golden_usage: ContentGoldenUsage;
+  quality_score: number | null;
+  confidence_score: number | null;
+  recommended: boolean;
+  evidence: string[];
+  recommendation_reasons: string[];
+  recommendation_blockers: string[];
+  benchmark?: {
+    classification?: ShowcaseVerificationEntry['classification'];
+    target?: string | null;
+    drift_signal?: ShowcaseVerificationEntry['drift']['signal'];
+    build_passed?: boolean | null;
+    smoke_passed?: boolean | null;
+  };
+}
+
+export interface PublicContentSummary {
+  id: string;
+  slug: string;
+  namespace: string;
+  type: string;
+  version?: string;
+  name?: string;
+  description?: string;
+  published_at?: string;
+  owner_name?: string | null;
+  owner_username?: string | null;
+  intelligence?: ContentIntelligenceMetadata | null;
+}
+
+export interface PublicContentRecord<TData = Record<string, unknown>> {
   id: string;
   slug: string;
   namespace: string;
   type: string;
   version: string;
-  data: Record<string, unknown>;
+  data: TData;
   visibility: 'public' | 'private';
   status: 'pending' | 'approved' | 'rejected' | 'published';
   created_at: string;
   updated_at: string;
   published_at?: string;
+  owner_name?: string | null;
+  owner_username?: string | null;
+  intelligence?: ContentIntelligenceMetadata | null;
+}
+
+export interface ContentItem extends PublicContentRecord<Record<string, unknown>> {}
+
+export interface OwnedContentSummary extends PublicContentSummary {
+  visibility: 'public' | 'private';
+  status: 'pending' | 'approved' | 'rejected' | 'published';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicUserProfile {
+  username: string;
+  display_name: string | null;
+  reputation_score: number;
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  created_at: string;
+  content_count: number;
+  content_counts: Record<string, number>;
 }
 
 export interface PublishPayload {
@@ -257,21 +468,40 @@ export interface SearchParams {
   q: string;
   type?: string;
   namespace?: string;
+  sort?: string;
+  recommended?: boolean;
+  intelligenceSource?: ContentIntelligenceSource;
   limit?: number;
   offset?: number;
 }
 
 export interface SearchResponse {
-  results: Array<{
-    id: string;
-    type: string;
-    slug: string;
-    namespace: string;
-    name: string;
-    description: string;
-    version: string;
-  }>;
+  results: PublicContentSummary[];
   total: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface RegistryIntelligenceSummaryBucket {
+  total_public_items: number;
+  with_intelligence: number;
+  recommended: number;
+  authored: number;
+  benchmark: number;
+  hybrid: number;
+  missing_source: number;
+  smoke_green: number;
+  build_green: number;
+  high_confidence: number;
+  verified_confidence: number;
+}
+
+export interface RegistryIntelligenceSummaryResponse {
+  $schema: string;
+  generated_at: string;
+  namespace: string | null;
+  totals: RegistryIntelligenceSummaryBucket;
+  by_type: Record<ContentType, RegistryIntelligenceSummaryBucket>;
 }
 
 export interface UserProfile {
@@ -280,4 +510,478 @@ export interface UserProfile {
   tier: 'free' | 'pro' | 'team' | 'enterprise';
   reputation_score: number;
   trusted: boolean;
+}
+
+export interface ShowcaseVerificationEntry {
+  slug: string;
+  target: string | null;
+  classification: 'pending' | 'A' | 'B' | 'C' | 'D';
+  verificationStatus: 'pending' | 'build-green' | 'build-red' | 'smoke-green' | 'smoke-red';
+  build: {
+    passed: boolean | null;
+    durationMs: number;
+  };
+  smoke: {
+    passed: boolean | null;
+    durationMs: number;
+    rootDocumentOk: boolean;
+    titleOk: boolean;
+    langOk: boolean;
+    viewportOk: boolean;
+    charsetOk: boolean;
+    cspSignalOk: boolean;
+    inlineScriptCount: number;
+    inlineEventHandlerCount: number;
+    externalScriptsWithoutIntegrityCount: number;
+    externalScriptsWithIntegrityMissingCrossoriginCount: number;
+    externalStylesheetsWithoutIntegrityCount: number;
+    externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
+    externalScriptsWithInsecureTransportCount: number;
+    externalStylesheetsWithInsecureTransportCount: number;
+    externalMediaSourcesWithInsecureTransportCount: number;
+    externalBlankLinksWithoutRelCount: number;
+    externalIframesWithoutSandboxCount: number;
+    externalIframesWithInsecureTransportCount: number;
+    jsEvalSignalCount: number;
+    jsHtmlInjectionSignalCount: number;
+    jsInsecureTransportSignalCount: number;
+    jsSecretSignalCount: number;
+    assetCount: number;
+    assetsPassed: number;
+    routeHintsChecked: string[];
+    routeHintsMatched: number;
+    routeHintsCoverageOk: boolean;
+    routeDocumentsChecked: number;
+    routeDocumentsPassed: number;
+    routeDocumentsHardenedCount: number;
+    routeDocumentsCoverageOk: boolean;
+    routeDocumentsHardeningOk: boolean;
+    fullRouteCoverageOk: boolean;
+    totalAssetBytes: number;
+    jsAssetBytes: number;
+    cssAssetBytes: number;
+    largestAssetPath: string | null;
+    largestAssetBytes: number;
+    failures: string[];
+  };
+  drift: {
+    signal: 'lower' | 'moderate' | 'elevated';
+    penalty: number;
+    inlineStyleCount: number;
+    hardcodedColorCount: number;
+    utilityLeakageCount: number;
+    decantrTreatmentCount: number;
+    hasPackManifest: boolean;
+    hasDist: boolean;
+  };
+}
+
+export interface ShowcaseShortlistSummary {
+  appCount: number;
+  passedBuilds: number;
+  failedBuilds: number;
+  averageDurationMs: number;
+  passedSmokes: number;
+  failedSmokes: number;
+  averageSmokeDurationMs: number;
+  appsWithTitleOkCount: number;
+  appsWithLangOkCount: number;
+  appsWithViewportOkCount: number;
+  appsWithCharsetOkCount: number;
+  appsWithoutInlineScriptsCount: number;
+  appsWithCspSignalCount: number;
+  appsWithExternalScriptIntegrityCount: number;
+  appsWithExternalScriptCrossoriginCount: number;
+  appsWithExternalStylesheetIntegrityCount: number;
+  appsWithExternalStylesheetCrossoriginCount: number;
+  appsWithRouteCoverageCount: number;
+  appsWithFullRouteCoverageCount: number;
+  averageTotalAssetBytes: number;
+  averageJsAssetBytes: number;
+  averageCssAssetBytes: number;
+  lowerDriftCount: number;
+  moderateDriftCount: number;
+  elevatedDriftCount: number;
+  withPackManifestCount: number;
+}
+
+export interface ShowcaseManifestEntry {
+  slug: string;
+  status: string;
+  classification: string;
+  origin?: string | null;
+  target?: string | null;
+  goldenCandidate?: string | boolean;
+  notes?: string | null;
+  verification?: ShowcaseVerificationEntry | null;
+}
+
+export interface ShowcaseManifestResponse {
+  total: number;
+  shortlisted: number;
+  apps: ShowcaseManifestEntry[];
+}
+
+export interface ShowcaseShortlistResponse {
+  generatedAt: string | null;
+  summary: ShowcaseShortlistSummary | null;
+  apps: ShowcaseManifestEntry[];
+}
+
+export interface ShowcaseShortlistReport {
+  $schema: string;
+  generatedAt: string;
+  dryRun: boolean;
+  summary: ShowcaseShortlistSummary;
+  results: ShowcaseVerificationEntry[];
+}
+
+export interface HostedFileCritiqueRequest {
+  essence: EssenceFile;
+  code: string;
+  filePath?: string;
+  treatmentsCss?: string;
+}
+
+export interface HostedDistSnapshot {
+  indexHtml: string;
+  assets?: Record<string, string>;
+}
+
+export interface HostedSourceSnapshot {
+  files: Record<string, string>;
+}
+
+export interface HostedProjectAuditRequest {
+  essence: EssenceFile;
+  dist?: HostedDistSnapshot;
+  sources?: HostedSourceSnapshot;
+}
+
+export type ExecutionPackType = 'scaffold' | 'section' | 'page' | 'mutation' | 'review';
+
+export interface ExecutionPackTarget {
+  platform: 'web';
+  framework: string | null;
+  runtime: string | null;
+  adapter: string;
+}
+
+export interface ExecutionPackScope {
+  appId: string;
+  pageIds: string[];
+  patternIds: string[];
+}
+
+export interface ExecutionPackExample {
+  id: string;
+  label: string;
+  language: string;
+  snippet: string;
+}
+
+export interface ExecutionPackAntiPattern {
+  id: string;
+  summary: string;
+  guidance: string;
+}
+
+export interface ExecutionPackSuccessCheck {
+  id: string;
+  label: string;
+  severity: 'error' | 'warn' | 'info';
+}
+
+export interface ExecutionPackTokenBudget {
+  target: number;
+  max: number;
+  strategy: string[];
+}
+
+export interface ExecutionPackBase<TData = Record<string, unknown>> {
+  $schema: string;
+  packVersion: '1.0.0';
+  packType: ExecutionPackType;
+  objective: string;
+  target: ExecutionPackTarget;
+  preset: string | null;
+  scope: ExecutionPackScope;
+  requiredSetup: string[];
+  allowedVocabulary: string[];
+  examples: ExecutionPackExample[];
+  antiPatterns: ExecutionPackAntiPattern[];
+  successChecks: ExecutionPackSuccessCheck[];
+  tokenBudget: ExecutionPackTokenBudget;
+  data: TData;
+  renderedMarkdown: string;
+}
+
+export interface PackManifestEntry {
+  id: string;
+  markdown: string;
+  json: string;
+}
+
+export interface PackManifestSectionEntry extends PackManifestEntry {
+  pageIds: string[];
+}
+
+export interface PackManifestPageEntry extends PackManifestEntry {
+  sectionId: string | null;
+  sectionRole: string | null;
+}
+
+export interface PackManifestMutationEntry extends PackManifestEntry {
+  mutationType: 'add-page' | 'modify';
+}
+
+export interface ExecutionPackManifest {
+  $schema: string;
+  version: '1.0.0';
+  generatedAt: string;
+  scaffold: PackManifestEntry | null;
+  review: PackManifestEntry | null;
+  sections: PackManifestSectionEntry[];
+  pages: PackManifestPageEntry[];
+  mutations: PackManifestMutationEntry[];
+}
+
+export interface ScaffoldExecutionPack extends ExecutionPackBase<{
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+}> {
+  packType: 'scaffold';
+}
+
+export interface ReviewExecutionPack extends ExecutionPackBase<{
+  reviewType: 'app';
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+  focusAreas: string[];
+  workflow: string[];
+}> {
+  packType: 'review';
+}
+
+export interface SectionExecutionPack extends ExecutionPackBase<{
+  sectionId: string;
+  role: string;
+  shell: string;
+  description: string;
+  features: string[];
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+}> {
+  packType: 'section';
+}
+
+export interface PageExecutionPack extends ExecutionPackBase<{
+  pageId: string;
+  path: string;
+  shell: string;
+  sectionId: string | null;
+  sectionRole: string | null;
+  features: string[];
+  surface: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  wiringSignals: string[];
+  patterns: Array<{
+    id: string;
+    alias: string;
+    preset: string;
+    layout: string;
+  }>;
+}> {
+  packType: 'page';
+}
+
+export interface MutationExecutionPack extends ExecutionPackBase<{
+  mutationType: 'add-page' | 'modify';
+  shell: string;
+  theme: {
+    id: string;
+    mode: string;
+    shape: string | null;
+  };
+  routing: 'hash' | 'history';
+  features: string[];
+  routes: Array<{
+    pageId: string;
+    path: string;
+    patternIds: string[];
+  }>;
+  workflow: string[];
+}> {
+  packType: 'mutation';
+}
+
+export interface ExecutionPackBundleResponse {
+  $schema: string;
+  generatedAt: string;
+  sourceEssenceVersion: string;
+  manifest: ExecutionPackManifest;
+  scaffold: ScaffoldExecutionPack;
+  review: ReviewExecutionPack;
+  sections: SectionExecutionPack[];
+  pages: PageExecutionPack[];
+  mutations: MutationExecutionPack[];
+}
+
+export interface HostedSelectedExecutionPackRequest {
+  essence: EssenceFile;
+  pack_type: ExecutionPackType;
+  id?: string;
+}
+
+export interface SelectedExecutionPackResponse {
+  $schema: string;
+  generatedAt: string;
+  sourceEssenceVersion: string;
+  manifest: ExecutionPackManifest;
+  selector: {
+    packType: ExecutionPackType;
+    id: string | null;
+  };
+  pack:
+    | ScaffoldExecutionPack
+    | ReviewExecutionPack
+    | SectionExecutionPack
+    | PageExecutionPack
+    | MutationExecutionPack;
+}
+
+export type VerificationSeverity = 'error' | 'warn' | 'info';
+
+export interface VerificationFinding {
+  id: string;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  evidence: string[];
+  target?: string;
+  file?: string;
+  rule?: string;
+  suggestedFix?: string;
+}
+
+export interface VerificationScore {
+  category: string;
+  focusArea: string;
+  score: number;
+  details: string;
+  suggestions: string[];
+}
+
+export interface FileCritiqueReport {
+  $schema: string;
+  file: string;
+  overall: number;
+  scores: VerificationScore[];
+  findings: VerificationFinding[];
+  focusAreas: string[];
+  reviewPack: ReviewExecutionPack | null;
+}
+
+export interface ProjectAuditRuntimeAudit {
+  distPresent: boolean;
+  indexPresent: boolean;
+  checked: boolean;
+  passed: boolean | null;
+  rootDocumentOk: boolean;
+  titleOk: boolean;
+  langOk: boolean;
+  viewportOk: boolean;
+  charsetOk: boolean;
+  cspSignalOk: boolean;
+  inlineScriptCount: number;
+  inlineEventHandlerCount: number;
+  externalScriptsWithoutIntegrityCount: number;
+  externalScriptsWithIntegrityMissingCrossoriginCount: number;
+  externalStylesheetsWithoutIntegrityCount: number;
+  externalStylesheetsWithIntegrityMissingCrossoriginCount: number;
+  externalScriptsWithInsecureTransportCount: number;
+  externalStylesheetsWithInsecureTransportCount: number;
+  externalMediaSourcesWithInsecureTransportCount: number;
+  externalBlankLinksWithoutRelCount: number;
+  externalIframesWithoutSandboxCount: number;
+  externalIframesWithInsecureTransportCount: number;
+  jsEvalSignalCount: number;
+  jsHtmlInjectionSignalCount: number;
+  jsInsecureTransportSignalCount: number;
+  jsSecretSignalCount: number;
+  assetCount: number;
+  assetsPassed: number;
+  routeHintsChecked: string[];
+  routeHintsMatched: number;
+  routeHintsCoverageOk: boolean;
+  routeDocumentsChecked: number;
+  routeDocumentsPassed: number;
+  routeDocumentsHardenedCount: number;
+  routeDocumentsCoverageOk: boolean;
+  routeDocumentsHardeningOk: boolean;
+  fullRouteCoverageOk: boolean;
+  totalAssetBytes: number;
+  jsAssetBytes: number;
+  cssAssetBytes: number;
+  largestAssetPath: string | null;
+  largestAssetBytes: number;
+  failures: string[];
+}
+
+export interface ProjectAuditSummary {
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+  essenceVersion: string | null;
+  reviewPackPresent: boolean;
+  packManifestPresent: boolean;
+  runtimeAuditChecked: boolean;
+  runtimePassed: boolean | null;
+  pageCount: number;
+}
+
+export interface ProjectAuditReport {
+  $schema: string;
+  projectRoot: string;
+  valid: boolean;
+  essence: EssenceFile | null;
+  reviewPack: ReviewExecutionPack | null;
+  packManifest: ExecutionPackManifest | null;
+  runtimeAudit: ProjectAuditRuntimeAudit;
+  findings: VerificationFinding[];
+  summary: ProjectAuditSummary;
 }

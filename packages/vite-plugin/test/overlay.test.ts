@@ -5,15 +5,15 @@ import type { GuardViolation } from '@decantr/essence-spec';
 describe('formatViolation', () => {
   it('formats a DNA error violation', () => {
     const v: GuardViolation = {
-      rule: 'style',
+      rule: 'theme',
       severity: 'error',
-      message: 'Style "glassmorphism" does not match essence theme "luminarum".',
+      message: 'Theme "glassmorphism" does not match essence theme "luminarum".',
       layer: 'dna',
       autoFixable: false,
     };
     const result = formatViolation(v);
     expect(result).toContain('[DNA]');
-    expect(result).toContain('[style]');
+    expect(result).toContain('[theme]');
     expect(result).toContain('glassmorphism');
   });
 
@@ -34,14 +34,14 @@ describe('formatViolation', () => {
 
   it('formats a v2 violation without layer', () => {
     const v: GuardViolation = {
-      rule: 'style',
+      rule: 'theme',
       severity: 'error',
-      message: 'Style mismatch.',
+      message: 'Theme mismatch.',
     };
     const result = formatViolation(v);
     expect(result).not.toContain('[DNA]');
     expect(result).not.toContain('[Blueprint]');
-    expect(result).toContain('[style]');
+    expect(result).toContain('[theme]');
   });
 });
 
@@ -52,7 +52,7 @@ describe('formatViolations', () => {
 
   it('returns structured error for violations', () => {
     const violations: GuardViolation[] = [
-      { rule: 'style', severity: 'error', message: 'Bad style.', layer: 'dna' },
+      { rule: 'theme', severity: 'error', message: 'Bad theme.', layer: 'dna' },
       { rule: 'structure', severity: 'warning', message: 'Missing page.', layer: 'blueprint' },
     ];
     const result = formatViolations(violations);
@@ -65,7 +65,7 @@ describe('formatViolations', () => {
 
   it('splits errors and warnings in output', () => {
     const violations: GuardViolation[] = [
-      { rule: 'style', severity: 'error', message: 'Error one.' },
+      { rule: 'theme', severity: 'error', message: 'Error one.' },
       { rule: 'density', severity: 'warning', message: 'Warning one.' },
     ];
     const result = formatViolations(violations);

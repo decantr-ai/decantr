@@ -1,5 +1,6 @@
 import type { ContentItem } from '@/lib/api';
 import { ContentCard } from '@/components/content-card';
+import { getShowcaseMetadataMap } from '@/lib/showcase';
 
 interface ContentCardGridProps {
   items: ContentItem[];
@@ -7,7 +8,11 @@ interface ContentCardGridProps {
   editable?: boolean;
 }
 
-export function ContentCardGrid({ items, emptyMessage, editable }: ContentCardGridProps) {
+function singularType(type: string): string {
+  return type.endsWith('s') ? type.slice(0, -1) : type;
+}
+
+export async function ContentCardGrid({ items, emptyMessage, editable }: ContentCardGridProps) {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -29,10 +34,21 @@ export function ContentCardGrid({ items, emptyMessage, editable }: ContentCardGr
     );
   }
 
+  const showcaseMetadataBySlug = await getShowcaseMetadataMap(
+    items
+      .filter((item) => singularType(item.type) === 'blueprint')
+      .map((item) => item.slug),
+  );
+
   return (
     <div className="content-card-grid">
       {items.map((item) => (
-        <ContentCard key={item.id} item={item} editable={editable} />
+        <ContentCard
+          key={item.id}
+          item={item}
+          editable={editable}
+          showcaseMetadata={showcaseMetadataBySlug[item.slug] ?? null}
+        />
       ))}
     </div>
   );

@@ -1,10 +1,11 @@
 export function getThemeSkeleton(id: string, name: string): object {
   return {
-    $schema: 'https://decantr.ai/schemas/style-metadata.v1.json',
+    $schema: 'https://decantr.ai/schemas/theme.v1.json',
     id,
     name,
-    description: '',
+    description: `Custom theme starter for ${name}. Replace the seed palette, personality, and treatments before publishing.`,
     tags: [],
+    personality: '',
     seed: {
       primary: '#6366F1',
       secondary: '#8B5CF6',
@@ -34,10 +35,12 @@ decantr theme create mytheme
 
 | Field | Required | Description |
 |-------|----------|-------------|
+| $schema | Yes | Must be \`https://decantr.ai/schemas/theme.v1.json\` |
 | id | Yes | Unique identifier (matches filename) |
 | name | Yes | Display name |
-| description | No | Brief description |
+| description | Yes | Brief description for humans and LLMs |
 | tags | No | Searchable tags |
+| personality | No | Short visual summary for LLMs |
 | seed | Yes | Core colors: primary, secondary, accent, background |
 | palette | No | Extended color palette |
 | modes | Yes | Supported modes: ["light"], ["dark"], or both |
@@ -52,7 +55,7 @@ In \`decantr.essence.json\`:
 \`\`\`json
 {
   "theme": {
-    "style": "custom:mytheme",
+    "id": "custom:mytheme",
     "mode": "dark"
   }
 }

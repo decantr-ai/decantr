@@ -1,14 +1,17 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient } from '@decantr/registry';
-import type { ApiContentType } from '@decantr/registry';
+import { RegistryAPIClient, API_CONTENT_TYPES } from '@decantr/registry';
+import type { ApiContentType, Archetype, Blueprint, Pattern, Shell, Theme } from '@decantr/registry';
 
-export interface RegistryItem {
-  id: string;
-  name?: string;
-  description?: string;
-  [key: string]: unknown;
-}
+type RegistryContentMap = {
+  patterns: Pattern;
+  archetypes: Archetype;
+  themes: Theme;
+  blueprints: Blueprint;
+  shells: Shell;
+};
+
+export type RegistryItem = RegistryContentMap[ApiContentType];
 
 export interface RegistrySource {
   type: 'api' | 'cache' | 'custom';
@@ -26,7 +29,7 @@ const DEFAULT_API_URL = 'https://api.decantr.ai/v1';
 /**
  * Content types that support custom overrides in .decantr/custom/
  */
-const ALL_CONTENT_TYPES = ['themes', 'patterns', 'blueprints', 'archetypes', 'shells'] as const;
+const ALL_CONTENT_TYPES = API_CONTENT_TYPES;
 
 /**
  * Load data from cache at .decantr/cache/{namespace}/{type}/
@@ -96,12 +99,16 @@ export class RegistryClient {
   } = {}) {
     this.projectRoot = options.projectRoot || process.cwd();
     this.cacheDir = options.cacheDir || join(this.projectRoot, '.decantr', 'cache');
-    this.apiUrl = options.apiUrl || DEFAULT_API_URL;
+    this.apiUrl = options.apiUrl || process.env.DECANTR_API_URL || DEFAULT_API_URL;
     this.offline = options.offline || false;
     this.apiClient = new RegistryAPIClient({
       baseUrl: this.apiUrl,
-      apiKey: options.apiKey,
+      apiKey: options.apiKey || process.env.DECANTR_API_KEY || undefined,
     });
+  }
+
+  getApiUrl(): string {
+    return this.apiUrl;
   }
 
   /**
@@ -133,7 +140,7 @@ export class RegistryClient {
   /**
    * List all custom content of a given type from .decantr/custom/{type}/
    */
-  listCustomContent(contentType: string): RegistryItem[] {
+  listCustomContent<T extends ApiContentType>(contentType: T): RegistryContentMap[T][] {
     const dir = join(this.projectRoot, '.decantr', 'custom', contentType);
     if (!existsSync(dir)) return [];
 
@@ -141,7 +148,7 @@ export class RegistryClient {
       return readdirSync(dir)
         .filter(f => f.endsWith('.json'))
         .map(f => {
-          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8'));
+          const data = JSON.parse(readFileSync(join(dir, f), 'utf-8')) as RegistryContentMap[T];
           return { id: data.id || f.replace('.json', ''), ...data };
         });
     } catch {
@@ -153,17 +160,25 @@ export class RegistryClient {
    * Unified fetch for a content list.
    * Resolution: API -> Cache. Custom items are merged into the list.
    */
-  async fetchContentList(
-    contentType: ApiContentType,
-    namespace?: string
-  ): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
-    let apiItems: RegistryItem[] = [];
+  async fetchContentList<T extends ApiContentType>(
+    contentType: T,
+    namespace?: string,
+    sort?: string,
+    recommended?: boolean,
+    intelligenceSource?: string,
+  ): Promise<FetchResult<{ items: RegistryContentMap[T][]; total: number }>> {
+    let apiItems: RegistryContentMap[T][] = [];
     let source: RegistrySource = { type: 'cache' };
 
     // Try API first
     if (!this.offline) {
       try {
-        const apiResult = await this.apiClient.listContent<RegistryItem>(contentType, { namespace });
+        const apiResult = await this.apiClient.listContent<RegistryContentMap[T]>(contentType, {
+          namespace,
+          sort,
+          recommended,
+          intelligenceSource,
+        });
         apiItems = apiResult.items;
         source = { type: 'api', url: this.apiUrl };
         // Cache the result
@@ -175,7 +190,7 @@ export class RegistryClient {
 
     // If no API result, try cache
     if (apiItems.length === 0) {
-      const cacheResult = loadFromCache<{ items: RegistryItem[]; total: number }>(
+      const cacheResult = loadFromCache<{ items: RegistryContentMap[T][]; total: number }>(
         this.cacheDir,
         contentType,
         undefined,
@@ -201,14 +216,14 @@ export class RegistryClient {
    * Unified fetch for a single content item.
    * Resolution: Custom -> API -> Cache
    */
-  async fetchContentItem(
-    contentType: ApiContentType,
+  async fetchContentItem<T extends ApiContentType>(
+    contentType: T,
     id: string,
     namespace: string = '@official'
-  ): Promise<FetchResult<RegistryItem> | null> {
+  ): Promise<FetchResult<RegistryContentMap[T]> | null> {
     // 1. Check custom content first (strip "custom:" prefix if present)
     const customId = id.startsWith('custom:') ? id.slice(7) : id;
-    const customResult = this.loadCustomContent<RegistryItem>(contentType, customId);
+    const customResult = this.loadCustomContent<RegistryContentMap[T]>(contentType, customId);
     if (customResult) return customResult;
 
     // If the id had "custom:" prefix and we didn't find it, return null
@@ -218,7 +233,7 @@ export class RegistryClient {
     if (!this.offline) {
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          const data = await this.apiClient.getContent<RegistryItem>(contentType, namespace, id);
+          const data = await this.apiClient.getContent<RegistryContentMap[T]>(contentType, namespace, id);
           saveToCache(this.cacheDir, contentType, id, data, namespace);
           return { data, source: { type: 'api', url: this.apiUrl } };
         } catch (e) {
@@ -236,48 +251,48 @@ export class RegistryClient {
     }
 
     // 3. Try cache
-    return loadFromCache<RegistryItem>(this.cacheDir, contentType, id, namespace);
+    return loadFromCache<RegistryContentMap[T]>(this.cacheDir, contentType, id, namespace);
   }
 
   // ── Convenience methods (delegate to unified fetch) ──
 
-  async fetchArchetypes(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+  async fetchArchetypes(): Promise<FetchResult<{ items: Archetype[]; total: number }>> {
     return this.fetchContentList('archetypes');
   }
 
-  async fetchArchetype(id: string): Promise<FetchResult<RegistryItem> | null> {
+  async fetchArchetype(id: string): Promise<FetchResult<Archetype> | null> {
     return this.fetchContentItem('archetypes', id);
   }
 
-  async fetchBlueprints(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+  async fetchBlueprints(): Promise<FetchResult<{ items: Blueprint[]; total: number }>> {
     return this.fetchContentList('blueprints');
   }
 
-  async fetchBlueprint(id: string): Promise<FetchResult<RegistryItem> | null> {
+  async fetchBlueprint(id: string): Promise<FetchResult<Blueprint> | null> {
     return this.fetchContentItem('blueprints', id);
   }
 
-  async fetchThemes(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+  async fetchThemes(): Promise<FetchResult<{ items: Theme[]; total: number }>> {
     return this.fetchContentList('themes');
   }
 
-  async fetchTheme(id: string): Promise<FetchResult<RegistryItem> | null> {
+  async fetchTheme(id: string): Promise<FetchResult<Theme> | null> {
     return this.fetchContentItem('themes', id);
   }
 
-  async fetchPatterns(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+  async fetchPatterns(): Promise<FetchResult<{ items: Pattern[]; total: number }>> {
     return this.fetchContentList('patterns');
   }
 
-  async fetchPattern(id: string): Promise<FetchResult<RegistryItem> | null> {
+  async fetchPattern(id: string): Promise<FetchResult<Pattern> | null> {
     return this.fetchContentItem('patterns', id);
   }
 
-  async fetchShells(): Promise<FetchResult<{ items: RegistryItem[]; total: number }>> {
+  async fetchShells(): Promise<FetchResult<{ items: Shell[]; total: number }>> {
     return this.fetchContentList('shells');
   }
 
-  async fetchShell(id: string): Promise<FetchResult<RegistryItem> | null> {
+  async fetchShell(id: string): Promise<FetchResult<Shell> | null> {
     return this.fetchContentItem('shells', id);
   }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { scaffoldProject, scaffoldMinimal, buildEssenceV3 } from '../src/scaffold.js';
+import { scaffoldProject, scaffoldMinimal, buildEssenceV3, refreshDerivedFiles } from '../src/scaffold.js';
 import type { ThemeData } from '../src/scaffold.js';
 import type { InitOptions } from '../src/prompts.js';
 import type { DetectedProject } from '../src/detect.js';
@@ -203,10 +203,239 @@ describe('v3 scaffold', () => {
     await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
     const contextDir = join(testDir, '.decantr', 'context');
+    const scaffoldTask = readFileSync(join(contextDir, 'task-scaffold.md'), 'utf-8');
     // task-scaffold.md should exist (always generated)
     expect(existsSync(join(contextDir, 'task-scaffold.md'))).toBe(true);
+    expect(scaffoldTask).toContain('## What to Generate');
     // Mutation task contexts should NOT exist during initial scaffold
     expect(existsSync(join(contextDir, 'task-modify.md'))).toBe(false);
     expect(existsSync(join(contextDir, 'task-add-page.md'))).toBe(false);
+  });
+
+  it('scaffoldProject emits scaffold, section, and page packs when cache contains required registry content', async () => {
+    const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
+    mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
+    mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
+
+    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
+      id: 'luminarum',
+      name: 'Luminarum',
+      spatial: {
+        card_wrapping: 'always',
+      },
+    }, null, 2));
+
+    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
+      id: 'hero',
+      name: 'Hero',
+      contained: false,
+      components: [],
+      presets: {
+        default: {
+          layout: {
+            layout: 'hero',
+            atoms: '',
+          },
+          code: {
+            imports: '',
+            example: '<section />',
+          },
+        },
+      },
+    }, null, 2));
+
+    await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
+
+    const packPath = join(testDir, '.decantr', 'context', 'scaffold-pack.md');
+    const packJsonPath = join(testDir, '.decantr', 'context', 'scaffold-pack.json');
+    const sectionPackPath = join(testDir, '.decantr', 'context', 'section-custom-pack.md');
+    const sectionPackJsonPath = join(testDir, '.decantr', 'context', 'section-custom-pack.json');
+    const pagePackPath = join(testDir, '.decantr', 'context', 'page-home-pack.md');
+    const pagePackJsonPath = join(testDir, '.decantr', 'context', 'page-home-pack.json');
+    const reviewPackPath = join(testDir, '.decantr', 'context', 'review-pack.md');
+    const reviewPackJsonPath = join(testDir, '.decantr', 'context', 'review-pack.json');
+    const addMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.md');
+    const addMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.json');
+    const modifyMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.md');
+    const modifyMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.json');
+    const manifestPath = join(testDir, '.decantr', 'context', 'pack-manifest.json');
+    expect(existsSync(packPath)).toBe(true);
+    expect(existsSync(packJsonPath)).toBe(true);
+    expect(existsSync(sectionPackPath)).toBe(true);
+    expect(existsSync(sectionPackJsonPath)).toBe(true);
+    expect(existsSync(pagePackPath)).toBe(true);
+    expect(existsSync(pagePackJsonPath)).toBe(true);
+    expect(existsSync(reviewPackPath)).toBe(true);
+    expect(existsSync(reviewPackJsonPath)).toBe(true);
+    expect(existsSync(addMutationPackPath)).toBe(true);
+    expect(existsSync(addMutationPackJsonPath)).toBe(true);
+    expect(existsSync(modifyMutationPackPath)).toBe(true);
+    expect(existsSync(modifyMutationPackJsonPath)).toBe(true);
+    expect(existsSync(manifestPath)).toBe(true);
+
+    const content = readFileSync(packPath, 'utf-8');
+    const packJson = JSON.parse(readFileSync(packJsonPath, 'utf-8'));
+    const sectionContent = readFileSync(sectionPackPath, 'utf-8');
+    const sectionPackJson = JSON.parse(readFileSync(sectionPackJsonPath, 'utf-8'));
+    const pageContent = readFileSync(pagePackPath, 'utf-8');
+    const pagePackJson = JSON.parse(readFileSync(pagePackJsonPath, 'utf-8'));
+    const reviewContent = readFileSync(reviewPackPath, 'utf-8');
+    const reviewJson = JSON.parse(readFileSync(reviewPackJsonPath, 'utf-8'));
+    const addMutationContent = readFileSync(addMutationPackPath, 'utf-8');
+    const addMutationJson = JSON.parse(readFileSync(addMutationPackJsonPath, 'utf-8'));
+    const modifyMutationContent = readFileSync(modifyMutationPackPath, 'utf-8');
+    const modifyMutationJson = JSON.parse(readFileSync(modifyMutationPackJsonPath, 'utf-8'));
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+    const scaffoldTask = readFileSync(join(testDir, '.decantr', 'context', 'task-scaffold.md'), 'utf-8');
+    expect(content).toContain('# Scaffold Pack');
+    expect(content).toContain('react-vite (react)');
+    expect(content).toContain('- / -> home [hero]');
+    expect(packJson.$schema).toBe('https://decantr.ai/schemas/scaffold-pack.v1.json');
+    expect(packJson.packType).toBe('scaffold');
+    expect(packJson.data.routes).toEqual([
+      {
+        pageId: 'home',
+        path: '/',
+        patternIds: ['hero'],
+      },
+    ]);
+    expect(sectionContent).toContain('# Section Pack');
+    expect(sectionContent).toContain('- Section: custom');
+    expect(sectionContent).toContain('- / -> home [hero]');
+    expect(sectionPackJson.$schema).toBe('https://decantr.ai/schemas/section-pack.v1.json');
+    expect(sectionPackJson.packType).toBe('section');
+    expect(sectionPackJson.data.sectionId).toBe('custom');
+    expect(sectionPackJson.data.routes).toEqual([
+      {
+        pageId: 'home',
+        path: '/',
+        patternIds: ['hero'],
+      },
+    ]);
+    expect(pageContent).toContain('# Page Pack');
+    expect(pageContent).toContain('- Page: home');
+    expect(pageContent).toContain('- Path: /');
+    expect(pageContent).toContain('- hero -> hero [hero | default]');
+    expect(pagePackJson.$schema).toBe('https://decantr.ai/schemas/page-pack.v1.json');
+    expect(pagePackJson.packType).toBe('page');
+    expect(pagePackJson.data.pageId).toBe('home');
+    expect(pagePackJson.data.path).toBe('/');
+    expect(pagePackJson.data.sectionId).toBe('custom');
+    expect(pagePackJson.data.patterns).toEqual([
+      {
+        id: 'hero',
+        alias: 'hero',
+        preset: 'default',
+        layout: 'hero',
+      },
+    ]);
+    expect(reviewContent).toContain('# Review Pack');
+    expect(reviewContent).toContain('## Focus Areas');
+    expect(reviewJson.$schema).toBe('https://decantr.ai/schemas/review-pack.v1.json');
+    expect(reviewJson.packType).toBe('review');
+    expect(reviewJson.data.reviewType).toBe('app');
+    expect(addMutationContent).toContain('# Mutation Pack');
+    expect(addMutationContent).toContain('- Operation: add-page');
+    expect(addMutationJson.$schema).toBe('https://decantr.ai/schemas/mutation-pack.v1.json');
+    expect(addMutationJson.packType).toBe('mutation');
+    expect(addMutationJson.data.mutationType).toBe('add-page');
+    expect(modifyMutationContent).toContain('- Operation: modify');
+    expect(modifyMutationJson.$schema).toBe('https://decantr.ai/schemas/mutation-pack.v1.json');
+    expect(modifyMutationJson.data.mutationType).toBe('modify');
+    expect(manifest.$schema).toBe('https://decantr.ai/schemas/pack-manifest.v1.json');
+    expect(manifest.scaffold).toEqual({
+      id: 'scaffold',
+      markdown: 'scaffold-pack.md',
+      json: 'scaffold-pack.json',
+    });
+    expect(manifest.review).toEqual({
+      id: 'review',
+      markdown: 'review-pack.md',
+      json: 'review-pack.json',
+    });
+    expect(manifest.sections).toEqual([
+      {
+        id: 'custom',
+        markdown: 'section-custom-pack.md',
+        json: 'section-custom-pack.json',
+        pageIds: ['home'],
+      },
+    ]);
+    expect(manifest.pages).toEqual([
+      {
+        id: 'home',
+        markdown: 'page-home-pack.md',
+        json: 'page-home-pack.json',
+        sectionId: 'custom',
+        sectionRole: 'primary',
+      },
+    ]);
+    expect(manifest.mutations).toEqual([
+      {
+        id: 'add-page',
+        markdown: 'mutation-add-page-pack.md',
+        json: 'mutation-add-page-pack.json',
+        mutationType: 'add-page',
+      },
+      {
+        id: 'modify',
+        markdown: 'mutation-modify-pack.md',
+        json: 'mutation-modify-pack.json',
+        mutationType: 'modify',
+      },
+    ]);
+    expect(scaffoldTask).toContain('## Primary Compiled Contract');
+    expect(scaffoldTask).toContain('.decantr/context/scaffold-pack.md');
+    expect(scaffoldTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
+    expect(scaffoldTask).toContain('- `/` -> `home` [hero]');
+    expect(scaffoldTask).toContain('Post-scaffold enforcement mode: **GUIDED**.');
+  });
+
+  it('refreshDerivedFiles emits pack-backed mutation task contexts when compiled packs exist', async () => {
+    const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
+    mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
+    mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
+
+    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
+      id: 'luminarum',
+      name: 'Luminarum',
+    }, null, 2));
+
+    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
+      id: 'hero',
+      name: 'Hero',
+      contained: false,
+      components: [],
+      presets: {
+        default: {
+          layout: {
+            layout: 'hero',
+            atoms: '',
+          },
+          code: {
+            imports: '',
+            example: '<section />',
+          },
+        },
+      },
+    }, null, 2));
+
+    const result = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
+    const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
+
+    await refreshDerivedFiles(testDir, essence, createMockRegistry());
+
+    const contextDir = join(testDir, '.decantr', 'context');
+    const addPageTask = readFileSync(join(contextDir, 'task-add-page.md'), 'utf-8');
+    const modifyTask = readFileSync(join(contextDir, 'task-modify.md'), 'utf-8');
+
+    expect(addPageTask).toContain('## Primary Compiled Contract');
+    expect(addPageTask).toContain('.decantr/context/mutation-add-page-pack.md');
+    expect(addPageTask).toContain('.decantr/context/scaffold-pack.md');
+    expect(addPageTask).toContain('Section `custom` -> `.decantr/context/section-custom-pack.md`');
+    expect(modifyTask).toContain('.decantr/context/mutation-modify-pack.md');
+    expect(modifyTask).toContain('decantr_get_page_context');
+    expect(modifyTask).toContain('## Strict Checks');
+    expect(modifyTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
   });
 });

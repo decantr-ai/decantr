@@ -1,7 +1,7 @@
 # Section: registry-browser
 
 **Role:** primary | **Shell:** top-nav-main | **Archetype:** registry-browser
-**Description:** Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, recipes, and shells.
+**Description:** Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.
 
 ## Quick Start
 

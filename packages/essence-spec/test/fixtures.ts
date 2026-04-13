@@ -47,20 +47,49 @@ export const VALID_V31: EssenceV3 = {
     personality: ['professional'],
   },
   blueprint: {
-    shell: 'sidebar-main',
-    pages: [
+    features: ['auth'],
+    sections: [
       {
-        id: 'main',
-        layout: ['kpi-grid', 'chart-grid'],
+        id: 'dashboard',
+        role: 'primary',
+        shell: 'sidebar-main',
+        features: ['auth'],
+        description: 'Main dashboard section',
+        pages: [
+          {
+            id: 'main',
+            route: '/dashboard',
+            layout: ['kpi-grid', 'chart-grid'],
+          },
+          {
+            id: 'settings',
+            route: '/dashboard/settings',
+            layout: ['settings-form'],
+          },
+        ],
       },
     ],
-    features: ['auth'],
+    routes: {
+      '/dashboard': { section: 'dashboard', page: 'main' },
+      '/dashboard/settings': { section: 'dashboard', page: 'settings' },
+    },
   },
   meta: {
     archetype: 'saas-dashboard',
     target: 'react',
     platform: { type: 'spa', routing: 'hash' },
     guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+    seo: {
+      schema_org: ['WebApplication'],
+      meta_priorities: ['description', 'og:image'],
+    },
+    navigation: {
+      command_palette: true,
+      hotkeys: [
+        { key: 'g d', label: 'Dashboard', route: '/dashboard' },
+        { key: 'g s', label: 'Settings', route: '/dashboard/settings' },
+      ],
+    },
   },
 };
 

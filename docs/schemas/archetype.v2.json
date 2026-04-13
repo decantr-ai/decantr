@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/archetype.v2.json",
+  "title": "Decantr Archetype",
+  "type": "object",
+  "required": [
+    "$schema",
+    "id",
+    "role",
+    "version",
+    "name",
+    "description",
+    "tags",
+    "pages",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/archetype.v2.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "version": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "decantr_compat": {
+      "type": "string"
+    },
+    "name": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "description": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "tags": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "role": {
+      "enum": [
+        "primary",
+        "gateway",
+        "public",
+        "auxiliary"
+      ]
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "default_layout",
+          "shell"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          },
+          "shell": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          },
+          "description": {
+            "type": "string"
+          },
+          "patterns": {
+            "type": "array",
+            "items": {
+              "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/patternReference"
+            }
+          },
+          "default_layout": {
+            "type": "array",
+            "items": {
+              "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/layoutItem"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "features": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      }
+    },
+    "seo_hints": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/seoHints"
+    },
+    "classification": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/classification"
+    },
+    "page_briefs": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+    },
+    "suggested_theme": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/suggestedTheme"
+    },
+    "shells": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/stringMap"
+    },
+    "personality": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "hero_customization": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/pattern.v2.json",
+  "title": "Decantr Pattern",
+  "type": "object",
+  "required": [
+    "$schema",
+    "id",
+    "version",
+    "name",
+    "description",
+    "components",
+    "default_preset",
+    "presets"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/pattern.v2.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "version": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "decantr_compat": {
+      "type": "string"
+    },
+    "name": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "description": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "tags": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "components": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "default_preset": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+    },
+    "presets": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "description",
+          "layout"
+        ],
+        "properties": {
+          "description": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+          },
+          "components": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+          },
+          "layout": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/patternLayoutSpec"
+          },
+          "code": {
+            "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/codeSpec"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "contained": {
+      "type": "boolean"
+    },
+    "io": {
+      "type": "object",
+      "properties": {
+        "produces": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "consumes": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "actions": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        }
+      },
+      "additionalProperties": true
+    },
+    "code": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/codeSpec"
+    },
+    "default_layout": {
+      "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/patternLayoutSpec"
+    },
+    "visual_brief": {
+      "type": "string"
+    },
+    "composition": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "responsive": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "aria-label": {
+          "type": "string"
+        },
+        "keyboard": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "announcements": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+        },
+        "focus_management": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "layout_hints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

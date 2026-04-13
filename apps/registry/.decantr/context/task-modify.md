@@ -2,171 +2,53 @@
 
 **Enforcement Tier: Strict**
 
-You are modifying existing code in a Decantr project. ALL 7 guard rules are enforced exactly.
+## Primary Compiled Contract
+
+- Start with `.decantr/context/mutation-modify-pack.md` for the strict modification workflow contract.
+- Start with `decantr_get_page_context` or the matching `.decantr/context/page-*-pack.md` file for the route you are editing.
+- Use `decantr_get_section_context` when you need the richer section contract behind that route.
+- If a change would alter route identity, shell identity, theme identity, or pattern contract, update the essence first and then refresh the packs.
+
+## Current Route Topology
+
+- `/` -> `homepage` [search-filter-bar, content-card-grid, kpi-grid]
+- `/browse` -> `browse` [search-filter-bar, content-card-grid]
+- `/browse-type` -> `browse-type` [search-filter-bar, content-card-grid]
+- `/detail` -> `detail` [content-detail-hero, json-viewer]
+- `/profile` -> `profile` [detail-header, content-card-grid, activity-feed]
+- `/overview` -> `overview` [kpi-grid, reputation-badge, activity-feed]
+- `/content` -> `content` [content-card-grid]
+- `/content-new` -> `content-new` [form, json-viewer]
+- `/api-keys` -> `api-keys` [api-key-row]
+- `/settings` -> `settings` [account-settings]
+- `/billing` -> `billing` [tier-upgrade-card, kpi-grid]
+- `/team` -> `team` [kpi-grid, team-member-row]
+- `/moderation-queue` -> `moderation-queue` [search-filter-bar, moderation-queue-item]
+- `/moderation-detail/:id` -> `moderation-detail` [content-detail-hero, json-viewer, moderation-queue-item]
+- `/login` -> `login` [auth-form]
+- `/register` -> `register` [auth-form]
+- `/forgot-password` -> `forgot-password` [auth-form]
+
+### Page Packs
+
+- 17 compiled references available. Use `.decantr/context/pack-manifest.json` to resolve the exact files for this scope.
+
+## Strict Workflow
+
+1. Identify the target page and read its compiled page pack first.
+2. Compare the planned edit against the compiled route, shell, and pattern contract.
+3. If the edit changes that contract, stop and update the essence before writing code.
+4. Run `npx @decantr/cli validate` and `npx @decantr/cli check` after the modification.
+
+## Strict Checks
+
+- [error] Routes and page IDs match the compiled topology.
+- [error] The declared shell contract is preserved unless the task explicitly mutates it.
+- [warn] Theme identity and mode remain consistent across scaffolded routes.
+- [error] The page you modify must already exist in the compiled topology.
+- [error] Pattern order and shell usage should stay aligned with the page pack unless the essence changes first.
+- [warn] Use section context only as supporting detail; the page pack is the primary contract for route-local work.
 
 ---
 
-## Enforced Rules
-
-| # | Layer | Rule | Enforcement | Consequence of Violation |
-|---|-------|------|-------------|--------------------------|
-| 1 | DNA | **Style** | STRICT | ERROR — Code rejected |
-| 2 | DNA | **Density** | STRICT | WARNING — Flagged for review |
-| 3 | DNA | **Accessibility** | STRICT | ERROR — Code rejected |
-| 4 | DNA | **Theme-mode** | STRICT | ERROR — Code rejected |
-| 5 | Blueprint | **Structure** | STRICT | ERROR — Code rejected |
-| 6 | Blueprint | **Layout** | STRICT | ERROR — Pattern order must match exactly |
-| 7 | Blueprint | **Pattern-exists** | STRICT | ERROR — Code rejected |
-
-## Violation Response Protocol
-
-When ANY rule would be violated:
-
-```
-1. STOP   — Do not generate code that violates rules
-2. EXPLAIN — State which rule and why
-3. OFFER  — Propose updating the essence
-4. WAIT   — Only proceed after essence is updated
-```
-
-### Example Responses
-
-**Theme violation:**
-```
-STOP: I cannot use theme "glassmorphism" because the essence specifies
-"luminarum". This would violate the Style guard rule.
-
-Would you like me to:
-1. Update the essence to use "glassmorphism" instead?
-2. Keep the current theme "luminarum"?
-```
-
-**Layout violation:**
-```
-STOP: I cannot reorder the patterns to [chart-grid, kpi-grid] because
-the essence specifies [kpi-grid, chart-grid] for this page.
-This would violate the Layout guard rule.
-
-Would you like me to:
-1. Update the essence with the new pattern order?
-2. Keep the original order [kpi-grid, chart-grid]?
-```
-
-**Never say "just this once."** The essence is the source of truth.
-
-## Before Modifying
-
-### 1. Read Current State
-
-```bash
-# Read the essence
-cat decantr.essence.json
-
-# Or use MCP
-decantr_read_essence()
-```
-
-### 2. Check Constraints
-
-For the page you're modifying, verify:
-
-- Page ID exists in `blueprint.sections[].pages[]`
-- Shell matches the page's `shell` property
-- Patterns match the page's `layout[]` in order
-- Theme matches `theme.style`
-- Theme decorators match `theme.id`
-
-### 3. Plan Changes
-
-Before writing code:
-
-1. List what changes are needed
-2. Check each change against guard rules
-3. If any would violate, STOP and propose essence updates
-4. Only proceed when all changes are compliant
-
-## Checklist
-
-Before modifying:
-
-- [ ] Page exists in essence structure
-- [ ] I know the layout order for the target page (check `blueprint.sections[].pages[]`)
-- [ ] I will use theme: `luminarum`
-- [ ] I will follow density: `comfortable`
-
-During modification:
-
-- [ ] Every color/typography change uses the theme
-- [ ] Pattern order matches essence exactly
-- [ ] Spacing uses tokens, not arbitrary values
-- [ ] No new pages without essence declaration
-
-After modification:
-
-- [ ] Run `npx @decantr/cli validate`
-- [ ] Run `npx @decantr/cli audit` to check drift
-- [ ] Verify no warnings or errors
-
-## Spacing Enforcement
-
-In strict mode, spacing must match the density profile:
-
-| Density | Content Gap | Use These Tokens |
-|---------|-------------|------------------|
-| compact | `_gap2` | `_gap1`, `_gap2`, `_gap3` |
-| comfortable | `_gap4` | `_gap3`, `_gap4`, `_gap6` |
-| spacious | `_gap6` | `_gap4`, `_gap6`, `_gap8` |
-
-This project uses **comfortable** density with `_gap4` content gap.
-
-## Pattern Order Matters
-
-In strict mode, patterns MUST appear in the order specified in `layout[]`.
-
-If the essence says:
-```json
-"layout": ["kpi-grid", "chart-grid", "data-table"]
-```
-
-Then your code MUST render in that order:
-1. KPI Grid section
-2. Chart Grid section
-3. Data Table section
-
-Swapping `chart-grid` and `data-table` is a Layout guard violation.
-
-## Common Strict Mode Violations
-
-| Violation | What Happened | Fix |
-|-----------|---------------|-----|
-| "Theme mismatch" | Used different theme | Revert to `luminarum` |
-| "Page undefined" | Edited undeclared page | Add page to essence first |
-| "Layout order wrong" | Patterns out of order | Match `layout[]` exactly |
-| "Theme mismatch" | Wrong decoration style | Use `luminarum` |
-| "Density drift" | Wrong spacing values | Use `_gap4` tokens |
-
-## Proposing Essence Changes
-
-If a change requires updating the essence:
-
-1. Explain what needs to change and why
-2. Show the before/after for the essence
-3. Wait for user approval
-4. Update the essence file
-5. Then proceed with code changes
-
-```
-To implement your request, I need to update the essence:
-
-Before:
-  "layout": ["kpi-grid", "chart-grid"]
-
-After:
-  "layout": ["hero", "kpi-grid", "chart-grid"]
-
-Shall I make this change?
-```
-
----
-
-*Task context generated by Decantr CLI*
+*Task context generated from Decantr execution packs*

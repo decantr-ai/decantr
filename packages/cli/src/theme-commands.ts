@@ -7,10 +7,11 @@ export interface ThemeValidationResult {
   errors: string[];
 }
 
-const REQUIRED_FIELDS = ['id', 'name', 'seed', 'modes', 'shapes', 'decantr_compat', 'source'];
+const REQUIRED_FIELDS = ['$schema', 'id', 'name', 'description', 'seed', 'modes', 'shapes', 'decantr_compat', 'source'];
 const REQUIRED_SEED = ['primary', 'secondary', 'accent', 'background'];
 const VALID_MODES = ['light', 'dark'];
 const VALID_SHAPES = ['sharp', 'rounded', 'pill'];
+const THEME_SCHEMA_URL = 'https://decantr.ai/schemas/theme.v1.json';
 
 export function validateCustomTheme(theme: Record<string, unknown>): ThemeValidationResult {
   const errors: string[] = [];
@@ -20,6 +21,17 @@ export function validateCustomTheme(theme: Record<string, unknown>): ThemeValida
     if (!(field in theme)) {
       errors.push(`Missing required field: ${field}`);
     }
+  }
+
+  for (const field of ['id', 'name', 'description']) {
+    const value = theme[field];
+    if (value !== undefined && (typeof value !== 'string' || value.trim().length === 0)) {
+      errors.push(`Field "${field}" must be a non-empty string`);
+    }
+  }
+
+  if ('$schema' in theme && theme.$schema !== THEME_SCHEMA_URL) {
+    errors.push(`Invalid $schema "${String(theme.$schema)}" - must be "${THEME_SCHEMA_URL}"`);
   }
 
   // Check seed colors

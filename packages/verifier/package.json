@@ -1,0 +1,46 @@
+{
+  "name": "@decantr/verifier",
+  "version": "1.0.0-beta.1",
+  "description": "Shared verification, critique, and report-schema engine for Decantr",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
+    "directory": "packages/verifier"
+  },
+  "homepage": "https://decantr.ai",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./schema/verification-report.common.v1.json": "./schema/verification-report.common.v1.json",
+    "./schema/project-audit-report.v1.json": "./schema/project-audit-report.v1.json",
+    "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",
+    "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json"
+  },
+  "files": [
+    "dist",
+    "schema"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@decantr/core": "workspace:*",
+    "@decantr/essence-spec": "workspace:*",
+    "typescript": "^5.7.0"
+  },
+  "devDependencies": {
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

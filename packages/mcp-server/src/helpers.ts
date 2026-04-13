@@ -31,6 +31,7 @@ export function fuzzyScore(query: string, text: string): number {
 }
 
 let _apiClient: RegistryAPIClient | null = null;
+let _publicApiClient: RegistryAPIClient | null = null;
 
 export function getAPIClient(): RegistryAPIClient {
   if (!_apiClient) {
@@ -42,8 +43,18 @@ export function getAPIClient(): RegistryAPIClient {
   return _apiClient;
 }
 
+export function getPublicAPIClient(): RegistryAPIClient {
+  if (!_publicApiClient) {
+    _publicApiClient = new RegistryAPIClient({
+      baseUrl: process.env.DECANTR_API_URL || undefined,
+    });
+  }
+  return _publicApiClient;
+}
+
 export function resetAPIClient(): void {
   _apiClient = null;
+  _publicApiClient = null;
 }
 
 // --- Essence file helpers ---

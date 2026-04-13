@@ -10,6 +10,16 @@ describe('normalizeEssence - v3 handling', () => {
     expect(isV3(result)).toBe(true);
   });
 
+  it('passes through v3.1 documents unchanged', () => {
+    const v31 = {
+      ...VALID_V3,
+      version: '3.1.0' as const,
+    };
+    const result = normalizeEssence(v31 as unknown as Record<string, unknown>);
+    expect(result).toEqual(v31);
+    expect(isV3(result)).toBe(true);
+  });
+
   it('preserves all v3 DNA fields', () => {
     const result = normalizeEssence(VALID_V3 as unknown as Record<string, unknown>);
     expect(isV3(result) && result.dna.theme.id).toBe('luminarum');

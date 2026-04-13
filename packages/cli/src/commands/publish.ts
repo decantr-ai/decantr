@@ -1,24 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient } from '@decantr/registry';
-import type { ApiContentType } from '@decantr/registry';
+import {
+  RegistryAPIClient,
+  RegistryAPIError,
+  API_CONTENT_TYPE_TO_CONTENT_TYPE,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+} from '@decantr/registry';
+import type { ApiContentType, ContentType } from '@decantr/registry';
 import { getApiKeyOrToken } from '../auth.js';
-
-const PLURAL_TO_SINGULAR: Record<string, string> = {
-  patterns: 'pattern',
-  themes: 'theme',
-  blueprints: 'blueprint',
-  archetypes: 'archetype',
-  shells: 'shell',
-};
-
-const SINGULAR_TO_PLURAL: Record<string, string> = {
-  pattern: 'patterns',
-  theme: 'themes',
-  blueprint: 'blueprints',
-  archetype: 'archetypes',
-  shell: 'shells',
-};
 
 export async function cmdPublish(
   type: string,
@@ -32,8 +21,10 @@ export async function cmdPublish(
     return;
   }
 
-  const singularType = PLURAL_TO_SINGULAR[type] || type;
-  const pluralType = SINGULAR_TO_PLURAL[type] || SINGULAR_TO_PLURAL[singularType] || `${type}s`;
+  const singularType = (API_CONTENT_TYPE_TO_CONTENT_TYPE as Record<string, ContentType>)[type] || type;
+  const pluralType = (CONTENT_TYPE_TO_API_CONTENT_TYPE as Record<string, ApiContentType>)[type]
+    || CONTENT_TYPE_TO_API_CONTENT_TYPE[singularType as ContentType]
+    || `${type}s`;
 
   const customPath = join(projectRoot, '.decantr', 'custom', pluralType, `${name}.json`);
 
@@ -69,7 +60,18 @@ export async function cmdPublish(
     console.log(`Published ${singularType}/${name} to @community`);
     console.log(`Status: ${result.status}`);
   } catch (err) {
-    console.error(`Failed to publish: ${(err as Error).message}`);
+    if (err instanceof RegistryAPIError) {
+      console.error(`Failed to publish: ${err.message}`);
+      const details = err.details as { validationErrors?: unknown } | undefined;
+      if (Array.isArray(details?.validationErrors) && details.validationErrors.length > 0) {
+        console.error('Validation errors:');
+        for (const validationError of details.validationErrors) {
+          console.error(`  - ${String(validationError)}`);
+        }
+      }
+    } else {
+      console.error(`Failed to publish: ${(err as Error).message}`);
+    }
     process.exitCode = 1;
   }
 }

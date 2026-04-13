@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decantr Schemas</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --fg: #f5f7fb;
+      --muted: #a7b0c0;
+      --accent: #59d8ff;
+      --border: rgba(255,255,255,0.12);
+      --panel: rgba(255,255,255,0.04);
+      --mono: "SF Mono", "Fira Code", "Consolas", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top left, rgba(89, 216, 255, 0.12), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(134, 239, 172, 0.10), transparent 28%),
+        var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 72px 24px 96px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.25rem, 4vw, 3.25rem);
+      line-height: 1.05;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      max-width: 64ch;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 20px;
+      padding: 22px;
+      backdrop-filter: blur(18px);
+    }
+
+    ul {
+      list-style: none;
+      margin: 24px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    li {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    a {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--accent);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Decantr Schemas</h1>
+    <p>
+      Canonical JSON Schemas for Decantr essence and registry content. These
+      files back the <code>$schema</code> URLs used across official essence
+      documents, patterns, themes, blueprints, archetypes, and shells.
+    </p>
+    <p>
+      Registry schemas are published from <code>@decantr/registry</code> and
+      essence schemas from <code>@decantr/essence-spec</code>. Execution-pack
+      schemas are published from <code>@decantr/core</code>. Verification
+      report schemas are published from <code>@decantr/verifier</code>.
+    </p>
+    <p>
+      Public registry response schemas below cover the hosted API surfaces for
+      content summary, content record, search, and intelligence metadata.
+    </p>
+
+    <section class="panel">
+      <ul>
+        <li><a href="/schemas/essence.v2.json"><code>essence.v2.json</code><span class="meta">legacy essence contract</span></a></li>
+        <li><a href="/schemas/essence.v3.json"><code>essence.v3.json</code><span class="meta">current essence contract</span></a></li>
+        <li><a href="/schemas/common.v1.json"><code>common.v1.json</code><span class="meta">shared definitions</span></a></li>
+        <li><a href="/schemas/content-intelligence.v1.json"><code>content-intelligence.v1.json</code><span class="meta">registry intelligence provenance and recommendation metadata</span></a></li>
+        <li><a href="/schemas/pattern.v2.json"><code>pattern.v2.json</code><span class="meta">pattern contract</span></a></li>
+        <li><a href="/schemas/theme.v1.json"><code>theme.v1.json</code><span class="meta">theme contract</span></a></li>
+        <li><a href="/schemas/blueprint.v1.json"><code>blueprint.v1.json</code><span class="meta">blueprint contract</span></a></li>
+        <li><a href="/schemas/archetype.v2.json"><code>archetype.v2.json</code><span class="meta">archetype contract</span></a></li>
+        <li><a href="/schemas/shell.v1.json"><code>shell.v1.json</code><span class="meta">shell contract</span></a></li>
+        <li><a href="/schemas/public-content-summary.v1.json"><code>public-content-summary.v1.json</code><span class="meta">public list/search item contract</span></a></li>
+        <li><a href="/schemas/public-content-record.v1.json"><code>public-content-record.v1.json</code><span class="meta">public content detail contract</span></a></li>
+        <li><a href="/schemas/public-content-list.v1.json"><code>public-content-list.v1.json</code><span class="meta">public content listing response</span></a></li>
+        <li><a href="/schemas/search-response.v1.json"><code>search-response.v1.json</code><span class="meta">public registry search response</span></a></li>
+        <li><a href="/schemas/showcase-manifest-entry.v1.json"><code>showcase-manifest-entry.v1.json</code><span class="meta">showcase corpus entry contract</span></a></li>
+        <li><a href="/schemas/showcase-manifest.v1.json"><code>showcase-manifest.v1.json</code><span class="meta">showcase manifest response</span></a></li>
+        <li><a href="/schemas/showcase-shortlist.v1.json"><code>showcase-shortlist.v1.json</code><span class="meta">shortlisted showcase response</span></a></li>
+        <li><a href="/schemas/registry-intelligence-summary.v1.json"><code>registry-intelligence-summary.v1.json</code><span class="meta">live registry intelligence aggregate summary</span></a></li>
+        <li><a href="/schemas/execution-pack.common.v1.json"><code>execution-pack.common.v1.json</code><span class="meta">shared execution-pack definitions</span></a></li>
+        <li><a href="/schemas/scaffold-pack.v1.json"><code>scaffold-pack.v1.json</code><span class="meta">scaffold pack contract</span></a></li>
+        <li><a href="/schemas/section-pack.v1.json"><code>section-pack.v1.json</code><span class="meta">section pack contract</span></a></li>
+        <li><a href="/schemas/page-pack.v1.json"><code>page-pack.v1.json</code><span class="meta">page pack contract</span></a></li>
+        <li><a href="/schemas/mutation-pack.v1.json"><code>mutation-pack.v1.json</code><span class="meta">mutation pack contract</span></a></li>
+        <li><a href="/schemas/review-pack.v1.json"><code>review-pack.v1.json</code><span class="meta">review pack contract</span></a></li>
+        <li><a href="/schemas/pack-manifest.v1.json"><code>pack-manifest.v1.json</code><span class="meta">pack bundle manifest contract</span></a></li>
+        <li><a href="/schemas/execution-pack-bundle.v1.json"><code>execution-pack-bundle.v1.json</code><span class="meta">hosted execution-pack bundle response</span></a></li>
+        <li><a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code><span class="meta">shared verification report definitions</span></a></li>
+        <li><a href="/schemas/project-audit-report.v1.json"><code>project-audit-report.v1.json</code><span class="meta">project audit report contract</span></a></li>
+        <li><a href="/schemas/file-critique-report.v1.json"><code>file-critique-report.v1.json</code><span class="meta">file critique report contract</span></a></li>
+        <li><a href="/schemas/showcase-shortlist-report.v1.json"><code>showcase-shortlist-report.v1.json</code><span class="meta">showcase shortlist verification contract</span></a></li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

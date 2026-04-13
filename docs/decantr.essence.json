@@ -1,51 +1,124 @@
 {
-  "version": "2.0.0",
-  "archetype": "marketing-landing",
-  "theme": {
-    "style": "luminarum",
-    "mode": "dark",
-    "recipe": "luminarum",
-    "shape": "pill"
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "luminarum",
+      "mode": "dark",
+      "shape": "pill"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Bold, technical, premium, and vibrant."
+    ]
   },
-  "personality": [
-    "bold",
-    "technical",
-    "premium",
-    "vibrant"
-  ],
-  "platform": {
-    "type": "spa",
-    "routing": "hash"
+  "blueprint": {
+    "sections": [
+      {
+        "id": "marketing-core",
+        "role": "public",
+        "shell": "full-bleed",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Public marketing landing experience for a product launch site.",
+        "pages": [
+          {
+            "id": "home",
+            "route": "/",
+            "layout": [
+              {
+                "pattern": "hero",
+                "preset": "vision",
+                "as": "product-hero"
+              },
+              {
+                "pattern": "features",
+                "preset": "standard",
+                "as": "feature-grid"
+              },
+              {
+                "pattern": "pricing",
+                "preset": "standard",
+                "as": "pricing"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "standard",
+                "as": "primary-cta"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "features": [
+      "marketing",
+      "seo",
+      "analytics"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-core",
+        "page": "home"
+      }
+    }
   },
-  "structure": [
-    {
-      "id": "home",
-      "shell": "full-bleed",
-      "layout": [
-        { "pattern": "hero-split", "preset": "standard", "as": "product-hero" },
-        { "pattern": "before-after", "preset": "browser-frames", "as": "drift-comparison" },
-        { "pattern": "pipeline-cards", "preset": "outlined", "as": "design-pipeline" },
-        { "pattern": "tool-list", "preset": "standard", "as": "mcp-tools" },
-        { "pattern": "quick-start", "preset": "cards", "as": "setup-guide" },
-        { "pattern": "tech-pills", "preset": "colored", "as": "works-with" },
-        { "pattern": "cta-banner", "preset": "gradient", "as": "bottom-cta" }
+  "meta": {
+    "archetype": "marketing-saas",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "history"
+    },
+    "guard": {
+      "mode": "guided",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebSite",
+        "SoftwareApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:image"
       ]
     }
-  ],
-  "features": [],
-  "guard": {
-    "enforce_style": true,
-    "enforce_recipe": true,
-    "mode": "strict"
-  },
-  "density": {
-    "level": "comfortable",
-    "content_gap": "_gap6"
-  },
-  "target": "html",
-  "_meta": {
-    "project": "decantr.ai homepage",
-    "description": "The Decantr product landing page — dogfooding the design intelligence system",
-    "url": "https://decantr.ai"
   }
 }

@@ -1,9 +1,15 @@
 import { Hono } from 'hono';
+import {
+  isContentIntelligenceSource,
+  type ContentIntelligenceSource,
+} from '@decantr/registry';
 import type { Env } from '../types.js';
-import { parsePagination } from '../types.js';
+import { PLURAL_TO_SINGULAR, isApiContentType, isContentType, parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
+import { getContentIntelligence } from '../lib/content-intelligence.js';
+import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
 
 export const searchRoutes = new Hono<Env>();
 
@@ -11,36 +17,47 @@ searchRoutes.get('/search', async (c) => {
   const query = c.req.query('q');
   const typeFilter = c.req.query('type');
   const namespace = c.req.query('namespace');
+  const sort = c.req.query('sort') ?? undefined;
+  const recommendedOnly = c.req.query('recommended') === 'true';
+  const rawIntelligenceSource = c.req.query('intelligence_source');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
   if (!query) {
     return c.json({ error: 'Query parameter "q" is required' }, 400);
   }
 
+  if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
+    return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
+  }
+
+  const intelligenceSource: ContentIntelligenceSource | undefined =
+    rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
+      ? rawIntelligenceSource
+      : undefined;
+
   // Map plural type filter to singular
-  let singularType: string | null = null;
+  let singularType: ContentType | null = null;
   if (typeFilter) {
-    const typeMap: Record<string, string> = {
-      patterns: 'pattern', pattern: 'pattern',
-      themes: 'theme', theme: 'theme',
-      blueprints: 'blueprint', blueprint: 'blueprint',
-      archetypes: 'archetype', archetype: 'archetype',
-      shells: 'shell', shell: 'shell',
-    };
-    singularType = typeMap[typeFilter] ?? null;
+    singularType = isApiContentType(typeFilter)
+      ? PLURAL_TO_SINGULAR[typeFilter]
+      : isContentType(typeFilter)
+        ? typeFilter
+        : null;
     if (typeFilter && !singularType) {
       return c.json({ error: `Invalid type filter: ${typeFilter}` }, 400);
     }
   }
 
   const client = createAdminClient();
+  const requestedCount =
+    recommendedOnly || intelligenceSource ? 500 : Math.min(limit + offset, 500);
 
   const { data, error } = await client.rpc('search_content', {
     search_query: query,
     content_type: singularType,
     content_namespace: namespace || null,
-    result_limit: limit,
-    result_offset: offset,
+    result_limit: requestedCount,
+    result_offset: 0,
   });
 
   if (error) {
@@ -49,21 +66,38 @@ searchRoutes.get('/search', async (c) => {
   }
 
   const rows = data ?? [];
-  const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
-
-  return c.json({
-    total,
+  const total = rows[0] ? Number(rows[0].total_count) : 0;
+  const mappedResults = rows.map((item: any) => ({
+    type: item.type,
+    id: item.slug,
+    slug: item.slug,
+    namespace: item.namespace,
+    version: item.version ?? undefined,
+    name: item.data?.name,
+    description: item.data?.description,
+    published_at: item.published_at ?? undefined,
+    owner_name: item.owner_display_name || null,
+    owner_username: item.owner_username || null,
+    intelligence: getContentIntelligence(
+      item.type as ContentType,
+      item.namespace,
+      item.slug,
+      item.data as Record<string, unknown> | null | undefined,
+    ),
+  }));
+  const ordered = applyPublicContentOrdering(
+    mappedResults,
+    sort,
+    recommendedOnly,
+    intelligenceSource,
     limit,
     offset,
-    results: rows.map((item: any) => ({
-      type: item.type,
-      id: item.slug,
-      slug: item.slug,
-      namespace: item.namespace,
-      name: item.data?.name,
-      description: item.data?.description,
-      owner_name: item.owner_display_name || null,
-      owner_username: item.owner_username || null,
-    })),
+  );
+
+  return c.json({
+    total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : total,
+      limit,
+      offset,
+      results: ordered.items,
   });
 });

@@ -54,7 +54,7 @@
           "search",
           "pagination"
         ],
-        "description": "Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, recipes, and shells.",
+        "description": "Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.",
         "pages": [
           {
             "id": "homepage",
