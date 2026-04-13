@@ -22,6 +22,7 @@ export interface ApiKey {
   id: string;
   name: string;
   scopes: string[];
+  org_id: string | null;
   created_at: string;
   last_used_at: string | null;
   revoked_at: string | null;
@@ -30,7 +31,90 @@ export interface ApiKey {
 export interface OrgMember {
   user_id: string;
   email: string;
+  display_name?: string | null;
+  username?: string | null;
   role: string;
+  created_at: string;
+}
+
+export interface OrganizationSummary {
+  id: string;
+  slug: string;
+  name: string;
+  tier: 'team' | 'enterprise';
+  role: 'owner' | 'admin' | 'member';
+  seat_limit: number;
+  member_count: number;
+  stripe_subscription_id: string | null;
+}
+
+export interface CommercialEntitlements {
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  personal_private_packages: boolean;
+  org_collaboration: boolean;
+  org_private_packages: boolean;
+  shared_packages: boolean;
+  audit_logs: boolean;
+  approval_workflows: boolean;
+  support_level: 'community' | 'priority' | 'enterprise';
+}
+
+export interface CommercialLimits {
+  api_requests_per_minute: number | null;
+  personal_content_items: number | null;
+  personal_private_packages: number | null;
+  org_content_items: number | null;
+  team_seats: number | null;
+}
+
+export interface BillingStatus {
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  entitlements: CommercialEntitlements;
+  limits: CommercialLimits;
+  usage: {
+    personal_content_items: number;
+    personal_private_packages: number;
+    org_content_items: number;
+    seats_used: number;
+    seats_limit: number;
+  };
+  organizations: OrganizationSummary[];
+  subscription: null | {
+    id: string;
+    status: string;
+    price_id: string | null;
+    quantity: number | null;
+    current_period_start: number | null;
+    current_period_end: number | null;
+    cancel_at_period_end: boolean;
+  };
+}
+
+export interface MeResponse {
+  id: string;
+  email: string;
+  username: string;
+  display_name: string | null;
+  tier: 'free' | 'pro' | 'team' | 'enterprise';
+  entitlements: CommercialEntitlements;
+  limits: CommercialLimits;
+  reputation_score: number;
+  trusted: boolean;
+  org_slug: string | null;
+  organizations: OrganizationSummary[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrgAuditEntry {
+  id: string;
+  actor_user_id: string | null;
+  org_id: string | null;
+  scope: 'user' | 'organization' | 'billing' | 'content' | 'membership';
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  details: Record<string, unknown>;
   created_at: string;
 }
 
@@ -141,7 +225,7 @@ export const api = {
     getPublicRegistryClient().getRegistryIntelligenceSummary(params),
 
   // Authenticated
-  getMe: (token: string) => apiFetch<any>('/me', { token }),
+  getMe: (token: string) => apiFetch<MeResponse>('/me', { token }),
   getMyContent: (token: string) => apiFetch<ContentListResponse<DashboardContentItem>>('/my/content', { token }),
   getApiKeys: (token: string) => apiFetch<any>('/api-keys', { token }),
   createApiKey: (token: string, body: any) =>
@@ -150,7 +234,7 @@ export const api = {
     apiFetch<void>(`/api-keys/${id}`, { token, method: 'DELETE' }),
   publishContent: (token: string, body: any) =>
     apiFetch<any>('/content', { token, method: 'POST', body: JSON.stringify(body) }),
-  getBillingStatus: (token: string) => apiFetch<any>('/billing/status', { token }),
+  getBillingStatus: (token: string) => apiFetch<BillingStatus>('/billing/status', { token }),
   createCheckout: (token: string, body: any) =>
     apiFetch<any>('/billing/checkout', { token, method: 'POST', body: JSON.stringify(body) }),
   createPortal: (token: string, body: any) =>
@@ -158,13 +242,29 @@ export const api = {
 
   // Team / Org
   getOrgMembers: (token: string, orgSlug: string) =>
-    apiFetch<{ members: OrgMember[] }>(`/orgs/${orgSlug}/members`, { token }),
+    apiFetch<{ organization: Omit<OrganizationSummary, 'role' | 'member_count' | 'stripe_subscription_id'>; your_role: string; members: OrgMember[] }>(`/orgs/${orgSlug}/members`, { token }),
+  getOrgContent: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    const query = searchParams.toString();
+    return apiFetch<ContentListResponse<DashboardContentItem>>(`/orgs/${orgSlug}/content${query ? `?${query}` : ''}`, { token });
+  },
+  publishOrgContent: (token: string, orgSlug: string, body: any) =>
+    apiFetch<any>(`/orgs/${orgSlug}/content`, { token, method: 'POST', body: JSON.stringify(body) }),
   inviteOrgMember: (token: string, orgSlug: string, body: { email: string; role: string }) =>
     apiFetch<any>(`/orgs/${orgSlug}/members`, { token, method: 'POST', body: JSON.stringify(body) }),
   removeOrgMember: (token: string, orgSlug: string, userId: string) =>
     apiFetch<void>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'DELETE' }),
   updateOrgMemberRole: (token: string, orgSlug: string, userId: string, body: { role: string }) =>
     apiFetch<any>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'PATCH', body: JSON.stringify(body) }),
+  getOrgAuditLog: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    const query = searchParams.toString();
+    return apiFetch<{ total: number; limit: number; offset: number; items: OrgAuditEntry[] }>(`/orgs/${orgSlug}/audit${query ? `?${query}` : ''}`, { token });
+  },
 
   // Admin
   getModerationQueue: (

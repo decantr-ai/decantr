@@ -48,6 +48,7 @@ export interface Database {
           owner_id: string;
           tier: 'team' | 'enterprise';
           stripe_subscription_id: string | null;
+          seat_limit: number;
           created_at: string;
           updated_at: string;
         };
@@ -58,6 +59,7 @@ export interface Database {
           owner_id: string;
           tier: 'team' | 'enterprise';
           stripe_subscription_id?: string | null;
+          seat_limit?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -68,6 +70,7 @@ export interface Database {
           owner_id?: string;
           tier?: 'team' | 'enterprise';
           stripe_subscription_id?: string | null;
+          seat_limit?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -327,6 +330,57 @@ export interface Database {
           processed_at?: string;
         };
         Relationships: [];
+      };
+      audit_logs: {
+        Row: {
+          id: string;
+          actor_user_id: string | null;
+          org_id: string | null;
+          scope: 'user' | 'organization' | 'billing' | 'content' | 'membership';
+          action: string;
+          target_type: string;
+          target_id: string | null;
+          details: Record<string, unknown>;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_user_id?: string | null;
+          org_id?: string | null;
+          scope: 'user' | 'organization' | 'billing' | 'content' | 'membership';
+          action: string;
+          target_type: string;
+          target_id?: string | null;
+          details?: Record<string, unknown>;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          actor_user_id?: string | null;
+          org_id?: string | null;
+          scope?: 'user' | 'organization' | 'billing' | 'content' | 'membership';
+          action?: string;
+          target_type?: string;
+          target_id?: string | null;
+          details?: Record<string, unknown>;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'audit_logs_actor_user_id_fkey';
+            columns: ['actor_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'audit_logs_org_id_fkey';
+            columns: ['org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {

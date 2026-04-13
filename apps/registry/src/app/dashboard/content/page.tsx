@@ -50,11 +50,23 @@ export default async function ContentPage() {
   const token = session?.access_token ?? '';
 
   let items: DashboardContentItem[] = [];
+  let orgItems: DashboardContentItem[] = [];
+  let orgName: string | null = null;
   try {
-    const result = await api.getMyContent(token);
+    const [me, result] = await Promise.all([
+      api.getMe(token).catch(() => null),
+      api.getMyContent(token),
+    ]);
     items = Array.isArray(result) ? result : result?.items ?? [];
+    const activeOrg = me?.organizations?.[0] ?? null;
+    if (activeOrg?.slug) {
+      const orgResult = await api.getOrgContent(token, activeOrg.slug).catch(() => null);
+      orgItems = Array.isArray(orgResult) ? orgResult : orgResult?.items ?? [];
+      orgName = activeOrg.name;
+    }
   } catch {
     items = [];
+    orgItems = [];
   }
 
   return (
@@ -79,7 +91,7 @@ export default async function ContentPage() {
         </Link>
       </div>
 
-      {/* Content grid */}
+      {/* Personal content grid */}
       <section className="d-section" data-density="compact">
         <span
           className="d-label block mb-4"
@@ -123,6 +135,41 @@ export default async function ContentPage() {
           </div>
         )}
       </section>
+
+      {orgName ? (
+        <section className="d-section" data-density="compact">
+          <span
+            className="d-label block mb-4"
+            style={{
+              paddingLeft: '0.75rem',
+              borderLeft: '2px solid var(--d-accent)',
+            }}
+          >
+            {orgName} Packages ({orgItems.length})
+          </span>
+          {orgItems.length > 0 ? (
+            <ContentCardGrid items={orgItems} editable />
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem',
+                padding: '2rem 0',
+              }}
+            >
+              <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
+                <PackageIcon size={48} />
+              </span>
+              <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                No organization packages yet.
+              </p>
+            </div>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 }

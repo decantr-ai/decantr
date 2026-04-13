@@ -3,16 +3,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { upgradeAction, manageBillingAction } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
-
-interface BillingStatus {
-  tier: string;
-  usage: {
-    api_calls: number;
-    api_limit: number;
-    content_items: number;
-    content_limit: number;
-  };
-}
+import type { BillingStatus } from '@/lib/api';
 
 /* ── Icons ── */
 
@@ -255,11 +246,8 @@ export default function BillingPage() {
   }, []);
 
   const currentTier = (billing?.tier ?? 'free').toLowerCase();
-
-  const planName =
-    currentTier.charAt(0).toUpperCase() + currentTier.slice(1);
-  const apiCalls = billing?.usage?.api_calls ?? 0;
-  const storageUsed = 0;
+  const planName = currentTier.charAt(0).toUpperCase() + currentTier.slice(1);
+  const activeOrg = billing?.organizations?.[0] ?? null;
 
   const kpiItems = [
     {
@@ -268,18 +256,18 @@ export default function BillingPage() {
       icon: <CreditCardIcon size={18} />,
     },
     {
-      label: 'API Usage',
-      value: apiCalls,
+      label: 'API Limit / Min',
+      value: billing?.limits?.api_requests_per_minute ?? 0,
       icon: <ActivityIcon size={18} />,
     },
     {
-      label: 'Storage Used',
-      value: storageUsed,
+      label: 'Personal Packages',
+      value: billing?.usage?.personal_content_items ?? 0,
       icon: <HardDriveIcon size={18} />,
     },
     {
       label: 'Team Seats',
-      value: currentTier === 'team' ? 5 : 1,
+      value: billing?.usage?.seats_limit ?? 0,
       icon: <UsersIcon size={18} />,
     },
   ];
@@ -288,22 +276,22 @@ export default function BillingPage() {
     {
       name: 'Free',
       price: 0,
-      description: 'For individual developers getting started.',
+      description: 'For community publishing and local experimentation.',
       features: [
-        '50 API calls/day',
-        '5 published items',
-        'Community namespace',
+        'Community publishing',
+        '60 API requests / minute',
+        'Up to 5 personal published items',
       ],
       current: currentTier === 'free',
     },
     {
       name: 'Pro',
       price: 29,
-      description: 'For professionals shipping production apps.',
+      description: 'For individual operators who need personal private packages.',
       features: [
-        '5,000 API calls/day',
-        '100 published items',
-        'Custom namespace',
+        'Personal private packages',
+        '300 API requests / minute',
+        'Up to 100 personal packages',
         'Priority support',
       ],
       planId: 'pro',
@@ -313,11 +301,11 @@ export default function BillingPage() {
     {
       name: 'Team',
       price: 99,
-      description: 'For teams collaborating on design systems.',
+      description: 'For organizations collaborating on shared private packages.',
       features: [
-        '50,000 API calls/day',
-        'Unlimited published items',
-        'Team features',
+        'Shared org-private packages',
+        'Member roles and seats',
+        '600 API requests / minute',
         'Priority support',
       ],
       planId: 'team',
@@ -367,6 +355,54 @@ export default function BillingPage() {
           Current Usage
         </span>
         <KPIGrid items={kpiItems} />
+        <div
+          className="d-surface"
+          style={{
+            marginTop: '1rem',
+            display: 'grid',
+            gap: '0.75rem',
+          }}
+        >
+          <div>
+            <div className="text-sm" style={{ fontWeight: 600 }}>
+              What this plan currently unlocks
+            </div>
+            <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              {billing?.entitlements?.personal_private_packages
+                ? 'Personal private packages are enabled.'
+                : 'Personal private packages are not enabled on this plan.'}
+            </div>
+            <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              {billing?.entitlements?.org_collaboration
+                ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
+                : 'Organization collaboration is not enabled on this plan.'}
+            </div>
+          </div>
+
+          {activeOrg && (
+            <div
+              style={{
+                paddingTop: '0.75rem',
+                borderTop: '1px solid var(--d-border)',
+                display: 'grid',
+                gap: '0.25rem',
+              }}
+            >
+              <div className="text-sm" style={{ fontWeight: 600 }}>
+                Active organization
+              </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                {activeOrg.name} ({activeOrg.slug})
+              </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                Seats used: {billing?.usage?.seats_used ?? 0} / {billing?.usage?.seats_limit ?? activeOrg.seat_limit}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                Org packages: {billing?.usage?.org_content_items ?? 0}
+              </div>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Manage billing for paying customers */}

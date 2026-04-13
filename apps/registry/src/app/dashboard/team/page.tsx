@@ -7,13 +7,31 @@ import {
   updateRoleAction,
 } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
+import { api } from '@/lib/api';
+import { createClient } from '@/lib/supabase/client';
 
 interface Member {
   user_id: string;
   email: string;
   role: string;
   created_at: string;
-  display_name?: string;
+  display_name?: string | null;
+  username?: string | null;
+}
+
+interface OrganizationOption {
+  id: string;
+  slug: string;
+  name: string;
+  seat_limit: number;
+}
+
+interface AuditEntry {
+  id: string;
+  scope: string;
+  action: string;
+  target_type: string;
+  created_at: string;
 }
 
 /* ── Icons ── */
@@ -288,12 +306,31 @@ function TeamMemberRow({
 
 export default function TeamPage() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
   const [orgSlug, setOrgSlug] = useState('');
+  const [seatLimit, setSeatLimit] = useState(0);
+  const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('member');
   const [error, setError] = useState<string | null>(null);
   const [isInviting, startInvite] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
+
+  async function reloadOrgState(token: string, slug: string) {
+    if (!token || !slug) return;
+    try {
+      const [memberData, auditData] = await Promise.all([
+        api.getOrgMembers(token, slug),
+        api.getOrgAuditLog(token, slug, { limit: 10, offset: 0 }).catch(() => null),
+      ]);
+      setMembers(memberData?.members ?? []);
+      setSeatLimit(memberData?.organization?.seat_limit ?? 0);
+      setAuditEntries(auditData?.items ?? []);
+    } catch {
+      setMembers([]);
+      setAuditEntries([]);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -307,25 +344,12 @@ export default function TeamPage() {
           data: { session },
         } = await supabase.auth.getSession();
         const token = session?.access_token ?? '';
-        const meRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/me`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (meRes.ok) {
-          const me = await meRes.json();
-          const slug = me.org_slug || me.username || '';
-          setOrgSlug(slug);
-          if (slug) {
-            const membersRes = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/orgs/${slug}/members`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
-            if (membersRes.ok) {
-              const data = await membersRes.json();
-              setMembers(data?.members ?? []);
-            }
-          }
-        }
+        const me = await api.getMe(token);
+        const orgs = me.organizations ?? [];
+        setOrganizations(orgs);
+        const slug = orgs[0]?.slug ?? '';
+        setOrgSlug(slug);
+        await reloadOrgState(token, slug);
       } catch {
         // defaults
       }
@@ -360,14 +384,7 @@ export default function TeamPage() {
             data: { session },
           } = await supabase.auth.getSession();
           const token = session?.access_token ?? '';
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/orgs/${orgSlug}/members`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            setMembers(data?.members ?? []);
-          }
+          await reloadOrgState(token, orgSlug);
         } catch {
           // ignore
         }
@@ -381,7 +398,9 @@ export default function TeamPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      setMembers((prev) => prev.filter((m) => m.user_id !== userId));
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      await reloadOrgState(session?.access_token ?? '', orgSlug);
     }
     setRemovingId(null);
   }
@@ -391,9 +410,9 @@ export default function TeamPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      setMembers((prev) =>
-        prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m))
-      );
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      await reloadOrgState(session?.access_token ?? '', orgSlug);
     }
   }
 
@@ -409,13 +428,13 @@ export default function TeamPage() {
       icon: <ActivityIcon size={18} />,
     },
     {
-      label: 'Items Published',
-      value: 0,
+      label: 'Seat Limit',
+      value: seatLimit,
       icon: <PackageIcon size={18} />,
     },
     {
-      label: 'Pending Invites',
-      value: 0,
+      label: 'Seats Available',
+      value: Math.max(0, seatLimit - members.length),
       icon: <MailIcon size={18} />,
     },
   ];
@@ -447,6 +466,43 @@ export default function TeamPage() {
           Members
         </span>
 
+        {organizations.length > 1 && (
+          <div className="flex flex-col gap-1 mb-4" style={{ maxWidth: '18rem' }}>
+            <label className="text-sm font-semibold" htmlFor="team-org">
+              Organization
+            </label>
+            <select
+              id="team-org"
+              className="d-control"
+              value={orgSlug}
+              onChange={async (e) => {
+                const nextSlug = e.target.value;
+                setOrgSlug(nextSlug);
+                try {
+                  const { createBrowserClient } = await import('@supabase/ssr');
+                  const supabase = createBrowserClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                  );
+                  const {
+                    data: { session },
+                  } = await supabase.auth.getSession();
+                  await reloadOrgState(session?.access_token ?? '', nextSlug);
+                } catch {
+                  setMembers([]);
+                  setAuditEntries([]);
+                }
+              }}
+            >
+              {organizations.map((org) => (
+                <option key={org.id} value={org.slug}>
+                  {org.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Invite form */}
         <form
           onSubmit={handleInvite}
@@ -454,8 +510,8 @@ export default function TeamPage() {
         >
           <input
             className="d-control"
-            type="email"
-            placeholder="colleague@company.com"
+            type="text"
+            placeholder="colleague@company.com or @username"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
             style={{ maxWidth: '20rem', flex: 1 }}
@@ -473,7 +529,7 @@ export default function TeamPage() {
             type="submit"
             className="d-interactive"
             data-variant="primary"
-            disabled={isInviting}
+            disabled={isInviting || !orgSlug}
             style={{
               fontSize: '0.875rem',
               display: 'inline-flex',
@@ -486,7 +542,20 @@ export default function TeamPage() {
           </button>
         </form>
 
-        {members.length > 0 ? (
+        {!orgSlug ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+              padding: '1.25rem 0',
+            }}
+          >
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Team collaboration is available once your account has an active organization.
+            </p>
+          </div>
+        ) : members.length > 0 ? (
           <div className="d-data">
             {members.map((member) => (
               <TeamMemberRow
@@ -518,6 +587,52 @@ export default function TeamPage() {
           </div>
         )}
       </section>
+
+      {orgSlug ? (
+        <section className="d-section" data-density="compact">
+          <span
+            className="d-label block mb-4"
+            style={{
+              paddingLeft: '0.75rem',
+              borderLeft: '2px solid var(--d-accent)',
+            }}
+          >
+            Recent Audit Activity
+          </span>
+          {auditEntries.length > 0 ? (
+            <div className="d-surface" style={{ display: 'grid', gap: '0.75rem' }}>
+              {auditEntries.map((entry) => (
+                <div
+                  key={entry.id}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.125rem',
+                    paddingBottom: '0.75rem',
+                    borderBottom: '1px solid var(--d-border)',
+                  }}
+                >
+                  <div className="text-sm" style={{ fontWeight: 600 }}>
+                    {entry.action}
+                  </div>
+                  <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    {entry.scope} · {entry.target_type}
+                  </div>
+                  <div className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
+                    {formatDate(entry.created_at)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="d-surface">
+              <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                No audit activity yet.
+              </p>
+            </div>
+          )}
+        </section>
+      ) : null}
     </div>
   );
 }

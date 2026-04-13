@@ -11,10 +11,10 @@ async function getToken() {
   return session.access_token;
 }
 
-export async function createApiKeyAction(name: string, scopes: string[]) {
+export async function createApiKeyAction(name: string, scopes: string[], orgId?: string | null) {
   const token = await getToken();
   try {
-    const result = await api.createApiKey(token, { name, scopes });
+    const result = await api.createApiKey(token, { name, scopes, org_id: orgId ?? null });
     revalidatePath('/dashboard/api-keys');
     return { key: result.key };
   } catch (error) {

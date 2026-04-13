@@ -148,8 +148,8 @@ export default async function DashboardPage() {
   let profile: {
     reputation_score: number;
     tier: string;
-    content_count: number;
-  } = { reputation_score: 0, tier: 'free', content_count: 0 };
+  } = { reputation_score: 0, tier: 'free' };
+  let contentCount = 0;
   let apiCallsLast30d = 0;
   let totalDownloads = 0;
 
@@ -159,7 +159,12 @@ export default async function DashboardPage() {
       api.getApiKeys(token).catch(() => null),
       api.getMyContent(token).catch(() => null),
     ]);
-    profile = me ?? profile;
+    if (me) {
+      profile = {
+        reputation_score: me.reputation_score,
+        tier: me.tier,
+      };
+    }
 
     const keyItems = Array.isArray(keys) ? keys : keys?.items ?? [];
     apiCallsLast30d = keyItems.reduce(
@@ -170,6 +175,7 @@ export default async function DashboardPage() {
     const contentItems = Array.isArray(myContent)
       ? myContent
       : myContent?.items ?? [];
+    contentCount = contentItems.length;
     totalDownloads = contentItems.reduce(
       (acc: number, item: { downloads?: number }) => acc + (item.downloads ?? 0),
       0
@@ -183,7 +189,7 @@ export default async function DashboardPage() {
   const kpiItems = [
     {
       label: 'Published Items',
-      value: profile.content_count,
+      value: contentCount,
       icon: <PackageIcon size={18} />,
     },
     {

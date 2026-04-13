@@ -5,6 +5,8 @@ import { createHash } from 'crypto';
 export interface AuthUser {
   id: string;
   email: string;
+  username: string;
+  display_name: string | null;
   tier: 'free' | 'pro' | 'team' | 'enterprise';
   trusted: boolean;
   reputation_score: number;
@@ -43,6 +45,8 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
           user: {
             id: profile.id,
             email: profile.email,
+            username: profile.username,
+            display_name: profile.display_name,
             tier: profile.tier,
             trusted: profile.trusted,
             reputation_score: profile.reputation_score,
@@ -78,6 +82,8 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
         user: {
           id: profile.id,
           email: profile.email,
+          username: profile.username,
+          display_name: profile.display_name,
           tier: profile.tier,
           trusted: profile.trusted,
           reputation_score: profile.reputation_score,

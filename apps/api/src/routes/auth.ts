@@ -6,6 +6,12 @@ import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { getStripe } from '../stripe/client.js';
 import { logger } from '../lib/logger.js';
+import {
+  getCommercialEntitlements,
+  getCommercialLimits,
+  type OrganizationEntitlementSummary,
+} from '../lib/entitlements.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 
 export const authRoutes = new Hono<Env>();
 
@@ -27,18 +33,39 @@ authRoutes.get('/me', async (c) => {
     return c.json({ error: 'User not found' }, 404);
   }
 
-  // Find user's org membership
-  let orgSlug: string | null = null;
-  const { data: membership } = await client
+  const { data: memberships } = await client
     .from('org_members')
-    .select('org_id, role, organizations(slug)')
+    .select('org_id, role, organizations(id, name, slug, tier, stripe_subscription_id, seat_limit)')
     .eq('user_id', user.id)
-    .limit(1)
-    .single();
+    .order('created_at', { ascending: true });
 
-  if (membership && (membership as any).organizations) {
-    orgSlug = (membership as any).organizations.slug;
-  }
+  const organizationLists = await Promise.all(
+    (memberships ?? []).map(async (membership: any) => {
+      const org = membership.organizations;
+      if (!org?.id || !org?.slug || !org?.name || !org?.tier) return [];
+
+      const { count } = await client
+        .from('org_members')
+        .select('*', { count: 'exact', head: true })
+        .eq('org_id', org.id);
+
+      return [{
+        id: org.id,
+        slug: org.slug,
+        name: org.name,
+        tier: org.tier,
+        role: membership.role,
+        seat_limit: org.seat_limit ?? 1,
+        member_count: count ?? 0,
+        stripe_subscription_id: org.stripe_subscription_id ?? null,
+      }];
+    }),
+  );
+  const organizations: OrganizationEntitlementSummary[] = organizationLists.flat();
+
+  const activeOrg = organizations[0] ?? null;
+  const entitlements = getCommercialEntitlements(user.tier);
+  const limits = getCommercialLimits(user.tier, activeOrg);
 
   return c.json({
     id: user.id,
@@ -46,9 +73,12 @@ authRoutes.get('/me', async (c) => {
     username: user.username,
     display_name: user.display_name,
     tier: user.tier,
+    entitlements,
+    limits,
     reputation_score: user.reputation_score,
     trusted: user.trusted,
-    org_slug: orgSlug,
+    org_slug: activeOrg?.slug ?? null,
+    organizations,
     created_at: user.created_at,
     updated_at: user.updated_at,
   });
@@ -122,17 +152,45 @@ authRoutes.get('/api-keys', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const client = createAdminClient();
 
-  const { data, error } = await client
+  const { data: memberships } = await client
+    .from('org_members')
+    .select('org_id, role')
+    .eq('user_id', auth.user!.id);
+
+  const accessibleOrgIds = (memberships ?? [])
+    .filter((membership: any) => ['owner', 'admin'].includes(membership.role))
+    .map((membership: any) => membership.org_id);
+
+  const { data: ownKeys, error: ownError } = await client
     .from('api_keys')
-    .select('id, name, scopes, created_at, last_used_at, revoked_at')
+    .select('id, name, scopes, org_id, created_at, last_used_at, revoked_at')
     .eq('user_id', auth.user!.id)
     .order('created_at', { ascending: false });
 
-  if (error) {
+  if (ownError) {
     return c.json({ error: 'Failed to fetch API keys' }, 500);
   }
 
-  return c.json({ items: data ?? [] });
+  let orgKeys: Array<Record<string, unknown>> = [];
+  if (accessibleOrgIds.length > 0) {
+    const { data: rawOrgKeys, error: orgError } = await client
+      .from('api_keys')
+      .select('id, name, scopes, org_id, created_at, last_used_at, revoked_at')
+      .in('org_id', accessibleOrgIds)
+      .order('created_at', { ascending: false });
+
+    if (orgError) {
+      return c.json({ error: 'Failed to fetch API keys' }, 500);
+    }
+    orgKeys = rawOrgKeys ?? [];
+  }
+
+  const merged = new Map<string, Record<string, unknown>>();
+  for (const item of [...(ownKeys ?? []), ...orgKeys]) {
+    merged.set(String(item.id), item);
+  }
+
+  return c.json({ items: Array.from(merged.values()) });
 });
 
 // POST /v1/api-keys
@@ -145,17 +203,31 @@ authRoutes.post('/api-keys', async (c) => {
   }
 
   const scopes = Array.isArray(body.scopes) ? body.scopes : ['read'];
+  const orgId = typeof body.org_id === 'string' && body.org_id.length > 0 ? body.org_id : null;
+
+  const client = createAdminClient();
+
+  if (orgId) {
+    const { data: membership } = await client
+      .from('org_members')
+      .select('role')
+      .eq('org_id', orgId)
+      .eq('user_id', auth.user!.id)
+      .single();
+
+    if (!membership || !['owner', 'admin'].includes(membership.role)) {
+      return c.json({ error: 'Organization API keys require owner or admin role.' }, 403);
+    }
+  }
 
   // Generate API key
   const rawKey = `dctr_${randomBytes(32).toString('hex')}`;
   const keyHash = createHash('sha256').update(rawKey).digest('hex');
-
-  const client = createAdminClient();
   const { data, error } = await client
     .from('api_keys')
     .insert({
       user_id: auth.user!.id,
-      org_id: body.org_id || null,
+      org_id: orgId,
       key_hash: keyHash,
       name: body.name,
       scopes,
@@ -167,11 +239,25 @@ authRoutes.post('/api-keys', async (c) => {
     return c.json({ error: 'Failed to create API key' }, 500);
   }
 
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: orgId,
+    scope: 'user',
+    action: orgId ? 'api_key.created_for_org' : 'api_key.created',
+    target_type: 'api_key',
+    target_id: data.id,
+    details: {
+      scopes,
+      org_id: orgId,
+      name: body.name,
+    },
+  });
+
   // Return the raw key ONCE (it's hashed in the DB, can't be retrieved later)
   return c.json({
     ...data,
     key: rawKey,
-    warning: 'Save this key now. It cannot be retrieved again.',
+      warning: 'Save this key now. It cannot be retrieved again.',
   }, 201);
 });
 
@@ -181,15 +267,49 @@ authRoutes.delete('/api-keys/:id', async (c) => {
   const keyId = c.req.param('id');
 
   const client = createAdminClient();
+  const { data: keyRow } = await client
+    .from('api_keys')
+    .select('id, user_id, org_id')
+    .eq('id', keyId)
+    .single();
+
+  if (!keyRow) {
+    return c.json({ error: 'API key not found' }, 404);
+  }
+
+  let allowed = keyRow.user_id === auth.user!.id;
+  if (!allowed && keyRow.org_id) {
+    const { data: membership } = await client
+      .from('org_members')
+      .select('role')
+      .eq('org_id', keyRow.org_id)
+      .eq('user_id', auth.user!.id)
+      .single();
+
+    allowed = Boolean(membership && ['owner', 'admin'].includes(membership.role));
+  }
+
+  if (!allowed) {
+    return c.json({ error: 'Not authorized to revoke this API key' }, 403);
+  }
+
   const { error } = await client
     .from('api_keys')
     .update({ revoked_at: new Date().toISOString() })
-    .eq('id', keyId)
-    .eq('user_id', auth.user!.id);
+    .eq('id', keyId);
 
   if (error) {
     return c.json({ error: 'Failed to revoke API key' }, 500);
   }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    scope: 'user',
+    action: 'api_key.revoked',
+    target_type: 'api_key',
+    target_id: keyId,
+    details: {},
+  });
 
   return c.json({ message: 'API key revoked' });
 });

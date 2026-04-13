@@ -102,6 +102,8 @@ describe('Auth middleware', () => {
       const mockUser = {
         id: 'user-123',
         email: 'test@example.com',
+        username: 'test-user',
+        display_name: 'Test User',
         tier: 'pro',
         trusted: true,
         reputation_score: 50,
@@ -141,6 +143,8 @@ describe('Auth middleware', () => {
       const mockUser = {
         id: 'user-456',
         email: 'apiuser@example.com',
+        username: 'api-user',
+        display_name: 'API User',
         tier: 'team',
         trusted: false,
         reputation_score: 10,

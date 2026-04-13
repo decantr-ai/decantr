@@ -8,6 +8,8 @@ import { createAdminClient } from '../db/client.js';
 import { validateEssence } from '@decantr/essence-spec';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
+import { getCommercialLimits } from '../lib/entitlements.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 
 export const publishRoutes = new Hono<Env>();
 
@@ -131,11 +133,49 @@ publishRoutes.post('/content', async (c) => {
   }
 
   // Determine namespace and status
-  const namespace = body.namespace || '@community';
+  const requestedNamespace = typeof body.namespace === 'string' ? body.namespace.trim() : '';
+  const personalNamespace = `@${auth.user!.username}`;
+  let namespace = requestedNamespace || (visibility === 'private' ? personalNamespace : '@community');
   let status: 'pending' | 'approved' | 'rejected' | 'published';
 
   if (namespace === '@official') {
     return c.json({ error: 'Cannot publish to @official namespace. Use admin sync.' }, 403);
+  }
+
+  if (namespace.startsWith('@org:')) {
+    return c.json({ error: 'Organization content must be published through the organization route.' }, 400);
+  }
+
+  if (namespace === '@community' && visibility === 'private') {
+    return c.json({ error: 'Community content cannot be private. Use your personal package namespace instead.' }, 400);
+  }
+
+  if (namespace !== '@community' && namespace !== personalNamespace) {
+    return c.json({ error: `Personal content must publish to "@community" or your personal namespace "${personalNamespace}".` }, 400);
+  }
+
+  const limits = getCommercialLimits(auth.user!.tier, null);
+  const { count: personalContentCount } = await client
+    .from('content')
+    .select('*', { count: 'exact', head: true })
+    .eq('owner_id', auth.user!.id)
+    .is('org_id', null);
+
+  if (typeof limits.personal_content_items === 'number' && (personalContentCount ?? 0) >= limits.personal_content_items) {
+    return c.json({ error: 'You have reached your personal content limit for this plan.' }, 403);
+  }
+
+  if (visibility === 'private' && typeof limits.personal_private_packages === 'number') {
+    const { count: privateCount } = await client
+      .from('content')
+      .select('*', { count: 'exact', head: true })
+      .eq('owner_id', auth.user!.id)
+      .is('org_id', null)
+      .eq('visibility', 'private');
+
+    if ((privateCount ?? 0) >= limits.personal_private_packages) {
+      return c.json({ error: 'You have reached your private package limit for this plan.' }, 403);
+    }
   }
 
   // Trusted users publish instantly, others go to moderation
@@ -175,6 +215,21 @@ publishRoutes.post('/content', async (c) => {
     version: body.version,
     data: body.data,
     created_by: auth.user!.id,
+  });
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    scope: 'content',
+    action: 'personal_content.published',
+    target_type: body.type,
+    target_id: data.id,
+    details: {
+      slug: body.slug,
+      namespace,
+      visibility,
+      status,
+      version: body.version,
+    },
   });
 
   const statusCode = status === 'published' ? 201 : 202;
@@ -248,6 +303,19 @@ publishRoutes.patch('/content/:id', async (c) => {
     });
   }
 
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    scope: 'content',
+    action: 'personal_content.updated',
+    target_type: existing.type,
+    target_id: contentId,
+    details: {
+      visibility: updates.visibility ?? null,
+      version: updates.version ?? null,
+      data_updated: Boolean(updates.data),
+    },
+  });
+
   return c.json(data);
 });
 
@@ -281,6 +349,15 @@ publishRoutes.delete('/content/:id', async (c) => {
   if (error) {
     return c.json({ error: 'Failed to delete content' }, 500);
   }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    scope: 'content',
+    action: 'personal_content.deleted',
+    target_type: 'content',
+    target_id: contentId,
+    details: {},
+  });
 
   return c.json({ message: 'Content deleted' });
 });
