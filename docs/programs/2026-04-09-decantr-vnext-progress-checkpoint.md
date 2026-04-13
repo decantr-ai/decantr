@@ -35,6 +35,7 @@ commit archaeology.
 - Removed lingering `recipe` and `theme.style` drift from active product flows.
 - Tightened shared registry typing to match the real corpus.
 - Hardened `decantr-content` validation around live schema contracts.
+- API registry-content validation now derives per-type validators directly from the shared `REGISTRY_SCHEMAS` map instead of a second hand-wired validator list, keeping publish/admin validation aligned with the same typed schema catalog used by the public schema route.
 
 ### Schema ownership
 

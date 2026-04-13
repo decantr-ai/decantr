@@ -1,5 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020.js';
 import type { ErrorObject } from 'ajv';
+import type { ValidateFunction } from 'ajv';
 import type { ContentType } from '../types.js';
 import { COMMON_SCHEMA, EXPECTED_REGISTRY_SCHEMA_URLS, REGISTRY_SCHEMAS } from './schema-catalog.js';
 
@@ -11,13 +12,9 @@ const ajv = new Ajv2020({
 
 ajv.addSchema(COMMON_SCHEMA);
 
-const validators = {
-  pattern: ajv.compile(REGISTRY_SCHEMAS.pattern),
-  theme: ajv.compile(REGISTRY_SCHEMAS.theme),
-  blueprint: ajv.compile(REGISTRY_SCHEMAS.blueprint),
-  archetype: ajv.compile(REGISTRY_SCHEMAS.archetype),
-  shell: ajv.compile(REGISTRY_SCHEMAS.shell),
-};
+const validators = Object.fromEntries(
+  Object.entries(REGISTRY_SCHEMAS).map(([type, schema]) => [type, ajv.compile(schema)]),
+) as Record<ContentType, ValidateFunction<unknown>>;
 
 function formatSchemaError(error: ErrorObject): string {
   const instancePath = error.instancePath || '/';
