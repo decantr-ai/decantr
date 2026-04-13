@@ -22,7 +22,10 @@
     "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",
     "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json"
   },
-  "files": ["dist", "schema"],
+  "files": [
+    "dist",
+    "schema"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -35,5 +38,9 @@
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "typescript": "^5.7.0"
+  },
+  "devDependencies": {
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1"
   }
 }
