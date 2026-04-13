@@ -29,6 +29,15 @@ describe('GET /v1/schema/:name', () => {
     expect(json.$id).toBe('https://decantr.ai/schemas/project-audit-report.v1.json');
   });
 
+  it('serves file critique verifier schemas', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/schema/file-critique-report.v1.json');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+  });
+
   it('serves shared verifier report definition schemas', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/schema/verification-report.common.v1.json');
