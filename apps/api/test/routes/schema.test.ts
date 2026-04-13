@@ -11,6 +11,21 @@ function createTestApp() {
 }
 
 describe('GET /v1/schema/:name', () => {
+  it.each([
+    ['essence.v3.json', 'https://decantr.ai/schemas/essence.v3.json'],
+    ['execution-pack.common.v1.json', 'https://decantr.ai/schemas/execution-pack.common.v1.json'],
+    ['review-pack.v1.json', 'https://decantr.ai/schemas/review-pack.v1.json'],
+    ['pack-manifest.v1.json', 'https://decantr.ai/schemas/pack-manifest.v1.json'],
+    ['selected-execution-pack.v1.json', 'https://decantr.ai/schemas/selected-execution-pack.v1.json'],
+  ])('serves foundational contract schema %s', async (name, schemaId) => {
+    const app = createTestApp();
+    const res = await app.request(`/v1/schema/${name}`);
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.$id).toBe(schemaId);
+  });
+
   it('serves known schemas', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/schema/scaffold-pack.v1.json');
@@ -100,6 +115,11 @@ describe('GET /v1/schema/:name', () => {
     const json = await res.json();
     expect(json.error).toBe('Schema not found');
     expect(Array.isArray(json.available)).toBe(true);
+    expect(json.available).toContain('essence.v3.json');
+    expect(json.available).toContain('execution-pack.common.v1.json');
+    expect(json.available).toContain('review-pack.v1.json');
+    expect(json.available).toContain('pack-manifest.v1.json');
+    expect(json.available).toContain('selected-execution-pack.v1.json');
     expect(json.available).toContain('scaffold-pack.v1.json');
     expect(json.available).toContain('verification-report.common.v1.json');
     expect(json.available).toContain('project-audit-report.v1.json');
