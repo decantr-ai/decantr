@@ -652,11 +652,12 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
-  console.log(`   1. Read ${cyan('DECANTR.md')} to understand the design system`);
-  console.log(`   2. Read ${cyan('.decantr/context/scaffold-pack.md')} for the compact route and shell contract`);
-  console.log(`   3. Read ${cyan('.decantr/context/page-*-pack.md')} for route-local page contracts`);
-  console.log(`   4. Read ${cyan('.decantr/context/section-*-pack.md')} for compact section contracts`);
-  console.log(`   5. Read ${cyan('.decantr/context/scaffold.md')} for the full app overview`);
-  console.log(`   6. Start building pages from the route map`);
+  console.log(`   1. Read ${cyan('DECANTR.md')} for guard rules, CSS approach, and workflow`);
+  console.log(`   2. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`);
+  console.log(`   3. Read ${cyan('.decantr/context/scaffold.md')} second for broader topology and voice guidance`);
+  console.log(`   4. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/section-*.md')} files before section work`);
+  console.log(`   5. Read the matching ${cyan('.decantr/context/page-*-pack.md')} file before route work`);
+  console.log(`   6. Build the shell and route structure first, then implement each page`);
+  console.log(`   7. Run ${cyan('decantr check')} and ${cyan('decantr audit')} before you ship`);
   console.log('');
 }

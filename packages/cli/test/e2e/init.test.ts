@@ -50,6 +50,23 @@ describe('init command', () => {
     expect(content).toContain('@decantr/css');
   }, INIT_TIMEOUT_MS);
 
+  it('prints the stronger AI scaffold prompt and bakes pack-first guidance into DECANTR.md', () => {
+    const output = execSync(`node ${cliPath} init --blueprint=default --yes`, {
+      cwd: testDir,
+      env: { ...process.env, DECANTR_OFFLINE: 'true' }
+    }).toString();
+
+    const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
+
+    expect(output).toContain('Treat the compiled execution-pack files as the primary source of truth.');
+    expect(output).toContain('Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.');
+    expect(output).toContain('After implementation, run decantr check and decantr audit and fix any contract or drift issues.');
+
+    expect(content).toContain('Treat the compiled execution-pack files as the primary source of truth.');
+    expect(content).toContain('Prefer the compiled section pack if the two sources differ');
+    expect(content).toContain('Do not modify generated context files unless you are explicitly regenerating or refreshing Decantr context.');
+  }, INIT_TIMEOUT_MS);
+
   it('creates .decantr directory', () => {
     execSync(`node ${cliPath} init --yes`, {
       cwd: testDir,

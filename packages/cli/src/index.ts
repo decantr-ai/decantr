@@ -199,15 +199,29 @@ function generateCuratedPrompt(ctx: PromptContext): string {
 
   lines.push('Build this application using the Decantr design system.');
   lines.push('');
-  lines.push('Read DECANTR.md for the design spec, CSS approach, and guard rules.');
-  lines.push('Read .decantr/context/scaffold-pack.md for the compact compiled shell and route contract.');
-  lines.push('Read .decantr/context/page-*-pack.md for route-local compiled page contracts.');
-  lines.push('Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.');
-  lines.push('Read each .decantr/context/section-*-pack.md file for the compact section contract.');
-  lines.push('Read each .decantr/context/section-*.md file before building that section\'s pages.');
-  lines.push('Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
+  lines.push('Treat the compiled execution-pack files as the primary source of truth.');
+  lines.push('Use narrative docs only as secondary explanation when the compiled packs are not enough.');
   lines.push('');
-  lines.push('Start with the shell layouts, then build each section\'s pages.');
+  lines.push('Read in this order:');
+  lines.push('1. DECANTR.md for the design spec, CSS approach, and guard rules.');
+  lines.push('2. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.');
+  lines.push('3. .decantr/context/scaffold.md for the broader app overview, topology, route map, and voice guidance.');
+  lines.push('4. Before working on any section, read its matching .decantr/context/section-*-pack.md and then .decantr/context/section-*.md files.');
+  lines.push('5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file.');
+  lines.push('');
+  lines.push('Implementation rules:');
+  lines.push('- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.');
+  lines.push('- Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.');
+  lines.push('- Start with the shell layouts and route structure first, then build section pages route by route.');
+  lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
+  lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.');
+  lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
+  lines.push('');
+  lines.push('Execution flow:');
+  lines.push('- Build the shell and shared layout first.');
+  lines.push('- Then implement each section\'s pages using the matching section and page packs.');
+  lines.push('- After implementation, run decantr check and decantr audit and fix any contract or drift issues.');
+  lines.push('- If a required context file is missing or inconsistent, stop and report exactly which file is missing before continuing.');
 
   return lines.join('\n');
 }
@@ -1183,8 +1197,9 @@ async function cmdInit(args: InitArgs) {
       console.log('');
       console.log('  Next steps:');
       console.log(`    1. Run ${cyan('decantr sync')} when online`);
-      console.log(`    2. Use ${cyan('decantr create <type> <name>')} to create custom content`);
-      console.log(`    3. Review DECANTR.md for methodology`);
+      console.log(`    2. Run ${cyan('decantr refresh')} after syncing to generate scaffold, section, and page packs`);
+      console.log(`    3. Read ${cyan('DECANTR.md')} and the generated ${cyan('.decantr/context/*')} files before implementation`);
+      console.log(`    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`);
       return;
     }
 
@@ -1453,10 +1468,12 @@ async function cmdInit(args: InitArgs) {
 
   console.log('');
   console.log('  Next steps:');
-  console.log('    1. Review DECANTR.md for methodology');
-  console.log('    2. Read .decantr/context/scaffold-pack.md for the compiled shell and route plan');
-  console.log('    3. Read .decantr/context/page-*-pack.md for route-local contracts');
-  console.log('    4. Explore more at decantr.ai/registry');
+  console.log('    1. Read DECANTR.md for methodology, CSS approach, and guard rules');
+  console.log('    2. Read .decantr/context/scaffold-pack.md first, then .decantr/context/scaffold.md');
+  console.log('    3. Read the matching section and page packs before implementing each route');
+  console.log('    4. Build the shell and route structure first, then implement the pages');
+  console.log('    5. Run decantr check and decantr audit after implementation');
+  console.log('    6. Explore more at decantr.ai/registry');
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);

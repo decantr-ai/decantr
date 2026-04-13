@@ -84,21 +84,32 @@ When a user request would violate guard rules:
 
 ### Initial scaffolding
 
-Read `.decantr/context/scaffold-pack.md` for the compact compiled route and shell contract.
-Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, and route map.
+Treat the compiled execution-pack files as the primary source of truth.
+Use narrative docs only as secondary explanation when the compiled packs are not enough.
+
+Read `.decantr/context/scaffold-pack.md` first for the compact compiled shell, theme, feature, and route contract.
+Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, route map, and voice guidance.
+Start implementation from the shell layouts and shared route structure before filling in section pages.
 
 ### Working on a section
 
 Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract.
-Then read `.decantr/context/section-{name}.md` for the fuller context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
+Then read `.decantr/context/section-{name}.md` for the fuller context. Prefer the compiled section pack if the two sources differ, and do not invent section features, shells, or themes that are not present in the compiled contract.
 
 ### Working on a route
 
-Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page.
+Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page. Route-local packs should win over broader narrative docs when there is any mismatch.
+
+### Editing rules
+
+- Import `src/styles/global.css`, `src/styles/tokens.css`, and `src/styles/treatments.css`.
+- Reuse the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.
+- Do not modify generated context files unless you are explicitly regenerating or refreshing Decantr context.
+- If a required context file is missing or inconsistent, stop and report which file is missing before continuing.
 
 ### Validation
 
-Run `decantr audit` to audit the whole project contract and `decantr check` to detect drift violations while editing.
+Run `decantr check` to detect drift violations while editing and `decantr audit` to audit the whole project contract after implementation.
 
 ### Quick Commands
 

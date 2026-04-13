@@ -48,6 +48,16 @@ Scaffolded projects include compiled execution packs under `.decantr/context/`, 
 
 Those files are the compact task contracts meant for AI assistants and downstream tooling.
 
+Recommended read order for AI-assisted scaffolding:
+
+1. `DECANTR.md` for the design spec, CSS approach, and guard rules
+2. `.decantr/context/scaffold-pack.md` as the primary compiled shell, theme, feature, and route contract
+3. `.decantr/context/scaffold.md` as the broader app overview and topology guide
+4. matching `section-*-pack.md` and `section-*.md` files before section work
+5. matching `page-*-pack.md` files before route work
+
+Treat the compiled execution packs as the source of truth. Use the narrative docs as secondary explanation, start with the shell and route structure first, and run `decantr check` plus `decantr audit` after implementation.
+
 ## Related Packages
 
 - `@decantr/essence-spec` for schema and guard validation
