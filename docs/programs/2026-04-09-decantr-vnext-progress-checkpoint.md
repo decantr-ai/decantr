@@ -103,6 +103,8 @@ commit archaeology.
 - Added schema-backed verifier report contracts.
 - Verifier tests now explicitly assert every finding id currently defined in the shared verifier source, so source-defined coverage no longer silently outruns the exercised test surface when new audit or critique findings are added.
 - Verifier now also validates real emitted `auditProject()` output, real `critiqueSource()` output, and the checked-in showcase shortlist artifact against the published verifier JSON schemas via AJV-backed round-trip tests, so report contracts are enforced by executable schema checks instead of only by TypeScript interfaces and downstream consumer expectations.
+- API schema assertion helpers now reuse already-registered AJV schemas by `$id`, aligning the API-side validator path with the verifier test helpers instead of recompiling the same schema objects on every assertion call.
+- API schema-catalog wiring now loads registry, essence, execution-pack, and verifier schemas from cached declarative spec maps instead of one hand-wired constant per file, reducing boilerplate across the public schema-serving surface without changing the exported `PUBLIC_SCHEMAS`, `REGISTRY_SCHEMAS`, or `COMMON_SCHEMA` contracts.
 - CLI and MCP now share the verifier engine.
 - Review packs now inform critique behavior.
 - Project audit now aggregates source-tree findings from `src/`, `app/`, `pages/`, and `components/` when they are present, including inline styles, risky HTML patterns, placeholder routes, auth storage writes, accessibility issues, and unsafe form/auth input behavior.
@@ -328,6 +330,7 @@ commit archaeology.
 - Added a lightweight public API smoke audit script: `pnpm audit:public-api`
 - Added a GitHub Actions workflow for scheduled/manual public API audit reporting.
 - Added a human-readable public API reference page under `docs/reference/`.
+- API schema-route coverage now walks the exported `PUBLIC_SCHEMAS` catalog directly and the unknown-schema branch asserts exact catalog parity, so adding a new public schema requires touching the shared catalog once instead of extending a second hand-maintained route-test list.
 - Added a manual Fly deploy workflow for the hosted API:
   - `.github/workflows/deploy-api-fly.yml`
 - Added an explicit Vercel deploy workflow for the registry portal:
