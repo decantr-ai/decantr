@@ -450,7 +450,7 @@ The core reset tracks are no longer the primary risk. The remaining initiative n
   - sweep remaining package/app READMEs
   - keep operator docs aligned with the merged `main` workflow
 - Optional but recommended hardening:
-  - expand the new representative blueprint certification matrix beyond its current `5/6` passing baseline and repair the remaining `terminal-dashboard` outlier
+  - expand the new representative blueprint certification matrix beyond its current `6/6` representative baseline
   - route inventory/meta coverage so test drift is caught automatically
   - deeper billing/admin/publish branch coverage where business logic is now present but not exhaustively exercised
 

@@ -102,8 +102,12 @@ Initial representative run against the local curated corpus:
 - `agent-marketplace`: pass
 - `knowledge-base`: pass
 - `registry-platform`: pass
-- `terminal-dashboard`: fail
+- `terminal-dashboard`: pass
 
-Current representative baseline: `5/6` passing.
+Current representative baseline: `6/6` passing.
 
-The remaining outlier is `terminal-dashboard`, which currently scaffolds but fails certification because its generated essence and referenced pattern set drift from the current contract enough that compiled pack artifacts are not emitted and `check`/`audit` do not pass cleanly.
+`terminal-dashboard` was the original outlier. The current green baseline includes the systemic fixes that made it pass cleanly:
+
+- sectioned composition now resolves archetype layout aliases into concrete pattern references
+- `decantr check` now reads real local pattern/theme registry context instead of evaluating guards against empty registries
+- the v3 schema now accepts the already-modeled `dna.constraints` metadata emitted by the scaffold path

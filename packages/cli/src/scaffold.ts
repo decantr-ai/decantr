@@ -154,7 +154,8 @@ export function composeArchetypes(
       for (const page of data.pages) {
         allPages.push({
           id: page.id,
-          layout: (page.default_layout?.length ? page.default_layout : ['hero']) as LayoutItem[],
+          layout: (page.default_layout?.length ? page.default_layout : ['hero'])
+            .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
           ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
         });
       }
@@ -163,7 +164,8 @@ export function composeArchetypes(
       for (const page of data.pages) {
         allPages.push({
           id: `${prefix}-${page.id}`,
-          layout: (page.default_layout?.length ? page.default_layout : ['hero']) as LayoutItem[],
+          layout: (page.default_layout?.length ? page.default_layout : ['hero'])
+            .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
           ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
         });
       }
@@ -260,7 +262,8 @@ export function composeSections(
       const overriddenPage = overrides?.pages?.[page.id];
       pages.push({
         id: page.id,
-        layout: (page.default_layout?.length ? page.default_layout : ['hero']) as LayoutItem[],
+        layout: (page.default_layout?.length ? page.default_layout : ['hero'])
+          .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
         ...overriddenPage,
       });
     }

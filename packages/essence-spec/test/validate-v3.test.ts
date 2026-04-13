@@ -36,6 +36,27 @@ describe('validateEssence - v3', () => {
     expect(result.valid).toBe(true);
   });
 
+  it('accepts optional dna.constraints metadata', () => {
+    const result = validateEssence({
+      ...VALID_V31,
+      dna: {
+        ...VALID_V31.dna,
+        constraints: {
+          mode: 'dark_only',
+          typography: 'monospace_only',
+          borders: 'ascii_box_drawing',
+          corners: 'sharp_only',
+          shadows: 'none',
+          effects: {
+            glow: 'optional',
+            scanlines: 'optional',
+          },
+        },
+      },
+    });
+    expect(result.valid).toBe(true);
+  });
+
   it('rejects v3 with missing dna', () => {
     const { dna, ...noData } = VALID_V3;
     const result = validateEssence(noData);

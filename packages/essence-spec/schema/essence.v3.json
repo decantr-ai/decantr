@@ -28,7 +28,8 @@
         "elevation": { "$ref": "#/$defs/Elevation" },
         "motion": { "$ref": "#/$defs/Motion" },
         "accessibility": { "$ref": "#/$defs/AccessibilityV3" },
-        "personality": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        "personality": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "constraints": { "$ref": "#/$defs/Constraints" }
       }
     },
     "Theme": {
@@ -108,6 +109,21 @@
         "wcag_level": { "type": "string", "enum": ["none", "A", "AA", "AAA"] },
         "focus_visible": { "type": "boolean" },
         "skip_nav": { "type": "boolean" }
+      }
+    },
+    "Constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "minLength": 1 },
+        "typography": { "type": "string", "minLength": 1 },
+        "borders": { "type": "string", "minLength": 1 },
+        "corners": { "type": "string", "minLength": 1 },
+        "shadows": { "type": "string", "minLength": 1 },
+        "effects": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
       }
     },
     "Blueprint": {

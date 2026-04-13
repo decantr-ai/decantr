@@ -387,4 +387,36 @@ describe('composeSections', () => {
     // Primary archetype pages also keep original IDs
     expect(result.sections[0].pages[0].id).toBe('home');
   });
+
+  it('resolves aliased default_layout entries to concrete pattern ids in sectioned composition', () => {
+    const terminal = makeArchetype({
+      id: 'terminal-home',
+      role: 'primary',
+      description: 'Terminal dashboard',
+      pages: [
+        {
+          id: 'home',
+          shell: 'terminal-split',
+          default_layout: ['status', 'main-split', 'hotkeys'],
+          patterns: [
+            { pattern: 'status-bar', preset: 'top', as: 'status' },
+            { pattern: 'split-pane', preset: 'horizontal', as: 'main-split' },
+            { pattern: 'hotkey-bar', preset: 'standard', as: 'hotkeys' },
+          ],
+        },
+      ],
+      features: ['keyboard-shortcuts'],
+    });
+
+    const result = composeSections(
+      ['terminal-home'],
+      new Map([['terminal-home', terminal]]),
+    );
+
+    expect(result.sections[0].pages[0].layout).toEqual([
+      { pattern: 'status-bar', preset: 'top' },
+      { pattern: 'split-pane', preset: 'horizontal' },
+      { pattern: 'hotkey-bar', preset: 'standard' },
+    ]);
+  });
 });

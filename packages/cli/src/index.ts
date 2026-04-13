@@ -13,6 +13,7 @@ import {
   isApiContentType,
   isContentIntelligenceSource,
 } from '@decantr/registry';
+import { buildGuardRegistryContext } from './guard-context.js';
 import type {
   ApiContentType,
   Blueprint as RegistryBlueprint,
@@ -948,56 +949,6 @@ async function cmdGet(type: string, id: string) {
   return;
 }
 
-function buildRegistryContext(): { themeRegistry: Map<string, { modes: string[] }>; patternRegistry: Map<string, unknown> } {
-  const themeRegistry = new Map<string, { modes: string[] }>();
-  const patternRegistry = new Map<string, unknown>();
-  const projectRoot = process.cwd();
-  const cacheDir = join(projectRoot, '.decantr', 'cache');
-  const customDir = join(projectRoot, '.decantr', 'custom');
-
-  // Load themes from cache (organized by namespace)
-  const cachedThemesDir = join(cacheDir, '@official', 'themes');
-  try {
-    if (existsSync(cachedThemesDir)) {
-      for (const f of readdirSync(cachedThemesDir).filter((f: string) => f.endsWith('.json') && f !== 'index.json')) {
-        const data = JSON.parse(readFileSync(join(cachedThemesDir, f), 'utf-8'));
-        if (data.id && !themeRegistry.has(data.id)) {
-          themeRegistry.set(data.id, { modes: data.modes || ['light', 'dark'] });
-        }
-      }
-    }
-  } catch { /* skip if unavailable */ }
-
-  // Load custom themes
-  const customThemesDir = join(customDir, 'themes');
-  try {
-    if (existsSync(customThemesDir)) {
-      for (const f of readdirSync(customThemesDir).filter((f: string) => f.endsWith('.json'))) {
-        const data = JSON.parse(readFileSync(join(customThemesDir, f), 'utf-8'));
-        if (data.id) {
-          // Register with custom: prefix
-          themeRegistry.set(`custom:${data.id}`, { modes: data.modes || ['light', 'dark'] });
-        }
-      }
-    }
-  } catch { /* skip if unavailable */ }
-
-  // Load patterns from cache
-  const cachedPatternsDir = join(cacheDir, '@official', 'patterns');
-  try {
-    if (existsSync(cachedPatternsDir)) {
-      for (const f of readdirSync(cachedPatternsDir).filter((f: string) => f.endsWith('.json') && f !== 'index.json')) {
-        const data = JSON.parse(readFileSync(join(cachedPatternsDir, f), 'utf-8'));
-        if (data.id && !patternRegistry.has(data.id)) {
-          patternRegistry.set(data.id, data);
-        }
-      }
-    }
-  } catch { /* skip if unavailable */ }
-
-  return { themeRegistry, patternRegistry };
-}
-
 async function cmdValidate(path?: string) {
   const essencePath = path || join(process.cwd(), 'decantr.essence.json');
   let raw: string;
@@ -1042,7 +993,7 @@ async function cmdValidate(path?: string) {
 
   try {
     // Build registry context for guard validation
-    const { themeRegistry, patternRegistry } = buildRegistryContext();
+    const { themeRegistry, patternRegistry } = buildGuardRegistryContext(process.cwd());
     const violations = evaluateGuard(essence, { themeRegistry, patternRegistry });
     if (violations.length > 0) {
       console.log(heading('Guard violations:'));
