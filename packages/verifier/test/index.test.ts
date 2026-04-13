@@ -45,7 +45,106 @@ describe('verifier', () => {
       expect(report.summary.runtimeAuditChecked).toBe(false);
       expect(report.runtimeAudit.distPresent).toBe(false);
       expect(report.findings.some(finding => finding.id === 'review-pack-file-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'pack-manifest-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-dist-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports missing or invalid essence contracts during project audit', async () => {
+    const missingEssenceRoot = createProjectRoot();
+    const invalidJsonRoot = createProjectRoot();
+    const invalidSchemaRoot = createProjectRoot();
+    try {
+      const missingEssenceReport = await auditProject(missingEssenceRoot);
+      expect(missingEssenceReport.valid).toBe(false);
+      expect(missingEssenceReport.findings.some(finding => finding.id === 'essence-missing')).toBe(true);
+
+      writeFileSync(join(invalidJsonRoot, 'decantr.essence.json'), '{ not-valid-json }\n');
+      const invalidJsonReport = await auditProject(invalidJsonRoot);
+      expect(invalidJsonReport.valid).toBe(false);
+      expect(invalidJsonReport.findings.some(finding => finding.id === 'essence-parse-error')).toBe(true);
+
+      writeFileSync(join(invalidSchemaRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: 'yes', skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          pages: [{ id: 'home', layout: ['hero'] }],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'hash' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      const invalidSchemaReport = await auditProject(invalidSchemaRoot);
+      expect(invalidSchemaReport.valid).toBe(false);
+      expect(invalidSchemaReport.findings.some(finding => finding.id === 'essence-validation')).toBe(true);
+    } finally {
+      await rm(missingEssenceRoot, { recursive: true, force: true });
+      await rm(invalidJsonRoot, { recursive: true, force: true });
+      await rm(invalidSchemaRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports incomplete execution pack manifests during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, '.decantr', 'context'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          pages: [{ id: 'home', layout: ['hero'] }],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'hash' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      writeFileSync(join(projectRoot, '.decantr', 'context', 'pack-manifest.json'), JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+        version: '1.0.0',
+        generatedAt: '2026-04-09T00:00:00.000Z',
+        scaffold: null,
+        review: null,
+        sections: [],
+        pages: [],
+        mutations: [],
+      }, null, 2));
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'scaffold-pack-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'review-pack-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'mutation-packs-missing')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -107,6 +206,153 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'runtime-title-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-lang-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'runtime-viewport-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-route-document-hardening-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports missing runtime index documents during project audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          sections: [
+            {
+              id: 'main',
+              role: 'main',
+              pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
+            },
+          ],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'pathname' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+
+      const report = await auditProject(projectRoot);
+      expect(report.runtimeAudit.distPresent).toBe(true);
+      expect(report.runtimeAudit.indexPresent).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'runtime-index-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports broken built runtime baselines when the entry document omits assets, mount roots, and route surfaces', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          sections: [
+            {
+              id: 'main',
+              role: 'main',
+              pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
+            },
+          ],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'pathname' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><title>Broken App</title></head><body><main>Fallback shell only</main></body></html>\n',
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'runtime-root-document-invalid')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-assets-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-route-hints-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-route-documents-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-route-document-hardening-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports referenced asset fetch failures during runtime verification', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          sections: [
+            {
+              id: 'main',
+              role: 'main',
+              pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
+            },
+          ],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'pathname' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Asset Failure</title><link rel="stylesheet" href="/assets/app.css"><link rel="stylesheet" href="/assets/missing.css"></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script><script type="module" src="/assets/missing.js"></script></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.css'), '.app{color:#111;}\n');
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/dashboard");\n');
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'missing.js'), '');
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'runtime-assets-fetch-failed')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -154,17 +400,21 @@ describe('verifier', () => {
         join(projectRoot, 'dist', 'index.html'),
         '<!doctype html><html><head><title>Large App</title><link rel="stylesheet" href="/assets/app.css"></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
       );
-      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.css'), '.app{color:#111;}\n');
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.css'), `.app{color:#111;}\n${'y'.repeat(200_000)}`);
       writeFileSync(
         join(projectRoot, 'dist', 'assets', 'app.js'),
-        `console.log("/dashboard");\n${'x'.repeat(410_000)}`,
+        `console.log("/dashboard");\n${'x'.repeat(1_400_000)}`,
       );
 
       const report = await auditProject(projectRoot);
       expect(report.runtimeAudit.largestAssetPath).toBe('/assets/app.js');
       expect(report.runtimeAudit.largestAssetBytes).toBeGreaterThan(350_000);
       expect(report.runtimeAudit.jsAssetBytes).toBeGreaterThan(350_000);
+      expect(report.runtimeAudit.cssAssetBytes).toBeGreaterThan(150_000);
+      expect(report.runtimeAudit.totalAssetBytes).toBeGreaterThan(1_500_000);
       expect(report.findings.some(finding => finding.id === 'runtime-js-bundle-large')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-css-bundle-large')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'runtime-total-assets-large')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -1209,6 +1459,56 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'auth-entry-route-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'auth-primary-section-missing')).toBe(false);
       expect(report.findings.some(finding => finding.id === 'auth-primary-routes-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports gateway sections whose pages do not declare explicit routes', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'auth-gateway-routes-missing')).toBe(true);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -28283,6 +28583,71 @@ describe('verifier', () => {
     }
   });
 
+  it('reports partial route document hardening during project audit when only some reviewed routes preserve document metadata', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'main',
+                role: 'main',
+                pages: [
+                  { id: 'home', route: '/', layout: ['hero'] },
+                  { id: 'dashboard', route: '/dashboard', layout: ['hero'] },
+                  { id: 'settings', route: '/settings', layout: ['hero'] },
+                ],
+              },
+            ],
+            features: [],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Showcase</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'dashboard'),
+        '<!doctype html><html lang="en"><head><title>Dashboard</title></head><body><div id="root"></div></body></html>\n',
+      );
+      writeFileSync(
+        join(projectRoot, 'dist', 'settings'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settings</title></head><body><div id="root"></div></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/"); console.log("/dashboard"); console.log("/settings");\n');
+
+      const report = await auditProject(projectRoot);
+      expect(report.runtimeAudit.routeDocumentsCoverageOk).toBe(true);
+      expect(report.runtimeAudit.routeDocumentsHardenedCount).toBe(2);
+      expect(report.findings.some(finding => finding.id === 'runtime-route-document-hardening-partial')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('extracts normalized route hints from v3 essence files', () => {
     const hints = extractRouteHintsFromEssence({
       version: '3.0.0',
@@ -28355,6 +28720,11 @@ describe('verifier', () => {
             summary: 'Avoid hardcoded color literals.',
             guidance: 'Use CSS variables and theme decorators instead of hex, rgb, or hsl values.',
           },
+          {
+            id: 'utility-framework-leakage',
+            summary: 'Avoid letting utility-framework classes carry the primary visual system.',
+            guidance: 'Prefer Decantr treatments and decorators as the primary styling contract.',
+          },
         ],
         successChecks: [
           {
@@ -28371,14 +28741,14 @@ describe('verifier', () => {
           routing: 'hash',
           features: [],
           routes: [{ pageId: 'home', path: '/', patternIds: ['hero'] }],
-          focusAreas: ['theme-consistency', 'accessibility', 'responsive-design'],
+          focusAreas: ['theme-consistency', 'accessibility', 'responsive-design', 'treatment-usage'],
           workflow: [],
         },
         renderedMarkdown: '# Review Pack\n',
       }, null, 2));
       writeFileSync(join(projectRoot, 'src', 'styles', 'treatments.css'), '.brand-accent { color: var(--d-primary); }\n');
       const filePath = join(projectRoot, 'Example.tsx');
-      writeFileSync(filePath, '<button className="plain" style={{ color: "#ff00ff" }}>Click me</button>\n');
+      writeFileSync(filePath, '<button className="hover:bg-pink-500" style={{ color: "#ff00ff" }}>Click me</button>\n');
 
       const report = await critiqueFile(filePath, projectRoot);
       expect(report.reviewPack?.packType).toBe('review');
@@ -28386,6 +28756,10 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'theme-consistency-weak')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'anti-pattern-inline-styles')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'anti-pattern-hardcoded-colors')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'anti-pattern-utility-framework-leakage')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'treatment-usage-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'accessibility-aria-missing')).toBe(true);
+      expect(report.findings.some(finding => finding.id === 'accessibility-keyboard-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'responsive-signals-missing')).toBe(true);
       expect(report.scores.some(score => score.category === 'Topology Context')).toBe(true);
     } finally {
@@ -28457,6 +28831,25 @@ describe('verifier', () => {
     expect(report.reviewPack?.packType).toBe('review');
     expect(report.findings.some(finding => finding.id === 'anti-pattern-inline-styles')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'anti-pattern-hardcoded-colors')).toBe(true);
+  });
+
+  it('flags critique runs that only have a pack manifest and no compiled review pack', () => {
+    const report = critiqueSource({
+      filePath: 'src/pages/Home.tsx',
+      code: '<a href="#">Go</a>\n',
+      packManifest: {
+        $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+        version: '1.0.0',
+        generatedAt: '2026-04-09T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: null,
+        sections: [],
+        pages: [{ id: 'home', markdown: 'page-home-pack.md', json: 'page-home-pack.json', sectionId: 'main', sectionRole: 'primary' }],
+        mutations: [],
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'review-pack-missing-for-critique')).toBe(true);
   });
 
   it('flags dangerous HTML injection and dynamic evaluation patterns during critique', () => {
