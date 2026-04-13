@@ -187,6 +187,7 @@ commit archaeology.
 - File critique now also flags sign-in flows that omit an obvious path to a declared recovery route, so compiled auth contracts can enforce recovery completeness instead of leaving it implicit.
 - File critique now also flags recovery flows that omit an obvious path back to a declared anonymous entry route, so compiled auth contracts can enforce recovery completeness in both directions.
 - File critique now also flags sign-in and sign-up surfaces that omit obvious cross-links when the compiled auth contract declares both routes, so gateway entry flows no longer drift into isolated dead ends.
+- Critique-side coverage now explicitly locks down the existing sign-in flow path that submits into the app but never links into a declared registration route like `/register` or `/sign-up`, so the already-modeled `route-auth-registration-link-missing` regression stays pinned in place when reviewed gateway entry surfaces omit their create-account branch.
 - Project audit now also flags declared auth-route gaps across the source tree, such as sign-in surfaces that never link into declared recovery/registration routes or gateway flows that never route back into declared sign-in.
 - File critique now catches dialog accessibility gaps too, including missing dialog labels and missing modal hints on dialog-like surfaces.
 - Auth verification now flags guard/session files that redirect unauthenticated users toward protected destinations like `/dashboard` instead of anonymous entry routes.
