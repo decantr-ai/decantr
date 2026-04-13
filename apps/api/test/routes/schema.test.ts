@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Hono } from 'hono';
+import { PUBLIC_SCHEMAS } from '../../src/lib/schema-catalog.js';
 import type { Env } from '../../src/types.js';
 import { createApp } from '../../src/app.js';
 import { schemaRoutes } from '../../src/routes/schema.js';
@@ -10,7 +11,23 @@ function createTestApp() {
   return app;
 }
 
+const expectedSchemaNames = Object.keys(PUBLIC_SCHEMAS).sort();
+
 describe('GET /v1/schema/:name', () => {
+  it('serves every schema catalog entry directly', async () => {
+    const app = createTestApp();
+
+    for (const [name, schema] of Object.entries(PUBLIC_SCHEMAS)) {
+      const res = await app.request(`/v1/schema/${name}`);
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      if (typeof schema.$id === 'string') {
+        expect(json.$id).toBe(schema.$id);
+      }
+    }
+  });
+
   it.each([
     ['common.v1.json', 'https://decantr.ai/schemas/common.v1.json'],
     ['content-intelligence.v1.json', 'https://decantr.ai/schemas/content-intelligence.v1.json'],
@@ -150,34 +167,6 @@ describe('GET /v1/schema/:name', () => {
     const json = await res.json();
     expect(json.error).toBe('Schema not found');
     expect(Array.isArray(json.available)).toBe(true);
-    expect(json.available).toContain('common.v1.json');
-    expect(json.available).toContain('content-intelligence.v1.json');
-    expect(json.available).toContain('pattern.v2.json');
-    expect(json.available).toContain('theme.v1.json');
-    expect(json.available).toContain('blueprint.v1.json');
-    expect(json.available).toContain('archetype.v2.json');
-    expect(json.available).toContain('shell.v1.json');
-    expect(json.available).toContain('public-content-summary.v1.json');
-    expect(json.available).toContain('public-content-list.v1.json');
-    expect(json.available).toContain('search-response.v1.json');
-    expect(json.available).toContain('showcase-manifest-entry.v1.json');
-    expect(json.available).toContain('showcase-shortlist.v1.json');
-    expect(json.available).toContain('essence.v2.json');
-    expect(json.available).toContain('essence.v3.json');
-    expect(json.available).toContain('execution-pack.common.v1.json');
-    expect(json.available).toContain('section-pack.v1.json');
-    expect(json.available).toContain('page-pack.v1.json');
-    expect(json.available).toContain('mutation-pack.v1.json');
-    expect(json.available).toContain('review-pack.v1.json');
-    expect(json.available).toContain('pack-manifest.v1.json');
-    expect(json.available).toContain('selected-execution-pack.v1.json');
-    expect(json.available).toContain('scaffold-pack.v1.json');
-    expect(json.available).toContain('verification-report.common.v1.json');
-    expect(json.available).toContain('project-audit-report.v1.json');
-    expect(json.available).toContain('file-critique-report.v1.json');
-    expect(json.available).toContain('showcase-shortlist-report.v1.json');
-    expect(json.available).toContain('public-content-record.v1.json');
-    expect(json.available).toContain('showcase-manifest.v1.json');
-    expect(json.available).toContain('execution-pack-bundle.v1.json');
+    expect([...json.available].sort()).toEqual(expectedSchemaNames);
   });
 });
