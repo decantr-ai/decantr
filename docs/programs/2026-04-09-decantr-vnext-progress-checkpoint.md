@@ -116,6 +116,7 @@ commit archaeology.
 - Source and file critique now also flag auth-like credentials written into client-managed cookies, not just localStorage/sessionStorage.
 - Project audit now also warns when auth is declared but the source tree does not show an obvious sign-out or session-exit path.
 - Project audit now also warns when auth gateway routes exist but the source tree never exposes a real sign-in, registration, or credential-entry surface.
+- Project-audit coverage now explicitly locks down the existing auth gateway route setup that still exposes no entry surface at all, with regressions for patterns like a gateway `/login` route in `decantr.essence.json`, a source file such as `DashboardGate.tsx` that only returns `redirect('/login')` for unauthenticated users, and no sign-in, registration, or credential-entry UI anywhere in the source tree, so the verifier's already-modeled `source-auth-entry-signals-missing` detection stays pinned in place.
 - Source and file critique now also flag auth-like authorization headers being assembled in client-side code.
 - Project audit now includes shared runtime evidence when `dist/` exists:
   - root document validation
