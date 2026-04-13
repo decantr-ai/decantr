@@ -13,6 +13,11 @@ jobs:
         node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        if: matrix.node-version == 20
+        with:
+          repository: decantr-ai/decantr-content
+          path: decantr-content
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -25,6 +30,8 @@ jobs:
       - run: pnpm test
       - run: pnpm audit:docs-marketing
       - run: pnpm audit:package-surface
+      - run: DECANTR_CONTENT_DIR="$GITHUB_WORKSPACE/decantr-content" pnpm audit:blueprint-matrix
+        if: matrix.node-version == 20
       - run: pnpm audit:registry-dogfood
       - run: pnpm run showcase:validate
         if: matrix.node-version == 20
