@@ -1,59 +1,110 @@
-import { css } from '@decantr/css';
-import { Link } from 'react-router-dom';
-import { Download, Calendar, Edit2, Trash2 } from 'lucide-react';
-import type { ContentItem } from '@/data/mock';
-import { TYPE_COLORS, formatNumber } from '@/data/mock';
+import { useState, useEffect } from 'react';
+import { type ContentItem, getTypeColor } from '../data/mock';
 
-interface Props {
+interface ContentCardGridProps {
   items: ContentItem[];
+  onItemClick: (item: ContentItem) => void;
   editable?: boolean;
 }
 
-export function ContentCardGrid({ items, editable }: Props) {
+function formatDownloads(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(n);
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+export function ContentCardGrid({ items, onItemClick, editable }: ContentCardGridProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Trigger stagger animation on mount
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
-    <>
-      <div className="content-card-grid">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            className="lum-card-outlined"
-            data-type={item.type}
-          >
-            {/* Header badges */}
-            <div className={css('_flex _aic _gap2')} style={{ marginBottom: '0.75rem' }}>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+        gap: 'var(--d-gap-6)',
+      }}
+    >
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          className="lum-card-outlined"
+          style={{
+            borderLeftColor: getTypeColor(item.type),
+            padding: 'var(--d-surface-p)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--d-gap-3)',
+            cursor: 'pointer',
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? 'translateY(0)' : 'translateY(12px)',
+            transition: `opacity 0.4s ease ${index * 50}ms, transform 0.4s ease ${index * 50}ms, border-color 0.2s ease, box-shadow 0.2s ease`,
+          }}
+          onClick={() => onItemClick(item)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onItemClick(item);
+            }
+          }}
+        >
+          {/* Header: type badge + namespace */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--d-gap-2)' }}>
+            <span
+              className="d-annotation"
+              style={{
+                background: `color-mix(in srgb, ${getTypeColor(item.type)} 15%, transparent)`,
+                color: getTypeColor(item.type),
+              }}
+            >
+              {item.type}
+            </span>
+            <span
+              className="d-annotation"
+              style={{ fontSize: '0.6875rem' }}
+            >
+              {item.namespace}
+            </span>
+            {editable && (
               <span
                 className="d-annotation"
-                style={{
-                  background: `color-mix(in srgb, ${TYPE_COLORS[item.type]} 15%, transparent)`,
-                  color: TYPE_COLORS[item.type],
-                }}
+                data-status="info"
+                style={{ marginLeft: 'auto', fontSize: '0.625rem' }}
               >
-                {item.type}
+                editable
               </span>
-              <span className="d-annotation">{item.namespace}</span>
-            </div>
+            )}
+          </div>
 
-            {/* Title */}
-            <Link
-              to={`/${item.type}/${item.namespace}/${item.slug}`}
-              className={css('_fontsemi')}
+          {/* Body: title + description */}
+          <div style={{ flex: 1 }}>
+            <div
               style={{
-                color: 'var(--d-text)',
-                textDecoration: 'none',
+                fontWeight: 600,
                 fontSize: '1rem',
-                display: 'block',
-                marginBottom: '0.375rem',
+                lineHeight: 1.3,
+                marginBottom: 'var(--d-gap-2)',
+                color: 'var(--d-text)',
               }}
             >
               {item.name}
-            </Link>
-
-            {/* Description */}
-            <p
-              className={css('_textsm')}
+            </div>
+            <div
               style={{
                 color: 'var(--d-text-muted)',
-                marginBottom: '0.75rem',
+                fontSize: '0.8125rem',
+                lineHeight: 1.5,
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
@@ -61,50 +112,35 @@ export function ContentCardGrid({ items, editable }: Props) {
               }}
             >
               {item.description}
-            </p>
-
-            {/* Footer */}
-            <div className={css('_flex _aic _jcsb')} style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}>
-              <div className={css('_flex _aic _gap3')}>
-                <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>v{item.version}</span>
-                <span className={css('_flex _aic _gap1')}>
-                  <Download size={12} />
-                  {formatNumber(item.downloads)}
-                </span>
-                <span className={css('_flex _aic _gap1')}>
-                  <Calendar size={12} />
-                  {item.updatedAt}
-                </span>
-              </div>
-
-              {editable && (
-                <div className={css('_flex _aic _gap1')}>
-                  <button className="d-interactive" data-variant="ghost" style={{ padding: '0.25rem' }} aria-label="Edit">
-                    <Edit2 size={14} />
-                  </button>
-                  <button className="d-interactive" data-variant="ghost" style={{ padding: '0.25rem', color: 'var(--d-error)' }} aria-label="Delete">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )}
             </div>
           </div>
-        ))}
-      </div>
 
-      <style>{`
-        .content-card-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1rem;
-        }
-        @media (min-width: 640px) {
-          .content-card-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (min-width: 1024px) {
-          .content-card-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-      `}</style>
-    </>
+          {/* Footer: version, downloads, date */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--d-gap-4)',
+              fontSize: '0.75rem',
+              color: 'var(--d-text-muted)',
+              borderTop: '1px solid var(--d-border)',
+              paddingTop: 'var(--d-gap-3)',
+              marginTop: 'auto',
+            }}
+          >
+            <span style={{ fontFamily: 'ui-monospace, monospace', letterSpacing: '-0.02em' }}>
+              v{item.version}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ fontSize: '0.6875rem' }}>↓</span>
+              {formatDownloads(item.downloads)}
+            </span>
+            <span style={{ marginLeft: 'auto' }}>
+              {formatDate(item.updatedAt)}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -72,7 +72,7 @@ export function generateTreatmentCSS(
     ['display', 'inline-flex'],
     ['align-items', 'center'],
     ['gap', '0.5em'],
-    ['padding', 'var(--d-interactive-py) var(--d-interactive-px)'],
+    ['padding', 'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)'],
     ['border', '1px solid var(--d-border)'],
     ['border-radius', 'var(--d-radius)'],
     ['background', 'transparent'],
@@ -132,7 +132,7 @@ export function generateTreatmentCSS(
     ['border', '1px solid var(--d-border)'],
     ['border-radius', 'var(--d-radius)'],
     ['box-shadow', 'var(--d-shadow)'],
-    ['padding', 'var(--d-surface-p)'],
+    ['padding', 'calc(var(--d-surface-p) * var(--d-density-scale, 1))'],
   ]);
 
   emitRule('.d-surface[data-elevation="raised"]', [
@@ -166,7 +166,7 @@ export function generateTreatmentCSS(
   ]);
 
   emitRule('.d-data-header', [
-    ['padding', 'var(--d-data-py) var(--d-content-gap)'],
+    ['padding', 'calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap)'],
     ['font-weight', '500'],
     ['color', 'var(--d-text-muted)'],
     ['border-bottom', '1px solid var(--d-border)'],
@@ -185,7 +185,7 @@ export function generateTreatmentCSS(
   ]);
 
   emitRule('.d-data-cell', [
-    ['padding', 'var(--d-data-py) var(--d-content-gap)'],
+    ['padding', 'calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap)'],
     ['vertical-align', 'middle'],
   ]);
 
@@ -194,7 +194,7 @@ export function generateTreatmentCSS(
   emitRule('.d-control', [
     ['background', 'var(--d-surface)'],
     ['color', 'var(--d-text)'],
-    ['padding', 'var(--d-control-py) 0.75rem'],
+    ['padding', 'calc(var(--d-control-py) * var(--d-density-scale, 1)) 0.75rem'],
     ['border-radius', 'var(--d-radius)'],
     ['border', '1px solid var(--d-border)'],
     ['width', '100%'],
@@ -224,19 +224,28 @@ export function generateTreatmentCSS(
 
   // ── 5. Section Rhythm — .d-section ──
 
+  // ── Section Rhythm ──
   emitRule('.d-section', [
-    ['padding', 'var(--d-section-py) 0'],
+    ['--d-density-scale', '1'],
+    ['padding', 'calc(var(--d-section-py) * var(--d-density-scale)) 0'],
   ]);
 
-  lines.push('.d-section + .d-section {');
-  lines.push('  border-top: 1px solid transparent;');
-  lines.push('  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;');
-  lines.push('  margin-top: var(--d-gap-2);');
+  // Density variants — broadcast scale to descendants
+  lines.push('.d-section[data-density="compact"] {');
+  lines.push('  --d-density-scale: 0.65;');
   lines.push('}');
   lines.push('');
 
-  lines.push('.d-section[data-density="compact"] {');
-  lines.push('  padding: calc(var(--d-section-py) * 0.5) 0;');
+  lines.push('.d-section[data-density="spacious"] {');
+  lines.push('  --d-density-scale: 1.4;');
+  lines.push('}');
+  lines.push('');
+
+  // Adjacent section separator — density-aware gap
+  lines.push('.d-section + .d-section {');
+  lines.push('  border-top: 1px solid transparent;');
+  lines.push('  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;');
+  lines.push('  margin-top: calc(var(--d-section-gap) * var(--d-density-scale, 1));');
   lines.push('}');
   lines.push('');
 
@@ -249,6 +258,7 @@ export function generateTreatmentCSS(
     ['font-size', '0.75rem'],
     ['font-weight', '500'],
     ['padding', '0.125rem 0.5rem'],
+    ['margin-top', 'calc(var(--d-annotation-mt) * var(--d-density-scale, 1))'],
     ['border-radius', 'var(--d-radius-full)'],
     ['background', 'var(--d-surface)'],
     ['color', 'var(--d-text-muted)'],
@@ -277,6 +287,7 @@ export function generateTreatmentCSS(
 
   // ── 7. Label Utility — .d-label ──
 
+  // ── Label ──
   emitRule('.d-label', [
     ['font-size', '0.7rem'],
     ['font-weight', '600'],
@@ -284,6 +295,14 @@ export function generateTreatmentCSS(
     ['letter-spacing', '0.08em'],
     ['color', 'var(--d-text-muted)'],
     ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
+    ['display', 'block'],
+    ['margin-bottom', 'calc(var(--d-label-mb) * var(--d-density-scale, 1))'],
+  ]);
+
+  // Anchored section header variant — accent border
+  emitRule('.d-label[data-anchor]', [
+    ['padding-left', 'var(--d-label-px)'],
+    ['border-left', '2px solid var(--d-accent)'],
   ]);
 
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──

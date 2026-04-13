@@ -1,89 +1,133 @@
-import { useState } from 'react';
-import { css } from '@decantr/css';
-import { UserPlus, Users } from 'lucide-react';
-import { KPIGrid } from '@/components/KPIGrid';
-import { TeamMemberRow } from '@/components/TeamMemberRow';
-import { TEAM_KPIS, TEAM_MEMBERS } from '@/data/mock';
+import { useState, useCallback } from 'react';
+import { KPIGrid } from '../../components/KPIGrid';
+import TeamMemberRow from '../../components/TeamMemberRow';
+import { teamKPIs, teamMembers as initialMembers, type TeamMember } from '../../data/mock';
 
-export function TeamPage() {
+export default function TeamPage() {
+  const [members, setMembers] = useState(initialMembers);
+  const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('member');
+  const [inviteRole, setInviteRole] = useState<TeamMember['role']>('member');
+
+  const handleRoleChange = useCallback((id: string, role: TeamMember['role']) => {
+    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, role } : m)));
+  }, []);
+
+  const handleRemove = useCallback((id: string) => {
+    setMembers((prev) => prev.filter((m) => m.id !== id));
+  }, []);
+
+  const handleInvite = useCallback(() => {
+    if (!inviteEmail.trim()) return;
+    const id = String(Date.now());
+    const localPart = inviteEmail.split('@')[0] ?? '';
+    const initials = localPart.slice(0, 2).toUpperCase();
+    setMembers((prev) => [
+      ...prev,
+      {
+        id,
+        name: localPart,
+        email: inviteEmail.trim(),
+        role: inviteRole,
+        joinedAt: new Date().toISOString().split('T')[0] ?? '',
+        initials,
+      },
+    ]);
+    setInviteEmail('');
+    setInviteRole('member');
+    setShowInvite(false);
+  }, [inviteEmail, inviteRole]);
 
   return (
-    <div className={css('_flex _col _gap6')}>
-      <h3 className={css('_textlg _fontsemi')}>Team</h3>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="d-label" data-anchor="">
+        Team
+      </div>
 
-      {/* KPIs */}
-      <section className="d-section" data-density="compact">
-        <KPIGrid kpis={TEAM_KPIS} />
-      </section>
+      <KPIGrid kpis={teamKPIs} />
 
-      {/* Members */}
-      <section className="d-section" data-density="compact">
-        <span
-          className={css('_db _mb4') + ' d-label'}
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Members</h3>
+        <button
+          type="button"
+          className="d-interactive"
+          data-variant="primary"
+          onClick={() => setShowInvite((v) => !v)}
+          style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
         >
-          Members
-        </span>
+          Invite Member
+        </button>
+      </div>
 
-        {/* Invite form */}
-        <div className={css('_flex _aic _gap3 _mb4')}>
+      {showInvite && (
+        <div
+          className="d-surface"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '1rem',
+          }}
+        >
           <input
-            className="d-control"
             type="email"
-            placeholder="colleague@company.com"
+            className="d-control"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
-            style={{ maxWidth: '20rem' }}
+            placeholder="colleague@example.com"
+            style={{ flex: 1, maxWidth: '320px' }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleInvite();
+            }}
           />
           <select
             className="d-control"
             value={inviteRole}
-            onChange={(e) => setInviteRole(e.target.value)}
-            style={{ maxWidth: '8rem' }}
+            onChange={(e) => setInviteRole(e.target.value as TeamMember['role'])}
+            style={{ width: 'auto', fontSize: '0.8125rem', padding: '0.375rem 0.5rem' }}
           >
-            <option value="member">Member</option>
             <option value="admin">Admin</option>
+            <option value="member">Member</option>
           </select>
-          <button className="d-interactive" data-variant="primary" style={{ fontSize: '0.875rem' }}>
-            <UserPlus size={16} />
+          <button
+            type="button"
+            className="d-interactive"
+            data-variant="primary"
+            onClick={handleInvite}
+            style={{ fontSize: '0.8125rem', padding: '0.375rem 0.875rem' }}
+          >
             Invite
           </button>
+          <button
+            type="button"
+            className="d-interactive"
+            data-variant="ghost"
+            onClick={() => setShowInvite(false)}
+            style={{ fontSize: '0.8125rem', padding: '0.375rem 0.875rem' }}
+          >
+            Cancel
+          </button>
         </div>
+      )}
 
-        {/* Team table */}
-        {TEAM_MEMBERS.length > 0 ? (
-          <div className="d-data" role="table">
-            {/* Header */}
-            <div
-              className={css('_grid _aic')}
-              style={{ gridTemplateColumns: '2fr 1fr 1fr 0.75fr' }}
-              role="row"
-            >
-              <span className="d-data-header" role="columnheader">Member</span>
-              <span className="d-data-header" role="columnheader">Role</span>
-              <span className="d-data-header" role="columnheader">Joined</span>
-              <span className="d-data-header" role="columnheader">Actions</span>
-            </div>
-
-            {/* Rows */}
-            {TEAM_MEMBERS.map((member) => (
-              <TeamMemberRow key={member.id} member={member} />
-            ))}
-          </div>
-        ) : (
-          <div className={css('_flex _col _aic _jcc _gap3')} style={{ padding: '3rem 0' }}>
-            <Users size={48} style={{ color: 'var(--d-text-muted)', opacity: 0.5 }} />
-            <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-              No team members yet.
-            </p>
-            <button className="d-interactive" data-variant="primary" style={{ fontSize: '0.875rem' }}>
-              Invite Your First Member
-            </button>
-          </div>
-        )}
-      </section>
+      <div
+        className="d-surface"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          padding: 0,
+          overflow: 'hidden',
+        }}
+      >
+        {members.map((member) => (
+          <TeamMemberRow
+            key={member.id}
+            member={member}
+            onRoleChange={handleRoleChange}
+            onRemove={handleRemove}
+          />
+        ))}
+      </div>
     </div>
   );
 }

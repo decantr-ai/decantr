@@ -1,51 +1,118 @@
-import { css } from '@decantr/css';
-import { SearchFilterBar } from '@/components/SearchFilterBar';
-import { ContentCardGrid } from '@/components/ContentCardGrid';
-import { KPIGrid } from '@/components/KPIGrid';
-import { CONTENT_ITEMS, REGISTRY_KPIS } from '@/data/mock';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SearchFilterBar } from '../../components/SearchFilterBar';
+import { ContentCardGrid } from '../../components/ContentCardGrid';
+import { KPIGrid } from '../../components/KPIGrid';
+import { contentItems, registryKPIs, type ContentItem } from '../../data/mock';
 
-export function HomePage() {
+export default function HomePage() {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeType, setActiveType] = useState('all');
+  const [sortBy, setSortBy] = useState('relevance');
+
+  const featured = contentItems.slice(0, 6);
+
+  function handleItemClick(item: ContentItem) {
+    navigate(`/browse/${item.type}/${item.namespace}/${item.slug}`);
+  }
+
   return (
-    <div className="lum-canvas" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1.5rem' }}>
-      {/* Search — prominent top element */}
-      <section className="entrance-fade">
-        <h2
-          className={css('_fontsemi')}
-          style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Hero section */}
+      <div
+        className="lum-orbs d-section"
+        style={{
+          textAlign: 'center',
+          padding: 'var(--d-gap-12) var(--d-gap-6)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 'var(--d-gap-4)',
+        }}
+      >
+        <h1
+          style={{
+            fontSize: '2.5rem',
+            fontWeight: 700,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.1,
+          }}
         >
-          Explore the Registry
-        </h2>
-        <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}>
-          Browse, install, and publish patterns, themes, blueprints, and shells.
+          Design Intelligence Registry
+        </h1>
+        <p
+          style={{
+            fontSize: '1.125rem',
+            color: 'var(--d-text-muted)',
+            maxWidth: '32rem',
+            lineHeight: 1.5,
+          }}
+        >
+          Browse 116 patterns, 20 themes, and 19 blueprints
         </p>
-        <SearchFilterBar resultCount={CONTENT_ITEMS.length} />
-      </section>
-
-      <div className="lum-divider" />
-
-      {/* Featured Content */}
-      <section>
-        <span
-          className={css('_db _mb4') + ' d-label'}
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
+        <button
+          className="d-interactive"
+          data-variant="primary"
+          onClick={() => navigate('/browse')}
+          style={{
+            borderRadius: 'var(--d-radius-full)',
+            padding: '0.625rem 1.5rem',
+            fontWeight: 600,
+            fontSize: '0.9375rem',
+            marginTop: 'var(--d-gap-2)',
+          }}
         >
-          Featured
-        </span>
-        <ContentCardGrid items={CONTENT_ITEMS.slice(0, 9)} />
-      </section>
+          Browse Registry
+        </button>
+      </div>
 
+      {/* Divider */}
       <div className="lum-divider" />
 
-      {/* Registry Stats */}
-      <section className="d-section" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
-        <span
-          className={css('_db _mb4') + ' d-label'}
-          style={{ paddingLeft: '0.75rem', borderLeft: '2px solid var(--d-accent)' }}
+      {/* Compact search */}
+      <SearchFilterBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        activeType={activeType}
+        onTypeChange={setActiveType}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
+
+      {/* Divider */}
+      <div className="lum-divider" />
+
+      {/* Featured content */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-4)' }}>
+        <h2
+          style={{
+            fontSize: '1.25rem',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Featured Content
+        </h2>
+        <ContentCardGrid items={featured} onItemClick={handleItemClick} />
+      </div>
+
+      {/* Divider */}
+      <div className="lum-divider" />
+
+      {/* KPI stats */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-4)' }}>
+        <h2
+          style={{
+            fontSize: '1.25rem',
+            fontWeight: 600,
+            letterSpacing: '-0.02em',
+          }}
         >
           Registry Stats
-        </span>
-        <KPIGrid stats={REGISTRY_KPIS} />
-      </section>
+        </h2>
+        <KPIGrid kpis={registryKPIs} />
+      </div>
     </div>
   );
 }

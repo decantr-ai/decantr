@@ -1,63 +1,51 @@
-import { css } from '@decantr/css';
-import type { ActivityEvent } from '@/data/mock';
+import { type ActivityEvent } from '../data/mock';
 
-const EVENT_COLORS: Record<ActivityEvent['type'], string> = {
-  publish: 'var(--d-success)',
-  update: 'var(--d-info)',
-  review: 'var(--d-warning)',
-  download: 'var(--d-accent)',
-  comment: 'var(--d-primary)',
-};
+interface ActivityFeedProps {
+  events: ActivityEvent[];
+}
 
 function groupByDate(events: ActivityEvent[]): Map<string, ActivityEvent[]> {
   const groups = new Map<string, ActivityEvent[]>();
   for (const event of events) {
-    let label: string;
-    const ts = event.timestamp;
-    if (ts.includes('h ago') || ts.includes('m ago') || ts.includes('s ago')) {
-      label = 'Today';
-    } else if (ts === '1d ago') {
-      label = 'Yesterday';
+    const existing = groups.get(event.date);
+    if (existing) {
+      existing.push(event);
     } else {
-      label = ts;
+      groups.set(event.date, [event]);
     }
-    const list = groups.get(label) || [];
-    list.push(event);
-    groups.set(label, list);
   }
   return groups;
 }
 
-interface Props {
-  events: ActivityEvent[];
-}
-
-export function ActivityFeed({ events }: Props) {
-  const groups = groupByDate(events);
+export function ActivityFeed({ events }: ActivityFeedProps) {
+  const grouped = groupByDate(events);
 
   return (
-    <div className={css('_flex _col _gap4')}>
-      {[...groups.entries()].map(([label, items]) => (
-        <div key={label}>
-          <div className="d-label" style={{ marginBottom: '0.75rem' }}>
-            {label}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--d-gap-6)' }}>
+      {Array.from(grouped.entries()).map(([date, dateEvents]) => (
+        <div key={date} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {/* Date header */}
+          <div
+            className="d-label"
+            data-anchor=""
+            style={{ marginBottom: 'var(--d-gap-3)' }}
+          >
+            {date}
           </div>
-          <div className={css('_flex _col')}>
-            {items.map((event) => (
+
+          {/* Events */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {dateEvents.map((event, index) => (
               <div
                 key={event.id}
-                className={css('_flex _aic _gap3')}
+                className="d-data-row"
                 style={{
-                  padding: '0.5rem 0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--d-gap-3)',
+                  padding: '0.625rem var(--d-gap-4)',
                   borderRadius: 'var(--d-radius-sm)',
-                  transition: 'background 0.1s ease',
                   cursor: 'default',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = 'var(--d-surface)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = 'transparent';
                 }}
               >
                 {/* Color dot */}
@@ -66,25 +54,64 @@ export function ActivityFeed({ events }: Props) {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    background: EVENT_COLORS[event.type],
+                    background: event.dotColor,
                     flexShrink: 0,
+                    boxShadow: `0 0 6px ${event.dotColor}44`,
                   }}
                 />
 
-                {/* Content */}
-                <div style={{ flex: 1, fontSize: '0.875rem' }}>
-                  <span style={{ fontWeight: 600 }}>{event.user}</span>{' '}
-                  <span style={{ color: 'var(--d-text-muted)' }}>{event.action}</span>{' '}
-                  <span>{event.target}</span>
+                {/* Avatar initials */}
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'var(--d-surface-raised)',
+                    border: '1px solid var(--d-border)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.6875rem',
+                    fontWeight: 600,
+                    color: 'var(--d-text-muted)',
+                    flexShrink: 0,
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {event.initials}
+                </div>
+
+                {/* Event content */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    style={{
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      color: 'var(--d-text)',
+                    }}
+                  >
+                    {event.user}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '0.8125rem',
+                      color: 'var(--d-text-muted)',
+                      marginLeft: '0.375rem',
+                    }}
+                  >
+                    {event.action}
+                  </span>
                 </div>
 
                 {/* Timestamp */}
                 <span
                   style={{
                     fontSize: '0.75rem',
+                    fontFamily: 'ui-monospace, monospace',
                     color: 'var(--d-text-muted)',
-                    fontFamily: 'var(--d-font-mono, monospace)',
+                    opacity: 0.6,
                     flexShrink: 0,
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {event.timestamp}

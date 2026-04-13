@@ -1,108 +1,133 @@
-import { css } from '@decantr/css';
-import { Check, X, Clock, User, Star, ExternalLink } from 'lucide-react';
-import type { ModerationItem } from '@/data/mock';
-import { TYPE_COLORS } from '@/data/mock';
+import { useCallback } from 'react';
+import type { ModerationItem } from '../data/mock';
+import { getTypeColor } from '../data/mock';
+import ReputationBadge from './ReputationBadge';
 
-interface Props {
+interface ModerationQueueItemProps {
   item: ModerationItem;
   onApprove?: (id: string) => void;
   onReject?: (id: string) => void;
-  showActions?: boolean;
+  onViewDetail?: (id: string) => void;
 }
 
-export function ModerationQueueItem({ item, onApprove, onReject, showActions = true }: Props) {
-  const { content, submitter, submittedAt, status } = item;
+const STATUS_BORDER: Record<ModerationItem['status'], string> = {
+  pending: 'var(--d-warning)',
+  approved: 'var(--d-success)',
+  rejected: 'var(--d-error)',
+};
 
-  const statusMap = {
-    pending: { label: 'Pending', variant: 'warning' as const },
-    approved: { label: 'Approved', variant: 'success' as const },
-    rejected: { label: 'Rejected', variant: 'error' as const },
-  };
+export default function ModerationQueueItem({ item, onApprove, onReject, onViewDetail }: ModerationQueueItemProps) {
+  const borderColor = STATUS_BORDER[item.status];
+  const typeColor = getTypeColor(item.content.type);
 
-  const s = statusMap[status];
+  const handleApprove = useCallback(() => onApprove?.(item.id), [onApprove, item.id]);
+  const handleReject = useCallback(() => onReject?.(item.id), [onReject, item.id]);
+  const handleView = useCallback(() => onViewDetail?.(item.id), [onViewDetail, item.id]);
 
   return (
-    <div className="d-surface lum-card-outlined" data-type={content.type}>
-      <div className={css('_flex _col _gap3')}>
-        {/* Header row */}
-        <div className={css('_flex _aic _jcsb _wrap _gap2')}>
-          <div className={css('_flex _aic _gap2')}>
-            <span
-              className="d-annotation"
-              style={{ background: TYPE_COLORS[content.type], color: '#141414', fontWeight: 600 }}
-            >
-              {content.type}
-            </span>
-            <span className={css('_fontbold _textlg')} style={{ color: 'var(--d-text)' }}>
-              {content.name}
-            </span>
-            <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-              v{content.version}
-            </span>
-          </div>
-          <span className="d-annotation" data-status={s.variant}>
-            <Clock size={12} />
-            {s.label}
-          </span>
+    <div
+      className="d-surface"
+      style={{
+        borderLeft: `3px solid ${borderColor}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+        padding: '1.25rem',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexWrap: 'wrap' }}>
+        <span
+          className="d-annotation"
+          style={{
+            background: `${typeColor}20`,
+            color: typeColor,
+            fontWeight: 600,
+            textTransform: 'capitalize',
+          }}
+        >
+          {item.content.type}
+        </span>
+        <h4 style={{ fontSize: '1rem', fontWeight: 600, margin: 0, flex: 1 }}>{item.content.name}</h4>
+        <span style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)', whiteSpace: 'nowrap' }}>
+          {item.submittedAt}
+        </span>
+      </div>
+
+      {/* Submitter */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        <div
+          style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--d-primary), var(--d-accent))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '0.625rem',
+            fontWeight: 700,
+            color: '#fff',
+            flexShrink: 0,
+          }}
+        >
+          {item.submitter.initials}
         </div>
+        <span style={{ fontSize: '0.8125rem', fontWeight: 500 }}>{item.submitter.name}</span>
+        <ReputationBadge score={item.submitter.reputation} />
+      </div>
 
-        {/* Description */}
-        <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', margin: 0 }}>
-          {content.description}
-        </p>
+      {/* Description */}
+      <p
+        style={{
+          fontSize: '0.8125rem',
+          color: 'var(--d-text-muted)',
+          lineHeight: 1.6,
+          margin: 0,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}
+      >
+        {item.content.description}
+      </p>
 
-        {/* Submitter info */}
-        <div className={css('_flex _aic _jcsb _wrap _gap3')}>
-          <div className={css('_flex _aic _gap3')}>
-            <div className={css('_flex _aic _gap1')}>
-              <User size={14} style={{ color: 'var(--d-text-muted)' }} />
-              <span className={css('_textsm _fontsemi')}>{submitter.name}</span>
-            </div>
-            <div className={css('_flex _aic _gap1')}>
-              <Star size={14} style={{ color: 'var(--d-amber)' }} />
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-                {submitter.reputation} rep
-              </span>
-            </div>
-            <span className="d-annotation">{submitter.level}</span>
-            <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>
-              {submittedAt}
-            </span>
-          </div>
-
-          {/* Actions */}
-          {showActions && status === 'pending' && (
-            <div className={css('_flex _aic _gap2')}>
-              <button
-                className="d-interactive"
-                data-variant="ghost"
-                onClick={() => onApprove?.(item.id)}
-                style={{ color: 'var(--d-success)', fontSize: '0.8125rem' }}
-              >
-                <Check size={14} />
-                Approve
-              </button>
-              <button
-                className="d-interactive"
-                data-variant="ghost"
-                onClick={() => onReject?.(item.id)}
-                style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
-              >
-                <X size={14} />
-                Reject
-              </button>
-              <a
-                className="d-interactive"
-                data-variant="ghost"
-                href={`#/admin/moderation/${item.id}`}
-                style={{ fontSize: '0.8125rem' }}
-              >
-                <ExternalLink size={14} />
-                Details
-              </a>
-            </div>
-          )}
-        </div>
+      {/* Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.25rem' }}>
+        <button
+          type="button"
+          className="d-interactive"
+          onClick={handleApprove}
+          style={{
+            fontSize: '0.8125rem',
+            padding: '0.375rem 0.75rem',
+            background: 'rgba(34, 197, 94, 0.12)',
+            color: 'var(--d-success)',
+            borderColor: 'rgba(34, 197, 94, 0.25)',
+          }}
+        >
+          {'\u2713'} Approve
+        </button>
+        <button
+          type="button"
+          className="d-interactive"
+          data-variant="danger"
+          onClick={handleReject}
+          style={{ fontSize: '0.8125rem', padding: '0.375rem 0.75rem' }}
+        >
+          Reject
+        </button>
+        <button
+          type="button"
+          className="d-interactive"
+          data-variant="ghost"
+          onClick={handleView}
+          style={{ fontSize: '0.8125rem', padding: '0.375rem 0.75rem', marginLeft: 'auto' }}
+        >
+          View Detail
+        </button>
       </div>
     </div>
   );

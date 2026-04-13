@@ -1,18 +1,18 @@
 {
   "detected": {
-    "framework": "react",
-    "version": "19.0.0",
+    "framework": "unknown",
+    "version": null,
     "packageManager": "unknown",
-    "hasTypeScript": true,
+    "hasTypeScript": false,
     "hasTailwind": false,
     "existingRuleFiles": []
   },
   "overrides": {
-    "framework": null
+    "framework": "react"
   },
   "sync": {
     "status": "synced",
-    "lastSync": "2026-04-03T16:34:19.390Z",
+    "lastSync": "2026-04-08T17:50:54.420Z",
     "registrySource": "api",
     "cachedContent": {
       "archetypes": [],
@@ -21,10 +21,10 @@
     }
   },
   "initialized": {
-    "at": "2026-04-03T16:34:19.390Z",
+    "at": "2026-04-08T17:50:54.420Z",
     "via": "cli",
     "version": "1.0.0",
-    "flags": "--blueprint=registry-platform --theme=luminarum --mode=dark --guard=guided"
+    "flags": "--blueprint=registry-platform --theme=luminarum --mode=dark --guard=strict"
   },
   "blueprintId": "registry-platform",
   "voice": {

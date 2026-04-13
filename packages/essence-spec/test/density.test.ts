@@ -65,6 +65,10 @@ describe('computeSpatialTokens', () => {
       '--d-data-py': '0.625rem',
       '--d-control-py': '0.5rem',
       '--d-content-gap': '1rem',
+      '--d-label-mb': '0.75rem',
+      '--d-label-px': '0.75rem',
+      '--d-section-gap': '1.5rem',
+      '--d-annotation-mt': '0.5rem',
     });
   });
 
@@ -78,6 +82,10 @@ describe('computeSpatialTokens', () => {
       '--d-data-py': '0.406rem',
       '--d-control-py': '0.325rem',
       '--d-content-gap': '0.65rem',
+      '--d-label-mb': '0.488rem',
+      '--d-label-px': '0.75rem',
+      '--d-section-gap': '0.975rem',
+      '--d-annotation-mt': '0.325rem',
     });
   });
 
@@ -91,6 +99,10 @@ describe('computeSpatialTokens', () => {
       '--d-data-py': '0.875rem',
       '--d-control-py': '0.7rem',
       '--d-content-gap': '1.4rem',
+      '--d-label-mb': '1.05rem',
+      '--d-label-px': '0.75rem',
+      '--d-section-gap': '2.1rem',
+      '--d-annotation-mt': '0.7rem',
     });
   });
 
@@ -111,6 +123,10 @@ describe('computeSpatialTokens', () => {
       '--d-data-py': '0.75rem',
       '--d-control-py': '0.6rem',
       '--d-content-gap': '1.2rem',
+      '--d-label-mb': '0.9rem',
+      '--d-label-px': '0.75rem',
+      '--d-section-gap': '1.8rem',
+      '--d-annotation-mt': '0.6rem',
     });
   });
 
@@ -138,5 +154,40 @@ describe('computeSpatialTokens', () => {
     });
     // 64px / 16 = 4rem, × 1.0 density × (1 + 3/10) = 4 × 1.3 = 5.2
     expect(tokens['--d-section-py']).toBe('5.2rem');
+  });
+
+  it('includes new spatial contract tokens for comfortable density', () => {
+    const tokens = computeSpatialTokens('comfortable');
+    expect(tokens['--d-label-mb']).toBe('0.75rem');
+    expect(tokens['--d-label-px']).toBe('0.75rem');
+    expect(tokens['--d-section-gap']).toBe('1.5rem');
+    expect(tokens['--d-annotation-mt']).toBe('0.5rem');
+  });
+
+  it('scales new spatial contract tokens for compact density (except label-px)', () => {
+    const tokens = computeSpatialTokens('compact');
+    expect(tokens['--d-label-mb']).toBe('0.488rem');
+    expect(tokens['--d-label-px']).toBe('0.75rem');
+    expect(tokens['--d-section-gap']).toBe('0.975rem');
+    expect(tokens['--d-annotation-mt']).toBe('0.325rem');
+  });
+
+  it('scales new spatial contract tokens for spacious density (except label-px)', () => {
+    const tokens = computeSpatialTokens('spacious');
+    expect(tokens['--d-label-mb']).toBe('1.05rem');
+    expect(tokens['--d-label-px']).toBe('0.75rem');
+    expect(tokens['--d-section-gap']).toBe('2.1rem');
+    expect(tokens['--d-annotation-mt']).toBe('0.7rem');
+  });
+
+  it('uses label_content_gap override for --d-label-mb', () => {
+    const tokens = computeSpatialTokens('comfortable', { label_content_gap: '1rem' });
+    expect(tokens['--d-label-mb']).toBe('1rem');
+    expect(tokens['--d-section-py']).toBe('5rem');
+  });
+
+  it('uses section_padding as rem string', () => {
+    const tokens = computeSpatialTokens('comfortable', { section_padding: '5rem' });
+    expect(tokens['--d-section-py']).toBe('5rem');
   });
 });

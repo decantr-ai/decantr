@@ -8,7 +8,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  padding: var(--d-interactive-py) var(--d-interactive-px);
+  padding: calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px);
   border: 1px solid var(--d-border);
   border-radius: var(--d-radius);
   background: transparent;
@@ -66,7 +66,7 @@
   border: 1px solid var(--d-border);
   border-radius: var(--d-radius);
   box-shadow: var(--d-shadow);
-  padding: var(--d-surface-p);
+  padding: calc(var(--d-surface-p) * var(--d-density-scale, 1));
 }
 
 .d-surface[data-elevation="raised"] {
@@ -98,7 +98,7 @@
 }
 
 .d-data-header {
-  padding: var(--d-data-py) var(--d-content-gap);
+  padding: calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap);
   font-weight: 500;
   color: var(--d-text-muted);
   border-bottom: 1px solid var(--d-border);
@@ -117,14 +117,14 @@
 }
 
 .d-data-cell {
-  padding: var(--d-data-py) var(--d-content-gap);
+  padding: calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap);
   vertical-align: middle;
 }
 
 .d-control {
   background: var(--d-surface);
   color: var(--d-text);
-  padding: var(--d-control-py) 0.75rem;
+  padding: calc(var(--d-control-py) * var(--d-density-scale, 1)) 0.75rem;
   border-radius: var(--d-radius);
   border: 1px solid var(--d-border);
   width: 100%;
@@ -153,17 +153,22 @@
 }
 
 .d-section {
-  padding: var(--d-section-py) 0;
+  --d-density-scale: 1;
+  padding: calc(var(--d-section-py) * var(--d-density-scale)) 0;
+}
+
+.d-section[data-density="compact"] {
+  --d-density-scale: 0.65;
+}
+
+.d-section[data-density="spacious"] {
+  --d-density-scale: 1.4;
 }
 
 .d-section + .d-section {
   border-top: 1px solid transparent;
   border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;
-  margin-top: var(--d-gap-2);
-}
-
-.d-section[data-density="compact"] {
-  padding: calc(var(--d-section-py) * 0.5) 0;
+  margin-top: calc(var(--d-section-gap) * var(--d-density-scale, 1));
 }
 
 .d-annotation {
@@ -206,6 +211,13 @@
   letter-spacing: 0.08em;
   color: var(--d-text-muted);
   font-family: var(--d-font-mono, ui-monospace, monospace);
+  display: block;
+  margin-bottom: calc(var(--d-label-mb) * var(--d-density-scale, 1));
+}
+
+.d-label[data-anchor] {
+  padding-left: var(--d-label-px);
+  border-left: 2px solid var(--d-accent);
 }
 
 /* ── Keyframes ── */
@@ -218,8 +230,201 @@
 } /* end @layer treatments */
 
 @layer decorators {
-  /* Decorator CSS is AI-generated from structured definitions in section context files. */
-  /* See .decantr/context/section-*.md for intent, suggested properties, and usage guidance. */
+
+/* lum-orbs: Breathing gradient orbs behind hero/feature sections */
+.lum-orbs {
+  position: relative;
+  overflow: hidden;
+}
+.lum-orbs::before,
+.lum-orbs::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  animation: lum-drift 12s ease-in-out infinite alternate;
+}
+.lum-orbs::before {
+  width: 500px; height: 500px;
+  top: -120px; left: -80px;
+  background: radial-gradient(circle, var(--d-primary) 0%, transparent 70%);
+  opacity: 0.18;
+}
+.lum-orbs::after {
+  width: 400px; height: 400px;
+  bottom: -100px; right: -60px;
+  background: radial-gradient(circle, var(--d-accent) 0%, transparent 70%);
+  opacity: 0.15;
+  animation-delay: -4s;
+}
+@keyframes lum-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -20px) scale(1.08); }
+}
+
+/* lum-brand: Brand text with accent color on punctuation */
+.lum-brand .brand-dot { color: var(--d-primary); }
+.lum-brand .brand-accent { color: var(--d-accent); }
+
+/* lum-glass: Subtle glass panel */
+.lum-glass {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(2px);
+}
+.light .lum-glass {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* lum-canvas: Particle network background */
+.lum-canvas {
+  position: relative;
+  background: var(--d-bg);
+}
+.lum-canvas::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 20%, var(--d-primary) 50%, transparent 50%),
+    radial-gradient(1px 1px at 30% 65%, var(--d-accent) 50%, transparent 50%),
+    radial-gradient(2px 2px at 55% 15%, var(--d-secondary) 50%, transparent 50%),
+    radial-gradient(1px 1px at 70% 80%, var(--d-primary) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 85% 40%, var(--d-accent) 50%, transparent 50%),
+    radial-gradient(1px 1px at 45% 90%, var(--d-secondary) 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 20% 50%, var(--d-primary) 50%, transparent 50%),
+    radial-gradient(1px 1px at 90% 10%, var(--d-accent) 50%, transparent 50%);
+  opacity: 0.12;
+  z-index: 0;
+}
+
+/* lum-divider: Section divider with centered colored dot */
+.lum-divider {
+  position: relative;
+  height: 1px;
+  background: var(--d-border);
+  margin: 2rem 0;
+}
+.lum-divider::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--d-accent);
+}
+
+/* lum-fade-up: Scroll-reveal animation */
+.lum-fade-up {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: lum-fade-up-in 0.6s ease-out forwards;
+}
+@keyframes lum-fade-up-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* lum-particles: Fixed position scattered dots */
+.lum-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(3px 3px at 15% 25%, var(--d-primary) 50%, transparent 50%),
+    radial-gradient(2px 2px at 35% 70%, var(--d-accent) 50%, transparent 50%),
+    radial-gradient(4px 4px at 60% 20%, var(--d-secondary) 50%, transparent 50%),
+    radial-gradient(2px 2px at 80% 55%, var(--d-primary) 50%, transparent 50%),
+    radial-gradient(3px 3px at 25% 85%, var(--d-accent) 50%, transparent 50%),
+    radial-gradient(2px 2px at 92% 35%, var(--d-secondary) 50%, transparent 50%);
+  opacity: 0.15;
+  animation: lum-particle-pulse 6s ease-in-out infinite alternate;
+}
+@keyframes lum-particle-pulse {
+  0% { opacity: 0.12; }
+  100% { opacity: 0.18; }
+}
+
+/* lum-stat-glow: Number badge with filled accent circle */
+.lum-stat-glow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--d-accent);
+  color: #141414;
+  font-weight: 700;
+  font-size: 1.125rem;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--d-accent) 30%, transparent);
+}
+
+/* lum-code-block: Code block with colored top border */
+.lum-code-block {
+  background: #111113;
+  border: 1px solid var(--d-border);
+  border-top: 2px solid var(--d-accent);
+  border-radius: var(--d-radius);
+  font-family: var(--d-font-mono, ui-monospace, 'Cascadia Code', 'Fira Code', monospace);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* lum-card-vibrant: Filled card with vibrant gradient */
+.lum-card-vibrant {
+  background: linear-gradient(135deg, var(--d-primary), var(--d-accent));
+  color: #fff;
+  border: none;
+  border-radius: var(--d-radius);
+  position: relative;
+  overflow: hidden;
+}
+.lum-card-vibrant::before,
+.lum-card-vibrant::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+.lum-card-vibrant::before {
+  top: 12px; left: 12px;
+  border-right: none; border-bottom: none;
+}
+.lum-card-vibrant::after {
+  bottom: 12px; right: 12px;
+  border-left: none; border-top: none;
+}
+
+/* lum-card-outlined: Outlined card with colored border */
+.lum-card-outlined {
+  background: transparent;
+  border: 1px solid var(--d-border);
+  border-left: 3px solid var(--d-primary);
+  border-radius: var(--d-radius);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.lum-card-outlined:hover {
+  border-left-color: var(--d-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--d-shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lum-orbs::before, .lum-orbs::after { animation: none; }
+  .lum-fade-up { animation: none; opacity: 1; transform: none; }
+  .lum-particles { animation: none; }
+  .lum-card-outlined:hover { transform: none; }
+}
+
 }
 
 @layer utilities {

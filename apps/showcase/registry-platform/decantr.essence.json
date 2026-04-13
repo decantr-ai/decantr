@@ -59,7 +59,6 @@
           {
             "id": "homepage",
             "layout": [
-              "hero",
               "search-filter-bar",
               "content-card-grid",
               "kpi-grid"
@@ -306,9 +305,9 @@
       "routing": "hash"
     },
     "guard": {
-      "mode": "guided",
+      "mode": "strict",
       "dna_enforcement": "error",
-      "blueprint_enforcement": "off"
+      "blueprint_enforcement": "warn"
     },
     "seo": {
       "schema_org": [

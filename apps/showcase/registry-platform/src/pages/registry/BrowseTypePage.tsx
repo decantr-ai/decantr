@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import { css } from '@decantr/css';
-import { SearchFilterBar } from '@/components/SearchFilterBar';
-import { ContentCardGrid } from '@/components/ContentCardGrid';
-import { CONTENT_ITEMS } from '@/data/mock';
+import { useNavigate, useParams } from 'react-router-dom';
+import { SearchFilterBar } from '../../components/SearchFilterBar';
+import { ContentCardGrid } from '../../components/ContentCardGrid';
+import { contentItems, type ContentItem } from '../../data/mock';
+
 const TYPE_LABELS: Record<string, string> = {
   pattern: 'Patterns',
   theme: 'Themes',
@@ -12,59 +12,89 @@ const TYPE_LABELS: Record<string, string> = {
   archetype: 'Archetypes',
 };
 
-export function BrowseTypePage() {
+export default function BrowseTypePage() {
+  const navigate = useNavigate();
   const { type } = useParams<{ type: string }>();
-  const [query, setQuery] = useState('');
-  const [sort, setSort] = useState('popular');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('relevance');
 
   const filtered = useMemo(() => {
-    let items = CONTENT_ITEMS.filter((i) => i.type === type);
+    let items = contentItems.filter((item) => item.type === type);
 
-    if (query) {
-      const q = query.toLowerCase();
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
       items = items.filter(
-        (i) =>
-          i.name.toLowerCase().includes(q) ||
-          i.description.toLowerCase().includes(q),
+        (item) =>
+          item.name.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q) ||
+          item.slug.toLowerCase().includes(q)
       );
     }
 
-    const sorted = [...items];
-    if (sort === 'popular') {
-      sorted.sort((a, b) => b.downloads - a.downloads);
-    } else if (sort === 'recent') {
-      sorted.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-    } else {
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
+    switch (sortBy) {
+      case 'downloads':
+        items = [...items].sort((a, b) => b.downloads - a.downloads);
+        break;
+      case 'updated':
+        items = [...items].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+        break;
+      case 'name':
+        items = [...items].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      default:
+        break;
     }
 
-    return sorted;
-  }, [type, query, sort]);
+    return items;
+  }, [type, searchQuery, sortBy]);
 
-  const label = TYPE_LABELS[type ?? ''] ?? type ?? 'Unknown';
+  function handleItemClick(item: ContentItem) {
+    navigate(`/browse/${item.type}/${item.namespace}/${item.slug}`);
+  }
+
+  function handleTypeChange(newType: string) {
+    if (newType === 'all') {
+      navigate('/browse');
+    } else {
+      navigate(`/browse/${newType}`);
+    }
+  }
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: 1200, margin: '0 auto' }}>
-      <h2
-        className={css('_fontsemi')}
-        style={{ fontSize: '1.75rem', color: 'var(--d-text)', marginBottom: '1.5rem' }}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Heading */}
+      <h1
+        style={{
+          fontSize: '1.75rem',
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+        }}
       >
-        {label}
-      </h2>
+        Browse {TYPE_LABELS[type ?? ''] ?? type}
+      </h1>
 
+      {/* Search and filters with type pre-selected */}
       <SearchFilterBar
-        resultCount={filtered.length}
-        query={query}
-        onQueryChange={setQuery}
-        activeType={type ?? null}
-        onTypeChange={() => {}}
-        sort={sort}
-        onSortChange={setSort}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        activeType={type ?? 'all'}
+        onTypeChange={handleTypeChange}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
       />
 
-      <div style={{ marginTop: '2rem' }}>
-        <ContentCardGrid items={filtered} />
+      {/* Result count */}
+      <div
+        style={{
+          fontSize: '0.8125rem',
+          color: 'var(--d-text-muted)',
+        }}
+      >
+        Showing {filtered.length} results
       </div>
+
+      {/* Content grid */}
+      <ContentCardGrid items={filtered} onItemClick={handleItemClick} />
     </div>
   );
 }

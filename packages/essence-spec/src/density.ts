@@ -1,4 +1,4 @@
-import type { Density, DensityLevel, SpatialTokens } from './types.js';
+import type { Density, DensityLevel, SpatialTokens, SpatialTokenHints } from './types.js';
 
 interface SpatialHints {
   density_bias?: number;
@@ -61,12 +61,6 @@ export function computeDensity(
 
 // --- Spatial Tokens ---
 
-interface SpatialTokenHints {
-  section_padding?: string | null;
-  density_bias?: number;
-  content_gap_shift?: number;
-}
-
 const DENSITY_SCALES: Record<DensityLevel, number> = {
   compact: 0.65,
   comfortable: 1.0,
@@ -81,6 +75,10 @@ const BASE_TOKENS = {
   '--d-data-py': 0.625,
   '--d-control-py': 0.5,
   '--d-content-gap': 1,
+  '--d-label-mb': 0.75,
+  '--d-label-px': 0.75,
+  '--d-section-gap': 1.5,
+  '--d-annotation-mt': 0.5,
 } as const;
 
 function roundTo3(value: number): number {
@@ -104,10 +102,32 @@ export function computeSpatialTokens(
   for (const [key, base] of Object.entries(BASE_TOKENS)) {
     const tokenKey = key as keyof SpatialTokens;
 
+    // --d-label-px is a visual anchor — never density-scaled
+    if (tokenKey === '--d-label-px') {
+      result[tokenKey] = toRemString(base);
+      continue;
+    }
+
     if (tokenKey === '--d-section-py' && spatialHints?.section_padding) {
       const pxMatch = spatialHints.section_padding.match(/^(\d+(?:\.\d+)?)px$/);
       if (pxMatch) {
         const remValue = parseFloat(pxMatch[1]) / 16;
+        result[tokenKey] = toRemString(remValue * scale * biasMultiplier);
+        continue;
+      }
+      const remMatch = spatialHints.section_padding.match(/^(\d+(?:\.\d+)?)rem$/);
+      if (remMatch) {
+        const remValue = parseFloat(remMatch[1]);
+        result[tokenKey] = toRemString(remValue * scale * biasMultiplier);
+        continue;
+      }
+    }
+
+    // --d-label-mb can be overridden by theme's label_content_gap
+    if (tokenKey === '--d-label-mb' && spatialHints?.label_content_gap) {
+      const remMatch = spatialHints.label_content_gap.match(/^(\d+(?:\.\d+)?)rem$/);
+      if (remMatch) {
+        const remValue = parseFloat(remMatch[1]);
         result[tokenKey] = toRemString(remValue * scale * biasMultiplier);
         continue;
       }

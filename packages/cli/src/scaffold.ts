@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } fr
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides } from '@decantr/essence-spec';
+import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides, SpatialTokenHints } from '@decantr/essence-spec';
 import { compileExecutionPackBundle } from '@decantr/core';
 import type { ExecutionPackBase, ExecutionPackBundle, ExecutionPackManifest, ScaffoldExecutionPack } from '@decantr/core';
 import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
@@ -2651,6 +2651,13 @@ export async function refreshDerivedFiles(
         }
       }
 
+      const sectionSpatialHints = themeData?.spatial ? {
+        section_padding: themeData.spatial.section_padding ?? undefined,
+        density_bias: typeof themeData.spatial.density_bias === 'number' ? themeData.spatial.density_bias : undefined,
+        content_gap_shift: themeData.spatial.content_gap_shift,
+        label_content_gap: themeData.spatial.label_content_gap ?? undefined,
+      } : undefined;
+
       const contextContent = generateSectionContext({
         section,
         themeTokens: themeTokensCss,
@@ -2676,6 +2683,7 @@ export async function refreshDerivedFiles(
         themeData,
         themeMode: mode,
         voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
+        spatialHints: sectionSpatialHints,
       });
 
       const sectionContextPath = join(contextDir, `section-${section.id}.md`);
@@ -2753,6 +2761,13 @@ export async function refreshDerivedFiles(
       }
     } catch { /* continue without shell info */ }
 
+    const v30SpatialHints = themeData?.spatial ? {
+      section_padding: themeData.spatial.section_padding ?? undefined,
+      density_bias: typeof themeData.spatial.density_bias === 'number' ? themeData.spatial.density_bias : undefined,
+      content_gap_shift: themeData.spatial.content_gap_shift,
+      label_content_gap: themeData.spatial.label_content_gap ?? undefined,
+    } : undefined;
+
     const contextContent = generateSectionContext({
       section: syntheticSection,
       themeTokens: themeTokensCss,
@@ -2778,6 +2793,7 @@ export async function refreshDerivedFiles(
       themeData,
       themeMode: mode,
       voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
+      spatialHints: v30SpatialHints,
     });
 
     const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
@@ -2999,6 +3015,7 @@ export interface SectionContextInput {
   themeData?: ThemeData;
   themeMode?: string;
   voiceTone?: string;
+  spatialHints?: SpatialTokenHints;
 }
 
 export interface ScaffoldContextInput {
@@ -3171,10 +3188,10 @@ function generateQuickStart(input: SectionContextInput): string[] {
  * Generate a spacing guide from density level.
  * Computes actual token values and renders as a markdown table.
  */
-function generateSpacingGuide(density: string): string[] {
+function generateSpacingGuide(density: string, spatialHints?: SpatialTokenHints): string[] {
   const lines: string[] = [];
   const level = (density === 'compact' || density === 'spacious') ? density : 'comfortable';
-  const tokens = computeSpatialTokens(level as 'compact' | 'comfortable' | 'spacious');
+  const tokens = computeSpatialTokens(level as 'compact' | 'comfortable' | 'spacious', spatialHints);
 
   lines.push('## Spacing Guide');
   lines.push('');
@@ -3187,6 +3204,10 @@ function generateSpacingGuide(density: string): string[] {
   lines.push(`| Interactive H | \`--d-interactive-px\` | \`${tokens['--d-interactive-px']}\` | Horizontal padding on buttons |`);
   lines.push(`| Control | \`--d-control-py\` | \`${tokens['--d-control-py']}\` | Vertical padding on inputs |`);
   lines.push(`| Data row | \`--d-data-py\` | \`${tokens['--d-data-py']}\` | Vertical padding on table rows |`);
+  lines.push(`| Label gap | \`--d-label-mb\` | \`${tokens['--d-label-mb']}\` | Gap below d-label section headers |`);
+  lines.push(`| Label indent | \`--d-label-px\` | \`${tokens['--d-label-px']}\` | Anchor indent for d-label[data-anchor] |`);
+  lines.push(`| Section gap | \`--d-section-gap\` | \`${tokens['--d-section-gap']}\` | Gap between adjacent d-sections |`);
+  lines.push(`| Annotation gap | \`--d-annotation-mt\` | \`${tokens['--d-annotation-mt']}\` | Top margin on d-annotation |`);
   lines.push('');
 
   return lines;
@@ -3199,7 +3220,7 @@ function generateSpacingGuide(density: string): string[] {
  * from scaffold.md and src/styles/tokens.css respectively.
  */
 export function generateSectionContext(input: SectionContextInput): string {
-  const { section, decorators, guardConfig, personality, themeName, zoneContext, patternSpecs, themeHints, constraints, shellInfo } = input;
+  const { section, decorators, guardConfig, personality, themeName, zoneContext, patternSpecs, themeHints, constraints, shellInfo, spatialHints } = input;
   const lines: string[] = [];
 
   // Header
@@ -3227,9 +3248,33 @@ export function generateSectionContext(input: SectionContextInput): string {
 
   // Shell Notes — guidance from the shell definition
   if (shellInfo?.guidance && Object.keys(shellInfo.guidance).length > 0) {
+    // Structured section label treatment (takes precedence over prose)
+    const labelTreatment = shellInfo.guidance.section_label_treatment;
+    const sectionDensity = shellInfo.guidance.section_density;
+
+    if (labelTreatment) {
+      lines.push('## Section Label Treatment');
+      lines.push('');
+      lines.push(`Apply \`${labelTreatment}\` to section headers in this shell.`);
+      lines.push('- Uppercase monospace label typography (d-label base treatment)');
+      if (labelTreatment.includes('[data-anchor]')) {
+        lines.push('- Left accent border anchor (data-anchor variant)');
+      }
+      lines.push('- Density-responsive bottom gap via `--d-label-mb` x `--d-density-scale`');
+      if (sectionDensity) {
+        const scaleMap: Record<string, string> = { compact: '0.65', comfortable: '1', spacious: '1.4' };
+        lines.push('');
+        lines.push(`Section density: ${sectionDensity} (--d-density-scale: ${scaleMap[sectionDensity] || '1'})`);
+      }
+      lines.push('');
+    }
+
+    // Remaining prose guidance (skip structured fields already emitted)
+    const structuredKeys = new Set(['section_label_treatment', 'section_density']);
     lines.push(`## Shell Notes (${section.shell})`);
     lines.push('');
     for (const [key, value] of Object.entries(shellInfo.guidance)) {
+      if (structuredKeys.has(key)) continue;
       const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       lines.push(`- **${label}:** ${value}`);
     }
@@ -3238,7 +3283,7 @@ export function generateSectionContext(input: SectionContextInput): string {
 
   // Spacing Guide
   const density = (section.dna_overrides?.density as string) || 'comfortable';
-  lines.push(...generateSpacingGuide(density));
+  lines.push(...generateSpacingGuide(density, spatialHints));
 
   lines.push('---');
   lines.push('');

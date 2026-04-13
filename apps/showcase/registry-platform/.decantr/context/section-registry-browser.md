@@ -7,7 +7,7 @@
 
 **Shell:** Horizontal navigation bar with full-width main content below. Used by ecommerce (storefront), portfolio, content-site. (header: 52px)
 **Pages:** 5 (homepage, browse, browse-type, detail, profile)
-**Key patterns:** hero, search-filter-bar [moderate], content-card-grid [moderate], kpi-grid, content-detail-hero [moderate], json-viewer, detail-header [moderate], activity-feed
+**Key patterns:** search-filter-bar [moderate], content-card-grid [moderate], kpi-grid, content-detail-hero [moderate], json-viewer, detail-header [moderate], activity-feed
 **CSS classes:** `.lum-orbs`, `.lum-brand`, `.lum-glass`
 **Density:** comfortable
 **Voice:** Welcoming and developer-friendly.
@@ -58,16 +58,20 @@
 | Context | Token | Value | Usage |
 |---------|-------|-------|-------|
 | Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
-| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
+| Section padding | `--d-section-py` | `7.5rem` | Vertical padding on d-section |
 | Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
 | Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
 | Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
 | Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
 | Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
+| Label gap | `--d-label-mb` | `0.75rem` | Gap below d-label section headers |
+| Label indent | `--d-label-px` | `0.75rem` | Anchor indent for d-label[data-anchor] |
+| Section gap | `--d-section-gap` | `1.5rem` | Gap between adjacent d-sections |
+| Annotation gap | `--d-annotation-mt` | `0.5rem` | Top margin on d-annotation |
 
 ---
 
-**Guard:** guided mode | DNA violations = error | Blueprint violations = off
+**Guard:** strict mode | DNA violations = error | Blueprint violations = warn
 
 **Key palette tokens:**
 
@@ -141,46 +145,6 @@ search, pagination
 - `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
 
 ## Pattern Reference
-
-### hero
-
-Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.
-
-**Visual brief:** Full-width section dominating the viewport with a bold, large-scale headline centered or left-aligned depending on preset. Generous vertical padding (4-6rem top/bottom) creates breathing room. Subtext sits beneath the headline in muted, lighter-weight type with relaxed line-height. One or two CTA buttons are arranged horizontally with equal height — the primary filled, the secondary ghost-outlined. Optional media (illustration, screenshot, or ambient gradient) appears below or beside the content. Brand preset fills the entire viewport height with decorative floating orbs in the background. Split preset uses a two-column grid with content on one side and media on the other.
-
-**Components:** Button, icon
-
-**Layout slots:**
-- `media`: Optional image, illustration, or chart component
-- `headline`: Primary heading, typically h1 with _heading1
-- `cta-group`: Horizontal Button group with _flex _gap3
-- `description`: Supporting paragraph with _body _muted
-  **Layout guidance:**
-  - note: Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.
-  - subtitle: Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.
-  - container: none
-  - background: Hero sections should have a subtle radial or mesh gradient background using the theme palette — not a flat color. Use the primary and accent colors at very low opacity (5-10%) to create depth. Example: radial-gradient(ellipse at top center, rgba(var(--d-accent-rgb), 0.08) 0%, transparent 60%), or a soft gradient from primary to transparent. The gradient should fade to var(--d-bg) at the edges so it blends seamlessly with the page.
-  - cta_sizing: Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).
-  - ambient_glow: For themes with neon/glow personality, add a soft ambient glow behind the hero heading or CTA area. Use a blurred pseudo-element or box-shadow with the accent color at 10-15% opacity, radius 200-400px. This creates a focal point without overwhelming the content.
-  - announcement: If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.
-  - visual_proof: The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.
-**Motion:**
-| Interaction | Animation |
-|-------------|-----------|
-| micro | CTA buttons scale subtly on hover (scale 1.02). Badge shimmer on announcement pill. |
-| transitions | Hero entrance: headline fades up from 20px below with 600ms ease-out. Subtext follows 150ms later. CTAs follow 300ms after subtext. Decorative orbs drift slowly with infinite CSS animation. Brand preset media floats with gentle vertical oscillation. |
-
-**Responsive:**
-- **Mobile (<640px):** Single column, stacked vertically. Headline drops to heading2 scale. CTAs stack full-width. Padding reduces to py8 px4. Media goes below content at full width. Min-height removed on brand/vision presets.
-- **Tablet (640-1024px):** Content remains centered or stacked. Headline at heading1 scale. CTAs stay horizontal. Split preset still single-column. Padding at py12 px6.
-- **Desktop (>1024px):** Full layout as designed — centered or split two-column. Headline at display scale for brand/vision. Generous py16-py24 padding. Split preset activates side-by-side grid. Decorative elements visible.
-
-**Accessibility:**
-- Role: `banner`
-- Keyboard: Tab to CTA button; Enter activates CTA
-- Announcements: Page title announced on load
-- Focus: CTA button is the primary focus target
-
 
 ### search-filter-bar
 
@@ -399,7 +363,7 @@ ActivityFeed = Container(d-data, flex-col, full-width) > [DateGroup[] + LoadMore
 
 ### homepage (/)
 
-Layout: hero → search-filter-bar → content-card-grid → kpi-grid
+Layout: search-filter-bar → content-card-grid → kpi-grid
 
 ### browse (/browse)
 

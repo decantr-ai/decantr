@@ -1,45 +1,52 @@
-import { css } from '@decantr/css';
-import { ArrowLeft } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ContentDetailHero } from '@/components/ContentDetailHero';
-import { JsonViewer } from '@/components/JsonViewer';
-import { ModerationQueueItem } from '@/components/ModerationQueueItem';
-import { MODERATION_ITEMS, SAMPLE_JSON } from '@/data/mock';
+import { useState, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { ContentDetailHero } from '../../components/ContentDetailHero';
+import { JsonViewer } from '../../components/JsonViewer';
+import ModerationQueueItem from '../../components/ModerationQueueItem';
+import { moderationQueue, sampleJson } from '../../data/mock';
 
-export function ModerationDetailPage() {
+export default function ModerationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const [notes, setNotes] = useState('');
 
-  const item = MODERATION_ITEMS.find((i) => i.id === id) ?? MODERATION_ITEMS[0];
+  // Find the item by id, fall back to first item
+  const item = moderationQueue.find((m) => m.id === id) ?? moderationQueue[0];
 
-  function handleApprove() {
-    navigate('/admin/moderation');
-  }
+  const handleApprove = useCallback(() => {
+    // Mock approve action
+  }, []);
 
-  function handleReject() {
-    navigate('/admin/moderation');
+  const handleReject = useCallback(() => {
+    // Mock reject action
+  }, []);
+
+  if (!item) {
+    return <div>Item not found</div>;
   }
 
   return (
-    <div className={css('_flex _col _gap5')}>
-      {/* Back link */}
-      <button
-        className="d-interactive"
-        data-variant="ghost"
-        onClick={() => navigate('/admin/moderation')}
-        style={{ alignSelf: 'flex-start', fontSize: '0.875rem' }}
-      >
-        <ArrowLeft size={16} />
-        Back to queue
-      </button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="d-label" data-anchor="">
+        Moderation Detail
+      </div>
 
-      {/* Content hero */}
       <ContentDetailHero item={item.content} />
 
-      {/* JSON preview */}
-      <JsonViewer data={SAMPLE_JSON} title="Content Data Preview" />
+      <JsonViewer data={sampleJson} title="Content Schema" />
 
-      {/* Moderation actions */}
+      {/* Admin notes */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0 }}>Admin Notes</h3>
+        <textarea
+          className="d-control"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={4}
+          placeholder="Add review notes..."
+          style={{ resize: 'vertical' }}
+        />
+      </div>
+
       <ModerationQueueItem
         item={item}
         onApprove={handleApprove}
