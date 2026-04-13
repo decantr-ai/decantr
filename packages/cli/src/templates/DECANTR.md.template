@@ -86,6 +86,7 @@ When a user request would violate guard rules:
 
 Treat the compiled execution-pack files as the primary source of truth.
 Use narrative docs only as secondary explanation when the compiled packs are not enough.
+Use only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.
 
 Read `.decantr/context/scaffold-pack.md` first for the compact compiled shell, theme, feature, and route contract.
 Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, route map, and voice guidance.
@@ -103,6 +104,7 @@ Read `.decantr/context/page-{name}-pack.md` for the most local compiled route co
 ### Editing rules
 
 - Use the real `@decantr/css` runtime for atoms. If `package.json` does not already include `@decantr/css`, add it before implementation.
+- If a local `package.json` is present, trust its declared Decantr dependencies over external assumptions about package availability.
 - Do **not** create local atom-runtime substitutes such as `src/lib/css.js`, `src/lib/css.ts`, or hand-written `src/styles/atoms.css` files unless the task explicitly asks for a fallback runtime.
 - Import `src/styles/global.css`, `src/styles/tokens.css`, and `src/styles/treatments.css`.
 - Reuse the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.

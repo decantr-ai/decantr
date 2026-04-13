@@ -61,6 +61,26 @@ For each selected blueprint, the matrix:
 
 The command exits non-zero if any blueprint fails.
 
+## Offline Content Expectations
+
+`decantr init --offline --blueprint=<slug>` now expects a real local content source rather than silently degrading to the default scaffold.
+
+Resolution order:
+
+1. existing workspace `.decantr/cache` / `.decantr/custom`
+2. `DECANTR_CONTENT_DIR`
+3. sibling `../decantr-content`
+
+If a requested offline blueprint or archetype cannot be resolved from one of those local sources, `init` should stop with an explicit error instead of scaffolding a fallback custom project.
+
+## Harness Guidance
+
+For cold-start certification runs, the workspace-local scaffold files are the only source of truth.
+
+- prefer the generated `scaffold-pack.md`, `scaffold.md`, section packs, and page packs over repo-global Decantr assumptions
+- if local scaffold files disagree with each other, stop and report the mismatch instead of inferring intent from prior knowledge
+- treat a missing compiled pack as a harness failure, not as permission to improvise
+
 ## Representative Matrix
 
 | Blueprint | Why it stays in the matrix |

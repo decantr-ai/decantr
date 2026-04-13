@@ -1,7 +1,8 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { seedOfflineRegistry } from '../offline-content.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -16,8 +17,6 @@ function success(text: string): string { return `${GREEN}${text}${RESET}`; }
 function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
-const CONTENT_TYPES = ['archetypes', 'blueprints', 'patterns', 'themes', 'shells'] as const;
-
 function detectRoutingMode(projectDir: string): 'hash' | 'history' {
   try {
     const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf-8')) as {
@@ -86,55 +85,6 @@ export function App() {
 }
 `;
   writeFileSync(join(srcDir, 'App.tsx'), appTsx);
-}
-
-function copyIfExists(source: string, target: string): boolean {
-  if (!existsSync(source)) return false;
-  cpSync(source, target, { recursive: true });
-  return true;
-}
-
-function hydrateContentRoot(projectDir: string, contentRoot: string): boolean {
-  if (!existsSync(contentRoot)) return false;
-
-  const customRoot = join(projectDir, '.decantr', 'custom');
-  const cacheRoot = join(projectDir, '.decantr', 'cache', '@official');
-  mkdirSync(customRoot, { recursive: true });
-  mkdirSync(cacheRoot, { recursive: true });
-
-  let copiedAny = false;
-  for (const type of CONTENT_TYPES) {
-    const sourceDir = join(contentRoot, type);
-    if (!existsSync(sourceDir)) continue;
-    cpSync(sourceDir, join(customRoot, type), { recursive: true });
-    cpSync(sourceDir, join(cacheRoot, type), { recursive: true });
-    copiedAny = true;
-  }
-
-  return copiedAny;
-}
-
-function seedOfflineRegistry(projectDir: string, workspaceRoot: string): { seeded: boolean; strategy: string | null } {
-  const projectDecantrRoot = join(projectDir, '.decantr');
-  mkdirSync(projectDecantrRoot, { recursive: true });
-
-  const copiedCache = copyIfExists(join(workspaceRoot, '.decantr', 'cache'), join(projectDecantrRoot, 'cache'));
-  const copiedCustom = copyIfExists(join(workspaceRoot, '.decantr', 'custom'), join(projectDecantrRoot, 'custom'));
-  if (copiedCache || copiedCustom) {
-    return { seeded: true, strategy: 'workspace-cache' };
-  }
-
-  const configuredContentRoot = process.env.DECANTR_CONTENT_DIR ? resolve(process.env.DECANTR_CONTENT_DIR) : null;
-  const siblingContentRoot = resolve(workspaceRoot, '..', 'decantr-content');
-  const contentRoot = configuredContentRoot && existsSync(configuredContentRoot)
-    ? configuredContentRoot
-    : siblingContentRoot;
-
-  if (hydrateContentRoot(projectDir, contentRoot)) {
-    return { seeded: true, strategy: configuredContentRoot && existsSync(configuredContentRoot) ? 'configured-content-root' : 'sibling-content-root' };
-  }
-
-  return { seeded: false, strategy: null };
 }
 
 export interface NewProjectOptions {

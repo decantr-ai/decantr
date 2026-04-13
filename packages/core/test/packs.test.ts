@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
-import type { EssenceFile } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import {
   buildMutationPack,
   buildPagePack,
@@ -234,5 +234,79 @@ describe('buildScaffoldPack', () => {
     expect(bundle.review.packType).toBe('review');
     expect(bundle.scaffold.target.adapter).toBe('decantr');
     expect(bundle.pages[0]?.renderedMarkdown).toContain('## Page Contract');
+  });
+
+  it('honors explicit v3 route mappings when compiling scaffold, section, and page packs', async () => {
+    const essence: EssenceV3 = {
+      version: '3.1.0',
+      dna: {
+        theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+        spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+        typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+        color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+        radius: { philosophy: 'rounded', base: 8 },
+        elevation: { system: 'layered', max_levels: 3 },
+        motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+        accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+        personality: ['operational'],
+      },
+      blueprint: {
+        sections: [
+          {
+            id: 'marketing',
+            role: 'public',
+            shell: 'top-nav-footer',
+            description: 'Marketing surface',
+            features: [],
+            pages: [
+              { id: 'home', route: '/', layout: ['hero'] },
+            ],
+          },
+          {
+            id: 'agent-orchestrator',
+            role: 'primary',
+            shell: 'sidebar-main',
+            description: 'Agent control plane',
+            features: ['agents'],
+            pages: [
+              { id: 'agent-overview', route: '/agents', layout: ['form-sections'] },
+            ],
+          },
+        ],
+        features: ['agents'],
+        routes: {
+          '/': { section: 'marketing', page: 'home' },
+          '/agents': { section: 'agent-orchestrator', page: 'agent-overview' },
+        },
+      },
+      meta: {
+        archetype: 'agent-orchestrator',
+        target: 'react',
+        platform: { type: 'spa', routing: 'hash' },
+        guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+      },
+    };
+
+    const bundle = await compileExecutionPackBundle(essence, { contentRoot });
+    const scaffoldRoutes = bundle.scaffold.data.routes.map((route) => ({ pageId: route.pageId, path: route.path }));
+    const marketingPack = bundle.sections.find((pack) => pack.data.sectionId === 'marketing');
+    const agentPack = bundle.sections.find((pack) => pack.data.sectionId === 'agent-orchestrator');
+    const homePack = bundle.pages.find((pack) => pack.data.pageId === 'home');
+    const agentOverviewPack = bundle.pages.find((pack) => pack.data.pageId === 'agent-overview');
+
+    expect(scaffoldRoutes).toEqual([
+      { pageId: 'home', path: '/' },
+      { pageId: 'agent-overview', path: '/agents' },
+    ]);
+    expect(marketingPack?.data.routes).toEqual([
+      { pageId: 'home', path: '/', patternIds: ['hero'] },
+    ]);
+    expect(agentPack?.data.routes).toEqual([
+      { pageId: 'agent-overview', path: '/agents', patternIds: ['form-sections'] },
+    ]);
+    expect(homePack?.data.path).toBe('/');
+    expect(agentOverviewPack?.data.path).toBe('/agents');
+    expect(bundle.scaffold.renderedMarkdown).toContain('- / -> home [hero]');
+    expect(bundle.scaffold.renderedMarkdown).toContain('- /agents -> agent-overview [form-sections]');
   });
 });
