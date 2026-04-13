@@ -56,6 +56,9 @@ decantr refresh
 decantr status
 decantr registry summary --namespace @official --json
 decantr registry compile-packs decantr.essence.json --json
+decantr registry get-pack manifest --namespace @official --json
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json --essence decantr.essence.json
+decantr registry audit-project --namespace @official --json --essence decantr.essence.json
 decantr registry compile-packs decantr.essence.json --write-context
 decantr showcase verification --json
 ```
@@ -93,8 +96,9 @@ Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
 Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `@decantr/essence-spec/schema/*`, execution-pack schemas by `@decantr/core/schema/*`, and verification report schemas by `@decantr/verifier/schema/*`.
 Hosted registry intelligence rollup data is available at `https://api.decantr.ai/v1/intelligence/summary`.
 Hosted execution-pack compilation is available at `https://api.decantr.ai/v1/packs/compile`.
-Hosted file critique is surfaced at `https://api.decantr.ai/v1/critique/file` on the reset branch, with rollout state tracked by the public API audit and rollout runbook.
-Hosted project audit is surfaced at `https://api.decantr.ai/v1/audit/project` on the reset branch, with optional dist-snapshot input for runtime verification during rollout.
+Hosted selected execution-pack reads are available at `https://api.decantr.ai/v1/packs/select`.
+Hosted file critique is available at `https://api.decantr.ai/v1/critique/file`.
+Hosted project audit is available at `https://api.decantr.ai/v1/audit/project`, with optional dist-snapshot input for runtime verification.
 Public registry API/filter examples live in `docs/reference/registry-public-api.md`, with a static docs page at `https://decantr.ai/reference/registry-public-api.html`.
 
 ## Packages
@@ -140,6 +144,7 @@ pnpm build
 pnpm test
 pnpm lint
 pnpm audit:public-api
+pnpm audit:registry-dogfood
 ```
 
 Requires:

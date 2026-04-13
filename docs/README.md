@@ -12,6 +12,8 @@ This reset branch treats only the vNext program, audits, and active implementati
   - Active implementation specs for the reset program.
 - `reference/`
   - Human-readable references for active public/runtime contracts such as registry API surfaces.
+- `schemas/`
+  - Published public schema copies and the schema index surfaced at `https://decantr.ai/schemas/`.
 - `runbooks/`
   - Operational rollout and verification procedures for hosted surfaces.
   - Includes package release strategy and hosted rollout runbooks.
