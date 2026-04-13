@@ -84,6 +84,7 @@ import { cmdExport } from './commands/export.js';
 import type { ExportTarget } from './commands/export.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
 import { cmdNewProject } from './commands/new-project.js';
+import { seedOfflineRegistry } from './offline-content.js';
 
 // ── Helpers ──
 
@@ -202,6 +203,7 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('Treat the compiled execution-pack files as the primary source of truth.');
   lines.push('Use narrative docs only as secondary explanation when the compiled packs are not enough.');
+  lines.push('Use only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.');
   lines.push('');
   lines.push('Read in this order:');
   lines.push('1. DECANTR.md for the design spec, CSS approach, and guard rules.');
@@ -1113,6 +1115,23 @@ async function cmdInit(args: InitArgs) {
     }
   }
 
+  const requestedBlueprint = Boolean(args.blueprint);
+  const requestedArchetype = Boolean(args.archetype);
+  const requestedTheme = Boolean(args.theme);
+
+  let offlineSeed = { seeded: false, strategy: null as 'workspace-cache' | 'configured-content-root' | 'sibling-content-root' | null };
+  if (args.offline) {
+    offlineSeed = seedOfflineRegistry(projectRoot, projectRoot);
+    if (offlineSeed.seeded) {
+      console.log(dim(`  Seeded offline registry content from ${offlineSeed.strategy}.`));
+    } else if (requestedBlueprint || requestedArchetype) {
+      console.log(error('\nOffline blueprint/archetype scaffolding requires a local Decantr content source.'));
+      console.log(dim('Set DECANTR_CONTENT_DIR, seed .decantr/cache or .decantr/custom, or run without --offline.'));
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   // Create registry client
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
@@ -1122,6 +1141,13 @@ async function cmdInit(args: InitArgs) {
 
   // Check connectivity
   const apiAvailable = await registryClient.checkApiAvailability();
+  if (!apiAvailable && !args.offline && (requestedBlueprint || requestedArchetype)) {
+    const fallbackSeed = seedOfflineRegistry(projectRoot, projectRoot);
+    if (fallbackSeed.seeded) {
+      offlineSeed = fallbackSeed;
+      console.log(dim(`  Seeded local registry fallback from ${fallbackSeed.strategy}.`));
+    }
+  }
 
   let selectedBlueprint = 'default';
   let registrySource: 'api' | 'cache' = 'cache';
@@ -1151,6 +1177,13 @@ async function cmdInit(args: InitArgs) {
       console.log(`    2. Run ${cyan('decantr refresh')} after syncing to generate scaffold, section, and page packs`);
       console.log(`    3. Read ${cyan('DECANTR.md')} and the generated ${cyan('.decantr/context/*')} files before implementation`);
       console.log(`    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`);
+      return;
+    }
+
+    if (requestedBlueprint || requestedArchetype) {
+      console.log(error('\nThe requested blueprint/archetype could not be resolved from the hosted registry or local cache.'));
+      console.log(dim('Run `decantr sync`, set DECANTR_CONTENT_DIR, or retry when the registry is reachable.'));
+      process.exitCode = 1;
       return;
     }
 
@@ -1363,6 +1396,12 @@ async function cmdInit(args: InitArgs) {
           : '';
       }
     } else {
+      if (requestedBlueprint) {
+        console.log(error(`  Error: Could not fetch blueprint "${options.blueprint}".`));
+        console.log(dim('Resolve local registry content or retry against the hosted registry.'));
+        process.exitCode = 1;
+        return;
+      }
       console.log(`${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`);
     }
   } else if (options.archetype) {
@@ -1371,6 +1410,12 @@ async function cmdInit(args: InitArgs) {
     if (archetypeResult) {
       archetypeData = mapRegistryArchetypeToArchetypeData(archetypeResult.data);
     } else {
+      if (requestedArchetype) {
+        console.log(error(`  Error: Could not fetch archetype "${options.archetype}".`));
+        console.log(dim('Resolve local registry content or retry against the hosted registry.'));
+        process.exitCode = 1;
+        return;
+      }
       console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
     }
   }
@@ -1383,6 +1428,12 @@ async function cmdInit(args: InitArgs) {
     if (themeResult) {
       themeData = mapRegistryThemeToThemeData(themeResult.data);
     } else {
+      if (requestedTheme) {
+        console.log(error(`  Error: Could not fetch theme "${options.theme}".`));
+        console.log(dim('Resolve local registry content or retry against the hosted registry.'));
+        process.exitCode = 1;
+        return;
+      }
       console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
     }
   }

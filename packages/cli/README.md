@@ -36,6 +36,14 @@ decantr registry summary --namespace @official --json
 decantr showcase verification --json
 ```
 
+Offline blueprint scaffolding expects a real local content source:
+
+```bash
+DECANTR_CONTENT_DIR=/path/to/decantr-content decantr init --blueprint=agent-marketplace --offline --yes
+```
+
+If a requested offline blueprint, archetype, or theme cannot be resolved from local cache/custom content or `DECANTR_CONTENT_DIR`, the CLI now stops explicitly instead of silently falling back to the default scaffold.
+
 ## Generated Context
 
 Scaffolded projects include compiled execution packs under `.decantr/context/`, including:
@@ -57,6 +65,8 @@ Recommended read order for AI-assisted scaffolding:
 5. matching `page-*-pack.md` files before route work
 
 Treat the compiled execution packs as the source of truth. Use the narrative docs as secondary explanation, start with the shell and route structure first, and run `decantr check` plus `decantr audit` after implementation.
+
+For cold-start harness or certification runs, use only the scaffolded workspace files as the contract. If local scaffold files disagree, stop and report the mismatch rather than relying on repo-global Decantr assumptions.
 
 ## Related Packages
 

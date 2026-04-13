@@ -124,9 +124,12 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function buildNavItems(pages: StructurePage[]): IRNavItem[] {
+function buildNavItems(pages: StructurePage[], routes?: IRRoute[]): IRNavItem[] {
+  const routeLookup = new Map<string, string>(
+    (routes ?? []).map((route) => [route.pageId, route.path]),
+  );
   return pages.map((page, i) => ({
-    href: routePath(page.id, i),
+    href: routeLookup.get(page.id) ?? routePath(page.id, i),
     icon: NAV_ICONS[page.id] || 'circle',
     label: capitalize(page.id.replace(/-/g, ' ')),
   }));
@@ -177,6 +180,31 @@ function blueprintPageToStructurePage(page: BlueprintPage, defaultShell: string)
     layout: page.layout,
     ...(page.surface ? { surface: page.surface } : {}),
   };
+}
+
+function buildV3Routes(
+  essence: EssenceV3,
+  blueprintPages: BlueprintPage[],
+  structurePages: StructurePage[],
+): IRRoute[] {
+  const explicitRoutes = new Map<string, string>();
+
+  for (const [path, entry] of Object.entries(essence.blueprint.routes ?? {})) {
+    if (entry?.page && !explicitRoutes.has(entry.page)) {
+      explicitRoutes.set(entry.page, path);
+    }
+  }
+
+  for (const page of blueprintPages) {
+    if (page.route && !explicitRoutes.has(page.id)) {
+      explicitRoutes.set(page.id, page.route);
+    }
+  }
+
+  return structurePages.map((page, i) => ({
+    path: explicitRoutes.get(page.id) ?? routePath(page.id, i),
+    pageId: page.id,
+  }));
 }
 
 function convertWiring(wiringResults: ReturnType<typeof detectWirings>): IRWiring | null {
@@ -397,7 +425,8 @@ async function resolveV3Essence(
   // 5. Shell config from blueprint
   const shellType = defaultShell;
   const brand = pascalCase(meta.archetype);
-  const nav = buildNavItems(structurePages);
+  const routes = buildV3Routes(essence, blueprintPages, structurePages);
+  const nav = buildNavItems(structurePages, routes);
   const decoration = registryTheme ? buildThemeDecoration(registryTheme) : null;
 
   const shell: IRShellConfig = {
@@ -407,12 +436,6 @@ async function resolveV3Essence(
     inset: false,
     decoration,
   };
-
-  // 6. Routes
-  const routes: IRRoute[] = structurePages.map((page, i) => ({
-    path: routePath(page.id, i),
-    pageId: page.id,
-  }));
 
   return {
     essence,
