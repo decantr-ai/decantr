@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
-function readJson(path: string) {
+function readJson(path: URL) {
   return JSON.parse(readFileSync(path, 'utf-8')) as Record<string, unknown>;
 }
 
@@ -15,15 +15,15 @@ const ajv = new Ajv2020({
 addFormats(ajv);
 
 const schemaPaths = [
-  '/Users/davidaimi/projects/decantr-monorepo/packages/verifier/schema/verification-report.common.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/verifier/schema/project-audit-report.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/verifier/schema/file-critique-report.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/verifier/schema/showcase-shortlist-report.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/core/schema/execution-pack.common.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/core/schema/pack-manifest.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/core/schema/review-pack.v1.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/essence-spec/schema/essence.v2.json',
-  '/Users/davidaimi/projects/decantr-monorepo/packages/essence-spec/schema/essence.v3.json',
+  new URL('../../schema/verification-report.common.v1.json', import.meta.url),
+  new URL('../../schema/project-audit-report.v1.json', import.meta.url),
+  new URL('../../schema/file-critique-report.v1.json', import.meta.url),
+  new URL('../../schema/showcase-shortlist-report.v1.json', import.meta.url),
+  new URL('../../../core/schema/execution-pack.common.v1.json', import.meta.url),
+  new URL('../../../core/schema/pack-manifest.v1.json', import.meta.url),
+  new URL('../../../core/schema/review-pack.v1.json', import.meta.url),
+  new URL('../../../essence-spec/schema/essence.v2.json', import.meta.url),
+  new URL('../../../essence-spec/schema/essence.v3.json', import.meta.url),
 ];
 
 for (const path of schemaPaths) {

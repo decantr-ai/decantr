@@ -92,7 +92,7 @@ describe('verifier schema contracts', () => {
 
   it('matches the published showcase shortlist schema for the checked-in report artifact', () => {
     const shortlistReport = JSON.parse(
-      readFileSync('/Users/davidaimi/projects/decantr-monorepo/apps/showcase/reports/shortlist-verification.json', 'utf-8'),
+      readFileSync(new URL('../../../apps/showcase/reports/shortlist-verification.json', import.meta.url), 'utf-8'),
     );
 
     assertMatchesVerifierSchema('showcase-shortlist-report.v1.json', shortlistReport);
