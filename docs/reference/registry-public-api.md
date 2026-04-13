@@ -202,6 +202,8 @@ Notes:
 Response schema:
 - `file-critique-report.v1.json`
 - `https://decantr.ai/schemas/file-critique-report.v1.json`
+- shared definitions: `verification-report.common.v1.json`
+- `https://decantr.ai/schemas/verification-report.common.v1.json`
 
 ## Hosted Project Audit
 
@@ -249,6 +251,8 @@ Notes:
 Response schema:
 - `project-audit-report.v1.json`
 - `https://decantr.ai/schemas/project-audit-report.v1.json`
+- shared definitions: `verification-report.common.v1.json`
+- `https://decantr.ai/schemas/verification-report.common.v1.json`
 
 ## Showcase Benchmark Surfaces
 
@@ -265,6 +269,7 @@ Response schemas:
 - `showcase-manifest.v1.json`
 - `showcase-shortlist.v1.json`
 - `showcase-shortlist-report.v1.json`
+- shared report definitions: `verification-report.common.v1.json`
 
 ## Registry Intelligence Summary
 

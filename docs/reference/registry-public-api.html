@@ -291,6 +291,7 @@ Content-Type: application/json
       <div class="meta">
         <div><strong>Purpose:</strong> Critique inline file contents against a hosted review-pack contract compiled from the posted essence document.</div>
         <div><strong>Schema:</strong> <a href="/schemas/file-critique-report.v1.json"><code>file-critique-report.v1.json</code></a></div>
+        <div><strong>Shared Definitions:</strong> <a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code></a></div>
         <div><strong>Notes:</strong> Include a valid Decantr essence document on <code>essence</code> and a non-empty source string on <code>code</code>. <code>filePath</code> and <code>treatmentsCss</code> are optional but help the hosted critique stay aligned with local project context.</div>
       </div>
     </section>
@@ -328,6 +329,7 @@ Content-Type: application/json
       <div class="meta">
         <div><strong>Purpose:</strong> Run the shared Decantr project audit remotely by compiling hosted execution packs from the posted essence and optionally replaying runtime verification against posted dist and source snapshots.</div>
         <div><strong>Schema:</strong> <a href="/schemas/project-audit-report.v1.json"><code>project-audit-report.v1.json</code></a></div>
+        <div><strong>Shared Definitions:</strong> <a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code></a></div>
         <div><strong>Notes:</strong> The <code>dist</code> object is optional. Without it, hosted audit still checks schema, topology, and compiled-pack presence, but runtime verification remains pending. The <code>sources</code> object is also optional and lets hosted audit aggregate source-level verifier findings from posted source files.</div>
       </div>
     </section>
@@ -340,6 +342,7 @@ GET /showcase/shortlist-verification</pre>
       <div class="meta">
         <div><strong>Purpose:</strong> Inspect the audited showcase corpus, shortlist metadata, and the schema-backed shortlist verification report.</div>
         <div><strong>Schemas:</strong> <a href="/schemas/showcase-manifest.v1.json"><code>showcase-manifest.v1.json</code></a>, <a href="/schemas/showcase-shortlist.v1.json"><code>showcase-shortlist.v1.json</code></a>, <a href="/schemas/showcase-shortlist-report.v1.json"><code>showcase-shortlist-report.v1.json</code></a></div>
+        <div><strong>Shared Definitions:</strong> <a href="/schemas/verification-report.common.v1.json"><code>verification-report.common.v1.json</code></a></div>
       </div>
     </section>
 
