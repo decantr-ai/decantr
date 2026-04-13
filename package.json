@@ -28,6 +28,7 @@
     "audit:public-api": "node scripts/audit-public-api.mjs",
     "audit:registry-portal": "node scripts/audit-registry-portal.mjs",
     "audit:registry-dogfood": "pnpm --filter ./apps/registry exec node ../../packages/cli/dist/index.js audit",
+    "audit:blueprint-matrix": "pnpm --filter @decantr/cli build && node scripts/audit-blueprint-matrix.mjs",
     "showcase:build": "node scripts/build-showcases.mjs",
     "showcase:build:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/build-showcases.mjs",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
