@@ -232,11 +232,11 @@ export function OrgGovernancePanel() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       <section className="d-surface">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex flex-col gap-2">
+        <div className="registry-surface-stack">
+          <div className="registry-form-grid-split">
+            <div className="registry-page-intro">
               <div>
                 <h3 className="text-lg font-semibold">Organization Governance</h3>
                 <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
@@ -256,7 +256,7 @@ export function OrgGovernancePanel() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2" style={{ minWidth: '16rem' }}>
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="governance-org">
                 Active organization
               </label>
@@ -275,7 +275,7 @@ export function OrgGovernancePanel() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="registry-inline-actions">
             <Link href="/dashboard/team" className="d-interactive" data-variant="ghost">
               Manage members
             </Link>
@@ -299,7 +299,7 @@ export function OrgGovernancePanel() {
       ) : null}
 
       <section className="d-surface">
-        <div className="flex flex-col gap-3">
+        <div className="registry-surface-stack">
           <div>
             <h4 className="text-base font-semibold">Publishing policy</h4>
             <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
@@ -307,14 +307,8 @@ export function OrgGovernancePanel() {
             </p>
           </div>
 
-          <label
-            className="flex items-center justify-between gap-4"
-            style={{
-              padding: '0.875rem 0',
-              borderTop: '1px solid var(--d-border)',
-              borderBottom: '1px solid var(--d-border)',
-            }}
-          >
+          <div className="registry-policy-list">
+          <label className="registry-policy-row">
             <div className="flex flex-col gap-1">
               <span className="text-sm" style={{ fontWeight: 600 }}>
                 Require approval for public org packages
@@ -337,13 +331,7 @@ export function OrgGovernancePanel() {
 
           {activeOrg?.tier === 'enterprise' ? (
             <>
-              <label
-                className="flex items-center justify-between gap-4"
-                style={{
-                  padding: '0.875rem 0',
-                  borderBottom: '1px solid var(--d-border)',
-                }}
-              >
+              <label className="registry-policy-row">
                 <div className="flex flex-col gap-1">
                   <span className="text-sm" style={{ fontWeight: 600 }}>
                     Allow member submissions
@@ -364,10 +352,7 @@ export function OrgGovernancePanel() {
                 />
               </label>
 
-              <label
-                className="flex items-center justify-between gap-4"
-                style={{ padding: '0.875rem 0' }}
-              >
+              <label className="registry-policy-row">
                 <div className="flex flex-col gap-1">
                   <span className="text-sm" style={{ fontWeight: 600 }}>
                     Require approval for private org packages
@@ -399,12 +384,13 @@ export function OrgGovernancePanel() {
               Only owners and admins can change organization policy.
             </p>
           ) : null}
+          </div>
         </div>
       </section>
 
       <section className="d-surface">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="registry-surface-stack">
+          <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
             <div>
               <h4 className="text-base font-semibold">Pending approvals</h4>
               <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
@@ -421,53 +407,48 @@ export function OrgGovernancePanel() {
               No org packages are waiting for approval right now.
             </p>
           ) : (
-            approvals.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-wrap items-center justify-between gap-3"
-                style={{
-                  paddingTop: '0.875rem',
-                  borderTop: '1px solid var(--d-border)',
-                }}
-              >
-                <div className="flex flex-col gap-1" style={{ minWidth: 0 }}>
-                  <span className="text-sm" style={{ fontWeight: 600 }}>
-                    {item.name || item.slug}
-                  </span>
-                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                    {item.type} · {item.namespace} · {item.visibility}
-                  </span>
-                </div>
+            <div className="registry-approval-list">
+              {approvals.map((item) => (
+                <div key={item.id} className="registry-approval-card">
+                  <div className="flex flex-col gap-1" style={{ minWidth: 0 }}>
+                    <span className="text-sm" style={{ fontWeight: 600 }}>
+                      {item.name || item.slug}
+                    </span>
+                    <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                      {item.type} · {item.namespace} · {item.visibility}
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="d-interactive"
-                    data-variant="ghost"
-                    disabled={!canManage || isPending}
-                    onClick={() => handleApproval(item.id, 'reject')}
-                  >
-                    Reject
-                  </button>
-                  <button
-                    type="button"
-                    className="d-interactive"
-                    data-variant="primary"
-                    disabled={!canManage || isPending}
-                    onClick={() => handleApproval(item.id, 'approve')}
-                  >
-                    Approve
-                  </button>
+                  <div className="registry-inline-actions">
+                    <button
+                      type="button"
+                      className="d-interactive"
+                      data-variant="ghost"
+                      disabled={!canManage || isPending}
+                      onClick={() => handleApproval(item.id, 'reject')}
+                    >
+                      Reject
+                    </button>
+                    <button
+                      type="button"
+                      className="d-interactive"
+                      data-variant="primary"
+                      disabled={!canManage || isPending}
+                      onClick={() => handleApproval(item.id, 'approve')}
+                    >
+                      Approve
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </section>
 
       <section className="d-surface">
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="registry-surface-stack">
+          <div className="registry-form-grid-split">
             <div>
               <h4 className="text-base font-semibold">Audit trail</h4>
               <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
@@ -475,7 +456,7 @@ export function OrgGovernancePanel() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="registry-filter-bar">
               <select
                 className="d-control"
                 value={auditScope}

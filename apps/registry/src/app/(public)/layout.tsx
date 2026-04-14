@@ -26,17 +26,8 @@ export default async function PublicLayout({
   }
 
   return (
-    <div className="flex flex-col" style={{ minHeight: '100vh' }}>
-      {/* Header — 52px, sticky */}
-      <header
-        className="sticky top-0 z-30 flex items-center justify-between shrink-0"
-        style={{
-          height: 52,
-          padding: '0 1.5rem',
-          borderBottom: '1px solid var(--d-border)',
-          background: 'var(--d-bg)',
-        }}
-      >
+    <div className="registry-public-frame">
+      <header className="registry-public-header">
         {/* Left: Brand */}
         <Link
           href="/"
@@ -68,29 +59,18 @@ export default async function PublicLayout({
         </nav>
 
         {/* Right: Theme toggle + auth */}
-        <div className="flex items-center gap-2">
+        <div className="registry-public-header-actions">
           <ThemeToggle compact />
           <NavHeader user={user} />
         </div>
       </header>
 
-      {/* Body — pages own their spacing */}
       <main className="registry-public-main lum-canvas">
         {children}
       </main>
 
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: '1px solid var(--d-border)',
-          padding: '2rem 1.5rem',
-          marginTop: 'auto',
-        }}
-      >
-        <div
-          className="flex justify-between flex-wrap gap-8"
-          style={{ maxWidth: 1200, margin: '0 auto' }}
-        >
+      <footer className="registry-public-footer">
+        <div className="registry-public-footer-inner">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <svg

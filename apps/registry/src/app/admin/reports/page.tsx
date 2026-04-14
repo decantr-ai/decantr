@@ -31,8 +31,8 @@ export default async function AdminReportsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+    <div className="registry-page-stack">
+      <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
         <h3 className="text-lg font-semibold">Commercial Reports</h3>
         <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
           Open organizations
@@ -48,16 +48,10 @@ export default async function AdminReportsPage() {
       {summary ? (
         <>
           <section className="d-section" data-density="compact">
-            <span
-              className="d-label block mb-4"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               Tier Distribution
             </span>
-            <div className="d-surface" style={{ display: 'grid', gap: '0.5rem' }}>
+            <div className="d-surface registry-surface-stack">
               <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
                 Users — Free: {summary.users_by_tier.free} · Pro: {summary.users_by_tier.pro} · Team: {summary.users_by_tier.team} · Enterprise: {summary.users_by_tier.enterprise}
               </div>
@@ -71,16 +65,10 @@ export default async function AdminReportsPage() {
           </section>
 
           <section className="d-section" data-density="compact">
-            <span
-              className="d-label block mb-4"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               Package Footprint
             </span>
-            <div className="d-surface" style={{ display: 'grid', gap: '0.5rem' }}>
+            <div className="d-surface registry-surface-stack">
               <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
                 Public packages: {summary.totals.public_packages}
               </div>
@@ -97,16 +85,10 @@ export default async function AdminReportsPage() {
           </section>
 
           <section className="d-section" data-density="compact">
-            <span
-              className="d-label block mb-4"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               30-Day Usage
             </span>
-            <div className="d-surface" style={{ display: 'grid', gap: '0.5rem' }}>
+            <div className="d-surface registry-surface-stack">
               <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
                 API requests: {summary.totals.api_requests_30d}
               </div>

@@ -230,88 +230,89 @@ function TeamMemberRow({
 }) {
   const roleStyle = ROLE_STYLES[member.role] ?? ROLE_STYLES.member;
   return (
-    <div
-      className="d-data-row flex items-center gap-3"
-      style={{ padding: 'var(--d-data-py) var(--d-content-gap)' }}
-    >
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          background: 'var(--d-surface-raised)',
-          border: '1px solid var(--d-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '0.6875rem',
-          fontWeight: 600,
-          flexShrink: 0,
-        }}
-      >
-        {getInitials(member.display_name || member.email)}
-      </div>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="font-medium text-sm">
-          {member.display_name || member.email.split('@')[0]}
-        </div>
+    <div className="registry-team-row">
+      <div className="registry-team-row-main">
         <div
-          className="text-sm"
           style={{
-            color: 'var(--d-text-muted)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            background: 'var(--d-surface-raised)',
+            border: '1px solid var(--d-border)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '0.6875rem',
+            fontWeight: 600,
+            flexShrink: 0,
           }}
         >
-          {member.email}
+          {getInitials(member.display_name || member.email)}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="font-medium text-sm">
+            {member.display_name || member.email.split('@')[0]}
+          </div>
+          <div
+            className="text-sm"
+            style={{
+              color: 'var(--d-text-muted)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {member.email}
+          </div>
         </div>
       </div>
 
-      <span
-        className="d-annotation"
-        style={{ background: roleStyle.bg, color: roleStyle.color }}
-      >
-        {member.role}
-      </span>
-
-      <span
-        className="text-sm"
-        style={{ color: 'var(--d-text-muted)', flexShrink: 0 }}
-      >
-        {formatDate(member.created_at)}
-      </span>
-
-      <div className="flex items-center gap-1">
-        <select
-          className="d-control"
-          defaultValue={member.role}
-          disabled={member.role === 'owner'}
-          onChange={(e) => onRoleChange(member.user_id, e.target.value)}
-          style={{
-            width: 'auto',
-            minWidth: 100,
-            fontSize: '0.75rem',
-            padding: '0.25rem 0.5rem',
-          }}
+      <div className="registry-team-row-trail">
+        <span
+          className="d-annotation"
+          style={{ background: roleStyle.bg, color: roleStyle.color }}
         >
-          <option value="admin">Admin</option>
-          <option value="member">Member</option>
-        </select>
-        {member.role !== 'owner' && (
-          <button
-            type="button"
-            className="d-interactive"
-            data-variant="ghost"
-            onClick={() => onRemove(member.user_id)}
-            disabled={removingId === member.user_id}
-            style={{ padding: '0.25rem', color: 'var(--d-error)' }}
-            aria-label="Remove member"
+          {member.role}
+        </span>
+
+        <span
+          className="text-sm"
+          style={{ color: 'var(--d-text-muted)', flexShrink: 0 }}
+        >
+          {formatDate(member.created_at)}
+        </span>
+
+        <div className="registry-team-row-actions">
+          <select
+            className="d-control"
+            defaultValue={member.role}
+            disabled={member.role === 'owner'}
+            onChange={(e) => onRoleChange(member.user_id, e.target.value)}
+            style={{
+              width: 'auto',
+              minWidth: 100,
+              fontSize: '0.75rem',
+              padding: '0.25rem 0.5rem',
+            }}
           >
-            <TrashIcon size={14} />
-          </button>
-        )}
+            <option value="admin">Admin</option>
+            <option value="member">Member</option>
+          </select>
+          {member.role !== 'owner' && (
+            <button
+              type="button"
+              className="d-interactive"
+              data-variant="ghost"
+              onClick={() => onRemove(member.user_id)}
+              disabled={removingId === member.user_id}
+              style={{ padding: '0.25rem', color: 'var(--d-error)' }}
+              aria-label="Remove member"
+            >
+              <TrashIcon size={14} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -457,7 +458,7 @@ export default function TeamPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       <h3 className="text-lg font-semibold">Team</h3>
 
       {error && (
@@ -473,16 +474,10 @@ export default function TeamPage() {
 
       {usageSummary ? (
         <section className="d-section" data-density="compact">
-          <span
-            className="d-label block mb-4"
-            style={{
-              paddingLeft: '0.75rem',
-              borderLeft: '2px solid var(--d-accent)',
-            }}
-          >
+          <span className="d-label registry-anchor-label">
             Organization Usage
           </span>
-          <div className="d-surface" style={{ display: 'grid', gap: '0.5rem' }}>
+          <div className="d-surface registry-surface-stack">
             <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
               Packages: {usageSummary.content_items} total · {usageSummary.public_packages} public · {usageSummary.private_packages} private
             </div>
@@ -517,18 +512,12 @@ export default function TeamPage() {
 
       {/* Members */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Members
         </span>
 
         {organizations.length > 1 && (
-          <div className="flex flex-col gap-1 mb-4" style={{ maxWidth: '18rem' }}>
+          <div className="registry-form-grid mb-4" style={{ maxWidth: '18rem' }}>
             <label className="text-sm font-semibold" htmlFor="team-org">
               Organization
             </label>
@@ -567,7 +556,8 @@ export default function TeamPage() {
         {/* Invite form */}
         <form
           onSubmit={handleInvite}
-          className="flex items-center gap-3 mb-4"
+          className="registry-inline-form"
+          style={{ marginBottom: '1rem' }}
         >
           <input
             className="d-control"
@@ -575,13 +565,11 @@ export default function TeamPage() {
             placeholder="colleague@company.com or @username"
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
-            style={{ maxWidth: '20rem', flex: 1 }}
           />
           <select
             className="d-control"
             value={inviteRole}
             onChange={(e) => setInviteRole(e.target.value)}
-            style={{ maxWidth: '8rem' }}
           >
             <option value="member">Member</option>
             <option value="admin">Admin</option>
@@ -617,7 +605,7 @@ export default function TeamPage() {
             </p>
           </div>
         ) : members.length > 0 ? (
-          <div className="d-data">
+          <div className="registry-team-list">
             {members.map((member) => (
               <TeamMemberRow
                 key={member.user_id}

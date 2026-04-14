@@ -182,9 +182,9 @@ export default function ApiKeysPage() {
   const activeKeys = keys.filter((k) => !k.revoked_at);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       {/* Header row */}
-      <div className="flex items-center justify-between">
+      <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
         <h3 className="text-lg font-semibold">API Keys</h3>
         <button
           className="d-interactive"
@@ -214,7 +214,7 @@ export default function ApiKeysPage() {
               <CheckIcon size={14} />
               <span className="text-sm font-semibold">Key created — save it now, it won&apos;t be shown again</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="registry-inline-actions">
               <code
                 style={{
                   fontFamily: 'var(--d-font-mono, monospace)',
@@ -248,13 +248,13 @@ export default function ApiKeysPage() {
       {/* Inline create form — toggled by header button */}
       {showForm && (
         <form onSubmit={handleCreate} className="d-surface">
-          <div className="flex flex-col gap-3">
+          <div className="registry-surface-stack">
             {error && (
               <span className="d-annotation" data-status="error">
                 {error}
               </span>
             )}
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-medium" htmlFor="key-name">Name</label>
               <input
                 id="key-name"
@@ -267,7 +267,7 @@ export default function ApiKeysPage() {
                 autoFocus
               />
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-medium" htmlFor="key-target">Key Scope</label>
               <select
                 id="key-target"
@@ -282,7 +282,7 @@ export default function ApiKeysPage() {
               </select>
             </div>
             {keyTarget === 'organization' && me?.organizations.length ? (
-              <div className="flex flex-col gap-1">
+              <div className="registry-form-grid">
                 <label className="text-sm font-medium" htmlFor="org-id">Organization</label>
                 <select
                   id="org-id"
@@ -298,9 +298,9 @@ export default function ApiKeysPage() {
                 </select>
               </div>
             ) : null}
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <span className="text-sm font-medium">Scopes</span>
-              <div className="flex items-center gap-3">
+              <div className="registry-inline-actions">
                 <label className="flex items-center gap-1.5 text-sm cursor-pointer">
                   <input type="checkbox" checked={scopes.has('read')} onChange={() => toggleScope('read')} />
                   Read
@@ -311,7 +311,7 @@ export default function ApiKeysPage() {
                 </label>
               </div>
             </div>
-            <div className="flex items-center gap-2 justify-end">
+            <div className="registry-inline-actions" style={{ justifyContent: 'flex-end' }}>
               <button
                 type="button"
                 className="d-interactive"
@@ -338,107 +338,74 @@ export default function ApiKeysPage() {
       {/* Table */}
       <section className="d-section" data-density="compact">
         {activeKeys.length > 0 ? (
-          <div className="d-data" role="table">
-            {/* Header row */}
-            <div
-              className="grid items-center"
-              style={{ gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 0.75fr' }}
-              role="row"
-            >
-              <span className="d-data-header" role="columnheader">Name</span>
-              <span className="d-data-header" role="columnheader">Key</span>
-              <span className="d-data-header" role="columnheader">Scopes</span>
-              <span className="d-data-header" role="columnheader">Created</span>
-              <span className="d-data-header" role="columnheader">Last Used</span>
-              <span className="d-data-header" role="columnheader">Actions</span>
-            </div>
-
-            {/* Data rows */}
+          <div className="registry-key-list">
             {activeKeys.map((apiKey) => (
-              <div
-                key={apiKey.id}
-                className="d-data-row grid items-center"
-                style={{
-                  gridTemplateColumns: '1.5fr 2fr 1.5fr 1fr 1fr 0.75fr',
-                  padding: 'var(--d-data-py) var(--d-content-gap)',
-                }}
-                role="row"
-              >
-                {/* Name */}
-                <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
-                  <span style={{ color: 'var(--d-accent)', flexShrink: 0 }}>
-                    <KeyIcon size={16} />
-                  </span>
-                  <span
-                    className="text-sm font-medium"
-                    style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {apiKey.name}
-                    {apiKey.org_id ? (
-                      <span className="d-annotation" data-status="info" style={{ marginLeft: '0.5rem' }}>
-                        Org
+              <div key={apiKey.id} className="d-surface registry-key-card">
+                <div className="registry-key-card-header">
+                  <div className="registry-key-card-meta">
+                    <div className="flex items-center gap-2" style={{ minWidth: 0 }}>
+                      <span style={{ color: 'var(--d-accent)', flexShrink: 0 }}>
+                        <KeyIcon size={16} />
                       </span>
-                    ) : null}
-                  </span>
-                </div>
-
-                {/* Key (masked) */}
-                <span
-                  className="text-sm"
-                  style={{
-                    fontFamily: 'var(--d-font-mono, monospace)',
-                    color: 'var(--d-text-muted)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {maskKey(apiKey.id)}
-                </span>
-
-                {/* Scopes */}
-                <div className="flex items-center gap-1 flex-wrap">
-                  {apiKey.scopes.map((scope) => (
-                    <span key={scope} className="d-annotation">
-                      {scope}
+                      <span
+                        className="text-sm font-medium"
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {apiKey.name}
+                        {apiKey.org_id ? (
+                          <span className="d-annotation" data-status="info" style={{ marginLeft: '0.5rem' }}>
+                            Org
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                    <span
+                      className="text-sm"
+                      style={{
+                        fontFamily: 'var(--d-font-mono, monospace)',
+                        color: 'var(--d-text-muted)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {maskKey(apiKey.id)}
                     </span>
-                  ))}
+                  </div>
+
+                  <div className="registry-key-card-scopes">
+                    {apiKey.scopes.map((scope) => (
+                      <span key={scope} className="d-annotation">
+                        {scope}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Created */}
-                <span
-                  className="text-xs"
-                  style={{ color: 'var(--d-text-muted)' }}
-                >
-                  {formatDate(apiKey.created_at)}
-                </span>
+                <div className="registry-key-card-footer">
+                  <div className="registry-key-card-dates">
+                    <span>Created {formatDate(apiKey.created_at)}</span>
+                    <span>Last used {formatDate(apiKey.last_used_at)}</span>
+                  </div>
 
-                {/* Last Used */}
-                <span
-                  className="text-xs"
-                  style={{ color: 'var(--d-text-muted)' }}
-                >
-                  {formatDate(apiKey.last_used_at)}
-                </span>
-
-                {/* Actions */}
-                <div className="flex items-center gap-1">
-                  <CopyButton text={maskKey(apiKey.id)} />
-                  <button
-                    type="button"
-                    className="d-interactive"
-                    data-variant="ghost"
-                    onClick={() => handleRevoke(apiKey.id)}
-                    disabled={revokingId === apiKey.id}
-                    style={{ padding: '0.25rem', color: 'var(--d-error)' }}
-                    aria-label="Revoke key"
-                  >
-                    <TrashIcon size={14} />
-                  </button>
+                  <div className="registry-inline-actions">
+                    <CopyButton text={maskKey(apiKey.id)} />
+                    <button
+                      type="button"
+                      className="d-interactive"
+                      data-variant="ghost"
+                      onClick={() => handleRevoke(apiKey.id)}
+                      disabled={revokingId === apiKey.id}
+                      style={{ padding: '0.25rem', color: 'var(--d-error)' }}
+                      aria-label="Revoke key"
+                    >
+                      <TrashIcon size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -44,8 +44,8 @@ export default async function AdminOrganizationsPage({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
+    <div className="registry-page-stack">
+      <div className="registry-page-intro">
         <h3 className="text-lg font-semibold">Organizations</h3>
         <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
           Inspect seat footprint, package mix, approval posture, and recent usage across Team and Enterprise customers.
@@ -53,8 +53,8 @@ export default async function AdminOrganizationsPage({
       </div>
 
       <section className="d-section" data-density="compact">
-        <form method="get" action="/admin/organizations" className="d-surface" style={{ display: 'grid', gap: '0.75rem' }}>
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'minmax(220px, 1fr) minmax(180px, 240px) auto' }}>
+        <form method="get" action="/admin/organizations" className="d-surface registry-surface-stack">
+          <div className="registry-admin-filter-grid">
             <input
               className="d-control"
               name="q"
@@ -82,13 +82,7 @@ export default async function AdminOrganizationsPage({
 
       {organizations ? (
         <section className="d-section" data-density="compact">
-          <span
-            className="d-label block mb-4"
-            style={{
-              paddingLeft: '0.75rem',
-              borderLeft: '2px solid var(--d-accent)',
-            }}
-          >
+          <span className="d-label registry-anchor-label">
             Organization Footprint ({organizations.total})
           </span>
 

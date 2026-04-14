@@ -203,30 +203,6 @@ export function ContentCard({
               </a>
             </span>
           )}
-          {showcaseVerification && (
-            <span className="flex items-center gap-1 min-w-0">
-              <span className="opacity-40">|</span>
-              <span className="d-annotation">
-                smoke {showcaseVerification.smoke.passed ? 'green' : showcaseVerification.build.passed ? 'red' : 'pending'}
-              </span>
-            </span>
-          )}
-          {showcaseVerification && (
-            <span className="flex items-center gap-1 min-w-0">
-              <span className="opacity-40">|</span>
-              <span className="d-annotation">
-                drift {showcaseVerification.drift.signal}
-              </span>
-            </span>
-          )}
-          {intelligence?.quality_score != null && (
-            <span className="flex items-center gap-1 min-w-0">
-              <span className="opacity-40">|</span>
-              <span className="d-annotation">
-                quality {intelligence.quality_score}
-              </span>
-            </span>
-          )}
         </div>
 
         {editable && (

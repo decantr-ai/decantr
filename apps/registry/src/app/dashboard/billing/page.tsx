@@ -127,7 +127,7 @@ function TierUpgradeCard({
 }) {
   return (
     <div
-      className="d-surface"
+      className="d-surface registry-plan-card"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -355,7 +355,7 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       <h3 className="text-lg font-semibold">Billing &amp; Plans</h3>
 
       {error && (
@@ -366,23 +366,13 @@ export default function BillingPage() {
 
       {/* Current Usage */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Current Usage
         </span>
         <KPIGrid items={kpiItems} />
         <div
-          className="d-surface"
-          style={{
-            marginTop: '1rem',
-            display: 'grid',
-            gap: '0.75rem',
-          }}
+          className="d-surface registry-surface-stack"
+          style={{ marginTop: '1rem' }}
         >
           <div>
             <div className="text-sm" style={{ fontWeight: 600 }}>
@@ -416,11 +406,10 @@ export default function BillingPage() {
 
           {activeOrg && (
             <div
+              className="registry-surface-stack"
               style={{
                 paddingTop: '0.75rem',
                 borderTop: '1px solid var(--d-border)',
-                display: 'grid',
-                gap: '0.25rem',
               }}
             >
               <div className="text-sm" style={{ fontWeight: 600 }}>
@@ -468,19 +457,10 @@ export default function BillingPage() {
 
       {/* Plans */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Plans
         </span>
-        <div
-          className="d-surface"
-          style={{ marginBottom: '1rem', display: 'grid', gap: '0.5rem' }}
-        >
+        <div className="d-surface registry-surface-stack" style={{ marginBottom: '1rem' }}>
           <div className="text-sm" style={{ fontWeight: 600 }}>
             Plan model
           </div>
@@ -489,10 +469,7 @@ export default function BillingPage() {
             Enterprise adds a dedicated internal private registry workspace on top of the shared org package model.
           </div>
         </div>
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}
-        >
+        <div className="registry-plan-grid">
           {tiers.map((tier) => (
             <TierUpgradeCard
               key={tier.name}

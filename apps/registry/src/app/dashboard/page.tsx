@@ -206,18 +206,12 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       <h3 className="text-lg font-semibold">Dashboard</h3>
 
       {/* Overview */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Overview
         </span>
         <KPIGrid items={kpiItems} />
@@ -235,13 +229,7 @@ export default async function DashboardPage() {
 
       {/* Recent Activity */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Recent Activity
         </span>
         <ActivityFeed events={[]} />

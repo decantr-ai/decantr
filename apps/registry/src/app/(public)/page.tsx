@@ -110,8 +110,8 @@ function CardGridSkeleton() {
 
 export default function HomePage() {
   return (
-    <div className="registry-browser-shell">
-      <section className="entrance-fade flex flex-col gap-3" aria-labelledby="registry-home-heading">
+    <div className="registry-page-max registry-browser-shell">
+      <section className="registry-page-intro entrance-fade" aria-labelledby="registry-home-heading">
         <h1 id="registry-home-heading" className="mb-2 text-2xl font-semibold">
           Explore the Registry
         </h1>
@@ -124,7 +124,7 @@ export default function HomePage() {
       </section>
 
       <section className="d-section" data-density="comfortable" aria-labelledby="featured-registry-heading">
-        <span id="featured-registry-heading" className="d-label">
+        <span id="featured-registry-heading" className="d-label registry-anchor-label">
           Featured
         </span>
         <Suspense fallback={<CardGridSkeleton />}>
@@ -133,7 +133,7 @@ export default function HomePage() {
       </section>
 
       <section className="d-section" data-density="comfortable" aria-labelledby="registry-stats-heading">
-        <span id="registry-stats-heading" className="d-label">
+        <span id="registry-stats-heading" className="d-label registry-anchor-label">
           Registry Stats
         </span>
         <p className="max-w-3xl text-[var(--d-text-muted)]">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { CommercialEntitlements } from '@/lib/api';
@@ -296,9 +296,63 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
 
 export function Sidebar({ user }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const sidebarWidth = collapsed ? 64 : 240;
   const navGroups = buildNavGroups(user);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => {
+      const nextIsMobile = media.matches;
+      setIsMobile(nextIsMobile);
+      if (!nextIsMobile) {
+        setMobileOpen(false);
+      }
+    };
+
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handleToggle = () => {
+      if (window.matchMedia('(max-width: 767px)').matches) {
+        setMobileOpen((open) => !open);
+      }
+    };
+
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+      }
+    };
+
+    window.addEventListener('registry:sidebar-toggle', handleToggle as EventListener);
+    window.addEventListener('keydown', handleKeydown);
+    return () => {
+      window.removeEventListener('registry:sidebar-toggle', handleToggle as EventListener);
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isMobile && mobileOpen) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = previous;
+      };
+    }
+    return undefined;
+  }, [isMobile, mobileOpen]);
 
   async function handleSignOut() {
     try {
@@ -308,153 +362,139 @@ export function Sidebar({ user }: SidebarProps) {
     }
   }
 
+  const desktopCollapsed = !isMobile && collapsed;
+  const shellStyle = {
+    '--sidebar-width': `${sidebarWidth}px`,
+  } as CSSProperties;
+
   return (
-    <aside
-      className="flex flex-col shrink-0"
-      style={{
-        width: sidebarWidth,
-        background: 'var(--d-surface)',
-        borderRight: '1px solid var(--d-border)',
-        transition: 'width 200ms var(--d-easing)',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Brand + collapse */}
-      <div
-        className="flex items-center justify-between shrink-0"
-        style={{
-          height: 52,
-          padding: '0 1rem',
-          borderBottom: '1px solid var(--d-border)',
-        }}
+    <>
+      <button
+        type="button"
+        className="registry-shell-sidebar-overlay"
+        data-open={isMobile && mobileOpen}
+        onClick={() => setMobileOpen(false)}
+        aria-label="Close navigation"
+      />
+      <aside
+        className="registry-shell-sidebar-spacer"
+        data-mobile={isMobile}
+        style={shellStyle}
       >
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <span style={{ color: 'var(--d-accent)', display: 'inline-flex' }}>
-              <HexagonIcon size={18} />
-            </span>
-            <span className="font-semibold text-sm lum-brand">decantr</span>
-          </div>
-        )}
-        <button
-          className="d-interactive"
-          data-variant="ghost"
-          onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          style={{ padding: '0.25rem' }}
+        <div
+          className="registry-shell-sidebar-panel"
+          data-mobile={isMobile}
+          data-open={isMobile && mobileOpen}
+          data-collapsed={desktopCollapsed}
         >
-          {collapsed ? <PanelLeftOpenIcon size={16} /> : <PanelLeftCloseIcon size={16} />}
-        </button>
-      </div>
-
-      {/* Nav */}
-      <nav
-        className="flex flex-col flex-1"
-        style={{ padding: '0.5rem', overflowY: 'auto', gap: '0.5rem' }}
-      >
-        {navGroups.map((group) => (
-          <div key={group.group} className="flex flex-col" style={{ gap: 2 }}>
-            {!collapsed && (
-              <span
-                className="d-label"
-                style={{
-                  padding: '0.375rem 0.75rem',
-                  borderLeft: '2px solid var(--d-accent)',
-                  marginBottom: '0.25rem',
-                }}
-              >
-                {group.group}
-              </span>
+          <div className="registry-sidebar-brand">
+            {!desktopCollapsed && (
+              <div className="registry-sidebar-brand-mark">
+                <span style={{ color: 'var(--d-accent)', display: 'inline-flex' }}>
+                  <HexagonIcon size={18} />
+                </span>
+                <span className="font-semibold text-sm lum-brand">decantr</span>
+              </div>
             )}
-            {group.items.map((item) => {
-              const isActive =
-                item.href === '/dashboard'
-                  ? pathname === '/dashboard'
-                  : pathname === item.href || pathname.startsWith(item.href + '/');
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="d-interactive"
-                  data-variant="ghost"
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    padding: '0.375rem 0.75rem',
-                    textDecoration: 'none',
-                    fontSize: '0.875rem',
-                    background: isActive ? 'var(--d-surface-raised)' : undefined,
-                    borderColor: isActive ? 'var(--d-border)' : 'transparent',
-                  }}
-                  title={item.label}
-                >
-                  <Icon size={16} />
-                  {!collapsed && <span>{item.label}</span>}
-                </Link>
-              );
-            })}
+            <button
+              className="d-interactive"
+              data-variant="ghost"
+              onClick={() => {
+                if (isMobile) {
+                  setMobileOpen(false);
+                  return;
+                }
+                setCollapsed((c) => !c);
+              }}
+              aria-label={
+                isMobile
+                  ? 'Close navigation'
+                  : desktopCollapsed
+                  ? 'Expand sidebar'
+                  : 'Collapse sidebar'
+              }
+              style={{ padding: '0.25rem' }}
+            >
+              {isMobile ? (
+                <PanelLeftCloseIcon size={16} />
+              ) : desktopCollapsed ? (
+                <PanelLeftOpenIcon size={16} />
+              ) : (
+                <PanelLeftCloseIcon size={16} />
+              )}
+            </button>
           </div>
-        ))}
-      </nav>
 
-      {/* Footer — sign out */}
-      <div
-        style={{
-          borderTop: '1px solid var(--d-border)',
-          padding: '0.5rem',
-          marginTop: 'auto',
-        }}
-      >
-        {!collapsed && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.125rem',
-              padding: '0.5rem 0.75rem 0.625rem',
-              borderBottom: '1px solid var(--d-border)',
-              marginBottom: '0.5rem',
-            }}
-          >
-            <span className="text-sm" style={{ fontWeight: 600 }}>
-              {user.display_name || user.email.split('@')[0]}
-            </span>
-            <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
-              {user.tier === 'team'
-                ? 'Team workspace'
-                : user.tier === 'enterprise'
-                ? 'Enterprise workspace'
-                : user.tier === 'pro'
-                ? 'Pro private packages'
-                : 'Free plan'}
-            </span>
+          <nav className="registry-sidebar-nav">
+            {navGroups.map((group) => (
+              <div key={group.group} className="registry-sidebar-group">
+                {!desktopCollapsed && (
+                  <span className="d-label registry-sidebar-group-label">
+                    {group.group}
+                  </span>
+                )}
+                {group.items.map((item) => {
+                  const isActive =
+                    item.href === '/dashboard'
+                      ? pathname === '/dashboard'
+                      : pathname === item.href || pathname.startsWith(item.href + '/');
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="d-interactive registry-sidebar-item"
+                      data-variant="ghost"
+                      data-active={isActive}
+                      data-collapsed={desktopCollapsed}
+                      title={item.label}
+                      onClick={() => {
+                        if (isMobile) {
+                          setMobileOpen(false);
+                        }
+                      }}
+                    >
+                      <Icon size={16} />
+                      {!desktopCollapsed && <span>{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+
+          <div className="registry-sidebar-footer">
+            {!desktopCollapsed && (
+              <div className="registry-sidebar-user">
+                <span className="text-sm" style={{ fontWeight: 600 }}>
+                  {user.display_name || user.email.split('@')[0]}
+                </span>
+                <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
+                  {user.tier === 'team'
+                    ? 'Team workspace'
+                    : user.tier === 'enterprise'
+                    ? 'Enterprise workspace'
+                    : user.tier === 'pro'
+                    ? 'Pro private packages'
+                    : 'Free plan'}
+                </span>
+              </div>
+            )}
+            <button
+              type="button"
+              className="d-interactive registry-sidebar-item"
+              data-variant="ghost"
+              data-collapsed={desktopCollapsed}
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <LogOutIcon size={16} />
+              {!desktopCollapsed && <span>Sign out</span>}
+            </button>
           </div>
-        )}
-        <button
-          type="button"
-          className="d-interactive"
-          data-variant="ghost"
-          onClick={handleSignOut}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: '0.375rem 0.75rem',
-            fontSize: '0.875rem',
-          }}
-          aria-label="Sign out"
-          title="Sign out"
-        >
-          <LogOutIcon size={16} />
-          {!collapsed && <span>Sign out</span>}
-        </button>
-      </div>
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 }

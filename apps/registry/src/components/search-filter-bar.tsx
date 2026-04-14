@@ -206,8 +206,7 @@ export function SearchFilterBar({
           <select
             value={currentIntelligenceSource}
             onChange={handleIntelligenceSourceChange}
-            className="d-control"
-            style={{ minWidth: '9rem' }}
+            className="d-control registry-search-select"
           >
             <option value="">All sources</option>
             {CONTENT_INTELLIGENCE_SOURCES.map((source) => (
@@ -228,8 +227,7 @@ export function SearchFilterBar({
             <select
               value={currentSort}
               onChange={handleSortChange}
-              className="d-control"
-              style={{ minWidth: '10rem' }}
+              className="d-control registry-search-select"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

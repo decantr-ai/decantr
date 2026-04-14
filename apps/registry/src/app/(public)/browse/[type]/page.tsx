@@ -83,8 +83,8 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   }
 
   return (
-    <div className="registry-browser-shell">
-      <div className="flex flex-col gap-2">
+    <div className="registry-page-max registry-browser-shell">
+      <div className="registry-page-intro">
         <h1 className="text-2xl font-bold">{CONTENT_TYPE_LABELS[type]}</h1>
         <p className="text-sm text-d-muted">{CONTENT_TYPE_DESCRIPTIONS[type]}</p>
       </div>

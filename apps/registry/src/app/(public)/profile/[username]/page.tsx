@@ -43,7 +43,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const tierStyle = TIER_STYLES[profile.tier] ?? TIER_STYLES.free;
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto w-full">
+    <div className="registry-page-max registry-page-stack">
       {/* Profile header */}
       <section className="d-section flex flex-col sm:flex-row items-start gap-6 pb-6 border-b border-d-border">
         {/* Avatar */}
@@ -107,7 +107,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
       {/* Published content */}
       <section>
-        <h2 className="d-label border-l-2 border-d-accent pl-2 mb-4">
+        <h2 className="d-label registry-anchor-label">
           Published Content
         </h2>
         <ContentCardGrid
@@ -118,7 +118,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
       {/* Activity feed placeholder */}
       <section>
-        <h2 className="d-label border-l-2 border-d-accent pl-2 mb-4">
+        <h2 className="d-label registry-anchor-label">
           Recent Activity
         </h2>
         <div className="flex flex-col items-center justify-center py-12 text-center">

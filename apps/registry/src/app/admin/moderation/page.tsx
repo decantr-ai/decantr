@@ -154,7 +154,7 @@ export default async function ModerationQueuePage({
 
   return (
     <div className="d-section" data-density="compact">
-      <div className="flex flex-col" style={{ gap: '1.25rem' }}>
+      <div className="registry-page-stack">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">

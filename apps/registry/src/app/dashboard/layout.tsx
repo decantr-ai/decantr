@@ -34,7 +34,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div className="registry-shell-root">
       <Sidebar
         user={{
           email,
@@ -55,12 +55,9 @@ export default async function DashboardLayout({
         }}
       />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="registry-shell-main">
         <DashboardHeader />
-        <main
-          className="entrance-fade"
-          style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}
-        >
+        <main className="registry-shell-body entrance-fade">
           {children}
         </main>
       </div>

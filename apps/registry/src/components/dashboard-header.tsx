@@ -21,6 +21,25 @@ function SearchIcon({ size = 14 }: { size?: number }) {
   );
 }
 
+function MenuIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="4" x2="20" y1="7" y2="7" />
+      <line x1="4" x2="20" y1="12" y2="12" />
+      <line x1="4" x2="20" y1="17" y2="17" />
+    </svg>
+  );
+}
+
 function toLabel(seg: string): string {
   return seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
 }
@@ -41,24 +60,33 @@ export function DashboardHeader() {
     }
   }
 
+  function toggleSidebar() {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('registry:sidebar-toggle'));
+    }
+  }
+
   return (
-    <header
-      className="flex items-center justify-between shrink-0"
-      style={{
-        height: 52,
-        padding: '0 1.5rem',
-        borderBottom: '1px solid var(--d-border)',
-      }}
-    >
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1" aria-label="Breadcrumb">
+    <header className="registry-shell-header">
+      <div className="registry-shell-header-main">
+        <button
+          type="button"
+          className="d-interactive registry-shell-mobile-toggle"
+          data-variant="ghost"
+          onClick={toggleSidebar}
+          aria-label="Open navigation"
+        >
+          <MenuIcon size={16} />
+        </button>
+
+        <nav className="registry-shell-breadcrumb" aria-label="Breadcrumb">
         {breadcrumb.map((crumb, i) => (
-          <span key={crumb.path} className="flex items-center gap-1">
+          <span key={crumb.path} className="flex items-center gap-1 min-w-0">
             {i > 0 && (
               <span style={{ color: 'var(--d-text-muted)' }}>/</span>
             )}
             <span
-              className="text-sm"
+              className="registry-shell-breadcrumb-segment text-sm"
               style={{
                 color:
                   i === breadcrumb.length - 1
@@ -70,10 +98,10 @@ export function DashboardHeader() {
             </span>
           </span>
         ))}
-      </nav>
+        </nav>
+      </div>
 
-      {/* Right side: theme toggle + search */}
-      <div className="flex items-center gap-2">
+      <div className="registry-shell-header-actions">
         <ThemeToggle compact />
         <button
           type="button"
@@ -89,9 +117,9 @@ export function DashboardHeader() {
           }}
         >
           <SearchIcon size={14} />
-          <span>Search</span>
+          <span className="registry-shell-search-label">Search</span>
           <kbd
-            className="text-xs"
+            className="registry-shell-search-kbd text-xs"
             style={{ opacity: 0.5, fontFamily: 'inherit' }}
           >
             &#8984;K

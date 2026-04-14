@@ -193,15 +193,15 @@ export default function ContentNewPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       <h3 className="text-lg font-semibold">Publish Content</h3>
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        className="registry-form-grid-split"
       >
         {/* Left: form card */}
-        <div className="d-surface" style={{ maxWidth: '40rem' }}>
+        <div className="d-surface registry-surface-stack">
           {error && (
             <div
               className="d-annotation"
@@ -213,18 +213,12 @@ export default function ContentNewPage() {
           )}
 
           {/* Basic Info */}
-          <section className="flex flex-col gap-4">
-            <span
-              className="d-label block mb-2"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+          <section className="registry-form-grid">
+            <span className="d-label registry-anchor-label">
               Basic Info
             </span>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="type">
                 Type
               </label>
@@ -242,7 +236,7 @@ export default function ContentNewPage() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="name">
                 Name
               </label>
@@ -256,7 +250,7 @@ export default function ContentNewPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="slug">
                 Slug
               </label>
@@ -273,7 +267,7 @@ export default function ContentNewPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="target">
                 Package Target
               </label>
@@ -294,7 +288,7 @@ export default function ContentNewPage() {
             </div>
 
             {form.target === 'organization' && me?.organizations.length ? (
-              <div className="flex flex-col gap-1">
+              <div className="registry-form-grid">
                 <label className="text-sm font-semibold" htmlFor="org_slug">
                   Organization
                 </label>
@@ -313,7 +307,7 @@ export default function ContentNewPage() {
               </div>
             ) : null}
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="visibility">
                 Visibility
               </label>
@@ -339,20 +333,14 @@ export default function ContentNewPage() {
 
           {/* Details */}
           <section
-            className="flex flex-col gap-4"
+            className="registry-form-grid"
             style={{ marginTop: '1.5rem' }}
           >
-            <span
-              className="d-label block mb-2"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               Details
             </span>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label
                 className="text-sm font-semibold"
                 htmlFor="description"
@@ -369,7 +357,7 @@ export default function ContentNewPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="version">
                 Version
               </label>
@@ -383,7 +371,7 @@ export default function ContentNewPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="tags">
                 Tags
               </label>
@@ -397,7 +385,7 @@ export default function ContentNewPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="json-data">
                 JSON Data
               </label>
@@ -424,7 +412,7 @@ export default function ContentNewPage() {
 
           {/* Actions */}
           <div
-            className="flex items-center gap-3"
+            className="registry-inline-actions"
             style={{ marginTop: '1.5rem' }}
           >
             <button
@@ -449,14 +437,8 @@ export default function ContentNewPage() {
         </div>
 
         {/* Right: JSON preview */}
-        <div style={{ maxWidth: '40rem' }}>
-          <span
-            className="d-label block mb-3"
-            style={{
-              paddingLeft: '0.75rem',
-              borderLeft: '2px solid var(--d-accent)',
-            }}
-          >
+        <div className="registry-surface-stack">
+          <span className="d-label registry-anchor-label">
             Preview
           </span>
           <JsonViewer data={preview} title="Preview" />
