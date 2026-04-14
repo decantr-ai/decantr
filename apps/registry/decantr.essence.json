@@ -163,6 +163,15 @@
               "team-member-row"
             ],
             "route": "/dashboard/team"
+          },
+          {
+            "id": "governance",
+            "layout": [
+              "kpi-grid",
+              "activity-feed",
+              "content-card-grid"
+            ],
+            "route": "/dashboard/governance"
           }
         ]
       },
@@ -183,6 +192,14 @@
               "moderation-queue-item"
             ],
             "route": "/admin/moderation"
+          },
+          {
+            "id": "commercial-reports",
+            "layout": [
+              "kpi-grid",
+              "activity-feed"
+            ],
+            "route": "/admin/reports"
           },
           {
             "id": "moderation-detail",
@@ -263,9 +280,17 @@
         "section": "user-dashboard",
         "page": "team"
       },
+      "/dashboard/governance": {
+        "section": "user-dashboard",
+        "page": "governance"
+      },
       "/admin/moderation": {
         "section": "admin-moderation",
         "page": "moderation-queue"
+      },
+      "/admin/reports": {
+        "section": "admin-moderation",
+        "page": "commercial-reports"
       },
       "/dashboard/billing": {
         "section": "user-dashboard",

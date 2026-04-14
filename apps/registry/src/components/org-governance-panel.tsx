@@ -1,76 +1,181 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import Link from 'next/link';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { KPIGrid } from '@/components/kpi-grid';
+import {
+  api,
+  type DashboardContentItem,
+  type MeResponse,
+  type OrgAuditEntry,
+  type OrgPolicy,
+  type OrgUsageSummary,
+} from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
-import { api, type DashboardContentItem, type MeResponse, type OrgPolicy } from '@/lib/api';
+
+const AUDIT_SCOPE_OPTIONS = [
+  { value: '', label: 'All scopes' },
+  { value: 'organization', label: 'Organization' },
+  { value: 'content', label: 'Content' },
+  { value: 'membership', label: 'Membership' },
+  { value: 'billing', label: 'Billing' },
+] as const;
+
+const AUDIT_ACTION_OPTIONS = [
+  { value: '', label: 'All actions' },
+  { value: 'policy.updated', label: 'Policy updated' },
+  { value: 'member.invited', label: 'Member invited' },
+  { value: 'member.role_updated', label: 'Role updated' },
+  { value: 'member.removed', label: 'Member removed' },
+  { value: 'org_content.published', label: 'Org package published' },
+  { value: 'org_content.approved', label: 'Org package approved' },
+  { value: 'org_content.rejected', label: 'Org package rejected' },
+] as const;
+
+async function getAccessToken() {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? '';
+}
+
+function formatTimestamp(value: string) {
+  return new Date(value).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function formatActionLabel(action: string) {
+  return action
+    .split('.')
+    .map((part) => part.replace(/_/g, ' '))
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' · ');
+}
 
 export function OrgGovernancePanel() {
   const [me, setMe] = useState<MeResponse | null>(null);
+  const [orgSlug, setOrgSlug] = useState('');
   const [policy, setPolicy] = useState<OrgPolicy | null>(null);
   const [approvals, setApprovals] = useState<DashboardContentItem[]>([]);
+  const [auditEntries, setAuditEntries] = useState<OrgAuditEntry[]>([]);
+  const [usage, setUsage] = useState<OrgUsageSummary['usage'] | null>(null);
+  const [auditScope, setAuditScope] = useState('');
+  const [auditAction, setAuditAction] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  async function load() {
+  const organizations = me?.organizations ?? [];
+  const activeOrg = organizations.find((org) => org.slug === orgSlug) ?? organizations[0] ?? null;
+  const canManage = Boolean(activeOrg && ['owner', 'admin'].includes(activeOrg.role));
+
+  const governanceKpis = useMemo(() => {
+    if (!usage) {
+      return [];
+    }
+
+    return [
+      { label: 'Pending approvals', value: usage.pending_approvals },
+      { label: 'Private packages', value: usage.private_packages },
+      { label: 'Seats used', value: usage.members },
+      { label: 'Approval actions (30d)', value: usage.approval_actions_30d },
+    ];
+  }, [usage]);
+
+  async function loadProfile() {
     try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token ?? '';
-      if (!token) return;
+      setError(null);
+      const token = await getAccessToken();
+      if (!token) {
+        setMe(null);
+        setOrgSlug('');
+        return;
+      }
 
       const profile = await api.getMe(token);
       setMe(profile);
-      const activeOrg = profile.organizations[0] ?? null;
-      if (!activeOrg) return;
+      setOrgSlug((current) => {
+        if (current && profile.organizations.some((org) => org.slug === current)) {
+          return current;
+        }
+        return profile.organizations[0]?.slug ?? '';
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load organization governance');
+    }
+  }
 
-      const [orgPolicy, approvalsResult] = await Promise.all([
-        api.getOrgPolicy(token, activeOrg.slug).catch(() => null),
-        api.getOrgApprovals(token, activeOrg.slug, { limit: 10, offset: 0 }).catch(() => null),
+  async function loadOrgState(nextOrgSlug: string) {
+    if (!nextOrgSlug) {
+      setPolicy(null);
+      setApprovals([]);
+      setAuditEntries([]);
+      setUsage(null);
+      return;
+    }
+
+    try {
+      setError(null);
+      const token = await getAccessToken();
+      if (!token) {
+        return;
+      }
+
+      const [orgPolicy, approvalsResult, auditResult, usageResult] = await Promise.all([
+        api.getOrgPolicy(token, nextOrgSlug).catch(() => null),
+        api.getOrgApprovals(token, nextOrgSlug, { limit: 12, offset: 0 }).catch(() => null),
+        api
+          .getOrgAuditLog(token, nextOrgSlug, {
+            limit: 12,
+            offset: 0,
+            scope: auditScope || undefined,
+            action: auditAction || undefined,
+          })
+          .catch(() => null),
+        api.getOrgUsage(token, nextOrgSlug).catch(() => null),
       ]);
+
       setPolicy(orgPolicy);
       setApprovals(Array.isArray(approvalsResult) ? approvalsResult : approvalsResult?.items ?? []);
+      setAuditEntries(auditResult?.items ?? []);
+      setUsage(usageResult?.usage ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load organization governance');
     }
   }
 
   useEffect(() => {
-    load();
+    void loadProfile();
   }, []);
 
-  const activeOrg = me?.organizations[0] ?? null;
-  const canManage =
-    activeOrg && ['owner', 'admin'].includes(activeOrg.role);
+  useEffect(() => {
+    if (!orgSlug) {
+      setPolicy(null);
+      setApprovals([]);
+      setAuditEntries([]);
+      setUsage(null);
+      return;
+    }
 
-  if (!me?.entitlements.org_collaboration || !activeOrg) {
-    return (
-      <div className="d-surface">
-        <div className="flex flex-col gap-2">
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Organization Governance</h3>
-          <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-            Team governance becomes available once this account is attached to an active organization plan.
-          </p>
-        </div>
-      </div>
-    );
-  }
+    void loadOrgState(orgSlug);
+  }, [orgSlug, auditScope, auditAction]);
 
   function handlePolicyChange(nextValue: boolean) {
     if (!activeOrg) return;
     setError(null);
+
     startTransition(async () => {
       try {
-        const supabase = createClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
+        const token = await getAccessToken();
         const updated = await api.updateOrgPolicy(token, activeOrg.slug, {
           require_public_content_approval: nextValue,
         });
         setPolicy(updated);
+        await loadOrgState(activeOrg.slug);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to update organization policy');
       }
@@ -80,34 +185,96 @@ export function OrgGovernancePanel() {
   function handleApproval(contentId: string, decision: 'approve' | 'reject') {
     if (!activeOrg) return;
     setError(null);
+
     startTransition(async () => {
       try {
-        const supabase = createClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
+        const token = await getAccessToken();
         if (decision === 'approve') {
           await api.approveOrgContent(token, activeOrg.slug, contentId);
         } else {
           await api.rejectOrgContent(token, activeOrg.slug, contentId);
         }
-        await load();
+        await loadOrgState(activeOrg.slug);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to update approval');
+        setError(err instanceof Error ? err.message : 'Failed to update approval queue');
       }
     });
   }
 
-  return (
-    <div className="flex flex-col gap-4">
+  if (!me?.entitlements.org_collaboration || organizations.length === 0) {
+    return (
       <div className="d-surface">
         <div className="flex flex-col gap-3">
           <div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Organization Governance</h3>
+            <h3 className="text-lg font-semibold">Organization Governance</h3>
             <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
-              {activeOrg.name} ({activeOrg.slug}) · {activeOrg.role}
+              Governance becomes available once this account is attached to an active Team or Enterprise organization.
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard/billing" className="d-interactive" data-variant="primary">
+              Review plans
+            </Link>
+            <Link href="/dashboard/team" className="d-interactive" data-variant="ghost">
+              Open team workspace
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <section className="d-surface">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-col gap-2">
+              <div>
+                <h3 className="text-lg font-semibold">Organization Governance</h3>
+                <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                  Manage approval rules, watch pending org packages, and inspect the audit trail for your shared workspace.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="d-annotation" data-status="info">
+                  {activeOrg?.name ?? 'Organization'}
+                </span>
+                <span className="d-annotation" data-status="success">
+                  {activeOrg?.role ?? 'member'}
+                </span>
+                <span className="d-annotation" data-status="warning">
+                  {activeOrg?.tier ?? 'team'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2" style={{ minWidth: '16rem' }}>
+              <label className="text-sm font-semibold" htmlFor="governance-org">
+                Active organization
+              </label>
+              <select
+                id="governance-org"
+                className="d-control"
+                value={activeOrg?.slug ?? ''}
+                onChange={(event) => setOrgSlug(event.target.value)}
+              >
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.slug}>
+                    {org.name} ({org.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/dashboard/team" className="d-interactive" data-variant="ghost">
+              Manage members
+            </Link>
+            <Link href="/dashboard/content" className="d-interactive" data-variant="ghost">
+              Review packages
+            </Link>
           </div>
 
           {error ? (
@@ -115,11 +282,28 @@ export function OrgGovernancePanel() {
               {error}
             </div>
           ) : null}
+        </div>
+      </section>
+
+      {governanceKpis.length > 0 ? (
+        <section className="d-section" data-density="compact">
+          <KPIGrid items={governanceKpis} />
+        </section>
+      ) : null}
+
+      <section className="d-surface">
+        <div className="flex flex-col gap-3">
+          <div>
+            <h4 className="text-base font-semibold">Publishing policy</h4>
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              Decide whether public org packages must stop in an approval queue before they become visible.
+            </p>
+          </div>
 
           <label
             className="flex items-center justify-between gap-4"
             style={{
-              padding: '0.75rem 0',
+              padding: '0.875rem 0',
               borderTop: '1px solid var(--d-border)',
               borderBottom: '1px solid var(--d-border)',
             }}
@@ -129,23 +313,34 @@ export function OrgGovernancePanel() {
                 Require approval for public org packages
               </span>
               <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                When enabled, new public organization packages enter a pending queue until an org admin approves them.
+                New public org packages remain pending until an owner or admin approves them.
               </span>
             </div>
             <input
               type="checkbox"
               checked={policy?.require_public_content_approval === true}
               disabled={!canManage || isPending}
-              onChange={(e) => handlePolicyChange(e.target.checked)}
+              onChange={(event) => handlePolicyChange(event.target.checked)}
             />
           </label>
-        </div>
-      </div>
 
-      <div className="d-surface">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h4 style={{ fontSize: '1rem', fontWeight: 600 }}>Pending Approvals</h4>
+          {!canManage ? (
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Only owners and admins can change organization policy.
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="d-surface">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h4 className="text-base font-semibold">Pending approvals</h4>
+              <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                Review org packages waiting on a publish decision.
+              </p>
+            </div>
             <span className="d-annotation" data-status="info">
               {approvals.length} pending
             </span>
@@ -153,28 +348,27 @@ export function OrgGovernancePanel() {
 
           {approvals.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              No organization packages are waiting for approval.
+              No org packages are waiting for approval right now.
             </p>
           ) : (
             approvals.map((item) => (
               <div
                 key={item.id}
+                className="flex flex-wrap items-center justify-between gap-3"
                 style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: '1rem',
-                  padding: '0.75rem 0',
+                  paddingTop: '0.875rem',
                   borderTop: '1px solid var(--d-border)',
                 }}
               >
                 <div className="flex flex-col gap-1" style={{ minWidth: 0 }}>
-                  <div className="text-sm" style={{ fontWeight: 600 }}>
+                  <span className="text-sm" style={{ fontWeight: 600 }}>
                     {item.name || item.slug}
-                  </div>
-                  <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
                     {item.type} · {item.namespace} · {item.visibility}
-                  </div>
+                  </span>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -199,7 +393,81 @@ export function OrgGovernancePanel() {
             ))
           )}
         </div>
-      </div>
+      </section>
+
+      <section className="d-surface">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h4 className="text-base font-semibold">Audit trail</h4>
+              <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                Filter the recent governance history for member changes, content decisions, and policy updates.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <select
+                className="d-control"
+                value={auditScope}
+                onChange={(event) => setAuditScope(event.target.value)}
+                style={{ minWidth: '10rem' }}
+              >
+                {AUDIT_SCOPE_OPTIONS.map((option) => (
+                  <option key={option.value || 'all'} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="d-control"
+                value={auditAction}
+                onChange={(event) => setAuditAction(event.target.value)}
+                style={{ minWidth: '12rem' }}
+              >
+                {AUDIT_ACTION_OPTIONS.map((option) => (
+                  <option key={option.value || 'all'} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {auditEntries.length === 0 ? (
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              No audit events match the current filters.
+            </p>
+          ) : (
+            auditEntries.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex flex-col gap-1"
+                style={{
+                  paddingTop: '0.875rem',
+                  borderTop: '1px solid var(--d-border)',
+                }}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm" style={{ fontWeight: 600 }}>
+                    {formatActionLabel(entry.action)}
+                  </span>
+                  <span className="d-annotation" data-status="info">
+                    {entry.scope}
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    {formatTimestamp(entry.created_at)}
+                  </span>
+                </div>
+                <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  {entry.target_type}
+                  {entry.target_id ? ` · ${entry.target_id}` : ''}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }

@@ -321,10 +321,16 @@ export const api = {
     apiFetch<void>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'DELETE' }),
   updateOrgMemberRole: (token: string, orgSlug: string, userId: string, body: { role: string }) =>
     apiFetch<any>(`/orgs/${orgSlug}/members/${userId}`, { token, method: 'PATCH', body: JSON.stringify(body) }),
-  getOrgAuditLog: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
+  getOrgAuditLog: (
+    token: string,
+    orgSlug: string,
+    params?: { limit?: number; offset?: number; scope?: string; action?: string },
+  ) => {
     const searchParams = new URLSearchParams();
     if (params?.limit != null) searchParams.set('limit', String(params.limit));
     if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    if (params?.scope) searchParams.set('scope', params.scope);
+    if (params?.action) searchParams.set('action', params.action);
     const query = searchParams.toString();
     return apiFetch<{ total: number; limit: number; offset: number; items: OrgAuditEntry[] }>(`/orgs/${orgSlug}/audit${query ? `?${query}` : ''}`, { token });
   },

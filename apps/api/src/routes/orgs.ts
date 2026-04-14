@@ -9,6 +9,7 @@ import { recordAuditEvent } from '../lib/audit-log.js';
 import { recordUsageEvent } from '../lib/usage-metering.js';
 
 export const orgRoutes = new Hono<Env>();
+const AUDIT_SCOPES = ['user', 'organization', 'billing', 'content', 'membership'] as const;
 
 orgRoutes.use('/*', requireAuth());
 
@@ -19,7 +20,7 @@ async function requireOrgMembership(
   const client = createAdminClient();
   const { data: org } = await client
     .from('organizations')
-    .select('id, name, slug, tier, seat_limit')
+    .select('id, name, slug, tier, seat_limit, created_at')
     .eq('slug', slug)
     .single();
 
@@ -620,6 +621,8 @@ orgRoutes.get('/orgs/:slug/audit', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const scope = AUDIT_SCOPES.find((value) => value === c.req.query('scope'));
+  const action = c.req.query('action');
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -630,10 +633,20 @@ orgRoutes.get('/orgs/:slug/audit', async (c) => {
     return c.json({ error: 'Not a member of this organization' }, 403);
   }
 
-  const { data, error, count } = await client
+  let query = client
     .from('audit_logs')
     .select('id, actor_user_id, org_id, scope, action, target_type, target_id, details, created_at', { count: 'exact' })
-    .eq('org_id', org.id)
+    .eq('org_id', org.id);
+
+  if (scope) {
+    query = query.eq('scope', scope);
+  }
+
+  if (action) {
+    query = query.eq('action', action);
+  }
+
+  const { data, error, count } = await query
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 

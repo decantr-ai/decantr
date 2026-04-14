@@ -262,13 +262,15 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
     { href: '/dashboard', icon: LayoutDashboardIcon, label: 'Overview' },
     { href: '/dashboard/content', icon: PackageIcon, label: 'Content' },
     { href: '/dashboard/api-keys', icon: KeyIcon, label: 'API Keys' },
-    { href: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' },
     { href: '/dashboard/billing', icon: CreditCardIcon, label: 'Billing' },
   ];
 
   if (user.entitlements.org_collaboration || user.organizations.length > 0) {
     dashboardItems.push({ href: '/dashboard/team', icon: UsersIcon, label: 'Team' });
+    dashboardItems.push({ href: '/dashboard/governance', icon: ShieldIcon, label: 'Governance' });
   }
+
+  dashboardItems.push({ href: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' });
 
   return [
     {

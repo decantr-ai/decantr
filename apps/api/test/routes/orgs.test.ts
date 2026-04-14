@@ -48,6 +48,7 @@ type AdminClientOptions = {
   privateContentCount?: number;
   approvalCount?: number;
   usageRows?: any[];
+  auditLogRows?: any[];
   policyResult?: { data: any; error: any };
   contentListResult?: { data: any[]; error: any; count: number | null };
   userLookupResult?: { data: any; error: any };
@@ -95,6 +96,26 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
 
         if (table === 'org_members' && options.membersListResult) {
           return options.membersListResult;
+        }
+
+        if (table === 'audit_logs') {
+          const rows = (options.auditLogRows ?? []).filter((row) => {
+            if (state.filters.org_id && row.org_id !== state.filters.org_id) {
+              return false;
+            }
+            if (state.filters.scope && row.scope !== state.filters.scope) {
+              return false;
+            }
+            if (state.filters.action && row.action !== state.filters.action) {
+              return false;
+            }
+            return true;
+          });
+          return {
+            data: rows,
+            error: null,
+            count: rows.length,
+          };
         }
 
         return { data: [], error: null };
@@ -152,7 +173,25 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
         order: vi.fn(() => {
           return chain;
         }),
-        range: vi.fn(async () => options.contentListResult ?? { data: [], error: null, count: 0 }),
+        range: vi.fn(async () => {
+          if (table === 'audit_logs') {
+            const rows = (options.auditLogRows ?? []).filter((row) => {
+              if (state.filters.org_id && row.org_id !== state.filters.org_id) {
+                return false;
+              }
+              if (state.filters.scope && row.scope !== state.filters.scope) {
+                return false;
+              }
+              if (state.filters.action && row.action !== state.filters.action) {
+                return false;
+              }
+              return true;
+            });
+            return { data: rows, error: null, count: rows.length };
+          }
+
+          return options.contentListResult ?? { data: [], error: null, count: 0 };
+        }),
         insert: vi.fn((payload: Record<string, unknown>) => {
           state.insertPayload = payload;
           return chain;
@@ -408,6 +447,61 @@ describe('Org routes', () => {
       api_requests_30d: 100,
       org_package_publishes_30d: 3,
       approval_actions_30d: 2,
+    });
+  });
+
+  it('filters organization audit logs by scope and action', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: {
+          id: 'org-1',
+          name: 'Acme',
+          slug: 'acme',
+          tier: 'team',
+          seat_limit: 5,
+        },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'admin' },
+        error: null,
+      },
+      auditLogRows: [
+        {
+          id: 'audit-1',
+          actor_user_id: 'user-1',
+          org_id: 'org-1',
+          scope: 'content',
+          action: 'org_content.approved',
+          target_type: 'pattern',
+          target_id: 'content-1',
+          details: {},
+          created_at: '2026-04-13T10:00:00.000Z',
+        },
+        {
+          id: 'audit-2',
+          actor_user_id: 'user-1',
+          org_id: 'org-1',
+          scope: 'membership',
+          action: 'member.invited',
+          target_type: 'org_member',
+          target_id: 'user-2',
+          details: {},
+          created_at: '2026-04-13T09:00:00.000Z',
+        },
+      ],
+    }));
+
+    const res = await app.request('/v1/orgs/acme/audit?scope=content&action=org_content.approved');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items).toHaveLength(1);
+    expect(json.items[0]).toMatchObject({
+      id: 'audit-1',
+      scope: 'content',
+      action: 'org_content.approved',
     });
   });
 

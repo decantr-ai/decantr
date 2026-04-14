@@ -36,12 +36,20 @@ The first implementation waves after this reset have already delivered:
 - durable API usage metering plus publish/approval usage event tracking
 - authenticated private package consumption for owners, org members, and org-scoped API keys
 - private package discovery foundations through hosted dashboard search/list flows
+- a dedicated governance workspace with approval review, policy control, and filterable org audit history
 
 That means the remaining work is no longer “introduce commercial structure.” It is:
 
 - deepen billing and usage fidelity
 - deepen governance and approval product surfaces
 - decide how much enterprise/private-registry scope should be implemented versus explicitly deferred
+
+The latest governance wave also clarifies the product boundary inside the registry app:
+
+- `Settings` is personal account state
+- `Team` is member and seat collaboration
+- `Governance` is org policy, approval workflow, and audit history
+- `Admin` is platform moderation and commercial reporting
 
 ---
 

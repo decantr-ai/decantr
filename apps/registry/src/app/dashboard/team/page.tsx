@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 import {
   inviteMemberAction,
@@ -497,6 +498,22 @@ export default function TeamPage() {
           </div>
         </section>
       ) : null}
+
+      <section className="d-section" data-density="compact">
+        <div className="d-surface flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm" style={{ fontWeight: 600 }}>
+              Governance workflow
+            </span>
+            <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Review publish approvals, policy, and the audit trail from the dedicated governance workspace.
+            </span>
+          </div>
+          <Link href="/dashboard/governance" className="d-interactive" data-variant="primary">
+            Open governance
+          </Link>
+        </div>
+      </section>
 
       {/* Members */}
       <section className="d-section" data-density="compact">
