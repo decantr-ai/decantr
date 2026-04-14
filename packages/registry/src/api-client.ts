@@ -345,6 +345,28 @@ export class RegistryAPIClient {
     return this.request<ContentListResponse<OwnedContentSummary>>('/my/content');
   }
 
+  async getAccessiblePrivateContent(
+    params?: {
+      type?: string;
+      scope?: 'all' | 'personal' | 'organization';
+      q?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<ContentListResponse<OwnedContentSummary>> {
+    const searchParams = new URLSearchParams();
+    if (params?.type) searchParams.set('type', params.type);
+    if (params?.scope) searchParams.set('scope', params.scope);
+    if (params?.q) searchParams.set('q', params.q);
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    const query = searchParams.toString();
+
+    return this.request<ContentListResponse<OwnedContentSummary>>(
+      `/private/content${query ? `?${query}` : ''}`,
+    );
+  }
+
   // ── Schema ──
 
   async getSchema(name: string = 'essence.v3.json'): Promise<Record<string, unknown>> {

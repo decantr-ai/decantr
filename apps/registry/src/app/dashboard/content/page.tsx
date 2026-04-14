@@ -42,7 +42,14 @@ function PackageIcon({ size = 48 }: { size?: number }) {
   );
 }
 
-export default async function ContentPage() {
+interface ContentPageProps {
+  searchParams: Promise<{ q?: string; scope?: string }>;
+}
+
+export default async function ContentPage({ searchParams }: ContentPageProps) {
+  const params = await searchParams;
+  const query = typeof params.q === 'string' ? params.q : '';
+  const scope = typeof params.scope === 'string' ? params.scope : 'all';
   const supabase = await createClient();
   const {
     data: { session },
@@ -51,6 +58,7 @@ export default async function ContentPage() {
 
   let items: DashboardContentItem[] = [];
   let orgItems: DashboardContentItem[] = [];
+  let privateItems: DashboardContentItem[] = [];
   let orgName: string | null = null;
   try {
     const [me, result] = await Promise.all([
@@ -64,9 +72,17 @@ export default async function ContentPage() {
       orgItems = Array.isArray(orgResult) ? orgResult : orgResult?.items ?? [];
       orgName = activeOrg.name;
     }
+    const privateResult = await api.getPrivateContent(token, {
+      q: query || undefined,
+      scope: scope === 'personal' || scope === 'organization' ? (scope as 'personal' | 'organization') : 'all',
+      limit: 50,
+      offset: 0,
+    }).catch(() => null);
+    privateItems = Array.isArray(privateResult) ? privateResult : privateResult?.items ?? [];
   } catch {
     items = [];
     orgItems = [];
+    privateItems = [];
   }
 
   return (
@@ -90,6 +106,62 @@ export default async function ContentPage() {
           New Content
         </Link>
       </div>
+
+      <section className="d-section" data-density="compact">
+        <span
+          className="d-label block mb-4"
+          style={{
+            paddingLeft: '0.75rem',
+            borderLeft: '2px solid var(--d-accent)',
+          }}
+        >
+          Private Discovery
+        </span>
+        <form
+          method="get"
+          action="/dashboard/content"
+          className="d-surface"
+          style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}
+        >
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="q">
+              Search private packages
+            </label>
+            <input
+              id="q"
+              name="q"
+              className="d-control"
+              defaultValue={query}
+              placeholder="Search by slug, namespace, name, or description"
+            />
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="text-sm font-semibold" htmlFor="scope">
+              Scope
+            </label>
+            <select id="scope" name="scope" className="d-control" defaultValue={scope} style={{ width: 'auto' }}>
+              <option value="all">All accessible private packages</option>
+              <option value="personal">Personal private packages</option>
+              <option value="organization">Organization private packages</option>
+            </select>
+            <button type="submit" className="d-interactive" data-variant="primary">
+              Search
+            </button>
+          </div>
+        </form>
+
+        {privateItems.length > 0 ? (
+          <ContentCardGrid items={privateItems} editable />
+        ) : (
+          <div className="d-surface">
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              {query
+                ? 'No private packages matched this search.'
+                : 'No accessible private packages found yet.'}
+            </p>
+          </div>
+        )}
+      </section>
 
       {/* Personal content grid */}
       <section className="d-section" data-density="compact">

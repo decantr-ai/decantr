@@ -34,6 +34,8 @@ The first implementation waves after this reset have already delivered:
 - org audit log foundations and an initial registry governance UI
 - personal vs org package publishing flows in the registry dashboard
 - durable API usage metering plus publish/approval usage event tracking
+- authenticated private package consumption for owners, org members, and org-scoped API keys
+- private package discovery foundations through hosted dashboard search/list flows
 
 That means the remaining work is no longer “introduce commercial structure.” It is:
 

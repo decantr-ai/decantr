@@ -277,6 +277,19 @@ export const api = {
   // Authenticated
   getMe: (token: string) => apiFetch<MeResponse>('/me', { token }),
   getMyContent: (token: string) => apiFetch<ContentListResponse<DashboardContentItem>>('/my/content', { token }),
+  getPrivateContent: (
+    token: string,
+    params?: { type?: string; scope?: 'all' | 'personal' | 'organization'; q?: string; limit?: number; offset?: number },
+  ) => {
+    const searchParams = new URLSearchParams();
+    if (params?.type) searchParams.set('type', params.type);
+    if (params?.scope) searchParams.set('scope', params.scope);
+    if (params?.q) searchParams.set('q', params.q);
+    if (params?.limit != null) searchParams.set('limit', String(params.limit));
+    if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    const query = searchParams.toString();
+    return apiFetch<ContentListResponse<DashboardContentItem>>(`/private/content${query ? `?${query}` : ''}`, { token });
+  },
   getApiKeys: (token: string) => apiFetch<any>('/api-keys', { token }),
   createApiKey: (token: string, body: any) =>
     apiFetch<any>('/api-keys', { token, method: 'POST', body: JSON.stringify(body) }),

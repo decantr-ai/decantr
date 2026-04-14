@@ -17,6 +17,110 @@ export const publishRoutes = new Hono<Env>();
 // All publish routes require auth
 publishRoutes.use('/*', requireAuth());
 
+// GET /v1/private/content - List accessible private content across personal and org scopes
+publishRoutes.get('/private/content', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const typeFilter = c.req.query('type') as ContentType | undefined;
+  const scope = (c.req.query('scope') || 'all') as 'all' | 'personal' | 'organization';
+  const query = (c.req.query('q') || '').trim().toLowerCase();
+
+  const client = createAdminClient();
+
+  let accessibleOrgIds: string[] = [];
+  if (auth.apiKeyOrgId) {
+    accessibleOrgIds = [auth.apiKeyOrgId];
+  } else {
+    const { data: memberships } = await client
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', auth.user!.id);
+    accessibleOrgIds = (memberships ?? []).map((membership: any) => membership.org_id);
+  }
+
+  const rows: any[] = [];
+
+  const allowPersonal = scope === 'all' || scope === 'personal';
+  const allowOrg = scope === 'all' || scope === 'organization';
+  const canReadPersonal = allowPersonal && !auth.apiKeyOrgId;
+
+  if (canReadPersonal) {
+    let personalQuery = client
+      .from('content')
+      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+      .eq('owner_id', auth.user!.id)
+      .is('org_id', null)
+      .eq('visibility', 'private')
+      .eq('status', 'published');
+
+    if (typeFilter && CONTENT_TYPES.includes(typeFilter)) {
+      personalQuery = personalQuery.eq('type', typeFilter);
+    }
+
+    const { data } = await personalQuery;
+    rows.push(...(data ?? []));
+  }
+
+  if (allowOrg && accessibleOrgIds.length > 0) {
+    let orgQuery = client
+      .from('content')
+      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+      .in('org_id', accessibleOrgIds)
+      .eq('visibility', 'private')
+      .eq('status', 'published');
+
+    if (typeFilter && CONTENT_TYPES.includes(typeFilter)) {
+      orgQuery = orgQuery.eq('type', typeFilter);
+    }
+
+    const { data } = await orgQuery;
+    rows.push(...(data ?? []));
+  }
+
+  const uniqueRows = Array.from(new Map(rows.map((row) => [row.id, row])).values());
+  const filteredRows = query
+    ? uniqueRows.filter((item) => {
+        const name = (item.data as Record<string, unknown> | null | undefined)?.name;
+        const description = (item.data as Record<string, unknown> | null | undefined)?.description;
+        return (
+          item.slug.toLowerCase().includes(query) ||
+          item.namespace.toLowerCase().includes(query) ||
+          (typeof name === 'string' && name.toLowerCase().includes(query)) ||
+          (typeof description === 'string' && description.toLowerCase().includes(query))
+        );
+      })
+    : uniqueRows;
+
+  filteredRows.sort((a, b) => {
+    const left = new Date(b.updated_at || b.created_at || 0).getTime();
+    const right = new Date(a.updated_at || a.created_at || 0).getTime();
+    return left - right;
+  });
+
+  const pagedRows = filteredRows.slice(offset, offset + limit);
+
+  return c.json({
+    total: filteredRows.length,
+    limit,
+    offset,
+    items: pagedRows.map((item) => ({
+      id: item.id,
+      type: item.type,
+      slug: item.slug,
+      namespace: item.namespace,
+      visibility: item.visibility,
+      status: item.status,
+      version: item.version,
+      name: (item.data as Record<string, unknown>)?.name,
+      description: (item.data as Record<string, unknown>)?.description,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      published_at: item.published_at,
+      intelligence: null,
+    })),
+  });
+});
+
 // GET /v1/my/content - List own content
 publishRoutes.get('/my/content', async (c) => {
   const auth = c.get('auth') as AuthContext;
