@@ -25,6 +25,18 @@ describe('GET /v1/showcase/*', () => {
     const shortlistEntry = json.apps.find((entry: { slug: string }) => entry.slug === 'portfolio');
     expect(shortlistEntry?.url).toBe('/showcase/portfolio/index.html');
     expect(shortlistEntry?.verification?.verificationStatus).toBe('smoke-green');
+    expect(
+      json.apps.every(
+        (entry: {
+          url?: string;
+          verification?: { build?: { passed?: boolean }; smoke?: { passed?: boolean } };
+        }) =>
+          typeof entry.url === 'string' &&
+          entry.url.startsWith('/showcase/') &&
+          entry.verification?.build?.passed === true &&
+          entry.verification?.smoke?.passed === true,
+      ),
+    ).toBe(true);
   });
 
   it('serves the shortlisted showcase set with verification summary', async () => {

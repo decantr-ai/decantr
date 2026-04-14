@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process';
-import { getActiveShowcaseEntries, repoRoot } from './showcase-manifest.mjs';
+import { getPublicShowcaseEntries, repoRoot } from './showcase-manifest.mjs';
 
 const dryRun = process.argv.includes('--dry-run');
-const activeShowcases = getActiveShowcaseEntries();
+const activeShowcases = getPublicShowcaseEntries();
 
 if (activeShowcases.length === 0) {
   console.error('No active showcase apps matched the current manifest/filter.');

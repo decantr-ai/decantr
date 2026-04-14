@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node ../../scripts/copy-showcase-dist.mjs && pnpm --filter @decantr/essence-spec build && pnpm --filter @decantr/registry build && next build",
+    "build": "node ../../scripts/build-showcases.mjs && node ../../scripts/copy-showcase-dist.mjs && pnpm --filter @decantr/essence-spec build && pnpm --filter @decantr/registry build && next build",
     "start": "next start",
     "lint": "pnpm --filter @decantr/essence-spec build && pnpm --filter @decantr/registry build && tsc --noEmit"
   },

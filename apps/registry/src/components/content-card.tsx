@@ -189,7 +189,7 @@ export function ContentCard({
               <span>{formatDate(item.published_at)}</span>
             </span>
           )}
-          {showcaseMeta?.url && (
+          {showcaseVerification?.build.passed && showcaseVerification?.smoke.passed && (
             <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <a

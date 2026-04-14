@@ -6,27 +6,42 @@ import type {
   ShowcaseVerificationEntry,
 } from '@decantr/registry';
 
-export const SHOWCASE_MANIFEST_ENTRIES = (
-  showcaseManifest.apps as ShowcaseManifestEntry[]
-).filter((entry) => entry.status === 'active');
-
 export const SHOWCASE_SHORTLIST_REPORT =
   shortlistVerificationReport as ShowcaseShortlistReport;
 
 export const SHOWCASE_VERIFICATION_RESULTS =
   (SHOWCASE_SHORTLIST_REPORT.results as ShowcaseVerificationEntry[] | undefined) ?? [];
 
+export function getShowcasePublicUrl(slug: string): string {
+  return `/showcase/${slug}/index.html`;
+}
+
+function normalizeShowcaseEntry(entry: ShowcaseManifestEntry): ShowcaseManifestEntry {
+  return {
+    ...entry,
+    url: entry.url ?? getShowcasePublicUrl(entry.slug),
+  };
+}
+
 export const SHOWCASE_VERIFICATION_MAP = new Map(
   SHOWCASE_VERIFICATION_RESULTS.map((entry) => [entry.slug, entry]),
 );
 
+const VERIFIED_SHOWCASE_SLUGS = new Set(
+  SHOWCASE_VERIFICATION_RESULTS
+    .filter((entry) => entry.build?.passed && entry.smoke?.passed)
+    .map((entry) => entry.slug),
+);
+
+export const SHOWCASE_MANIFEST_ENTRIES = (
+  showcaseManifest.apps as ShowcaseManifestEntry[]
+)
+  .map(normalizeShowcaseEntry)
+  .filter((entry) => entry.status === 'active' && VERIFIED_SHOWCASE_SLUGS.has(entry.slug));
+
 export const SHORTLISTED_SHOWCASE_ENTRIES = SHOWCASE_MANIFEST_ENTRIES.filter((entry) =>
   Boolean(entry.goldenCandidate),
 );
-
-export function getShowcasePublicUrl(slug: string): string {
-  return `/showcase/${slug}/index.html`;
-}
 
 export function getShowcaseManifestEntry(
   slug: string,

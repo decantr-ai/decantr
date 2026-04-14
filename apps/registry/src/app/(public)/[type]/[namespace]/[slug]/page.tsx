@@ -337,7 +337,10 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const benchmarkBackedIntelligence = intelligence ? hasBenchmarkBackedIntelligence(intelligence) : false;
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
-  const showcaseUrl = showcaseMeta?.url ? getShowcaseUrl(slug, showcaseMeta) : null;
+  const showcaseUrl =
+    showcaseVerification?.build.passed && showcaseVerification?.smoke.passed
+      ? getShowcaseUrl(slug, showcaseMeta)
+      : null;
   const primarySignal = getPrimarySignal(content, Boolean(showcaseUrl));
   const quickStart = getQuickStartContent(singular, namespace, slug);
   const usageBullets = getUsageBullets(singular, tags);

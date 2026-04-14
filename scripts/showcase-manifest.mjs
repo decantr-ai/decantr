@@ -10,10 +10,21 @@ export const showcaseManifestPath = join(showcaseRoot, 'manifest.json');
 export const showcaseReportsRoot = join(showcaseRoot, 'reports');
 export const shortlistVerificationReportPath = join(showcaseReportsRoot, 'shortlist-verification.json');
 
+export function getShowcasePublicUrl(slug) {
+  return `/showcase/${slug}/index.html`;
+}
+
+export function normalizeShowcaseEntry(entry) {
+  return {
+    ...entry,
+    url: entry.url ?? getShowcasePublicUrl(entry.slug),
+  };
+}
+
 export function loadShowcaseManifest() {
   const raw = readFileSync(showcaseManifestPath, 'utf-8');
   const manifest = JSON.parse(raw);
-  const apps = Array.isArray(manifest.apps) ? manifest.apps : [];
+  const apps = Array.isArray(manifest.apps) ? manifest.apps.map(normalizeShowcaseEntry) : [];
 
   return {
     ...manifest,
@@ -90,6 +101,16 @@ export function getActiveShowcaseEntries() {
 }
 
 export function getShortlistedShowcaseEntries() {
-  const manifest = loadShowcaseManifest();
-  return manifest.apps.filter(entry => entry.status === 'active' && Boolean(entry.goldenCandidate));
+  return getPublicShowcaseEntries().filter(entry => Boolean(entry.goldenCandidate));
+}
+
+export function getPublicShowcaseEntries() {
+  const verificationReport = loadShortlistVerificationReport();
+  const verifiedSlugs = new Set(
+    verificationReport.results
+      .filter(entry => entry.build?.passed && entry.smoke?.passed)
+      .map(entry => entry.slug),
+  );
+
+  return getActiveShowcaseEntries().filter(entry => verifiedSlugs.has(entry.slug));
 }
