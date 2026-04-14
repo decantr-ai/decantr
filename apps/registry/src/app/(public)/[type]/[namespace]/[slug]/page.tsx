@@ -6,6 +6,7 @@ import { JsonViewer } from '@/components/json-viewer';
 import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 import { CopyInstallButton } from './copy-install-button';
 import styles from './page.module.css';
+import { createClient } from '@/lib/supabase/server';
 
 const TYPE_STYLES: Record<string, { canvas: string; badge: string }> = {
   pattern: { canvas: styles.canvasPattern, badge: styles.typeBadgePattern },
@@ -95,11 +96,17 @@ interface DetailPageProps {
 export default async function ContentDetailPage({ params }: DetailPageProps) {
   const { type, namespace: rawNamespace, slug } = await params;
   const namespace = decodeURIComponent(rawNamespace);
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   let content: ContentRecord | null = null;
 
   try {
-    content = await getContent(type, namespace, slug);
+    content = await getContent(type, namespace, slug, {
+      token: session?.access_token ?? undefined,
+    });
   } catch {
     notFound();
   }

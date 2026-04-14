@@ -9,6 +9,7 @@ import type {
   SearchResponse,
   OwnedContentSummary,
 } from '@decantr/registry/client';
+import { RegistryAPIClient } from '@decantr/registry/client';
 import { getPublicRegistryClient, normalizeApiContentType } from '@/lib/public-registry-client';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
@@ -412,7 +413,25 @@ export function searchContent(
     .then((data) => ({ total: data.total, items: data.results }));
 }
 
-export function getContent(type: string, namespace: string, slug: string) {
+export function getContent(
+  type: string,
+  namespace: string,
+  slug: string,
+  options?: { token?: string; apiKey?: string },
+) {
+  if (options?.token || options?.apiKey) {
+    const client = new RegistryAPIClient({
+      baseUrl: API_URL,
+      apiKey: options?.apiKey,
+      accessToken: options?.token,
+    });
+    return client.getContentRecord(
+      normalizeApiContentType(type),
+      namespace,
+      slug,
+    );
+  }
+
   return getPublicRegistryClient().getPublicContentRecord(
     normalizeApiContentType(type),
     namespace,

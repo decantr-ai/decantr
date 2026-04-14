@@ -82,20 +82,14 @@ export function createApp(): Hono<Env> {
     });
   });
 
-  // Optional auth on v1 routes — skip for public read-only endpoints and admin sync
+  // Optional auth on v1 routes — preserve public access, but allow authenticated
+  // reads to flow through the same endpoints when credentials are provided.
   app.use('/v1/*', async (c, next) => {
     const path = c.req.path;
     const method = c.req.method;
 
     // Skip auth for admin sync (uses X-Admin-Key)
     if (isAdminSyncRoute(method, path)) {
-      return next();
-    }
-
-    // Skip auth for public read-only content endpoints (GET only)
-    // These don't need auth — auth is only for publishing, moderation, billing
-    if (isPublicReadOnlyRoute(method, path)) {
-      c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
       return next();
     }
 

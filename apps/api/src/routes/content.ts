@@ -10,6 +10,7 @@ import { validateEssence, isV3 } from '@decantr/essence-spec';
 import { logger } from '../lib/logger.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
+import type { AuthContext } from '../middleware/auth.js';
 
 export const contentRoutes = new Hono<Env>();
 const CONTENT_ROUTE_PATTERN = API_CONTENT_TYPES.join('|');
@@ -33,6 +34,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c)
       return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
     }
     const singularType = PLURAL_TO_SINGULAR[pluralType];
+    const auth = c.get('auth') as AuthContext | undefined;
 
     const client = createAdminClient();
 
@@ -42,15 +44,41 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c)
       .eq('type', singularType)
       .eq('namespace', namespace)
       .eq('slug', slug)
-      .eq('visibility', 'public')
-      .eq('status', 'published')
       .single();
 
     if (error || !data) {
       return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
     }
 
-    c.header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+    const isPublicRecord = data.visibility === 'public' && data.status === 'published';
+    let allowed = isPublicRecord;
+
+    if (!allowed && auth?.isAuthenticated && auth.user) {
+      if (data.owner_id === auth.user.id) {
+        allowed = true;
+      } else if (data.org_id && auth.apiKeyOrgId && data.org_id === auth.apiKeyOrgId) {
+        allowed = true;
+      } else if (data.org_id) {
+        const { data: membership } = await client
+          .from('org_members')
+          .select('role')
+          .eq('org_id', data.org_id)
+          .eq('user_id', auth.user.id)
+          .single();
+        allowed = Boolean(membership);
+      }
+    }
+
+    if (!allowed) {
+      return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
+    }
+
+    c.header(
+      'Cache-Control',
+      isPublicRecord
+        ? 'public, max-age=300, stale-while-revalidate=3600'
+        : 'private, no-store',
+    );
     return c.json({
       id: data.id,
       type: data.type,

@@ -50,6 +50,7 @@ function unwrapDataEnvelope<T>(value: T): T {
 export interface RegistryAPIClientOptions {
   baseUrl?: string;
   apiKey?: string;
+  accessToken?: string;
   timeoutMs?: number;
   cacheTtlMs?: number;
 }
@@ -73,6 +74,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 export class RegistryAPIClient {
   private baseUrl: string;
   private apiKey: string | undefined;
+  private accessToken: string | undefined;
   private timeoutMs: number;
   private cacheTtlMs: number;
   private cache = new Map<string, CacheEntry<unknown>>();
@@ -80,6 +82,7 @@ export class RegistryAPIClient {
   constructor(options: RegistryAPIClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? DEFAULT_BASE_URL;
     this.apiKey = options.apiKey;
+    this.accessToken = options.accessToken;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
   }
@@ -92,6 +95,9 @@ export class RegistryAPIClient {
     };
     if (this.apiKey) {
       headers['X-API-Key'] = this.apiKey;
+    }
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
     return headers;
   }
@@ -221,6 +227,20 @@ export class RegistryAPIClient {
     slug: string,
   ): Promise<PublicContentRecord<TData>> {
     const cacheKey = `public-record:${type}:${namespace}:${slug}`;
+    const cached = this.getCached<PublicContentRecord<TData>>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.request<PublicContentRecord<TData>>(`/${type}/${namespace}/${slug}`);
+    this.setCache(cacheKey, result);
+    return result;
+  }
+
+  async getContentRecord<TData = Record<string, unknown>>(
+    type: ApiContentType,
+    namespace: string,
+    slug: string,
+  ): Promise<PublicContentRecord<TData>> {
+    const cacheKey = `content-record:${type}:${namespace}:${slug}:${this.apiKey ?? ''}:${this.accessToken ?? ''}`;
     const cached = this.getCached<PublicContentRecord<TData>>(cacheKey);
     if (cached) return cached;
 

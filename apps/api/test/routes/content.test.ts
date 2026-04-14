@@ -3,7 +3,18 @@ import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
 import { assertMatchesSchema } from '../helpers/schema-assert.js';
 
-const mockCreateAdminClient = vi.fn();
+const { mockCreateAdminClient, mockAuthState } = vi.hoisted(() => ({
+  mockCreateAdminClient: vi.fn(),
+  mockAuthState: {
+    current: {
+      user: null,
+      isAuthenticated: false,
+      isAdmin: false,
+      apiKeyOrgId: null,
+      authSource: null,
+    },
+  },
+}));
 
 // Mock the db client before importing routes
 vi.mock('../../src/db/client.js', () => ({
@@ -16,22 +27,43 @@ const { contentRoutes } = await import('../../src/routes/content.js');
 
 function createTestApp() {
   const app = new Hono<Env>();
+  app.use('/v1/*', async (c, next) => {
+    c.set('auth', mockAuthState.current);
+    await next();
+  });
   app.route('/v1', contentRoutes);
   return app;
 }
 
-function createSingleContentClient(row: Record<string, unknown> | null) {
+function createSingleContentClient(
+  row: Record<string, unknown> | null,
+  membership: Record<string, unknown> | null = null,
+) {
   const chain = {
+    filters: {} as Record<string, unknown>,
+    table: '',
     select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({
-      data: row,
-      error: row ? null : { message: 'not found' },
+    eq: vi.fn(function (field: string, value: unknown) {
+      this.filters[field] = value;
+      return this;
+    }),
+    single: vi.fn(async function () {
+      if (this.table === 'org_members') {
+        return { data: membership, error: membership ? null : { message: 'not found' } };
+      }
+      return {
+        data: row,
+        error: row ? null : { message: 'not found' },
+      };
     }),
   };
 
   return {
-    from: vi.fn(() => chain),
+    from: vi.fn((table: string) => ({
+      ...chain,
+      table,
+      filters: {},
+    })),
   };
 }
 
@@ -59,6 +91,13 @@ describe('POST /v1/validate', () => {
   beforeEach(() => {
     app = createTestApp();
     mockCreateAdminClient.mockReset();
+    mockAuthState.current = {
+      user: null,
+      isAuthenticated: false,
+      isAdmin: false,
+      apiKeyOrgId: null,
+      authSource: null,
+    };
   });
 
   it('should return error for invalid JSON body', async () => {
@@ -208,6 +247,179 @@ describe('POST /v1/validate', () => {
     assertMatchesSchema('public-content-record.v1.json', json);
     expect(json.slug).toBe('portfolio');
     expect(json.intelligence?.source).toBe('hybrid');
+  });
+
+  it('allows the owner to fetch a private content record', async () => {
+    mockAuthState.current = {
+      user: {
+        id: 'user-1',
+        email: 'owner@example.com',
+        username: 'owner',
+        display_name: 'Owner',
+        tier: 'pro',
+        trusted: false,
+        reputation_score: 0,
+      },
+      isAuthenticated: true,
+      isAdmin: false,
+      apiKeyOrgId: null,
+      authSource: 'jwt',
+    };
+
+    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
+      id: 'content-1',
+      owner_id: 'user-1',
+      org_id: null,
+      type: 'theme',
+      slug: 'private-theme',
+      namespace: '@owner',
+      version: '1.0.0',
+      visibility: 'private',
+      status: 'published',
+      data: {
+        name: 'Private Theme',
+        description: 'Personal private package',
+      },
+      created_at: '2026-04-09T00:00:00.000Z',
+      updated_at: '2026-04-09T00:00:00.000Z',
+      published_at: '2026-04-09T00:00:00.000Z',
+      owner: {
+        display_name: 'Owner',
+        username: 'owner',
+      },
+    }));
+
+    const res = await app.request('/v1/themes/%40owner/private-theme');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.visibility).toBe('private');
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+  });
+
+  it('allows org members to fetch org-private content records', async () => {
+    mockAuthState.current = {
+      user: {
+        id: 'user-2',
+        email: 'member@example.com',
+        username: 'member',
+        display_name: 'Member',
+        tier: 'team',
+        trusted: false,
+        reputation_score: 0,
+      },
+      isAuthenticated: true,
+      isAdmin: false,
+      apiKeyOrgId: null,
+      authSource: 'jwt',
+    };
+
+    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
+      id: 'content-1',
+      owner_id: 'user-1',
+      org_id: 'org-1',
+      type: 'theme',
+      slug: 'org-theme',
+      namespace: '@org:acme',
+      version: '1.0.0',
+      visibility: 'private',
+      status: 'published',
+      data: {
+        name: 'Org Theme',
+        description: 'Org private package',
+      },
+      created_at: '2026-04-09T00:00:00.000Z',
+      updated_at: '2026-04-09T00:00:00.000Z',
+      published_at: '2026-04-09T00:00:00.000Z',
+      owner: {
+        display_name: 'Owner',
+        username: 'owner',
+      },
+    }, { role: 'member' }));
+
+    const res = await app.request('/v1/themes/%40org%3Aacme/org-theme');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.namespace).toBe('@org:acme');
+    expect(json.visibility).toBe('private');
+  });
+
+  it('returns 404 for unauthorized private content reads', async () => {
+    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
+      id: 'content-1',
+      owner_id: 'user-1',
+      org_id: null,
+      type: 'theme',
+      slug: 'private-theme',
+      namespace: '@owner',
+      version: '1.0.0',
+      visibility: 'private',
+      status: 'published',
+      data: {
+        name: 'Private Theme',
+        description: 'Personal private package',
+      },
+      created_at: '2026-04-09T00:00:00.000Z',
+      updated_at: '2026-04-09T00:00:00.000Z',
+      published_at: '2026-04-09T00:00:00.000Z',
+      owner: {
+        display_name: 'Owner',
+        username: 'owner',
+      },
+    }));
+
+    const res = await app.request('/v1/themes/%40owner/private-theme');
+
+    expect(res.status).toBe(404);
+  });
+
+  it('allows org-scoped API keys to fetch org-private content records', async () => {
+    mockAuthState.current = {
+      user: {
+        id: 'user-2',
+        email: 'member@example.com',
+        username: 'member',
+        display_name: 'Member',
+        tier: 'team',
+        trusted: false,
+        reputation_score: 0,
+      },
+      isAuthenticated: true,
+      isAdmin: false,
+      apiKeyOrgId: 'org-1',
+      authSource: 'api_key',
+    };
+
+    mockCreateAdminClient.mockReturnValue(createSingleContentClient({
+      id: 'content-1',
+      owner_id: 'user-1',
+      org_id: 'org-1',
+      type: 'theme',
+      slug: 'org-theme',
+      namespace: '@org:acme',
+      version: '1.0.0',
+      visibility: 'private',
+      status: 'published',
+      data: {
+        name: 'Org Theme',
+        description: 'Org private package',
+      },
+      created_at: '2026-04-09T00:00:00.000Z',
+      updated_at: '2026-04-09T00:00:00.000Z',
+      published_at: '2026-04-09T00:00:00.000Z',
+      owner: {
+        display_name: 'Owner',
+        username: 'owner',
+      },
+    }));
+
+    const res = await app.request('/v1/themes/%40org%3Aacme/org-theme');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.namespace).toBe('@org:acme');
+    expect(json.visibility).toBe('private');
   });
 
   it('serves public content list responses that match the published schema', async () => {
