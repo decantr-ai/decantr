@@ -437,18 +437,24 @@ export interface Database {
         Row: {
           org_id: string;
           require_public_content_approval: boolean;
+          allow_member_submissions: boolean;
+          require_private_content_approval: boolean;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           org_id: string;
           require_public_content_approval?: boolean;
+          allow_member_submissions?: boolean;
+          require_private_content_approval?: boolean;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           org_id?: string;
           require_public_content_approval?: boolean;
+          allow_member_submissions?: boolean;
+          require_private_content_approval?: boolean;
           created_at?: string;
           updated_at?: string;
         };

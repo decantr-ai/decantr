@@ -415,6 +415,11 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
     owner_username: null,
     published_at: item.published_at ?? null,
   }));
+  const policyData = (policyResult.data ?? {}) as {
+    require_public_content_approval?: boolean;
+    allow_member_submissions?: boolean;
+    require_private_content_approval?: boolean;
+  };
 
   return c.json({
     organization: {
@@ -436,7 +441,9 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
       approval_actions_30d: usageTotals.approval_action ?? 0,
     },
     policy: {
-      require_public_content_approval: policyResult.data?.require_public_content_approval ?? false,
+      require_public_content_approval: policyData.require_public_content_approval ?? false,
+      allow_member_submissions: policyData.allow_member_submissions ?? false,
+      require_private_content_approval: policyData.require_private_content_approval ?? false,
     },
     members,
     recent_audit: auditResult.data ?? [],

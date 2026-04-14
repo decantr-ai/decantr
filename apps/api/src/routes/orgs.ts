@@ -295,13 +295,15 @@ orgRoutes.get('/orgs/:slug/policy', async (c) => {
 
   const { data: policy } = await client
     .from('organization_policies')
-    .select('org_id, require_public_content_approval')
+    .select('org_id, require_public_content_approval, allow_member_submissions, require_private_content_approval')
     .eq('org_id', org.id)
     .single();
 
   return c.json({
     org_id: org.id,
     require_public_content_approval: policy?.require_public_content_approval ?? false,
+    allow_member_submissions: policy?.allow_member_submissions ?? false,
+    require_private_content_approval: policy?.require_private_content_approval ?? false,
   });
 });
 
@@ -320,11 +322,19 @@ orgRoutes.patch('/orgs/:slug/policy', async (c) => {
     return c.json({ error: 'Requires admin or owner role' }, 403);
   }
 
+  const nextPolicy = {
+    require_public_content_approval: body.require_public_content_approval === true,
+    allow_member_submissions:
+      org.tier === 'enterprise' ? body.allow_member_submissions === true : false,
+    require_private_content_approval:
+      org.tier === 'enterprise' ? body.require_private_content_approval === true : false,
+  };
+
   const { data, error } = await client
     .from('organization_policies')
     .upsert({
       org_id: org.id,
-      require_public_content_approval: body.require_public_content_approval === true,
+      ...nextPolicy,
       updated_at: new Date().toISOString(),
     })
     .select()
@@ -342,7 +352,7 @@ orgRoutes.patch('/orgs/:slug/policy', async (c) => {
     target_type: 'organization_policy',
     target_id: org.id,
     details: {
-      require_public_content_approval: data.require_public_content_approval,
+      ...nextPolicy,
     },
   });
 
@@ -358,10 +368,6 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
 
   if (!org) {
     return c.json({ error: 'Organization not found' }, 404);
-  }
-
-  if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return c.json({ error: 'Requires admin or owner role' }, 403);
   }
 
   if (!body.type || !CONTENT_TYPES.includes(body.type)) {
@@ -389,11 +395,25 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
   const visibility = body.visibility === 'public' ? 'public' : 'private';
   const { data: policy } = await client
     .from('organization_policies')
-    .select('require_public_content_approval')
+    .select('require_public_content_approval, allow_member_submissions, require_private_content_approval')
     .eq('org_id', org.id)
     .single();
+
+  const canManageDirectly = ['owner', 'admin'].includes(membership?.role ?? '');
+  const allowMemberSubmissions = org.tier === 'enterprise' && policy?.allow_member_submissions === true;
+
+  if (!canManageDirectly && !(membership?.role === 'member' && allowMemberSubmissions)) {
+    return c.json({ error: 'Requires admin or owner role unless member submissions are enabled.' }, 403);
+  }
+
   const requiresPublicApproval = policy?.require_public_content_approval === true;
-  const status = visibility === 'public' && requiresPublicApproval ? 'pending' : 'published';
+  const requiresPrivateApproval =
+    org.tier === 'enterprise' && policy?.require_private_content_approval === true;
+  const status =
+    (visibility === 'public' && requiresPublicApproval) ||
+    (visibility === 'private' && requiresPrivateApproval)
+      ? 'pending'
+      : 'published';
 
   const { data, error } = await client
     .from('content')

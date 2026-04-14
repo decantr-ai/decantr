@@ -59,6 +59,12 @@ The latest admin operations wave also makes support workflows first-class:
 - `Admin / Organizations` provides org-by-org operational inspection
 - `Admin / Organizations / :slug` provides member, package, policy, and audit visibility for support follow-through
 
+The next governance refinement now expands enterprise-only org policy controls beyond the original single boolean:
+
+- `require_public_content_approval`
+- `allow_member_submissions`
+- `require_private_content_approval`
+
 ---
 
 ## Executive Decision

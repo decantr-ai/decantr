@@ -89,6 +89,8 @@ export default async function AdminOrganizationDetailPage({
                 <div>Pending approvals: {detail.usage.pending_approvals}</div>
                 <div>API requests (30d): {detail.usage.api_requests_30d}</div>
                 <div>Policy: {detail.policy.require_public_content_approval ? 'Public content approval required' : 'Public content can publish directly'}</div>
+                <div>Member submissions: {detail.policy.allow_member_submissions ? 'Enabled' : 'Admins and owners only'}</div>
+                <div>Private package review: {detail.policy.require_private_content_approval ? 'Required' : 'Direct private publish'}</div>
               </div>
             </div>
           </section>

@@ -324,6 +324,8 @@ export default function BillingPage() {
       features: [
         'Enterprise private registry workspace',
         'Expanded approval workflows',
+        'Advanced member submission controls',
+        'Private package review controls',
         'Advanced governance controls',
         'Dedicated support path',
       ],

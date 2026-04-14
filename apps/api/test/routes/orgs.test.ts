@@ -63,11 +63,13 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
         filters: Record<string, unknown>;
         selectArgs: unknown[];
         insertPayload: Record<string, unknown> | null;
+        upsertPayload: Record<string, unknown> | null;
         deleteMode: boolean;
       } = {
         filters: {},
         selectArgs: [],
         insertPayload: null,
+        upsertPayload: null,
         deleteMode: false,
       };
 
@@ -156,6 +158,12 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
           }
 
           if (table === 'organization_policies') {
+            if (state.upsertPayload) {
+              return {
+                data: state.upsertPayload,
+                error: null,
+              };
+            }
             return options.policyResult ?? { data: null, error: null };
           }
 
@@ -199,6 +207,10 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
         }),
         insert: vi.fn((payload: Record<string, unknown>) => {
           state.insertPayload = payload;
+          return chain;
+        }),
+        upsert: vi.fn((payload: Record<string, unknown>) => {
+          state.upsertPayload = payload;
           return chain;
         }),
         update: vi.fn(() => chain),
@@ -505,6 +517,83 @@ describe('Org routes', () => {
     });
   });
 
+  it('returns advanced enterprise policy fields', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: {
+          id: 'org-1',
+          slug: 'acme',
+          name: 'Acme',
+          tier: 'enterprise',
+          seat_limit: 10,
+        },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'admin' },
+        error: null,
+      },
+      policyResult: {
+        data: {
+          org_id: 'org-1',
+          require_public_content_approval: true,
+          allow_member_submissions: true,
+          require_private_content_approval: true,
+        },
+        error: null,
+      },
+    }));
+
+    const res = await app.request('/v1/orgs/acme/policy');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toEqual({
+      org_id: 'org-1',
+      require_public_content_approval: true,
+      allow_member_submissions: true,
+      require_private_content_approval: true,
+    });
+  });
+
+  it('updates advanced policy controls for enterprise orgs', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: {
+          id: 'org-1',
+          slug: 'acme',
+          name: 'Acme',
+          tier: 'enterprise',
+          seat_limit: 10,
+        },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'owner' },
+        error: null,
+      },
+    }));
+
+    const res = await app.request('/v1/orgs/acme/policy', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        require_public_content_approval: true,
+        allow_member_submissions: true,
+        require_private_content_approval: true,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toMatchObject({
+      org_id: 'org-1',
+      require_public_content_approval: true,
+      allow_member_submissions: true,
+      require_private_content_approval: true,
+    });
+  });
+
   it('filters organization audit logs by scope and action', async () => {
     mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
       orgResult: {
@@ -633,6 +722,54 @@ describe('Org routes', () => {
     expect(json.slug).toBe('clean-theme');
     expect(json.namespace).toBe('@org:acme');
     expect(json.visibility).toBe('public');
+    expect(json.org_id).toBe('org-1');
+  });
+
+  it('lets enterprise members submit private content when member submissions are enabled', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: {
+          id: 'org-1',
+          slug: 'acme',
+          tier: 'enterprise',
+        },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'member' },
+        error: null,
+      },
+      policyResult: {
+        data: {
+          require_public_content_approval: false,
+          allow_member_submissions: true,
+          require_private_content_approval: true,
+        },
+        error: null,
+      },
+    }));
+
+    const res = await app.request('/v1/orgs/acme/content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'theme',
+        slug: 'member-theme',
+        version: '1.0.0',
+        visibility: 'private',
+        data: {
+          $schema: 'https://decantr.ai/schemas/theme.v1.json',
+          id: 'member-theme',
+          name: 'Member Theme',
+          description: 'Submitted by a member',
+        },
+      }),
+    });
+
+    expect(res.status).toBe(201);
+    const json = await res.json();
+    expect(json.status).toBe('pending');
+    expect(json.visibility).toBe('private');
     expect(json.org_id).toBe('org-1');
   });
 });

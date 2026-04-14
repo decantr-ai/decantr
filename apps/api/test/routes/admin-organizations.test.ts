@@ -318,6 +318,8 @@ describe('Admin organization routes', () => {
     });
     expect(json.policy).toEqual({
       require_public_content_approval: true,
+      allow_member_submissions: false,
+      require_private_content_approval: false,
     });
     expect(json.members).toHaveLength(2);
     expect(json.recent_audit).toHaveLength(1);

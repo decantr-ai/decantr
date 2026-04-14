@@ -164,7 +164,9 @@ export function OrgGovernancePanel() {
     void loadOrgState(orgSlug);
   }, [orgSlug, auditScope, auditAction]);
 
-  function handlePolicyChange(nextValue: boolean) {
+  function handlePolicyChange(
+    updates: Partial<Pick<OrgPolicy, 'require_public_content_approval' | 'allow_member_submissions' | 'require_private_content_approval'>>,
+  ) {
     if (!activeOrg) return;
     setError(null);
 
@@ -172,7 +174,12 @@ export function OrgGovernancePanel() {
       try {
         const token = await getAccessToken();
         const updated = await api.updateOrgPolicy(token, activeOrg.slug, {
-          require_public_content_approval: nextValue,
+          require_public_content_approval:
+            updates.require_public_content_approval ?? policy?.require_public_content_approval ?? false,
+          allow_member_submissions:
+            updates.allow_member_submissions ?? policy?.allow_member_submissions ?? false,
+          require_private_content_approval:
+            updates.require_private_content_approval ?? policy?.require_private_content_approval ?? false,
         });
         setPolicy(updated);
         await loadOrgState(activeOrg.slug);
@@ -320,9 +327,72 @@ export function OrgGovernancePanel() {
               type="checkbox"
               checked={policy?.require_public_content_approval === true}
               disabled={!canManage || isPending}
-              onChange={(event) => handlePolicyChange(event.target.checked)}
+              onChange={(event) =>
+                handlePolicyChange({
+                  require_public_content_approval: event.target.checked,
+                })
+              }
             />
           </label>
+
+          {activeOrg?.tier === 'enterprise' ? (
+            <>
+              <label
+                className="flex items-center justify-between gap-4"
+                style={{
+                  padding: '0.875rem 0',
+                  borderBottom: '1px solid var(--d-border)',
+                }}
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm" style={{ fontWeight: 600 }}>
+                    Allow member submissions
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    Let members submit org packages without needing owner or admin publishing access.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={policy?.allow_member_submissions === true}
+                  disabled={!canManage || isPending}
+                  onChange={(event) =>
+                    handlePolicyChange({
+                      allow_member_submissions: event.target.checked,
+                    })
+                  }
+                />
+              </label>
+
+              <label
+                className="flex items-center justify-between gap-4"
+                style={{ padding: '0.875rem 0' }}
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm" style={{ fontWeight: 600 }}>
+                    Require approval for private org packages
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    Route private enterprise packages into the approval queue before they become visible to the org.
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={policy?.require_private_content_approval === true}
+                  disabled={!canManage || isPending}
+                  onChange={(event) =>
+                    handlePolicyChange({
+                      require_private_content_approval: event.target.checked,
+                    })
+                  }
+                />
+              </label>
+            </>
+          ) : (
+            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Advanced submission and private-review controls are part of the Enterprise governance model.
+            </p>
+          )}
 
           {!canManage ? (
             <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>

@@ -128,6 +128,8 @@ export interface OrgAuditEntry {
 export interface OrgPolicy {
   org_id: string;
   require_public_content_approval: boolean;
+  allow_member_submissions: boolean;
+  require_private_content_approval: boolean;
 }
 
 export interface OrgUsageSummary {
@@ -215,6 +217,8 @@ export interface AdminOrganizationDetail {
   };
   policy: {
     require_public_content_approval: boolean;
+    allow_member_submissions?: boolean;
+    require_private_content_approval?: boolean;
   };
   members: OrgMember[];
   recent_audit: OrgAuditEntry[];
@@ -406,7 +410,15 @@ export const api = {
     apiFetch<OrgPolicy>(`/orgs/${orgSlug}/policy`, { token }),
   getOrgUsage: (token: string, orgSlug: string) =>
     apiFetch<OrgUsageSummary>(`/orgs/${orgSlug}/usage`, { token }),
-  updateOrgPolicy: (token: string, orgSlug: string, body: { require_public_content_approval: boolean }) =>
+  updateOrgPolicy: (
+    token: string,
+    orgSlug: string,
+    body: {
+      require_public_content_approval: boolean;
+      allow_member_submissions?: boolean;
+      require_private_content_approval?: boolean;
+    },
+  ) =>
     apiFetch<OrgPolicy>(`/orgs/${orgSlug}/policy`, { token, method: 'PATCH', body: JSON.stringify(body) }),
   getOrgApprovals: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
     const searchParams = new URLSearchParams();
