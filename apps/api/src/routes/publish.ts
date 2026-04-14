@@ -10,6 +10,7 @@ import { validateRegistryContent } from '../lib/content-validation.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { getCommercialLimits } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { recordUsageEvent } from '../lib/usage-metering.js';
 
 export const publishRoutes = new Hono<Env>();
 
@@ -230,6 +231,13 @@ publishRoutes.post('/content', async (c) => {
       status,
       version: body.version,
     },
+  });
+
+  await recordUsageEvent({
+    user_id: auth.user!.id,
+    metric: visibility === 'private' ? 'private_package_publish' : 'content_publish',
+    quantity: 1,
+    source: 'jwt',
   });
 
   const statusCode = status === 'published' ? 201 : 202;

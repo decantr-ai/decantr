@@ -32,6 +32,10 @@ export interface CommercialLimits {
 
 export interface CommercialUsage {
   api_requests_30d: number;
+  personal_publishes_30d: number;
+  private_package_publishes_30d: number;
+  org_package_publishes_30d: number;
+  approval_actions_30d: number;
   personal_content_items: number;
   personal_private_packages: number;
   org_content_items: number;

@@ -387,7 +387,7 @@ export interface Database {
           id: string;
           user_id: string;
           org_id: string | null;
-          metric: 'api_request';
+          metric: 'api_request' | 'content_publish' | 'private_package_publish' | 'org_package_publish' | 'approval_action';
           quantity: number;
           source: 'jwt' | 'api_key';
           path: string | null;
@@ -398,7 +398,7 @@ export interface Database {
           id?: string;
           user_id: string;
           org_id?: string | null;
-          metric: 'api_request';
+          metric: 'api_request' | 'content_publish' | 'private_package_publish' | 'org_package_publish' | 'approval_action';
           quantity?: number;
           source?: 'jwt' | 'api_key';
           path?: string | null;
@@ -409,7 +409,7 @@ export interface Database {
           id?: string;
           user_id?: string;
           org_id?: string | null;
-          metric?: 'api_request';
+          metric?: 'api_request' | 'content_publish' | 'private_package_publish' | 'org_package_publish' | 'approval_action';
           quantity?: number;
           source?: 'jwt' | 'api_key';
           path?: string | null;

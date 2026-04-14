@@ -344,7 +344,12 @@ describe('Billing routes', () => {
       ],
       memberCount: 3,
       orgContentCount: 12,
-      usageRows: [{ quantity: 41 }, { quantity: 9 }],
+      usageRows: [
+        { metric: 'api_request', quantity: 41 },
+        { metric: 'api_request', quantity: 9 },
+        { metric: 'org_package_publish', quantity: 2 },
+        { metric: 'approval_action', quantity: 1 },
+      ],
     }));
     mockStripe.subscriptions.list.mockResolvedValue({
       data: [
@@ -374,6 +379,8 @@ describe('Billing routes', () => {
     expect(json.entitlements.org_collaboration).toBe(true);
     expect(json.usage.org_content_items).toBe(12);
     expect(json.usage.api_requests_30d).toBe(50);
+    expect(json.usage.org_package_publishes_30d).toBe(2);
+    expect(json.usage.approval_actions_30d).toBe(1);
     expect(json.usage.seats_used).toBe(3);
     expect(json.usage.seats_limit).toBe(4);
     expect(json.organizations[0].slug).toBe('acme');

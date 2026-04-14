@@ -23,6 +23,24 @@ That means the next step is not “start Phase 6.” The next step is to clarify
 
 This document resets that workstream around the actual product that exists today.
 
+## Implemented Since Reset
+
+The first implementation waves after this reset have already delivered:
+
+- a shared commercial entitlement model for `Free`, `Pro`, `Team`, and `Enterprise`
+- richer `/me` and `/billing/status` hosted contract responses
+- Team-backed organizations with seat persistence
+- org member listing, invites, role changes, and removals
+- org audit log foundations and an initial registry governance UI
+- personal vs org package publishing flows in the registry dashboard
+- durable API usage metering plus publish/approval usage event tracking
+
+That means the remaining work is no longer “introduce commercial structure.” It is:
+
+- deepen billing and usage fidelity
+- deepen governance and approval product surfaces
+- decide how much enterprise/private-registry scope should be implemented versus explicitly deferred
+
 ---
 
 ## Executive Decision

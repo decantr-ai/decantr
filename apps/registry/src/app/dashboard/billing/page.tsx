@@ -104,11 +104,13 @@ function CheckIcon({ size = 14 }: { size?: number }) {
 interface TierDef {
   name: string;
   price: number;
+  priceLabel?: string;
   description: string;
   features: string[];
   planId?: 'pro' | 'team';
   highlighted?: boolean;
   current?: boolean;
+  ctaLabel?: string;
 }
 
 function TierUpgradeCard({
@@ -158,14 +160,16 @@ function TierUpgradeCard({
         <span
           style={{ fontSize: '2.5rem', fontWeight: 700, lineHeight: 1 }}
         >
-          ${tier.price}
+          {tier.priceLabel ?? `$${tier.price}`}
         </span>
-        <span
-          className="text-sm"
-          style={{ color: 'var(--d-text-muted)', marginLeft: '0.25rem' }}
-        >
-          /mo
-        </span>
+        {!tier.priceLabel && (
+          <span
+            className="text-sm"
+            style={{ color: 'var(--d-text-muted)', marginLeft: '0.25rem' }}
+          >
+            /mo
+          </span>
+        )}
       </div>
 
       <p
@@ -208,7 +212,7 @@ function TierUpgradeCard({
           ? 'Current Plan'
           : isPending
           ? 'Loading...'
-          : 'Upgrade'}
+          : tier.ctaLabel || 'Upgrade'}
       </button>
     </div>
   );
@@ -311,6 +315,20 @@ export default function BillingPage() {
       planId: 'team',
       current: currentTier === 'team',
     },
+    {
+      name: 'Enterprise',
+      price: 0,
+      priceLabel: 'Custom',
+      description: 'For advanced governance, approvals, and future private-registry-grade controls.',
+      features: [
+        'Expanded approval workflows',
+        'Advanced governance controls',
+        'Dedicated support path',
+        'Private registry roadmap scope',
+      ],
+      ctaLabel: 'Contact Sales',
+      current: currentTier === 'enterprise',
+    },
   ];
 
   function handleUpgrade(plan: 'pro' | 'team') {
@@ -383,6 +401,9 @@ export default function BillingPage() {
                   ? ` Current live limit: ${billing.limits.api_requests_per_minute}/minute.`
                   : ' Unlimited per-minute usage on this plan.'}
               </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                Personal publishes in the last 30 days: {billing?.usage?.personal_publishes_30d ?? 0}. Private package publishes: {billing?.usage?.private_package_publishes_30d ?? 0}.
+              </div>
             </div>
 
           {activeOrg && (
@@ -405,6 +426,9 @@ export default function BillingPage() {
               </div>
               <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
                 Org packages: {billing?.usage?.org_content_items ?? 0}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                Org package publishes in the last 30 days: {billing?.usage?.org_package_publishes_30d ?? 0}. Approval actions: {billing?.usage?.approval_actions_30d ?? 0}.
               </div>
             </div>
           )}
@@ -439,8 +463,20 @@ export default function BillingPage() {
           Plans
         </span>
         <div
+          className="d-surface"
+          style={{ marginBottom: '1rem', display: 'grid', gap: '0.5rem' }}
+        >
+          <div className="text-sm" style={{ fontWeight: 600 }}>
+            Plan model
+          </div>
+          <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            Pro is for personal private packages. Team is for shared organization packages and collaboration.
+            Private registries are not part of the current self-serve Pro or Team offering and remain part of the enterprise roadmap.
+          </div>
+        </div>
+        <div
           className="grid gap-4"
-          style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}
+          style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}
         >
           {tiers.map((tier) => (
             <TierUpgradeCard

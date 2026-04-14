@@ -6,6 +6,7 @@ import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { recordUsageEvent } from '../lib/usage-metering.js';
 
 export const orgRoutes = new Hono<Env>();
 
@@ -311,6 +312,14 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
     },
   });
 
+  await recordUsageEvent({
+    user_id: auth.user!.id,
+    org_id: org.id,
+    metric: 'org_package_publish',
+    quantity: 1,
+    source: 'jwt',
+  });
+
   return c.json({
     ...data,
     message:
@@ -459,6 +468,14 @@ orgRoutes.patch('/orgs/:slug/members/:user_id', async (c) => {
       role: body.role,
       org_slug: slug,
     },
+  });
+
+  await recordUsageEvent({
+    user_id: auth.user!.id,
+    org_id: org.id,
+    metric: 'approval_action',
+    quantity: 1,
+    source: 'jwt',
   });
 
   return c.json(data);
@@ -642,6 +659,14 @@ orgRoutes.post('/orgs/:slug/approvals/:content_id/approve', async (c) => {
       slug: data.slug,
       namespace: data.namespace,
     },
+  });
+
+  await recordUsageEvent({
+    user_id: auth.user!.id,
+    org_id: org.id,
+    metric: 'approval_action',
+    quantity: 1,
+    source: 'jwt',
   });
 
   return c.json(data);

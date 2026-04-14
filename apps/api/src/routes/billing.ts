@@ -232,11 +232,19 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
   const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000)).toISOString();
   const { data: usageRows } = await adminClient
     .from('usage_events')
-    .select('quantity')
+    .select('metric, quantity')
     .eq('user_id', user.id)
-    .eq('metric', 'api_request')
     .gte('created_at', thirtyDaysAgo);
-  const apiRequests30d = (usageRows ?? []).reduce((total: number, row: any) => total + (row.quantity ?? 0), 0);
+  const usageTotals = (usageRows ?? []).reduce((totals: Record<string, number>, row: any) => {
+    const metric = row.metric ?? 'unknown';
+    totals[metric] = (totals[metric] ?? 0) + (row.quantity ?? 0);
+    return totals;
+  }, {});
+  const apiRequests30d = usageTotals.api_request ?? 0;
+  const personalPublishes30d = usageTotals.content_publish ?? 0;
+  const privatePublishes30d = usageTotals.private_package_publish ?? 0;
+  const orgPublishes30d = usageTotals.org_package_publish ?? 0;
+  const approvalActions30d = usageTotals.approval_action ?? 0;
 
   // Base response for free users or users without Stripe
   if (!userRow.stripe_customer_id) {
@@ -246,6 +254,10 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
       limits,
       usage: {
         api_requests_30d: apiRequests30d,
+        personal_publishes_30d: personalPublishes30d,
+        private_package_publishes_30d: privatePublishes30d,
+        org_package_publishes_30d: orgPublishes30d,
+        approval_actions_30d: approvalActions30d,
         personal_content_items: personalContentItems ?? 0,
         personal_private_packages: personalPrivatePackages ?? 0,
         org_content_items: orgContentItems ?? 0,
@@ -273,6 +285,10 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
       limits,
       usage: {
         api_requests_30d: apiRequests30d,
+        personal_publishes_30d: personalPublishes30d,
+        private_package_publishes_30d: privatePublishes30d,
+        org_package_publishes_30d: orgPublishes30d,
+        approval_actions_30d: approvalActions30d,
         personal_content_items: personalContentItems ?? 0,
         personal_private_packages: personalPrivatePackages ?? 0,
         org_content_items: orgContentItems ?? 0,
@@ -292,6 +308,10 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
     limits,
     usage: {
       api_requests_30d: apiRequests30d,
+      personal_publishes_30d: personalPublishes30d,
+      private_package_publishes_30d: privatePublishes30d,
+      org_package_publishes_30d: orgPublishes30d,
+      approval_actions_30d: approvalActions30d,
       personal_content_items: personalContentItems ?? 0,
       personal_private_packages: personalPrivatePackages ?? 0,
       org_content_items: orgContentItems ?? 0,
