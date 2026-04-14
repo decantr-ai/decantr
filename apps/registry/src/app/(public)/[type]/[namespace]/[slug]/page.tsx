@@ -28,6 +28,11 @@ type ActionSpec = {
   variant?: 'primary' | 'ghost';
 };
 
+type EvidenceSection = {
+  title: string;
+  items: string[];
+};
+
 function singularType(type: string): string {
   return type.endsWith('s') ? type.slice(0, -1) : type;
 }
@@ -336,6 +341,65 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const primarySignal = getPrimarySignal(content, Boolean(showcaseUrl));
   const quickStart = getQuickStartContent(singular, namespace, slug);
   const usageBullets = getUsageBullets(singular, tags);
+  const artifactCommands: ActionSpec[] = [
+    ...quickStart.actions,
+    ...(showcaseUrl
+      ? [
+          {
+            label: 'Open showcase URL',
+            command: showcaseUrl,
+            hint: 'Live showcase destination',
+            variant: 'ghost' as const,
+          },
+        ]
+      : []),
+  ];
+  const artifactEvidence: EvidenceSection[] = [
+    ...(intelligence
+      ? [
+          {
+            title: 'Registry intelligence',
+            items: [
+              getIntelligenceDescription(intelligence),
+              ...(intelligence.target_coverage.length > 0
+                ? [`Targets: ${intelligence.target_coverage.join(', ')}`]
+                : []),
+              ...(intelligence.last_verified_at
+                ? [`Last verified: ${formatDate(intelligence.last_verified_at)}`]
+                : []),
+              ...(recommendationReasons.length > 0
+                ? [`Recommended because: ${recommendationReasons.join(', ')}`]
+                : []),
+              ...(!intelligence.recommended && recommendationBlockers.length > 0
+                ? [`Holding back: ${recommendationBlockers.join(', ')}`]
+                : []),
+              ...(intelligence.evidence.length > 0
+                ? [`Evidence: ${intelligence.evidence.join(', ')}`]
+                : []),
+            ],
+          },
+        ]
+      : []),
+    ...(showcaseMeta
+      ? [
+          {
+            title: 'Showcase verification',
+            items: [
+              getShowcaseDescription(showcaseMeta),
+              ...(showcaseVerification
+                ? [
+                    `Build: ${showcaseVerification.build.passed ? 'passing' : 'failing'} in ${formatDuration(showcaseVerification.build.durationMs)}`,
+                    `Smoke: ${showcaseVerification.smoke.passed ? 'passing' : 'failing'} in ${formatDuration(showcaseVerification.smoke.durationMs)}`,
+                    `Routes: ${showcaseVerification.smoke.routeDocumentsPassed}/${showcaseVerification.smoke.routeDocumentsChecked} route documents passed`,
+                    `Hints matched: ${showcaseVerification.smoke.routeHintsMatched}/${showcaseVerification.smoke.routeHintsChecked.length}`,
+                    `Drift signal: ${showcaseVerification.drift.signal}`,
+                  ]
+                : []),
+            ],
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main className={`${styles.pageCanvas} ${typeStyles.canvas}`}>
@@ -539,6 +603,8 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
             <JsonViewer
               data={content.data}
               title={`${namespace}/${slug} — contract JSON`}
+              commands={artifactCommands}
+              evidence={artifactEvidence}
             />
           </div>
         ) : null}

@@ -131,6 +131,11 @@
   gap: 0.75rem;
 }
 
+.stackGrid {
+  display: grid;
+  gap: 0.875rem;
+}
+
 .outlineItem {
   border: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
   border-radius: var(--d-radius);
@@ -151,6 +156,72 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.commandCard {
+  border: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
+  border-radius: var(--d-radius);
+  padding: 0.875rem 1rem;
+  display: grid;
+  gap: 0.625rem;
+  background: color-mix(in srgb, var(--d-surface) 92%, transparent);
+}
+
+.commandHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.commandLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--d-text);
+}
+
+.commandHint {
+  font-size: 0.75rem;
+  color: var(--d-text-muted);
+  line-height: 1.5;
+}
+
+.commandCode {
+  font-family: var(--d-font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--d-amber);
+  padding: 0.75rem;
+  border-radius: var(--d-radius);
+  background: color-mix(in srgb, var(--d-bg) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.evidenceCard {
+  border: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
+  border-radius: var(--d-radius);
+  padding: 0.875rem 1rem;
+  display: grid;
+  gap: 0.625rem;
+  background: color-mix(in srgb, var(--d-surface) 92%, transparent);
+}
+
+.evidenceTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--d-text);
+}
+
+.evidenceList {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--d-text-muted);
+  line-height: 1.5;
 }
 
 .footer {

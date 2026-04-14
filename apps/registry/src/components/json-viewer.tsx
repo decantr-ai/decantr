@@ -6,6 +6,15 @@ import styles from './json-viewer.module.css';
 interface JsonViewerProps {
   data: unknown;
   title?: string;
+  commands?: Array<{
+    label: string;
+    command: string;
+    hint?: string;
+  }>;
+  evidence?: Array<{
+    title: string;
+    items: string[];
+  }>;
 }
 
 const INDENT_CLASSES = [
@@ -287,8 +296,13 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   );
 }
 
-export function JsonViewer({ data, title = 'Preview' }: JsonViewerProps) {
-  const [tab, setTab] = useState<'json' | 'outline'>('json');
+export function JsonViewer({
+  data,
+  title = 'Preview',
+  commands = [],
+  evidence = [],
+}: JsonViewerProps) {
+  const [tab, setTab] = useState<'json' | 'outline' | 'commands' | 'evidence'>('json');
   const jsonString = JSON.stringify(data, null, 2);
   const lineCount = jsonString.split('\n').length;
   const topLevelEntries = useMemo(() => getTopLevelEntries(data), [data]);
@@ -330,13 +344,33 @@ export function JsonViewer({ data, title = 'Preview' }: JsonViewerProps) {
         >
           Outline
         </button>
+        {commands.length > 0 ? (
+          <button
+            type="button"
+            className={`d-interactive ${styles.tabButton}`}
+            data-variant={tab === 'commands' ? 'primary' : 'ghost'}
+            onClick={() => setTab('commands')}
+          >
+            Commands
+          </button>
+        ) : null}
+        {evidence.length > 0 ? (
+          <button
+            type="button"
+            className={`d-interactive ${styles.tabButton}`}
+            data-variant={tab === 'evidence' ? 'primary' : 'ghost'}
+            onClick={() => setTab('evidence')}
+          >
+            Evidence
+          </button>
+        ) : null}
       </div>
 
       {tab === 'json' ? (
         <div className={`${styles.pane} ${styles.jsonPane}`}>
           <JsonNode value={data} depth={0} lineCounter={lineCounter} isLast />
         </div>
-      ) : (
+      ) : tab === 'outline' ? (
         <div className={`${styles.pane} ${styles.outlineGrid}`}>
           {topLevelEntries.map((entry) => (
             <div key={entry.key} className={styles.outlineItem}>
@@ -345,6 +379,34 @@ export function JsonViewer({ data, title = 'Preview' }: JsonViewerProps) {
                 <span>{typeof entry.value}</span>
                 <span>{summarizeValue(entry.value)}</span>
               </div>
+            </div>
+          ))}
+        </div>
+      ) : tab === 'commands' ? (
+        <div className={`${styles.pane} ${styles.stackGrid}`}>
+          {commands.map((entry) => (
+            <div key={entry.label} className={styles.commandCard}>
+              <div className={styles.commandHeader}>
+                <div>
+                  <div className={styles.commandLabel}>{entry.label}</div>
+                  {entry.hint ? <div className={styles.commandHint}>{entry.hint}</div> : null}
+                </div>
+                <CopyButton text={entry.command} />
+              </div>
+              <code className={styles.commandCode}>{entry.command}</code>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className={`${styles.pane} ${styles.stackGrid}`}>
+          {evidence.map((section) => (
+            <div key={section.title} className={styles.evidenceCard}>
+              <div className={styles.evidenceTitle}>{section.title}</div>
+              <ul className={styles.evidenceList}>
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
