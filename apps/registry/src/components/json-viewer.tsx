@@ -6,6 +6,7 @@ import styles from './json-viewer.module.css';
 interface JsonViewerProps {
   data: unknown;
   title?: string;
+  defaultTab?: 'json' | 'overview' | 'commands' | 'evidence';
   commands?: Array<{
     label: string;
     command: string;
@@ -299,10 +300,17 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
 export function JsonViewer({
   data,
   title = 'Preview',
+  defaultTab = 'json',
   commands = [],
   evidence = [],
 }: JsonViewerProps) {
-  const [tab, setTab] = useState<'json' | 'outline' | 'commands' | 'evidence'>('json');
+  const initialTab = useMemo(() => {
+    if (defaultTab === 'commands' && commands.length > 0) return 'commands';
+    if (defaultTab === 'evidence' && evidence.length > 0) return 'evidence';
+    if (defaultTab === 'overview') return 'overview';
+    return 'json';
+  }, [commands.length, defaultTab, evidence.length]);
+  const [tab, setTab] = useState<'json' | 'overview' | 'commands' | 'evidence'>(initialTab);
   const jsonString = JSON.stringify(data, null, 2);
   const lineCount = jsonString.split('\n').length;
   const topLevelEntries = useMemo(() => getTopLevelEntries(data), [data]);
@@ -331,18 +339,18 @@ export function JsonViewer({
         <button
           type="button"
           className={`d-interactive ${styles.tabButton}`}
-          data-variant={tab === 'json' ? 'primary' : 'ghost'}
-          onClick={() => setTab('json')}
+          data-variant={tab === 'overview' ? 'primary' : 'ghost'}
+          onClick={() => setTab('overview')}
         >
-          JSON
+          Overview
         </button>
         <button
           type="button"
           className={`d-interactive ${styles.tabButton}`}
-          data-variant={tab === 'outline' ? 'primary' : 'ghost'}
-          onClick={() => setTab('outline')}
+          data-variant={tab === 'json' ? 'primary' : 'ghost'}
+          onClick={() => setTab('json')}
         >
-          Outline
+          JSON
         </button>
         {commands.length > 0 ? (
           <button
@@ -366,11 +374,7 @@ export function JsonViewer({
         ) : null}
       </div>
 
-      {tab === 'json' ? (
-        <div className={`${styles.pane} ${styles.jsonPane}`}>
-          <JsonNode value={data} depth={0} lineCounter={lineCounter} isLast />
-        </div>
-      ) : tab === 'outline' ? (
+      {tab === 'overview' ? (
         <div className={`${styles.pane} ${styles.outlineGrid}`}>
           {topLevelEntries.map((entry) => (
             <div key={entry.key} className={styles.outlineItem}>
@@ -381,6 +385,10 @@ export function JsonViewer({
               </div>
             </div>
           ))}
+        </div>
+      ) : tab === 'json' ? (
+        <div className={`${styles.pane} ${styles.jsonPane}`}>
+          <JsonNode value={data} depth={0} lineCounter={lineCounter} isLast />
         </div>
       ) : tab === 'commands' ? (
         <div className={`${styles.pane} ${styles.stackGrid}`}>
@@ -413,9 +421,11 @@ export function JsonViewer({
       )}
 
       <div className={styles.footer}>
-        {schemaId
-          ? 'This artifact is schema-backed and can be copied directly into your workflow or inspected in detail.'
-          : 'This artifact can be copied directly into your workflow or inspected in detail.'}
+        {tab === 'commands'
+          ? 'Use the commands tab as the fastest path into Decantr, then switch to JSON only when you need raw contract detail.'
+          : schemaId
+            ? 'This artifact is schema-backed and can be copied directly into your workflow or inspected in detail.'
+            : 'This artifact can be copied directly into your workflow or inspected in detail.'}
       </div>
     </div>
   );

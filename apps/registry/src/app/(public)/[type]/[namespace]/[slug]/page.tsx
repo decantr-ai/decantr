@@ -341,6 +341,12 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const primarySignal = getPrimarySignal(content, Boolean(showcaseUrl));
   const quickStart = getQuickStartContent(singular, namespace, slug);
   const usageBullets = getUsageBullets(singular, tags);
+  const artifactDefaultTab =
+    singular === 'blueprint'
+      ? 'commands'
+      : intelligence || showcaseMeta
+        ? 'overview'
+        : 'json';
   const artifactCommands: ActionSpec[] = [
     ...quickStart.actions,
     ...(showcaseUrl
@@ -514,7 +520,8 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
         </section>
 
         <div className={styles.summaryGrid}>
-          <section className={`d-surface ${styles.summaryCard}`} data-elevation="raised" aria-label="Usage guidance">
+          <section className={`d-surface ${styles.summaryCard} ${styles.summaryCardPrimary}`} data-elevation="raised" aria-label="Usage guidance">
+            <span className={styles.summaryEyebrow}>How to use this</span>
             <h2 className={styles.summaryTitle}>What to do next</h2>
             <p className={styles.supportingCopy}>
               Use the official command rail first, then inspect the raw contract when you need implementation detail or drift debugging.
@@ -527,29 +534,35 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
           </section>
 
           {intelligence ? (
-            <section className={`d-surface ${styles.summaryCard}`} data-elevation="raised" aria-label="Registry intelligence">
+            <section className={`d-surface ${styles.summaryCard} ${styles.summaryCardAccent}`} data-elevation="raised" aria-label="Registry intelligence">
+              <span className={styles.summaryEyebrow}>Trust snapshot</span>
               <h2 className={styles.summaryTitle}>Registry intelligence</h2>
               <div className={styles.factRow}>
                 {intelligence.recommended ? (
                   <span className="d-annotation" data-status="success">recommended</span>
                 ) : null}
-                {formatVerificationLabel(intelligence.verification_status) ? (
+                {benchmarkBackedIntelligence ? (
                   <span className="d-annotation">
-                    {formatVerificationLabel(intelligence.verification_status)}
+                    {intelligence.benchmark_confidence} benchmark confidence
                   </span>
                 ) : null}
-                <span className="d-annotation">quality {intelligence.quality_score ?? 'n/a'}</span>
-                <span className="d-annotation">confidence {intelligence.confidence_score ?? 'n/a'}</span>
               </div>
               <p className={styles.supportingCopy}>{getIntelligenceDescription(intelligence)}</p>
+              <div className={styles.factList}>
+                <div>Quality score: {intelligence.quality_score ?? 'n/a'}</div>
+                <div>Confidence score: {intelligence.confidence_score ?? 'n/a'}</div>
+                {formatVerificationLabel(intelligence.verification_status) ? (
+                  <div>Verification: {formatVerificationLabel(intelligence.verification_status)}</div>
+                ) : null}
+                {intelligence.last_verified_at ? (
+                  <div>Last verified: {formatDate(intelligence.last_verified_at)}</div>
+                ) : null}
+              </div>
               <details className={styles.detailsBlock}>
                 <summary className={styles.detailsSummary}>Why this is trusted</summary>
                 <div className={styles.detailsContent}>
                   {intelligence.target_coverage.length > 0 ? (
                     <div>Targets: {intelligence.target_coverage.join(', ')}</div>
-                  ) : null}
-                  {intelligence.last_verified_at ? (
-                    <div>Last verified: {formatDate(intelligence.last_verified_at)}</div>
                   ) : null}
                   {recommendationReasons.length > 0 ? (
                     <div>Recommended because: {recommendationReasons.join(', ')}</div>
@@ -569,19 +582,23 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
           ) : null}
 
           {showcaseMeta ? (
-            <section className={`d-surface ${styles.summaryCard}`} data-elevation="raised" aria-label="Showcase verification">
+            <section className={`d-surface ${styles.summaryCard} ${styles.summaryCardSuccess}`} data-elevation="raised" aria-label="Showcase verification">
+              <span className={styles.summaryEyebrow}>Live validation</span>
               <h2 className={styles.summaryTitle}>Showcase verification</h2>
               <div className={styles.factRow}>
                 <span className="d-annotation" data-status={showcaseMeta.goldenCandidate ? 'success' : 'info'}>
                   {showcaseMeta.goldenCandidate ? 'shortlisted showcase' : 'live showcase'}
                 </span>
-                <span className="d-annotation">classification {showcaseMeta.classification}</span>
-                {showcaseMeta.target ? <span className="d-annotation">{showcaseMeta.target}</span> : null}
-                {showcaseVerification ? (
-                  <span className="d-annotation">drift {showcaseVerification.drift.signal}</span>
-                ) : null}
               </div>
               <p className={styles.supportingCopy}>{getShowcaseDescription(showcaseMeta)}</p>
+              <div className={styles.factList}>
+                <div>Classification: {showcaseMeta.classification}</div>
+                {showcaseMeta.target ? <div>Target runtime: {showcaseMeta.target}</div> : null}
+                {showcaseVerification ? <div>Drift signal: {showcaseVerification.drift.signal}</div> : null}
+                {showcaseVerification ? (
+                  <div>Build / smoke: {showcaseVerification.build.passed ? 'passing' : 'failing'} / {showcaseVerification.smoke.passed ? 'passing' : 'failing'}</div>
+                ) : null}
+              </div>
               {showcaseVerification ? (
                 <details className={styles.detailsBlock}>
                   <summary className={styles.detailsSummary}>Technical verification summary</summary>
@@ -603,6 +620,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
             <JsonViewer
               data={content.data}
               title={`${namespace}/${slug} — contract JSON`}
+              defaultTab={artifactDefaultTab}
               commands={artifactCommands}
               evidence={artifactEvidence}
             />
