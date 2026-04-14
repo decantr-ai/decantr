@@ -9,6 +9,7 @@ import { logger } from '../lib/logger.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
 
 export const adminRoutes = new Hono<Env>();
+const ORG_TIERS = ['team', 'enterprise'] as const;
 
 /** Timing-safe string comparison to prevent timing attacks on admin key */
 function safeCompare(a: string, b: string): boolean {
@@ -58,6 +59,10 @@ adminRoutes.use('/admin/content/*', requireAdminKeyOnly());
 // All other admin endpoints require both user auth + admin key
 adminRoutes.use('/admin/moderation/*', requireAuth());
 adminRoutes.use('/admin/moderation/*', requireAdmin());
+adminRoutes.use('/admin/commercial/*', requireAuth());
+adminRoutes.use('/admin/commercial/*', requireAdmin());
+adminRoutes.use('/admin/organizations/*', requireAuth());
+adminRoutes.use('/admin/organizations/*', requireAdmin());
 
 // GET /v1/admin/moderation/queue
 adminRoutes.get('/admin/moderation/queue', async (c) => {
@@ -250,6 +255,195 @@ adminRoutes.post('/admin/moderation/:id/reject', async (c) => {
   return c.json({ message: 'Content rejected' });
 });
 
+function aggregateUsageTotals(rows: Array<{ metric?: string | null; quantity?: number | null }>) {
+  return rows.reduce((totals: Record<string, number>, row) => {
+    const metric = row.metric ?? 'unknown';
+    totals[metric] = (totals[metric] ?? 0) + (row.quantity ?? 0);
+    return totals;
+  }, {});
+}
+
+// GET /v1/admin/organizations
+adminRoutes.get('/admin/organizations', async (c) => {
+  const client = createAdminClient();
+  const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const q = c.req.query('q')?.trim().toLowerCase() ?? '';
+  const tier = ORG_TIERS.find((value) => value === c.req.query('tier'));
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: organizations, error } = await client
+    .from('organizations')
+    .select('id, name, slug, tier, seat_limit, stripe_subscription_id')
+    .order('name', { ascending: true });
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch organizations' }, 500);
+  }
+
+  const filtered = (organizations ?? []).filter((org: any) => {
+    if (tier && org.tier !== tier) {
+      return false;
+    }
+
+    if (!q) {
+      return true;
+    }
+
+    return [org.name, org.slug].join(' ').toLowerCase().includes(q);
+  });
+
+  const paged = filtered.slice(offset, offset + limit);
+  const items = await Promise.all(
+    paged.map(async (org: any) => {
+      const [
+        memberCountResult,
+        privateCountResult,
+        publicCountResult,
+        pendingResult,
+        policyResult,
+        usageRowsResult,
+      ] = await Promise.all([
+        client.from('org_members').select('*', { count: 'exact', head: true }).eq('org_id', org.id),
+        client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'private'),
+        client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'public'),
+        client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('status', 'pending'),
+        client.from('organization_policies').select('require_public_content_approval').eq('org_id', org.id).single(),
+        client.from('usage_events').select('metric, quantity').eq('org_id', org.id).gte('created_at', thirtyDaysAgo),
+      ]);
+
+      const usageTotals = aggregateUsageTotals((usageRowsResult.data ?? []) as Array<{ metric?: string | null; quantity?: number | null }>);
+      const publicPackages = publicCountResult.count ?? 0;
+      const privatePackages = privateCountResult.count ?? 0;
+
+      return {
+        id: org.id,
+        slug: org.slug,
+        name: org.name,
+        tier: org.tier,
+        seat_limit: org.seat_limit ?? 0,
+        stripe_subscription_id: org.stripe_subscription_id ?? null,
+        member_count: memberCountResult.count ?? 0,
+        package_count: publicPackages + privatePackages,
+        public_packages: publicPackages,
+        private_packages: privatePackages,
+        pending_approvals: pendingResult.count ?? 0,
+        require_public_content_approval: policyResult.data?.require_public_content_approval ?? false,
+        api_requests_30d: usageTotals.api_request ?? 0,
+        org_package_publishes_30d: usageTotals.org_package_publish ?? 0,
+        approval_actions_30d: usageTotals.approval_action ?? 0,
+      };
+    }),
+  );
+
+  return c.json({
+    total: filtered.length,
+    limit,
+    offset,
+    items,
+  });
+});
+
+// GET /v1/admin/organizations/:slug
+adminRoutes.get('/admin/organizations/:slug', async (c) => {
+  const client = createAdminClient();
+  const slug = c.req.param('slug');
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: org, error } = await client
+    .from('organizations')
+    .select('id, name, slug, tier, seat_limit, stripe_subscription_id, created_at')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  const [
+    membersResult,
+    privateCountResult,
+    publicCountResult,
+    pendingResult,
+    policyResult,
+    usageRowsResult,
+    auditResult,
+    recentContentResult,
+  ] = await Promise.all([
+    client
+      .from('org_members')
+      .select('user_id, role, created_at, users(email, display_name, username)')
+      .eq('org_id', org.id)
+      .order('created_at', { ascending: true }),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'private'),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'public'),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('status', 'pending'),
+    client.from('organization_policies').select('require_public_content_approval').eq('org_id', org.id).single(),
+    client.from('usage_events').select('metric, quantity').eq('org_id', org.id).gte('created_at', thirtyDaysAgo),
+    client
+      .from('audit_logs')
+      .select('id, actor_user_id, org_id, scope, action, target_type, target_id, details, created_at')
+      .eq('org_id', org.id)
+      .order('created_at', { ascending: false })
+      .range(0, 14),
+    client
+      .from('content')
+      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+      .eq('org_id', org.id)
+      .order('updated_at', { ascending: false })
+      .range(0, 11),
+  ]);
+
+  const usageTotals = aggregateUsageTotals((usageRowsResult.data ?? []) as Array<{ metric?: string | null; quantity?: number | null }>);
+  const members = (membersResult.data ?? []).map((member: any) => ({
+    user_id: member.user_id,
+    email: member.users?.email ?? '',
+    display_name: member.users?.display_name ?? null,
+    username: member.users?.username ?? null,
+    role: member.role,
+    created_at: member.created_at,
+  }));
+  const recentContent = (recentContentResult.data ?? []).map((item: any) => ({
+    id: item.id,
+    type: item.type,
+    slug: item.slug,
+    namespace: item.namespace,
+    visibility: item.visibility,
+    status: item.status,
+    version: item.version,
+    name: (item.data as Record<string, unknown>)?.name,
+    description: (item.data as Record<string, unknown>)?.description,
+    owner_username: null,
+    published_at: item.published_at ?? null,
+  }));
+
+  return c.json({
+    organization: {
+      id: org.id,
+      slug: org.slug,
+      name: org.name,
+      tier: org.tier,
+      seat_limit: org.seat_limit ?? 0,
+      stripe_subscription_id: org.stripe_subscription_id ?? null,
+      created_at: org.created_at,
+    },
+    usage: {
+      member_count: members.length,
+      public_packages: publicCountResult.count ?? 0,
+      private_packages: privateCountResult.count ?? 0,
+      pending_approvals: pendingResult.count ?? 0,
+      api_requests_30d: usageTotals.api_request ?? 0,
+      org_package_publishes_30d: usageTotals.org_package_publish ?? 0,
+      approval_actions_30d: usageTotals.approval_action ?? 0,
+    },
+    policy: {
+      require_public_content_approval: policyResult.data?.require_public_content_approval ?? false,
+    },
+    members,
+    recent_audit: auditResult.data ?? [],
+    recent_content: recentContent,
+  });
+});
+
 // GET /v1/admin/commercial/summary
 adminRoutes.get('/admin/commercial/summary', async (c) => {
   const client = createAdminClient();
@@ -287,11 +481,7 @@ adminRoutes.get('/admin/commercial/summary', async (c) => {
     totalSeatLimit += row.seat_limit ?? 0;
   }
 
-  const usageTotals = ((usageRowsResult.data ?? []) as any[]).reduce((totals: Record<string, number>, row) => {
-    const metric = row.metric ?? 'unknown';
-    totals[metric] = (totals[metric] ?? 0) + (row.quantity ?? 0);
-    return totals;
-  }, {});
+  const usageTotals = aggregateUsageTotals((usageRowsResult.data ?? []) as Array<{ metric?: string | null; quantity?: number | null }>);
 
   return c.json({
     users_by_tier: usersByTier,

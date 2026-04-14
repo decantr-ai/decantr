@@ -181,4 +181,19 @@ describe('GET /v1/admin/commercial/summary', () => {
       approval_actions_30d: 4,
     });
   });
+
+  it('rejects access without a valid admin key', async () => {
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/commercial/summary', {
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer test-token',
+      },
+    });
+
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toBe('Admin access required');
+  });
 });

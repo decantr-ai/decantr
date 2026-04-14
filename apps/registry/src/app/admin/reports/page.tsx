@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
 import { isAdmin } from '@/lib/admin';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -31,7 +32,12 @@ export default async function AdminReportsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h3 className="text-lg font-semibold">Commercial Reports</h3>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h3 className="text-lg font-semibold">Commercial Reports</h3>
+        <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
+          Open organizations
+        </Link>
+      </div>
 
       {error ? (
         <div className="d-annotation" data-status="error" style={{ display: 'block' }}>

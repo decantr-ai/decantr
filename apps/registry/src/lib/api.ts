@@ -169,6 +169,58 @@ export interface AdminCommercialSummary {
   };
 }
 
+export interface AdminOrganizationSummary {
+  id: string;
+  slug: string;
+  name: string;
+  tier: 'team' | 'enterprise';
+  seat_limit: number;
+  stripe_subscription_id: string | null;
+  member_count: number;
+  package_count: number;
+  public_packages: number;
+  private_packages: number;
+  pending_approvals: number;
+  require_public_content_approval: boolean;
+  api_requests_30d: number;
+  org_package_publishes_30d: number;
+  approval_actions_30d: number;
+}
+
+export interface AdminOrganizationListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  items: AdminOrganizationSummary[];
+}
+
+export interface AdminOrganizationDetail {
+  organization: {
+    id: string;
+    slug: string;
+    name: string;
+    tier: 'team' | 'enterprise';
+    seat_limit: number;
+    stripe_subscription_id: string | null;
+    created_at: string;
+  };
+  usage: {
+    member_count: number;
+    public_packages: number;
+    private_packages: number;
+    pending_approvals: number;
+    api_requests_30d: number;
+    org_package_publishes_30d: number;
+    approval_actions_30d: number;
+  };
+  policy: {
+    require_public_content_approval: boolean;
+  };
+  members: OrgMember[];
+  recent_audit: OrgAuditEntry[];
+  recent_content: DashboardContentItem[];
+}
+
 export interface ModerationQueueItem {
   id: string;
   content_id: string;
@@ -399,6 +451,27 @@ export const api = {
     }),
   getCommercialSummary: (token: string, adminKey: string) =>
     adminFetch<AdminCommercialSummary>('/admin/commercial/summary', {
+      token,
+      adminKey,
+    }),
+  getAdminOrganizations: (
+    token: string,
+    adminKey: string,
+    params?: { q?: string; tier?: 'team' | 'enterprise'; limit?: number; offset?: number },
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.q) query.q = params.q;
+    if (params?.tier) query.tier = params.tier;
+    if (params?.limit != null) query.limit = String(params.limit);
+    if (params?.offset != null) query.offset = String(params.offset);
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<AdminOrganizationListResponse>(`/admin/organizations${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  getAdminOrganization: (token: string, adminKey: string, slug: string) =>
+    adminFetch<AdminOrganizationDetail>(`/admin/organizations/${slug}`, {
       token,
       adminKey,
     }),

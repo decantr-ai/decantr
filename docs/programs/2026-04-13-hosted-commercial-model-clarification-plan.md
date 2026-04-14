@@ -53,6 +53,12 @@ The latest governance wave also clarifies the product boundary inside the regist
 - `Private Registry` is the enterprise internal catalog for org-owned packages
 - `Admin` is platform moderation and commercial reporting
 
+The latest admin operations wave also makes support workflows first-class:
+
+- secure admin commercial endpoints now require the same admin gate as moderation
+- `Admin / Organizations` provides org-by-org operational inspection
+- `Admin / Organizations / :slug` provides member, package, policy, and audit visibility for support follow-through
+
 ---
 
 ## Executive Decision

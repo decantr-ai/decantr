@@ -210,6 +210,25 @@
             "route": "/admin/reports"
           },
           {
+            "id": "organizations",
+            "layout": [
+              "search-filter-bar",
+              "content-card-grid",
+              "activity-feed"
+            ],
+            "route": "/admin/organizations"
+          },
+          {
+            "id": "organization-detail",
+            "layout": [
+              "detail-header",
+              "kpi-grid",
+              "activity-feed",
+              "content-card-grid"
+            ],
+            "route": "/admin/organizations/:slug"
+          },
+          {
             "id": "moderation-detail",
             "layout": [
               "content-detail-hero",
@@ -303,6 +322,14 @@
       "/admin/reports": {
         "section": "admin-moderation",
         "page": "commercial-reports"
+      },
+      "/admin/organizations": {
+        "section": "admin-moderation",
+        "page": "organizations"
+      },
+      "/admin/organizations/:slug": {
+        "section": "admin-moderation",
+        "page": "organization-detail"
       },
       "/dashboard/billing": {
         "section": "user-dashboard",
