@@ -88,11 +88,11 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="registry-page-stack">
       {/* Header row */}
-      <div className="flex items-center justify-between">
+      <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
         <h3 className="text-lg font-semibold">Content</h3>
-        <div className="flex items-center gap-2">
+        <div className="registry-inline-actions">
           {privateRegistryEnabled ? (
             <Link href="/dashboard/private-registry" className="d-interactive" data-variant="ghost">
               Open Private Registry
@@ -117,22 +117,16 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
       </div>
 
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Private Discovery
         </span>
         <form
           method="get"
           action="/dashboard/content"
-          className="d-surface"
-          style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}
+          className="d-surface registry-surface-stack"
+          style={{ marginBottom: '1rem' }}
         >
-          <div className="flex flex-col gap-1">
+          <div className="registry-form-grid">
             <label className="text-sm font-semibold" htmlFor="q">
               Search private packages
             </label>
@@ -144,7 +138,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
               placeholder="Search by slug, namespace, name, or description"
             />
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="registry-inline-actions">
             <label className="text-sm font-semibold" htmlFor="scope">
               Scope
             </label>
@@ -174,13 +168,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
 
       {/* Personal content grid */}
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           Published ({items.length})
         </span>
         {items.length > 0 ? (
@@ -219,13 +207,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
 
       {orgName ? (
         <section className="d-section" data-density="compact">
-          <span
-            className="d-label block mb-4"
-            style={{
-              paddingLeft: '0.75rem',
-              borderLeft: '2px solid var(--d-accent)',
-            }}
-          >
+          <span className="d-label registry-anchor-label">
             {orgName} Packages ({orgItems.length})
           </span>
           {orgItems.length > 0 ? (

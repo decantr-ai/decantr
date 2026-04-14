@@ -33,8 +33,8 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
 
   if (!me?.entitlements.private_registry_portal || !activeOrg) {
     return (
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
+      <div className="registry-page-stack">
+        <div className="registry-page-intro">
           <h3 className="text-lg font-semibold">Private Registry</h3>
           <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
             Private registry workspaces are available on Enterprise for organizations that need a dedicated internal catalog.
@@ -76,8 +76,8 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
+    <div className="registry-page-stack">
+      <div className="registry-page-intro">
         <h3 className="text-lg font-semibold">Private Registry</h3>
         <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
           Browse the internal package catalog for your enterprise organization, including private packages and governed public releases.
@@ -88,11 +88,10 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
         <form
           method="get"
           action="/dashboard/private-registry"
-          className="d-surface"
-          style={{ display: 'grid', gap: '0.75rem' }}
+          className="d-surface registry-surface-stack"
         >
-          <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-            <div className="flex flex-col gap-1">
+          <div className="registry-form-grid-split" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="org">
                 Organization
               </label>
@@ -105,7 +104,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="q">
                 Search
               </label>
@@ -118,7 +117,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="type">
                 Type
               </label>
@@ -132,7 +131,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="visibility">
                 Visibility
               </label>
@@ -143,7 +142,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
               </select>
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="status">
                 Status
               </label>
@@ -157,7 +156,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="registry-inline-actions">
             <button type="submit" className="d-interactive" data-variant="primary">
               Filter registry
             </button>
@@ -169,13 +168,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
       </section>
 
       <section className="d-section" data-density="compact">
-        <span
-          className="d-label block mb-4"
-          style={{
-            paddingLeft: '0.75rem',
-            borderLeft: '2px solid var(--d-accent)',
-          }}
-        >
+        <span className="d-label registry-anchor-label">
           {activeOrg.name} Registry ({items.length})
         </span>
 

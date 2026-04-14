@@ -383,8 +383,10 @@
 
   .registry-shell-root {
     display: flex;
-    min-height: 100vh;
+    height: 100dvh;
+    min-height: 100dvh;
     background: var(--d-bg);
+    overflow: hidden;
   }
 
   .registry-shell-main {
@@ -392,6 +394,7 @@
     flex-direction: column;
     flex: 1;
     min-width: 0;
+    min-height: 0;
     overflow: hidden;
   }
 
@@ -451,12 +454,30 @@
     flex: 1;
     overflow-y: auto;
     padding: clamp(1rem, 2vw, 1.5rem);
+    min-height: 0;
+  }
+
+  .registry-shell-body .registry-page-stack {
+    gap: 1rem;
+  }
+
+  .registry-shell-body .d-section[data-density="compact"] {
+    padding-block: 1rem;
+  }
+
+  .registry-shell-body .d-section[data-density="comfortable"] {
+    padding-block: 1.5rem;
+  }
+
+  .registry-shell-body .d-section + .d-section {
+    margin-top: 0;
   }
 
   .registry-shell-sidebar-spacer {
     position: relative;
     flex: none;
     width: var(--sidebar-width, 240px);
+    height: 100%;
     transition: width 200ms var(--d-easing);
   }
 
@@ -484,7 +505,7 @@
     display: flex;
     flex-direction: column;
     width: var(--sidebar-width, 240px);
-    height: 100vh;
+    height: 100%;
     background: var(--d-surface);
     border-right: 1px solid var(--d-border);
     overflow: hidden;
@@ -501,6 +522,7 @@
     left: 0;
     z-index: 40;
     width: min(18rem, calc(100vw - 1.5rem));
+    height: 100dvh;
     transform: translateX(-100%);
     box-shadow: var(--d-shadow-lg);
   }
