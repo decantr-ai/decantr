@@ -41,12 +41,6 @@ function formatVerificationStatus(status?: string | null): string | null {
   }
 }
 
-function verificationBadgeStatus(status?: string | null): 'success' | 'warning' | undefined {
-  if (status === 'smoke-green' || status === 'build-green') return 'success';
-  if (status === 'smoke-red' || status === 'build-red') return 'warning';
-  return undefined;
-}
-
 function getIntelligenceSourceLabel(
   source?: NonNullable<ContentItem['intelligence']>['source'],
 ): string | null {
@@ -101,7 +95,16 @@ export function ContentCard({
       ? 'smoke verified'
       : showcaseVerification?.build.passed
         ? 'build verified'
-        : null);
+      : null);
+  const signalSummary = [
+    intelligenceSourceLabel,
+    verificationLabel,
+    confidenceTierLabel,
+    showcaseMeta?.target ?? null,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .slice(0, 3)
+    .join(' · ');
 
   return (
     <div className="lum-card-outlined registry-card" data-type={singular}>
@@ -122,27 +125,9 @@ export function ContentCard({
             recommended
           </span>
         )}
-        {intelligenceSourceLabel && (
-          <span className="d-annotation">
-            {intelligenceSourceLabel}
-          </span>
-        )}
-        {showcaseMeta && (
+        {showcaseMeta?.goldenCandidate && (
           <span className="d-annotation" data-status={hasShortlistedShowcase ? 'success' : undefined}>
-            {hasShortlistedShowcase ? 'shortlisted showcase' : 'live showcase'}
-          </span>
-        )}
-        {verificationLabel && (
-          <span
-            className="d-annotation"
-            data-status={verificationBadgeStatus(intelligence?.verification_status)}
-          >
-            {verificationLabel}
-          </span>
-        )}
-        {confidenceTierLabel && (
-          <span className="d-annotation">
-            {confidenceTierLabel}
+            shortlisted showcase
           </span>
         )}
       </div>
@@ -169,6 +154,12 @@ export function ContentCard({
           {item.description}
         </p>
       )}
+
+      {signalSummary ? (
+        <p className="registry-card-signal-row text-sm">
+          {signalSummary}
+        </p>
+      ) : null}
 
       {/* Footer */}
       <div className="registry-card-footer">

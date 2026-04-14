@@ -399,6 +399,12 @@
     overflow: hidden;
   }
 
+  .registry-card-signal-row {
+    margin: 0;
+    color: var(--d-text-muted);
+    line-height: 1.5;
+  }
+
   .registry-card-footer {
     display: flex;
     flex-direction: column;

@@ -1,10 +1,58 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import styles from './json-viewer.module.css';
 
 interface JsonViewerProps {
   data: unknown;
   title?: string;
+}
+
+const INDENT_CLASSES = [
+  styles.depth0,
+  styles.depth1,
+  styles.depth2,
+  styles.depth3,
+  styles.depth4,
+  styles.depth5,
+  styles.depth6,
+];
+
+function getIndentClass(depth: number) {
+  return INDENT_CLASSES[Math.min(depth, INDENT_CLASSES.length - 1)];
+}
+
+function summarizeValue(value: unknown) {
+  if (Array.isArray(value)) {
+    return `${value.length} items`;
+  }
+  if (value && typeof value === 'object') {
+    return `${Object.keys(value as Record<string, unknown>).length} keys`;
+  }
+  return typeof value;
+}
+
+function getTopLevelEntries(value: unknown): Array<{ key: string; value: unknown }> {
+  if (Array.isArray(value)) {
+    return value.map((entry, index) => ({ key: `[${index}]`, value: entry }));
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>).map(([key, entry]) => ({
+      key,
+      value: entry,
+    }));
+  }
+  return [];
+}
+
+function formatBytes(bytes: number) {
+  if (bytes >= 1_000_000) {
+    return `${(bytes / 1_000_000).toFixed(2)} MB`;
+  }
+  if (bytes >= 1_000) {
+    return `${(bytes / 1_000).toFixed(1)} KB`;
+  }
+  return `${bytes} B`;
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -26,22 +74,7 @@ function CopyButton({ text }: { text: string }) {
       className="d-interactive py-1 px-2.5 text-xs"
       data-variant="ghost"
     >
-      {copied ? (
-        <span className="flex items-center gap-1.5 text-d-green">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          Copied
-        </span>
-      ) : (
-        <span className="flex items-center gap-1.5">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-          </svg>
-          Copy
-        </span>
-      )}
+      {copied ? 'Copied' : 'Copy JSON'}
     </button>
   );
 }
@@ -54,39 +87,27 @@ interface NodeProps {
   isLast: boolean;
 }
 
-function LineNum({ num }: { num: number }) {
-  return (
-    <span className="inline-block w-8 text-right mr-4 text-d-muted text-xs font-mono select-none opacity-50">
-      {num}
-    </span>
-  );
-}
-
-function Indent({ depth }: { depth: number }) {
-  return <span style={{ paddingLeft: `${depth * 1.25}rem` }} />;
-}
-
 function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   const [collapsed, setCollapsed] = useState(depth >= 3);
   const comma = isLast ? '' : ',';
 
   const keyEl = keyName !== undefined ? (
     <span>
-      <span className="text-d-coral">&quot;{keyName}&quot;</span>
-      <span className="text-d-muted">: </span>
+      <span className={styles.tokenKey}>"{keyName}"</span>
+      <span className={styles.tokenPunctuation}>: </span>
     </span>
   ) : null;
 
-  // Primitives
   if (value === null) {
     const line = lineCounter.current++;
     return (
-      <div className="leading-relaxed">
-        <LineNum num={line} />
-        <Indent depth={depth} />
-        {keyEl}
-        <span className="text-d-muted italic">null</span>
-        {comma}
+      <div className={styles.row}>
+        <span className={styles.lineNum}>{line}</span>
+        <div className={`${styles.content} ${getIndentClass(depth)}`}>
+          {keyEl}
+          <span className={styles.tokenNull}>null</span>
+          {comma}
+        </div>
       </div>
     );
   }
@@ -94,12 +115,13 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   if (typeof value === 'boolean') {
     const line = lineCounter.current++;
     return (
-      <div className="leading-relaxed">
-        <LineNum num={line} />
-        <Indent depth={depth} />
-        {keyEl}
-        <span className="text-d-green">{String(value)}</span>
-        {comma}
+      <div className={styles.row}>
+        <span className={styles.lineNum}>{line}</span>
+        <div className={`${styles.content} ${getIndentClass(depth)}`}>
+          {keyEl}
+          <span className={styles.tokenBoolean}>{String(value)}</span>
+          {comma}
+        </div>
       </div>
     );
   }
@@ -107,12 +129,13 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   if (typeof value === 'number') {
     const line = lineCounter.current++;
     return (
-      <div className="leading-relaxed">
-        <LineNum num={line} />
-        <Indent depth={depth} />
-        {keyEl}
-        <span className="text-d-cyan">{String(value)}</span>
-        {comma}
+      <div className={styles.row}>
+        <span className={styles.lineNum}>{line}</span>
+        <div className={`${styles.content} ${getIndentClass(depth)}`}>
+          {keyEl}
+          <span className={styles.tokenNumber}>{String(value)}</span>
+          {comma}
+        </div>
       </div>
     );
   }
@@ -120,165 +143,217 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   if (typeof value === 'string') {
     const line = lineCounter.current++;
     return (
-      <div className="leading-relaxed">
-        <LineNum num={line} />
-        <Indent depth={depth} />
-        {keyEl}
-        <span className="text-d-amber">&quot;{value}&quot;</span>
-        {comma}
+      <div className={styles.row}>
+        <span className={styles.lineNum}>{line}</span>
+        <div className={`${styles.content} ${getIndentClass(depth)}`}>
+          {keyEl}
+          <span className={styles.tokenString}>"{value}"</span>
+          {comma}
+        </div>
       </div>
     );
   }
 
-  // Arrays
   if (Array.isArray(value)) {
     const openLine = lineCounter.current++;
 
     if (collapsed) {
       return (
-        <div className="leading-relaxed">
-          <LineNum num={openLine} />
-          <Indent depth={depth} />
-          {keyEl}
-          <button
-            onClick={() => setCollapsed(false)}
-            className="text-d-muted hover:text-d-text cursor-pointer bg-transparent border-none font-mono text-inherit p-0"
-            aria-label={`Expand array${keyName ? ` ${keyName}` : ''}`}
-          >
-            <span className="text-d-text">[</span>
-            <span className="text-xs mx-1 d-annotation">{value.length}</span>
-            <span className="text-d-text">]</span>
-          </button>
-          {comma}
+        <div className={styles.row}>
+          <span className={styles.lineNum}>{openLine}</span>
+          <div className={`${styles.content} ${getIndentClass(depth)}`}>
+            {keyEl}
+            <button
+              onClick={() => setCollapsed(false)}
+              className={styles.toggleButton}
+              aria-label={`Expand array${keyName ? ` ${keyName}` : ''}`}
+            >
+              <span className={styles.tokenPunctuation}>[</span>
+              <span className="d-annotation">{value.length}</span>
+              <span className={styles.tokenPunctuation}>]</span>
+            </button>
+            {comma}
+          </div>
         </div>
       );
     }
 
     return (
       <>
-        <div className="leading-relaxed">
-          <LineNum num={openLine} />
-          <Indent depth={depth} />
-          {keyEl}
-          <button
-            onClick={() => setCollapsed(true)}
-            className="text-d-muted hover:text-d-text cursor-pointer bg-transparent border-none font-mono text-inherit p-0"
-            aria-label={`Collapse array${keyName ? ` ${keyName}` : ''}`}
-          >
-            <span className="text-d-text">[</span>
-          </button>
+        <div className={styles.row}>
+          <span className={styles.lineNum}>{openLine}</span>
+          <div className={`${styles.content} ${getIndentClass(depth)}`}>
+            {keyEl}
+            <button
+              onClick={() => setCollapsed(true)}
+              className={styles.toggleButton}
+              aria-label={`Collapse array${keyName ? ` ${keyName}` : ''}`}
+            >
+              <span className={styles.tokenPunctuation}>[</span>
+            </button>
+          </div>
         </div>
-        {value.map((item, i) => (
+        {value.map((item, index) => (
           <JsonNode
-            key={i}
+            key={index}
             value={item}
             depth={depth + 1}
             lineCounter={lineCounter}
-            isLast={i === value.length - 1}
+            isLast={index === value.length - 1}
           />
         ))}
-        <div className="leading-relaxed">
-          <LineNum num={lineCounter.current++} />
-          <Indent depth={depth} />
-          <span className="text-d-text">]</span>
-          {comma}
+        <div className={styles.row}>
+          <span className={styles.lineNum}>{lineCounter.current++}</span>
+          <div className={`${styles.content} ${getIndentClass(depth)}`}>
+            <span className={styles.tokenPunctuation}>]</span>
+            {comma}
+          </div>
         </div>
       </>
     );
   }
 
-  // Objects
   if (typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>);
     const openLine = lineCounter.current++;
 
     if (collapsed) {
       return (
-        <div className="leading-relaxed">
-          <LineNum num={openLine} />
-          <Indent depth={depth} />
-          {keyEl}
-          <button
-            onClick={() => setCollapsed(false)}
-            className="text-d-muted hover:text-d-text cursor-pointer bg-transparent border-none font-mono text-inherit p-0"
-            aria-label={`Expand object${keyName ? ` ${keyName}` : ''}`}
-          >
-            <span className="text-d-text">{'{'}</span>
-            <span className="text-xs mx-1 d-annotation">{entries.length}</span>
-            <span className="text-d-text">{'}'}</span>
-          </button>
-          {comma}
+        <div className={styles.row}>
+          <span className={styles.lineNum}>{openLine}</span>
+          <div className={`${styles.content} ${getIndentClass(depth)}`}>
+            {keyEl}
+            <button
+              onClick={() => setCollapsed(false)}
+              className={styles.toggleButton}
+              aria-label={`Expand object${keyName ? ` ${keyName}` : ''}`}
+            >
+              <span className={styles.tokenPunctuation}>{'{'}</span>
+              <span className="d-annotation">{entries.length}</span>
+              <span className={styles.tokenPunctuation}>{'}'}</span>
+            </button>
+            {comma}
+          </div>
         </div>
       );
     }
 
     return (
       <>
-        <div className="leading-relaxed">
-          <LineNum num={openLine} />
-          <Indent depth={depth} />
-          {keyEl}
-          <button
-            onClick={() => setCollapsed(true)}
-            className="text-d-muted hover:text-d-text cursor-pointer bg-transparent border-none font-mono text-inherit p-0"
-            aria-label={`Collapse object${keyName ? ` ${keyName}` : ''}`}
-          >
-            <span className="text-d-text">{'{'}</span>
-          </button>
+        <div className={styles.row}>
+          <span className={styles.lineNum}>{openLine}</span>
+          <div className={`${styles.content} ${getIndentClass(depth)}`}>
+            {keyEl}
+            <button
+              onClick={() => setCollapsed(true)}
+              className={styles.toggleButton}
+              aria-label={`Collapse object${keyName ? ` ${keyName}` : ''}`}
+            >
+              <span className={styles.tokenPunctuation}>{'{'}</span>
+            </button>
+          </div>
         </div>
-        {entries.map(([k, v], i) => (
+        {entries.map(([entryKey, entryValue], index) => (
           <JsonNode
-            key={k}
-            keyName={k}
-            value={v}
+            key={entryKey}
+            keyName={entryKey}
+            value={entryValue}
             depth={depth + 1}
             lineCounter={lineCounter}
-            isLast={i === entries.length - 1}
+            isLast={index === entries.length - 1}
           />
         ))}
-        <div className="leading-relaxed">
-          <LineNum num={lineCounter.current++} />
-          <Indent depth={depth} />
-          <span className="text-d-text">{'}'}</span>
-          {comma}
+        <div className={styles.row}>
+          <span className={styles.lineNum}>{lineCounter.current++}</span>
+          <div className={`${styles.content} ${getIndentClass(depth)}`}>
+            <span className={styles.tokenPunctuation}>{'}'}</span>
+            {comma}
+          </div>
         </div>
       </>
     );
   }
 
-  // Fallback
   const line = lineCounter.current++;
   return (
-    <div className="leading-relaxed">
-      <LineNum num={line} />
-      <Indent depth={depth} />
-      {keyEl}
-      <span className="text-d-text">{String(value)}</span>
-      {comma}
+    <div className={styles.row}>
+      <span className={styles.lineNum}>{line}</span>
+      <div className={`${styles.content} ${getIndentClass(depth)}`}>
+        {keyEl}
+        <span>{String(value)}</span>
+        {comma}
+      </div>
     </div>
   );
 }
 
 export function JsonViewer({ data, title = 'Preview' }: JsonViewerProps) {
+  const [tab, setTab] = useState<'json' | 'outline'>('json');
   const jsonString = JSON.stringify(data, null, 2);
+  const lineCount = jsonString.split('\n').length;
+  const topLevelEntries = useMemo(() => getTopLevelEntries(data), [data]);
+  const schemaId =
+    data && typeof data === 'object' && '$schema' in (data as Record<string, unknown>)
+      ? String((data as Record<string, unknown>)['$schema'])
+      : null;
   const lineCounter = { current: 1 };
 
   return (
-    <div className="lum-code-block overflow-hidden">
-      {/* Header toolbar */}
-      <div className="flex items-center justify-between pb-3 mb-3 border-b border-d-border/50">
-        <span className="text-xs font-medium text-d-muted">{title}</span>
+    <div className={`lum-code-block ${styles.viewer}`}>
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarMeta}>
+          <span className={styles.title}>{title}</span>
+          <div className={styles.summaryRow}>
+            <span className={`d-annotation ${styles.metaChip}`}>{lineCount} lines</span>
+            <span className={`d-annotation ${styles.metaChip}`}>{formatBytes(jsonString.length)}</span>
+            <span className={`d-annotation ${styles.metaChip}`}>{topLevelEntries.length} root entries</span>
+            {schemaId ? <span className={`d-annotation ${styles.metaChip}`}>schema</span> : null}
+          </div>
+        </div>
         <CopyButton text={jsonString} />
       </div>
 
-      {/* JSON content */}
-      <div className="overflow-x-auto text-sm font-mono">
-        <JsonNode
-          value={data}
-          depth={0}
-          lineCounter={lineCounter}
-          isLast
-        />
+      <div className={styles.tabs}>
+        <button
+          type="button"
+          className={`d-interactive ${styles.tabButton}`}
+          data-variant={tab === 'json' ? 'primary' : 'ghost'}
+          onClick={() => setTab('json')}
+        >
+          JSON
+        </button>
+        <button
+          type="button"
+          className={`d-interactive ${styles.tabButton}`}
+          data-variant={tab === 'outline' ? 'primary' : 'ghost'}
+          onClick={() => setTab('outline')}
+        >
+          Outline
+        </button>
+      </div>
+
+      {tab === 'json' ? (
+        <div className={`${styles.pane} ${styles.jsonPane}`}>
+          <JsonNode value={data} depth={0} lineCounter={lineCounter} isLast />
+        </div>
+      ) : (
+        <div className={`${styles.pane} ${styles.outlineGrid}`}>
+          {topLevelEntries.map((entry) => (
+            <div key={entry.key} className={styles.outlineItem}>
+              <div className={styles.outlineKey}>{entry.key}</div>
+              <div className={styles.outlineMeta}>
+                <span>{typeof entry.value}</span>
+                <span>{summarizeValue(entry.value)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.footer}>
+        {schemaId
+          ? 'This artifact is schema-backed and can be copied directly into your workflow or inspected in detail.'
+          : 'This artifact can be copied directly into your workflow or inspected in detail.'}
       </div>
     </div>
   );
