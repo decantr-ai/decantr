@@ -250,6 +250,68 @@ adminRoutes.post('/admin/moderation/:id/reject', async (c) => {
   return c.json({ message: 'Content rejected' });
 });
 
+// GET /v1/admin/commercial/summary
+adminRoutes.get('/admin/commercial/summary', async (c) => {
+  const client = createAdminClient();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [
+    usersResult,
+    orgsResult,
+    publicContentResult,
+    privateContentResult,
+    orgContentResult,
+    approvalsResult,
+    auditResult,
+    usageRowsResult,
+  ] = await Promise.all([
+    client.from('users').select('tier'),
+    client.from('organizations').select('id, tier, seat_limit'),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('visibility', 'public'),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('visibility', 'private'),
+    client.from('content').select('*', { count: 'exact', head: true }).not('org_id', 'is', null),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    client.from('audit_logs').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
+    client.from('usage_events').select('metric, quantity').gte('created_at', thirtyDaysAgo),
+  ]);
+
+  const usersByTier = { free: 0, pro: 0, team: 0, enterprise: 0 } as Record<string, number>;
+  for (const row of usersResult.data ?? []) {
+    usersByTier[row.tier] = (usersByTier[row.tier] ?? 0) + 1;
+  }
+
+  const orgsByTier = { team: 0, enterprise: 0 } as Record<string, number>;
+  let totalSeatLimit = 0;
+  for (const row of orgsResult.data ?? []) {
+    orgsByTier[row.tier] = (orgsByTier[row.tier] ?? 0) + 1;
+    totalSeatLimit += row.seat_limit ?? 0;
+  }
+
+  const usageTotals = ((usageRowsResult.data ?? []) as any[]).reduce((totals: Record<string, number>, row) => {
+    const metric = row.metric ?? 'unknown';
+    totals[metric] = (totals[metric] ?? 0) + (row.quantity ?? 0);
+    return totals;
+  }, {});
+
+  return c.json({
+    users_by_tier: usersByTier,
+    organizations_by_tier: orgsByTier,
+    totals: {
+      public_packages: publicContentResult.count ?? 0,
+      private_packages: privateContentResult.count ?? 0,
+      org_packages: orgContentResult.count ?? 0,
+      pending_approvals: approvalsResult.count ?? 0,
+      audit_events_30d: auditResult.count ?? 0,
+      seat_limit_total: totalSeatLimit,
+      api_requests_30d: usageTotals.api_request ?? 0,
+      content_publishes_30d: usageTotals.content_publish ?? 0,
+      private_package_publishes_30d: usageTotals.private_package_publish ?? 0,
+      org_package_publishes_30d: usageTotals.org_package_publish ?? 0,
+      approval_actions_30d: usageTotals.approval_action ?? 0,
+    },
+  });
+});
+
 // POST /v1/admin/sync - Bulk upsert official content (used by CI/CD)
 adminRoutes.post('/admin/sync', async (c) => {
   const body = await c.req.json();

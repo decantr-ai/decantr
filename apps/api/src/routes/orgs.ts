@@ -156,6 +156,74 @@ orgRoutes.get('/orgs/:slug/members', async (c) => {
   });
 });
 
+// GET /v1/orgs/:slug/usage
+orgRoutes.get('/orgs/:slug/usage', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const slug = c.req.param('slug');
+  const { client, org, membership } = await requireOrgMembership(auth, slug);
+
+  if (!org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  if (!membership) {
+    return c.json({ error: 'Not a member of this organization' }, 403);
+  }
+
+  const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000)).toISOString();
+
+  const [
+    memberCountResult,
+    contentCountResult,
+    publicCountResult,
+    privateCountResult,
+    usageRowsResult,
+    approvalsResult,
+  ] = await Promise.all([
+    client.from('org_members').select('*', { count: 'exact', head: true }).eq('org_id', org.id),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'public'),
+    client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'private'),
+    client
+      .from('usage_events')
+      .select('metric, quantity')
+      .eq('org_id', org.id)
+      .gte('created_at', thirtyDaysAgo),
+    client
+      .from('content')
+      .select('*', { count: 'exact', head: true })
+      .eq('org_id', org.id)
+      .eq('status', 'pending'),
+  ]);
+
+  const usageTotals = ((usageRowsResult.data ?? []) as any[]).reduce((totals: Record<string, number>, row) => {
+    const metric = row.metric ?? 'unknown';
+    totals[metric] = (totals[metric] ?? 0) + (row.quantity ?? 0);
+    return totals;
+  }, {});
+
+  return c.json({
+    organization: {
+      id: org.id,
+      slug: org.slug,
+      name: org.name,
+      tier: org.tier,
+      seat_limit: org.seat_limit ?? 1,
+    },
+    usage: {
+      members: memberCountResult.count ?? 0,
+      seat_limit: org.seat_limit ?? 1,
+      content_items: contentCountResult.count ?? 0,
+      public_packages: publicCountResult.count ?? 0,
+      private_packages: privateCountResult.count ?? 0,
+      pending_approvals: approvalsResult.count ?? 0,
+      api_requests_30d: usageTotals.api_request ?? 0,
+      org_package_publishes_30d: usageTotals.org_package_publish ?? 0,
+      approval_actions_30d: usageTotals.approval_action ?? 0,
+    },
+  });
+});
+
 // GET /v1/orgs/:slug/policy
 orgRoutes.get('/orgs/:slug/policy', async (c) => {
   const auth = c.get('auth') as AuthContext;

@@ -34,6 +34,18 @@ interface AuditEntry {
   created_at: string;
 }
 
+interface UsageSummary {
+  members: number;
+  seat_limit: number;
+  content_items: number;
+  public_packages: number;
+  private_packages: number;
+  pending_approvals: number;
+  api_requests_30d: number;
+  org_package_publishes_30d: number;
+  approval_actions_30d: number;
+}
+
 /* ── Icons ── */
 
 function UserPlusIcon({ size = 16 }: { size?: number }) {
@@ -310,6 +322,7 @@ export default function TeamPage() {
   const [orgSlug, setOrgSlug] = useState('');
   const [seatLimit, setSeatLimit] = useState(0);
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
+  const [usageSummary, setUsageSummary] = useState<UsageSummary | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('member');
   const [error, setError] = useState<string | null>(null);
@@ -319,16 +332,19 @@ export default function TeamPage() {
   async function reloadOrgState(token: string, slug: string) {
     if (!token || !slug) return;
     try {
-      const [memberData, auditData] = await Promise.all([
+      const [memberData, auditData, usageData] = await Promise.all([
         api.getOrgMembers(token, slug),
         api.getOrgAuditLog(token, slug, { limit: 10, offset: 0 }).catch(() => null),
+        api.getOrgUsage(token, slug).catch(() => null),
       ]);
       setMembers(memberData?.members ?? []);
       setSeatLimit(memberData?.organization?.seat_limit ?? 0);
       setAuditEntries(auditData?.items ?? []);
+      setUsageSummary(usageData?.usage ?? null);
     } catch {
       setMembers([]);
       setAuditEntries([]);
+      setUsageSummary(null);
     }
   }
 
@@ -419,22 +435,22 @@ export default function TeamPage() {
   const kpiItems = [
     {
       label: 'Members',
-      value: members.length,
+      value: usageSummary?.members ?? members.length,
       icon: <UsersIcon size={18} />,
     },
     {
-      label: 'Active This Week',
-      value: members.length,
+      label: 'Pending Approvals',
+      value: usageSummary?.pending_approvals ?? 0,
       icon: <ActivityIcon size={18} />,
     },
     {
       label: 'Seat Limit',
-      value: seatLimit,
+      value: usageSummary?.seat_limit ?? seatLimit,
       icon: <PackageIcon size={18} />,
     },
     {
       label: 'Seats Available',
-      value: Math.max(0, seatLimit - members.length),
+      value: Math.max(0, (usageSummary?.seat_limit ?? seatLimit) - (usageSummary?.members ?? members.length)),
       icon: <MailIcon size={18} />,
     },
   ];
@@ -453,6 +469,34 @@ export default function TeamPage() {
       <section className="d-section" data-density="compact">
         <KPIGrid items={kpiItems} />
       </section>
+
+      {usageSummary ? (
+        <section className="d-section" data-density="compact">
+          <span
+            className="d-label block mb-4"
+            style={{
+              paddingLeft: '0.75rem',
+              borderLeft: '2px solid var(--d-accent)',
+            }}
+          >
+            Organization Usage
+          </span>
+          <div className="d-surface" style={{ display: 'grid', gap: '0.5rem' }}>
+            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Packages: {usageSummary.content_items} total · {usageSummary.public_packages} public · {usageSummary.private_packages} private
+            </div>
+            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              API requests (30d): {usageSummary.api_requests_30d}
+            </div>
+            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Org package publishes (30d): {usageSummary.org_package_publishes_30d}
+            </div>
+            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              Approval actions (30d): {usageSummary.approval_actions_30d}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* Members */}
       <section className="d-section" data-density="compact">
