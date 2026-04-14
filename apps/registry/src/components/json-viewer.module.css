@@ -1,5 +1,7 @@
 .viewer {
   overflow: hidden;
+  --viewer-inline-pad: clamp(0.875rem, 2vw, 1.25rem);
+  --viewer-block-pad: clamp(0.875rem, 1.5vw, 1rem);
 }
 
 .toolbar {
@@ -7,8 +9,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  padding: var(--viewer-block-pad) var(--viewer-inline-pad) 0.75rem;
   padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
   border-bottom: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
 }
 
@@ -23,6 +25,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--d-text);
+  line-height: 1.4;
 }
 
 .summaryRow {
@@ -33,8 +36,9 @@
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  padding: 0.875rem var(--viewer-inline-pad) 0.75rem;
 }
 
 .tabButton {
@@ -47,12 +51,14 @@
 
 .pane {
   min-width: 0;
+  padding: 0 var(--viewer-inline-pad) var(--viewer-block-pad);
 }
 
 .jsonPane {
   overflow-x: auto;
   font-size: 0.875rem;
   font-family: var(--d-font-mono, ui-monospace, monospace);
+  padding-bottom: calc(var(--viewer-block-pad) * 0.25);
 }
 
 .row {
@@ -225,14 +231,21 @@
 }
 
 .footer {
-  margin-top: 0.75rem;
   padding-top: 0.75rem;
+  padding-right: var(--viewer-inline-pad);
+  padding-bottom: var(--viewer-block-pad);
+  padding-left: var(--viewer-inline-pad);
   border-top: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
   font-size: 0.75rem;
   color: var(--d-text-muted);
 }
 
 @media (max-width: 768px) {
+  .viewer {
+    --viewer-inline-pad: 0.75rem;
+    --viewer-block-pad: 0.75rem;
+  }
+
   .toolbar {
     flex-direction: column;
   }
