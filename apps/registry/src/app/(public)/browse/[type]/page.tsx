@@ -83,8 +83,8 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      <div className="mb-6 flex flex-col gap-1">
+    <div className="registry-browser-shell">
+      <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">{CONTENT_TYPE_LABELS[type]}</h1>
         <p className="text-sm text-d-muted">{CONTENT_TYPE_DESCRIPTIONS[type]}</p>
       </div>
@@ -97,7 +97,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
         />
       </Suspense>
 
-      <div className="mt-8">
+      <div>
         <ContentCardGrid
           items={items}
           emptyMessage={

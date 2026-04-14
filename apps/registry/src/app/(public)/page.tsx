@@ -6,11 +6,6 @@ import { SearchFilterBar } from '@/components/search-filter-bar';
 import { KPIGrid } from '@/components/kpi-grid';
 import { compareContentItems } from '@/lib/content-ranking';
 import {
-  getShowcaseShortlistVerificationSummary,
-  listShortlistedShowcases,
-} from '@/lib/showcase';
-import styles from './page.module.css';
-import {
   CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
   type RegistryContentType,
@@ -40,55 +35,6 @@ async function FeaturedContent() {
   }
 
   return <ContentCardGrid items={items} emptyMessage="No featured registry content yet." />;
-}
-
-async function ShowcaseShortlist() {
-  const shortlist = await listShortlistedShowcases();
-  if (shortlist.length === 0) {
-    return null;
-  }
-
-  let items: ContentItem[] = [];
-
-  try {
-    const result = await listContent('blueprints', { limit: 100 });
-    const shortlistOrder = new Map(shortlist.map((entry, index) => [entry.slug, index]));
-    items = result.items
-      .filter((item) => shortlistOrder.has(item.slug))
-      .sort((a, b) => (shortlistOrder.get(a.slug) ?? 999) - (shortlistOrder.get(b.slug) ?? 999));
-  } catch {
-    // API unavailable
-  }
-
-  return (
-    <ContentCardGrid
-      items={items}
-      emptyMessage="No shortlisted showcase blueprints are available yet."
-    />
-  );
-}
-
-async function ShowcaseShortlistSummary() {
-  const summary = await getShowcaseShortlistVerificationSummary();
-  if (!summary) {
-    return null;
-  }
-
-  return (
-    <KPIGrid
-      items={[
-        { label: 'Build Verified', value: summary.passedBuilds },
-        { label: 'Smoke Verified', value: summary.passedSmokes },
-        { label: 'Route Coverage', value: summary.appsWithRouteCoverageCount },
-        { label: 'Full Route Coverage', value: summary.appsWithFullRouteCoverageCount },
-        { label: 'No Inline Scripts', value: summary.appsWithoutInlineScriptsCount },
-        { label: 'CSP Signals', value: summary.appsWithCspSignalCount },
-        { label: 'External CSS Integrity', value: summary.appsWithExternalStylesheetIntegrityCount },
-        { label: 'Lower Drift', value: summary.lowerDriftCount },
-        { label: 'Elevated Drift', value: summary.elevatedDriftCount },
-      ]}
-    />
-  );
 }
 
 async function RegistryStats() {
@@ -164,12 +110,12 @@ function CardGridSkeleton() {
 
 export default function HomePage() {
   return (
-    <main className={`lum-canvas ${styles.pageShellBreakpoint}`}>
-      <section className="entrance-fade" aria-labelledby="registry-home-heading">
+    <div className="registry-browser-shell">
+      <section className="entrance-fade flex flex-col gap-3" aria-labelledby="registry-home-heading">
         <h1 id="registry-home-heading" className="mb-2 text-2xl font-semibold">
           Explore the Registry
         </h1>
-        <p className={`${styles.heroCopy} text-[var(--d-text-muted)]`}>
+        <p className="max-w-3xl text-[var(--d-text-muted)]">
           Browse, install, and publish patterns, themes, blueprints, archetypes, and shells.
         </p>
         <Suspense>
@@ -177,13 +123,8 @@ export default function HomePage() {
         </Suspense>
       </section>
 
-      <div className="lum-divider" />
-
-      <section aria-labelledby="featured-registry-heading">
-        <span
-          id="featured-registry-heading"
-          className={`d-label ${styles.sectionLabelAccent} border-l-[var(--d-accent)]`}
-        >
+      <section className="d-section" data-density="comfortable" aria-labelledby="featured-registry-heading">
+        <span id="featured-registry-heading" className="d-label">
           Featured
         </span>
         <Suspense fallback={<CardGridSkeleton />}>
@@ -191,43 +132,17 @@ export default function HomePage() {
         </Suspense>
       </section>
 
-      <div className="lum-divider" />
-
-      <section aria-labelledby="showcase-shortlist-heading">
-        <span
-          id="showcase-shortlist-heading"
-          className={`d-label ${styles.sectionLabelSuccess} border-l-[var(--d-success)]`}
-        >
-          Showcase Shortlist
-        </span>
-        <p className={`${styles.sectionCopy} text-[var(--d-text-muted)]`}>
-          Provisional benchmark candidates from the Decantr showcase corpus. These blueprints currently have live showcase builds and a passing served-output smoke baseline.
-        </p>
-        <Suspense>
-          <ShowcaseShortlistSummary />
-        </Suspense>
-        <div className="h-4" />
-        <Suspense fallback={<CardGridSkeleton />}>
-          <ShowcaseShortlist />
-        </Suspense>
-      </section>
-
-      <div className="lum-divider" />
-
-      <section className={`d-section ${styles.metricsSection}`} aria-labelledby="registry-stats-heading">
-        <span
-          id="registry-stats-heading"
-          className={`d-label ${styles.sectionLabelAccent} border-l-[var(--d-accent)]`}
-        >
+      <section className="d-section" data-density="comfortable" aria-labelledby="registry-stats-heading">
+        <span id="registry-stats-heading" className="d-label">
           Registry Stats
         </span>
-        <p className={`${styles.sectionCopy} text-[var(--d-text-muted)]`}>
+        <p className="max-w-3xl text-[var(--d-text-muted)]">
           Live totals are sourced from the hosted public registry contracts, including aggregate intelligence and verification coverage where available.
         </p>
         <Suspense>
           <RegistryStats />
         </Suspense>
       </section>
-    </main>
+    </div>
   );
 }

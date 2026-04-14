@@ -112,6 +112,7 @@ export function SearchFilterBar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const currentQuery = searchParams.get('q') ?? '';
   const currentSort = normalizePublicContentSort(searchParams.get('sort'));
@@ -177,8 +178,73 @@ export function SearchFilterBar({
     navigate({ intelligence_source: e.target.value });
   }
 
+  function renderControls() {
+    return (
+      <>
+        {showRecommendedToggle && (
+          <button
+            type="button"
+            className="d-interactive"
+            data-variant={recommendedOnly ? 'primary' : 'ghost'}
+            onClick={handleRecommendedToggle}
+            style={{
+              borderRadius: 'var(--d-radius-full)',
+              fontSize: '0.8125rem',
+              padding: '0.25rem 0.75rem',
+            }}
+          >
+            Recommended only
+          </button>
+        )}
+        <div className="registry-search-control-row">
+          <span
+            className="text-sm whitespace-nowrap"
+            style={{ color: 'var(--d-text-muted)' }}
+          >
+            Intelligence
+          </span>
+          <select
+            value={currentIntelligenceSource}
+            onChange={handleIntelligenceSourceChange}
+            className="d-control"
+            style={{ minWidth: '9rem' }}
+          >
+            <option value="">All sources</option>
+            {CONTENT_INTELLIGENCE_SOURCES.map((source) => (
+              <option key={source} value={source}>
+                {INTELLIGENCE_SOURCE_LABELS[source]}
+              </option>
+            ))}
+          </select>
+        </div>
+        {showSort && (
+          <div className="registry-search-control-row">
+            <span
+              className="text-sm whitespace-nowrap"
+              style={{ color: 'var(--d-text-muted)' }}
+            >
+              Sort by
+            </span>
+            <select
+              value={currentSort}
+              onChange={handleSortChange}
+              className="d-control"
+              style={{ minWidth: '10rem' }}
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="registry-search-filter">
       {/* Search input */}
       <form onSubmit={handleSubmit} className="relative">
         <svg
@@ -222,9 +288,9 @@ export function SearchFilterBar({
       </form>
 
       {/* Filters row */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="registry-search-meta">
         {/* Type tabs */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="registry-type-strip">
           {TYPES.map(({ type, label, icon }) => (
             <button
               key={label}
@@ -245,70 +311,32 @@ export function SearchFilterBar({
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          {resultCount !== undefined && (
+        <div className="flex items-center gap-3 flex-wrap">
+          {resultCount !== undefined ? (
             <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
               {resultCount} results
             </span>
-          )}
-          {showRecommendedToggle && (
-            <button
-              type="button"
-              className="d-interactive"
-              data-variant={recommendedOnly ? 'primary' : 'ghost'}
-              onClick={handleRecommendedToggle}
-              style={{
-                borderRadius: 'var(--d-radius-full)',
-                fontSize: '0.8125rem',
-                padding: '0.25rem 0.75rem',
-              }}
-            >
-              Recommended only
-            </button>
-          )}
-          <div className="flex items-center gap-2">
-            <span
-              className="text-sm whitespace-nowrap"
-              style={{ color: 'var(--d-text-muted)' }}
-            >
-              Intelligence
-            </span>
-            <select
-              value={currentIntelligenceSource}
-              onChange={handleIntelligenceSourceChange}
-              className="d-control"
-              style={{ minWidth: '9rem' }}
-            >
-              <option value="">All sources</option>
-              {CONTENT_INTELLIGENCE_SOURCES.map((source) => (
-                <option key={source} value={source}>
-                  {INTELLIGENCE_SOURCE_LABELS[source]}
-                </option>
-              ))}
-            </select>
+          ) : null}
+          <button
+            type="button"
+            className="d-interactive registry-mobile-filter-toggle"
+            data-variant="ghost"
+            onClick={() => setMobileFiltersOpen((open) => !open)}
+            aria-expanded={mobileFiltersOpen}
+          >
+            Filters
+          </button>
+          <div className="registry-search-controls registry-search-controls-desktop">
+            {renderControls()}
           </div>
-          {showSort && (
-            <div className="flex items-center gap-2">
-              <span
-                className="text-sm whitespace-nowrap"
-                style={{ color: 'var(--d-text-muted)' }}
-              >
-                Sort by
-              </span>
-              <select
-                value={currentSort}
-                onChange={handleSortChange}
-                className="d-control"
-                style={{ width: 'auto', minWidth: 160 }}
-              >
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+        </div>
+      </div>
+
+      <div className="registry-mobile-filters" data-open={mobileFiltersOpen}>
+        <div className="d-surface" style={{ display: 'grid', gap: '0.75rem' }}>
+          <div className="registry-search-controls">
+            {renderControls()}
+          </div>
         </div>
       </div>
     </div>

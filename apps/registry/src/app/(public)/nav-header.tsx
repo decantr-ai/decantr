@@ -7,6 +7,13 @@ interface NavHeaderProps {
   user: { id: string; email?: string } | null;
 }
 
+const MOBILE_NAV_LINKS = [
+  { href: '/browse', label: 'Browse' },
+  { href: '/browse/patterns', label: 'Patterns' },
+  { href: '/browse/themes', label: 'Themes' },
+  { href: '/browse/blueprints', label: 'Blueprints' },
+];
+
 export function NavHeader({ user }: NavHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -87,6 +94,19 @@ export function NavHeader({ user }: NavHeaderProps) {
             borderLeft: '1px solid var(--d-border)',
           }}
         >
+          {MOBILE_NAV_LINKS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="d-interactive no-underline"
+              data-variant="ghost"
+              style={{ width: '100%', justifyContent: 'flex-start' }}
+            >
+              {item.label}
+            </Link>
+          ))}
+
           {user ? (
             <>
               <Link

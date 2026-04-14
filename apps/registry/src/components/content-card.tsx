@@ -104,9 +104,9 @@ export function ContentCard({
         : null);
 
   return (
-    <div className="lum-card-outlined" data-type={singular}>
+    <div className="lum-card-outlined registry-card" data-type={singular}>
       {/* Header badges */}
-      <div className="flex items-center gap-2" style={{ marginBottom: '0.75rem' }}>
+      <div className="registry-card-badges">
         <span
           className="d-annotation"
           style={{
@@ -150,11 +150,9 @@ export function ContentCard({
       {/* Title */}
       <Link
         href={href}
-        className="font-semibold block no-underline"
+        className="registry-card-title font-semibold block no-underline"
         style={{
           color: 'var(--d-text)',
-          fontSize: '1rem',
-          marginBottom: '0.375rem',
         }}
       >
         {item.name || item.slug}
@@ -163,14 +161,9 @@ export function ContentCard({
       {/* Description */}
       {item.description && (
         <p
-          className="text-sm"
+          className="registry-card-description text-sm"
           style={{
-            color: 'var(--d-text-muted)',
-            marginBottom: '0.75rem',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
+            marginBottom: '0.25rem',
           }}
         >
           {item.description}
@@ -178,16 +171,13 @@ export function ContentCard({
       )}
 
       {/* Footer */}
-      <div
-        className="flex items-center justify-between"
-        style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}
-      >
-        <div className="flex items-center gap-3">
+      <div className="registry-card-footer">
+        <div className="registry-card-meta">
           <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
             v{item.version}
           </span>
           {item.owner_username && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
                 {item.owner_username}
@@ -195,7 +185,7 @@ export function ContentCard({
             </span>
           )}
           {!item.owner_username && item.id && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <span style={{ fontFamily: 'var(--d-font-mono, monospace)' }}>
                 {formatId(item.id)}
@@ -203,13 +193,13 @@ export function ContentCard({
             </span>
           )}
           {item.published_at && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <span>{formatDate(item.published_at)}</span>
             </span>
           )}
           {showcaseMeta && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <Link
                 href={getShowcaseUrl(item.slug)}
@@ -221,7 +211,7 @@ export function ContentCard({
             </span>
           )}
           {showcaseVerification && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <span className="d-annotation">
                 smoke {showcaseVerification.smoke.passed ? 'green' : showcaseVerification.build.passed ? 'red' : 'pending'}
@@ -229,7 +219,7 @@ export function ContentCard({
             </span>
           )}
           {showcaseVerification && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <span className="d-annotation">
                 drift {showcaseVerification.drift.signal}
@@ -237,7 +227,7 @@ export function ContentCard({
             </span>
           )}
           {intelligence?.quality_score != null && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
               <span className="d-annotation">
                 quality {intelligence.quality_score}
@@ -247,7 +237,7 @@ export function ContentCard({
         </div>
 
         {editable && (
-          <div className="flex items-center gap-1">
+          <div className="registry-card-actions">
             <button
               className="d-interactive"
               data-variant="ghost"

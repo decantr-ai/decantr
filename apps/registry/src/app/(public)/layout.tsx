@@ -3,6 +3,13 @@ import { createClient } from '@/lib/supabase/server';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { NavHeader } from './nav-header';
 
+const PUBLIC_NAV_LINKS = [
+  { href: '/browse', label: 'Browse' },
+  { href: '/browse/patterns', label: 'Patterns' },
+  { href: '/browse/themes', label: 'Themes' },
+  { href: '/browse/blueprints', label: 'Blueprints' },
+];
+
 export default async function PublicLayout({
   children,
 }: {
@@ -52,6 +59,14 @@ export default async function PublicLayout({
           <span className="font-semibold text-lg lum-brand">decantr</span>
         </Link>
 
+        <nav className="registry-header-nav" aria-label="Public registry navigation">
+          {PUBLIC_NAV_LINKS.map((item) => (
+            <Link key={item.href} href={item.href} className="registry-header-link">
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         {/* Right: Theme toggle + auth */}
         <div className="flex items-center gap-2">
           <ThemeToggle compact />
@@ -60,7 +75,7 @@ export default async function PublicLayout({
       </header>
 
       {/* Body — pages own their spacing */}
-      <main style={{ flex: 1, overflowY: 'auto' }}>
+      <main className="registry-public-main lum-canvas">
         {children}
       </main>
 
