@@ -60,6 +60,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
   let orgItems: DashboardContentItem[] = [];
   let privateItems: DashboardContentItem[] = [];
   let orgName: string | null = null;
+  let privateRegistryEnabled = false;
   try {
     const [me, result] = await Promise.all([
       api.getMe(token).catch(() => null),
@@ -67,6 +68,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
     ]);
     items = Array.isArray(result) ? result : result?.items ?? [];
     const activeOrg = me?.organizations?.[0] ?? null;
+    privateRegistryEnabled = Boolean(me?.entitlements.private_registry_portal && activeOrg?.tier === 'enterprise');
     if (activeOrg?.slug) {
       const orgResult = await api.getOrgContent(token, activeOrg.slug).catch(() => null);
       orgItems = Array.isArray(orgResult) ? orgResult : orgResult?.items ?? [];
@@ -90,21 +92,28 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Content</h3>
-        <Link
-          href="/dashboard/content/new"
-          className="d-interactive"
-          data-variant="primary"
-          style={{
-            fontSize: '0.875rem',
-            textDecoration: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
-        >
-          <PlusIcon size={16} />
-          New Content
-        </Link>
+        <div className="flex items-center gap-2">
+          {privateRegistryEnabled ? (
+            <Link href="/dashboard/private-registry" className="d-interactive" data-variant="ghost">
+              Open Private Registry
+            </Link>
+          ) : null}
+          <Link
+            href="/dashboard/content/new"
+            className="d-interactive"
+            data-variant="primary"
+            style={{
+              fontSize: '0.875rem',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <PlusIcon size={16} />
+            New Content
+          </Link>
+        </div>
       </div>
 
       <section className="d-section" data-density="compact">

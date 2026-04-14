@@ -270,6 +270,10 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
     dashboardItems.push({ href: '/dashboard/governance', icon: ShieldIcon, label: 'Governance' });
   }
 
+  if (user.entitlements.private_registry_portal) {
+    dashboardItems.push({ href: '/dashboard/private-registry', icon: PackageIcon, label: 'Private Registry' });
+  }
+
   dashboardItems.push({ href: '/dashboard/settings', icon: SettingsIcon, label: 'Settings' });
 
   return [
@@ -421,6 +425,8 @@ export function Sidebar({ user }: SidebarProps) {
             <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
               {user.tier === 'team'
                 ? 'Team workspace'
+                : user.tier === 'enterprise'
+                ? 'Enterprise workspace'
                 : user.tier === 'pro'
                 ? 'Pro private packages'
                 : 'Free plan'}

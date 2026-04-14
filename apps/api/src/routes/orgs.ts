@@ -10,6 +10,8 @@ import { recordUsageEvent } from '../lib/usage-metering.js';
 
 export const orgRoutes = new Hono<Env>();
 const AUDIT_SCOPES = ['user', 'organization', 'billing', 'content', 'membership'] as const;
+const CONTENT_VISIBILITIES = ['public', 'private'] as const;
+const CONTENT_STATUSES = ['pending', 'published', 'rejected'] as const;
 
 orgRoutes.use('/*', requireAuth());
 
@@ -74,6 +76,10 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const typeQuery = c.req.query('type');
+  const visibilityQuery = c.req.query('visibility');
+  const statusQuery = c.req.query('status');
+  const q = c.req.query('q')?.trim().toLowerCase() ?? '';
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -84,22 +90,70 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
     return c.json({ error: 'Not a member of this organization' }, 403);
   }
 
-  const { data, error, count } = await client
+  const type = CONTENT_TYPES.find((value) => value === typeQuery);
+  const visibility = CONTENT_VISIBILITIES.find((value) => value === visibilityQuery);
+  const status = CONTENT_STATUSES.find((value) => value === statusQuery);
+
+  if (typeQuery && !type) {
+    return c.json({ error: `type must be one of: ${CONTENT_TYPES.join(', ')}` }, 400);
+  }
+
+  if (visibilityQuery && !visibility) {
+    return c.json({ error: 'visibility must be "public" or "private"' }, 400);
+  }
+
+  if (statusQuery && !status) {
+    return c.json({ error: 'status must be one of: pending, published, rejected' }, 400);
+  }
+
+  let query = client
     .from('content')
-    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at', { count: 'exact' })
-    .eq('org_id', org.id)
-    .order('updated_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+    .eq('org_id', org.id);
+
+  if (type) {
+    query = query.eq('type', type);
+  }
+
+  if (visibility) {
+    query = query.eq('visibility', visibility);
+  }
+
+  if (status) {
+    query = query.eq('status', status);
+  }
+
+  const { data, error } = await query.order('updated_at', { ascending: false });
 
   if (error) {
     return c.json({ error: 'Failed to fetch content' }, 500);
   }
 
+  const filtered = (data ?? []).filter((item) => {
+    if (!q) {
+      return true;
+    }
+
+    const payload = item.data as Record<string, unknown> | null;
+    const haystack = [
+      item.slug,
+      item.namespace,
+      typeof payload?.name === 'string' ? payload.name : '',
+      typeof payload?.description === 'string' ? payload.description : '',
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    return haystack.includes(q);
+  });
+
+  const pagedItems = filtered.slice(offset, offset + limit);
+
   return c.json({
-    total: count ?? 0,
+    total: filtered.length,
     limit,
     offset,
-    items: (data ?? []).map((item) => ({
+    items: pagedItems.map((item) => ({
       id: item.id,
       type: item.type,
       slug: item.slug,

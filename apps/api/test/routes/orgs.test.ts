@@ -50,6 +50,7 @@ type AdminClientOptions = {
   usageRows?: any[];
   auditLogRows?: any[];
   policyResult?: { data: any; error: any };
+  contentRows?: any[];
   contentListResult?: { data: any[]; error: any; count: number | null };
   userLookupResult?: { data: any; error: any };
   deleteMemberResult?: { error: any };
@@ -96,6 +97,10 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
 
         if (table === 'org_members' && options.membersListResult) {
           return options.membersListResult;
+        }
+
+        if (table === 'content' && options.contentRows) {
+          return { data: options.contentRows, error: null };
         }
 
         if (table === 'audit_logs') {
@@ -293,25 +298,21 @@ describe('Org routes', () => {
         data: { role: 'member' },
         error: null,
       },
-      contentListResult: {
-        data: [
-          {
-            id: 'content-1',
-            type: 'theme',
-            slug: 'clean',
-            namespace: '@org:acme',
-            visibility: 'private',
-            status: 'published',
-            version: '1.0.0',
-            data: {
-              name: 'Clean',
-              description: 'Minimal org theme',
-            },
+      contentRows: [
+        {
+          id: 'content-1',
+          type: 'theme',
+          slug: 'clean',
+          namespace: '@org:acme',
+          visibility: 'private',
+          status: 'published',
+          version: '1.0.0',
+          data: {
+            name: 'Clean',
+            description: 'Minimal org theme',
           },
-        ],
-        error: null,
-        count: 1,
-      },
+        },
+      ],
     }));
 
     const res = await app.request('/v1/orgs/acme/content?limit=10&offset=0');
@@ -329,6 +330,60 @@ describe('Org routes', () => {
       version: '1.0.0',
       name: 'Clean',
       description: 'Minimal org theme',
+    });
+  });
+
+  it('filters organization content for internal registry browsing', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: { id: 'org-1' },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'member' },
+        error: null,
+      },
+      contentRows: [
+        {
+          id: 'content-1',
+          type: 'theme',
+          slug: 'clean-theme',
+          namespace: '@org:acme',
+          visibility: 'private',
+          status: 'published',
+          version: '1.0.0',
+          data: {
+            name: 'Clean Theme',
+            description: 'Minimal internal theme',
+          },
+        },
+        {
+          id: 'content-2',
+          type: 'pattern',
+          slug: 'public-card',
+          namespace: '@org:acme',
+          visibility: 'public',
+          status: 'published',
+          version: '1.0.0',
+          data: {
+            name: 'Public Card',
+            description: 'Customer-facing card pattern',
+          },
+        },
+      ],
+    }));
+
+    const res = await app.request('/v1/orgs/acme/content?visibility=private&type=theme&q=clean');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items).toHaveLength(1);
+    expect(json.items[0]).toMatchObject({
+      id: 'content-1',
+      type: 'theme',
+      visibility: 'private',
+      slug: 'clean-theme',
     });
   });
 

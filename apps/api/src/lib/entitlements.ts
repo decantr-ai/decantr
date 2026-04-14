@@ -19,6 +19,7 @@ export interface CommercialEntitlements {
   shared_packages: boolean;
   audit_logs: boolean;
   approval_workflows: boolean;
+  private_registry_portal: boolean;
   support_level: 'community' | 'priority' | 'enterprise';
 }
 
@@ -54,6 +55,7 @@ export function getCommercialEntitlements(tier: UserTier): CommercialEntitlement
         shared_packages: true,
         audit_logs: true,
         approval_workflows: true,
+        private_registry_portal: true,
         support_level: 'enterprise',
       };
     case 'team':
@@ -65,6 +67,7 @@ export function getCommercialEntitlements(tier: UserTier): CommercialEntitlement
         shared_packages: true,
         audit_logs: true,
         approval_workflows: false,
+        private_registry_portal: false,
         support_level: 'priority',
       };
     case 'pro':
@@ -76,6 +79,7 @@ export function getCommercialEntitlements(tier: UserTier): CommercialEntitlement
         shared_packages: false,
         audit_logs: false,
         approval_workflows: false,
+        private_registry_portal: false,
         support_level: 'priority',
       };
     case 'free':
@@ -88,6 +92,7 @@ export function getCommercialEntitlements(tier: UserTier): CommercialEntitlement
         shared_packages: false,
         audit_logs: false,
         approval_workflows: false,
+        private_registry_portal: false,
         support_level: 'community',
       };
   }

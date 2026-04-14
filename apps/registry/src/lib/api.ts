@@ -57,6 +57,7 @@ export interface CommercialEntitlements {
   shared_packages: boolean;
   audit_logs: boolean;
   approval_workflows: boolean;
+  private_registry_portal: boolean;
   support_level: 'community' | 'priority' | 'enterprise';
 }
 
@@ -306,10 +307,25 @@ export const api = {
   // Team / Org
   getOrgMembers: (token: string, orgSlug: string) =>
     apiFetch<{ organization: Omit<OrganizationSummary, 'role' | 'member_count' | 'stripe_subscription_id'>; your_role: string; members: OrgMember[] }>(`/orgs/${orgSlug}/members`, { token }),
-  getOrgContent: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
+  getOrgContent: (
+    token: string,
+    orgSlug: string,
+    params?: {
+      limit?: number;
+      offset?: number;
+      q?: string;
+      type?: string;
+      visibility?: string;
+      status?: string;
+    },
+  ) => {
     const searchParams = new URLSearchParams();
     if (params?.limit != null) searchParams.set('limit', String(params.limit));
     if (params?.offset != null) searchParams.set('offset', String(params.offset));
+    if (params?.q) searchParams.set('q', params.q);
+    if (params?.type) searchParams.set('type', params.type);
+    if (params?.visibility) searchParams.set('visibility', params.visibility);
+    if (params?.status) searchParams.set('status', params.status);
     const query = searchParams.toString();
     return apiFetch<ContentListResponse<DashboardContentItem>>(`/orgs/${orgSlug}/content${query ? `?${query}` : ''}`, { token });
   },

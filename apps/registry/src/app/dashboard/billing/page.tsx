@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 import { upgradeAction, manageBillingAction } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
@@ -319,12 +320,12 @@ export default function BillingPage() {
       name: 'Enterprise',
       price: 0,
       priceLabel: 'Custom',
-      description: 'For advanced governance, approvals, and future private-registry-grade controls.',
+      description: 'For organizations that need a dedicated internal registry plus advanced governance and approvals.',
       features: [
+        'Enterprise private registry workspace',
         'Expanded approval workflows',
         'Advanced governance controls',
         'Dedicated support path',
-        'Private registry roadmap scope',
       ],
       ctaLabel: 'Contact Sales',
       current: currentTier === 'enterprise',
@@ -396,6 +397,11 @@ export default function BillingPage() {
                   : 'Organization collaboration is not enabled on this plan.'}
               </div>
               <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+                {billing?.entitlements?.private_registry_portal
+                  ? 'Enterprise private registry browsing is enabled for your organization.'
+                  : 'Private registry browsing is not enabled on this plan.'}
+              </div>
+              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
                 API usage in the last 30 days: {billing?.usage?.api_requests_30d ?? 0} requests.
                 {billing?.limits?.api_requests_per_minute != null
                   ? ` Current live limit: ${billing.limits.api_requests_per_minute}/minute.`
@@ -430,6 +436,13 @@ export default function BillingPage() {
               <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
                 Org package publishes in the last 30 days: {billing?.usage?.org_package_publishes_30d ?? 0}. Approval actions: {billing?.usage?.approval_actions_30d ?? 0}.
               </div>
+              {billing?.entitlements?.private_registry_portal ? (
+                <div style={{ marginTop: '0.5rem' }}>
+                  <Link href="/dashboard/private-registry" className="d-interactive" data-variant="primary">
+                    Open Private Registry
+                  </Link>
+                </div>
+              ) : null}
             </div>
           )}
         </div>
@@ -471,7 +484,7 @@ export default function BillingPage() {
           </div>
           <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
             Pro is for personal private packages. Team is for shared organization packages and collaboration.
-            Private registries are not part of the current self-serve Pro or Team offering and remain part of the enterprise roadmap.
+            Enterprise adds a dedicated internal private registry workspace on top of the shared org package model.
           </div>
         </div>
         <div

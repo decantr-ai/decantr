@@ -172,6 +172,14 @@
               "content-card-grid"
             ],
             "route": "/dashboard/governance"
+          },
+          {
+            "id": "private-registry",
+            "layout": [
+              "search-filter-bar",
+              "content-card-grid"
+            ],
+            "route": "/dashboard/private-registry"
           }
         ]
       },
@@ -283,6 +291,10 @@
       "/dashboard/governance": {
         "section": "user-dashboard",
         "page": "governance"
+      },
+      "/dashboard/private-registry": {
+        "section": "user-dashboard",
+        "page": "private-registry"
       },
       "/admin/moderation": {
         "section": "admin-moderation",

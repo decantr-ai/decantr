@@ -58,6 +58,7 @@ export default async function AdminLayout({
             shared_packages: false,
             audit_logs: false,
             approval_workflows: false,
+            private_registry_portal: false,
             support_level: 'community',
           },
         }}
