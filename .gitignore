@@ -29,6 +29,9 @@ apps/web/public/showcase/
 # Generated showcase builds (large SPA dist files — not committed)
 apps/registry/public/showcase/*/assets/
 apps/registry/public/showcase/*/index.html
+apps/registry/public/showcase/manifest.json
+apps/registry/public/showcase/shortlist.json
+apps/registry/public/showcase/shortlist-verification.json
 # Keep screenshot PNGs (small, needed for deployment)
 !apps/registry/public/showcase/*/preview.png
 !apps/registry/public/showcase/*/preview-thumb.png

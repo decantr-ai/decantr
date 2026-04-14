@@ -5,11 +5,13 @@ import {
   SHORTLISTED_SHOWCASE_ENTRIES,
   SHOWCASE_SHORTLIST_REPORT,
   SHOWCASE_VERIFICATION_MAP,
+  getShowcasePublicUrl,
 } from '../lib/showcase-benchmarks.js';
 
 const SHORTLISTED_SHOWCASES = SHORTLISTED_SHOWCASE_ENTRIES
   .map(entry => ({
     ...entry,
+    url: getShowcasePublicUrl(entry.slug),
     verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
   }));
 
@@ -22,6 +24,7 @@ showcaseRoutes.get('/showcase/manifest', (c) => {
     shortlisted: SHORTLISTED_SHOWCASES.length,
     apps: SHOWCASE_MANIFEST_ENTRIES.map(entry => ({
       ...entry,
+      url: getShowcasePublicUrl(entry.slug),
       verification: SHOWCASE_VERIFICATION_MAP.get(entry.slug) ?? null,
     })),
   });

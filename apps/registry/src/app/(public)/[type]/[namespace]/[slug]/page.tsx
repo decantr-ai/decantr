@@ -251,14 +251,16 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   variant="ghost"
                 />
               )}
-              {showcaseMeta && (
-                <Link
-                  href={getShowcaseUrl(slug)}
+              {showcaseMeta?.url && (
+                <a
+                  href={getShowcaseUrl(slug, showcaseMeta)}
+                  target="_blank"
+                  rel="noreferrer"
                   className="d-interactive no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--d-primary)]"
                   data-variant="ghost"
                 >
                   Open Showcase
-                </Link>
+                </a>
               )}
             </div>
           </div>

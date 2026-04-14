@@ -23,6 +23,7 @@ describe('GET /v1/showcase/*', () => {
     expect(Array.isArray(json.apps)).toBe(true);
     expect(json.apps.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
     const shortlistEntry = json.apps.find((entry: { slug: string }) => entry.slug === 'portfolio');
+    expect(shortlistEntry?.url).toBe('/showcase/portfolio/index.html');
     expect(shortlistEntry?.verification?.verificationStatus).toBe('smoke-green');
   });
 

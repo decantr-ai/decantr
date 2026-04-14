@@ -198,16 +198,18 @@ export function ContentCard({
               <span>{formatDate(item.published_at)}</span>
             </span>
           )}
-          {showcaseMeta && (
+          {showcaseMeta?.url && (
             <span className="flex items-center gap-1 min-w-0">
               <span className="opacity-40">|</span>
-              <Link
-                href={getShowcaseUrl(item.slug)}
+              <a
+                href={getShowcaseUrl(item.slug, showcaseMeta)}
+                target="_blank"
+                rel="noreferrer"
                 className="no-underline transition-colors hover:text-d-primary"
                 style={{ color: 'var(--d-text)' }}
               >
                 Open showcase
-              </Link>
+              </a>
             </span>
           )}
           {showcaseVerification && (

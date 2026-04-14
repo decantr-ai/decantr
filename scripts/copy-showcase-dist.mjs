@@ -46,7 +46,7 @@ const publicManifest = {
     goldenCandidate: entry.goldenCandidate ?? false,
     notes: entry.notes ?? null,
     verification: verificationBySlug.get(entry.slug) ?? null,
-    url: `/showcase/${entry.slug}/`,
+    url: `/showcase/${entry.slug}/index.html`,
   })),
 };
 

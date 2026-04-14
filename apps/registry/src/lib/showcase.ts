@@ -69,8 +69,8 @@ async function getShowcaseDataset(): Promise<ShowcaseDataset> {
   return fetchShowcaseDataset();
 }
 
-export function getShowcaseUrl(blueprintSlug: string): string {
-  return `/showcase/${blueprintSlug}/`;
+export function getShowcaseUrl(blueprintSlug: string, metadata?: ShowcaseMetadata | null): string {
+  return metadata?.url ?? `/showcase/${blueprintSlug}/index.html`;
 }
 
 export async function hasShowcase(blueprintSlug: string): Promise<boolean> {

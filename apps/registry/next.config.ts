@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@decantr/registry'],
   redirects: async () => [
     {
+      source: '/showcase/:slug',
+      destination: '/showcase/:slug/index.html',
+      permanent: false,
+    },
+    {
+      source: '/showcase/:slug/',
+      destination: '/showcase/:slug/index.html',
+      permanent: false,
+    },
+    {
       source: '/registry',
       destination: '/',
       permanent: true,

@@ -613,6 +613,7 @@ export interface ShowcaseManifestEntry {
   target?: string | null;
   goldenCandidate?: string | boolean;
   notes?: string | null;
+  url?: string | null;
   verification?: ShowcaseVerificationEntry | null;
 }
 

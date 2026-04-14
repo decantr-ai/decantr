@@ -24,6 +24,10 @@ export const SHORTLISTED_SHOWCASE_ENTRIES = SHOWCASE_MANIFEST_ENTRIES.filter((en
   Boolean(entry.goldenCandidate),
 );
 
+export function getShowcasePublicUrl(slug: string): string {
+  return `/showcase/${slug}/index.html`;
+}
+
 export function getShowcaseManifestEntry(
   slug: string,
 ): ShowcaseManifestEntry | null {
