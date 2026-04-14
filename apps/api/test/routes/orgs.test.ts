@@ -43,6 +43,12 @@ type AdminClientOptions = {
   targetMembershipResult?: { data: any; error: any };
   memberCount?: number;
   membersListResult?: { data: any[]; error: any };
+  orgContentCount?: number;
+  publicContentCount?: number;
+  privateContentCount?: number;
+  approvalCount?: number;
+  usageRows?: any[];
+  policyResult?: { data: any; error: any };
   contentListResult?: { data: any[]; error: any; count: number | null };
   userLookupResult?: { data: any; error: any };
   deleteMemberResult?: { error: any };
@@ -63,6 +69,37 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
         deleteMode: false,
       };
 
+      const resolveChainResult = async () => {
+        const isHeadCount = Boolean((state.selectArgs[1] as { head?: boolean } | undefined)?.head);
+
+        if (table === 'org_members' && isHeadCount) {
+          return { count: options.memberCount ?? 0, error: null };
+        }
+
+        if (table === 'content' && isHeadCount) {
+          if (state.filters.status === 'pending') {
+            return { count: options.approvalCount ?? 0, error: null };
+          }
+          if (state.filters.visibility === 'public') {
+            return { count: options.publicContentCount ?? 0, error: null };
+          }
+          if (state.filters.visibility === 'private') {
+            return { count: options.privateContentCount ?? 0, error: null };
+          }
+          return { count: options.orgContentCount ?? 0, error: null };
+        }
+
+        if (table === 'usage_events') {
+          return { data: options.usageRows ?? [], error: null };
+        }
+
+        if (table === 'org_members' && options.membersListResult) {
+          return options.membersListResult;
+        }
+
+        return { data: [], error: null };
+      };
+
       const chain: any = {
         select: vi.fn((...args: unknown[]) => {
           state.selectArgs = args;
@@ -70,12 +107,6 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
         }),
         eq: vi.fn((field: string, value: unknown) => {
           state.filters[field] = value;
-          const isHeadCount = Boolean((state.selectArgs[1] as { head?: boolean } | undefined)?.head);
-
-          if (table === 'org_members' && isHeadCount) {
-            return Promise.resolve({ count: options.memberCount ?? 0, error: null });
-          }
-
           if (table === 'org_members' && state.deleteMode && 'org_id' in state.filters && 'user_id' in state.filters) {
             return Promise.resolve(options.deleteMemberResult ?? { error: null });
           }
@@ -98,6 +129,10 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
             return options.userLookupResult ?? { data: null, error: null };
           }
 
+          if (table === 'organization_policies') {
+            return options.policyResult ?? { data: null, error: null };
+          }
+
           if (table === 'content' && state.insertPayload) {
             return {
               data: {
@@ -110,10 +145,11 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
 
           return { data: null, error: null };
         }),
+        gte: vi.fn((field: string, value: unknown) => {
+          state.filters[field] = value;
+          return chain;
+        }),
         order: vi.fn(() => {
-          if (table === 'org_members' && options.membersListResult) {
-            return Promise.resolve(options.membersListResult);
-          }
           return chain;
         }),
         range: vi.fn(async () => options.contentListResult ?? { data: [], error: null, count: 0 }),
@@ -126,6 +162,8 @@ function createOrgAdminClient(options: AdminClientOptions = {}) {
           state.deleteMode = true;
           return chain;
         }),
+        then: (resolve: (value: unknown) => unknown, reject?: (reason?: unknown) => unknown) =>
+          resolveChainResult().then(resolve, reject),
       };
 
       return chain;
@@ -318,6 +356,58 @@ describe('Org routes', () => {
       username: 'member',
       role: 'member',
       created_at: '2026-04-02T00:00:00.000Z',
+    });
+  });
+
+  it('returns organization usage summaries for members', async () => {
+    mockCreateAdminClient.mockReturnValue(createOrgAdminClient({
+      orgResult: {
+        data: {
+          id: 'org-1',
+          name: 'Acme',
+          slug: 'acme',
+          tier: 'team',
+          seat_limit: 5,
+        },
+        error: null,
+      },
+      membershipResult: {
+        data: { role: 'admin' },
+        error: null,
+      },
+      memberCount: 3,
+      orgContentCount: 10,
+      publicContentCount: 4,
+      privateContentCount: 6,
+      approvalCount: 2,
+      usageRows: [
+        { metric: 'api_request', quantity: 100 },
+        { metric: 'org_package_publish', quantity: 3 },
+        { metric: 'approval_action', quantity: 2 },
+      ],
+    }));
+
+    const res = await app.request('/v1/orgs/acme/usage');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.organization).toEqual({
+      id: 'org-1',
+      slug: 'acme',
+      name: 'Acme',
+      tier: 'team',
+      seat_limit: 5,
+    });
+    expect(json.usage).toEqual({
+      members: 3,
+      seat_limit: 5,
+      content_items: 10,
+      public_packages: 4,
+      private_packages: 6,
+      pending_approvals: 2,
+      api_requests_30d: 100,
+      org_package_publishes_30d: 3,
+      approval_actions_30d: 2,
     });
   });
 

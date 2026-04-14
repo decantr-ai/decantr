@@ -128,6 +128,45 @@ export interface OrgPolicy {
   require_public_content_approval: boolean;
 }
 
+export interface OrgUsageSummary {
+  organization: {
+    id: string;
+    slug: string;
+    name: string;
+    tier: 'team' | 'enterprise';
+    seat_limit: number;
+  };
+  usage: {
+    members: number;
+    seat_limit: number;
+    content_items: number;
+    public_packages: number;
+    private_packages: number;
+    pending_approvals: number;
+    api_requests_30d: number;
+    org_package_publishes_30d: number;
+    approval_actions_30d: number;
+  };
+}
+
+export interface AdminCommercialSummary {
+  users_by_tier: Record<'free' | 'pro' | 'team' | 'enterprise', number>;
+  organizations_by_tier: Record<'team' | 'enterprise', number>;
+  totals: {
+    public_packages: number;
+    private_packages: number;
+    org_packages: number;
+    pending_approvals: number;
+    audit_events_30d: number;
+    seat_limit_total: number;
+    api_requests_30d: number;
+    content_publishes_30d: number;
+    private_package_publishes_30d: number;
+    org_package_publishes_30d: number;
+    approval_actions_30d: number;
+  };
+}
+
 export interface ModerationQueueItem {
   id: string;
   content_id: string;
@@ -277,6 +316,8 @@ export const api = {
   },
   getOrgPolicy: (token: string, orgSlug: string) =>
     apiFetch<OrgPolicy>(`/orgs/${orgSlug}/policy`, { token }),
+  getOrgUsage: (token: string, orgSlug: string) =>
+    apiFetch<OrgUsageSummary>(`/orgs/${orgSlug}/usage`, { token }),
   updateOrgPolicy: (token: string, orgSlug: string, body: { require_public_content_approval: boolean }) =>
     apiFetch<OrgPolicy>(`/orgs/${orgSlug}/policy`, { token, method: 'PATCH', body: JSON.stringify(body) }),
   getOrgApprovals: (token: string, orgSlug: string, params?: { limit?: number; offset?: number }) => {
@@ -319,6 +360,11 @@ export const api = {
       adminKey,
       method: 'POST',
       body: JSON.stringify({ reason }),
+    }),
+  getCommercialSummary: (token: string, adminKey: string) =>
+    adminFetch<AdminCommercialSummary>('/admin/commercial/summary', {
+      token,
+      adminKey,
     }),
 };
 
