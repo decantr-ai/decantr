@@ -102,7 +102,7 @@ export function OrgGovernancePanel() {
         if (current && profile.organizations.some((org) => org.slug === current)) {
           return current;
         }
-        return profile.organizations[0]?.slug ?? '';
+        return profile.organizations?.[0]?.slug ?? '';
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load organization governance');
@@ -208,7 +208,7 @@ export function OrgGovernancePanel() {
     });
   }
 
-  if (!me?.entitlements.org_collaboration || organizations.length === 0) {
+  if (!me?.entitlements?.org_collaboration || organizations.length === 0) {
     return (
       <div className="d-surface">
         <div className="flex flex-col gap-3">

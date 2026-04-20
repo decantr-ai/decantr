@@ -31,7 +31,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
   const enterpriseOrgs = (me?.organizations ?? []).filter((org) => org.tier === 'enterprise');
   const activeOrg = enterpriseOrgs.find((org) => org.slug === selectedOrgParam) ?? enterpriseOrgs[0] ?? null;
 
-  if (!me?.entitlements.private_registry_portal || !activeOrg) {
+  if (!me?.entitlements?.private_registry_portal || !activeOrg) {
     return (
       <div className="registry-page-stack">
         <div className="registry-page-intro">

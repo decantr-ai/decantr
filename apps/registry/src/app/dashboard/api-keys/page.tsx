@@ -121,8 +121,9 @@ export default function ApiKeysPage() {
       }
       const profile = await api.getMe(token).catch(() => null);
       setMe(profile);
-      if (profile?.organizations[0]?.id) {
-        setOrgId((current) => current || profile.organizations[0]!.id);
+      const firstOrganizationId = profile?.organizations?.[0]?.id;
+      if (firstOrganizationId) {
+        setOrgId((current) => current || firstOrganizationId);
       }
     } catch {
       // silently fail
@@ -276,7 +277,7 @@ export default function ApiKeysPage() {
                 onChange={(e) => setKeyTarget(e.target.value as 'personal' | 'organization')}
               >
                 <option value="personal">Personal key</option>
-                {me?.entitlements.org_collaboration && me.organizations.length > 0 ? (
+                {me?.entitlements?.org_collaboration && me.organizations.length > 0 ? (
                   <option value="organization">Organization key</option>
                 ) : null}
               </select>

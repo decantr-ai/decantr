@@ -68,7 +68,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
     ]);
     items = Array.isArray(result) ? result : result?.items ?? [];
     const activeOrg = me?.organizations?.[0] ?? null;
-    privateRegistryEnabled = Boolean(me?.entitlements.private_registry_portal && activeOrg?.tier === 'enterprise');
+    privateRegistryEnabled = Boolean(me?.entitlements?.private_registry_portal && activeOrg?.tier === 'enterprise');
     if (activeOrg?.slug) {
       const orgResult = await api.getOrgContent(token, activeOrg.slug).catch(() => null);
       orgItems = Array.isArray(orgResult) ? orgResult : orgResult?.items ?? [];

@@ -93,11 +93,10 @@ interface NodeProps {
   keyName?: string;
   value: unknown;
   depth: number;
-  lineCounter: { current: number };
   isLast: boolean;
 }
 
-function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
+function JsonNode({ keyName, value, depth, isLast }: NodeProps) {
   const [collapsed, setCollapsed] = useState(depth >= 3);
   const comma = isLast ? '' : ',';
 
@@ -109,10 +108,9 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   ) : null;
 
   if (value === null) {
-    const line = lineCounter.current++;
     return (
       <div className={styles.row}>
-        <span className={styles.lineNum}>{line}</span>
+        <span aria-hidden="true" className={styles.lineNum} />
         <div className={`${styles.content} ${getIndentClass(depth)}`}>
           {keyEl}
           <span className={styles.tokenNull}>null</span>
@@ -123,10 +121,9 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   }
 
   if (typeof value === 'boolean') {
-    const line = lineCounter.current++;
     return (
       <div className={styles.row}>
-        <span className={styles.lineNum}>{line}</span>
+        <span aria-hidden="true" className={styles.lineNum} />
         <div className={`${styles.content} ${getIndentClass(depth)}`}>
           {keyEl}
           <span className={styles.tokenBoolean}>{String(value)}</span>
@@ -137,10 +134,9 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   }
 
   if (typeof value === 'number') {
-    const line = lineCounter.current++;
     return (
       <div className={styles.row}>
-        <span className={styles.lineNum}>{line}</span>
+        <span aria-hidden="true" className={styles.lineNum} />
         <div className={`${styles.content} ${getIndentClass(depth)}`}>
           {keyEl}
           <span className={styles.tokenNumber}>{String(value)}</span>
@@ -151,10 +147,9 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   }
 
   if (typeof value === 'string') {
-    const line = lineCounter.current++;
     return (
       <div className={styles.row}>
-        <span className={styles.lineNum}>{line}</span>
+        <span aria-hidden="true" className={styles.lineNum} />
         <div className={`${styles.content} ${getIndentClass(depth)}`}>
           {keyEl}
           <span className={styles.tokenString}>"{value}"</span>
@@ -165,12 +160,10 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
   }
 
   if (Array.isArray(value)) {
-    const openLine = lineCounter.current++;
-
     if (collapsed) {
       return (
         <div className={styles.row}>
-          <span className={styles.lineNum}>{openLine}</span>
+          <span aria-hidden="true" className={styles.lineNum} />
           <div className={`${styles.content} ${getIndentClass(depth)}`}>
             {keyEl}
             <button
@@ -191,7 +184,7 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
     return (
       <>
         <div className={styles.row}>
-          <span className={styles.lineNum}>{openLine}</span>
+          <span aria-hidden="true" className={styles.lineNum} />
           <div className={`${styles.content} ${getIndentClass(depth)}`}>
             {keyEl}
             <button
@@ -208,12 +201,11 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
             key={index}
             value={item}
             depth={depth + 1}
-            lineCounter={lineCounter}
             isLast={index === value.length - 1}
           />
         ))}
         <div className={styles.row}>
-          <span className={styles.lineNum}>{lineCounter.current++}</span>
+          <span aria-hidden="true" className={styles.lineNum} />
           <div className={`${styles.content} ${getIndentClass(depth)}`}>
             <span className={styles.tokenPunctuation}>]</span>
             {comma}
@@ -225,12 +217,10 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
 
   if (typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>);
-    const openLine = lineCounter.current++;
-
     if (collapsed) {
       return (
         <div className={styles.row}>
-          <span className={styles.lineNum}>{openLine}</span>
+          <span aria-hidden="true" className={styles.lineNum} />
           <div className={`${styles.content} ${getIndentClass(depth)}`}>
             {keyEl}
             <button
@@ -251,7 +241,7 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
     return (
       <>
         <div className={styles.row}>
-          <span className={styles.lineNum}>{openLine}</span>
+          <span aria-hidden="true" className={styles.lineNum} />
           <div className={`${styles.content} ${getIndentClass(depth)}`}>
             {keyEl}
             <button
@@ -269,12 +259,11 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
             keyName={entryKey}
             value={entryValue}
             depth={depth + 1}
-            lineCounter={lineCounter}
             isLast={index === entries.length - 1}
           />
         ))}
         <div className={styles.row}>
-          <span className={styles.lineNum}>{lineCounter.current++}</span>
+          <span aria-hidden="true" className={styles.lineNum} />
           <div className={`${styles.content} ${getIndentClass(depth)}`}>
             <span className={styles.tokenPunctuation}>{'}'}</span>
             {comma}
@@ -283,11 +272,9 @@ function JsonNode({ keyName, value, depth, lineCounter, isLast }: NodeProps) {
       </>
     );
   }
-
-  const line = lineCounter.current++;
   return (
     <div className={styles.row}>
-      <span className={styles.lineNum}>{line}</span>
+      <span aria-hidden="true" className={styles.lineNum} />
       <div className={`${styles.content} ${getIndentClass(depth)}`}>
         {keyEl}
         <span>{String(value)}</span>
@@ -318,8 +305,6 @@ export function JsonViewer({
     data && typeof data === 'object' && '$schema' in (data as Record<string, unknown>)
       ? String((data as Record<string, unknown>)['$schema'])
       : null;
-  const lineCounter = { current: 1 };
-
   return (
     <div className={`lum-code-block ${styles.viewer}`}>
       <div className={styles.toolbar}>
@@ -388,7 +373,7 @@ export function JsonViewer({
         </div>
       ) : tab === 'json' ? (
         <div className={`${styles.pane} ${styles.jsonPane}`}>
-          <JsonNode value={data} depth={0} lineCounter={lineCounter} isLast />
+          <JsonNode value={data} depth={0} isLast />
         </div>
       ) : tab === 'commands' ? (
         <div className={`${styles.pane} ${styles.stackGrid}`}>

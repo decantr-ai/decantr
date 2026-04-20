@@ -256,6 +256,103 @@ interface FetchOptions {
   apiKey?: string;
 }
 
+function deriveCommercialEntitlements(
+  tier: 'free' | 'pro' | 'team' | 'enterprise',
+): CommercialEntitlements {
+  switch (tier) {
+    case 'enterprise':
+      return {
+        tier,
+        personal_private_packages: true,
+        org_collaboration: true,
+        org_private_packages: true,
+        shared_packages: true,
+        audit_logs: true,
+        approval_workflows: true,
+        private_registry_portal: true,
+        support_level: 'enterprise',
+      };
+    case 'team':
+      return {
+        tier,
+        personal_private_packages: true,
+        org_collaboration: true,
+        org_private_packages: true,
+        shared_packages: true,
+        audit_logs: true,
+        approval_workflows: false,
+        private_registry_portal: false,
+        support_level: 'priority',
+      };
+    case 'pro':
+      return {
+        tier,
+        personal_private_packages: true,
+        org_collaboration: false,
+        org_private_packages: false,
+        shared_packages: false,
+        audit_logs: false,
+        approval_workflows: false,
+        private_registry_portal: false,
+        support_level: 'priority',
+      };
+    case 'free':
+    default:
+      return {
+        tier: 'free',
+        personal_private_packages: false,
+        org_collaboration: false,
+        org_private_packages: false,
+        shared_packages: false,
+        audit_logs: false,
+        approval_workflows: false,
+        private_registry_portal: false,
+        support_level: 'community',
+      };
+  }
+}
+
+function deriveCommercialLimits(
+  tier: 'free' | 'pro' | 'team' | 'enterprise',
+  activeOrg: OrganizationSummary | null,
+): CommercialLimits {
+  switch (tier) {
+    case 'enterprise':
+      return {
+        api_requests_per_minute: null,
+        personal_content_items: null,
+        personal_private_packages: null,
+        org_content_items: null,
+        team_seats: activeOrg?.seat_limit ?? null,
+      };
+    case 'team':
+      return {
+        api_requests_per_minute: 600,
+        personal_content_items: 500,
+        personal_private_packages: 250,
+        org_content_items: null,
+        team_seats: activeOrg?.seat_limit ?? 1,
+      };
+    case 'pro':
+      return {
+        api_requests_per_minute: 300,
+        personal_content_items: 100,
+        personal_private_packages: 100,
+        org_content_items: null,
+        team_seats: null,
+      };
+    case 'free':
+    default:
+      return {
+        api_requests_per_minute: 60,
+        personal_content_items: 5,
+        personal_private_packages: 0,
+        org_content_items: 0,
+        team_seats: null,
+      };
+  }
+}
+
 async function apiFetch<T>(path: string, options?: FetchOptions & RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -308,6 +405,42 @@ async function adminFetch<T>(
   return res.json();
 }
 
+async function hydrateOrganizationsFromOrgSlug(
+  token: string,
+  orgSlug: string | null | undefined,
+  organizations: OrganizationSummary[],
+): Promise<OrganizationSummary[]> {
+  if (!token || organizations.length > 0 || !orgSlug) {
+    return organizations;
+  }
+
+  try {
+    const org = await apiFetch<{
+      id: string;
+      slug: string;
+      name: string;
+      tier: 'team' | 'enterprise';
+      member_count?: number;
+      your_role?: 'owner' | 'admin' | 'member';
+    }>(`/orgs/${orgSlug}`, { token });
+
+    return [
+      {
+        id: org.id,
+        slug: org.slug,
+        name: org.name,
+        tier: org.tier,
+        role: org.your_role ?? 'member',
+        seat_limit: 1,
+        member_count: org.member_count ?? 0,
+        stripe_subscription_id: null,
+      },
+    ];
+  } catch {
+    return organizations;
+  }
+}
+
 export const api = {
   // Public
   getUserProfile: (username: string) => getPublicRegistryClient().getPublicUserProfile(username),
@@ -332,7 +465,29 @@ export const api = {
     getPublicRegistryClient().getRegistryIntelligenceSummary(params),
 
   // Authenticated
-  getMe: (token: string) => apiFetch<MeResponse>('/me', { token }),
+  getMe: async (token: string) => {
+    const result = await apiFetch<Partial<MeResponse>>('/me', { token });
+    const baseOrganizations = Array.isArray(result.organizations) ? result.organizations : [];
+    const organizations = await hydrateOrganizationsFromOrgSlug(token, result.org_slug, baseOrganizations);
+    const tier = result.tier ?? 'free';
+    const activeOrg = organizations[0] ?? null;
+
+    return {
+      id: result.id ?? '',
+      email: result.email ?? '',
+      username: result.username ?? '',
+      display_name: result.display_name ?? null,
+      tier,
+      entitlements: result.entitlements ?? deriveCommercialEntitlements(tier),
+      limits: result.limits ?? deriveCommercialLimits(tier, activeOrg),
+      reputation_score: result.reputation_score ?? 0,
+      trusted: result.trusted ?? false,
+      org_slug: result.org_slug ?? activeOrg?.slug ?? null,
+      organizations,
+      created_at: result.created_at ?? '',
+      updated_at: result.updated_at ?? '',
+    } satisfies MeResponse;
+  },
   getMyContent: (token: string) => apiFetch<ContentListResponse<DashboardContentItem>>('/my/content', { token }),
   getPrivateContent: (
     token: string,

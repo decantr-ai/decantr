@@ -59,10 +59,11 @@ export default function ContentNewPage() {
         if (!token) return;
 
         const result = await api.getMe(token);
+        const organizations = Array.isArray(result.organizations) ? result.organizations : [];
         setMe(result);
         setForm((prev) => ({
           ...prev,
-          org_slug: prev.org_slug || result.organizations[0]?.slug || '',
+          org_slug: prev.org_slug || organizations[0]?.slug || '',
         }));
       } catch {
         // ignore

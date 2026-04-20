@@ -59,6 +59,7 @@
   font-size: 0.875rem;
   font-family: var(--d-font-mono, ui-monospace, monospace);
   padding-bottom: calc(var(--viewer-block-pad) * 0.25);
+  counter-reset: json-line;
 }
 
 .row {
@@ -66,6 +67,7 @@
   align-items: flex-start;
   min-width: 0;
   line-height: 1.6;
+  counter-increment: json-line;
 }
 
 .lineNum {
@@ -78,6 +80,10 @@
   font-size: 0.75rem;
   user-select: none;
   flex: none;
+}
+
+.lineNum::before {
+  content: counter(json-line);
 }
 
 .content {
