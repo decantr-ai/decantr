@@ -18,6 +18,12 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      - name: Validate Fly deploy secret
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          test -n "$FLY_API_TOKEN" || { echo "Missing GitHub Actions secret: FLY_API_TOKEN"; exit 1; }
+
       - name: Deploy apps/api to Fly
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
