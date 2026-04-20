@@ -37,6 +37,8 @@ GitHub Actions secrets:
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
 
+If any of these are unset, the explicit deploy workflow should fail immediately with a clear secret-missing error instead of reaching the Vercel CLI and failing later.
+
 ## Required Portal Environment
 
 Vercel project environment variables should include:
@@ -75,6 +77,15 @@ Use the GitHub Actions workflow:
 Inputs:
 
 - `run_portal_audit=true` is recommended
+
+Workflow contract:
+
+1. validate `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`
+2. run `vercel pull` with `apps/registry` as the working directory
+3. run `vercel env pull .env.production.local` into `apps/registry`
+4. run `pnpm --filter './apps/registry' build`
+5. run `vercel deploy --prod` from `apps/registry`
+6. run the hosted portal audit
 
 ### 3. Verify hosted behavior
 

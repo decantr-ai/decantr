@@ -30,15 +30,26 @@ jobs:
           node-version: 22
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter './apps/registry' build
+      - name: Validate Vercel deploy secrets
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          test -n "$VERCEL_TOKEN" || { echo "Missing GitHub Actions secret: VERCEL_TOKEN"; exit 1; }
+          test -n "$VERCEL_ORG_ID" || { echo "Missing GitHub Actions secret: VERCEL_ORG_ID"; exit 1; }
+          test -n "$VERCEL_PROJECT_ID" || { echo "Missing GitHub Actions secret: VERCEL_PROJECT_ID"; exit 1; }
       - name: Pull Vercel production config
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: pnpm dlx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+        run: pnpm dlx vercel pull --yes --environment=production --token="$VERCEL_TOKEN" --cwd apps/registry
+      - name: Pull Vercel production environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: pnpm dlx vercel env pull .env.production.local --yes --environment=production --token="$VERCEL_TOKEN" --cwd apps/registry
+      - run: pnpm --filter './apps/registry' build
       - name: Deploy registry portal to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: pnpm dlx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+        run: pnpm dlx vercel deploy --prod --yes --token="$VERCEL_TOKEN" --cwd apps/registry
       - name: Audit hosted registry portal after deploy
         if: ${{ inputs.run_portal_audit }}
         run: node scripts/audit-registry-portal.mjs --fail-on-error --report-json=registry-portal-report.json --summary-markdown=registry-portal-summary.md
