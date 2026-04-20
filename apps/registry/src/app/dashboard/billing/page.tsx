@@ -131,9 +131,12 @@ function TierUpgradeCard({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        borderColor: highlighted ? 'var(--d-primary)' : undefined,
-        borderTopWidth: highlighted ? 3 : undefined,
-        borderTopColor: highlighted ? 'var(--d-primary)' : undefined,
+        borderColor: tier.current ? 'var(--d-success)' : undefined,
+        borderTopWidth: tier.current ? 3 : undefined,
+        borderTopColor: tier.current ? 'var(--d-success)' : undefined,
+        background: highlighted && !tier.current
+          ? 'linear-gradient(180deg, color-mix(in srgb, var(--d-primary) 6%, transparent) 0%, color-mix(in srgb, var(--d-surface) 98%, transparent) 100%)'
+          : undefined,
         position: 'relative',
       }}
     >

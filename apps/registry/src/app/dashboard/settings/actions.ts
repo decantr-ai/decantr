@@ -42,7 +42,14 @@ export async function updateProfile(formData: FormData) {
   // Also update auth metadata for display_name
   if (displayName) {
     await supabase.auth.updateUser({
-      data: { display_name: displayName },
+      data: {
+        display_name: displayName,
+        ...(username ? { username, user_name: username } : {}),
+      },
+    });
+  } else if (username) {
+    await supabase.auth.updateUser({
+      data: { username, user_name: username },
     });
   }
 

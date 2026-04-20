@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { updateProfile } from '@/app/dashboard/settings/actions';
+import { api } from '@/lib/api';
 
 /* ── Icons ── */
 
@@ -204,8 +205,19 @@ function ProfileTab() {
         if (session?.user) {
           setEmail(session.user.email ?? '');
           const meta = session.user.user_metadata;
-          setDisplayName((meta?.display_name as string) ?? '');
-          setUsername((meta?.username as string) ?? '');
+          const me = await api.getMe(session.access_token).catch(() => null);
+          setDisplayName(
+            me?.display_name
+              ?? (meta?.display_name as string)
+              ?? (meta?.name as string)
+              ?? '',
+          );
+          setUsername(
+            me?.username
+              ?? (meta?.username as string)
+              ?? (meta?.user_name as string)
+              ?? '',
+          );
           setBio((meta?.bio as string) ?? '');
         }
       } catch {

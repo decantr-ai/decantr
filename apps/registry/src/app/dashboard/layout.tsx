@@ -2,7 +2,9 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
+import { CommandPalette } from '@/components/command-palette';
 import { api } from '@/lib/api';
+import { isAdmin } from '@/lib/admin';
 
 export default async function DashboardLayout({
   children,
@@ -22,8 +24,6 @@ export default async function DashboardLayout({
   }
 
   const email = user.email ?? '';
-  const display_name =
-    (user.user_metadata?.display_name as string | undefined) ?? undefined;
   const token = session?.access_token ?? '';
 
   let me = null;
@@ -33,30 +33,50 @@ export default async function DashboardLayout({
     me = null;
   }
 
+  const display_name =
+    me?.display_name
+    ?? (user.user_metadata?.display_name as string | undefined)
+    ?? (user.user_metadata?.name as string | undefined)
+    ?? undefined;
+  const username =
+    me?.username
+    ?? (user.user_metadata?.username as string | undefined)
+    ?? (user.user_metadata?.user_name as string | undefined)
+    ?? null;
+  const entitlements = me?.entitlements ?? {
+    tier: 'free' as const,
+    personal_private_packages: false,
+    org_collaboration: false,
+    org_private_packages: false,
+    shared_packages: false,
+    audit_logs: false,
+    approval_workflows: false,
+    private_registry_portal: false,
+    support_level: 'community' as const,
+  };
+  const admin = isAdmin(email);
+
   return (
     <div className="registry-shell-root">
       <Sidebar
         user={{
           email,
           display_name,
+          username,
           tier: me?.tier ?? 'free',
           organizations: me?.organizations ?? [],
-          entitlements: me?.entitlements ?? {
-            tier: 'free',
-            personal_private_packages: false,
-            org_collaboration: false,
-            org_private_packages: false,
-            shared_packages: false,
-            audit_logs: false,
-            approval_workflows: false,
-            private_registry_portal: false,
-            support_level: 'community',
-          },
+          entitlements,
+          isAdmin: admin,
         }}
       />
 
       <div className="registry-shell-main">
         <DashboardHeader />
+        <CommandPalette
+          isAdmin={admin}
+          organizations={me?.organizations ?? []}
+          entitlements={entitlements}
+        />
         <main className="registry-shell-body entrance-fade">
           {children}
         </main>

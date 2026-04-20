@@ -12,6 +12,7 @@ import {
   type OrganizationEntitlementSummary,
 } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { ensureUserProfile } from '../lib/user-profile.js';
 
 export const authRoutes = new Hono<Env>();
 
@@ -23,11 +24,27 @@ authRoutes.get('/me', async (c) => {
   const auth = c.get('auth') as AuthContext;
   const client = createAdminClient();
 
-  const { data: user, error } = await client
+  let { data: user, error } = await client
     .from('users')
     .select('*')
     .eq('id', auth.user!.id)
     .single();
+
+  if (!user) {
+    try {
+      user = await ensureUserProfile({
+        id: auth.user!.id,
+        email: auth.user!.email,
+        user_metadata: {
+          username: auth.user!.username,
+          display_name: auth.user!.display_name,
+        },
+      });
+      error = null;
+    } catch (provisionError) {
+      logger.warn({ err: provisionError, userId: auth.user!.id }, 'Failed to provision user during /me');
+    }
+  }
 
   if (error || !user) {
     return c.json({ error: 'User not found' }, 404);

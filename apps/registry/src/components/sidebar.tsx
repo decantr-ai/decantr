@@ -251,9 +251,11 @@ interface SidebarProps {
   user: {
     email: string;
     display_name?: string;
+    username?: string | null;
     tier: 'free' | 'pro' | 'team' | 'enterprise';
     organizations: Array<{ id: string; slug: string; name: string }>;
     entitlements: CommercialEntitlements;
+    isAdmin: boolean;
   };
 }
 
@@ -281,14 +283,16 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
       group: 'Dashboard',
       items: dashboardItems,
     },
-    {
-      group: 'Admin',
-      items: [
-        { href: '/admin/moderation', icon: ShieldIcon, label: 'Moderation' },
-        { href: '/admin/organizations', icon: UsersIcon, label: 'Organizations' },
-        { href: '/admin/reports', icon: BarChartIcon, label: 'Reports' },
-      ],
-    },
+    ...(user.isAdmin
+      ? [{
+          group: 'Admin',
+          items: [
+            { href: '/admin/moderation', icon: ShieldIcon, label: 'Moderation' },
+            { href: '/admin/organizations', icon: UsersIcon, label: 'Organizations' },
+            { href: '/admin/reports', icon: BarChartIcon, label: 'Reports' },
+          ],
+        }]
+      : []),
   ];
 }
 
@@ -467,7 +471,7 @@ export function Sidebar({ user }: SidebarProps) {
             {!desktopCollapsed && (
               <div className="registry-sidebar-user">
                 <span className="text-sm" style={{ fontWeight: 600 }}>
-                  {user.display_name || user.email.split('@')[0]}
+                  {user.display_name || user.username || user.email.split('@')[0]}
                 </span>
                 <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
                   {user.tier === 'team'

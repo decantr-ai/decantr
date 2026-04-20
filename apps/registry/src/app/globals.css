@@ -431,6 +431,74 @@
     white-space: nowrap;
   }
 
+  .registry-command-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10vh 1rem 1rem;
+    background: rgba(0, 0, 0, 0.55);
+  }
+
+  .registry-command-panel {
+    width: min(100%, 42rem);
+    max-height: min(75vh, 42rem);
+    overflow: hidden;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .registry-command-header {
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--d-border);
+  }
+
+  .registry-command-list {
+    display: grid;
+    gap: 0.5rem;
+    overflow-y: auto;
+  }
+
+  .registry-command-item {
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: var(--d-radius);
+    background: transparent;
+    color: var(--d-text);
+    text-align: left;
+    cursor: pointer;
+    padding: 0.75rem 0.875rem;
+    display: grid;
+    gap: 0.25rem;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .registry-command-item:hover,
+  .registry-command-item:focus-visible {
+    background: var(--d-surface-raised);
+    border-color: var(--d-border);
+    outline: none;
+  }
+
+  .registry-command-item-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .registry-command-item-path {
+    font-size: 0.75rem;
+    color: var(--d-text-muted);
+    font-family: var(--d-font-mono, ui-monospace, monospace);
+  }
+
+  .registry-command-empty {
+    padding: 0.5rem 0;
+    color: var(--d-text-muted);
+    font-size: 0.875rem;
+  }
+
   .registry-shell-mobile-toggle {
     display: none;
   }

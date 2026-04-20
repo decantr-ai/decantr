@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono';
 import { createUserClient, createAdminClient } from '../db/client.js';
 import { createHash } from 'crypto';
+import { ensureUserProfile } from '../lib/user-profile.js';
 
 export interface AuthUser {
   id: string;
@@ -36,11 +37,19 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
     const { data: { user: authUser }, error: authError } = await client.auth.getUser();
 
     if (!authError && authUser) {
-      const { data: profile } = await client
+      let { data: profile } = await client
         .from('users')
         .select('*')
         .eq('id', authUser.id)
         .single();
+
+      if (!profile) {
+        profile = await ensureUserProfile({
+          id: authUser.id,
+          email: authUser.email,
+          user_metadata: authUser.user_metadata ?? {},
+        });
+      }
 
       if (profile) {
         return {

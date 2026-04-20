@@ -102,7 +102,11 @@ export default function LoginPage() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: { user_name: username },
+            data: {
+              username,
+              user_name: username,
+              display_name: username,
+            },
           },
         });
         if (err) {

@@ -54,9 +54,7 @@ export function DashboardHeader() {
 
   function triggerSearch() {
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'k', metaKey: true })
-      );
+      window.dispatchEvent(new CustomEvent('registry:command-palette-toggle'));
     }
   }
 
