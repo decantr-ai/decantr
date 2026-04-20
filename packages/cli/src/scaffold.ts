@@ -51,6 +51,16 @@ export interface ArchetypeData {
   };
 }
 
+function getPlatformMeta(target: string) {
+  const normalized = (target || 'react').toLowerCase();
+  const routing = normalized === 'nextjs' ? 'pathname' : 'hash';
+
+  return {
+    type: 'spa' as const,
+    routing,
+  };
+}
+
 type LegacyMetaCompat = EssenceV3['meta'] & {
   blueprint?: string;
 };
@@ -1043,10 +1053,7 @@ export function buildEssenceV3(
   const meta: EssenceMeta = {
     archetype: options.archetype || 'custom',
     target: options.target,
-    platform: {
-      type: 'spa',
-      routing: 'hash',
-    },
+    platform: getPlatformMeta(options.target),
     guard: guardModeMap[options.guard] || guardModeMap.guided,
   };
 
@@ -1344,6 +1351,7 @@ If the essence defines hotkeys or command_palette, implement as keyboard event l
 Check \`decantr.essence.json\` → \`meta.platform.routing\` for the routing strategy:
 - \`"hash"\` → use \`HashRouter\` (e.g., for static hosting, GitHub Pages)
 - \`"history"\` → use \`BrowserRouter\` (e.g., for server-rendered apps)
+- \`"pathname"\` → use pathname-based routing (e.g., Next.js App Router or React apps using \`BrowserRouter\`)
 
 Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and listed in \`.decantr/context/scaffold.md\`.
 
@@ -2046,10 +2054,7 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
     meta: {
       archetype: 'custom',
       target: 'react',
-      platform: {
-        type: 'spa',
-        routing: 'hash',
-      },
+      platform: getPlatformMeta('react'),
       guard: {
         mode: 'guided',
         dna_enforcement: 'error',

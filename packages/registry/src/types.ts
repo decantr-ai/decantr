@@ -754,7 +754,7 @@ export interface ScaffoldExecutionPack extends ExecutionPackBase<{
     mode: string;
     shape: string | null;
   };
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   features: string[];
   routes: Array<{
     pageId: string;
@@ -773,7 +773,7 @@ export interface ReviewExecutionPack extends ExecutionPackBase<{
     mode: string;
     shape: string | null;
   };
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   features: string[];
   routes: Array<{
     pageId: string;
@@ -838,7 +838,7 @@ export interface MutationExecutionPack extends ExecutionPackBase<{
     mode: string;
     shape: string | null;
   };
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   features: string[];
   routes: Array<{
     pageId: string;

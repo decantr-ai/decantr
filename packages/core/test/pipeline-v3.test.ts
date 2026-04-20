@@ -47,6 +47,15 @@ describe('runPipeline (v3 essences)', () => {
     expect(page.children.length).toBe(2); // hero + card-grid
   });
 
+  it('preserves pathname routing for v3 essences', async () => {
+    const essence = loadFixture('essence-v3-landing') as any;
+    essence.meta.platform.routing = 'pathname';
+
+    const result = await runPipeline(essence, { contentRoot });
+
+    expect(result.ir.routing).toBe('pathname');
+  });
+
   it('attaches layer metadata to IR nodes from v3 source', async () => {
     const essence = loadFixture('essence-v3-saas');
     const result = await runPipeline(essence, { contentRoot });

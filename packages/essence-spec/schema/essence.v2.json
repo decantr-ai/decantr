@@ -62,7 +62,7 @@
       "additionalProperties": false,
       "properties": {
         "type": { "type": "string", "enum": ["spa", "ssr", "static"] },
-        "routing": { "type": "string", "enum": ["hash", "history"] }
+        "routing": { "type": "string", "enum": ["hash", "history", "pathname"] }
       }
     },
     "StructurePage": {

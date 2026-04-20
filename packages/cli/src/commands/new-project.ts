@@ -17,20 +17,24 @@ function success(text: string): string { return `${GREEN}${text}${RESET}`; }
 function error(text: string): string { return `${RED}${text}${RESET}`; }
 function dim(text: string): string { return `${DIM}${text}${RESET}`; }
 function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
-function detectRoutingMode(projectDir: string): 'hash' | 'history' {
+function detectRoutingMode(projectDir: string): 'hash' | 'history' | 'pathname' {
   try {
     const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf-8')) as {
       meta?: { platform?: { routing?: string } };
     };
-    return essence.meta?.platform?.routing === 'history' ? 'history' : 'hash';
+    const routing = essence.meta?.platform?.routing;
+    if (routing === 'history' || routing === 'pathname') {
+      return routing;
+    }
+    return 'hash';
   } catch {
     return 'hash';
   }
 }
 
-function writeStarterRuntimeFiles(projectDir: string, title: string, routingMode: 'hash' | 'history'): void {
+function writeStarterRuntimeFiles(projectDir: string, title: string, routingMode: 'hash' | 'history' | 'pathname'): void {
   const srcDir = join(projectDir, 'src');
-  const routerImport = routingMode === 'history' ? 'BrowserRouter' : 'HashRouter';
+  const routerImport = routingMode === 'hash' ? 'HashRouter' : 'BrowserRouter';
 
   const mainTsx = `import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -93,8 +97,13 @@ export interface NewProjectOptions {
   theme?: string;
   mode?: string;
   shape?: string;
+  target?: string;
   offline?: boolean;
   registry?: string;
+}
+
+function getTargetRoutingMode(target: string | undefined): 'hash' | 'history' | 'pathname' {
+  return (target || 'react').toLowerCase() === 'nextjs' ? 'pathname' : 'hash';
 }
 
 export async function cmdNewProject(
@@ -234,7 +243,7 @@ export default defineConfig({
   const srcDir = join(projectDir, 'src');
   mkdirSync(srcDir, { recursive: true });
 
-  writeStarterRuntimeFiles(projectDir, title, 'hash');
+  writeStarterRuntimeFiles(projectDir, title, getTargetRoutingMode(options.target));
 
   // src/vite-env.d.ts
   writeFileSync(join(srcDir, 'vite-env.d.ts'), '/// <reference types="vite/client" />\n');
@@ -281,6 +290,7 @@ export default defineConfig({
   if (options.theme) initFlags.push(`--theme=${options.theme}`);
   if (options.mode) initFlags.push(`--mode=${options.mode}`);
   if (options.shape) initFlags.push(`--shape=${options.shape}`);
+  if (options.target) initFlags.push(`--target=${options.target}`);
   if (options.offline) initFlags.push('--offline');
   if (options.registry) initFlags.push(`--registry=${options.registry}`);
 

@@ -49,6 +49,25 @@ describe('normalizeEssence', () => {
     expect(result).toEqual(v2);
   });
 
+  it('preserves pathname routing during v1 to v2 normalization', () => {
+    const v1 = {
+      version: '1.0.0',
+      terroir: 'saas-dashboard',
+      vintage: { style: 'auradecantism', mode: 'dark', shape: 'rounded' },
+      character: ['professional'],
+      vessel: { type: 'spa', routing: 'pathname' },
+      structure: [
+        { id: 'overview', carafe: 'sidebar-main', blend: ['kpi-grid'] },
+      ],
+      tannins: ['auth'],
+      clarity: { density: 'comfortable', content_gap: '_gap4' },
+      cork: { enforce_style: true, mode: 'maintenance' },
+    };
+
+    const v2 = normalizeEssence(v1);
+    expect(v2.platform).toEqual({ type: 'spa', routing: 'pathname' });
+  });
+
   it('converts v1 sectioned essence', () => {
     const v1 = {
       version: '1.0.0',

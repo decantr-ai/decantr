@@ -47,6 +47,16 @@ describe('validateEssence', () => {
     expect(result.errors).toEqual([]);
   });
 
+  it('accepts pathname as a valid routing strategy', () => {
+    const pathnameEssence = {
+      ...VALID_SIMPLE,
+      platform: { type: 'spa', routing: 'pathname' },
+    };
+    const result = validateEssence(pathnameEssence);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
   it('rejects missing required fields', () => {
     const result = validateEssence({ version: '2.0.0' });
     expect(result.valid).toBe(false);

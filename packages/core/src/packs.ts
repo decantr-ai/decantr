@@ -118,7 +118,7 @@ export interface ScaffoldPackData {
     mode: string;
     shape: string | null;
   };
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   features: string[];
   routes: ScaffoldPackRoute[];
 }
@@ -206,7 +206,7 @@ export interface MutationPackData {
     mode: string;
     shape: string | null;
   };
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   features: string[];
   routes: ScaffoldPackRoute[];
   workflow: string[];
@@ -226,7 +226,7 @@ export interface ReviewPackData {
     mode: string;
     shape: string | null;
   };
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   features: string[];
   routes: ScaffoldPackRoute[];
   focusAreas: string[];

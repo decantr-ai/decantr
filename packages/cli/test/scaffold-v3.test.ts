@@ -150,6 +150,13 @@ describe('v3 scaffold', () => {
     expect(creative.meta.guard.blueprint_enforcement).toBe('off');
   });
 
+  it('buildEssenceV3 uses pathname routing for nextjs target', () => {
+    const nextjs = buildEssenceV3({ ...defaultOptions, target: 'nextjs' });
+
+    expect(nextjs.meta.target).toBe('nextjs');
+    expect(nextjs.meta.platform.routing).toBe('pathname');
+  });
+
   it('buildEssenceV3 with theme hints produces matching dna.typography values', () => {
     const themeHints: ThemeData = {
       typography: { scale: 'linear', heading_weight: 700, body_weight: 350 },
@@ -437,5 +444,51 @@ describe('v3 scaffold', () => {
     expect(modifyTask).toContain('decantr_get_page_context');
     expect(modifyTask).toContain('## Strict Checks');
     expect(modifyTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
+  });
+
+  it('scaffoldProject preserves pathname routing in essence and scaffold packs for nextjs target', async () => {
+    const cacheRoot = join(testDir, '.decantr', 'cache', '@official');
+    mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
+    mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
+
+    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
+      id: 'luminarum',
+      name: 'Luminarum',
+    }, null, 2));
+
+    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
+      id: 'hero',
+      name: 'Hero',
+      contained: false,
+      components: [],
+      presets: {
+        default: {
+          layout: {
+            layout: 'hero',
+            atoms: '',
+          },
+          code: {
+            imports: '',
+            example: '<section />',
+          },
+        },
+      },
+    }, null, 2));
+
+    await scaffoldProject(
+      testDir,
+      { ...defaultOptions, target: 'nextjs' },
+      { ...detected, framework: 'nextjs' },
+      createMockRegistry(),
+    );
+
+    const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8'));
+    await refreshDerivedFiles(testDir, essence, createMockRegistry());
+    const scaffoldPack = JSON.parse(readFileSync(join(testDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf-8'));
+
+    expect(essence.meta.target).toBe('nextjs');
+    expect(essence.meta.platform.routing).toBe('pathname');
+    expect(scaffoldPack.target.adapter).toBe('nextjs');
+    expect(scaffoldPack.data.routing).toBe('pathname');
   });
 });

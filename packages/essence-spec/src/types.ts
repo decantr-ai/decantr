@@ -34,7 +34,7 @@ export interface Theme {
 // --- Platform ---
 
 export type PlatformType = 'spa' | 'ssr' | 'static';
-export type RoutingStrategy = 'hash' | 'history';
+export type RoutingStrategy = 'hash' | 'history' | 'pathname';
 
 export interface Platform {
   type: PlatformType;

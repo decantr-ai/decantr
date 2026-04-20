@@ -65,7 +65,7 @@
         },
         "routing": {
           "type": "string",
-          "enum": ["hash", "history"]
+          "enum": ["hash", "history", "pathname"]
         },
         "features": {
           "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"

@@ -117,7 +117,7 @@ export interface IRAppNode extends IRNode {
   type: 'app';
   theme: IRTheme;
   routes: IRRoute[];
-  routing: 'hash' | 'history';
+  routing: 'hash' | 'history' | 'pathname';
   shell: IRShellNode;
   store: IRStoreNode;
   features: string[];

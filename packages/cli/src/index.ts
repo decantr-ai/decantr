@@ -1571,6 +1571,15 @@ async function cmdStatus() {
 
     if (isV3(essence)) {
       const v3 = essence as EssenceV3;
+      const sections = v3.blueprint.sections ?? [];
+      const flatPages = sections.length > 0
+        ? sections.flatMap((section: any) => section.pages ?? [])
+        : v3.blueprint.pages ?? [];
+      const resolvedShell = sections.find((section: any) => section.role === 'primary')?.shell
+        || sections[0]?.shell
+        || (v3.blueprint as any).shell
+        || 'unknown';
+      const resolvedFeatures = v3.blueprint.features ?? [];
       // DNA axioms
       console.log(`  ${BOLD}DNA:${RESET}`);
       console.log(`    Theme: ${v3.dna.theme.id} (${v3.dna.theme.mode})`);
@@ -1582,9 +1591,12 @@ async function cmdStatus() {
       console.log(`    Personality: ${v3.dna.personality.join(', ')}`);
       // Blueprint
       console.log(`  ${BOLD}Blueprint:${RESET}`);
-      console.log(`    Shell: ${v3.blueprint.shell}`);
-      console.log(`    Pages: ${v3.blueprint.pages.length}`);
-      console.log(`    Features: ${v3.blueprint.features.length > 0 ? v3.blueprint.features.join(', ') : 'none'}`);
+      console.log(`    Shell: ${resolvedShell}`);
+      console.log(`    Pages: ${flatPages.length}`);
+      if (sections.length > 0) {
+        console.log(`    Sections: ${sections.length}`);
+      }
+      console.log(`    Features: ${resolvedFeatures.length > 0 ? resolvedFeatures.join(', ') : 'none'}`);
       // Meta
       console.log(`  ${BOLD}Meta:${RESET}`);
       console.log(`    Archetype: ${v3.meta.archetype}`);
@@ -2081,6 +2093,7 @@ async function main() {
         theme: newOpts.theme as string | undefined,
         mode: newOpts.mode as string | undefined,
         shape: newOpts.shape as string | undefined,
+        target: newOpts.target as string | undefined,
         offline: newOpts.offline === true,
         registry: newOpts.registry as string | undefined,
       });

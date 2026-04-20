@@ -7,11 +7,11 @@ import { resolveEssence } from './resolve.js';
 import { buildPageIR } from './ir.js';
 import { pascalCase } from './utils.js';
 
-function extractRouting(essence: EssenceFile): 'hash' | 'history' {
+function extractRouting(essence: EssenceFile): 'hash' | 'history' | 'pathname' {
   if (isV3(essence)) {
     return essence.meta.platform.routing || 'hash';
   }
-  return (essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' || 'hash';
+  return (essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' | 'pathname' || 'hash';
 }
 
 export interface PipelineOptions {

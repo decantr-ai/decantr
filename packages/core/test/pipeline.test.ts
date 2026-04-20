@@ -46,6 +46,15 @@ describe('runPipeline', () => {
     expect(page.children.length).toBe(2); // hero + card-grid
   });
 
+  it('preserves pathname routing in the IR when the essence requests it', async () => {
+    const essence = loadFixture('essence-landing') as any;
+    essence.platform.routing = 'pathname';
+
+    const result = await runPipeline(essence, { contentRoot });
+
+    expect(result.ir.routing).toBe('pathname');
+  });
+
   it('includes wiring signals for filter-bar + data-table pages', async () => {
     const essence = loadFixture('essence-saas');
     const result = await runPipeline(essence, { contentRoot });

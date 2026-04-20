@@ -41,7 +41,7 @@ function normalizeSimple(v1: Record<string, unknown>): Essence {
     personality: (v1.character ?? v1.personality) as string[],
     platform: {
       type: (vessel?.type ?? 'spa') as 'spa' | 'ssr' | 'static',
-      routing: (vessel?.routing ?? 'hash') as 'hash' | 'history',
+      routing: (vessel?.routing ?? 'hash') as 'hash' | 'history' | 'pathname',
     },
     structure: (structure ?? []).map(normalizeStructurePage),
     features: (v1.tannins ?? v1.features ?? []) as string[],
@@ -69,7 +69,7 @@ function normalizeSectioned(v1: Record<string, unknown>): SectionedEssence {
     version: '2.0.0',
     platform: {
       type: (vessel?.type ?? 'spa') as 'spa' | 'ssr' | 'static',
-      routing: (vessel?.routing ?? 'hash') as 'hash' | 'history',
+      routing: (vessel?.routing ?? 'hash') as 'hash' | 'history' | 'pathname',
     },
     // Accept both old 'character' and new 'personality' field names
     personality: (v1.character ?? v1.personality) as string[],
