@@ -49,7 +49,7 @@ jobs:
       - name: Deploy registry portal to Vercel
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: pnpm dlx vercel deploy --prod --yes --token="$VERCEL_TOKEN" --cwd apps/registry
+        run: pnpm dlx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
       - name: Audit hosted registry portal after deploy
         if: ${{ inputs.run_portal_audit }}
         run: node scripts/audit-registry-portal.mjs --fail-on-error --report-json=registry-portal-report.json --summary-markdown=registry-portal-summary.md
