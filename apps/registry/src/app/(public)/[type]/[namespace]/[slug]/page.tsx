@@ -305,10 +305,20 @@ interface DetailPageProps {
 export default async function ContentDetailPage({ params }: DetailPageProps) {
   const { type, namespace: rawNamespace, slug } = await params;
   const namespace = decodeURIComponent(rawNamespace);
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  let session:
+    | {
+        access_token?: string | null;
+      }
+    | null = null;
+
+  try {
+    const supabase = await createClient();
+    const result = await supabase.auth.getSession();
+    session = result.data.session;
+  } catch {
+    // Public detail pages should still render without Supabase envs or auth context.
+    session = null;
+  }
 
   let content: ContentRecord | null = null;
 

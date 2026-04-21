@@ -6,6 +6,8 @@ import { CommandPalette } from '@/components/command-palette';
 import { api } from '@/lib/api';
 import { isAdmin } from '@/lib/admin';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({
   children,
 }: {

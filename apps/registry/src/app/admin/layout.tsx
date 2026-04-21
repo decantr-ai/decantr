@@ -7,6 +7,8 @@ import { CommandPalette } from '@/components/command-palette';
 import type { Metadata } from 'next';
 import { api } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Admin',
 };

@@ -66,10 +66,31 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const supabase = createClient();
+  const authConfigured = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  function getSupabaseClient() {
+    if (!authConfigured) {
+      setError('Authentication is unavailable in this environment.');
+      return null;
+    }
+
+    try {
+      return createClient();
+    } catch {
+      setError('Authentication is unavailable in this environment.');
+      return null;
+    }
+  }
 
   async function handleOAuth(provider: 'github' | 'google') {
     setError('');
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      return;
+    }
+
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -85,6 +106,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const supabase = getSupabaseClient();
+      if (!supabase) {
+        return;
+      }
+
       if (mode === 'login') {
         const { error: err } = await supabase.auth.signInWithPassword({
           email,
@@ -168,6 +194,7 @@ export default function LoginPage() {
                 type="button"
                 className="d-interactive w-full flex items-center justify-center gap-2.5 text-sm py-2.5"
                 data-variant="ghost"
+                disabled={!authConfigured}
                 onClick={() => handleOAuth('github')}
               >
                 <GitHubIcon />
@@ -177,6 +204,7 @@ export default function LoginPage() {
                 type="button"
                 className="d-interactive w-full flex items-center justify-center gap-2.5 text-sm py-2.5"
                 data-variant="ghost"
+                disabled={!authConfigured}
                 onClick={() => handleOAuth('google')}
               >
                 <GoogleIcon />
@@ -286,12 +314,18 @@ export default function LoginPage() {
             </p>
           )}
 
+          {!authConfigured && (
+            <p className="text-xs text-d-muted" role="status">
+              Authentication controls are unavailable until Supabase public env is configured.
+            </p>
+          )}
+
           {/* Submit */}
           <button
             type="submit"
             className="d-interactive w-full text-sm py-2.5 mt-1 flex items-center justify-center gap-2"
             data-variant="primary"
-            disabled={loading}
+            disabled={loading || !authConfigured}
           >
             {loading && <Spinner />}
             {submitLabels[mode]}
