@@ -91,74 +91,33 @@ export function AccountSettings() {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
 
   return (
-    <>
-      <div className="account-settings-layout">
-        <nav className="flex flex-col gap-1">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-2"
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  border: 'none',
-                  borderLeft: `2px solid ${active ? 'var(--d-accent)' : 'transparent'}`,
-                  background: active ? 'var(--d-surface)' : 'transparent',
-                  color: active
-                    ? 'var(--d-accent)'
-                    : 'var(--d-text-muted)',
-                  cursor: 'pointer',
-                  borderRadius: '0 var(--d-radius-sm) var(--d-radius-sm) 0',
-                  fontSize: '0.875rem',
-                  fontWeight: active ? 500 : 400,
-                  textAlign: 'left',
-                  transition: 'color 0.15s, background 0.15s',
-                }}
-              >
-                <Icon size={16} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
+    <div className="registry-settings-layout">
+      <nav className="registry-settings-nav">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const active = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className="registry-settings-tab"
+              data-active={active}
+            >
+              <Icon size={16} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </nav>
 
-        <div style={{ flex: 1 }}>
-          {activeTab === 'profile' && <ProfileTab />}
-          {activeTab === 'security' && <SecurityTab />}
-          {activeTab === 'notifications' && <NotificationsTab />}
-          {activeTab === 'danger' && <DangerTab />}
-        </div>
+      <div className="registry-settings-panel">
+        {activeTab === 'profile' && <ProfileTab />}
+        {activeTab === 'security' && <SecurityTab />}
+        {activeTab === 'notifications' && <NotificationsTab />}
+        {activeTab === 'danger' && <DangerTab />}
       </div>
-
-      <style>{`
-        .account-settings-layout {
-          display: flex;
-          gap: 2rem;
-        }
-        .account-settings-layout > nav {
-          min-width: 180px;
-        }
-        @media (max-width: 639px) {
-          .account-settings-layout {
-            flex-direction: column;
-          }
-          .account-settings-layout > nav {
-            flex-direction: row;
-            overflow-x: auto;
-            min-width: unset;
-          }
-          .account-settings-layout > nav > button {
-            border-left: none !important;
-            border-bottom: 2px solid transparent;
-            white-space: nowrap;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }
 
@@ -170,10 +129,7 @@ function FieldGroup({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className="flex flex-col gap-1"
-      style={{ marginBottom: '1rem' }}
-    >
+    <div className="registry-settings-field">
       <label className="d-label">{label}</label>
       {children}
     </div>
@@ -233,6 +189,7 @@ function ProfileTab() {
     const formData = new FormData();
     formData.set('display_name', displayName);
     formData.set('username', username);
+    formData.set('bio', bio);
     startSave(async () => {
       const result = await updateProfile(formData);
       if (result?.error) {
@@ -251,42 +208,25 @@ function ProfileTab() {
     .join('');
 
   return (
-    <form onSubmit={handleSave} className="flex flex-col gap-4">
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Profile</h3>
+    <form onSubmit={handleSave} className="registry-settings-form">
+      <h3 className="registry-settings-section-title">Profile</h3>
 
       {message && (
         <div
-          className="d-annotation"
+          className="d-annotation registry-settings-message"
           data-status={message.type}
-          style={{ display: 'block' }}
         >
           {message.text}
         </div>
       )}
 
       {/* Avatar placeholder */}
-      <div className="flex items-center gap-3">
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'var(--d-surface-raised)',
-            border: '2px solid var(--d-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.25rem',
-            fontWeight: 600,
-          }}
-        >
-          {initials || 'YO'}
-        </div>
+      <div className="registry-settings-avatar-row">
+        <div className="registry-settings-avatar">{initials || 'YO'}</div>
         <button
           type="button"
           className="d-interactive"
           data-variant="ghost"
-          style={{ fontSize: '0.8125rem' }}
         >
           Change avatar
         </button>
@@ -312,30 +252,27 @@ function ProfileTab() {
       </FieldGroup>
       <FieldGroup label="Email">
         <input
-          className="d-control"
+          className="d-control registry-settings-disabled"
           type="email"
           value={email}
           disabled
-          style={{ opacity: 0.6, cursor: 'not-allowed' }}
         />
       </FieldGroup>
       <FieldGroup label="Bio">
         <textarea
-          className="d-control"
+          className="d-control registry-settings-textarea"
           rows={3}
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           placeholder="Building with Decantr."
-          style={{ resize: 'vertical' }}
         />
       </FieldGroup>
 
       <button
         type="submit"
-        className="d-interactive"
+        className="d-interactive registry-settings-actions"
         data-variant="primary"
         disabled={isSaving}
-        style={{ alignSelf: 'flex-start' }}
       >
         {isSaving ? 'Saving...' : 'Save changes'}
       </button>
@@ -345,8 +282,8 @@ function ProfileTab() {
 
 function SecurityTab() {
   return (
-    <div className="flex flex-col gap-4">
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Security</h3>
+    <div className="registry-settings-form">
+      <h3 className="registry-settings-section-title">Security</h3>
 
       <FieldGroup label="Current Password">
         <input
@@ -372,9 +309,8 @@ function SecurityTab() {
 
       <button
         type="button"
-        className="d-interactive"
+        className="d-interactive registry-settings-actions"
         data-variant="primary"
-        style={{ alignSelf: 'flex-start' }}
       >
         Update password
       </button>
@@ -384,8 +320,8 @@ function SecurityTab() {
 
 function NotificationsTab() {
   return (
-    <div className="flex flex-col gap-4">
-      <h3 style={{ fontSize: '1.125rem', fontWeight: 600 }}>Notifications</h3>
+    <div className="registry-settings-form">
+      <h3 className="registry-settings-section-title">Notifications</h3>
       {(
         [
           'Email notifications',
@@ -396,17 +332,12 @@ function NotificationsTab() {
       ).map((label) => (
         <div
           key={label}
-          className="flex items-center justify-between"
-          style={{
-            padding: '0.5rem 0',
-            borderBottom: '1px solid var(--d-border)',
-          }}
+          className="registry-settings-toggle-row"
         >
           <span className="text-sm">{label}</span>
           <input
             type="checkbox"
             defaultChecked
-            style={{ accentColor: 'var(--d-primary)' }}
           />
         </div>
       ))}
@@ -424,25 +355,18 @@ function DangerTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h3
-        style={{
-          fontSize: '1.125rem',
-          fontWeight: 600,
-          color: 'var(--d-error)',
-        }}
-      >
+    <div className="registry-settings-form">
+      <h3 className="registry-settings-section-title registry-settings-danger-title">
         Danger Zone
       </h3>
-      <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+      <p className="registry-muted-copy">
         Sign out of your account. You will need to log in again.
       </p>
       <button
         type="button"
-        className="d-interactive"
+        className="d-interactive registry-settings-actions"
         data-variant="danger"
         onClick={handleSignOut}
-        style={{ alignSelf: 'flex-start' }}
       >
         Sign out
       </button>

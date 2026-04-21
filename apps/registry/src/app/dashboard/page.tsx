@@ -87,53 +87,23 @@ function reputationLevel(score: number): string {
   return 'Newcomer';
 }
 
-const LEVEL_STYLES: Record<string, { bg: string; color: string }> = {
-  Newcomer: {
-    bg: 'var(--d-surface)',
-    color: 'var(--d-text-muted)',
-  },
-  Contributor: {
-    bg: 'color-mix(in srgb, var(--d-info) 15%, transparent)',
-    color: 'var(--d-info)',
-  },
-  Trusted: {
-    bg: 'color-mix(in srgb, var(--d-warning) 15%, transparent)',
-    color: 'var(--d-warning)',
-  },
-  Expert: {
-    bg: 'color-mix(in srgb, var(--d-success) 15%, transparent)',
-    color: 'var(--d-success)',
-  },
-};
-
 function ReputationBadge({ score, level }: { score: number; level: string }) {
-  const style = LEVEL_STYLES[level] || LEVEL_STYLES.Newcomer;
   return (
-    <span
-      className="flex items-center gap-1"
-      style={{
-        display: 'inline-flex',
-        padding: '0.125rem 0.5rem',
-        borderRadius: 'var(--d-radius-full)',
-        background: style.bg,
-        fontSize: '0.75rem',
-        whiteSpace: 'nowrap',
-      }}
-    >
+    <span className="registry-reputation-badge" data-level={level}>
       <svg
         width={10}
         height={10}
         viewBox="0 0 24 24"
         fill="none"
-        stroke={style.color}
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
       </svg>
-      <span style={{ fontWeight: 600, color: style.color }}>{score}</span>
-      <span style={{ color: 'var(--d-text-muted)' }}>{level}</span>
+      <span className="registry-reputation-score">{score}</span>
+      <span className="registry-reputation-level">{level}</span>
     </span>
   );
 }
@@ -207,31 +177,27 @@ export default async function DashboardPage() {
 
   return (
     <div className="registry-page-stack">
-      <h3 className="text-lg font-semibold">Dashboard</h3>
+      <div className="registry-page-intro">
+        <h3 className="text-lg font-semibold">Dashboard</h3>
+        <p className="registry-dashboard-description">
+          Your overview surface for published work, usage signals, and reputation momentum across the registry workspace.
+        </p>
+      </div>
 
-      {/* Overview */}
       <section className="d-section" data-density="compact">
-        <span className="d-label registry-anchor-label">
-          Overview
-        </span>
+        <span className="d-label registry-anchor-label">Overview</span>
         <KPIGrid items={kpiItems} />
       </section>
 
-      {/* Reputation */}
       <section className="d-section" data-density="compact">
-        <div className="flex items-center gap-4">
-          <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-            Your Reputation
-          </span>
+        <div className="registry-overview-reputation">
+          <span className="registry-reputation-caption">Your Reputation</span>
           <ReputationBadge score={profile.reputation_score} level={level} />
         </div>
       </section>
 
-      {/* Recent Activity */}
       <section className="d-section" data-density="compact">
-        <span className="d-label registry-anchor-label">
-          Recent Activity
-        </span>
+        <span className="d-label registry-anchor-label">Recent Activity</span>
         <ActivityFeed events={[]} />
       </section>
     </div>

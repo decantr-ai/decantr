@@ -5,7 +5,7 @@ export default function GovernancePage() {
     <div className="registry-page-stack">
       <div className="registry-page-intro">
         <h3 className="text-lg font-semibold">Governance</h3>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+        <p className="registry-dashboard-description">
           Review organization publishing policy, approvals, and the audit trail for your shared workspace.
         </p>
       </div>

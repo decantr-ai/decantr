@@ -128,76 +128,43 @@ function TierUpgradeCard({
   return (
     <div
       className="d-surface registry-plan-card"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        borderColor: tier.current ? 'var(--d-success)' : undefined,
-        borderTopWidth: tier.current ? 3 : undefined,
-        borderTopColor: tier.current ? 'var(--d-success)' : undefined,
-        background: highlighted && !tier.current
-          ? 'linear-gradient(180deg, color-mix(in srgb, var(--d-primary) 6%, transparent) 0%, color-mix(in srgb, var(--d-surface) 98%, transparent) 100%)'
-          : undefined,
-        position: 'relative',
-      }}
+      data-current={tier.current || undefined}
+      data-highlighted={highlighted || undefined}
     >
-      <div
-        className="flex items-center justify-between"
-        style={{ marginBottom: '0.5rem' }}
-      >
-        <h4 style={{ fontSize: '1.125rem', fontWeight: 600 }}>{tier.name}</h4>
-        {tier.current && (
-          <span className="d-annotation" data-status="success">
-            Current
+      <div className="registry-plan-card-head">
+        <div className="registry-plan-card-title-row">
+          <h4 className="registry-plan-card-title">{tier.name}</h4>
+          {tier.current && (
+            <span className="d-annotation" data-status="success">
+              Current
+            </span>
+          )}
+          {highlighted && !tier.current && (
+            <span className="d-annotation" data-status="info">
+              Popular
+            </span>
+          )}
+        </div>
+
+        <div className="registry-plan-card-price-row">
+          <span className="registry-plan-card-price">
+            {tier.priceLabel ?? `$${tier.price}`}
           </span>
-        )}
-        {highlighted && !tier.current && (
-          <span className="d-annotation" data-status="info">
-            Popular
-          </span>
-        )}
+          {!tier.priceLabel && (
+            <span className="registry-plan-card-price-suffix">
+              /mo
+            </span>
+          )}
+        </div>
+
+        <p className="registry-plan-card-description">
+          {tier.description}
+        </p>
       </div>
 
-      <div
-        className="flex items-center"
-        style={{ marginBottom: '0.5rem' }}
-      >
-        <span
-          style={{ fontSize: '2.5rem', fontWeight: 700, lineHeight: 1 }}
-        >
-          {tier.priceLabel ?? `$${tier.price}`}
-        </span>
-        {!tier.priceLabel && (
-          <span
-            className="text-sm"
-            style={{ color: 'var(--d-text-muted)', marginLeft: '0.25rem' }}
-          >
-            /mo
-          </span>
-        )}
-      </div>
-
-      <p
-        className="text-sm"
-        style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem' }}
-      >
-        {tier.description}
-      </p>
-
-      <ul
-        className="flex flex-col gap-2"
-        style={{
-          listStyle: 'none',
-          marginBottom: '1.5rem',
-          flex: 1,
-          padding: 0,
-        }}
-      >
+      <ul className="registry-plan-feature-list">
         {tier.features.map((feature) => (
-          <li
-            key={feature}
-            className="flex items-center gap-2"
-            style={{ fontSize: '0.875rem' }}
-          >
+          <li key={feature} className="registry-plan-feature-item">
             <CheckIcon size={14} />
             {feature}
           </li>
@@ -206,11 +173,10 @@ function TierUpgradeCard({
 
       <button
         type="button"
-        className="d-interactive"
-        data-variant={tier.current ? undefined : 'primary'}
+        className="d-interactive registry-plan-card-cta"
+        data-variant={tier.current ? 'ghost' : 'primary'}
         disabled={tier.current || isPending || !tier.planId}
         onClick={() => tier.planId && onUpgrade(tier.planId)}
-        style={{ width: '100%', justifyContent: 'center' }}
       >
         {tier.current
           ? 'Current Plan'
@@ -359,10 +325,15 @@ export default function BillingPage() {
 
   return (
     <div className="registry-page-stack">
-      <h3 className="text-lg font-semibold">Billing &amp; Plans</h3>
+      <div className="registry-page-intro">
+        <h3 className="text-lg font-semibold">Billing &amp; Plans</h3>
+        <p className="registry-dashboard-description">
+          Review current entitlements, compare the commercial plan model, and move into Stripe only when you need to manage a paid subscription.
+        </p>
+      </div>
 
       {error && (
-        <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
+        <div className="d-annotation registry-settings-message" data-status="error">
           {error}
         </div>
       )}
@@ -373,66 +344,53 @@ export default function BillingPage() {
           Current Usage
         </span>
         <KPIGrid items={kpiItems} />
-        <div
-          className="d-surface registry-surface-stack"
-          style={{ marginTop: '1rem' }}
-        >
-          <div>
-            <div className="text-sm" style={{ fontWeight: 600 }}>
-              What this plan currently unlocks
-            </div>
-            <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+        <div className="d-surface registry-dashboard-panel">
+          <div className="registry-panel-note">
+            <h4 className="registry-panel-title">What this plan currently unlocks</h4>
+            <div className="registry-detail-list">
               {billing?.entitlements?.personal_private_packages
                 ? 'Personal private packages are enabled.'
                 : 'Personal private packages are not enabled on this plan.'}
-            </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              <div>
                 {billing?.entitlements?.org_collaboration
                   ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
                   : 'Organization collaboration is not enabled on this plan.'}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              <div>
                 {billing?.entitlements?.private_registry_portal
-                  ? 'Enterprise private registry browsing is enabled for your organization.'
+                  ? 'Private registry browsing is enabled for your organization.'
                   : 'Private registry browsing is not enabled on this plan.'}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              <div>
                 API usage in the last 30 days: {billing?.usage?.api_requests_30d ?? 0} requests.
                 {billing?.limits?.api_requests_per_minute != null
                   ? ` Current live limit: ${billing.limits.api_requests_per_minute}/minute.`
                   : ' Unlimited per-minute usage on this plan.'}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+              <div>
                 Personal publishes in the last 30 days: {billing?.usage?.personal_publishes_30d ?? 0}. Private package publishes: {billing?.usage?.private_package_publishes_30d ?? 0}.
               </div>
             </div>
+          </div>
 
           {activeOrg && (
-            <div
-              className="registry-surface-stack"
-              style={{
-                paddingTop: '0.75rem',
-                borderTop: '1px solid var(--d-border)',
-              }}
-            >
-              <div className="text-sm" style={{ fontWeight: 600 }}>
-                Active organization
-              </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <div className="registry-panel-divider registry-panel-note">
+              <h4 className="registry-panel-title">Active organization</h4>
+              <div className="registry-detail-list">
                 {activeOrg.name} ({activeOrg.slug})
-              </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                <div>
                 Seats used: {billing?.usage?.seats_used ?? 0} / {billing?.usage?.seats_limit ?? activeOrg.seat_limit}
-              </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                </div>
+                <div>
                 Org packages: {billing?.usage?.org_content_items ?? 0}
-              </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                </div>
+                <div>
                 Org package publishes in the last 30 days: {billing?.usage?.org_package_publishes_30d ?? 0}. Approval actions: {billing?.usage?.approval_actions_30d ?? 0}.
+                </div>
               </div>
               {billing?.entitlements?.private_registry_portal ? (
-                <div style={{ marginTop: '0.5rem' }}>
-                  <Link href="/dashboard/private-registry" className="d-interactive" data-variant="primary">
+                <div className="registry-action-band-actions">
+                  <Link href="/dashboard/private-registry" className="d-interactive no-underline" data-variant="primary">
                     Open Private Registry
                   </Link>
                 </div>
@@ -445,16 +403,25 @@ export default function BillingPage() {
       {/* Manage billing for paying customers */}
       {currentTier !== 'free' && (
         <section className="d-section" data-density="compact">
-          <button
-            type="button"
-            className="d-interactive"
-            data-variant="ghost"
-            onClick={handleManageBilling}
-            disabled={isPending}
-            style={{ fontSize: '0.875rem' }}
-          >
-            {isPending ? 'Loading...' : 'Manage Billing in Stripe'}
-          </button>
+          <div className="registry-action-band" data-tone="billing">
+            <div className="registry-action-band-copy">
+              <h4 className="registry-action-band-title">Stripe billing workspace</h4>
+              <p className="registry-dashboard-description">
+                Open the hosted billing portal to manage invoices, payment methods, or subscription status for the active paid plan.
+              </p>
+            </div>
+            <div className="registry-action-band-actions">
+              <button
+                type="button"
+                className="d-interactive"
+                data-variant="primary"
+                onClick={handleManageBilling}
+                disabled={isPending}
+              >
+                {isPending ? 'Loading...' : 'Manage Billing in Stripe'}
+              </button>
+            </div>
+          </div>
         </section>
       )}
 
@@ -463,14 +430,12 @@ export default function BillingPage() {
         <span className="d-label registry-anchor-label">
           Plans
         </span>
-        <div className="d-surface registry-surface-stack" style={{ marginBottom: '1rem' }}>
-          <div className="text-sm" style={{ fontWeight: 600 }}>
-            Plan model
-          </div>
-          <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+        <div className="d-surface registry-dashboard-panel">
+          <h4 className="registry-panel-title">Plan model</h4>
+          <p className="registry-dashboard-description">
             Pro is for personal private packages. Team is for shared organization packages and collaboration.
             Enterprise adds a dedicated internal private registry workspace on top of the shared org package model.
-          </div>
+          </p>
         </div>
         <div className="registry-plan-grid">
           {tiers.map((tier) => (

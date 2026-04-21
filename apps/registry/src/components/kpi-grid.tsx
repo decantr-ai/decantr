@@ -51,87 +51,36 @@ function AnimatedValue({ value }: { value: number }) {
 
 export function KPIGrid({ items }: KPIGridProps) {
   return (
-    <>
-      <div className="kpi-grid">
-        {items.map((item) => {
-          const trend = item.trend;
-          const positive = trend !== undefined && trend >= 0;
-          return (
-            <div key={item.label} className="d-surface">
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                }}
-              >
-                {item.icon && (
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 'var(--d-radius)',
-                      background:
-                        'color-mix(in srgb, var(--d-accent) 12%, transparent)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.icon}
-                  </div>
-                )}
-                <div style={{ flex: 1 }}>
-                  <div
-                    className="text-sm"
-                    style={{
-                      color: 'var(--d-text-muted)',
-                      marginBottom: '0.125rem',
-                    }}
-                  >
-                    {item.label}
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                  >
+    <div className="registry-kpi-grid">
+      {items.map((item) => {
+        const trend = item.trend;
+        const positive = trend !== undefined && trend >= 0;
+
+        return (
+          <div key={item.label} className="d-surface registry-kpi-card">
+            <div className="registry-kpi-content">
+              {item.icon ? <div className="registry-kpi-icon">{item.icon}</div> : null}
+              <div className="registry-kpi-meta">
+                <div className="registry-kpi-label">{item.label}</div>
+                <div className="registry-kpi-value-row">
+                  <span className="registry-kpi-value">
+                    <AnimatedValue value={item.value} />
+                  </span>
+                  {trend !== undefined && trend !== 0 ? (
                     <span
-                      style={{
-                        fontSize: '1.5rem',
-                        fontWeight: 700,
-                        lineHeight: 1.2,
-                      }}
+                      className="d-annotation"
+                      data-status={positive ? 'success' : 'error'}
                     >
-                      <AnimatedValue value={item.value} />
+                      {positive ? '+' : ''}
+                      {trend}%
                     </span>
-                    {trend !== undefined && trend !== 0 && (
-                      <span
-                        className="d-annotation"
-                        data-status={positive ? 'success' : 'error'}
-                      >
-                        {positive ? '+' : ''}
-                        {trend}%
-                      </span>
-                    )}
-                  </div>
+                  ) : null}
                 </div>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      <style>{`
-        .kpi-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-          gap: 1rem;
-        }
-      `}</style>
-    </>
+          </div>
+        );
+      })}
+    </div>
   );
 }

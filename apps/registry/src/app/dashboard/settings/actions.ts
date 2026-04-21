@@ -16,12 +16,13 @@ export async function updateProfile(formData: FormData) {
 
   const displayName = formData.get('display_name') as string;
   const username = formData.get('username') as string;
+  const bio = formData.get('bio') as string;
 
   const body: Record<string, string> = {};
   if (displayName) body.display_name = displayName;
   if (username) body.username = username;
 
-  if (Object.keys(body).length === 0) {
+  if (Object.keys(body).length === 0 && !bio) {
     return { error: 'No changes to save' };
   }
 
@@ -40,16 +41,13 @@ export async function updateProfile(formData: FormData) {
   }
 
   // Also update auth metadata for display_name
-  if (displayName) {
+  if (displayName || username || bio) {
     await supabase.auth.updateUser({
       data: {
-        display_name: displayName,
+        ...(displayName ? { display_name: displayName } : {}),
         ...(username ? { username, user_name: username } : {}),
+        ...(bio !== undefined ? { bio } : {}),
       },
-    });
-  } else if (username) {
-    await supabase.auth.updateUser({
-      data: { username, user_name: username },
     });
   }
 

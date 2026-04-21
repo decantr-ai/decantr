@@ -394,14 +394,14 @@ export function Sidebar({ user }: SidebarProps) {
           <div className="registry-sidebar-brand">
             {!desktopCollapsed && (
               <div className="registry-sidebar-brand-mark">
-                <span style={{ color: 'var(--d-accent)', display: 'inline-flex' }}>
+                <span className="registry-sidebar-brand-icon">
                   <HexagonIcon size={18} />
                 </span>
                 <span className="font-semibold text-sm lum-brand">decantr</span>
               </div>
             )}
             <button
-              className="d-interactive"
+              className="d-interactive registry-sidebar-collapse"
               data-variant="ghost"
               onClick={() => {
                 if (isMobile) {
@@ -417,7 +417,6 @@ export function Sidebar({ user }: SidebarProps) {
                   ? 'Expand sidebar'
                   : 'Collapse sidebar'
               }
-              style={{ padding: '0.25rem' }}
             >
               {isMobile ? (
                 <PanelLeftCloseIcon size={16} />
@@ -470,10 +469,10 @@ export function Sidebar({ user }: SidebarProps) {
           <div className="registry-sidebar-footer">
             {!desktopCollapsed && (
               <div className="registry-sidebar-user">
-                <span className="text-sm" style={{ fontWeight: 600 }}>
+                <span className="registry-sidebar-user-name">
                   {user.display_name || user.username || user.email.split('@')[0]}
                 </span>
-                <span className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
+                <span className="registry-sidebar-user-tier">
                   {user.tier === 'team'
                     ? 'Team workspace'
                     : user.tier === 'enterprise'

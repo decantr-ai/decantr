@@ -78,24 +78,19 @@ export function DashboardHeader() {
         </button>
 
         <nav className="registry-shell-breadcrumb" aria-label="Breadcrumb">
-        {breadcrumb.map((crumb, i) => (
-          <span key={crumb.path} className="flex items-center gap-1 min-w-0">
-            {i > 0 && (
-              <span style={{ color: 'var(--d-text-muted)' }}>/</span>
-            )}
-            <span
-              className="registry-shell-breadcrumb-segment text-sm"
-              style={{
-                color:
-                  i === breadcrumb.length - 1
-                    ? 'var(--d-text)'
-                    : 'var(--d-text-muted)',
-              }}
-            >
-              {crumb.label}
+          {breadcrumb.map((crumb, i) => (
+            <span key={crumb.path} className="registry-shell-breadcrumb-item">
+              {i > 0 ? (
+                <span className="registry-shell-breadcrumb-separator">/</span>
+              ) : null}
+              <span
+                className="registry-shell-breadcrumb-segment text-sm"
+                data-current={i === breadcrumb.length - 1}
+              >
+                {crumb.label}
+              </span>
             </span>
-          </span>
-        ))}
+          ))}
         </nav>
       </div>
 
@@ -103,23 +98,13 @@ export function DashboardHeader() {
         <ThemeToggle compact />
         <button
           type="button"
-          className="d-interactive"
+          className="d-interactive registry-shell-search-trigger"
           data-variant="ghost"
           onClick={triggerSearch}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.8125rem',
-            color: 'var(--d-text-muted)',
-          }}
         >
           <SearchIcon size={14} />
           <span className="registry-shell-search-label">Search</span>
-          <kbd
-            className="registry-shell-search-kbd text-xs"
-            style={{ opacity: 0.5, fontFamily: 'inherit' }}
-          >
+          <kbd className="registry-shell-search-kbd text-xs">
             &#8984;K
           </kbd>
         </button>

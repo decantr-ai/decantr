@@ -7,14 +7,6 @@ interface ActivityEvent {
   type: 'publish' | 'update' | 'review' | 'download' | 'comment';
 }
 
-const EVENT_COLORS: Record<ActivityEvent['type'], string> = {
-  publish: 'var(--d-success)',
-  update: 'var(--d-info)',
-  review: 'var(--d-warning)',
-  download: 'var(--d-accent)',
-  comment: 'var(--d-primary)',
-};
-
 function ActivityIcon({ size = 48 }: { size?: number }) {
   return (
     <svg
@@ -60,22 +52,11 @@ interface ActivityFeedProps {
 export function ActivityFeed({ events }: ActivityFeedProps) {
   if (events.length === 0) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '0.75rem',
-          padding: '3rem 0',
-        }}
-      >
-        <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
+      <div className="registry-empty-state" data-density="compact">
+        <span className="registry-empty-state-icon">
           <ActivityIcon size={48} />
         </span>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-          No recent activity yet.
-        </p>
+        <p className="registry-empty-state-copy">No recent activity yet.</p>
       </div>
     );
   }
@@ -83,57 +64,20 @@ export function ActivityFeed({ events }: ActivityFeedProps) {
   const groups = groupByDate(events);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="registry-activity-feed">
       {[...groups.entries()].map(([label, items]) => (
-        <div key={label}>
-          <div
-            className="d-label"
-            style={{
-              marginBottom: '0.75rem',
-              paddingLeft: '0.75rem',
-              borderLeft: '2px solid var(--d-accent)',
-            }}
-          >
-            {label}
-          </div>
-          <div className="flex flex-col">
+        <div key={label} className="registry-activity-group">
+          <div className="d-label registry-anchor-label">{label}</div>
+          <div className="registry-activity-list">
             {items.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center gap-3"
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: 'var(--d-radius-sm)',
-                  transition: 'background 0.1s ease',
-                  cursor: 'default',
-                }}
-              >
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    background: EVENT_COLORS[event.type],
-                    flexShrink: 0,
-                  }}
-                />
-                <div style={{ flex: 1, fontSize: '0.875rem' }}>
-                  <span style={{ fontWeight: 600 }}>{event.user}</span>{' '}
-                  <span style={{ color: 'var(--d-text-muted)' }}>
-                    {event.action}
-                  </span>
+              <div key={event.id} className="registry-activity-item">
+                <div className="registry-activity-dot" data-type={event.type} />
+                <div className="registry-activity-body">
+                  <span className="registry-activity-user">{event.user}</span>{' '}
+                  <span className="registry-activity-action">{event.action}</span>
                   {event.target && <> <span>{event.target}</span></>}
                 </div>
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    color: 'var(--d-text-muted)',
-                    fontFamily: 'var(--d-font-mono, monospace)',
-                    flexShrink: 0,
-                  }}
-                >
-                  {event.timestamp}
-                </span>
+                <span className="registry-activity-timestamp">{event.timestamp}</span>
               </div>
             ))}
           </div>

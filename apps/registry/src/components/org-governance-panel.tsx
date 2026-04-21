@@ -210,22 +210,20 @@ export function OrgGovernancePanel() {
 
   if (!me?.entitlements?.org_collaboration || organizations.length === 0) {
     return (
-      <div className="d-surface">
-        <div className="flex flex-col gap-3">
-          <div>
-            <h3 className="text-lg font-semibold">Organization Governance</h3>
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
-              Governance becomes available once this account is attached to an active Team or Enterprise organization.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/dashboard/billing" className="d-interactive" data-variant="primary">
-              Review plans
-            </Link>
-            <Link href="/dashboard/team" className="d-interactive" data-variant="ghost">
-              Open team workspace
-            </Link>
-          </div>
+      <div className="d-surface registry-dashboard-panel">
+        <div className="registry-dashboard-copy">
+          <h3 className="registry-dashboard-title">Organization Governance</h3>
+          <p className="registry-dashboard-description">
+            Governance becomes available once this account is attached to an active Team or Enterprise organization.
+          </p>
+        </div>
+        <div className="registry-action-band-actions">
+          <Link href="/dashboard/billing" className="d-interactive no-underline" data-variant="primary">
+            Review plans
+          </Link>
+          <Link href="/dashboard/team" className="d-interactive no-underline" data-variant="ghost">
+            Open team workspace
+          </Link>
         </div>
       </div>
     );
@@ -233,63 +231,67 @@ export function OrgGovernancePanel() {
 
   return (
     <div className="registry-page-stack">
-      <section className="d-surface">
-        <div className="registry-surface-stack">
-          <div className="registry-form-grid-split">
-            <div className="registry-page-intro">
-              <div>
-                <h3 className="text-lg font-semibold">Organization Governance</h3>
-                <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
-                  Manage approval rules, watch pending org packages, and inspect the audit trail for your shared workspace.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="d-annotation" data-status="info">
-                  {activeOrg?.name ?? 'Organization'}
-                </span>
-                <span className="d-annotation" data-status="success">
-                  {activeOrg?.role ?? 'member'}
-                </span>
-                <span className="d-annotation" data-status="warning">
-                  {activeOrg?.tier ?? 'team'}
-                </span>
-              </div>
-            </div>
-
-            <div className="registry-form-grid">
-              <label className="text-sm font-semibold" htmlFor="governance-org">
-                Active organization
-              </label>
-              <select
-                id="governance-org"
-                className="d-control"
-                value={activeOrg?.slug ?? ''}
-                onChange={(event) => setOrgSlug(event.target.value)}
-              >
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.slug}>
-                    {org.name} ({org.role})
-                  </option>
-                ))}
-              </select>
+      <section className="d-surface registry-dashboard-panel">
+        <div className="registry-form-grid-split">
+          <div className="registry-dashboard-copy">
+            <h3 className="registry-dashboard-title">Organization Governance</h3>
+            <p className="registry-dashboard-description">
+              Manage approval rules, watch pending org packages, and inspect the audit trail for your shared workspace.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="d-annotation" data-status="info">
+                {activeOrg?.name ?? 'Organization'}
+              </span>
+              <span className="d-annotation" data-status="success">
+                {activeOrg?.role ?? 'member'}
+              </span>
+              <span className="d-annotation" data-status="warning">
+                {activeOrg?.tier ?? 'team'}
+              </span>
             </div>
           </div>
 
-          <div className="registry-inline-actions">
-            <Link href="/dashboard/team" className="d-interactive" data-variant="ghost">
+          <div className="registry-form-grid">
+            <label className="text-sm font-semibold" htmlFor="governance-org">
+              Active organization
+            </label>
+            <select
+              id="governance-org"
+              className="d-control"
+              value={activeOrg?.slug ?? ''}
+              onChange={(event) => setOrgSlug(event.target.value)}
+            >
+              {organizations.map((org) => (
+                <option key={org.id} value={org.slug}>
+                  {org.name} ({org.role})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="registry-action-band" data-tone="governance">
+          <div className="registry-action-band-copy">
+            <h4 className="registry-action-band-title">Governance workflow</h4>
+            <p className="registry-dashboard-description">
+              Move between team membership and content review without losing the governance context for this organization.
+            </p>
+          </div>
+          <div className="registry-action-band-actions">
+            <Link href="/dashboard/team" className="d-interactive no-underline" data-variant="primary">
               Manage members
             </Link>
-            <Link href="/dashboard/content" className="d-interactive" data-variant="ghost">
+            <Link href="/dashboard/content" className="d-interactive no-underline" data-variant="ghost">
               Review packages
             </Link>
           </div>
-
-          {error ? (
-            <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
-              {error}
-            </div>
-          ) : null}
         </div>
+
+        {error ? (
+          <div className="d-annotation registry-settings-message" data-status="error">
+            {error}
+          </div>
+        ) : null}
       </section>
 
       {governanceKpis.length > 0 ? (
@@ -298,22 +300,21 @@ export function OrgGovernancePanel() {
         </section>
       ) : null}
 
-      <section className="d-surface">
-        <div className="registry-surface-stack">
-          <div>
-            <h4 className="text-base font-semibold">Publishing policy</h4>
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
-              Decide whether public org packages must stop in an approval queue before they become visible.
-            </p>
-          </div>
+      <section className="d-surface registry-dashboard-panel">
+        <div className="registry-panel-note">
+          <h4 className="registry-panel-title">Publishing policy</h4>
+          <p className="registry-dashboard-description">
+            Decide whether public org packages must stop in an approval queue before they become visible.
+          </p>
+        </div>
 
           <div className="registry-policy-list">
           <label className="registry-policy-row">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm" style={{ fontWeight: 600 }}>
+            <div className="registry-policy-copy">
+              <span className="text-sm font-semibold">
                 Require approval for public org packages
               </span>
-              <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <span className="registry-muted-copy">
                 New public org packages remain pending until an owner or admin approves them.
               </span>
             </div>
@@ -332,11 +333,11 @@ export function OrgGovernancePanel() {
           {activeOrg?.tier === 'enterprise' ? (
             <>
               <label className="registry-policy-row">
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm" style={{ fontWeight: 600 }}>
+                <div className="registry-policy-copy">
+                  <span className="text-sm font-semibold">
                     Allow member submissions
                   </span>
-                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  <span className="registry-muted-copy">
                     Let members submit org packages without needing owner or admin publishing access.
                   </span>
                 </div>
@@ -353,11 +354,11 @@ export function OrgGovernancePanel() {
               </label>
 
               <label className="registry-policy-row">
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm" style={{ fontWeight: 600 }}>
+                <div className="registry-policy-copy">
+                  <span className="text-sm font-semibold">
                     Require approval for private org packages
                   </span>
-                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  <span className="registry-muted-copy">
                     Route private enterprise packages into the approval queue before they become visible to the org.
                   </span>
                 </div>
@@ -374,26 +375,24 @@ export function OrgGovernancePanel() {
               </label>
             </>
           ) : (
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <p className="registry-muted-copy">
               Advanced submission and private-review controls are part of the Enterprise governance model.
             </p>
           )}
 
           {!canManage ? (
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <p className="registry-muted-copy">
               Only owners and admins can change organization policy.
             </p>
           ) : null}
           </div>
-        </div>
       </section>
 
-      <section className="d-surface">
-        <div className="registry-surface-stack">
-          <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
-            <div>
-              <h4 className="text-base font-semibold">Pending approvals</h4>
-              <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+      <section className="d-surface registry-dashboard-panel">
+        <div className="registry-panel-header">
+            <div className="registry-panel-note">
+              <h4 className="registry-panel-title">Pending approvals</h4>
+              <p className="registry-dashboard-description">
                 Review org packages waiting on a publish decision.
               </p>
             </div>
@@ -403,18 +402,18 @@ export function OrgGovernancePanel() {
           </div>
 
           {approvals.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <p className="registry-muted-copy">
               No org packages are waiting for approval right now.
             </p>
           ) : (
             <div className="registry-approval-list">
               {approvals.map((item) => (
                 <div key={item.id} className="registry-approval-card">
-                  <div className="flex flex-col gap-1" style={{ minWidth: 0 }}>
-                    <span className="text-sm" style={{ fontWeight: 600 }}>
+                  <div className="registry-approval-meta">
+                    <span className="text-sm font-semibold">
                       {item.name || item.slug}
                     </span>
-                    <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    <span className="registry-muted-copy">
                       {item.type} · {item.namespace} · {item.visibility}
                     </span>
                   </div>
@@ -443,25 +442,22 @@ export function OrgGovernancePanel() {
               ))}
             </div>
           )}
-        </div>
       </section>
 
-      <section className="d-surface">
-        <div className="registry-surface-stack">
+      <section className="d-surface registry-dashboard-panel">
           <div className="registry-form-grid-split">
-            <div>
-              <h4 className="text-base font-semibold">Audit trail</h4>
-              <p className="text-sm" style={{ color: 'var(--d-text-muted)', marginTop: '0.25rem' }}>
+            <div className="registry-panel-note">
+              <h4 className="registry-panel-title">Audit trail</h4>
+              <p className="registry-dashboard-description">
                 Filter the recent governance history for member changes, content decisions, and policy updates.
               </p>
             </div>
 
             <div className="registry-filter-bar">
               <select
-                className="d-control"
+                className="d-control registry-inline-select"
                 value={auditScope}
                 onChange={(event) => setAuditScope(event.target.value)}
-                style={{ minWidth: '10rem' }}
               >
                 {AUDIT_SCOPE_OPTIONS.map((option) => (
                   <option key={option.value || 'all'} value={option.value}>
@@ -471,10 +467,9 @@ export function OrgGovernancePanel() {
               </select>
 
               <select
-                className="d-control"
+                className="d-control registry-inline-select"
                 value={auditAction}
                 onChange={(event) => setAuditAction(event.target.value)}
-                style={{ minWidth: '12rem' }}
               >
                 {AUDIT_ACTION_OPTIONS.map((option) => (
                   <option key={option.value || 'all'} value={option.value}>
@@ -486,38 +481,30 @@ export function OrgGovernancePanel() {
           </div>
 
           {auditEntries.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <p className="registry-muted-copy">
               No audit events match the current filters.
             </p>
           ) : (
             auditEntries.map((entry) => (
-              <div
-                key={entry.id}
-                className="flex flex-col gap-1"
-                style={{
-                  paddingTop: '0.875rem',
-                  borderTop: '1px solid var(--d-border)',
-                }}
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm" style={{ fontWeight: 600 }}>
+              <div key={entry.id} className="registry-log-entry">
+                <div className="registry-log-entry-title">
+                  <span className="text-sm font-semibold">
                     {formatActionLabel(entry.action)}
                   </span>
                   <span className="d-annotation" data-status="info">
                     {entry.scope}
                   </span>
-                  <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  <span className="registry-muted-copy">
                     {formatTimestamp(entry.created_at)}
                   </span>
                 </div>
-                <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                <div className="registry-muted-copy">
                   {entry.target_type}
                   {entry.target_id ? ` · ${entry.target_id}` : ''}
                 </div>
               </div>
             ))
           )}
-        </div>
       </section>
     </div>
   );

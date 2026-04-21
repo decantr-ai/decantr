@@ -46,6 +46,30 @@ interface ContentPageProps {
   searchParams: Promise<{ q?: string; scope?: string }>;
 }
 
+function EmptyContentState({
+  copy,
+  actionHref,
+  actionLabel,
+}: {
+  copy: string;
+  actionHref?: string;
+  actionLabel?: string;
+}) {
+  return (
+    <div className="d-surface registry-empty-state" data-density="compact">
+      <span className="registry-empty-state-icon">
+        <PackageIcon size={48} />
+      </span>
+      <p className="registry-empty-state-copy">{copy}</p>
+      {actionHref && actionLabel ? (
+        <Link href={actionHref} className="d-interactive no-underline" data-variant="primary">
+          {actionLabel}
+        </Link>
+      ) : null}
+    </div>
+  );
+}
+
 export default async function ContentPage({ searchParams }: ContentPageProps) {
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
@@ -61,25 +85,37 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
   let privateItems: DashboardContentItem[] = [];
   let orgName: string | null = null;
   let privateRegistryEnabled = false;
+
   try {
     const [me, result] = await Promise.all([
       api.getMe(token).catch(() => null),
       api.getMyContent(token),
     ]);
+
     items = Array.isArray(result) ? result : result?.items ?? [];
+
     const activeOrg = me?.organizations?.[0] ?? null;
-    privateRegistryEnabled = Boolean(me?.entitlements?.private_registry_portal && activeOrg?.tier === 'enterprise');
+    privateRegistryEnabled = Boolean(
+      me?.entitlements?.private_registry_portal && activeOrg?.tier === 'enterprise',
+    );
+
     if (activeOrg?.slug) {
       const orgResult = await api.getOrgContent(token, activeOrg.slug).catch(() => null);
       orgItems = Array.isArray(orgResult) ? orgResult : orgResult?.items ?? [];
       orgName = activeOrg.name;
     }
-    const privateResult = await api.getPrivateContent(token, {
-      q: query || undefined,
-      scope: scope === 'personal' || scope === 'organization' ? (scope as 'personal' | 'organization') : 'all',
-      limit: 50,
-      offset: 0,
-    }).catch(() => null);
+
+    const privateResult = await api
+      .getPrivateContent(token, {
+        q: query || undefined,
+        scope:
+          scope === 'personal' || scope === 'organization'
+            ? (scope as 'personal' | 'organization')
+            : 'all',
+        limit: 50,
+        offset: 0,
+      })
+      .catch(() => null);
     privateItems = Array.isArray(privateResult) ? privateResult : privateResult?.items ?? [];
   } catch {
     items = [];
@@ -89,26 +125,27 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
 
   return (
     <div className="registry-page-stack">
-      {/* Header row */}
-      <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
-        <h3 className="text-lg font-semibold">Content</h3>
-        <div className="registry-inline-actions">
+      <div className="registry-dashboard-head">
+        <div className="registry-dashboard-copy">
+          <h3 className="registry-dashboard-title">Content</h3>
+          <p className="registry-dashboard-description">
+            Publish new registry items, inspect your private package surface, and keep personal and organization content in one coherent workspace.
+          </p>
+        </div>
+        <div className="registry-dashboard-head-actions">
           {privateRegistryEnabled ? (
-            <Link href="/dashboard/private-registry" className="d-interactive" data-variant="ghost">
+            <Link
+              href="/dashboard/private-registry"
+              className="d-interactive no-underline"
+              data-variant="ghost"
+            >
               Open Private Registry
             </Link>
           ) : null}
           <Link
             href="/dashboard/content/new"
-            className="d-interactive"
+            className="d-interactive no-underline"
             data-variant="primary"
-            style={{
-              fontSize: '0.875rem',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
           >
             <PlusIcon size={16} />
             New Content
@@ -117,15 +154,9 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
       </div>
 
       <section className="d-section" data-density="compact">
-        <span className="d-label registry-anchor-label">
-          Private Discovery
-        </span>
-        <form
-          method="get"
-          action="/dashboard/content"
-          className="d-surface registry-surface-stack"
-          style={{ marginBottom: '1rem' }}
-        >
+        <span className="d-label registry-anchor-label">Private Discovery</span>
+
+        <form method="get" action="/dashboard/content" className="d-surface registry-dashboard-panel">
           <div className="registry-form-grid">
             <label className="text-sm font-semibold" htmlFor="q">
               Search private packages
@@ -138,11 +169,17 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
               placeholder="Search by slug, namespace, name, or description"
             />
           </div>
-          <div className="registry-inline-actions">
+
+          <div className="registry-filter-bar">
             <label className="text-sm font-semibold" htmlFor="scope">
               Scope
             </label>
-            <select id="scope" name="scope" className="d-control" defaultValue={scope} style={{ width: 'auto' }}>
+            <select
+              id="scope"
+              name="scope"
+              className="d-control registry-inline-select"
+              defaultValue={scope}
+            >
               <option value="all">All accessible private packages</option>
               <option value="personal">Personal private packages</option>
               <option value="organization">Organization private packages</option>
@@ -156,52 +193,26 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
         {privateItems.length > 0 ? (
           <ContentCardGrid items={privateItems} editable />
         ) : (
-          <div className="d-surface">
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              {query
+          <EmptyContentState
+            copy={
+              query
                 ? 'No private packages matched this search.'
-                : 'No accessible private packages found yet.'}
-            </p>
-          </div>
+                : 'No accessible private packages found yet.'
+            }
+          />
         )}
       </section>
 
-      {/* Personal content grid */}
       <section className="d-section" data-density="compact">
-        <span className="d-label registry-anchor-label">
-          Published ({items.length})
-        </span>
+        <span className="d-label registry-anchor-label">Published ({items.length})</span>
         {items.length > 0 ? (
           <ContentCardGrid items={items} editable />
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem',
-              padding: '3rem 0',
-            }}
-          >
-            <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
-              <PackageIcon size={48} />
-            </span>
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              No content published yet.
-            </p>
-            <Link
-              href="/dashboard/content/new"
-              className="d-interactive"
-              data-variant="primary"
-              style={{
-                fontSize: '0.875rem',
-                textDecoration: 'none',
-              }}
-            >
-              Publish Your First Item
-            </Link>
-          </div>
+          <EmptyContentState
+            copy="No content published yet."
+            actionHref="/dashboard/content/new"
+            actionLabel="Publish Your First Item"
+          />
         )}
       </section>
 
@@ -213,23 +224,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
           {orgItems.length > 0 ? (
             <ContentCardGrid items={orgItems} editable />
           ) : (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem',
-                padding: '2rem 0',
-              }}
-            >
-              <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
-                <PackageIcon size={48} />
-              </span>
-              <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                No organization packages yet.
-              </p>
-            </div>
+            <EmptyContentState copy="No organization packages published yet." />
           )}
         </section>
       ) : null}

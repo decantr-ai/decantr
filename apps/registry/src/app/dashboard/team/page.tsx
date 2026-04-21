@@ -47,8 +47,6 @@ interface UsageSummary {
   approval_actions_30d: number;
 }
 
-/* ── Icons ── */
-
 function UserPlusIcon({ size = 16 }: { size?: number }) {
   return (
     <svg
@@ -183,29 +181,12 @@ function UsersLgIcon({ size = 48 }: { size?: number }) {
   );
 }
 
-/* ── Role styling ── */
-
-const ROLE_STYLES: Record<string, { bg: string; color: string }> = {
-  owner: {
-    bg: 'color-mix(in srgb, var(--d-primary) 15%, transparent)',
-    color: 'var(--d-primary)',
-  },
-  admin: {
-    bg: 'color-mix(in srgb, var(--d-secondary) 15%, transparent)',
-    color: 'var(--d-secondary)',
-  },
-  member: {
-    bg: 'var(--d-surface)',
-    color: 'var(--d-text-muted)',
-  },
-};
-
 function getInitials(name: string): string {
   return name
     .split(/[\s@]/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((s) => s[0].toUpperCase())
+    .map((segment) => segment[0].toUpperCase())
     .join('');
 }
 
@@ -215,6 +196,14 @@ function formatDate(dateStr: string): string {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function formatActionLabel(action: string): string {
+  return action
+    .split('.')
+    .map((part) => part.replace(/_/g, ' '))
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' · ');
 }
 
 function TeamMemberRow({
@@ -228,94 +217,66 @@ function TeamMemberRow({
   onRoleChange: (userId: string, role: string) => void;
   removingId: string | null;
 }) {
-  const roleStyle = ROLE_STYLES[member.role] ?? ROLE_STYLES.member;
   return (
     <div className="registry-team-row">
       <div className="registry-team-row-main">
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            background: 'var(--d-surface-raised)',
-            border: '1px solid var(--d-border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '0.6875rem',
-            fontWeight: 600,
-            flexShrink: 0,
-          }}
-        >
-          {getInitials(member.display_name || member.email)}
+        <div className="registry-team-avatar" aria-hidden="true">
+          <span className="registry-team-avatar-text">
+            {getInitials(member.display_name || member.email)}
+          </span>
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="font-medium text-sm">
+        <div className="registry-team-identity">
+          <p className="registry-team-name">
             {member.display_name || member.email.split('@')[0]}
-          </div>
-          <div
-            className="text-sm"
-            style={{
-              color: 'var(--d-text-muted)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {member.email}
-          </div>
+          </p>
+          <p className="registry-team-email">{member.email}</p>
         </div>
       </div>
 
       <div className="registry-team-row-trail">
-        <span
-          className="d-annotation"
-          style={{ background: roleStyle.bg, color: roleStyle.color }}
-        >
+        <span className="d-annotation registry-team-role" data-role={member.role}>
           {member.role}
         </span>
 
-        <span
-          className="text-sm"
-          style={{ color: 'var(--d-text-muted)', flexShrink: 0 }}
-        >
-          {formatDate(member.created_at)}
-        </span>
+        <span className="registry-team-meta">{formatDate(member.created_at)}</span>
 
         <div className="registry-team-row-actions">
           <select
-            className="d-control"
+            className="d-control registry-team-select"
             defaultValue={member.role}
             disabled={member.role === 'owner'}
-            onChange={(e) => onRoleChange(member.user_id, e.target.value)}
-            style={{
-              width: 'auto',
-              minWidth: 100,
-              fontSize: '0.75rem',
-              padding: '0.25rem 0.5rem',
-            }}
+            onChange={(event) => onRoleChange(member.user_id, event.target.value)}
           >
             <option value="admin">Admin</option>
             <option value="member">Member</option>
           </select>
-          {member.role !== 'owner' && (
+
+          {member.role !== 'owner' ? (
             <button
               type="button"
-              className="d-interactive"
+              className="d-interactive registry-icon-button"
               data-variant="ghost"
+              data-tone="danger"
               onClick={() => onRemove(member.user_id)}
               disabled={removingId === member.user_id}
-              style={{ padding: '0.25rem', color: 'var(--d-error)' }}
               aria-label="Remove member"
             >
               <TrashIcon size={14} />
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
   );
+}
+
+async function getSessionToken() {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.access_token ?? '';
 }
 
 export default function TeamPage() {
@@ -332,13 +293,20 @@ export default function TeamPage() {
   const [removingId, setRemovingId] = useState<string | null>(null);
 
   async function reloadOrgState(token: string, slug: string) {
-    if (!token || !slug) return;
+    if (!token || !slug) {
+      setMembers([]);
+      setAuditEntries([]);
+      setUsageSummary(null);
+      return;
+    }
+
     try {
       const [memberData, auditData, usageData] = await Promise.all([
         api.getOrgMembers(token, slug),
         api.getOrgAuditLog(token, slug, { limit: 10, offset: 0 }).catch(() => null),
         api.getOrgUsage(token, slug).catch(() => null),
       ]);
+
       setMembers(memberData?.members ?? []);
       setSeatLimit(memberData?.organization?.seat_limit ?? 0);
       setAuditEntries(auditData?.items ?? []);
@@ -356,7 +324,7 @@ export default function TeamPage() {
         const { createBrowserClient } = await import('@supabase/ssr');
         const supabase = createBrowserClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         );
         const {
           data: { session },
@@ -364,62 +332,52 @@ export default function TeamPage() {
         const token = session?.access_token ?? '';
         const me = await api.getMe(token);
         const orgs = me.organizations ?? [];
-        setOrganizations(orgs);
         const slug = orgs[0]?.slug ?? '';
+
+        setOrganizations(orgs);
         setOrgSlug(slug);
         await reloadOrgState(token, slug);
       } catch {
-        // defaults
+        // ignore initial load failure in empty-state flow
       }
     }
-    load();
+
+    void load();
   }, []);
 
-  function handleInvite(e: React.FormEvent) {
-    e.preventDefault();
+  function handleInvite(event: React.FormEvent) {
+    event.preventDefault();
     setError(null);
+
     if (!inviteEmail.trim()) {
       setError('Email or username is required.');
       return;
     }
+
     startInvite(async () => {
-      const result = await inviteMemberAction(
-        orgSlug,
-        inviteEmail.trim(),
-        inviteRole
-      );
+      const result = await inviteMemberAction(orgSlug, inviteEmail.trim(), inviteRole);
       if (result?.error) {
         setError(result.error);
-      } else {
-        setInviteEmail('');
-        try {
-          const { createBrowserClient } = await import('@supabase/ssr');
-          const supabase = createBrowserClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          );
-          const {
-            data: { session },
-          } = await supabase.auth.getSession();
-          const token = session?.access_token ?? '';
-          await reloadOrgState(token, orgSlug);
-        } catch {
-          // ignore
-        }
+        return;
       }
+
+      setInviteEmail('');
+      const token = await getSessionToken();
+      await reloadOrgState(token, orgSlug);
     });
   }
 
   async function handleRemove(userId: string) {
     setRemovingId(userId);
     const result = await removeMemberAction(orgSlug, userId);
+
     if (result?.error) {
       setError(result.error);
     } else {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      await reloadOrgState(session?.access_token ?? '', orgSlug);
+      const token = await getSessionToken();
+      await reloadOrgState(token, orgSlug);
     }
+
     setRemovingId(null);
   }
 
@@ -428,9 +386,8 @@ export default function TeamPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      await reloadOrgState(session?.access_token ?? '', orgSlug);
+      const token = await getSessionToken();
+      await reloadOrgState(token, orgSlug);
     }
   }
 
@@ -452,156 +409,133 @@ export default function TeamPage() {
     },
     {
       label: 'Seats Available',
-      value: Math.max(0, (usageSummary?.seat_limit ?? seatLimit) - (usageSummary?.members ?? members.length)),
+      value: Math.max(
+        0,
+        (usageSummary?.seat_limit ?? seatLimit) - (usageSummary?.members ?? members.length),
+      ),
       icon: <MailIcon size={18} />,
     },
   ];
 
   return (
     <div className="registry-page-stack">
-      <h3 className="text-lg font-semibold">Team</h3>
+      <div className="registry-page-intro">
+        <h3 className="text-lg font-semibold">Team</h3>
+        <p className="registry-dashboard-description">
+          Manage seats, invite collaborators, and keep governance workflows connected to the active organization instead of scattered across separate utilities.
+        </p>
+      </div>
 
-      {error && (
-        <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
+      {error ? (
+        <div className="d-annotation registry-settings-message" data-status="error">
           {error}
         </div>
-      )}
+      ) : null}
 
-      {/* KPIs */}
       <section className="d-section" data-density="compact">
         <KPIGrid items={kpiItems} />
       </section>
 
       {usageSummary ? (
         <section className="d-section" data-density="compact">
-          <span className="d-label registry-anchor-label">
-            Organization Usage
-          </span>
-          <div className="d-surface registry-surface-stack">
-            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              Packages: {usageSummary.content_items} total · {usageSummary.public_packages} public · {usageSummary.private_packages} private
-            </div>
-            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              API requests (30d): {usageSummary.api_requests_30d}
-            </div>
-            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              Org package publishes (30d): {usageSummary.org_package_publishes_30d}
-            </div>
-            <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              Approval actions (30d): {usageSummary.approval_actions_30d}
+          <span className="d-label registry-anchor-label">Organization Usage</span>
+          <div className="d-surface registry-dashboard-panel">
+            <h4 className="registry-panel-title">Usage snapshot</h4>
+            <div className="registry-detail-list">
+              <div>
+                Packages: {usageSummary.content_items} total · {usageSummary.public_packages} public ·{' '}
+                {usageSummary.private_packages} private
+              </div>
+              <div>API requests (30d): {usageSummary.api_requests_30d}</div>
+              <div>Org package publishes (30d): {usageSummary.org_package_publishes_30d}</div>
+              <div>Approval actions (30d): {usageSummary.approval_actions_30d}</div>
             </div>
           </div>
         </section>
       ) : null}
 
       <section className="d-section" data-density="compact">
-        <div className="d-surface flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm" style={{ fontWeight: 600 }}>
-              Governance workflow
-            </span>
-            <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              Review publish approvals, policy, and the audit trail from the dedicated governance workspace.
-            </span>
+        <div className="registry-action-band" data-tone="team">
+          <div className="registry-action-band-copy">
+            <h4 className="registry-action-band-title">Governance workflow</h4>
+            <p className="registry-dashboard-description">
+              Review publishing approvals, policy, and the organization audit trail in the dedicated governance workspace.
+            </p>
           </div>
-          <Link href="/dashboard/governance" className="d-interactive" data-variant="primary">
-            Open governance
-          </Link>
+          <div className="registry-action-band-actions">
+            <Link href="/dashboard/governance" className="d-interactive no-underline" data-variant="primary">
+              Open governance
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Members */}
       <section className="d-section" data-density="compact">
-        <span className="d-label registry-anchor-label">
-          Members
-        </span>
+        <span className="d-label registry-anchor-label">Members</span>
 
-        {organizations.length > 1 && (
-          <div className="registry-form-grid mb-4" style={{ maxWidth: '18rem' }}>
-            <label className="text-sm font-semibold" htmlFor="team-org">
-              Organization
-            </label>
-            <select
-              id="team-org"
-              className="d-control"
-              value={orgSlug}
-              onChange={async (e) => {
-                const nextSlug = e.target.value;
-                setOrgSlug(nextSlug);
-                try {
-                  const { createBrowserClient } = await import('@supabase/ssr');
-                  const supabase = createBrowserClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                  );
-                  const {
-                    data: { session },
-                  } = await supabase.auth.getSession();
-                  await reloadOrgState(session?.access_token ?? '', nextSlug);
-                } catch {
-                  setMembers([]);
-                  setAuditEntries([]);
-                }
-              }}
-            >
-              {organizations.map((org) => (
-                <option key={org.id} value={org.slug}>
-                  {org.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div className="d-surface registry-dashboard-panel">
+          {organizations.length > 1 ? (
+            <div className="registry-form-grid">
+              <label className="text-sm font-semibold" htmlFor="team-org">
+                Organization
+              </label>
+              <select
+                id="team-org"
+                className="d-control registry-inline-select"
+                value={orgSlug}
+                onChange={async (event) => {
+                  const nextSlug = event.target.value;
+                  setOrgSlug(nextSlug);
+                  const token = await getSessionToken();
+                  await reloadOrgState(token, nextSlug);
+                }}
+              >
+                {organizations.map((org) => (
+                  <option key={org.id} value={org.slug}>
+                    {org.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
-        {/* Invite form */}
-        <form
-          onSubmit={handleInvite}
-          className="registry-inline-form"
-          style={{ marginBottom: '1rem' }}
-        >
-          <input
-            className="d-control"
-            type="text"
-            placeholder="colleague@company.com or @username"
-            value={inviteEmail}
-            onChange={(e) => setInviteEmail(e.target.value)}
-          />
-          <select
-            className="d-control"
-            value={inviteRole}
-            onChange={(e) => setInviteRole(e.target.value)}
-          >
-            <option value="member">Member</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button
-            type="submit"
-            className="d-interactive"
-            data-variant="primary"
-            disabled={isInviting || !orgSlug}
-            style={{
-              fontSize: '0.875rem',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <UserPlusIcon size={16} />
-            {isInviting ? 'Inviting...' : 'Invite'}
-          </button>
-        </form>
+          {orgSlug ? (
+            <form onSubmit={handleInvite} className="registry-inline-form">
+              <input
+                className="d-control"
+                type="text"
+                placeholder="colleague@company.com or @username"
+                value={inviteEmail}
+                onChange={(event) => setInviteEmail(event.target.value)}
+              />
+              <select
+                className="d-control registry-team-select"
+                value={inviteRole}
+                onChange={(event) => setInviteRole(event.target.value)}
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button
+                type="submit"
+                className="d-interactive"
+                data-variant="primary"
+                disabled={isInviting || !orgSlug}
+              >
+                <UserPlusIcon size={16} />
+                {isInviting ? 'Inviting...' : 'Invite'}
+              </button>
+            </form>
+          ) : null}
+        </div>
 
         {!orgSlug ? (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem',
-              padding: '1.25rem 0',
-            }}
-          >
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              Team collaboration is available once your account has an active organization.
+          <div className="d-surface registry-empty-state" data-density="compact">
+            <span className="registry-empty-state-icon">
+              <UsersLgIcon size={48} />
+            </span>
+            <p className="registry-empty-state-copy">
+              Team collaboration becomes available once your account is attached to an active organization.
             </p>
           </div>
         ) : members.length > 0 ? (
@@ -617,67 +551,39 @@ export default function TeamPage() {
             ))}
           </div>
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem',
-              padding: '3rem 0',
-            }}
-          >
-            <span style={{ color: 'var(--d-text-muted)', opacity: 0.5 }}>
+          <div className="d-surface registry-empty-state" data-density="compact">
+            <span className="registry-empty-state-icon">
               <UsersLgIcon size={48} />
             </span>
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              No team members yet.
-            </p>
+            <p className="registry-empty-state-copy">No team members yet.</p>
           </div>
         )}
       </section>
 
       {orgSlug ? (
         <section className="d-section" data-density="compact">
-          <span
-            className="d-label block mb-4"
-            style={{
-              paddingLeft: '0.75rem',
-              borderLeft: '2px solid var(--d-accent)',
-            }}
-          >
-            Recent Audit Activity
-          </span>
+          <span className="d-label registry-anchor-label">Recent Audit Activity</span>
+
           {auditEntries.length > 0 ? (
-            <div className="d-surface" style={{ display: 'grid', gap: '0.75rem' }}>
+            <div className="d-surface registry-dashboard-panel">
               {auditEntries.map((entry) => (
-                <div
-                  key={entry.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.125rem',
-                    paddingBottom: '0.75rem',
-                    borderBottom: '1px solid var(--d-border)',
-                  }}
-                >
-                  <div className="text-sm" style={{ fontWeight: 600 }}>
-                    {entry.action}
+                <div key={entry.id} className="registry-log-entry">
+                  <div className="registry-log-entry-title">
+                    <span className="text-sm font-semibold">
+                      {formatActionLabel(entry.action)}
+                    </span>
+                    <span className="d-annotation" data-status="info">
+                      {entry.scope}
+                    </span>
                   </div>
-                  <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                    {entry.scope} · {entry.target_type}
-                  </div>
-                  <div className="text-xs" style={{ color: 'var(--d-text-muted)' }}>
-                    {formatDate(entry.created_at)}
-                  </div>
+                  <p className="registry-muted-copy">{entry.target_type}</p>
+                  <p className="registry-team-meta">{formatDate(entry.created_at)}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="d-surface">
-              <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                No audit activity yet.
-              </p>
+            <div className="d-surface registry-empty-state" data-density="compact">
+              <p className="registry-empty-state-copy">No audit activity yet.</p>
             </div>
           )}
         </section>
