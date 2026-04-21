@@ -73,6 +73,11 @@ describe('GET /v1/users/:username/content', () => {
         data: {
           name: 'Zeta',
           description: 'Second item',
+          registry_presentation: {
+            thumbnail: {
+              path: 'thumbs/zeta.png',
+            },
+          },
         },
         published_at: '2026-04-09T00:00:00.000Z',
       },
@@ -96,6 +101,7 @@ describe('GET /v1/users/:username/content', () => {
     const json = await res.json();
     assertMatchesSchema('public-content-list.v1.json', json);
     expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['zeta']);
+    expect(json.items[0]?.thumbnail_url).toBe('http://localhost/v1/blueprints/%40community/zeta/thumbnail');
   });
 
   it('filters public user content down to recommended items when requested', async () => {
@@ -131,6 +137,42 @@ describe('GET /v1/users/:username/content', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     assertMatchesSchema('public-content-list.v1.json', json);
+    expect(json.total).toBe(1);
+    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
+  });
+
+  it('filters public user content by source when requested', async () => {
+    mockCreateAdminClient.mockReturnValue(createUserContentClient([
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'portfolio',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Portfolio',
+          description: 'Creator portfolio',
+        },
+        published_at: '2026-04-09T00:00:00.000Z',
+      },
+      {
+        id: 'content-2',
+        type: 'blueprint',
+        slug: 'zeta',
+        namespace: '@community',
+        version: '1.0.0',
+        data: {
+          name: 'Zeta',
+          description: 'Community blueprint',
+        },
+        published_at: '2026-04-08T00:00:00.000Z',
+      },
+    ], 2));
+
+    const res = await app.request('/v1/users/alice/content?source=official');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
     expect(json.total).toBe(1);
     expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
   });

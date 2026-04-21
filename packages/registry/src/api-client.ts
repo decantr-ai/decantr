@@ -179,6 +179,7 @@ export class RegistryAPIClient {
     type: ApiContentType,
     params?: {
       namespace?: string;
+      source?: SearchParams['source'];
       sort?: string;
       recommended?: boolean;
       intelligenceSource?: SearchParams['intelligenceSource'];
@@ -192,6 +193,7 @@ export class RegistryAPIClient {
 
     const searchParams = new URLSearchParams();
     if (params?.namespace) searchParams.set('namespace', params.namespace);
+    if (params?.source) searchParams.set('source', params.source);
     if (params?.sort) searchParams.set('sort', params.sort);
     if (params?.recommended) searchParams.set('recommended', 'true');
     if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
@@ -277,6 +279,7 @@ export class RegistryAPIClient {
     const searchParams = new URLSearchParams({ q: params.q });
     if (params.type) searchParams.set('type', params.type);
     if (params.namespace) searchParams.set('namespace', params.namespace);
+    if (params.source) searchParams.set('source', params.source);
     if (params.sort) searchParams.set('sort', params.sort);
     if (params.recommended) searchParams.set('recommended', 'true');
     if (params.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
@@ -300,6 +303,7 @@ export class RegistryAPIClient {
     username: string,
     params?: {
       type?: string;
+      source?: SearchParams['source'];
       sort?: string;
       recommended?: boolean;
       intelligenceSource?: SearchParams['intelligenceSource'];
@@ -313,6 +317,7 @@ export class RegistryAPIClient {
 
     const searchParams = new URLSearchParams();
     if (params?.type) searchParams.set('type', params.type);
+    if (params?.source) searchParams.set('source', params.source);
     if (params?.sort) searchParams.set('sort', params.sort);
     if (params?.recommended) searchParams.set('recommended', 'true');
     if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);

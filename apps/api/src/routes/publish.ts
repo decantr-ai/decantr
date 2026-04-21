@@ -11,11 +11,89 @@ import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { getCommercialLimits } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { recordUsageEvent } from '../lib/usage-metering.js';
+import {
+  getSignedThumbnailUrl,
+  REGISTRY_THUMBNAIL_BUCKET,
+} from '../lib/content-presentation.js';
 
 export const publishRoutes = new Hono<Env>();
 
 // All publish routes require auth
 publishRoutes.use('/*', requireAuth());
+
+function sanitizeFileName(fileName: string): string {
+  return fileName
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// POST /v1/content/thumbnail-upload - Create signed upload target
+publishRoutes.post('/content/thumbnail-upload', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const body = await c.req.json();
+  const target = body.target === 'organization' ? 'organization' : body.target === 'personal' ? 'personal' : 'community';
+  const fileName = typeof body.file_name === 'string' ? sanitizeFileName(body.file_name) : '';
+  const orgSlug = typeof body.org_slug === 'string' ? body.org_slug.trim() : '';
+  const username = auth.user!.username?.trim();
+
+  if (!fileName) {
+    return c.json({ error: 'file_name is required' }, 400);
+  }
+
+  const extension = fileName.includes('.') ? fileName.split('.').pop() : 'jpg';
+  let scopePath = `${target}`;
+
+  if (target === 'organization') {
+    if (!orgSlug) {
+      return c.json({ error: 'org_slug is required for organization thumbnails' }, 400);
+    }
+
+    const client = createAdminClient();
+    const { data: membership } = await client
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', auth.user!.id)
+      .in('role', ['owner', 'admin', 'member']);
+
+    const memberOrgIds = (membership ?? []).map((item: any) => item.org_id);
+    const { data: org } = await client
+      .from('organizations')
+      .select('id, slug')
+      .eq('slug', orgSlug)
+      .single();
+
+    if (!org || !memberOrgIds.includes(org.id)) {
+      return c.json({ error: 'Not authorized to upload organization thumbnails for this org' }, 403);
+    }
+
+    scopePath = `organization/${org.slug}`;
+  } else if (target === 'personal') {
+    if (!username) {
+      return c.json({ error: 'Set a username before uploading personal thumbnails' }, 400);
+    }
+    scopePath = `personal/${username}`;
+  } else {
+    scopePath = `community/${username || auth.user!.id}`;
+  }
+
+  const path = `${auth.user!.id}/${scopePath}/${crypto.randomUUID()}.${extension}`;
+  const client = createAdminClient();
+  const { data, error } = await client.storage
+    .from(REGISTRY_THUMBNAIL_BUCKET)
+    .createSignedUploadUrl(path);
+
+  if (error || !data?.token) {
+    return c.json({ error: 'Failed to create thumbnail upload target' }, 500);
+  }
+
+  return c.json({
+    bucket: REGISTRY_THUMBNAIL_BUCKET,
+    path,
+    token: data.token,
+  });
+});
 
 // GET /v1/private/content - List accessible private content across personal and org scopes
 publishRoutes.get('/private/content', async (c) => {
@@ -47,7 +125,7 @@ publishRoutes.get('/private/content', async (c) => {
   if (canReadPersonal) {
     let personalQuery = client
       .from('content')
-      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name, username)')
       .eq('owner_id', auth.user!.id)
       .is('org_id', null)
       .eq('visibility', 'private')
@@ -64,7 +142,7 @@ publishRoutes.get('/private/content', async (c) => {
   if (allowOrg && accessibleOrgIds.length > 0) {
     let orgQuery = client
       .from('content')
-      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+      .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name, username)')
       .in('org_id', accessibleOrgIds)
       .eq('visibility', 'private')
       .eq('status', 'published');
@@ -99,11 +177,8 @@ publishRoutes.get('/private/content', async (c) => {
 
   const pagedRows = filteredRows.slice(offset, offset + limit);
 
-  return c.json({
-    total: filteredRows.length,
-    limit,
-    offset,
-    items: pagedRows.map((item) => ({
+  const items = await Promise.all(
+    pagedRows.map(async (item) => ({
       id: item.id,
       type: item.type,
       slug: item.slug,
@@ -116,8 +191,18 @@ publishRoutes.get('/private/content', async (c) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       published_at: item.published_at,
+      owner_name: (item as any).owner?.display_name || null,
+      owner_username: (item as any).owner?.username || null,
+      thumbnail_url: await getSignedThumbnailUrl(item.data as Record<string, unknown> | null | undefined),
       intelligence: null,
     })),
+  );
+
+  return c.json({
+    total: filteredRows.length,
+    limit,
+    offset,
+    items,
   });
 });
 
@@ -146,11 +231,8 @@ publishRoutes.get('/my/content', async (c) => {
     return c.json({ error: 'Failed to fetch content' }, 500);
   }
 
-  return c.json({
-    total: count ?? 0,
-    limit,
-    offset,
-    items: (data ?? []).map((item) => ({
+  const items = await Promise.all(
+    (data ?? []).map(async (item) => ({
       id: item.id,
       type: item.type,
       slug: item.slug,
@@ -163,6 +245,9 @@ publishRoutes.get('/my/content', async (c) => {
       created_at: item.created_at,
       updated_at: item.updated_at,
       published_at: item.published_at,
+      owner_name: auth.user!.display_name ?? null,
+      owner_username: auth.user!.username ?? null,
+      thumbnail_url: await getSignedThumbnailUrl(item.data as Record<string, unknown> | null | undefined),
       intelligence:
         item.visibility === 'public' && item.status === 'published'
           ? getContentIntelligence(
@@ -173,6 +258,13 @@ publishRoutes.get('/my/content', async (c) => {
           )
           : null,
     })),
+  );
+
+  return c.json({
+    total: count ?? 0,
+    limit,
+    offset,
+    items,
   });
 });
 

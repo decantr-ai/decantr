@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import {
   isContentIntelligenceSource,
   type ContentIntelligenceSource,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
 } from '@decantr/registry';
 import type { Env } from '../types.js';
 import { parsePagination } from '../types.js';
@@ -10,6 +11,13 @@ import type { ContentType } from '../types.js';
 import { createAdminClient } from '../db/client.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
+import {
+  getPublicApiBaseUrl,
+  getPublicThumbnailUrl,
+  isPublicContentSource,
+  matchesPublicContentSource,
+  type PublicContentSource,
+} from '../lib/content-presentation.js';
 
 export const userRoutes = new Hono<Env>();
 
@@ -68,6 +76,7 @@ userRoutes.get('/users/:username', async (c) => {
 userRoutes.get('/users/:username/content', async (c) => {
   const username = c.req.param('username').toLowerCase();
   const rawTypeFilter = c.req.query('type');
+  const rawSource = c.req.query('source');
   const sort = c.req.query('sort') ?? undefined;
   const recommendedOnly = c.req.query('recommended') === 'true';
   const rawIntelligenceSource = c.req.query('intelligence_source');
@@ -77,11 +86,19 @@ userRoutes.get('/users/:username/content', async (c) => {
     return c.json({ error: `Invalid type filter: ${rawTypeFilter}` }, 400);
   }
 
+  if (rawSource && !isPublicContentSource(rawSource)) {
+    return c.json({ error: `Invalid source filter: ${rawSource}` }, 400);
+  }
+
   if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
     return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
   }
 
   const typeFilter = rawTypeFilter as ContentType | undefined;
+  const source: PublicContentSource | undefined =
+    rawSource && isPublicContentSource(rawSource)
+      ? rawSource
+      : undefined;
   const intelligenceSource: ContentIntelligenceSource | undefined =
     rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
       ? rawIntelligenceSource
@@ -118,6 +135,7 @@ userRoutes.get('/users/:username/content', async (c) => {
     return c.json({ error: 'Failed to fetch content' }, 500);
   }
 
+  const publicApiBaseUrl = getPublicApiBaseUrl(c.req.url);
   const mappedItems = (data ?? []).map((item) => {
     const itemData = item.data as Record<string, unknown> | null | undefined;
     return {
@@ -129,6 +147,14 @@ userRoutes.get('/users/:username/content', async (c) => {
       name: getSummaryText(itemData, 'name'),
       description: getSummaryText(itemData, 'description'),
       published_at: item.published_at ?? undefined,
+      owner_username: username,
+      thumbnail_url: getPublicThumbnailUrl(
+        publicApiBaseUrl,
+        CONTENT_TYPE_TO_API_CONTENT_TYPE[item.type as keyof typeof CONTENT_TYPE_TO_API_CONTENT_TYPE],
+        item.namespace,
+        item.slug,
+        itemData,
+      ),
       intelligence: getContentIntelligence(
         item.type as ContentType,
         item.namespace,
@@ -137,8 +163,11 @@ userRoutes.get('/users/:username/content', async (c) => {
       ),
     };
   });
+  const sourceFilteredItems = mappedItems.filter((item) =>
+    matchesPublicContentSource(item.namespace, source),
+  );
   const ordered = applyPublicContentOrdering(
-    mappedItems,
+    sourceFilteredItems,
     sort,
     recommendedOnly,
     intelligenceSource,
@@ -147,7 +176,7 @@ userRoutes.get('/users/:username/content', async (c) => {
   );
 
   return c.json({
-    total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : (count ?? 0),
+    total: recommendedOnly || intelligenceSource || source ? ordered.filteredTotal : (count ?? 0),
     limit,
     offset,
     items: ordered.items,

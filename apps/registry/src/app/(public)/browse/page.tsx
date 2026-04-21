@@ -1,8 +1,4 @@
 import { Suspense } from 'react';
-import {
-  isContentIntelligenceSource,
-  type ContentIntelligenceSource,
-} from '@decantr/registry/client';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
@@ -27,10 +23,8 @@ interface BrowsePageProps {
   searchParams: Promise<{
     q?: string;
     type?: string;
-    namespace?: string;
+    source?: string;
     sort?: string;
-    recommended?: string;
-    intelligence_source?: string;
     offset?: string;
   }>;
 }
@@ -42,13 +36,10 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const selectedType = isRegistryContentType(requestedType)
     ? requestedType
     : undefined;
-  const namespace = params.namespace;
+  const source = params.source === 'official' || params.source === 'community' || params.source === 'organization'
+    ? params.source
+    : undefined;
   const sort = normalizePublicContentSort(params.sort);
-  const recommended = params.recommended === 'true';
-  const intelligenceSource: ContentIntelligenceSource | undefined =
-    params.intelligence_source && isContentIntelligenceSource(params.intelligence_source)
-      ? params.intelligence_source
-      : undefined;
   const offset = parseInt(params.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -58,10 +49,8 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     if (q) {
       const result = await searchContent(q, {
         type: selectedType,
-        namespace: namespace || undefined,
+        source,
         sort,
-        recommended,
-        intelligenceSource,
         limit: LIMIT,
         offset,
       });
@@ -69,10 +58,8 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       total = result.total;
     } else if (selectedType) {
       const result = await listContent(selectedType, {
-        namespace: namespace || undefined,
+        source,
         sort,
-        recommended,
-        intelligenceSource,
         limit: LIMIT,
         offset,
       });
@@ -83,10 +70,8 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       const results = await Promise.allSettled(
         CONTENT_TYPES.map((type) =>
           listContent(type, {
-            namespace: namespace || undefined,
+            source,
             sort,
-            recommended,
-            intelligenceSource,
             limit: requestedCount,
             offset: 0,
           })

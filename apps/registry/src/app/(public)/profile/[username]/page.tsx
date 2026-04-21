@@ -44,16 +44,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <div className="registry-page-max registry-page-stack">
-      {/* Profile header */}
-      <section className="d-section flex flex-col sm:flex-row items-start gap-6 pb-6 border-b border-d-border">
-        {/* Avatar */}
-        <div className="w-20 h-20 rounded-full bg-d-primary text-white text-2xl font-bold flex items-center justify-center shrink-0">
+      <section className="d-section registry-profile-hero">
+        <div className="registry-profile-avatar">
           {(profile.display_name?.[0] ?? profile.username[0]).toUpperCase()}
         </div>
 
-        <div className="flex flex-col gap-3 flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-d-text leading-tight">
+        <div className="registry-profile-body">
+          <div className="registry-profile-heading-row">
+            <h1 className="registry-profile-title">
               {profile.display_name || profile.username}
             </h1>
             <span className={`d-annotation ${tierStyle} uppercase`}>
@@ -61,11 +59,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             </span>
           </div>
 
-          <p className="text-sm text-d-muted font-mono">@{profile.username}</p>
+          <p className="registry-profile-handle">@{profile.username}</p>
 
-          {/* Stats row */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-d-muted">
-            <div className="flex items-center gap-1.5">
+          <div className="registry-profile-stats">
+            <div className="registry-profile-stat">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
@@ -73,7 +70,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 <span className="font-medium text-d-text">{profile.reputation_score}</span> reputation
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="registry-profile-stat">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
@@ -81,7 +78,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 <span className="font-medium text-d-text">{profile.content_count}</span> item{profile.content_count !== 1 ? 's' : ''} published
               </span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="registry-profile-stat">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
@@ -92,9 +89,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             </div>
           </div>
 
-          {/* Content type breakdown */}
           {profile.content_counts && Object.keys(profile.content_counts).length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="registry-profile-breakdown">
               {Object.entries(profile.content_counts).map(([contentType, count]) => (
                 <span key={contentType} className="d-annotation text-xs">
                   {count} {contentType}

@@ -7,6 +7,7 @@ import { createAdminClient } from '../db/client.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { recordUsageEvent } from '../lib/usage-metering.js';
+import { getSignedThumbnailUrl } from '../lib/content-presentation.js';
 
 export const orgRoutes = new Hono<Env>();
 const AUDIT_SCOPES = ['user', 'organization', 'billing', 'content', 'membership'] as const;
@@ -108,7 +109,7 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
 
   let query = client
     .from('content')
-    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at')
+    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name, username)')
     .eq('org_id', org.id);
 
   if (type) {
@@ -149,11 +150,8 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
 
   const pagedItems = filtered.slice(offset, offset + limit);
 
-  return c.json({
-    total: filtered.length,
-    limit,
-    offset,
-    items: pagedItems.map((item) => ({
+  const items = await Promise.all(
+    pagedItems.map(async (item) => ({
       id: item.id,
       type: item.type,
       slug: item.slug,
@@ -163,7 +161,17 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
       version: item.version,
       name: (item.data as Record<string, unknown>)?.name,
       description: (item.data as Record<string, unknown>)?.description,
+      owner_name: (item as any).owner?.display_name || null,
+      owner_username: (item as any).owner?.username || null,
+      thumbnail_url: await getSignedThumbnailUrl(item.data as Record<string, unknown> | null | undefined),
     })),
+  );
+
+  return c.json({
+    total: filtered.length,
+    limit,
+    offset,
+    items,
   });
 });
 
@@ -753,7 +761,7 @@ orgRoutes.get('/orgs/:slug/approvals', async (c) => {
 
   const { data, error, count } = await client
     .from('content')
-    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at', { count: 'exact' })
+    .select('id, type, slug, namespace, visibility, status, version, data, created_at, updated_at, published_at, owner:users!owner_id(display_name, username)', { count: 'exact' })
     .eq('org_id', org.id)
     .eq('status', 'pending')
     .order('updated_at', { ascending: false })
@@ -763,11 +771,30 @@ orgRoutes.get('/orgs/:slug/approvals', async (c) => {
     return c.json({ error: 'Failed to fetch approval queue' }, 500);
   }
 
+  const items = await Promise.all(
+    (data ?? []).map(async (item) => ({
+      id: item.id,
+      type: item.type,
+      slug: item.slug,
+      namespace: item.namespace,
+      visibility: item.visibility,
+      status: item.status,
+      version: item.version,
+      data: item.data,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      published_at: item.published_at,
+      owner_name: (item as any).owner?.display_name || null,
+      owner_username: (item as any).owner?.username || null,
+      thumbnail_url: await getSignedThumbnailUrl(item.data as Record<string, unknown> | null | undefined),
+    })),
+  );
+
   return c.json({
     total: count ?? 0,
     limit,
     offset,
-    items: data ?? [],
+    items,
   });
 });
 

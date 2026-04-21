@@ -342,6 +342,9 @@ describe('Org routes', () => {
       version: '1.0.0',
       name: 'Clean',
       description: 'Minimal org theme',
+      owner_name: null,
+      owner_username: null,
+      thumbnail_url: null,
     });
   });
 

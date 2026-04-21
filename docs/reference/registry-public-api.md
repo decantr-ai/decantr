@@ -15,6 +15,7 @@ Canonical response schemas are published at `https://decantr.ai/schemas/`.
 These parameters are supported wherever noted below:
 
 - `namespace` — scope results to a namespace such as `@official`
+- `source` — scope results to `official`, `community`, or `organization`
 - `sort` — `recommended`, `recent`, or `name`
 - `recommended=true` — return only recommended content
 - `intelligence_source` — `authored`, `benchmark`, or `hybrid`
@@ -24,7 +25,7 @@ These parameters are supported wherever noted below:
 ## Search
 
 ```http
-GET /search?q=portfolio&type=blueprint&sort=recommended&recommended=true&intelligence_source=hybrid
+GET /search?q=portfolio&type=blueprint&source=official&sort=recommended
 ```
 
 Purpose:
@@ -37,13 +38,14 @@ Response schema:
 Notable response fields:
 - `total`
 - `results[]`
+- `results[].thumbnail_url`
 - `results[].intelligence`
 
 ## Public Lists
 
 ```http
-GET /blueprints?namespace=@official&sort=recommended&recommended=true
-GET /patterns?namespace=@official&limit=50&offset=0
+GET /blueprints?source=official&sort=recommended
+GET /patterns?source=community&limit=50&offset=0
 GET /archetypes?namespace=@official&intelligence_source=authored
 ```
 
@@ -64,6 +66,7 @@ Response schema:
 Notable response fields:
 - `total`
 - `items[]`
+- `items[].thumbnail_url`
 - `items[].intelligence`
 
 ## Public Detail
@@ -79,6 +82,15 @@ Purpose:
 Response schema:
 - `public-content-record.v1.json`
 - `https://decantr.ai/schemas/public-content-record.v1.json`
+
+Additional media route:
+
+```http
+GET /blueprints/@official/portfolio/thumbnail
+```
+
+Purpose:
+- fetch the public thumbnail asset for a published registry item when one has been uploaded
 
 ## Public Schema Discovery
 

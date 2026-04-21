@@ -1,6 +1,7 @@
 export type {
   ApiContentType,
   ContentListResponse,
+  PublicContentSource,
   ContentVerificationStatus,
   ContentBenchmarkConfidence,
   ContentGoldenUsage,
@@ -30,11 +31,13 @@ export {
   CONTENT_TYPES,
   API_CONTENT_TYPES,
   CONTENT_INTELLIGENCE_SOURCES,
+  PUBLIC_CONTENT_SOURCES,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
   API_CONTENT_TYPE_TO_CONTENT_TYPE,
   isContentType,
   isApiContentType,
   isContentIntelligenceSource,
+  isPublicContentSource,
 } from './types.js';
 
 export { RegistryAPIClient, RegistryAPIError, createRegistryClient } from './api-client.js';

@@ -41,6 +41,8 @@ vi.mock('../../src/lib/audit-log.js', () => ({
 function createPublishAdminClient(options: {
   privateRows?: any[];
   memberships?: any[];
+  organization?: { id: string; slug: string } | null;
+  uploadToken?: string;
 } = {}) {
   return {
     from: vi.fn((table: string) => {
@@ -113,13 +115,29 @@ function createPublishAdminClient(options: {
             })),
           };
         }),
-        single: vi.fn(async () => ({ data: null, error: null })),
+        single: vi.fn(async () => {
+          if (table === 'organizations') {
+            return {
+              data: options.organization ?? null,
+              error: options.organization ? null : { message: 'not found' },
+            };
+          }
+          return { data: null, error: null };
+        }),
         then: (resolve: (value: unknown) => unknown, reject?: (reason?: unknown) => unknown) =>
           resolveChainResult().then(resolve, reject),
       };
 
       return chain;
     }),
+    storage: {
+      from: vi.fn(() => ({
+        createSignedUploadUrl: vi.fn(async () => ({
+          data: { token: options.uploadToken ?? 'upload-token' },
+          error: null,
+        })),
+      })),
+    },
   };
 }
 
@@ -198,6 +216,45 @@ describe('Publish routes', () => {
     expect(res.status).toBe(400);
     const json = await res.json();
     expect(json.error).toBe('Organization content must be published through the organization route.');
+  });
+
+  it('creates signed thumbnail upload targets for authenticated community uploads', async () => {
+    const res = await app.request('/v1/content/thumbnail-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_name: 'Hero Preview.png',
+        target: 'community',
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.bucket).toBe('registry-thumbnails');
+    expect(json.token).toBe('upload-token');
+    expect(json.path).toContain('/community/pro-user/');
+    expect(json.path).toMatch(/\.png$/);
+  });
+
+  it('rejects organization thumbnail uploads when the user is not a member', async () => {
+    mockCreateAdminClient.mockReturnValue(createPublishAdminClient({
+      memberships: [],
+      organization: { id: 'org-1', slug: 'acme' },
+    }));
+
+    const res = await app.request('/v1/content/thumbnail-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_name: 'team.png',
+        target: 'organization',
+        org_slug: 'acme',
+      }),
+    });
+
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toBe('Not authorized to upload organization thumbnails for this org');
   });
 
   it('publishes personal private packages into the user namespace by default', async () => {

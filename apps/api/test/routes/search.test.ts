@@ -39,7 +39,15 @@ describe('GET /v1/search', () => {
           slug: 'zeta',
           namespace: '@community',
           version: '1.0.0',
-          data: { name: 'Zeta', description: 'Second result' },
+          data: {
+            name: 'Zeta',
+            description: 'Second result',
+            registry_presentation: {
+              thumbnail: {
+                path: 'thumbs/zeta.png',
+              },
+            },
+          },
           published_at: '2026-04-09T00:00:00.000Z',
           owner_display_name: 'Alice',
           owner_username: 'alice',
@@ -66,6 +74,7 @@ describe('GET /v1/search', () => {
     const json = await res.json();
     assertMatchesSchema('search-response.v1.json', json);
     expect(json.results.map((item: { slug: string }) => item.slug)).toEqual(['zeta']);
+    expect(json.results[0]?.thumbnail_url).toBe('http://localhost/v1/blueprints/%40community/zeta/thumbnail');
     expect(rpc).toHaveBeenCalledWith('search_content', expect.objectContaining({
       search_query: 'port',
       result_limit: 2,
@@ -113,6 +122,43 @@ describe('GET /v1/search', () => {
       result_limit: 500,
       result_offset: 0,
     }));
+  });
+
+  it('filters search results by source when requested', async () => {
+    rpc.mockResolvedValue({
+      data: [
+        {
+          type: 'blueprint',
+          slug: 'portfolio',
+          namespace: '@official',
+          version: '1.0.0',
+          data: { name: 'Portfolio', description: 'Creator portfolio' },
+          published_at: '2026-04-09T00:00:00.000Z',
+          owner_display_name: 'Decantr',
+          owner_username: 'decantr',
+          total_count: 2,
+        },
+        {
+          type: 'blueprint',
+          slug: 'zeta',
+          namespace: '@community',
+          version: '1.0.0',
+          data: { name: 'Zeta', description: 'Community result' },
+          published_at: '2026-04-08T00:00:00.000Z',
+          owner_display_name: 'Alice',
+          owner_username: 'alice',
+          total_count: 2,
+        },
+      ],
+      error: null,
+    });
+
+    const res = await app.request('/v1/search?q=port&source=official');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.results.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
   });
 
   it('filters search results down to a requested intelligence source', async () => {

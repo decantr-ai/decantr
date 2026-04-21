@@ -6,11 +6,70 @@ import { JsonViewer } from '@/components/json-viewer';
 import { api, type MeResponse } from '@/lib/api';
 import { CONTENT_TYPES } from '@/lib/content-types';
 
+type RegistryThumbnailMeta = {
+  path: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+};
+
 function toSlug(name: string): string {
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+async function getImageDimensions(
+  file: File,
+): Promise<Pick<RegistryThumbnailMeta, 'width' | 'height'> | null> {
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const dimensions = await new Promise<Pick<RegistryThumbnailMeta, 'width' | 'height'> | null>((resolve) => {
+      const image = new Image();
+      image.onload = () => resolve({ width: image.width, height: image.height });
+      image.onerror = () => resolve(null);
+      image.src = objectUrl;
+    });
+
+    return dimensions;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function mergeRegistryPresentation(
+  value: unknown,
+  thumbnail: RegistryThumbnailMeta | null,
+  fallbackAlt: string,
+) {
+  const base =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? { ...(value as Record<string, unknown>) }
+      : {};
+
+  if (!thumbnail) {
+    return base;
+  }
+
+  const currentPresentation =
+    base.registry_presentation &&
+    typeof base.registry_presentation === 'object' &&
+    !Array.isArray(base.registry_presentation)
+      ? { ...(base.registry_presentation as Record<string, unknown>) }
+      : {};
+
+  return {
+    ...base,
+    registry_presentation: {
+      ...currentPresentation,
+      thumbnail: {
+        ...thumbnail,
+        alt: thumbnail.alt || fallbackAlt,
+      },
+    },
+  };
 }
 
 export default function ContentNewPage() {
@@ -33,6 +92,10 @@ export default function ContentNewPage() {
   const [slugEdited, setSlugEdited] = useState(false);
   const [jsonData, setJsonData] = useState('{\n  \n}');
   const [parseError, setParseError] = useState<string | null>(null);
+  const [thumbnailMeta, setThumbnailMeta] = useState<RegistryThumbnailMeta | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null);
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
 
   function update(field: string, value: string) {
     setForm((prev) => {
@@ -73,6 +136,14 @@ export default function ContentNewPage() {
     loadMe();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreviewUrl) {
+        URL.revokeObjectURL(thumbnailPreviewUrl);
+      }
+    };
+  }, [thumbnailPreviewUrl]);
+
   function handleJsonChange(value: string) {
     setJsonData(value);
     try {
@@ -97,6 +168,11 @@ export default function ContentNewPage() {
         : form.target === 'personal'
         ? personalNamespace
         : '@community';
+    const presentationData = mergeRegistryPresentation(
+      parsedData,
+      thumbnailMeta,
+      `${form.name || form.slug || 'Registry item'} thumbnail`,
+    );
     return {
       type: form.type,
       name: form.name || undefined,
@@ -111,9 +187,91 @@ export default function ContentNewPage() {
             .map((t) => t.trim())
             .filter(Boolean)
         : undefined,
-      data: parsedData,
+      data: presentationData,
     };
-  }, [form, jsonData, me]);
+  }, [form, jsonData, me, thumbnailMeta]);
+
+  async function handleThumbnailSelect(file: File | null) {
+    if (!file) {
+      if (thumbnailPreviewUrl) {
+        URL.revokeObjectURL(thumbnailPreviewUrl);
+      }
+      setThumbnailPreviewUrl(null);
+      setThumbnailMeta(null);
+      setThumbnailError(null);
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setThumbnailError('Thumbnail must be an image file.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setThumbnailError('Thumbnail must be 5 MB or smaller.');
+      return;
+    }
+
+    if (form.target === 'organization' && !form.org_slug) {
+      setThumbnailError('Select an organization before uploading an organization thumbnail.');
+      return;
+    }
+
+    setThumbnailError(null);
+    setIsUploadingThumbnail(true);
+
+    try {
+      const dimensions = await getImageDimensions(file);
+      const { createBrowserClient } = await import('@supabase/ssr');
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      );
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token ?? '';
+
+      if (!token) {
+        throw new Error('You must be signed in to upload a thumbnail.');
+      }
+
+      const uploadTarget = await api.createThumbnailUploadTarget(token, {
+        file_name: file.name,
+        target: form.target === 'organization' ? 'organization' : form.target === 'personal' ? 'personal' : 'community',
+        org_slug: form.target === 'organization' ? form.org_slug : undefined,
+      });
+
+      const { error } = await supabase.storage
+        .from(uploadTarget.bucket)
+        .uploadToSignedUrl(uploadTarget.path, uploadTarget.token, file, {
+          upsert: true,
+          cacheControl: '3600',
+          contentType: file.type,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const nextPreviewUrl = URL.createObjectURL(file);
+      if (thumbnailPreviewUrl) {
+        URL.revokeObjectURL(thumbnailPreviewUrl);
+      }
+
+      setThumbnailPreviewUrl(nextPreviewUrl);
+      setThumbnailMeta({
+        path: uploadTarget.path,
+        alt: `${form.name || form.slug || 'Registry item'} thumbnail`,
+        width: dimensions?.width,
+        height: dimensions?.height,
+      });
+    } catch (error) {
+      setThumbnailError(error instanceof Error ? error.message : 'Failed to upload thumbnail.');
+    } finally {
+      setIsUploadingThumbnail(false);
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -151,6 +309,11 @@ export default function ContentNewPage() {
       return;
     }
 
+    const mergedData = mergeRegistryPresentation(
+      parsed,
+      thumbnailMeta,
+      `${form.name || form.slug || 'Registry item'} thumbnail`,
+    );
     startTransition(async () => {
       try {
         const { createBrowserClient } = await import('@supabase/ssr');
@@ -168,7 +331,7 @@ export default function ContentNewPage() {
           slug: form.slug,
           version: form.version,
           visibility: form.target === 'community' ? 'public' : form.visibility,
-          data: parsed,
+          data: mergedData,
         };
 
         if (form.target === 'organization') {
@@ -205,9 +368,8 @@ export default function ContentNewPage() {
         <div className="d-surface registry-surface-stack">
           {error && (
             <div
-              className="d-annotation"
+              className="d-annotation registry-inline-error"
               data-status="error"
-              style={{ marginBottom: '1rem', display: 'block' }}
             >
               {error}
             </div>
@@ -322,7 +484,7 @@ export default function ContentNewPage() {
                 <option value="public">Public</option>
                 <option value="private">Private</option>
               </select>
-              <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <p className="registry-form-hint">
                 {form.target === 'community'
                   ? 'Community packages are always public.'
                   : form.target === 'personal'
@@ -333,10 +495,7 @@ export default function ContentNewPage() {
           </section>
 
           {/* Details */}
-          <section
-            className="registry-form-grid"
-            style={{ marginTop: '1.5rem' }}
-          >
+          <section className="registry-form-grid registry-section-spacer">
             <span className="d-label registry-anchor-label">
               Details
             </span>
@@ -350,11 +509,10 @@ export default function ContentNewPage() {
               </label>
               <textarea
                 id="description"
-                className="d-control"
                 placeholder="Describe your content item..."
                 value={form.description}
                 onChange={(e) => update('description', e.target.value)}
-                style={{ minHeight: '6rem', resize: 'vertical' }}
+                className="d-control registry-description-textarea"
               />
             </div>
 
@@ -387,24 +545,51 @@ export default function ContentNewPage() {
             </div>
 
             <div className="registry-form-grid">
+              <label className="text-sm font-semibold" htmlFor="thumbnail">
+                Thumbnail
+              </label>
+              <input
+                id="thumbnail"
+                className="d-control"
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/avif"
+                onChange={(e) => {
+                  void handleThumbnailSelect(e.target.files?.[0] ?? null);
+                }}
+              />
+              <p className="registry-helper-copy">
+                Upload a 16:9 preview image. It will render on registry cards when available.
+              </p>
+              {isUploadingThumbnail ? (
+                <p className="registry-helper-copy">Uploading thumbnail…</p>
+              ) : null}
+              {thumbnailError ? (
+                <p className="registry-error-copy">{thumbnailError}</p>
+              ) : null}
+              {thumbnailPreviewUrl ? (
+                <div className="registry-thumbnail-preview">
+                  <img
+                    src={thumbnailPreviewUrl}
+                    alt="Thumbnail preview"
+                    className="registry-thumbnail-preview-image"
+                  />
+                </div>
+              ) : null}
+            </div>
+
+            <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="json-data">
                 JSON Data
               </label>
               <textarea
                 id="json-data"
-                className="d-control"
+                className="d-control registry-json-textarea"
                 value={jsonData}
                 onChange={(e) => handleJsonChange(e.target.value)}
                 spellCheck={false}
-                style={{
-                  minHeight: '8rem',
-                  resize: 'vertical',
-                  fontFamily: 'var(--d-font-mono, monospace)',
-                  fontSize: '0.8125rem',
-                }}
               />
               {parseError && (
-                <p className="text-xs" style={{ color: 'var(--d-error)' }}>
+                <p className="registry-error-copy">
                   {parseError}
                 </p>
               )}
@@ -412,16 +597,12 @@ export default function ContentNewPage() {
           </section>
 
           {/* Actions */}
-          <div
-            className="registry-inline-actions"
-            style={{ marginTop: '1.5rem' }}
-          >
+          <div className="registry-inline-actions registry-form-actions">
             <button
               type="submit"
               className="d-interactive"
               data-variant="primary"
               disabled={isPending || !!parseError}
-              style={{ fontSize: '0.875rem' }}
             >
               {isPending ? 'Publishing...' : 'Publish'}
             </button>
@@ -429,7 +610,6 @@ export default function ContentNewPage() {
               type="button"
               className="d-interactive"
               data-variant="ghost"
-              style={{ fontSize: '0.875rem' }}
               onClick={() => router.back()}
             >
               Cancel

@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import {
   isContentIntelligenceSource,
   type ContentIntelligenceSource,
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
 } from '@decantr/registry';
 import type { Env } from '../types.js';
 import { API_CONTENT_TYPES, PLURAL_TO_SINGULAR, isApiContentType, parsePagination } from '../types.js';
@@ -11,6 +12,16 @@ import { logger } from '../lib/logger.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
 import type { AuthContext } from '../middleware/auth.js';
+import {
+  getPublicApiBaseUrl,
+  getPublicThumbnailUrl,
+  getRegistryThumbnailMetadata,
+  getSignedThumbnailUrl,
+  isPublicContentSource,
+  matchesPublicContentSource,
+  type PublicContentSource,
+  REGISTRY_THUMBNAIL_BUCKET,
+} from '../lib/content-presentation.js';
 
 export const contentRoutes = new Hono<Env>();
 const CONTENT_ROUTE_PATTERN = API_CONTENT_TYPES.join('|');
@@ -22,6 +33,83 @@ function getSummaryText(
   const value = data?.[key];
   return typeof value === 'string' ? value : undefined;
 }
+
+// GET /v1/:type/:namespace/:slug/thumbnail - Get thumbnail asset
+contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug/thumbnail`, async (c) => {
+  try {
+    const pluralType = c.req.param('type');
+    const namespace = c.req.param('namespace');
+    const slug = c.req.param('slug');
+
+    if (!isApiContentType(pluralType)) {
+      return c.json({ error: `Unknown content type: ${pluralType}` }, 400);
+    }
+    const singularType = PLURAL_TO_SINGULAR[pluralType];
+    const auth = c.get('auth') as AuthContext | undefined;
+    const client = createAdminClient();
+
+    const { data, error } = await client
+      .from('content')
+      .select('*')
+      .eq('type', singularType)
+      .eq('namespace', namespace)
+      .eq('slug', slug)
+      .single();
+
+    if (error || !data) {
+      return c.json({ error: `${singularType} "${namespace}/${slug}" not found` }, 404);
+    }
+
+    const thumbnail = getRegistryThumbnailMetadata(data.data as Record<string, unknown> | null | undefined);
+    if (!thumbnail) {
+      return c.json({ error: 'Thumbnail not found' }, 404);
+    }
+
+    const isPublicRecord = data.visibility === 'public' && data.status === 'published';
+    let allowed = isPublicRecord;
+
+    if (!allowed && auth?.isAuthenticated && auth.user) {
+      if (data.owner_id === auth.user.id) {
+        allowed = true;
+      } else if (data.org_id && auth.apiKeyOrgId && data.org_id === auth.apiKeyOrgId) {
+        allowed = true;
+      } else if (data.org_id) {
+        const { data: membership } = await client
+          .from('org_members')
+          .select('role')
+          .eq('org_id', data.org_id)
+          .eq('user_id', auth.user.id)
+          .single();
+        allowed = Boolean(membership);
+      }
+    }
+
+    if (!allowed) {
+      return c.json({ error: 'Thumbnail not found' }, 404);
+    }
+
+    const { data: file, error: storageError } = await client.storage
+      .from(REGISTRY_THUMBNAIL_BUCKET)
+      .download(thumbnail.path);
+
+    if (storageError || !file) {
+      return c.json({ error: 'Thumbnail not found' }, 404);
+    }
+
+    const bytes = await file.arrayBuffer();
+    return new Response(bytes, {
+      headers: {
+        'Content-Type': file.type || 'application/octet-stream',
+        'Cache-Control': isPublicRecord
+          ? 'public, max-age=300, stale-while-revalidate=3600'
+          : 'private, no-store',
+      },
+    });
+  } catch (e) {
+    logger.error({ err: e }, 'Thumbnail route error');
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+});
 
 // GET /v1/:type/:namespace/:slug - Get single item (must be before list route)
 contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c) => {
@@ -79,6 +167,12 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c)
         ? 'public, max-age=300, stale-while-revalidate=3600'
         : 'private, no-store',
     );
+    const itemData = data.data as Record<string, unknown> | null | undefined;
+    const publicApiBaseUrl = getPublicApiBaseUrl(c.req.url);
+    const thumbnailUrl = isPublicRecord
+      ? getPublicThumbnailUrl(publicApiBaseUrl, pluralType, data.namespace, data.slug, itemData)
+      : await getSignedThumbnailUrl(itemData);
+
     return c.json({
       id: data.id,
       type: data.type,
@@ -93,11 +187,12 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}/:namespace/:slug`, async (c)
       published_at: data.published_at,
       owner_name: (data as any).owner?.display_name || null,
       owner_username: (data as any).owner?.username || null,
+      thumbnail_url: thumbnailUrl,
       intelligence: getContentIntelligence(
         singularType,
         data.namespace,
         data.slug,
-        data.data as Record<string, unknown> | null | undefined,
+        itemData,
       ),
     });
   } catch (e) {
@@ -117,15 +212,24 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     const singularType = PLURAL_TO_SINGULAR[pluralType];
 
     const namespace = c.req.query('namespace');
+    const rawSource = c.req.query('source');
     const sort = c.req.query('sort') ?? undefined;
     const recommendedOnly = c.req.query('recommended') === 'true';
     const rawIntelligenceSource = c.req.query('intelligence_source');
     const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
+    if (rawSource && !isPublicContentSource(rawSource)) {
+      return c.json({ error: `Invalid source filter: ${rawSource}` }, 400);
+    }
+
     if (rawIntelligenceSource && !isContentIntelligenceSource(rawIntelligenceSource)) {
       return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
     }
 
+    const source: PublicContentSource | undefined =
+      rawSource && isPublicContentSource(rawSource)
+        ? rawSource
+        : undefined;
     const intelligenceSource: ContentIntelligenceSource | undefined =
       rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
         ? rawIntelligenceSource
@@ -152,6 +256,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     }
 
     c.header('Cache-Control', 'public, max-age=60, stale-while-revalidate=3600');
+    const publicApiBaseUrl = getPublicApiBaseUrl(c.req.url);
     const mappedItems = (data ?? []).map((item) => {
       const itemData = item.data as Record<string, unknown> | null | undefined;
       return {
@@ -165,6 +270,13 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
         published_at: item.published_at ?? undefined,
         owner_name: (item as any).owner?.display_name || null,
         owner_username: (item as any).owner?.username || null,
+        thumbnail_url: getPublicThumbnailUrl(
+          publicApiBaseUrl,
+          CONTENT_TYPE_TO_API_CONTENT_TYPE[item.type as keyof typeof CONTENT_TYPE_TO_API_CONTENT_TYPE],
+          item.namespace,
+          item.slug,
+          itemData,
+        ),
         intelligence: getContentIntelligence(
           singularType,
           item.namespace,
@@ -173,8 +285,11 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
         ),
       };
     });
+    const sourceFilteredItems = mappedItems.filter((item) =>
+      matchesPublicContentSource(item.namespace, source),
+    );
     const ordered = applyPublicContentOrdering(
-      mappedItems,
+      sourceFilteredItems,
       sort,
       recommendedOnly,
       intelligenceSource,
@@ -182,7 +297,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
       offset,
     );
     return c.json({
-      total: recommendedOnly || intelligenceSource ? ordered.filteredTotal : (count ?? 0),
+      total: recommendedOnly || intelligenceSource || source ? ordered.filteredTotal : (count ?? 0),
       limit,
       offset,
       items: ordered.items,

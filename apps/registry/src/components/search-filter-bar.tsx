@@ -1,86 +1,19 @@
 'use client';
 
-import {
-  CONTENT_INTELLIGENCE_SOURCES,
-  isContentIntelligenceSource,
-  normalizePublicContentSort,
-  type ContentIntelligenceSource,
-} from '@decantr/registry/client';
+import { normalizePublicContentSort } from '@decantr/registry/client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useState, useTransition, type ReactNode } from 'react';
 import {
-  CONTENT_TYPES,
   CONTENT_TYPE_LABELS,
+  CONTENT_TYPES,
   type RegistryContentType,
 } from '@/lib/content-types';
-
-// Inline SVG icons (14px, stroke-based) to avoid adding lucide-react dependency
-function IconGrid(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
-    </svg>
-  );
-}
-function IconComponent(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M5 3v4M3 5h4M6 17v4M4 19h4M13 3l2 2L13 7M17 13l2 2-2 2" />
-      <path d="M20 3h1v1M20 7h1v1M14 13h1v1M14 17h1v1" />
-    </svg>
-  );
-}
-function IconPalette(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="13.5" cy="6.5" r="0.5" fill="currentColor" /><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor" />
-      <circle cx="8.5" cy="7.5" r="0.5" fill="currentColor" /><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor" />
-      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
-    </svg>
-  );
-}
-function IconLayers(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z" />
-      <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
-      <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
-    </svg>
-  );
-}
-function IconBox(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-      <path d="m3.3 7 8.7 5 8.7-5M12 22V12" />
-    </svg>
-  );
-}
-function IconCube(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-    </svg>
-  );
-}
-
-const TYPE_ICONS: Record<RegistryContentType, React.ReactNode> = {
-  patterns: <IconComponent />,
-  themes: <IconPalette />,
-  blueprints: <IconLayers />,
-  archetypes: <IconCube />,
-  shells: <IconBox />,
-};
-
-const TYPES: { type?: RegistryContentType; label: string; icon: React.ReactNode }[] = [
-  { label: 'All', icon: <IconGrid /> },
-  ...CONTENT_TYPES.map((type) => ({
-    type,
-    label: CONTENT_TYPE_LABELS[type],
-    icon: TYPE_ICONS[type],
-  })),
-];
+import {
+  CONTENT_TYPE_PRESENTATION,
+  SOURCE_FILTER_OPTIONS,
+  getAllTypesIcon,
+  type RegistrySourceFilter,
+} from '@/lib/content-presentation';
 
 const SORT_OPTIONS = [
   { value: 'recommended', label: 'Recommended' },
@@ -88,24 +21,27 @@ const SORT_OPTIONS = [
   { value: 'name', label: 'Name A-Z' },
 ] as const;
 
-const INTELLIGENCE_SOURCE_LABELS: Record<ContentIntelligenceSource, string> = {
-  authored: 'Authored',
-  benchmark: 'Benchmark',
-  hybrid: 'Hybrid',
-};
-
 interface SearchFilterBarProps {
   baseUrl?: string;
   showSort?: boolean;
-  showRecommendedToggle?: boolean;
+  showSourceFilter?: boolean;
   resultCount?: number;
   activeType?: RegistryContentType | 'all';
 }
 
+const TYPES: Array<{ type?: RegistryContentType; label: string; icon: ReactNode }> = [
+  { label: 'All', icon: getAllTypesIcon() },
+  ...CONTENT_TYPES.map((type) => ({
+    type,
+    label: CONTENT_TYPE_LABELS[type],
+    icon: CONTENT_TYPE_PRESENTATION[type].icon,
+  })),
+];
+
 export function SearchFilterBar({
   baseUrl = '/browse',
   showSort = true,
-  showRecommendedToggle = true,
+  showSourceFilter = true,
   resultCount,
   activeType = 'all',
 }: SearchFilterBarProps) {
@@ -116,15 +52,12 @@ export function SearchFilterBar({
 
   const currentQuery = searchParams.get('q') ?? '';
   const currentSort = normalizePublicContentSort(searchParams.get('sort'));
-  const recommendedOnly = searchParams.get('recommended') === 'true';
-  const currentIntelligenceSource = (() => {
-    const rawValue = searchParams.get('intelligence_source');
-    return rawValue && isContentIntelligenceSource(rawValue) ? rawValue : '';
-  })();
-
+  const currentSource = SOURCE_FILTER_OPTIONS.some(
+    (option) => option.value === searchParams.get('source'),
+  )
+    ? (searchParams.get('source') as RegistrySourceFilter)
+    : 'all';
   const [query, setQuery] = useState(currentQuery);
-  const activeLabel =
-    activeType === 'all' ? 'All' : CONTENT_TYPE_LABELS[activeType];
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
@@ -132,7 +65,7 @@ export function SearchFilterBar({
       params.delete('offset');
 
       for (const [key, value] of Object.entries(updates)) {
-        if (value) {
+        if (value && value !== 'all') {
           params.set(key, value);
         } else {
           params.delete(key);
@@ -144,124 +77,69 @@ export function SearchFilterBar({
         router.push(qs ? `${baseUrl}?${qs}` : baseUrl);
       });
     },
-    [router, searchParams, baseUrl],
+    [baseUrl, router, searchParams],
   );
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     navigate({ q: query });
   }
 
   function handleTypeChange(type?: RegistryContentType) {
-    setQuery('');
     const params = new URLSearchParams(searchParams.toString());
     params.delete('offset');
-    params.delete('q');
     params.delete('type');
-
     const nextBase = type ? `/browse/${type}` : '/browse';
     const qs = params.toString();
+
     startTransition(() => {
       router.push(qs ? `${nextBase}?${qs}` : nextBase);
     });
   }
 
-  function handleSortChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    navigate({ sort: e.target.value });
+  function handleSortChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    navigate({ sort: event.target.value });
   }
 
-  function handleRecommendedToggle() {
-    navigate({ recommended: recommendedOnly ? '' : 'true' });
+  function handleSourceChange(source: RegistrySourceFilter) {
+    navigate({ source });
   }
 
-  function handleIntelligenceSourceChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    navigate({ intelligence_source: e.target.value });
-  }
+  function renderSourceFilters(mode: 'desktop' | 'mobile') {
+    if (!showSourceFilter) {
+      return null;
+    }
 
-  function renderControls() {
     return (
-      <>
-        {showRecommendedToggle && (
+      <div className="registry-source-strip" data-mode={mode} role="group" aria-label="Filter by source">
+        {SOURCE_FILTER_OPTIONS.map((option) => (
           <button
+            key={option.value}
             type="button"
-            className="d-interactive"
-            data-variant={recommendedOnly ? 'primary' : 'ghost'}
-            onClick={handleRecommendedToggle}
-            style={{
-              borderRadius: 'var(--d-radius-full)',
-              fontSize: '0.8125rem',
-              padding: '0.25rem 0.75rem',
-            }}
+            className="d-interactive registry-source-pill"
+            data-variant={currentSource === option.value ? 'primary' : 'ghost'}
+            data-source={option.value}
+            onClick={() => handleSourceChange(option.value)}
           >
-            Recommended only
+            {option.label}
           </button>
-        )}
-        <div className="registry-search-control-row">
-          <span
-            className="text-sm whitespace-nowrap"
-            style={{ color: 'var(--d-text-muted)' }}
-          >
-            Intelligence
-          </span>
-          <select
-            value={currentIntelligenceSource}
-            onChange={handleIntelligenceSourceChange}
-            className="d-control registry-search-select"
-          >
-            <option value="">All sources</option>
-            {CONTENT_INTELLIGENCE_SOURCES.map((source) => (
-              <option key={source} value={source}>
-                {INTELLIGENCE_SOURCE_LABELS[source]}
-              </option>
-            ))}
-          </select>
-        </div>
-        {showSort && (
-          <div className="registry-search-control-row">
-            <span
-              className="text-sm whitespace-nowrap"
-              style={{ color: 'var(--d-text-muted)' }}
-            >
-              Sort by
-            </span>
-            <select
-              value={currentSort}
-              onChange={handleSortChange}
-              className="d-control registry-search-select"
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </>
+        ))}
+      </div>
     );
   }
 
   return (
     <div className="registry-search-filter">
-      {/* Search input */}
-      <form onSubmit={handleSubmit} className="relative">
+      <form onSubmit={handleSubmit} className="registry-search-input-row">
         <svg
-          width="16"
-          height="16"
+          className="registry-search-icon"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="pointer-events-none"
-          style={{
-            position: 'absolute',
-            left: '0.75rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--d-text-muted)',
-          }}
+          aria-hidden="true"
         >
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -269,52 +147,48 @@ export function SearchFilterBar({
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search patterns, themes, blueprints, archetypes, or shells..."
-          className="d-control w-full"
-          style={{ paddingLeft: '2.25rem' }}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search Decantr blueprints, themes, patterns, archetypes, or shells..."
+          className="d-control registry-search-input"
           aria-label="Search registry content"
         />
-        {isPending && (
-          <div
-            className="absolute"
-            style={{ right: '0.75rem', top: '50%', transform: 'translateY(-50%)' }}
-          >
-            <div className="w-4 h-4 border-2 border-d-muted border-t-d-primary rounded-full animate-spin" />
+        {isPending ? (
+          <div className="registry-search-spinner" aria-hidden="true">
+            <div className="registry-search-spinner-dot" />
           </div>
-        )}
+        ) : null}
       </form>
 
-      {/* Filters row */}
-      <div className="registry-search-meta">
-        {/* Type tabs */}
-        <div className="registry-type-strip">
-          {TYPES.map(({ type, label, icon }) => (
+      <div className="registry-type-strip" role="tablist" aria-label="Filter by content type">
+        {TYPES.map(({ type, label, icon }) => {
+          const isActive = (activeType === 'all' && !type) || activeType === type;
+          const tone = type ? CONTENT_TYPE_PRESENTATION[type].tone : 'all';
+          return (
             <button
               key={label}
-              className="d-interactive"
-              data-variant={activeLabel === label ? 'primary' : 'ghost'}
-              onClick={() => handleTypeChange(type)}
               type="button"
-              style={{
-                borderRadius: 'var(--d-radius-full)',
-                fontSize: '0.8125rem',
-                padding: '0.25rem 0.75rem',
-                gap: '0.375rem',
-              }}
+              className="d-interactive registry-type-tab"
+              data-variant={isActive ? 'primary' : 'ghost'}
+              data-type-tone={tone}
+              data-active={isActive}
+              onClick={() => handleTypeChange(type)}
             >
               {icon}
-              {label}
+              <span>{label}</span>
             </button>
-          ))}
+          );
+        })}
+      </div>
+
+      <div className="registry-search-meta">
+        <div className="registry-search-summary">
+          {resultCount !== undefined ? (
+            <span className="registry-search-results">{resultCount} results</span>
+          ) : null}
+          {renderSourceFilters('desktop')}
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {resultCount !== undefined ? (
-            <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-              {resultCount} results
-            </span>
-          ) : null}
+        <div className="registry-search-actions">
           <button
             type="button"
             className="d-interactive registry-mobile-filter-toggle"
@@ -324,17 +198,45 @@ export function SearchFilterBar({
           >
             Filters
           </button>
-          <div className="registry-search-controls registry-search-controls-desktop">
-            {renderControls()}
-          </div>
+
+          {showSort ? (
+            <label className="registry-search-sort">
+              <span>Sort by</span>
+              <select
+                value={currentSort}
+                onChange={handleSortChange}
+                className="d-control registry-search-select"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       </div>
 
       <div className="registry-mobile-filters" data-open={mobileFiltersOpen}>
-        <div className="d-surface" style={{ display: 'grid', gap: '0.75rem' }}>
-          <div className="registry-search-controls">
-            {renderControls()}
-          </div>
+        <div className="d-surface registry-mobile-filters-surface">
+          {renderSourceFilters('mobile')}
+          {showSort ? (
+            <label className="registry-search-sort">
+              <span>Sort by</span>
+              <select
+                value={currentSort}
+                onChange={handleSortChange}
+                className="d-control registry-search-select"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       </div>
     </div>

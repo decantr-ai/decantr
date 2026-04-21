@@ -6,6 +6,7 @@ import type { ContentRecord } from '@/lib/api';
 import { JsonViewer } from '@/components/json-viewer';
 import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 import { CopyInstallButton } from './copy-install-button';
+import { getDisplaySourceLine } from '@/lib/content-presentation';
 import styles from './page.module.css';
 
 const TYPE_STYLES: Record<string, { canvas: string; badge: string }> = {
@@ -344,6 +345,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const primarySignal = getPrimarySignal(content, Boolean(showcaseUrl));
   const quickStart = getQuickStartContent(singular, namespace, slug);
   const usageBullets = getUsageBullets(singular, tags);
+  const displaySourceLine = getDisplaySourceLine(content);
   const artifactDefaultTab =
     singular === 'blueprint'
       ? 'commands'
@@ -436,7 +438,6 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                 <span className={`d-annotation ${styles.typeBadge} ${typeStyles.badge}`}>
                   {singular}
                 </span>
-                <span className="d-annotation">{namespace}</span>
                 {primarySignal ? (
                   <span className="d-annotation" data-status={primarySignal.status}>
                     {primarySignal.label}
@@ -456,17 +457,14 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               ) : null}
 
               <div className={styles.metaRow}>
-                {content.owner_username ? (
-                  <span className={styles.metaItem}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    <Link href={`/profile/${content.owner_username}`} className={`no-underline hover:text-d-primary ${styles.mutedLink}`}>
-                      {content.owner_name || content.owner_username}
-                    </Link>
-                  </span>
-                ) : null}
+                <span className={styles.metaItem}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
+                    <path d="M20 7h-9a2 2 0 0 1-2-2V4" />
+                    <path d="M14 2H8a2 2 0 0 0-2 2v3" />
+                    <path d="M4 7h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
+                  </svg>
+                  {displaySourceLine}
+                </span>
                 {content.published_at ? (
                   <span className={styles.metaItem}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>

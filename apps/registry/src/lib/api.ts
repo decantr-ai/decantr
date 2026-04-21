@@ -18,6 +18,7 @@ export type ContentItem = PublicContentSummary;
 export type ContentRecord<TData = Record<string, unknown>> = PublicContentRecord<TData>;
 export type UserProfile = PublicUserProfile;
 export type DashboardContentItem = OwnedContentSummary;
+export type PublicRegistrySource = 'official' | 'community' | 'organization';
 
 export interface ApiKey {
   id: string;
@@ -111,6 +112,12 @@ export interface MeResponse {
   organizations: OrganizationSummary[];
   created_at: string;
   updated_at: string;
+}
+
+export interface ThumbnailUploadTarget {
+  bucket: string;
+  path: string;
+  token: string;
 }
 
 export interface OrgAuditEntry {
@@ -586,6 +593,19 @@ export const api = {
     apiFetch<any>(`/orgs/${orgSlug}/approvals/${contentId}/approve`, { token, method: 'POST' }),
   rejectOrgContent: (token: string, orgSlug: string, contentId: string) =>
     apiFetch<any>(`/orgs/${orgSlug}/approvals/${contentId}/reject`, { token, method: 'POST' }),
+  createThumbnailUploadTarget: (
+    token: string,
+    body: {
+      file_name: string;
+      target: 'community' | 'personal' | 'organization';
+      org_slug?: string;
+    },
+  ) =>
+    apiFetch<ThumbnailUploadTarget>('/content/thumbnail-upload', {
+      token,
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
 
   // Admin
   getModerationQueue: (
@@ -649,6 +669,7 @@ export function listContent(
   type: string,
   params?: {
     namespace?: string;
+    source?: PublicRegistrySource;
     sort?: string;
     recommended?: boolean;
     intelligenceSource?: ContentIntelligenceSource;
@@ -667,6 +688,7 @@ export function searchContent(
   params?: {
     type?: string;
     namespace?: string;
+    source?: PublicRegistrySource;
     sort?: string;
     recommended?: boolean;
     intelligenceSource?: ContentIntelligenceSource;
@@ -679,6 +701,7 @@ export function searchContent(
       q,
       type: params?.type,
       namespace: params?.namespace,
+      source: params?.source,
       sort: params?.sort,
       recommended: params?.recommended,
       intelligenceSource: params?.intelligenceSource,
@@ -728,6 +751,7 @@ export function getUserContent(
   username: string,
   params?: {
     type?: string;
+    source?: PublicRegistrySource;
     sort?: string;
     recommended?: boolean;
     intelligenceSource?: ContentIntelligenceSource;

@@ -38,6 +38,7 @@ function createTestApp() {
 function createSingleContentClient(
   row: Record<string, unknown> | null,
   membership: Record<string, unknown> | null = null,
+  storageFile: { body: string; type: string } | null = null,
 ) {
   const chain = {
     filters: {} as Record<string, unknown>,
@@ -64,6 +65,20 @@ function createSingleContentClient(
       table,
       filters: {},
     })),
+    storage: {
+      from: vi.fn(() => ({
+        download: vi.fn(async () => {
+          if (!storageFile) {
+            return { data: null, error: { message: 'not found' } };
+          }
+
+          return {
+            data: new Blob([storageFile.body], { type: storageFile.type }),
+            error: null,
+          };
+        }),
+      })),
+    },
   };
 }
 
@@ -230,6 +245,11 @@ describe('POST /v1/validate', () => {
       data: {
         name: 'Portfolio',
         description: 'Creator portfolio',
+        registry_presentation: {
+          thumbnail: {
+            path: 'thumbs/portfolio.png',
+          },
+        },
       },
       created_at: '2026-04-09T00:00:00.000Z',
       updated_at: '2026-04-09T00:00:00.000Z',
@@ -247,6 +267,42 @@ describe('POST /v1/validate', () => {
     assertMatchesSchema('public-content-record.v1.json', json);
     expect(json.slug).toBe('portfolio');
     expect(json.intelligence?.source).toBe('hybrid');
+    expect(json.thumbnail_url).toBe('http://localhost/v1/blueprints/%40official/portfolio/thumbnail');
+  });
+
+  it('serves public thumbnail assets through the API thumbnail route', async () => {
+    mockCreateAdminClient.mockReturnValue(createSingleContentClient(
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'portfolio',
+        namespace: '@official',
+        version: '1.0.0',
+        visibility: 'public',
+        status: 'published',
+        data: {
+          name: 'Portfolio',
+          description: 'Creator portfolio',
+          registry_presentation: {
+            thumbnail: {
+              path: 'thumbs/portfolio.png',
+            },
+          },
+        },
+        created_at: '2026-04-09T00:00:00.000Z',
+        updated_at: '2026-04-09T00:00:00.000Z',
+        published_at: '2026-04-09T00:00:00.000Z',
+      },
+      null,
+      { body: 'png-bytes', type: 'image/png' },
+    ));
+
+    const res = await app.request('/v1/blueprints/%40official/portfolio/thumbnail');
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('image/png');
+    expect(res.headers.get('Cache-Control')).toBe('public, max-age=300, stale-while-revalidate=3600');
+    expect(await res.text()).toBe('png-bytes');
   });
 
   it('allows the owner to fetch a private content record', async () => {
@@ -433,6 +489,11 @@ describe('POST /v1/validate', () => {
         data: {
           name: 'Portfolio',
           description: 'Creator portfolio',
+          registry_presentation: {
+            thumbnail: {
+              path: 'thumbs/portfolio.png',
+            },
+          },
         },
         published_at: '2026-04-09T00:00:00.000Z',
         owner: {
@@ -450,6 +511,7 @@ describe('POST /v1/validate', () => {
     expect(json.total).toBe(1);
     expect(json.items[0]?.slug).toBe('portfolio');
     expect(json.items[0]?.intelligence?.source).toBe('hybrid');
+    expect(json.items[0]?.thumbnail_url).toBe('http://localhost/v1/blueprints/%40official/portfolio/thumbnail');
   });
 
   it('applies shared name sorting to public content lists before pagination', async () => {
@@ -532,6 +594,50 @@ describe('POST /v1/validate', () => {
     ], 2));
 
     const res = await app.request('/v1/blueprints?recommended=true');
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['portfolio']);
+  });
+
+  it('filters public content lists by source when requested', async () => {
+    mockCreateAdminClient.mockReturnValue(createListContentClient([
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'portfolio',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Portfolio',
+          description: 'Creator portfolio',
+        },
+        published_at: '2026-04-09T00:00:00.000Z',
+        owner: {
+          display_name: 'Decantr',
+          username: 'decantr',
+        },
+      },
+      {
+        id: 'content-2',
+        type: 'blueprint',
+        slug: 'zeta',
+        namespace: '@community',
+        version: '1.0.0',
+        data: {
+          name: 'Zeta',
+          description: 'Community blueprint',
+        },
+        published_at: '2026-04-08T00:00:00.000Z',
+        owner: {
+          display_name: 'Alice',
+          username: 'alice',
+        },
+      },
+    ], 2));
+
+    const res = await app.request('/v1/blueprints?source=official');
 
     expect(res.status).toBe(200);
     const json = await res.json();

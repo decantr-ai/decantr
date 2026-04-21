@@ -1,8 +1,4 @@
 import { Suspense } from 'react';
-import {
-  isContentIntelligenceSource,
-  type ContentIntelligenceSource,
-} from '@decantr/registry/client';
 import { notFound } from 'next/navigation';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
@@ -24,10 +20,8 @@ interface BrowseTypePageProps {
   params: Promise<{ type: string }>;
   searchParams: Promise<{
     q?: string;
-    namespace?: string;
+    source?: string;
     sort?: string;
-    recommended?: string;
-    intelligence_source?: string;
     offset?: string;
   }>;
 }
@@ -41,13 +35,10 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   }
 
   const q = sp.q ?? '';
-  const namespace = sp.namespace;
+  const source = sp.source === 'official' || sp.source === 'community' || sp.source === 'organization'
+    ? sp.source
+    : undefined;
   const sort = normalizePublicContentSort(sp.sort);
-  const recommended = sp.recommended === 'true';
-  const intelligenceSource: ContentIntelligenceSource | undefined =
-    sp.intelligence_source && isContentIntelligenceSource(sp.intelligence_source)
-      ? sp.intelligence_source
-      : undefined;
   const offset = parseInt(sp.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -57,10 +48,8 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
     if (q) {
       const result = await searchContent(q, {
         type,
-        namespace: namespace || undefined,
+        source,
         sort,
-        recommended,
-        intelligenceSource,
         limit: LIMIT,
         offset,
       });
@@ -68,10 +57,8 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
       total = result.total;
     } else {
       const result = await listContent(type, {
-        namespace: namespace || undefined,
+        source,
         sort,
-        recommended,
-        intelligenceSource,
         limit: LIMIT,
         offset,
       });

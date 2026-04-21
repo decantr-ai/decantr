@@ -361,6 +361,17 @@ export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
 export type ContentConfidenceTier = 'low' | 'medium' | 'high' | 'verified';
 
 export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
+export const PUBLIC_CONTENT_SOURCES = [
+  'official',
+  'community',
+  'organization',
+] as const;
+
+export type PublicContentSource = (typeof PUBLIC_CONTENT_SOURCES)[number];
+
+export function isPublicContentSource(value: string): value is PublicContentSource {
+  return PUBLIC_CONTENT_SOURCES.includes(value as PublicContentSource);
+}
 
 export const CONTENT_INTELLIGENCE_SOURCES = [
   'authored',
@@ -408,6 +419,7 @@ export interface PublicContentSummary {
   published_at?: string;
   owner_name?: string | null;
   owner_username?: string | null;
+  thumbnail_url?: string | null;
   intelligence?: ContentIntelligenceMetadata | null;
 }
 
@@ -425,6 +437,7 @@ export interface PublicContentRecord<TData = Record<string, unknown>> {
   published_at?: string;
   owner_name?: string | null;
   owner_username?: string | null;
+  thumbnail_url?: string | null;
   intelligence?: ContentIntelligenceMetadata | null;
 }
 
@@ -468,6 +481,7 @@ export interface SearchParams {
   q: string;
   type?: string;
   namespace?: string;
+  source?: PublicContentSource;
   sort?: string;
   recommended?: boolean;
   intelligenceSource?: ContentIntelligenceSource;
