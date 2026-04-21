@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { Suspense } from 'react';
 import { listAvailableShowcases } from '@/lib/showcase';
 import { listContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { RegistryDiscoveryCtaGrid } from '@/components/registry-discovery-cta-grid';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 
 async function FeaturedBlueprints() {
@@ -57,50 +57,6 @@ async function ShowcaseBlueprints() {
   );
 }
 
-const QUICK_START_STEPS = [
-  {
-    eyebrow: 'Start with blueprints',
-    title: 'Pick a full app starting point',
-    description:
-      'Browse official blueprints first when you want the fastest path from Decantr contract to scaffolded application.',
-    href: '/browse/blueprints?source=official',
-    cta: 'Browse blueprints',
-  },
-  {
-    eyebrow: 'See it running',
-    title: 'Open live showcases',
-    description:
-      'Use audited showcases to understand the interaction model and visual rhythm before committing to a direction.',
-    href: '/browse/blueprints?source=official',
-    cta: 'Explore showcases',
-  },
-  {
-    eyebrow: 'Build your own stack',
-    title: 'Mix patterns, themes, shells, and archetypes',
-    description:
-      'When you already know the workflow shape, browse the lower-level building blocks and compose your own system.',
-    href: '/browse',
-    cta: 'Browse the registry',
-  },
-];
-
-function QuickStartSection() {
-  return (
-    <div className="registry-quickstart-grid">
-      {QUICK_START_STEPS.map((step) => (
-        <article key={step.title} className="d-surface registry-quickstart-card" data-elevation="raised">
-          <span className="d-label registry-quickstart-eyebrow">{step.eyebrow}</span>
-          <h2 className="registry-quickstart-title">{step.title}</h2>
-          <p className="registry-quickstart-description">{step.description}</p>
-          <Link href={step.href} className="d-interactive registry-quickstart-link" data-variant="ghost">
-            {step.cta}
-          </Link>
-        </article>
-      ))}
-    </div>
-  );
-}
-
 export default function HomePage() {
   return (
     <div className="registry-page-max registry-browser-shell">
@@ -128,7 +84,7 @@ export default function HomePage() {
         <span id="registry-home-quickstart" className="d-label registry-anchor-label">
           Quick start
         </span>
-        <QuickStartSection />
+        <RegistryDiscoveryCtaGrid />
       </section>
 
       <section className="d-section" data-density="comfortable" aria-labelledby="registry-home-featured">
