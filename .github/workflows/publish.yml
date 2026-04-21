@@ -74,7 +74,6 @@ jobs:
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           DRY_RUN_ONLY: ${{ github.event.inputs.dry_run_only || 'false' }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           ARGS=""
           if [ "$RELEASE_WAVE" != "all" ]; then
