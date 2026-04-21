@@ -13,7 +13,12 @@ COPY packages/registry/package.json ./packages/registry/package.json
 COPY packages/core/package.json ./packages/core/package.json
 COPY packages/verifier/package.json ./packages/verifier/package.json
 
-RUN pnpm install --frozen-lockfile --filter ./apps/api...
+RUN pnpm install --frozen-lockfile \
+  --filter @decantr/essence-spec... \
+  --filter @decantr/registry... \
+  --filter @decantr/core... \
+  --filter @decantr/verifier... \
+  --filter ./apps/api...
 
 COPY apps/api/ ./apps/api/
 COPY apps/showcase/manifest.json ./apps/showcase/manifest.json
