@@ -324,6 +324,24 @@
     gap: 0.75rem;
   }
 
+  .registry-region-stack {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .registry-region-stack > * {
+    min-width: 0;
+  }
+
+  .registry-region-stack[data-density='compact'] {
+    gap: 1rem;
+  }
+
+  .registry-region-stack[data-density='comfortable'] {
+    gap: 1.25rem;
+  }
+
   .registry-fact-list {
     display: grid;
     gap: 0.5rem;

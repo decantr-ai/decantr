@@ -155,52 +155,53 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
 
       <section className="d-section" data-density="compact">
         <span className="d-label registry-anchor-label">Private Discovery</span>
+        <div className="registry-region-stack" data-density="compact">
+          <form method="get" action="/dashboard/content" className="d-surface registry-dashboard-panel">
+            <div className="registry-form-grid">
+              <label className="text-sm font-semibold" htmlFor="q">
+                Search private packages
+              </label>
+              <input
+                id="q"
+                name="q"
+                className="d-control"
+                defaultValue={query}
+                placeholder="Search by slug, namespace, name, or description"
+              />
+            </div>
 
-        <form method="get" action="/dashboard/content" className="d-surface registry-dashboard-panel">
-          <div className="registry-form-grid">
-            <label className="text-sm font-semibold" htmlFor="q">
-              Search private packages
-            </label>
-            <input
-              id="q"
-              name="q"
-              className="d-control"
-              defaultValue={query}
-              placeholder="Search by slug, namespace, name, or description"
+            <div className="registry-filter-bar">
+              <label className="text-sm font-semibold" htmlFor="scope">
+                Scope
+              </label>
+              <select
+                id="scope"
+                name="scope"
+                className="d-control registry-inline-select"
+                defaultValue={scope}
+              >
+                <option value="all">All accessible private packages</option>
+                <option value="personal">Personal private packages</option>
+                <option value="organization">Organization private packages</option>
+              </select>
+              <button type="submit" className="d-interactive" data-variant="primary">
+                Search
+              </button>
+            </div>
+          </form>
+
+          {privateItems.length > 0 ? (
+            <ContentCardGrid items={privateItems} editable />
+          ) : (
+            <EmptyContentState
+              copy={
+                query
+                  ? 'No private packages matched this search.'
+                  : 'No accessible private packages found yet.'
+              }
             />
-          </div>
-
-          <div className="registry-filter-bar">
-            <label className="text-sm font-semibold" htmlFor="scope">
-              Scope
-            </label>
-            <select
-              id="scope"
-              name="scope"
-              className="d-control registry-inline-select"
-              defaultValue={scope}
-            >
-              <option value="all">All accessible private packages</option>
-              <option value="personal">Personal private packages</option>
-              <option value="organization">Organization private packages</option>
-            </select>
-            <button type="submit" className="d-interactive" data-variant="primary">
-              Search
-            </button>
-          </div>
-        </form>
-
-        {privateItems.length > 0 ? (
-          <ContentCardGrid items={privateItems} editable />
-        ) : (
-          <EmptyContentState
-            copy={
-              query
-                ? 'No private packages matched this search.'
-                : 'No accessible private packages found yet.'
-            }
-          />
-        )}
+          )}
+        </div>
       </section>
 
       <section className="d-section" data-density="compact">

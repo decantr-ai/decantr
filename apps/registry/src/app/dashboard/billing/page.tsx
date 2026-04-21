@@ -343,60 +343,64 @@ export default function BillingPage() {
         <span className="d-label registry-anchor-label">
           Current Usage
         </span>
-        <KPIGrid items={kpiItems} />
-        <div className="d-surface registry-dashboard-panel">
-          <div className="registry-panel-note">
-            <h4 className="registry-panel-title">What this plan currently unlocks</h4>
-            <div className="registry-detail-list">
-              {billing?.entitlements?.personal_private_packages
-                ? 'Personal private packages are enabled.'
-                : 'Personal private packages are not enabled on this plan.'}
-              <div>
-                {billing?.entitlements?.org_collaboration
-                  ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
-                  : 'Organization collaboration is not enabled on this plan.'}
-              </div>
-              <div>
-                {billing?.entitlements?.private_registry_portal
-                  ? 'Private registry browsing is enabled for your organization.'
-                  : 'Private registry browsing is not enabled on this plan.'}
-              </div>
-              <div>
-                API usage in the last 30 days: {billing?.usage?.api_requests_30d ?? 0} requests.
-                {billing?.limits?.api_requests_per_minute != null
-                  ? ` Current live limit: ${billing.limits.api_requests_per_minute}/minute.`
-                  : ' Unlimited per-minute usage on this plan.'}
-              </div>
-              <div>
-                Personal publishes in the last 30 days: {billing?.usage?.personal_publishes_30d ?? 0}. Private package publishes: {billing?.usage?.private_package_publishes_30d ?? 0}.
-              </div>
-            </div>
-          </div>
-
-          {activeOrg && (
-            <div className="registry-panel-divider registry-panel-note">
-              <h4 className="registry-panel-title">Active organization</h4>
+        <div className="registry-region-stack" data-density="compact">
+          <KPIGrid items={kpiItems} />
+          <div className="d-surface registry-dashboard-panel">
+            <div className="registry-panel-note">
+              <h4 className="registry-panel-title">What this plan currently unlocks</h4>
               <div className="registry-detail-list">
-                {activeOrg.name} ({activeOrg.slug})
                 <div>
-                Seats used: {billing?.usage?.seats_used ?? 0} / {billing?.usage?.seats_limit ?? activeOrg.seat_limit}
+                  {billing?.entitlements?.personal_private_packages
+                    ? 'Personal private packages are enabled.'
+                    : 'Personal private packages are not enabled on this plan.'}
                 </div>
                 <div>
-                Org packages: {billing?.usage?.org_content_items ?? 0}
+                  {billing?.entitlements?.org_collaboration
+                    ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
+                    : 'Organization collaboration is not enabled on this plan.'}
                 </div>
                 <div>
-                Org package publishes in the last 30 days: {billing?.usage?.org_package_publishes_30d ?? 0}. Approval actions: {billing?.usage?.approval_actions_30d ?? 0}.
+                  {billing?.entitlements?.private_registry_portal
+                    ? 'Private registry browsing is enabled for your organization.'
+                    : 'Private registry browsing is not enabled on this plan.'}
+                </div>
+                <div>
+                  API usage in the last 30 days: {billing?.usage?.api_requests_30d ?? 0} requests.
+                  {billing?.limits?.api_requests_per_minute != null
+                    ? ` Current live limit: ${billing.limits.api_requests_per_minute}/minute.`
+                    : ' Unlimited per-minute usage on this plan.'}
+                </div>
+                <div>
+                  Personal publishes in the last 30 days: {billing?.usage?.personal_publishes_30d ?? 0}. Private package publishes: {billing?.usage?.private_package_publishes_30d ?? 0}.
                 </div>
               </div>
-              {billing?.entitlements?.private_registry_portal ? (
-                <div className="registry-action-band-actions">
-                  <Link href="/dashboard/private-registry" className="d-interactive no-underline" data-variant="primary">
-                    Open Private Registry
-                  </Link>
-                </div>
-              ) : null}
             </div>
-          )}
+
+            {activeOrg && (
+              <div className="registry-panel-divider registry-panel-note">
+                <h4 className="registry-panel-title">Active organization</h4>
+                <div className="registry-detail-list">
+                  <div>{activeOrg.name} ({activeOrg.slug})</div>
+                  <div>
+                    Seats used: {billing?.usage?.seats_used ?? 0} / {billing?.usage?.seats_limit ?? activeOrg.seat_limit}
+                  </div>
+                  <div>
+                    Org packages: {billing?.usage?.org_content_items ?? 0}
+                  </div>
+                  <div>
+                    Org package publishes in the last 30 days: {billing?.usage?.org_package_publishes_30d ?? 0}. Approval actions: {billing?.usage?.approval_actions_30d ?? 0}.
+                  </div>
+                </div>
+                {billing?.entitlements?.private_registry_portal ? (
+                  <div className="registry-action-band-actions">
+                    <Link href="/dashboard/private-registry" className="d-interactive no-underline" data-variant="primary">
+                      Open Private Registry
+                    </Link>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -430,23 +434,25 @@ export default function BillingPage() {
         <span className="d-label registry-anchor-label">
           Plans
         </span>
-        <div className="d-surface registry-dashboard-panel">
-          <h4 className="registry-panel-title">Plan model</h4>
-          <p className="registry-dashboard-description">
-            Pro is for personal private packages. Team is for shared organization packages and collaboration.
-            Enterprise adds a dedicated internal private registry workspace on top of the shared org package model.
-          </p>
-        </div>
-        <div className="registry-plan-grid">
-          {tiers.map((tier) => (
-            <TierUpgradeCard
-              key={tier.name}
-              tier={tier}
-              highlighted={!!tier.highlighted}
-              isPending={isPending}
-              onUpgrade={handleUpgrade}
-            />
-          ))}
+        <div className="registry-region-stack" data-density="compact">
+          <div className="d-surface registry-dashboard-panel">
+            <h4 className="registry-panel-title">Plan model</h4>
+            <p className="registry-dashboard-description">
+              Pro is for personal private packages. Team is for shared organization packages and collaboration.
+              Enterprise adds a dedicated internal private registry workspace on top of the shared org package model.
+            </p>
+          </div>
+          <div className="registry-plan-grid">
+            {tiers.map((tier) => (
+              <TierUpgradeCard
+                key={tier.name}
+                tier={tier}
+                highlighted={!!tier.highlighted}
+                isPending={isPending}
+                onUpgrade={handleUpgrade}
+              />
+            ))}
+          </div>
         </div>
       </section>
     </div>

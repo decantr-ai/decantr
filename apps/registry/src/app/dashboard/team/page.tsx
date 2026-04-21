@@ -472,92 +472,93 @@ export default function TeamPage() {
 
       <section className="d-section" data-density="compact">
         <span className="d-label registry-anchor-label">Members</span>
+        <div className="registry-region-stack" data-density="compact">
+          <div className="d-surface registry-dashboard-panel">
+            {organizations.length > 1 ? (
+              <div className="registry-form-grid">
+                <label className="text-sm font-semibold" htmlFor="team-org">
+                  Organization
+                </label>
+                <select
+                  id="team-org"
+                  className="d-control registry-inline-select"
+                  value={orgSlug}
+                  onChange={async (event) => {
+                    const nextSlug = event.target.value;
+                    setOrgSlug(nextSlug);
+                    const token = await getSessionToken();
+                    await reloadOrgState(token, nextSlug);
+                  }}
+                >
+                  {organizations.map((org) => (
+                    <option key={org.id} value={org.slug}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
 
-        <div className="d-surface registry-dashboard-panel">
-          {organizations.length > 1 ? (
-            <div className="registry-form-grid">
-              <label className="text-sm font-semibold" htmlFor="team-org">
-                Organization
-              </label>
-              <select
-                id="team-org"
-                className="d-control registry-inline-select"
-                value={orgSlug}
-                onChange={async (event) => {
-                  const nextSlug = event.target.value;
-                  setOrgSlug(nextSlug);
-                  const token = await getSessionToken();
-                  await reloadOrgState(token, nextSlug);
-                }}
-              >
-                {organizations.map((org) => (
-                  <option key={org.id} value={org.slug}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
+            {orgSlug ? (
+              <form onSubmit={handleInvite} className="registry-inline-form">
+                <input
+                  className="d-control"
+                  type="text"
+                  placeholder="colleague@company.com or @username"
+                  value={inviteEmail}
+                  onChange={(event) => setInviteEmail(event.target.value)}
+                />
+                <select
+                  className="d-control registry-team-select"
+                  value={inviteRole}
+                  onChange={(event) => setInviteRole(event.target.value)}
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <button
+                  type="submit"
+                  className="d-interactive"
+                  data-variant="primary"
+                  disabled={isInviting || !orgSlug}
+                >
+                  <UserPlusIcon size={16} />
+                  {isInviting ? 'Inviting...' : 'Invite'}
+                </button>
+              </form>
+            ) : null}
+          </div>
+
+          {!orgSlug ? (
+            <div className="d-surface registry-empty-state" data-density="compact">
+              <span className="registry-empty-state-icon">
+                <UsersLgIcon size={48} />
+              </span>
+              <p className="registry-empty-state-copy">
+                Team collaboration becomes available once your account is attached to an active organization.
+              </p>
             </div>
-          ) : null}
-
-          {orgSlug ? (
-            <form onSubmit={handleInvite} className="registry-inline-form">
-              <input
-                className="d-control"
-                type="text"
-                placeholder="colleague@company.com or @username"
-                value={inviteEmail}
-                onChange={(event) => setInviteEmail(event.target.value)}
-              />
-              <select
-                className="d-control registry-team-select"
-                value={inviteRole}
-                onChange={(event) => setInviteRole(event.target.value)}
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-              <button
-                type="submit"
-                className="d-interactive"
-                data-variant="primary"
-                disabled={isInviting || !orgSlug}
-              >
-                <UserPlusIcon size={16} />
-                {isInviting ? 'Inviting...' : 'Invite'}
-              </button>
-            </form>
-          ) : null}
+          ) : members.length > 0 ? (
+            <div className="registry-team-list">
+              {members.map((member) => (
+                <TeamMemberRow
+                  key={member.user_id}
+                  member={member}
+                  onRemove={handleRemove}
+                  onRoleChange={handleRoleChange}
+                  removingId={removingId}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="d-surface registry-empty-state" data-density="compact">
+              <span className="registry-empty-state-icon">
+                <UsersLgIcon size={48} />
+              </span>
+              <p className="registry-empty-state-copy">No team members yet.</p>
+            </div>
+          )}
         </div>
-
-        {!orgSlug ? (
-          <div className="d-surface registry-empty-state" data-density="compact">
-            <span className="registry-empty-state-icon">
-              <UsersLgIcon size={48} />
-            </span>
-            <p className="registry-empty-state-copy">
-              Team collaboration becomes available once your account is attached to an active organization.
-            </p>
-          </div>
-        ) : members.length > 0 ? (
-          <div className="registry-team-list">
-            {members.map((member) => (
-              <TeamMemberRow
-                key={member.user_id}
-                member={member}
-                onRemove={handleRemove}
-                onRoleChange={handleRoleChange}
-                removingId={removingId}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="d-surface registry-empty-state" data-density="compact">
-            <span className="registry-empty-state-icon">
-              <UsersLgIcon size={48} />
-            </span>
-            <p className="registry-empty-state-copy">No team members yet.</p>
-          </div>
-        )}
       </section>
 
       {orgSlug ? (
