@@ -2,7 +2,11 @@
   "name": "@decantr/verifier",
   "version": "1.0.0-beta.1",
   "description": "Shared verification, critique, and report-schema engine for Decantr",
+  "author": "Decantr AI",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/decantr-ai/decantr/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/decantr-ai/decantr.git",

@@ -168,3 +168,5 @@ Contributions are welcome. See [docs/](docs/) for the current audits, specs, and
 ## License
 
 MIT
+
+The Decantr source repositories are MIT licensed. Hosted services such as the registry and API may also publish Terms of Service and Privacy Policy for service use without changing the source-code license.

@@ -1630,6 +1630,64 @@
     border-image: none;
   }
 
+  .registry-legal-shell {
+    width: min(100%, 72rem);
+    margin: 0 auto;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .registry-legal-hero {
+    display: grid;
+    gap: 0.625rem;
+  }
+
+  .registry-legal-updated {
+    font-size: 0.875rem;
+    color: var(--d-text-muted);
+  }
+
+  .registry-legal-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .registry-legal-card {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .registry-legal-card h2 {
+    margin: 0;
+    color: var(--d-text);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .registry-legal-copy {
+    margin: 0;
+    color: var(--d-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+  }
+
+  .registry-legal-list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--d-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+  }
+
+  .registry-legal-callout {
+    border-color: color-mix(in srgb, var(--d-accent) 35%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--d-accent) 6%, transparent) 0%, transparent 100%),
+      color-mix(in srgb, var(--d-surface) 96%, transparent);
+  }
+
   .registry-home-hero {
     display: flex;
     flex-direction: column;

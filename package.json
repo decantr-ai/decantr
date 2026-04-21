@@ -2,6 +2,13 @@
   "name": "decantr",
   "private": true,
   "description": "Design intelligence layer for AI-generated web applications",
+  "license": "MIT",
+  "homepage": "https://decantr.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decantr-ai/decantr.git"
+  },
+  "author": "Decantr AI",
   "scripts": {
     "build:packages": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/css run build && pnpm --filter @decantr/core --filter @decantr/verifier --filter @decantr/mcp-server --filter @decantr/cli --filter @decantr/vite-plugin run build",
     "build:apps": "pnpm --filter './apps/api' --filter './apps/registry' run build",

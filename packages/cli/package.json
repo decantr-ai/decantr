@@ -2,7 +2,11 @@
   "name": "@decantr/cli",
   "version": "1.7.5",
   "description": "Decantr CLI — scaffold, audit, and maintain Decantr projects from the terminal",
+  "author": "Decantr AI",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/decantr-ai/decantr/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/decantr-ai/decantr.git",

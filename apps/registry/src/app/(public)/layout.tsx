@@ -145,6 +145,16 @@ export default async function PublicLayout({
                 Schemas
               </a>
             </div>
+
+            <div className="registry-footer-group">
+              <span className="d-label">Legal</span>
+              <Link href="/privacy" className="registry-footer-link">
+                Privacy
+              </Link>
+              <Link href="/terms" className="registry-footer-link">
+                Terms
+              </Link>
+            </div>
           </div>
         </div>
 

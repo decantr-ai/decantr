@@ -2,7 +2,11 @@
   "name": "@decantr/vite-plugin",
   "version": "0.1.0",
   "description": "Experimental Vite plugin for Decantr guard feedback during local development",
+  "author": "Decantr AI",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/decantr-ai/decantr/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/decantr-ai/decantr.git",

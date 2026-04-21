@@ -2,7 +2,10 @@
   "name": "@decantr/css",
   "version": "1.0.2",
   "description": "Framework-agnostic CSS atom runtime for Decantr projects",
-  "author": "Decantr",
+  "author": "Decantr AI",
+  "bugs": {
+    "url": "https://github.com/decantr-ai/decantr/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/decantr-ai/decantr.git",
