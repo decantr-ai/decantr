@@ -27,7 +27,7 @@ function describeNpmFinding(result, finding) {
     const tag = finding.slice('missing expected '.length).replace(/ dist-tag$/, '');
     return `${result.name} is missing its expected npm dist-tag "${tag}".`;
   }
-  if (finding.startsWith('beta version on latest ')) {
+  if (finding.startsWith('prerelease version on latest ')) {
     const suffix = result.stableFallbackVersion
       ? ` Suggested stable fallback: ${result.stableFallbackVersion}.`
       : ' No stable npm version is published yet.';
@@ -76,8 +76,9 @@ const markdownLines = [
   '',
   `- Generated at: ${output.generatedAt}`,
   `- Package surface findings: ${packageSurfaceFindings.length}`,
-  `- Stable candidates: ${releaseReadiness.stableCandidates.length}`,
-  `- Beta packages with blockers: ${releaseReadiness.betaWithBlockers.length}`,
+  `- Stable public packages: ${releaseReadiness.stablePackages.length}`,
+  `- Internal packages: ${releaseReadiness.internalPackages.length}`,
+  `- Experimental packages: ${releaseReadiness.experimentalPackages.length}`,
   `- npm surface findings: ${npmSurfaceFindings.length}`,
   `- npm executable actions: ${npmExecutableActions.length}`,
   `- npm manual actions: ${npmManualActions.length}`,
@@ -85,6 +86,7 @@ const markdownLines = [
   '',
   '## Release Waves',
   ...Object.entries(releaseReadiness.releaseWaves).map(([wave, packages]) => `- ${wave}: ${packages.join(', ') || 'none'}`),
+  '',
   '',
 ];
 
@@ -96,25 +98,32 @@ if (packageSurfaceFindings.length > 0) {
   markdownLines.push('');
 }
 
-markdownLines.push('## Stable Candidates');
-if (releaseReadiness.stableCandidates.length === 0) {
+markdownLines.push('## Stable Public Packages');
+if (releaseReadiness.stablePackages.length === 0) {
   markdownLines.push('- none');
 } else {
-  for (const candidate of releaseReadiness.stableCandidates) {
+  for (const candidate of releaseReadiness.stablePackages) {
     markdownLines.push(`- ${candidate}`);
   }
 }
 markdownLines.push('');
 
-markdownLines.push('## Beta Blockers');
-if (releaseReadiness.betaWithBlockers.length === 0) {
+markdownLines.push('## Internal Packages');
+if (releaseReadiness.internalPackages.length === 0) {
   markdownLines.push('- none');
 } else {
-  for (const entry of releaseReadiness.betaWithBlockers) {
-    markdownLines.push(`- ${entry.name}`);
-    for (const blocker of entry.blockers) {
-      markdownLines.push(`  - ${blocker}`);
-    }
+  for (const name of releaseReadiness.internalPackages) {
+    markdownLines.push(`- ${name}`);
+  }
+}
+markdownLines.push('');
+
+markdownLines.push('## Experimental Packages');
+if (releaseReadiness.experimentalPackages.length === 0) {
+  markdownLines.push('- none');
+} else {
+  for (const name of releaseReadiness.experimentalPackages) {
+    markdownLines.push(`- ${name}`);
   }
 }
 markdownLines.push('');

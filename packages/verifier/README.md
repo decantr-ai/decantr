@@ -1,14 +1,14 @@
 # @decantr/verifier
 
 Support status: `core-supported`  
-Release channel: `beta`
+Release channel: `stable`
 
 Shared Decantr verification, critique, and report-schema engine used by the CLI, MCP server, and future CI/hosted verification surfaces.
 
 ## Install
 
 ```bash
-npm install @decantr/verifier@beta
+npm install @decantr/verifier
 ```
 
 ## What It Exports
@@ -42,6 +42,14 @@ const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
 - `@decantr/verifier/schema/project-audit-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
+
+## Compatibility
+
+`@decantr/verifier` is stable in the `1.x` line for the documented verifier APIs and published report-schema exports.
+
+- new checks and additive report fields may appear in compatible releases
+- breaking report-shape or exported API changes require a major version
+- hosted and CLI verifier consumers should treat the published schemas as the supported contract surface
 
 ## License
 

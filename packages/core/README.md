@@ -1,17 +1,21 @@
 # @decantr/core
 
 Support status: `core-supported`  
-Release channel: `beta`
+Release channel: `internal`
 
 Low-level Decantr compiler and execution-pack foundation.
 
-Most teams should use `@decantr/cli` or `@decantr/mcp-server` directly. This package is for integrations that need programmatic access to Decantr pack building and core pipeline utilities.
+Most teams should use `@decantr/cli`, `@decantr/registry`, or `@decantr/mcp-server` directly. This package remains inside the Decantr implementation boundary and is not part of the supported public package contract.
 
 ## Install
 
 ```bash
 npm install @decantr/core
 ```
+
+## Stability
+
+`@decantr/core` is versioned and tested inside the monorepo, but it is intentionally not part of the default public npm release story. Treat it as an internal substrate for Decantr execution-pack compilation rather than a public low-level SDK with independent compatibility guarantees.
 
 ## What It Exports
 

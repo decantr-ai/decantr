@@ -35,7 +35,7 @@ function describeNpmFinding(result, finding) {
     const tag = finding.slice('missing expected '.length).replace(/ dist-tag$/, '');
     return `Restore expected npm dist-tag \`${tag}\`.`;
   }
-  if (finding.startsWith('beta version on latest ')) {
+  if (finding.startsWith('prerelease version on latest ')) {
     return result.stableFallbackVersion
       ? `Move npm \`latest\` back to stable \`${result.stableFallbackVersion}\` before graduation work.`
       : 'Publish a stable version before npm `latest` can stop pointing at a prerelease.';
@@ -64,21 +64,19 @@ function classifyEntry(entry, npmResult) {
     };
   }
 
+  if (entry.recommendedAction === 'hold-internal') {
+    return {
+      status: 'internal-only',
+      nextStep: 'Keep this package inside the Decantr implementation boundary and outside the default npm publish track.',
+    };
+  }
+
   if (entry.maturity === 'stable') {
     return {
       status: npmFindings.length > 0 ? 'stable-needs-npm-normalization' : 'stable-live',
       nextStep: npmFindings.length > 0
         ? describeNpmFinding(npmResult, npmFindings[0])
         : 'No graduation action needed; keep publishing under `latest` in its release wave.',
-    };
-  }
-
-  if (entry.recommendedAction === 'ready-to-graduate') {
-    return {
-      status: npmFindings.length > 0 ? 'ready-but-npm-blocked' : 'ready-to-graduate',
-      nextStep: npmFindings.length > 0
-        ? describeNpmFinding(npmResult, npmFindings[0])
-        : 'Bump version if needed and publish this package under `latest` in its release wave.',
     };
   }
 
@@ -104,8 +102,8 @@ function classifyEntry(entry, npmResult) {
   }
 
   return {
-    status: 'beta-publish',
-    nextStep: 'Keep publishing under `beta` until stable-graduation criteria are explicitly met.',
+    status: 'policy-review',
+    nextStep: 'Review the package-surface classification so this package is explicitly stable, internal, experimental, or retired.',
   };
 }
 
@@ -148,8 +146,8 @@ const output = {
 };
 
 const stableNow = packages.filter((entry) => entry.graduationStatus === 'stable-live' || entry.graduationStatus === 'stable-needs-npm-normalization');
-const readyNow = packages.filter((entry) => entry.graduationStatus === 'ready-to-graduate' || entry.graduationStatus === 'ready-but-npm-blocked');
-const blocked = packages.filter((entry) => entry.graduationStatus === 'blocked-contract' || entry.graduationStatus === 'blocked-contract-and-npm' || entry.graduationStatus === 'blocked-npm' || entry.graduationStatus === 'beta-publish');
+const internalOnly = packages.filter((entry) => entry.graduationStatus === 'internal-only');
+const blocked = packages.filter((entry) => entry.graduationStatus === 'blocked-contract' || entry.graduationStatus === 'blocked-contract-and-npm' || entry.graduationStatus === 'blocked-npm' || entry.graduationStatus === 'policy-review');
 const experimentalOrRetired = packages.filter((entry) => entry.graduationStatus === 'experimental-hold' || entry.graduationStatus === 'retired');
 
 const markdownLines = [
@@ -157,12 +155,12 @@ const markdownLines = [
   '',
   `- Generated at: ${output.generatedAt}`,
   `- Stable now: ${stableNow.length}`,
-  `- Ready to graduate: ${readyNow.length}`,
+  `- Internal only: ${internalOnly.length}`,
   `- Still blocked: ${blocked.length}`,
   `- Experimental or retired: ${experimentalOrRetired.length}`,
   `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : 'not authenticated'}`,
   '',
-  'Package graduation means moving a package from prerelease/public-beta semantics into an intentional `latest` contract with a stable npm tag, cleared blockers, and an explicit publish wave.',
+  'Package graduation now means holding a clean package line: stable public, internal-only, experimental hold, or retired. The old public beta lane is no longer part of the intended Decantr package model.',
   '',
   '## npm Auth',
 ];
@@ -188,14 +186,13 @@ if (stableNow.length === 0) {
   }
 }
 
-markdownLines.push('', '## Ready To Graduate');
-if (readyNow.length === 0) {
+markdownLines.push('', '## Internal Only');
+if (internalOnly.length === 0) {
   markdownLines.push('- none');
 } else {
-  for (const entry of readyNow) {
+  for (const entry of internalOnly) {
     markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
     markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
-    markdownLines.push(`  - stable target: ${entry.stableTargetVersion ?? 'unknown'}`);
     markdownLines.push(`  - next step: ${entry.nextStep}`);
   }
 }
@@ -207,9 +204,7 @@ if (blocked.length === 0) {
   for (const entry of blocked) {
     markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
     markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
-    if (entry.maturity === 'beta') {
-      markdownLines.push(`  - stable target: ${entry.stableTargetVersion ?? 'unknown'}`);
-    }
+    markdownLines.push(`  - stable target: ${entry.stableTargetVersion ?? 'unknown'}`);
     markdownLines.push(`  - next step: ${entry.nextStep}`);
     if (entry.blockers.length > 0) {
       for (const blocker of entry.blockers) {

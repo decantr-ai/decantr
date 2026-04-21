@@ -15,17 +15,10 @@ if (findings.length > 0) {
 }
 
 console.log('Release readiness audit passed.');
-console.log(`Stable candidates: ${readiness.stableCandidates.join(', ') || 'none'}`);
+console.log(`Stable public packages: ${readiness.stablePackages.join(', ') || 'none'}`);
+console.log(`Internal packages: ${readiness.internalPackages.join(', ') || 'none'}`);
 console.log(`Experimental packages: ${readiness.experimentalPackages.join(', ') || 'none'}`);
 console.log('Release waves:');
 for (const [wave, packages] of Object.entries(readiness.releaseWaves)) {
   console.log(`- ${wave}: ${packages.join(', ') || 'none'}`);
-}
-console.log('');
-console.log('Beta package blockers:');
-for (const entry of readiness.betaWithBlockers) {
-  console.log(`- ${entry.name}`);
-  for (const blocker of entry.blockers) {
-    console.log(`    • ${blocker}`);
-  }
 }

@@ -30,8 +30,8 @@ const output = {
   packages: filteredByWave,
   counts: {
     publishLatest: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-latest').length,
-    publishBeta: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-beta').length,
-    readyToGraduate: filteredByWave.filter((entry) => entry.recommendedAction === 'ready-to-graduate').length,
+    publishNext: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-next').length,
+    holdInternal: filteredByWave.filter((entry) => entry.recommendedAction === 'hold-internal').length,
     holdExperimental: filteredByWave.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
     retired: filteredByWave.filter((entry) => entry.recommendedAction === 'retired').length,
     byWave: filteredByWave.reduce((acc, entry) => {
@@ -50,8 +50,8 @@ const markdownLines = [
   `- Release wave filter: ${onlyWave ?? 'all'}`,
   `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : 'not authenticated'}`,
   `- Publish latest: ${output.counts.publishLatest}`,
-  `- Publish beta: ${output.counts.publishBeta}`,
-  `- Ready to graduate: ${output.counts.readyToGraduate}`,
+  `- Publish next: ${output.counts.publishNext}`,
+  `- Hold internal: ${output.counts.holdInternal}`,
   `- Hold experimental: ${output.counts.holdExperimental}`,
   `- Retired: ${output.counts.retired}`,
   '',

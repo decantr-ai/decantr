@@ -55,8 +55,8 @@ console.log(`Support matrix: ${matrixPath.replace(`${root}/`, '')}`);
 for (const [support, count] of Object.entries(supportCounts)) {
   console.log(`- ${support}: ${count}`);
 }
-console.log(`Stable candidates: ${readiness.stableCandidates.join(', ') || 'none'}`);
-console.log(`Beta packages with blockers: ${readiness.betaWithBlockers.length}`);
+console.log(`Stable public packages: ${readiness.stablePackages.join(', ') || 'none'}`);
+console.log(`Internal packages: ${readiness.internalPackages.join(', ') || 'none'}`);
 console.log(`Experimental packages: ${readiness.experimentalPackages.join(', ') || 'none'}`);
 for (const [wave, packages] of Object.entries(readiness.releaseWaves)) {
   console.log(`- release wave ${wave}: ${packages.length}`);

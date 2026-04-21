@@ -70,8 +70,8 @@ export function readNpmDistTags(packageName) {
   }
 }
 
-export function isBetaLike(version) {
-  return typeof version === 'string' && /beta|alpha|rc/i.test(version);
+export function isPrereleaseLike(version) {
+  return typeof version === 'string' && /^\d+\.\d+\.\d+-.+/.test(version);
 }
 
 export function readNpmVersions(packageName) {
@@ -115,7 +115,7 @@ export function readNpmVersions(packageName) {
 
 export function findLatestStableVersion(versions) {
   return [...versions]
-    .filter((version) => typeof version === 'string' && !isBetaLike(version))
+    .filter((version) => typeof version === 'string' && !isPrereleaseLike(version))
     .at(-1) ?? null;
 }
 
@@ -128,7 +128,7 @@ export function planNpmSurfaceRepairs(surface) {
     const npmState = readNpmDistTags(entry.name);
     const npmVersions = readNpmVersions(entry.name);
     const tagKeys = Object.keys(npmState.tags ?? {});
-    const extraTags = tagKeys.filter((tag) => !new Set(['latest', 'beta']).has(tag));
+    const extraTags = tagKeys.filter((tag) => !new Set(['latest', 'next']).has(tag));
     const actions = [];
     const findings = [];
     const stableFallbackVersion = findLatestStableVersion(npmVersions.versions ?? []);
@@ -152,17 +152,17 @@ export function planNpmSurfaceRepairs(surface) {
 
     if (!npmState.tags[entry.defaultDistTag]) {
       findings.push(`missing expected ${entry.defaultDistTag} dist-tag`);
-      if (entry.defaultDistTag === 'beta' && isBetaLike(npmState.tags.latest)) {
+      if (entry.defaultDistTag === 'next' && isPrereleaseLike(npmState.tags.latest)) {
         actions.push({
           type: 'add-dist-tag',
-          tag: 'beta',
+          tag: 'next',
           version: npmState.tags.latest,
         });
       }
     }
 
-    if (entry.maturity !== 'stable' && npmState.tags.latest && isBetaLike(npmState.tags.latest)) {
-      findings.push(`beta version on latest (${npmState.tags.latest})`);
+    if (entry.maturity === 'stable' && npmState.tags.latest && isPrereleaseLike(npmState.tags.latest)) {
+      findings.push(`prerelease version on latest (${npmState.tags.latest})`);
       actions.push({
         type: 'manual-latest-retag',
         tag: 'latest',

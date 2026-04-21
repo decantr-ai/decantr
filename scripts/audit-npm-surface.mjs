@@ -20,7 +20,7 @@ const findings = results.flatMap((result) => {
       const tag = finding.slice('missing expected '.length).replace(/ dist-tag$/, '');
       return `${result.name} is missing its expected npm dist-tag "${tag}".`;
     }
-    if (finding.startsWith('beta version on latest ')) {
+    if (finding.startsWith('prerelease version on latest ')) {
       const suffix = result.stableFallbackVersion
         ? ` Suggested stable fallback: ${result.stableFallbackVersion}.`
         : ' No stable npm version is published yet.';

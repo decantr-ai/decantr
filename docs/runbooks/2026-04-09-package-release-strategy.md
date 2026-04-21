@@ -1,7 +1,17 @@
 # Package Release Strategy
 
 Date: 2026-04-09
-Status: Active
+Status: Historical context
+
+This runbook captures the earlier beta-era release model.
+
+Current policy has moved on:
+
+- the long-lived public beta lane is being removed
+- active packages now resolve into stable public, internal-only, experimental, or retired
+- see [2026-04-21-package-graduation-consolidation-plan.md](../programs/2026-04-21-package-graduation-consolidation-plan.md) for the current package policy
+
+The sections below are preserved as historical implementation context for the old release strategy.
 
 This runbook defines how the Decantr reset branch should treat npm releases while the product moves from reset work into commercial hardening.
 

@@ -9,8 +9,20 @@ const SUPPORT_VALUES = new Set([
   'extracted',
 ]);
 
-const MATURITY_VALUES = new Set(['stable', 'beta', 'experimental']);
-const RELEASE_WAVE_VALUES = ['foundation', 'delivery', 'experimental'];
+const SURFACE_CLASS_VALUES = new Set([
+  'public-foundation',
+  'public-delivery',
+  'public-operator',
+  'internal',
+  'experimental',
+]);
+const PUBLIC_SURFACE_CLASS_VALUES = new Set([
+  'public-foundation',
+  'public-delivery',
+  'public-operator',
+]);
+const MATURITY_VALUES = new Set(['stable', 'internal', 'experimental']);
+const RELEASE_WAVE_VALUES = ['foundation', 'delivery', 'internal', 'experimental'];
 const RELEASE_WAVE_VALUE_SET = new Set(RELEASE_WAVE_VALUES);
 const RELEASE_WAVE_RANK = new Map(RELEASE_WAVE_VALUES.map((wave, index) => [wave, index]));
 const RETIREMENT_STATUS_VALUES = new Set(['retired', 'deprecated']);
@@ -21,9 +33,16 @@ const SUPPORT_DESCRIPTIONS = {
   archived: 'preserved for history only and not expected to receive new product work',
   extracted: 'moved out of the monorepo reset surface into a separate line',
 };
+const SURFACE_CLASS_DESCRIPTIONS = {
+  'public-foundation': 'stable public package that defines Decantr foundation contracts and shared building blocks',
+  'public-delivery': 'stable public delivery package used directly by end users and teams',
+  'public-operator': 'stable public operator-facing package for advanced delivery, verification, or agent workflows',
+  internal: 'internal package used inside Decantr implementation and not part of the public release promise',
+  experimental: 'opt-in package outside the default supported public surface',
+};
 const MATURITY_DESCRIPTIONS = {
   stable: 'intended to publish under npm `latest`',
-  beta: 'public and supported, but still expected to evolve before stable graduation',
+  internal: 'not part of the public npm release promise',
   experimental: 'opt-in and not part of the default publish wave',
 };
 
@@ -40,21 +59,19 @@ function toStableTargetVersion(version) {
 }
 
 function describeGraduationLane(entry) {
-  const blockers = entry.releaseReadiness?.blockers ?? [];
-
-  if (entry.maturity === 'stable') {
-    return 'stable-now';
+  if (entry.surfaceClass === 'internal' || entry.maturity === 'internal') {
+    return 'internal-only';
   }
 
-  if (entry.maturity === 'experimental' || entry.publish === false) {
+  if (entry.surfaceClass === 'experimental' || entry.maturity === 'experimental' || entry.publish === false) {
     return 'experimental-hold';
   }
 
-  if (entry.releaseReadiness?.stableCandidate === true && blockers.length === 0) {
-    return 'ready-next';
+  if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass) && entry.maturity === 'stable') {
+    return 'stable-public';
   }
 
-  return 'beta-blocked';
+  return 'policy-invalid';
 }
 
 function isMeaningfulStringArray(value) {
@@ -93,6 +110,8 @@ export function listPublicPackages(root = getRepoRoot()) {
         license: pkg.license,
         homepage: pkg.homepage,
         repository: pkg.repository,
+        bugs: pkg.bugs,
+        author: pkg.author,
         publishConfig: pkg.publishConfig,
         bin: pkg.bin,
         files: pkg.files,
@@ -126,6 +145,9 @@ export function validatePackageSurface(surface, publicPackages) {
     if (!SUPPORT_VALUES.has(entry.support)) {
       findings.push(`Unsupported support value for ${entry.name}: ${entry.support}`);
     }
+    if (!SURFACE_CLASS_VALUES.has(entry.surfaceClass)) {
+      findings.push(`Unsupported surfaceClass value for ${entry.name}: ${entry.surfaceClass}`);
+    }
     if (!MATURITY_VALUES.has(entry.maturity)) {
       findings.push(`Unsupported maturity value for ${entry.name}: ${entry.maturity}`);
     }
@@ -154,8 +176,14 @@ export function validatePackageSurface(surface, publicPackages) {
     if (typeof pkg.license !== 'string' || pkg.license.trim().length === 0) {
       findings.push(`Public package ${entry.name} must declare a non-empty license.`);
     }
+    if (typeof pkg.author !== 'string' || pkg.author.trim().length === 0) {
+      findings.push(`Public package ${entry.name} must declare a non-empty author.`);
+    }
     if (pkg.homepage !== 'https://decantr.ai') {
       findings.push(`Public package ${entry.name} must declare homepage https://decantr.ai.`);
+    }
+    if (!pkg.bugs || typeof pkg.bugs !== 'object' || pkg.bugs.url !== 'https://github.com/decantr-ai/decantr/issues') {
+      findings.push(`Public package ${entry.name} must declare bugs.url https://github.com/decantr-ai/decantr/issues.`);
     }
     if (!pkg.repository || typeof pkg.repository !== 'object') {
       findings.push(`Public package ${entry.name} must declare repository metadata.`);
@@ -193,23 +221,41 @@ export function validatePackageSurface(surface, publicPackages) {
     if (entry.maturity === 'stable' && isPrereleaseVersion(pkg.version)) {
       findings.push(`Stable package ${entry.name} must not use a prerelease semver version (${pkg.version}).`);
     }
-    if (entry.maturity === 'beta' && !isPrereleaseVersion(pkg.version)) {
-      findings.push(`Beta package ${entry.name} must use a prerelease semver version until it graduates (${pkg.version}).`);
+    if (entry.maturity === 'internal' && isPrereleaseVersion(pkg.version)) {
+      findings.push(`Internal package ${entry.name} should use a normal semver version rather than a prerelease (${pkg.version}).`);
     }
-    if (entry.maturity === 'stable' && entry.defaultDistTag !== 'latest') {
-      findings.push(`Stable package ${entry.name} must default to the latest dist-tag.`);
+    if (entry.publish === true && entry.defaultDistTag !== 'latest' && !(entry.maturity === 'experimental' && entry.defaultDistTag === 'next')) {
+      findings.push(`Published package ${entry.name} must default to the expected dist-tag for its maturity.`);
     }
-    if (entry.maturity !== 'stable' && entry.defaultDistTag !== 'beta') {
-      findings.push(`Non-stable package ${entry.name} must default to the beta dist-tag unless overridden.`);
+    if (entry.publish !== true && entry.defaultDistTag != null) {
+      findings.push(`Non-published package ${entry.name} must not declare a default npm dist-tag.`);
     }
     if (entry.maturity === 'experimental' && entry.publish !== false) {
-      findings.push(`Experimental package ${entry.name} should not publish by default.`);
+      findings.push(`Experimental package ${entry.name} should not publish by default unless explicitly promoted to an opt-in next release.`);
     }
-    if (entry.maturity === 'experimental' && entry.releaseWave !== 'experimental') {
+    if (entry.surfaceClass === 'experimental' && entry.releaseWave !== 'experimental') {
       findings.push(`Experimental package ${entry.name} must live in the experimental release wave.`);
     }
-    if (entry.maturity !== 'experimental' && entry.releaseWave === 'experimental') {
-      findings.push(`Non-experimental package ${entry.name} cannot live in the experimental release wave.`);
+    if (entry.surfaceClass === 'internal' && entry.releaseWave !== 'internal') {
+      findings.push(`Internal package ${entry.name} must live in the internal release wave.`);
+    }
+    if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass) && !['foundation', 'delivery'].includes(entry.releaseWave)) {
+      findings.push(`Public package ${entry.name} must live in the foundation or delivery release wave.`);
+    }
+    if (entry.surfaceClass === 'internal' && entry.publish !== false) {
+      findings.push(`Internal package ${entry.name} must not publish by default.`);
+    }
+    if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass) && entry.publish !== true) {
+      findings.push(`Public package ${entry.name} must publish by default.`);
+    }
+    if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass) && entry.maturity !== 'stable') {
+      findings.push(`Public package ${entry.name} must use stable maturity now that the beta lane has been removed.`);
+    }
+    if (entry.surfaceClass === 'internal' && entry.maturity !== 'internal') {
+      findings.push(`Internal package ${entry.name} must use internal maturity.`);
+    }
+    if (entry.surfaceClass === 'experimental' && entry.maturity !== 'experimental') {
+      findings.push(`Experimental package ${entry.name} must use experimental maturity.`);
     }
 
     const readiness = entry.releaseReadiness;
@@ -226,20 +272,20 @@ export function validatePackageSurface(surface, publicPackages) {
       findings.push(`Package ${entry.name} releaseReadiness.blockers must be a string array.`);
     }
 
-    if (entry.maturity === 'stable') {
+    if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass)) {
       if (!readiness.stableCandidate) {
-        findings.push(`Stable package ${entry.name} must be marked releaseReadiness.stableCandidate=true.`);
+        findings.push(`Public stable package ${entry.name} must be marked releaseReadiness.stableCandidate=true.`);
       }
       if (!readiness.docsAligned || !readiness.ciCovered || !readiness.productIntegrated) {
-        findings.push(`Stable package ${entry.name} must have docsAligned, ciCovered, and productIntegrated set to true.`);
+        findings.push(`Public stable package ${entry.name} must have docsAligned, ciCovered, and productIntegrated set to true.`);
       }
       if ((readiness.blockers ?? []).length > 0) {
-        findings.push(`Stable package ${entry.name} must not carry outstanding release blockers.`);
+        findings.push(`Public stable package ${entry.name} must not carry outstanding release blockers.`);
       }
     }
 
-    if (entry.maturity === 'beta' && !readiness.stableCandidate && (readiness.blockers ?? []).length === 0) {
-      findings.push(`Beta package ${entry.name} must declare explicit release blockers until it is ready for stable graduation.`);
+    if ((entry.surfaceClass === 'internal' || entry.surfaceClass === 'experimental') && entry.releaseReadiness?.stableCandidate) {
+      findings.push(`Non-public package ${entry.name} must not be marked as a stable candidate.`);
     }
   }
 
@@ -254,22 +300,26 @@ export function validatePackageSurface(surface, publicPackages) {
 
 export function summarizeReleaseReadiness(surface) {
   const summary = {
-    stableCandidates: [],
-    betaWithBlockers: [],
+    stablePackages: [],
+    publicPackages: [],
+    internalPackages: [],
     experimentalPackages: [],
     releaseWaves: Object.fromEntries(RELEASE_WAVE_VALUES.map((wave) => [wave, []])),
   };
 
   for (const entry of surface.packages) {
-    const blockers = entry.releaseReadiness?.blockers ?? [];
     summary.releaseWaves[entry.releaseWave]?.push(entry.name);
-    if (entry.releaseReadiness?.stableCandidate) {
-      summary.stableCandidates.push(entry.name);
-    } else if (entry.maturity === 'beta') {
-      summary.betaWithBlockers.push({
-        name: entry.name,
-        blockers,
-      });
+
+    if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass)) {
+      summary.publicPackages.push(entry.name);
+    }
+
+    if (entry.maturity === 'stable' && PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass)) {
+      summary.stablePackages.push(entry.name);
+    }
+
+    if (entry.surfaceClass === 'internal') {
+      summary.internalPackages.push(entry.name);
     }
 
     if (entry.maturity === 'experimental') {
@@ -286,11 +336,10 @@ function escapeMarkdownCell(value) {
 
 export function renderPackageSupportMatrix(surface, retirements) {
   const activePackages = sortReleaseEntries(surface.packages);
-  const nucleusPackages = activePackages.filter((entry) => entry.support === 'core-supported' && entry.maturity !== 'experimental');
+  const nucleusPackages = activePackages.filter((entry) => entry.support === 'core-supported' && entry.surfaceClass !== 'experimental');
   const retiredPackages = [...(retirements?.packages ?? [])].sort((left, right) => left.name.localeCompare(right.name));
-  const stableNow = activePackages.filter((entry) => describeGraduationLane(entry) === 'stable-now');
-  const readyNext = activePackages.filter((entry) => describeGraduationLane(entry) === 'ready-next');
-  const betaBlocked = activePackages.filter((entry) => describeGraduationLane(entry) === 'beta-blocked');
+  const stablePublic = activePackages.filter((entry) => describeGraduationLane(entry) === 'stable-public');
+  const internalOnly = activePackages.filter((entry) => describeGraduationLane(entry) === 'internal-only');
   const experimentalHold = activePackages.filter((entry) => describeGraduationLane(entry) === 'experimental-hold');
 
   const lines = [
@@ -306,53 +355,44 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '',
     '## Active Packages',
     '',
-    '| Package | Support status | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Graduation lane | Summary |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Package | Support status | Surface class | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...activePackages.map((entry) => (
-      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.defaultDistTag)}\` | \`${entry.publish === true ? 'true' : 'false'}\` | \`${entry.releaseReadiness?.stableCandidate === true ? 'true' : 'false'}\` | \`${escapeMarkdownCell((entry.releaseReadiness?.blockers ?? []).length)}\` | \`${describeGraduationLane(entry)}\` | ${escapeMarkdownCell(entry.summary)} |`
+      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | \`${escapeMarkdownCell(entry.surfaceClass)}\` | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.defaultDistTag ?? '-')}\` | \`${entry.publish === true ? 'true' : 'false'}\` | \`${entry.releaseReadiness?.stableCandidate === true ? 'true' : 'false'}\` | \`${escapeMarkdownCell((entry.releaseReadiness?.blockers ?? []).length)}\` | \`${describeGraduationLane(entry)}\` | ${escapeMarkdownCell(entry.summary)} |`
     )),
     '',
     '## Interpretation',
     '',
     ...Object.entries(SUPPORT_DESCRIPTIONS).map(([support, description]) => `- \`${support}\` means ${description}.`),
+    ...Object.entries(SURFACE_CLASS_DESCRIPTIONS).map(([surfaceClass, description]) => `- \`${surfaceClass}\` means ${description}.`),
     ...Object.entries(MATURITY_DESCRIPTIONS).map(([maturity, description]) => `- \`${maturity}\` means ${description}.`),
     '- `release wave` defines the intended publish order for coordinated npm releases.',
     '- `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.',
     '- `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.',
-    '- `graduation lane` is the operator-facing bucket for release planning: `stable-now`, `ready-next`, `beta-blocked`, or `experimental-hold`.',
+    '- `release lane` is the operator-facing bucket for release planning: `stable-public`, `internal-only`, or `experimental-hold`.',
     '',
-    '## Graduation Snapshot',
+    '## Surface Snapshot',
     '',
-    `- Stable now: ${stableNow.length}`,
-    `- Ready next: ${readyNext.length}`,
-    `- Beta blocked: ${betaBlocked.length}`,
+    `- Stable public: ${stablePublic.length}`,
+    `- Internal only: ${internalOnly.length}`,
     `- Experimental hold: ${experimentalHold.length}`,
     '',
-    '### Stable Now',
+    '### Stable Public',
     '',
-    ...(stableNow.length > 0
-      ? stableNow.map((entry) => `- \`${entry.name}\` in \`${entry.releaseWave}\` wave`)
+    ...(stablePublic.length > 0
+      ? stablePublic.map((entry) => `- \`${entry.name}\` in \`${entry.releaseWave}\` wave`)
       : ['- none']),
     '',
-    '### Ready Next',
+    '### Internal Only',
     '',
-    ...(readyNext.length > 0
-      ? readyNext.map((entry) => `- \`${entry.name}\` is a stable candidate with no declared blockers`)
-      : ['- none']),
-    '',
-    '### Beta Blocked',
-    '',
-    ...(betaBlocked.length > 0
-      ? betaBlocked.map((entry) => {
-        const blockers = entry.releaseReadiness?.blockers ?? [];
-        return `- \`${entry.name}\`: ${blockers[0] ?? 'blockers still need to be cleared before stable graduation'}`;
-      })
+    ...(internalOnly.length > 0
+      ? internalOnly.map((entry) => `- \`${entry.name}\` stays inside the implementation boundary and outside the default npm publish track`)
       : ['- none']),
     '',
     '### Experimental Hold',
     '',
     ...(experimentalHold.length > 0
-      ? experimentalHold.map((entry) => `- \`${entry.name}\` stays outside the default graduation path`)
+      ? experimentalHold.map((entry) => `- \`${entry.name}\` stays outside the default supported public surface`)
       : ['- none']),
     '',
     '## Current Product Nucleus',
@@ -383,7 +423,7 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '4. the relevant package README',
     '5. publish/deprecation workflow behavior',
     '',
-    'Beta packages now also need explicit `releaseReadiness.blockers` in `config/package-surface.json` until they are ready to graduate.',
+    'Public stable packages must keep `releaseReadiness.blockers` empty, while internal or experimental packages must be clearly classified instead of drifting into long-lived public prerelease states.',
     '',
   ];
 
@@ -403,17 +443,20 @@ export function createReleasePlan(surface, publicPackages, retirements) {
 
     if (retiredByName.has(entry.name)) {
       recommendedAction = 'retired';
-    } else if (entry.publish === false || entry.maturity === 'experimental') {
+    } else if (entry.surfaceClass === 'internal' || entry.maturity === 'internal') {
+      recommendedAction = 'hold-internal';
+    } else if (entry.maturity === 'experimental' || entry.surfaceClass === 'experimental') {
+      if (entry.publish === true) {
+        recommendedAction = 'publish-next';
+        releaseTag = 'next';
+      } else {
+        recommendedAction = 'hold-experimental';
+      }
+    } else if (entry.publish === false) {
       recommendedAction = 'hold-experimental';
     } else if (entry.maturity === 'stable') {
       recommendedAction = 'publish-latest';
       releaseTag = 'latest';
-    } else if (entry.releaseReadiness?.stableCandidate && blockers.length === 0) {
-      recommendedAction = 'ready-to-graduate';
-      releaseTag = 'latest';
-    } else {
-      recommendedAction = 'publish-beta';
-      releaseTag = entry.defaultDistTag;
     }
 
     packages.push({
@@ -422,6 +465,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       version: pkg?.version ?? null,
       stableTargetVersion: pkg?.version ? toStableTargetVersion(pkg.version) : null,
       support: entry.support,
+      surfaceClass: entry.surfaceClass,
       maturity: entry.maturity,
       publish: entry.publish === true,
       releaseWave: entry.releaseWave,
@@ -447,6 +491,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       version: null,
       stableTargetVersion: null,
       support: 'retired',
+      surfaceClass: 'retired',
       maturity: 'retired',
       publish: false,
       releaseWave: 'retired',
@@ -466,8 +511,8 @@ export function createReleasePlan(surface, publicPackages, retirements) {
 
   const counts = {
     publishLatest: packages.filter((entry) => entry.recommendedAction === 'publish-latest').length,
-    publishBeta: packages.filter((entry) => entry.recommendedAction === 'publish-beta').length,
-    readyToGraduate: packages.filter((entry) => entry.recommendedAction === 'ready-to-graduate').length,
+    publishNext: packages.filter((entry) => entry.recommendedAction === 'publish-next').length,
+    holdInternal: packages.filter((entry) => entry.recommendedAction === 'hold-internal').length,
     holdExperimental: packages.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
     retired: packages.filter((entry) => entry.recommendedAction === 'retired').length,
     byWave: sortReleaseEntries(

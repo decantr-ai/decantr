@@ -1,7 +1,7 @@
 # @decantr/registry
 
 Support status: `core-supported`  
-Release channel: `beta`
+Release channel: `stable`
 
 Registry contracts, schemas, API client, ranking helpers, and content utilities for Decantr.
 
@@ -42,6 +42,14 @@ const summary = await client.getIntelligenceSummary();
 ## Related Schemas
 
 This package owns the canonical registry schemas published under `@decantr/registry/schema/*`.
+
+## Compatibility
+
+`@decantr/registry` is part of the stable public Decantr package surface in the `1.x` line.
+
+- exported schema paths and documented client entrypoints are expected to remain stable across `1.x`
+- additive response fields may be introduced without breaking the stable contract
+- breaking client, schema, or path changes require a major version
 
 ## License
 

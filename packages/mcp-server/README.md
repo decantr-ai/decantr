@@ -1,7 +1,7 @@
 # @decantr/mcp-server
 
 Support status: `core-supported`  
-Release channel: `beta`
+Release channel: `stable`
 
 Design intelligence for AI-generated UI. Make Claude, Cursor, and Windsurf generate better code.
 
@@ -82,6 +82,14 @@ The server exposes Decantr registry, context, benchmark, and verification tools.
 | `decantr_get_showcase_benchmarks` | Read the audited showcase corpus manifest, shortlist, or verification report | `{ "view": "verification" }` |
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
+
+## Compatibility
+
+`@decantr/mcp-server` is stable in the `1.x` line for the documented MCP tool surface.
+
+- new tools may be added in compatible releases
+- existing documented tool names and envelopes should not break without a major version
+- breaking changes to established tool contracts require a major version and migration note
 
 ## How It Works
 

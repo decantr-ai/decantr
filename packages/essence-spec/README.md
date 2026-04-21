@@ -1,7 +1,7 @@
 # @decantr/essence-spec
 
 Support status: `core-supported`  
-Release channel: `beta`
+Release channel: `stable`
 
 Schemas, validation, migration, guard evaluation, and TypeScript types for `decantr.essence.json`.
 
@@ -36,6 +36,14 @@ const violations = evaluateGuard(essence, {});
 
 - `@decantr/essence-spec/schema/essence.v2.json`
 - `@decantr/essence-spec/schema/essence.v3.json`
+
+## Compatibility
+
+`@decantr/essence-spec` now defines a stable public contract for Decantr essence validation and migration in the `1.x` line.
+
+- additive schema fields may be introduced in compatible minor releases
+- breaking schema or migration behavior changes require a major version
+- deprecation and migration guidance should be documented before removing or replacing a supported essence path
 
 ## License
 
