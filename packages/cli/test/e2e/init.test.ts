@@ -6,10 +6,20 @@ import { execSync } from 'node:child_process';
 
 const INIT_TIMEOUT_MS = 15_000;
 
+function resolveContentRoot() {
+  const candidates = [
+    process.env.DECANTR_CONTENT_DIR,
+    join(__dirname, '..', '..', '..', '..', '..', 'decantr-content'),
+    join(__dirname, '..', '..', '..', '..', 'decantr-content'),
+  ].filter((value): value is string => Boolean(value));
+
+  return candidates.find((candidate) => existsSync(join(candidate, 'archetypes'))) ?? candidates[0];
+}
+
 describe('init command', () => {
   let testDir: string;
   const cliPath = join(__dirname, '..', '..', 'dist', 'index.js');
-  const contentRoot = join(__dirname, '..', '..', '..', '..', '..', 'decantr-content');
+  const contentRoot = resolveContentRoot();
 
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-test-'));

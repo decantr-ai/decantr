@@ -4,10 +4,20 @@ import { chmodSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rm
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
+function resolveContentRoot() {
+  const candidates = [
+    process.env.DECANTR_CONTENT_DIR,
+    join(__dirname, '..', '..', '..', '..', '..', 'decantr-content'),
+    join(__dirname, '..', '..', '..', '..', 'decantr-content'),
+  ].filter((value): value is string => Boolean(value));
+
+  return candidates.find((candidate) => existsSync(join(candidate, 'archetypes'))) ?? candidates[0];
+}
+
 describe('new command (e2e)', () => {
   let testDir: string;
   const cliPath = join(__dirname, '..', '..', 'dist', 'bin.js');
-  const contentRoot = join(__dirname, '..', '..', '..', '..', '..', 'decantr-content');
+  const contentRoot = resolveContentRoot();
 
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-new-'));

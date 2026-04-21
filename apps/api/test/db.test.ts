@@ -1,12 +1,15 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { createAdminClient } from '../src/db/client.js';
 
-describe('Database Connection', () => {
-  beforeAll(() => {
-    if (!process.env.SUPABASE_URL) {
-      throw new Error('SUPABASE_URL not set. Run with: dotenv -e .env.local -- vitest');
-    }
-  });
+const hasDbEnv = Boolean(
+  process.env.SUPABASE_URL &&
+  process.env.SUPABASE_ANON_KEY &&
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+const describeDatabase = hasDbEnv ? describe : describe.skip;
+
+describeDatabase('Database Connection', () => {
 
   it('should connect to Supabase', async () => {
     const client = createAdminClient();

@@ -8,13 +8,14 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      DECANTR_CONTENT_DIR: ${{ github.workspace }}/decantr-content
     strategy:
       matrix:
         node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
-        if: matrix.node-version == 20
         with:
           repository: decantr-ai/decantr-content
           path: decantr-content
