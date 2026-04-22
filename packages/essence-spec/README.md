@@ -45,6 +45,14 @@ const violations = evaluateGuard(essence, {});
 - breaking schema or migration behavior changes require a major version
 - deprecation and migration guidance should be documented before removing or replacing a supported essence path
 
+## Stability Note
+
+This package is the lowest-level public Decantr contract and is intended to remain boring and dependable for downstream consumers.
+
+- patch releases should stay documentation-only or behaviorally compatible
+- schema export paths are part of the supported public surface
+- coordinated downstream releases should only be needed when a package explicitly adopts a newer essence-spec version
+
 ## License
 
 MIT

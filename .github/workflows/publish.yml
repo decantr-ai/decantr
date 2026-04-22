@@ -18,6 +18,10 @@ on:
         description: Optional dist-tag override for all selected packages
         required: false
         default: ''
+      only_packages:
+        description: Optional comma-separated package names to publish
+        required: false
+        default: ''
       include_experimental:
         description: Include experimental packages such as @decantr/vite-plugin
         required: false
@@ -61,10 +65,14 @@ jobs:
       - name: Generate release plan summary
         env:
           RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
+          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
         run: |
           ARGS=""
           if [ "$RELEASE_WAVE" != "all" ]; then
             ARGS="$ARGS --wave=$RELEASE_WAVE"
+          fi
+          if [ -n "$ONLY_PACKAGES" ]; then
+            ARGS="$ARGS --only=$ONLY_PACKAGES"
           fi
           node scripts/release-plan.mjs $ARGS --summary-markdown=/tmp/package-release-plan.md
           cat /tmp/package-release-plan.md >> "$GITHUB_STEP_SUMMARY"
@@ -72,6 +80,7 @@ jobs:
         env:
           RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
+          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           DRY_RUN_ONLY: ${{ github.event.inputs.dry_run_only || 'false' }}
         run: |
@@ -81,6 +90,9 @@ jobs:
           fi
           if [ -n "$DIST_TAG_OVERRIDE" ]; then
             ARGS="$ARGS --tag-override=$DIST_TAG_OVERRIDE"
+          fi
+          if [ -n "$ONLY_PACKAGES" ]; then
+            ARGS="$ARGS --only=$ONLY_PACKAGES"
           fi
           if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
             ARGS="$ARGS --include-experimental"

@@ -10,6 +10,14 @@ const reportJsonValue = readArgValue(rawArgs, 'report-json');
 const summaryMarkdownValue = readArgValue(rawArgs, 'summary-markdown');
 const onlySupport = readArgValue(rawArgs, 'support');
 const onlyWave = readArgValue(rawArgs, 'wave');
+const onlyNames = new Set(
+  readArgValue(rawArgs, 'only')
+    ? readArgValue(rawArgs, 'only')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : [],
+);
 
 const root = getRepoRoot();
 const surface = loadPackageSurface(root);
@@ -23,18 +31,21 @@ const filteredPackages = onlySupport
 const filteredByWave = onlyWave
   ? filteredPackages.filter((entry) => entry.releaseWave === onlyWave)
   : filteredPackages;
+const filteredByName = onlyNames.size > 0
+  ? filteredByWave.filter((entry) => onlyNames.has(entry.name))
+  : filteredByWave;
 
 const output = {
   ...plan,
   npmAuth,
-  packages: filteredByWave,
+  packages: filteredByName,
   counts: {
-    publishLatest: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-latest').length,
-    publishNext: filteredByWave.filter((entry) => entry.recommendedAction === 'publish-next').length,
-    holdInternal: filteredByWave.filter((entry) => entry.recommendedAction === 'hold-internal').length,
-    holdExperimental: filteredByWave.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
-    retired: filteredByWave.filter((entry) => entry.recommendedAction === 'retired').length,
-    byWave: filteredByWave.reduce((acc, entry) => {
+    publishLatest: filteredByName.filter((entry) => entry.recommendedAction === 'publish-latest').length,
+    publishNext: filteredByName.filter((entry) => entry.recommendedAction === 'publish-next').length,
+    holdInternal: filteredByName.filter((entry) => entry.recommendedAction === 'hold-internal').length,
+    holdExperimental: filteredByName.filter((entry) => entry.recommendedAction === 'hold-experimental').length,
+    retired: filteredByName.filter((entry) => entry.recommendedAction === 'retired').length,
+    byWave: filteredByName.reduce((acc, entry) => {
       acc[entry.releaseWave] = (acc[entry.releaseWave] || 0) + 1;
       return acc;
     }, {}),
@@ -48,6 +59,7 @@ const markdownLines = [
   `- Packages in scope: ${output.packages.length}`,
   `- Support filter: ${onlySupport ?? 'all'}`,
   `- Release wave filter: ${onlyWave ?? 'all'}`,
+  `- Package filter: ${onlyNames.size > 0 ? [...onlyNames].join(', ') : 'all'}`,
   `- npm auth: ${npmAuth.authenticated ? `authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}` : 'not authenticated'}`,
   `- Publish latest: ${output.counts.publishLatest}`,
   `- Publish next: ${output.counts.publishNext}`,

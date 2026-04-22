@@ -12,6 +12,7 @@ const includeExperimental = args.has('--include-experimental');
 const dryRun = args.has('--dry-run');
 const publishDryRun = args.has('--publish-dry-run');
 const ciProvenance = process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true';
+const shouldCheckPublishedVersions = publishDryRun || !dryRun;
 const tagOverride = readArgValue(rawArgs, 'tag-override');
 const onlyWave = readArgValue(rawArgs, 'wave');
 const onlyNames = new Set(
@@ -49,13 +50,22 @@ for (const entry of selected) {
   const cwd = join(root, entry.path);
   const packageJson = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'));
   const packageVersion = packageJson.version;
-  const npmVersions = publishDryRun ? readNpmVersions(entry.name) : null;
+  const npmVersions = shouldCheckPublishedVersions ? readNpmVersions(entry.name) : null;
   const versionAlreadyPublished = Boolean(
-    publishDryRun
+    shouldCheckPublishedVersions
     && npmVersions?.published
     && Array.isArray(npmVersions.versions)
     && npmVersions.versions.includes(packageVersion),
   );
+  const prefix = publishDryRun ? '[publish-dry-run] ' : dryRun ? '[dry-run] ' : '';
+
+  if (versionAlreadyPublished && !publishDryRun) {
+    console.log(
+      `${prefix}Skipping ${entry.name} from ${entry.path} because version ${packageVersion} is already published (wave ${entry.releaseWave}, order ${entry.publishOrder})`,
+    );
+    continue;
+  }
+
   const tempPackDir = versionAlreadyPublished ? mkdtempSync(join(tmpdir(), 'decantr-pack-')) : null;
   const cmd = versionAlreadyPublished
     ? ['pack', '--pack-destination', tempPackDir]
@@ -64,7 +74,6 @@ for (const entry of selected) {
     cmd.push('--dry-run');
   }
 
-  const prefix = publishDryRun ? '[publish-dry-run] ' : dryRun ? '[dry-run] ' : '';
   const action = versionAlreadyPublished ? 'Packing' : 'Publishing';
   const suffix = versionAlreadyPublished ? ` (version ${packageVersion} is already published)` : ` with tag ${distTag}`;
   console.log(`${prefix}${action} ${entry.name} from ${entry.path}${suffix} (wave ${entry.releaseWave}, order ${entry.publishOrder})`);
