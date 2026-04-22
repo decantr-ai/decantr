@@ -10,6 +10,7 @@ const args = new Set(rawArgs);
 const includeExperimental = args.has('--include-experimental');
 const dryRun = args.has('--dry-run');
 const publishDryRun = args.has('--publish-dry-run');
+const ciProvenance = process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true';
 const tagOverride = readArgValue(rawArgs, 'tag-override');
 const onlyWave = readArgValue(rawArgs, 'wave');
 const onlyNames = new Set(
@@ -56,7 +57,7 @@ for (const entry of selected) {
   );
   const cmd = versionAlreadyPublished
     ? ['pack', '--dry-run']
-    : ['publish', '--access', 'public', '--provenance', '--tag', distTag];
+    : ['publish', '--access', 'public', ...(ciProvenance ? ['--provenance'] : []), '--tag', distTag];
   if (publishDryRun && !versionAlreadyPublished) {
     cmd.push('--dry-run');
   }
