@@ -2,113 +2,78 @@
 
 **Design intelligence, governance, and verification for AI-generated UI.**
 
-Decantr is the contract layer between product intent and AI-generated implementation. It gives coding assistants structured design inputs, registry-backed UI knowledge, scoped context files, and verification paths so they can build coherent product surfaces instead of improvising screen by screen.
-
-Think of it as OpenAPI for AI-generated UI: the model still writes the code, but Decantr defines the shape, vocabulary, and checks around it.
+Decantr is the contract layer between product intent and AI-generated implementation. It gives coding assistants three things they don't have on their own — structured design inputs, registry-backed UI knowledge, and scoped context files — so they build coherent product surfaces instead of improvising screen by screen. Think of it as OpenAPI for AI-generated UI: the model still writes the code, but Decantr defines the shape, vocabulary, and checks around it.
 
 > AI generates the interface. Decantr keeps the outcome aligned.
 
-## What It Actually Does
+## Pick Your Path
 
-- Captures durable intent in `decantr.essence.json`: theme, density, accessibility, personality, sections, routes, shells, and features.
-- Resolves curated registry content such as patterns, archetypes, blueprints, themes, and shells.
-- Generates assistant-readable context like `DECANTR.md` and `.decantr/context/*.md` so an LLM sees the right constraints at the right scope.
-- Produces style outputs like `src/styles/tokens.css`, `src/styles/treatments.css`, and `src/styles/decorators.css`.
-- Compiles local or hosted execution packs for scaffold, section, page, mutation, review, critique, and audit workflows.
-- Detects drift between the contract and the code with checks, critiques, audits, and optional drift-resolution flows.
+How are you starting?
 
-## How The Model Works
+- **A) [⭐ Brand new app from a blueprint](#a-brand-new-app-from-a-blueprint)** — Pick a published blueprint and scaffold the full essence + context in one command. The fastest way to see what Decantr gives you.
+- **B) Brand new app from scratch** — Start from `decantr magic` or an empty essence and grow the contract as you build. <!-- TODO: link to docs/getting-started/path-b-from-scratch.md when written -->
+- **C) Attach Decantr to an existing app** — Add the contract layer to a project you've already started, with or without registry-backed content. <!-- TODO: link to docs/getting-started/path-c-attach-existing.md when written -->
+
+---
+
+## A) Brand new app from a blueprint
+
+### Step 1 — Scaffold from a blueprint
+
+```bash
+npx @decantr/cli new my-app --blueprint=agent-marketplace
+cd my-app
+```
+
+A blueprint is a published app composition: theme, sections, pages, layouts, voice, and personality. Try `agent-marketplace`, `terminal-dashboard`, or `portfolio` to start, or run `decantr search` to browse the full catalog.
+
+### Step 2 — What just got generated
+
+```
+my-app/
+├── decantr.essence.json     # the durable contract: theme, sections, routes, features
+├── DECANTR.md               # methodology primer your AI assistant reads first
+├── .decantr/context/
+│   ├── scaffold.md          # full app overview: topology, voice, personality
+│   └── section-*.md         # per-section spec: shell, patterns, spacing
+└── src/styles/
+    ├── tokens.css           # CSS variables from the theme
+    ├── treatments.css       # shared visual treatment classes
+    └── decorators.css       # theme-specific decorator classes
+```
+
+You haven't generated any application code yet. Decantr produces the contract; your AI assistant produces the implementation against it.
+
+### Step 3 — Hand it to your AI assistant
+
+Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your assistant will read `DECANTR.md` to learn the methodology, then load section context files on demand as it works on each part of the app. The split keeps the assistant focused on the right scope at the right time.
+
+### Step 4 — Make your first change and verify
+
+```bash
+# Edit decantr.essence.json — add a section, swap the theme, etc.
+decantr refresh   # regenerate context files from the updated essence
+decantr check     # verify the code matches the new contract
+```
+
+`refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules — if your code drifted from the contract, it tells you exactly where. `decantr audit` is a broader pass when you want a full report.
+
+> Working from a different starting point? See the from-scratch guide or the attach-existing-app guide. <!-- TODO: link to docs/getting-started/*.md when written -->
+
+---
+
+## The Model
 
 Decantr separates design governance into two layers:
 
-- **DNA**: durable visual and system axioms such as theme, spacing, motion, accessibility, and personality.
-- **Blueprint**: product topology such as sections, page routes, shells, layouts, and features.
+- **DNA** — durable visual and system axioms: theme, spacing, motion, accessibility, personality.
+- **Blueprint** — product topology: sections, page routes, shells, layouts, features.
 
-That split matters because not every change should be treated the same way. A theme swap or accessibility regression is different from adding a new auxiliary section or reshaping a route map. Decantr keeps those concerns separate so governance can be strict where it should be strict and flexible where it should be flexible.
+That split matters because not every change should be treated the same way. A theme swap or accessibility regression is different from adding a new auxiliary section or reshaping a route map. Decantr lets governance be strict where it should be strict (DNA, errors by default) and flexible where it should be flexible (Blueprint, warnings only).
 
-## Example Shapes
+For the full model — example essence shapes, registry content schemas, guard mode details, and drift-resolution flow — see the [governance and essence reference](docs/concepts/governance.md). <!-- TODO: link when written -->
 
-Minimal essence shape:
-
-```json
-{
-  "version": "3.1.0",
-  "dna": {
-    "theme": { "id": "terminal", "mode": "dark", "shape": "sharp" },
-    "spacing": { "density": "comfortable", "content_gap": "_gap4" },
-    "accessibility": { "wcag_level": "AA", "focus_visible": true },
-    "personality": [
-      "Technical workspace with terminal-inspired aesthetics."
-    ]
-  },
-  "blueprint": {
-    "sections": [
-      {
-        "id": "pipeline-builder",
-        "role": "primary",
-        "shell": "terminal-split",
-        "pages": [
-          {
-            "id": "pipeline-editor",
-            "layout": ["workflow-canvas"],
-            "route": "/pipelines/:id"
-          }
-        ]
-      }
-    ]
-  },
-  "meta": {
-    "platform": { "type": "spa", "routing": "hash" },
-    "guard": {
-      "mode": "guided",
-      "dna_enforcement": "error",
-      "blueprint_enforcement": "warn"
-    }
-  }
-}
-```
-
-Registry content is also structured, not just prose:
-
-```ts
-const pattern = {
-  $schema: 'https://decantr.ai/schemas/pattern.v2.json',
-  id: 'hero',
-  components: ['eyebrow', 'headline', 'supporting-copy', 'cta'],
-  default_preset: 'split',
-  presets: {
-    split: {
-      description: 'Content left, media right',
-      layout: ['content', 'media']
-    }
-  },
-  visual_brief: 'Confident launch hero with strong hierarchy and clear CTA.'
-};
-
-const theme = {
-  $schema: 'https://decantr.ai/schemas/theme.v1.json',
-  id: 'terminal',
-  personality: 'Technical workspace with terminal-inspired aesthetics.',
-  tokens: { '--d-primary': '#86efac', '--d-bg': '#050816' },
-  decorator_definitions: {
-    glass: { intent: 'Soft elevated blur for overlays and cards.' }
-  }
-};
-```
-
-## Governance In Practice
-
-- `meta.guard.mode` sets the overall posture: `creative`, `guided`, or `strict`.
-- `meta.guard.dna_enforcement` governs visual/system violations like theme, density, and accessibility drift.
-- `meta.guard.blueprint_enforcement` governs structural drift like pages, layout contracts, and registry-backed pattern usage.
-- `decantr check` is the fast local contract check.
-- `decantr audit` and `decantr registry audit-project` are broader verification passes.
-- `decantr registry critique-file` critiques a specific file against the current contract.
-- `decantr sync-drift` exists for reviewing and resolving accepted drift entries over time.
-
-The rule of thumb is simple: if a change is intentional and durable, update the essence and refresh the context. If it is accidental, fix the code. If it is a temporary exception, track it as drift instead of pretending the contract changed.
-
-## Main Surfaces
+## Surfaces
 
 | Surface | What it does |
 | --- | --- |
@@ -118,9 +83,7 @@ The rule of thumb is simple: if a change is intentional and durable, update the 
 | Verifier | Shared audit and critique engine with schema-backed reports |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
-## Current Product Surface
-
-The active public package surface in this monorepo is:
+## Packages
 
 | Package | Role |
 | --- | --- |
@@ -134,50 +97,6 @@ The active public package surface in this monorepo is:
 | `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
 
 Full release/support status lives in [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md).
-
-## Quick Start
-
-Create a new project:
-
-```bash
-npx @decantr/cli new my-app --blueprint=agent-marketplace
-cd my-app
-decantr status
-decantr check
-decantr audit
-```
-
-Initialize Decantr inside an existing project:
-
-```bash
-npx @decantr/cli init --blueprint=agent-marketplace --yes
-decantr refresh
-decantr check
-```
-
-Common commands:
-
-```bash
-decantr magic "AI chatbot with a bold terminal-inspired workspace"
-decantr search dashboard
-decantr suggest leaderboard
-decantr registry summary --namespace @official --json
-decantr registry compile-packs decantr.essence.json --write-context
-decantr registry critique-file src/pages/Home.tsx --namespace @official --json
-decantr registry audit-project --namespace @official --json
-decantr showcase verification --json
-```
-
-## What Gets Generated
-
-Typical Decantr project outputs include:
-
-- `decantr.essence.json` for the durable contract
-- `DECANTR.md` for assistant instructions
-- `.decantr/context/scaffold.md` plus section/page context files
-- `src/styles/tokens.css` for token variables
-- `src/styles/treatments.css` for shared treatments
-- `src/styles/decorators.css` for theme decorators
 
 ## Repo Layout
 
@@ -207,6 +126,19 @@ pnpm lint
 pnpm audit:public-api
 pnpm audit:registry-dogfood
 pnpm showcase:verify:shortlist
+```
+
+## More CLI Commands
+
+```bash
+decantr magic "AI chatbot with a bold terminal-inspired workspace"
+decantr search dashboard
+decantr suggest leaderboard
+decantr registry summary --namespace @official --json
+decantr registry compile-packs decantr.essence.json --write-context
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+decantr registry audit-project --namespace @official --json
+decantr showcase verification --json
 ```
 
 ## Links
