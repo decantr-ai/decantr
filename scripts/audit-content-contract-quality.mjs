@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -14,6 +14,7 @@ function parseArgs(argv) {
     blueprint: null,
     contentRoot: defaultContentRoot,
     shortlist: false,
+    all: false,
     json: false,
   };
 
@@ -21,6 +22,8 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === '--shortlist') {
       options.shortlist = true;
+    } else if (arg === '--all') {
+      options.all = true;
     } else if (arg === '--json') {
       options.json = true;
     } else if (arg.startsWith('--blueprint=')) {
@@ -388,6 +391,24 @@ function loadShortlistBlueprintIds(contentRoot) {
     .filter((slug) => existsSync(fileFor(contentRoot, 'blueprints', slug)));
 }
 
+function loadAllBlueprintIds(contentRoot) {
+  return readdirSync(join(contentRoot, 'blueprints'))
+    .filter((name) => name.endsWith('.json'))
+    .map((name) => name.replace(/\.json$/, ''))
+    .filter((id) => !id.startsWith('recipefork'))
+    .sort();
+}
+
+function summarizeReports(reports) {
+  return reports.reduce((summary, report) => {
+    summary.blueprints += 1;
+    summary.error += report.summary.findings.error;
+    summary.warn += report.summary.findings.warn;
+    summary.info += report.summary.findings.info;
+    return summary;
+  }, { blueprints: 0, error: 0, warn: 0, info: 0 });
+}
+
 function renderTextReport(report) {
   const lines = [
     '# Blueprint Content Contract Audit',
@@ -432,18 +453,27 @@ function main() {
 
   const blueprintIds = options.shortlist
     ? loadShortlistBlueprintIds(options.contentRoot)
+    : options.all
+      ? loadAllBlueprintIds(options.contentRoot)
     : options.blueprint
       ? [options.blueprint]
       : [];
 
   if (blueprintIds.length === 0) {
-    throw new Error('Usage: node scripts/audit-content-contract-quality.mjs --blueprint=<id> [--json] or --shortlist [--json]');
+    throw new Error('Usage: node scripts/audit-content-contract-quality.mjs --blueprint=<id> [--json], --shortlist [--json], or --all [--json]');
   }
 
   const reports = blueprintIds.map((blueprintId) => auditBlueprint(options.contentRoot, blueprintId));
   if (options.json) {
-    console.log(JSON.stringify({ generatedAt: new Date().toISOString(), reports }, null, 2));
+    console.log(JSON.stringify({ generatedAt: new Date().toISOString(), summary: summarizeReports(reports), reports }, null, 2));
     return;
+  }
+
+  if (options.all) {
+    const summary = summarizeReports(reports);
+    process.stdout.write(`# Blueprint Content Contract Audit Summary\n\n`);
+    process.stdout.write(`- Blueprints: ${summary.blueprints}\n`);
+    process.stdout.write(`- Findings: ${summary.error} error, ${summary.warn} warn, ${summary.info} info\n\n`);
   }
 
   for (const [index, report] of reports.entries()) {
