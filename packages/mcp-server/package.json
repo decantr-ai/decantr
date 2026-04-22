@@ -1,6 +1,7 @@
 {
   "name": "@decantr/mcp-server",
   "version": "1.0.1",
+  "mcpName": "io.github.decantr-ai/mcp-server",
   "description": "MCP server for Decantr — exposes design intelligence, packs, and verification to AI coding assistants",
   "keywords": [
     "mcp",
