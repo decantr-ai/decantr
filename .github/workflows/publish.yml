@@ -45,18 +45,23 @@ jobs:
     env:
       DECANTR_CONTENT_DIR: ${{ github.workspace }}/decantr-content
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           repository: decantr-ai/decantr-content
           path: decantr-content
       - uses: pnpm/action-setup@v4
         with:
           version: 10
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: 'https://registry.npmjs.org'
+      - name: Report toolchain versions
+        run: |
+          node -v
+          npm -v
+          pnpm -v
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
