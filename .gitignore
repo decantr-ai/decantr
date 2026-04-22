@@ -13,6 +13,7 @@ packages/cli/DECANTR.md
 packages/cli/.decantr/
 .worktrees/*
 .logs
+.logs/*
 tools/auto-tasks
 tools/auto-tasks/done/*
 tools/auto-tasks/queue/*
