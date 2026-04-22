@@ -70,6 +70,12 @@
         "null"
       ]
     },
+    "thumbnail_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "intelligence": {
       "anyOf": [
         {
