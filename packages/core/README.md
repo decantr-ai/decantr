@@ -5,7 +5,7 @@ Release channel: `stable`
 
 Low-level Decantr compiler and execution-pack foundation.
 
-Most teams should use `@decantr/cli`, `@decantr/registry`, or `@decantr/mcp-server` directly. This package remains inside the Decantr implementation boundary and is not part of the supported public package contract.
+Most teams should use `@decantr/cli`, `@decantr/registry`, or `@decantr/mcp-server` directly. `@decantr/core` is part of the supported Decantr public foundation surface, but it is intentionally lower-level than the usual integration entrypoints.
 
 ## Install
 
@@ -20,14 +20,22 @@ npm install @decantr/core
 ## What It Exports
 
 - execution-pack builders for scaffold, section, page, mutation, and review scopes
+- execution-pack bundle compilation and pack selection helpers
+- canonical pack adapter resolution used by higher-level Decantr surfaces
 - execution-pack schema URLs
 - markdown rendering for compiled packs
 - IR and pipeline helpers used by higher-level Decantr surfaces
 
+In the current workflow architecture, `@decantr/core` owns the canonical adapter labels used by compiled packs, while runnable greenfield bootstrap adapters are resolved in the CLI on top of those labels.
+
 ## Example
 
 ```ts
-import { buildReviewPack, renderExecutionPackMarkdown } from '@decantr/core';
+import {
+  buildReviewPack,
+  renderExecutionPackMarkdown,
+  resolvePackAdapter,
+} from '@decantr/core';
 
 const pack = buildReviewPack({
   projectName: 'Acme Console',
@@ -36,6 +44,7 @@ const pack = buildReviewPack({
   sections: ['overview', 'settings'],
 });
 
+const adapter = resolvePackAdapter('react', 'spa');
 const markdown = renderExecutionPackMarkdown(pack);
 ```
 
@@ -49,6 +58,8 @@ This package publishes execution-pack schemas under:
 - `@decantr/core/schema/mutation-pack.v1.json`
 - `@decantr/core/schema/review-pack.v1.json`
 - `@decantr/core/schema/pack-manifest.v1.json`
+- `@decantr/core/schema/execution-pack-bundle.v1.json`
+- `@decantr/core/schema/selected-execution-pack.v1.json`
 
 ## License
 
