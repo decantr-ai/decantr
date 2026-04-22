@@ -218,6 +218,7 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('- Start with the shell layouts and route structure first, then build section pages route by route.');
   lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
   lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.');
+  lines.push('- If package.json, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists in the workspace.');
   lines.push('- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.');
   lines.push('- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.');
   lines.push('- If command_palette or hotkeys are declared in the generated context, implement them as real features. Do not merely acknowledge them in copy or comments.');
@@ -1472,6 +1473,12 @@ async function cmdInit(args: InitArgs) {
     console.log(`    ${dim('.gitignore updated')}`);
   }
 
+  if (!existsSync(join(projectRoot, 'package.json'))) {
+    console.log('');
+    console.log(dim(`  Note: ${cyan('decantr init')} created Decantr contract/context files only.`));
+    console.log(dim(`  For a runnable starter in a new directory, prefer ${cyan('decantr new <name> --blueprint=...')}.`));
+  }
+
   console.log('');
   console.log('  Next steps:');
   console.log('    1. Read DECANTR.md for methodology, CSS approach, and guard rules');
@@ -2034,7 +2041,7 @@ ${BOLD}Examples:${RESET}
   decantr new my-app --blueprint=carbon-ai-portal
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
   decantr init
-  decantr init --blueprint=saas-dashboard --theme=luminarum --yes
+  decantr init --existing --blueprint=saas-dashboard --theme=luminarum --yes
   decantr status
   decantr audit
   decantr audit src/pages/HomePage.tsx

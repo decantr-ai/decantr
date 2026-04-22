@@ -14,8 +14,11 @@ npm install -D @decantr/cli
 Or run it without installing:
 
 ```bash
-npx @decantr/cli init --blueprint=agent-marketplace --yes
+npx @decantr/cli new my-app --blueprint=agent-marketplace
 ```
+
+Use `decantr new` when you want a runnable starter project with `package.json`, Vite, and a React entrypoint.
+Use `decantr init` when you want to add Decantr contract/context files to an existing project or create a contract-only workspace for certification/harness runs.
 
 ## What It Does
 
@@ -28,7 +31,8 @@ npx @decantr/cli init --blueprint=agent-marketplace --yes
 ## Common Commands
 
 ```bash
-decantr init --blueprint=agent-marketplace
+decantr new my-app --blueprint=agent-marketplace
+decantr init --existing --blueprint=agent-marketplace
 decantr magic "AI-native analytics workspace"
 decantr audit
 decantr check
@@ -39,7 +43,7 @@ decantr showcase verification --json
 Offline blueprint scaffolding expects a real local content source:
 
 ```bash
-DECANTR_CONTENT_DIR=/path/to/decantr-content decantr init --blueprint=agent-marketplace --offline --yes
+DECANTR_CONTENT_DIR=/path/to/decantr-content decantr new my-app --blueprint=agent-marketplace --offline
 ```
 
 If a requested offline blueprint, archetype, or theme cannot be resolved from local cache/custom content or `DECANTR_CONTENT_DIR`, the CLI now stops explicitly instead of silently falling back to the default scaffold.

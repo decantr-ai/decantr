@@ -1100,6 +1100,7 @@ import './styles/global.css';                // Resets
 ### Runtime Rules
 
 - Use the real \`@decantr/css\` runtime for atoms. If \`package.json\` does not already depend on \`@decantr/css\`, add it before building.
+- If \`package.json\`, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists.
 - Do **not** create local atom-runtime substitutes such as \`src/lib/css.js\`, \`src/lib/css.ts\`, or hand-written \`src/styles/atoms.css\` files unless the task explicitly asks for a fallback runtime.
 - Keep atoms in \`css(...)\`, treatments as semantic classes, and theme decorators as additive classes. Do not blur those roles together.
 - Do **not** use inline visual style values or component-scoped \`<style>\` tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.
@@ -1138,11 +1139,18 @@ Atoms + treatment + theme decorator:
 
 \`\`\`tsx
 // Responsive prefix — applies at breakpoint and above:
-css('_col sm:_row')
+css('_col _sm:row')
 
 // Pseudo prefix:
-css('hover:_opacity80')
+css('_bgprimary _h:bgprimary/80')
 \`\`\`
+
+### Prefix and Arbitrary Value Syntax
+
+- Responsive prefixes are part of the atom token itself: \`_sm:gc2\`, \`_md:flex\`, \`_lg:row\`.
+- Pseudo prefixes are also token-prefixed: \`_h:bgprimary/80\`, \`_f:borderprimary\`, \`_fv:shadowmd\`.
+- Arbitrary values use square brackets when the standard scale is not enough: \`_w[512px]\`, \`_h[100vh]\`, \`_p[clamp(1rem,3vw,2rem)]\`, \`_z[40]\`.
+- When you see bracket atoms in shell or page contracts, treat them as first-class Decantr syntax, not as an error or a cue to fall back to inline styles.
 
 ### Atom Reference
 
@@ -1320,7 +1328,7 @@ css('hover:_opacity80')
 | \`_trans\` | \`transition:all 0.15s ease\` |
 | \`_visible\`, \`_invisible\` | visibility |
 
-Responsive prefixes: \`_sm:\`, \`_md:\`, \`_lg:\` (e.g. \`_md:gc2\`, \`_lg:gc4\`, \`_sm:flex\`).
+Responsive prefixes: \`_sm:\`, \`_md:\`, \`_lg:\`, \`_xl:\` (e.g. \`_sm:gc2\`, \`_md:flex\`, \`_lg:row\`).
 
 ### Section Labels
 
