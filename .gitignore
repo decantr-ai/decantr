@@ -51,3 +51,7 @@ apps/registry/.next/
 .superpowers
 .superpowers/
 .superpowers/*
+
+# Operational / internal-only notes — never committed to the public repo
+.private/
+.private/*
