@@ -7,6 +7,7 @@ import { scanStyling } from '../analyzers/styling.js';
 import { scanLayout } from '../analyzers/layout.js';
 import { scanFeatures } from '../analyzers/features.js';
 import { scanDependencies } from '../analyzers/dependencies.js';
+import { createBrownfieldInitSeed } from '../workflow-model.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -40,6 +41,7 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
 
   console.log(`${DIM}Scanning dependencies...${RESET}`);
   const dependencies = scanDependencies(projectRoot);
+  const initSeed = createBrownfieldInitSeed(project, layout, styling);
 
   // 3. Combine into analysis object
   const analysis = {
@@ -58,6 +60,19 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
     layout,
     features,
     dependencies,
+    decantr: {
+      workflow: 'brownfield-adoption',
+      registryOptional: true,
+      attach: {
+        entrypoint: 'decantr analyze',
+        contractOnly: true,
+        initSeedPath: '.decantr/init-seed.json',
+        recommendedCommand: 'decantr init --existing --yes',
+      },
+      hybrid: {
+        ownerCommands: ['decantr add', 'decantr remove', 'decantr theme switch', 'decantr registry', 'decantr upgrade'],
+      },
+    },
   };
 
   // 4. Write to .decantr/analysis.json
@@ -66,7 +81,9 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
     mkdirSync(decantrDir, { recursive: true });
   }
   const outputPath = join(decantrDir, 'analysis.json');
+  const initSeedPath = join(decantrDir, 'init-seed.json');
   writeFileSync(outputPath, JSON.stringify(analysis, null, 2) + '\n', 'utf-8');
+  writeFileSync(initSeedPath, JSON.stringify(initSeed, null, 2) + '\n', 'utf-8');
 
   // 5. Print summary
   console.log(`\n${GREEN}Analysis complete.${RESET}\n`);
@@ -93,5 +110,6 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
   console.log(`  Dependencies: ${depCounts || 'none categorized'}`);
 
   console.log(`\n${DIM}Written to:${RESET} ${outputPath}`);
-  console.log(`\n${YELLOW}Next step:${RESET} Ask your AI assistant to read ${BOLD}.decantr/analysis.json${RESET} and set up Decantr\n`);
+  console.log(`${DIM}Init seed:${RESET} ${initSeedPath}`);
+  console.log(`\n${YELLOW}Next step:${RESET} Run ${BOLD}decantr init --existing --yes${RESET} to attach Decantr using the generated brownfield seed.\n`);
 }

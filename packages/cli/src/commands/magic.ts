@@ -3,8 +3,8 @@ import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
 import { RegistryClient } from '../registry.js';
 import { detectProject } from '../detect.js';
-import { mergeWithDefaults } from '../prompts.js';
 import type { InitOptions } from '../prompts.js';
+import { cmdAnalyze } from './analyze.js';
 import {
   scaffoldProject,
   composeSections,
@@ -23,6 +23,7 @@ import {
   type LayoutItem,
 } from '../scaffold.js';
 import type { Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
+import { hasExistingProjectFootprint } from '../workflow-model.js';
 
 // ── ANSI helpers ──
 
@@ -300,6 +301,17 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     return;
   }
 
+  const detected = detectProject(projectRoot);
+  if (hasExistingProjectFootprint(detected)) {
+    console.log(`${YELLOW} Existing project detected.${RESET}`);
+    console.log(dim(' decantr magic stays greenfield-first and will not silently bootstrap over an existing app.'));
+    console.log(dim(' Running brownfield analysis instead so you can attach Decantr deliberately.\n'));
+    cmdAnalyze(projectRoot);
+    console.log(`${BOLD}Recommended next step:${RESET} ${cyan('decantr init --existing --yes')}`);
+    console.log('');
+    return;
+  }
+
   // 3. Create registry client
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
@@ -435,8 +447,6 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   console.log('');
 
   // 6. Scaffold — reuse cmdInit's registry fetch + scaffold flow
-  const detected = detectProject(projectRoot);
-
   let archetypeData: ArchetypeData | undefined;
   let composedSections: ComposeSectionsResult | undefined;
   let routeMap: Record<string, { section: string; page: string }> | undefined;

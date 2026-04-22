@@ -124,7 +124,7 @@
       "releaseWave": "delivery",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local scaffold, audit, registry, and maintenance workflows for Decantr projects.",
+      "summary": "Local greenfield, brownfield, and hybrid Decantr workflows with adapter-driven bootstrap.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -143,7 +143,7 @@
       "releaseWave": "experimental",
       "publishOrder": 10,
       "defaultDistTag": null,
-      "summary": "Experimental Vite overlay for Decantr guard feedback during local development.",
+      "summary": "Experimental Vite-specific overlay for Decantr guard feedback during local development.",
       "releaseReadiness": {
         "stableCandidate": false,
         "docsAligned": true,

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
@@ -141,5 +141,42 @@ describe('init command', () => {
       const output = `${stdout}\n${stderr}`;
       expect(output).toContain('Offline blueprint/archetype scaffolding requires a local Decantr content source.');
     }
+  }, INIT_TIMEOUT_MS);
+
+  it('uses the brownfield init seed from analyze when attaching to an existing project', () => {
+    writeFileSync(join(testDir, 'package.json'), JSON.stringify({
+      name: 'brownfield-angular',
+      private: true,
+      dependencies: {
+        '@angular/core': '^19.0.0',
+      },
+    }, null, 2) + '\n');
+    writeFileSync(join(testDir, 'angular.json'), JSON.stringify({
+      version: 1,
+      projects: {},
+    }, null, 2) + '\n');
+
+    execSync(`node ${cliPath} analyze`, {
+      cwd: testDir,
+      env: { ...process.env, DECANTR_OFFLINE: 'true' },
+      stdio: 'pipe',
+    });
+
+    const output = execSync(`node ${cliPath} init --existing --yes --offline`, {
+      cwd: testDir,
+      env: {
+        ...process.env,
+        DECANTR_OFFLINE: 'true',
+        DECANTR_CONTENT_DIR: contentRoot,
+      },
+      stdio: 'pipe',
+    }).toString();
+
+    const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8')) as {
+      meta?: { target?: string };
+    };
+
+    expect(output).toContain('Found .decantr/init-seed.json brownfield guidance.');
+    expect(essence.meta?.target).toBe('angular');
   }, INIT_TIMEOUT_MS);
 });

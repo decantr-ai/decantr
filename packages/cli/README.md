@@ -17,12 +17,19 @@ Or run it without installing:
 npx @decantr/cli new my-app --blueprint=agent-marketplace
 ```
 
-Use `decantr new` when you want a runnable starter project with `package.json`, Vite, and a React entrypoint.
-Use `decantr init` when you want to add Decantr contract/context files to an existing project or create a contract-only workspace for certification/harness runs.
+Use `decantr new` for a greenfield workspace in a fresh directory.
+Use `decantr analyze` first when you already have an app and want Decantr governance without adopting a blueprint.
+Use `decantr init` to attach Decantr contract/context files to an existing project or to create a contract-only workspace.
+
+Current starter adapter availability:
+
+- `react-vite` is the runnable bootstrap adapter in this wave
+- other contract targets remain valid Decantr targets, but `decantr new` will keep them in contract-only mode until their adapters land
 
 ## What It Does
 
 - scaffolds Decantr projects from blueprints, archetypes, or prompts
+- supports three workflow lanes: greenfield blueprint, brownfield adoption, and hybrid composition
 - generates execution-pack context files for AI coding assistants
 - audits projects against Decantr contracts
 - searches the registry and showcase benchmark corpus
@@ -32,6 +39,8 @@ Use `decantr init` when you want to add Decantr contract/context files to an exi
 
 ```bash
 decantr new my-app --blueprint=agent-marketplace
+decantr analyze
+decantr init --existing --yes
 decantr init --existing --blueprint=agent-marketplace
 decantr magic "AI-native analytics workspace"
 decantr audit
@@ -68,6 +77,20 @@ DECANTR_CONTENT_DIR=/path/to/decantr-content decantr new my-app --blueprint=agen
 ```
 
 If a requested offline blueprint, archetype, or theme cannot be resolved from local cache/custom content or `DECANTR_CONTENT_DIR`, the CLI now stops explicitly instead of silently falling back to the default scaffold.
+
+## Workflow Certification
+
+The broader workflow matrix now has its own certification entrypoint:
+
+```bash
+pnpm --filter @decantr/cli certify:workflows
+```
+
+It covers:
+
+- greenfield blueprint bootstrap
+- brownfield `analyze -> init --existing`
+- hybrid follow-up composition via Decantr mutation commands
 
 ## Generated Context
 

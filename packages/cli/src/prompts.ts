@@ -28,6 +28,11 @@ export interface InitOptions {
   };
 }
 
+export type InitWorkflowSeed = Partial<Pick<
+  InitOptions,
+  'theme' | 'mode' | 'target' | 'guard' | 'density' | 'shell' | 'existing'
+>>;
+
 export interface RegistryItem {
   id: string;
   name?: string;
@@ -158,7 +163,8 @@ export async function runInteractivePrompts(
   detected: DetectedProject,
   archetypes: RegistryItem[],
   blueprints: RegistryItem[],
-  themes: RegistryItem[]
+  themes: RegistryItem[],
+  workflowSeed?: InitWorkflowSeed,
 ): Promise<InitOptions> {
   showDetection(detected);
 
@@ -181,7 +187,8 @@ export async function runInteractivePrompts(
     label: t.id,
     description: t.description,
   }));
-  const defaultThemeIdx = themeOptions.findIndex(t => t.value === 'luminarum') || 0;
+  const desiredTheme = workflowSeed?.theme || 'luminarum';
+  const defaultThemeIdx = Math.max(0, themeOptions.findIndex(t => t.value === desiredTheme));
   const theme = await select('Choose a theme', themeOptions, Math.max(0, defaultThemeIdx), true);
 
   // Mode
@@ -192,7 +199,7 @@ export async function runInteractivePrompts(
       { value: 'light', label: 'light', description: 'Light background' },
       { value: 'auto', label: 'auto', description: 'Follow system preference' },
     ],
-    0
+    workflowSeed?.mode === 'light' ? 1 : workflowSeed?.mode === 'auto' ? 2 : 0
   );
 
   // Shape
@@ -220,7 +227,7 @@ export async function runInteractivePrompts(
   ];
 
   // Find default based on detection
-  let defaultFrameworkIdx = frameworkOptions.findIndex(f => f.value === detected.framework);
+  let defaultFrameworkIdx = frameworkOptions.findIndex(f => f.value === (workflowSeed?.target || detected.framework));
   if (defaultFrameworkIdx < 0) defaultFrameworkIdx = 0;
 
   const target = await select('Target framework', frameworkOptions, defaultFrameworkIdx, true);
@@ -243,7 +250,10 @@ export async function runInteractivePrompts(
       { value: 'guided', label: 'guided', description: 'Style, structure, density enforced' },
       { value: 'strict', label: 'strict', description: 'All 5 rules enforced exactly' },
     ],
-    detected.existingEssence ? 1 : 2 // Default to guided for existing, strict for new
+    workflowSeed?.guard === 'creative' ? 0
+      : workflowSeed?.guard === 'strict' ? 2
+      : workflowSeed?.guard === 'guided' ? 1
+      : detected.existingEssence ? 1 : 2
   );
 
   // Density
@@ -254,7 +264,7 @@ export async function runInteractivePrompts(
       { value: 'comfortable', label: 'comfortable', description: 'Balanced spacing' },
       { value: 'spacious', label: 'spacious', description: 'Generous whitespace' },
     ],
-    1
+    workflowSeed?.density === 'compact' ? 0 : workflowSeed?.density === 'spacious' ? 2 : 1
   );
 
   // Shell (layout)
@@ -267,8 +277,11 @@ export async function runInteractivePrompts(
   ];
 
   // Suggest shell based on framework
-  let defaultShellIdx = 0;
-  if (['nextjs', 'nuxt', 'astro'].includes(target)) {
+  let defaultShellIdx = shellOptions.findIndex(s => s.value === workflowSeed?.shell);
+  if (defaultShellIdx < 0) {
+    defaultShellIdx = 0;
+  }
+  if (defaultShellIdx === 0 && ['nextjs', 'nuxt', 'astro'].includes(target)) {
     defaultShellIdx = shellOptions.findIndex(s => s.value === 'top-nav-main');
   }
 
@@ -286,7 +299,7 @@ export async function runInteractivePrompts(
     shell: shell as string,
     personality: ['professional'],
     features: [],
-    existing: detected.existingEssence,
+    existing: workflowSeed?.existing || detected.existingEssence,
   };
 }
 
@@ -315,20 +328,24 @@ export function parseFlags(args: Record<string, unknown>, detected: DetectedProj
 /**
  * Merge flags with defaults from detection.
  */
-export function mergeWithDefaults(flags: Partial<InitOptions>, detected: DetectedProject): InitOptions {
+export function mergeWithDefaults(
+  flags: Partial<InitOptions>,
+  detected: DetectedProject,
+  workflowSeed?: InitWorkflowSeed,
+): InitOptions {
   return {
     blueprint: flags.blueprint,
     archetype: flags.archetype,
-    theme: flags.theme || 'luminarum',
-    mode: flags.mode || 'dark',
+    theme: flags.theme || workflowSeed?.theme || 'luminarum',
+    mode: flags.mode || workflowSeed?.mode || 'dark',
     shape: flags.shape || 'rounded',
-    target: flags.target || (detected.framework !== 'unknown' ? detected.framework : 'react'),
-    guard: flags.guard || (detected.existingEssence ? 'guided' : 'strict'),
-    density: flags.density || 'comfortable',
-    shell: flags.shell || 'sidebar-main',
+    target: flags.target || workflowSeed?.target || (detected.framework !== 'unknown' ? detected.framework : 'react'),
+    guard: flags.guard || workflowSeed?.guard || (detected.existingEssence ? 'guided' : 'strict'),
+    density: flags.density || workflowSeed?.density || 'comfortable',
+    shell: flags.shell || workflowSeed?.shell || 'sidebar-main',
     personality: flags.personality || ['professional'],
     features: flags.features || [],
-    existing: flags.existing || detected.existingEssence,
+    existing: flags.existing || workflowSeed?.existing || detected.existingEssence,
   };
 }
 

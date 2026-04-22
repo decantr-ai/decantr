@@ -10,9 +10,9 @@ Decantr is the contract layer between product intent and AI-generated implementa
 
 How are you starting?
 
-- **A) [⭐ Brand new app from a blueprint](#a-brand-new-app-from-a-blueprint)** — Pick a published blueprint and scaffold the full essence + context in one command. The fastest way to see what Decantr gives you.
-- **B) Brand new app from scratch** — Start from `decantr magic` or an empty essence and grow the contract as you build. <!-- TODO: link to docs/getting-started/path-b-from-scratch.md when written -->
-- **C) Attach Decantr to an existing app** — Add the contract layer to a project you've already started, with or without registry-backed content. <!-- TODO: link to docs/getting-started/path-c-attach-existing.md when written -->
+- **A) [⭐ Brand new app from a blueprint](#a-brand-new-app-from-a-blueprint)** — Use `decantr new` when you want a new directory plus the currently available starter adapter.
+- **B) [Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** — Use `decantr analyze` first, then `decantr init --existing` to attach Decantr to an existing app without requiring a blueprint.
+- **C) [Hybrid composition](docs/reference/workflow-model.md#hybrid-composition)** — Start from any attached Decantr project, then selectively add/remove features, switch themes, or pull registry content later.
 
 ---
 
@@ -26,6 +26,7 @@ cd my-app
 ```
 
 A blueprint is a published app composition: theme, sections, pages, layouts, voice, and personality. Try `agent-marketplace`, `terminal-dashboard`, or `portfolio` to start, or run `decantr search` to browse the full catalog.
+The greenfield runnable starter adapter available in this wave is `react-vite`. Other contract targets remain valid Decantr targets, but currently initialize in contract-only mode until their bootstrap adapters land.
 
 ### Step 2 — What just got generated
 
@@ -42,7 +43,7 @@ my-app/
     └── decorators.css       # theme-specific decorator classes
 ```
 
-You haven't generated any application code yet. Decantr produces the contract; your AI assistant produces the implementation against it.
+If a runnable starter adapter is available for your requested target, `decantr new` also writes the starter runtime. Otherwise the command still creates a new Decantr workspace, but leaves runtime ownership to you. In both cases, Decantr produces the contract; your AI assistant produces the implementation against it.
 
 ### Step 3 — Hand it to your AI assistant
 
@@ -58,7 +59,7 @@ decantr check     # verify the code matches the new contract
 
 `refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules — if your code drifted from the contract, it tells you exactly where. `decantr audit` is a broader pass when you want a full report.
 
-> Working from a different starting point? See the from-scratch guide or the attach-existing-app guide. <!-- TODO: link to docs/getting-started/*.md when written -->
+> Working from a different starting point? See the full [workflow model](docs/reference/workflow-model.md).
 
 ---
 
@@ -132,6 +133,8 @@ pnpm showcase:verify:shortlist
 
 ```bash
 decantr magic "AI chatbot with a bold terminal-inspired workspace"
+decantr analyze
+decantr init --existing --yes
 decantr search dashboard
 decantr suggest leaderboard
 decantr registry summary --namespace @official --json
@@ -144,6 +147,7 @@ decantr showcase verification --json
 ## Links
 
 - Registry: [registry.decantr.ai](https://registry.decantr.ai)
+- Workflow model: [docs/reference/workflow-model.md](docs/reference/workflow-model.md)
 - Public API reference: [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)
 - Published schemas: [decantr.ai/schemas](https://decantr.ai/schemas/)
 - Package support matrix: [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)

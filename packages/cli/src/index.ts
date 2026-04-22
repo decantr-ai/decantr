@@ -85,6 +85,7 @@ import type { ExportTarget } from './commands/export.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
 import { cmdNewProject } from './commands/new-project.js';
 import { seedOfflineRegistry } from './offline-content.js';
+import { hasExistingProjectFootprint, readBrownfieldInitSeed } from './workflow-model.js';
 
 // ── Helpers ──
 
@@ -1110,6 +1111,12 @@ async function cmdInit(args: InitArgs) {
 
   // Detect project configuration
   const detected = detectProject(projectRoot);
+  const workflowSeed = readBrownfieldInitSeed(projectRoot);
+  const brownfieldAttach = Boolean(workflowSeed) || hasExistingProjectFootprint(detected);
+
+  if (workflowSeed) {
+    console.log(dim('  Found .decantr/init-seed.json brownfield guidance.'));
+  }
 
   // Check for existing essence
   if (detected.existingEssence && !args.existing) {
@@ -1157,6 +1164,7 @@ async function cmdInit(args: InitArgs) {
 
   let selectedBlueprint = 'default';
   let registrySource: 'api' | 'cache' = 'cache';
+  const preferContractOnly = brownfieldAttach && !requestedBlueprint && !requestedArchetype;
 
   if (args.yes) {
     // Non-interactive: use --blueprint flag or default
@@ -1196,7 +1204,7 @@ async function cmdInit(args: InitArgs) {
     console.log(`\n${YELLOW}You're offline. Scaffolding Decantr default.${RESET}`);
     console.log(dim('Run `decantr upgrade` when online, or visit decantr.ai/registry\n'));
     selectedBlueprint = 'default';
-  } else {
+  } else if (!preferContractOnly) {
     // Online: fetch blueprints and show simplified prompt
     console.log(dim('Fetching registry content...'));
     const blueprintsResult = await registryClient.fetchBlueprints();
@@ -1236,10 +1244,10 @@ async function cmdInit(args: InitArgs) {
     // Non-interactive mode or simplified selection: use flags with defaults
     const flags = parseFlags(args as Record<string, unknown>, detected);
     flags.blueprint = selectedBlueprint !== 'default' ? selectedBlueprint : flags.blueprint;
-    options = mergeWithDefaults(flags, detected);
+    options = mergeWithDefaults(flags, detected, workflowSeed ?? undefined);
   } else {
     // Full interactive mode (default blueprint selected)
-    options = await runInteractivePrompts(detected, archetypes, blueprints, themes);
+    options = await runInteractivePrompts(detected, archetypes, blueprints, themes, workflowSeed ?? undefined);
     // In interactive mode, all choices are explicit
     userExplicit.theme = true;
     userExplicit.mode = true;
@@ -2012,9 +2020,9 @@ ${BOLD}Init Options:${RESET}
   --registry         Custom registry URL
 
 ${BOLD}Commands:${RESET}
-  ${cyan('new')}         Create a new project with Vite + React + Decantr
-  ${cyan('magic')}       One-liner scaffold from a natural language prompt
-  ${cyan('init')}        Initialize Decantr in an existing project (v3 essence by default)
+  ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
+  ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
+  ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
@@ -2032,7 +2040,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('publish')}     Publish a custom content item to the community registry
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
-  ${cyan('analyze')}     Scan existing project and produce analysis report
+  ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
   ${cyan('registry')}    Registry management and intelligence summary
   ${cyan('upgrade')}     Check for content updates from registry
@@ -2063,6 +2071,15 @@ ${BOLD}Examples:${RESET}
   decantr registry audit-project --namespace @official --json
   decantr registry audit-project --namespace @official --dist dist --sources src
   decantr create pattern my-card
+
+${BOLD}Workflow Model:${RESET}
+  ${cyan('Greenfield blueprint')}   decantr new / decantr magic
+  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing
+  ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
+
+${BOLD}Bootstrap adapters:${RESET}
+  Current runnable starter adapter: ${cyan('react-vite')}
+  Other contract targets stay framework-agnostic, but currently initialize in contract-only mode until their starter adapters land.
 `);
 }
 

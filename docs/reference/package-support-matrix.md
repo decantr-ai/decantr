@@ -18,8 +18,8 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 | `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, and report-schema engine. |
 | `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local scaffold, audit, registry, and maintenance workflows for Decantr projects. |
-| `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite overlay for Decantr guard feedback during local development. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local greenfield, brownfield, and hybrid Decantr workflows with adapter-driven bootstrap. |
+| `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development. |
 
 ## Interpretation
 
