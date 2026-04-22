@@ -28,6 +28,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "certify:blueprints": "pnpm build && node scripts/certify-blueprints.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

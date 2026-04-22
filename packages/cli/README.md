@@ -40,6 +40,27 @@ decantr registry summary --namespace @official --json
 decantr showcase verification --json
 ```
 
+## Greenfield Certification
+
+Use the built-in certification harness before releases when you want to prove that representative blueprints still scaffold into runnable starter projects:
+
+```bash
+pnpm --filter @decantr/cli certify:blueprints
+```
+
+By default it certifies `portfolio`, `producer-studio`, and `agent-marketplace` by:
+
+- running `decantr new` in fresh temp directories
+- seeding offline content from `DECANTR_CONTENT_DIR` or a sibling `decantr-content` checkout
+- verifying the starter runtime files and router mode match the generated essence
+- running `npm run build` in each scaffolded project
+
+Override the matrix or emit JSON when needed:
+
+```bash
+pnpm --filter @decantr/cli certify:blueprints -- --blueprints=portfolio,legal-research --json
+```
+
 Offline blueprint scaffolding expects a real local content source:
 
 ```bash
