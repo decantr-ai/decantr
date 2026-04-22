@@ -58,6 +58,25 @@
       }
     },
     {
+      "name": "@decantr/core",
+      "path": "packages/core",
+      "support": "core-supported",
+      "surfaceClass": "public-foundation",
+      "maturity": "stable",
+      "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 40,
+      "defaultDistTag": "latest",
+      "summary": "Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers.",
+      "releaseReadiness": {
+        "stableCandidate": true,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": []
+      }
+    },
+    {
       "name": "@decantr/mcp-server",
       "path": "packages/mcp-server",
       "support": "core-supported",
@@ -65,7 +84,7 @@
       "maturity": "stable",
       "publish": true,
       "releaseWave": "delivery",
-      "publishOrder": 10,
+      "publishOrder": 20,
       "defaultDistTag": "latest",
       "summary": "MCP delivery surface for Decantr design intelligence, packs, and verification.",
       "releaseReadiness": {
@@ -84,7 +103,7 @@
       "maturity": "stable",
       "publish": true,
       "releaseWave": "delivery",
-      "publishOrder": 20,
+      "publishOrder": 10,
       "defaultDistTag": "latest",
       "summary": "Shared verification, critique, and report-schema engine.",
       "releaseReadiness": {
@@ -108,25 +127,6 @@
       "summary": "Local scaffold, audit, registry, and maintenance workflows for Decantr projects.",
       "releaseReadiness": {
         "stableCandidate": true,
-        "docsAligned": true,
-        "ciCovered": true,
-        "productIntegrated": true,
-        "blockers": []
-      }
-    },
-    {
-      "name": "@decantr/core",
-      "path": "packages/core",
-      "support": "core-supported",
-      "surfaceClass": "internal",
-      "maturity": "internal",
-      "publish": false,
-      "releaseWave": "internal",
-      "publishOrder": 10,
-      "defaultDistTag": null,
-      "summary": "Execution-pack compiler primitives and shared Decantr core utilities kept inside the Decantr implementation boundary.",
-      "releaseReadiness": {
-        "stableCandidate": false,
         "docsAligned": true,
         "ciCovered": true,
         "productIntegrated": true,

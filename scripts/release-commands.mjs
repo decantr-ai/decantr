@@ -39,12 +39,13 @@ const commands = selected.map((entry) => {
   const distTag = tagOverride || entry.defaultDistTag;
   const npmVersions = readNpmVersions(entry.name);
   const versionAlreadyPublished = npmVersions.published && Array.isArray(npmVersions.versions) && npmVersions.versions.includes(version);
+  const provenanceFlag = process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true' ? ' --provenance' : '';
   const preflight = versionAlreadyPublished
-    ? `cd ${cwd} && npm pack --dry-run`
-    : `cd ${cwd} && npm publish --access public --provenance --tag ${distTag} --dry-run`;
+    ? `cd ${cwd} && pnpm pack --pack-destination /tmp`
+    : `cd ${cwd} && pnpm publish --access public${provenanceFlag} --tag ${distTag} --no-git-checks --dry-run`;
   const publish = versionAlreadyPublished
-    ? `cd ${cwd} && npm pack`
-    : `cd ${cwd} && npm publish --access public --provenance --tag ${distTag}`;
+    ? `cd ${cwd} && pnpm pack --pack-destination /tmp`
+    : `cd ${cwd} && pnpm publish --access public${provenanceFlag} --tag ${distTag} --no-git-checks`;
 
   return {
     name: entry.name,

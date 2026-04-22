@@ -1,6 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
 import { readNpmVersions } from './npm-surface-lib.mjs';
@@ -55,9 +56,10 @@ for (const entry of selected) {
     && Array.isArray(npmVersions.versions)
     && npmVersions.versions.includes(packageVersion),
   );
+  const tempPackDir = versionAlreadyPublished ? mkdtempSync(join(tmpdir(), 'decantr-pack-')) : null;
   const cmd = versionAlreadyPublished
-    ? ['pack', '--dry-run']
-    : ['publish', '--access', 'public', ...(ciProvenance ? ['--provenance'] : []), '--tag', distTag];
+    ? ['pack', '--pack-destination', tempPackDir]
+    : ['publish', '--access', 'public', ...(ciProvenance ? ['--provenance'] : []), '--tag', distTag, '--no-git-checks'];
   if (publishDryRun && !versionAlreadyPublished) {
     cmd.push('--dry-run');
   }
@@ -69,11 +71,15 @@ for (const entry of selected) {
 
   if (dryRun) continue;
 
-  const result = spawnSync('npm', cmd, {
+  const result = spawnSync('pnpm', cmd, {
     cwd,
     stdio: 'inherit',
     env: process.env,
   });
+
+  if (tempPackDir) {
+    rmSync(tempPackDir, { recursive: true, force: true });
+  }
 
   if (result.status !== 0) {
     process.exit(result.status ?? 1);

@@ -1,7 +1,7 @@
 # @decantr/core
 
 Support status: `core-supported`  
-Release channel: `internal`
+Release channel: `stable`
 
 Low-level Decantr compiler and execution-pack foundation.
 
@@ -15,7 +15,7 @@ npm install @decantr/core
 
 ## Stability
 
-`@decantr/core` is versioned and tested inside the monorepo, but it is intentionally not part of the default public npm release story. Treat it as an internal substrate for Decantr execution-pack compilation rather than a public low-level SDK with independent compatibility guarantees.
+`@decantr/core` is published for advanced package consumers that need low-level execution-pack primitives. It is stable in the `1.x` line for the documented exports in this package, but it is still not the recommended first integration surface for most Decantr adopters.
 
 ## What It Exports
 

@@ -113,6 +113,24 @@ export function readNpmVersions(packageName) {
   }
 }
 
+function readPublishedDependencyField(packageName, version, field) {
+  try {
+    const stdout = execFileSync('npm', ['view', `${packageName}@${version}`, field, '--json'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+
+    if (!stdout) {
+      return {};
+    }
+
+    const parsed = JSON.parse(stdout);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export function findLatestStableVersion(versions) {
   return [...versions]
     .filter((version) => typeof version === 'string' && !isPrereleaseLike(version))
@@ -177,6 +195,21 @@ export function planNpmSurfaceRepairs(surface) {
         type: 'remove-dist-tag',
         tag,
       });
+    }
+
+    const latestVersion = npmState.tags.latest;
+    if (typeof latestVersion === 'string' && latestVersion.length > 0) {
+      const publishedDependencies = readPublishedDependencyField(entry.name, latestVersion, 'dependencies');
+      const publishedPeerDependencies = readPublishedDependencyField(entry.name, latestVersion, 'peerDependencies');
+
+      for (const [dependencyName, dependencyVersion] of Object.entries({
+        ...publishedDependencies,
+        ...publishedPeerDependencies,
+      })) {
+        if (typeof dependencyVersion === 'string' && dependencyVersion.startsWith('workspace:')) {
+          findings.push(`workspace protocol leaked in published manifest (${dependencyName}=${dependencyVersion})`);
+        }
+      }
     }
 
     results.push({

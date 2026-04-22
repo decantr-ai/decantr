@@ -15,10 +15,10 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 | `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Essence schemas, validation, migration, and TypeScript types. |
 | `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | Registry contracts, schemas, API client, and public content utilities. |
 | `@decantr/css` | core-supported | `public-foundation` | stable | `foundation` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Framework-agnostic CSS atom runtime for Decantr projects. |
-| `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
-| `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, and report-schema engine. |
+| `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers. |
+| `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, and report-schema engine. |
+| `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
 | `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local scaffold, audit, registry, and maintenance workflows for Decantr projects. |
-| `@decantr/core` | core-supported | `internal` | internal | `internal` (`10`) | `-` | `false` | `false` | `0` | `internal-only` | Execution-pack compiler primitives and shared Decantr core utilities kept inside the Decantr implementation boundary. |
 | `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite overlay for Decantr guard feedback during local development. |
 
 ## Interpretation
@@ -43,8 +43,8 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 
 ## Surface Snapshot
 
-- Stable public: 6
-- Internal only: 1
+- Stable public: 7
+- Internal only: 0
 - Experimental hold: 1
 
 ### Stable Public
@@ -52,13 +52,14 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 - `@decantr/essence-spec` in `foundation` wave
 - `@decantr/registry` in `foundation` wave
 - `@decantr/css` in `foundation` wave
-- `@decantr/mcp-server` in `delivery` wave
+- `@decantr/core` in `foundation` wave
 - `@decantr/verifier` in `delivery` wave
+- `@decantr/mcp-server` in `delivery` wave
 - `@decantr/cli` in `delivery` wave
 
 ### Internal Only
 
-- `@decantr/core` stays inside the implementation boundary and outside the default npm publish track
+- none
 
 ### Experimental Hold
 
@@ -71,10 +72,10 @@ The active Decantr product surface is:
 - `@decantr/essence-spec`
 - `@decantr/registry`
 - `@decantr/css`
-- `@decantr/mcp-server`
-- `@decantr/verifier`
-- `@decantr/cli`
 - `@decantr/core`
+- `@decantr/verifier`
+- `@decantr/mcp-server`
+- `@decantr/cli`
 
 ## Explicitly Not Part of the Active Product Story
 

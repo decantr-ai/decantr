@@ -1,6 +1,6 @@
 {
   "name": "@decantr/mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Decantr — exposes design intelligence, packs, and verification to AI coding assistants",
   "author": "Decantr AI",
   "license": "MIT",

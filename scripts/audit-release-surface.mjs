@@ -33,6 +33,10 @@ function describeNpmFinding(result, finding) {
       : ' No stable npm version is published yet.';
     return `${result.name} is ${result.maturity} but npm latest currently points to prerelease ${result.tags.latest}.${suffix}`;
   }
+  if (finding.startsWith('workspace protocol leaked in published manifest ')) {
+    const detail = finding.slice('workspace protocol leaked in published manifest '.length);
+    return `${result.name} still exposes a workspace protocol dependency in the published manifest (${detail}).`;
+  }
   if (finding === 'unpublished') {
     return `${result.name} is marked publish:true but is not currently published on npm.`;
   }
