@@ -3,8 +3,9 @@
 import { useState, useMemo, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { JsonViewer } from '@/components/json-viewer';
-import { api, type MeResponse } from '@/lib/api';
+import { api } from '@/lib/api';
 import { CONTENT_TYPES } from '@/lib/content-types';
+import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 type RegistryThumbnailMeta = {
   path: string;
@@ -74,9 +75,9 @@ function mergeRegistryPresentation(
 
 export default function ContentNewPage() {
   const router = useRouter();
+  const workspace = useWorkspaceState();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [me, setMe] = useState<MeResponse | null>(null);
 
   const [form, setForm] = useState({
     type: 'patterns',
@@ -107,34 +108,25 @@ export default function ContentNewPage() {
     });
   }
 
+  const me = workspace.me;
+
   useEffect(() => {
-    async function loadMe() {
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
-        if (!token) return;
+    const organizations = me?.organizations ?? [];
+    setForm((prev) => ({
+      ...prev,
+      org_slug: prev.org_slug || workspace.activeOrganization?.slug || organizations[0]?.slug || '',
+    }));
+  }, [me, workspace.activeOrganization]);
 
-        const result = await api.getMe(token);
-        const organizations = Array.isArray(result.organizations) ? result.organizations : [];
-        setMe(result);
-        setForm((prev) => ({
-          ...prev,
-          org_slug: prev.org_slug || organizations[0]?.slug || '',
-        }));
-      } catch {
-        // ignore
-      }
+  useEffect(() => {
+    if (form.target === 'organization' && !workspace.capabilities.canUseOrganizationFeatures) {
+      setForm((prev) => ({
+        ...prev,
+        target: 'community',
+        org_slug: '',
+      }));
     }
-
-    loadMe();
-  }, []);
+  }, [form.target, workspace.capabilities.canUseOrganizationFeatures]);
 
   useEffect(() => {
     return () => {
@@ -444,13 +436,13 @@ export default function ContentNewPage() {
                 <option value="personal">
                   Personal package{me?.username ? ` (@${me.username})` : ''}
                 </option>
-                {me?.organizations.length ? (
+                {workspace.capabilities.canUseOrganizationFeatures && me?.organizations.length ? (
                   <option value="organization">Organization package</option>
                 ) : null}
               </select>
             </div>
 
-            {form.target === 'organization' && me?.organizations.length ? (
+            {form.target === 'organization' && workspace.capabilities.canUseOrganizationFeatures && me?.organizations.length ? (
               <div className="registry-form-grid">
                 <label className="text-sm font-semibold" htmlFor="org_slug">
                   Organization

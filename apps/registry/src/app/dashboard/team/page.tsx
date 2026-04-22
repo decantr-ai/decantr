@@ -10,6 +10,7 @@ import {
 import { KPIGrid } from '@/components/kpi-grid';
 import { api } from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
+import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 interface Member {
   user_id: string;
@@ -280,6 +281,7 @@ async function getSessionToken() {
 }
 
 export default function TeamPage() {
+  const workspace = useWorkspaceState();
   const [members, setMembers] = useState<Member[]>([]);
   const [organizations, setOrganizations] = useState<OrganizationOption[]>([]);
   const [orgSlug, setOrgSlug] = useState('');
@@ -319,31 +321,24 @@ export default function TeamPage() {
   }
 
   useEffect(() => {
-    async function load() {
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        );
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
-        const me = await api.getMe(token);
-        const orgs = me.organizations ?? [];
-        const slug = orgs[0]?.slug ?? '';
+    const orgs = workspace.organizations;
+    const initialSlug = workspace.activeOrganization?.slug ?? orgs[0]?.slug ?? '';
+    setOrganizations(orgs);
+    setOrgSlug((current) =>
+      current && orgs.some((org) => org.slug === current) ? current : initialSlug,
+    );
+  }, [workspace.activeOrganization?.slug, workspace.organizations]);
 
-        setOrganizations(orgs);
-        setOrgSlug(slug);
-        await reloadOrgState(token, slug);
-      } catch {
-        // ignore initial load failure in empty-state flow
-      }
+  useEffect(() => {
+    async function syncOrgState() {
+      const slug = orgSlug || workspace.activeOrganization?.slug || '';
+      if (!slug) return;
+      const token = await getSessionToken();
+      await reloadOrgState(token, slug);
     }
 
-    void load();
-  }, []);
+    void syncOrgState();
+  }, [orgSlug, workspace.activeOrganization?.slug]);
 
   function handleInvite(event: React.FormEvent) {
     event.preventDefault();
@@ -416,6 +411,35 @@ export default function TeamPage() {
       icon: <MailIcon size={18} />,
     },
   ];
+
+  if (!workspace.capabilities.canAccessTeam) {
+    return (
+      <div className="registry-page-stack">
+        <div className="registry-page-intro">
+          <h3 className="text-lg font-semibold">Team</h3>
+          <p className="registry-dashboard-description">
+            Team collaboration becomes available once this account is attached to an active Team or Enterprise organization.
+          </p>
+        </div>
+
+        <section className="d-section" data-density="compact">
+          <div className="registry-action-band" data-tone="team">
+            <div className="registry-action-band-copy">
+              <h4 className="registry-action-band-title">Organization collaboration</h4>
+              <p className="registry-dashboard-description">
+                Upgrade into a shared workspace to invite collaborators, manage seats, and connect content publishing to governance.
+              </p>
+            </div>
+            <div className="registry-action-band-actions">
+              <Link href="/dashboard/billing" className="d-interactive no-underline" data-variant="primary">
+                Review plans
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="registry-page-stack">

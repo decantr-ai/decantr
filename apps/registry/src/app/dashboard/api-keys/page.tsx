@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createApiKeyAction, revokeApiKeyAction } from './actions';
-import { api, type MeResponse } from '@/lib/api';
+import { api } from '@/lib/api';
+import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 interface ApiKeyDisplay {
   id: string;
@@ -147,7 +148,8 @@ function CopyButton({ text }: { text: string }) {
 
 export default function ApiKeysPage() {
   const [keys, setKeys] = useState<ApiKeyDisplay[]>([]);
-  const [me, setMe] = useState<MeResponse | null>(null);
+  const workspace = useWorkspaceState();
+  const me = workspace.me;
   const [showForm, setShowForm] = useState(false);
   const [newKeyValue, setNewKeyValue] = useState<string | null>(null);
   const [name, setName] = useState('');
@@ -157,6 +159,12 @@ export default function ApiKeysPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCreating, startCreate] = useTransition();
   const [revokingId, setRevokingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (keyTarget === 'organization' && !workspace.capabilities.canUseOrganizationFeatures) {
+      setKeyTarget('personal');
+    }
+  }, [keyTarget, workspace.capabilities.canUseOrganizationFeatures]);
 
   const loadKeys = useCallback(async () => {
     try {
@@ -175,17 +183,14 @@ export default function ApiKeysPage() {
         setKeys(Array.isArray(data) ? data : data?.items ?? []);
       }
 
-      const profile = await api.getMe(token).catch(() => null);
-      setMe(profile);
-
-      const firstOrganizationId = profile?.organizations?.[0]?.id;
+      const firstOrganizationId = workspace.activeOrganization?.id ?? me?.organizations?.[0]?.id;
       if (firstOrganizationId) {
         setOrgId((current) => current || firstOrganizationId);
       }
     } catch {
       // ignore load failures in the empty-state flow
     }
-  }, []);
+  }, [me?.organizations, workspace.activeOrganization?.id]);
 
   useEffect(() => {
     void loadKeys();
@@ -327,13 +332,13 @@ export default function ApiKeysPage() {
               onChange={(event) => setKeyTarget(event.target.value as 'personal' | 'organization')}
             >
               <option value="personal">Personal key</option>
-              {me?.entitlements?.org_collaboration && me.organizations.length > 0 ? (
+              {workspace.capabilities.canUseOrganizationFeatures && me?.organizations.length ? (
                 <option value="organization">Organization key</option>
               ) : null}
             </select>
           </div>
 
-          {keyTarget === 'organization' && me?.organizations.length ? (
+          {keyTarget === 'organization' && workspace.capabilities.canUseOrganizationFeatures && me?.organizations.length ? (
             <div className="registry-form-grid">
               <label className="text-sm font-medium" htmlFor="org-id">
                 Organization

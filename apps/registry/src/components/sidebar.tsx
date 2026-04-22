@@ -3,7 +3,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { CommercialEntitlements } from '@/lib/api';
+import type { WorkspaceSnapshot } from '@/lib/workspace-state';
 
 /* ── Inline SVG Icons (16x16, Lucide-style, stroke-based) ── */
 
@@ -248,18 +248,10 @@ interface NavGroup {
 }
 
 interface SidebarProps {
-  user: {
-    email: string;
-    display_name?: string;
-    username?: string | null;
-    tier: 'free' | 'pro' | 'team' | 'enterprise';
-    organizations: Array<{ id: string; slug: string; name: string }>;
-    entitlements: CommercialEntitlements;
-    isAdmin: boolean;
-  };
+  workspace: WorkspaceSnapshot;
 }
 
-function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
+function buildNavGroups(workspace: WorkspaceSnapshot): NavGroup[] {
   const dashboardItems: NavItem[] = [
     { href: '/dashboard', icon: LayoutDashboardIcon, label: 'Overview' },
     { href: '/dashboard/content', icon: PackageIcon, label: 'Content' },
@@ -267,12 +259,15 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
     { href: '/dashboard/billing', icon: CreditCardIcon, label: 'Billing' },
   ];
 
-  if (user.entitlements.org_collaboration || user.organizations.length > 0) {
+  if (workspace.capabilities.canAccessTeam) {
     dashboardItems.push({ href: '/dashboard/team', icon: UsersIcon, label: 'Team' });
+  }
+
+  if (workspace.capabilities.canAccessGovernance) {
     dashboardItems.push({ href: '/dashboard/governance', icon: ShieldIcon, label: 'Governance' });
   }
 
-  if (user.entitlements.private_registry_portal) {
+  if (workspace.capabilities.canAccessPrivateRegistry) {
     dashboardItems.push({ href: '/dashboard/private-registry', icon: PackageIcon, label: 'Private Registry' });
   }
 
@@ -283,7 +278,7 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
       group: 'Dashboard',
       items: dashboardItems,
     },
-    ...(user.isAdmin
+    ...(workspace.capabilities.canAccessAdmin
       ? [{
           group: 'Admin',
           items: [
@@ -298,13 +293,13 @@ function buildNavGroups(user: SidebarProps['user']): NavGroup[] {
 
 /* ── Component ── */
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ workspace }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const sidebarWidth = collapsed ? 64 : 240;
-  const navGroups = buildNavGroups(user);
+  const navGroups = buildNavGroups(workspace);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -470,16 +465,10 @@ export function Sidebar({ user }: SidebarProps) {
             {!desktopCollapsed && (
               <div className="registry-sidebar-user">
                 <span className="registry-sidebar-user-name">
-                  {user.display_name || user.username || user.email.split('@')[0]}
+                  {workspace.identity.shortLabel}
                 </span>
                 <span className="registry-sidebar-user-tier">
-                  {user.tier === 'team'
-                    ? 'Team workspace'
-                    : user.tier === 'enterprise'
-                    ? 'Enterprise workspace'
-                    : user.tier === 'pro'
-                    ? 'Pro private packages'
-                    : 'Free plan'}
+                  {workspace.identity.tierLabel}
                 </span>
               </div>
             )}

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { updateProfile } from '@/app/dashboard/settings/actions';
-import { api } from '@/lib/api';
+import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 /* ── Icons ── */
 
@@ -137,6 +138,8 @@ function FieldGroup({
 }
 
 function ProfileTab() {
+  const router = useRouter();
+  const workspace = useWorkspaceState();
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -148,40 +151,11 @@ function ProfileTab() {
   const [isSaving, startSave] = useTransition();
 
   useEffect(() => {
-    async function load() {
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (session?.user) {
-          setEmail(session.user.email ?? '');
-          const meta = session.user.user_metadata;
-          const me = await api.getMe(session.access_token).catch(() => null);
-          setDisplayName(
-            me?.display_name
-              ?? (meta?.display_name as string)
-              ?? (meta?.name as string)
-              ?? '',
-          );
-          setUsername(
-            me?.username
-              ?? (meta?.username as string)
-              ?? (meta?.user_name as string)
-              ?? '',
-          );
-          setBio((meta?.bio as string) ?? '');
-        }
-      } catch {
-        // defaults
-      }
-    }
-    load();
-  }, []);
+    setDisplayName(workspace.identity.displayName ?? '');
+    setUsername(workspace.identity.username ?? '');
+    setEmail(workspace.identity.email);
+    setBio(workspace.identity.bio ?? '');
+  }, [workspace.identity]);
 
   function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -196,16 +170,12 @@ function ProfileTab() {
         setMessage({ type: 'error', text: result.error });
       } else {
         setMessage({ type: 'success', text: 'Profile updated.' });
+        router.refresh();
       }
     });
   }
 
-  const initials = (displayName || email || 'YO')
-    .split(/[\s@]/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0].toUpperCase())
-    .join('');
+  const initials = workspace.identity.initials || 'YO';
 
   return (
     <form onSubmit={handleSave} className="registry-settings-form">

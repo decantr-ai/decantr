@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
 import type { DashboardContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { getWorkspaceState } from '@/lib/workspace-state';
 
 function PlusIcon({ size = 16 }: { size?: number }) {
   return (
@@ -74,32 +74,23 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
   const params = await searchParams;
   const query = typeof params.q === 'string' ? params.q : '';
   const scope = typeof params.scope === 'string' ? params.scope : 'all';
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token ?? '';
+  const workspace = await getWorkspaceState();
+  const token = workspace?.token ?? '';
 
   let items: DashboardContentItem[] = [];
   let orgItems: DashboardContentItem[] = [];
   let privateItems: DashboardContentItem[] = [];
   let orgName: string | null = null;
-  let privateRegistryEnabled = false;
+  const privateRegistryEnabled = workspace?.capabilities.canAccessPrivateRegistry ?? false;
 
   try {
-    const [me, result] = await Promise.all([
-      api.getMe(token).catch(() => null),
-      api.getMyContent(token),
-    ]);
+    const result = await api.getMyContent(token);
 
     items = Array.isArray(result) ? result : result?.items ?? [];
 
-    const activeOrg = me?.organizations?.[0] ?? null;
-    privateRegistryEnabled = Boolean(
-      me?.entitlements?.private_registry_portal && activeOrg?.tier === 'enterprise',
-    );
+    const activeOrg = workspace?.activeOrganization ?? null;
 
-    if (activeOrg?.slug) {
+    if (workspace?.capabilities.canUseOrganizationFeatures && activeOrg?.slug) {
       const orgResult = await api.getOrgContent(token, activeOrg.slug).catch(() => null);
       orgItems = Array.isArray(orgResult) ? orgResult : orgResult?.items ?? [];
       orgName = activeOrg.name;
@@ -217,7 +208,7 @@ export default async function ContentPage({ searchParams }: ContentPageProps) {
         )}
       </section>
 
-      {orgName ? (
+      {workspace?.capabilities.canUseOrganizationFeatures && orgName ? (
         <section className="d-section" data-density="compact">
           <span className="d-label registry-anchor-label">
             {orgName} Packages ({orgItems.length})

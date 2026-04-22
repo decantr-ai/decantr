@@ -2,12 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import type { CommercialEntitlements } from '@/lib/api';
+import type { WorkspaceSnapshot } from '@/lib/workspace-state';
 
 interface CommandPaletteProps {
-  isAdmin: boolean;
-  organizations: Array<{ id: string; slug: string; name: string }>;
-  entitlements: CommercialEntitlements;
+  workspace: WorkspaceSnapshot;
 }
 
 interface CommandItem {
@@ -25,16 +23,19 @@ function buildItems(props: CommandPaletteProps): CommandItem[] {
     { href: '/dashboard/settings', label: 'Settings' },
   ];
 
-  if (props.entitlements.org_collaboration || props.organizations.length > 0) {
+  if (props.workspace.capabilities.canAccessTeam) {
     items.push({ href: '/dashboard/team', label: 'Team' });
+  }
+
+  if (props.workspace.capabilities.canAccessGovernance) {
     items.push({ href: '/dashboard/governance', label: 'Governance' });
   }
 
-  if (props.entitlements.private_registry_portal) {
+  if (props.workspace.capabilities.canAccessPrivateRegistry) {
     items.push({ href: '/dashboard/private-registry', label: 'Private Registry' });
   }
 
-  if (props.isAdmin) {
+  if (props.workspace.capabilities.canAccessAdmin) {
     items.push({ href: '/admin/moderation', label: 'Moderation' });
     items.push({ href: '/admin/organizations', label: 'Organizations' });
     items.push({ href: '/admin/reports', label: 'Reports' });

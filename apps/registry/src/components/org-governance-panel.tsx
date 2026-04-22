@@ -6,12 +6,12 @@ import { KPIGrid } from '@/components/kpi-grid';
 import {
   api,
   type DashboardContentItem,
-  type MeResponse,
   type OrgAuditEntry,
   type OrgPolicy,
   type OrgUsageSummary,
 } from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
+import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 const AUDIT_SCOPE_OPTIONS = [
   { value: '', label: 'All scopes' },
@@ -58,7 +58,7 @@ function formatActionLabel(action: string) {
 }
 
 export function OrgGovernancePanel() {
-  const [me, setMe] = useState<MeResponse | null>(null);
+  const workspace = useWorkspaceState();
   const [orgSlug, setOrgSlug] = useState('');
   const [policy, setPolicy] = useState<OrgPolicy | null>(null);
   const [approvals, setApprovals] = useState<DashboardContentItem[]>([]);
@@ -69,7 +69,7 @@ export function OrgGovernancePanel() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const organizations = me?.organizations ?? [];
+  const organizations = workspace.organizations;
   const activeOrg = organizations.find((org) => org.slug === orgSlug) ?? organizations[0] ?? null;
   const canManage = Boolean(activeOrg && ['owner', 'admin'].includes(activeOrg.role));
 
@@ -85,29 +85,6 @@ export function OrgGovernancePanel() {
       { label: 'Approval actions (30d)', value: usage.approval_actions_30d },
     ];
   }, [usage]);
-
-  async function loadProfile() {
-    try {
-      setError(null);
-      const token = await getAccessToken();
-      if (!token) {
-        setMe(null);
-        setOrgSlug('');
-        return;
-      }
-
-      const profile = await api.getMe(token);
-      setMe(profile);
-      setOrgSlug((current) => {
-        if (current && profile.organizations.some((org) => org.slug === current)) {
-          return current;
-        }
-        return profile.organizations?.[0]?.slug ?? '';
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load organization governance');
-    }
-  }
 
   async function loadOrgState(nextOrgSlug: string) {
     if (!nextOrgSlug) {
@@ -149,8 +126,13 @@ export function OrgGovernancePanel() {
   }
 
   useEffect(() => {
-    void loadProfile();
-  }, []);
+    setOrgSlug((current) => {
+      if (current && organizations.some((org) => org.slug === current)) {
+        return current;
+      }
+      return workspace.activeOrganization?.slug ?? organizations[0]?.slug ?? '';
+    });
+  }, [organizations, workspace.activeOrganization?.slug]);
 
   useEffect(() => {
     if (!orgSlug) {
@@ -208,7 +190,7 @@ export function OrgGovernancePanel() {
     });
   }
 
-  if (!me?.entitlements?.org_collaboration || organizations.length === 0) {
+  if (!workspace.capabilities.canAccessGovernance || organizations.length === 0) {
     return (
       <div className="d-surface registry-dashboard-panel">
         <div className="registry-dashboard-copy">

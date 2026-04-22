@@ -1,10 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { upgradeAction, manageBillingAction } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
-import type { BillingStatus } from '@/lib/api';
+import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 /* ── Icons ── */
 
@@ -189,46 +189,16 @@ function TierUpgradeCard({
 }
 
 export default function BillingPage() {
-  const [billing, setBilling] = useState<BillingStatus | null>(null);
+  const workspace = useWorkspaceState();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1'}/billing/status`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (res.ok) {
-          setBilling(await res.json());
-        }
-      } catch {
-        // defaults
-      }
-    }
-    load();
-  }, []);
-
-  const currentTier = (billing?.tier ?? 'free').toLowerCase();
+  const billing = workspace.billing;
+  const currentTier = workspace.tier.toLowerCase();
   const planName = currentTier.charAt(0).toUpperCase() + currentTier.slice(1);
-  const activeOrg = billing?.organizations?.[0] ?? null;
+  const activeOrg = workspace.activeOrganization;
 
   const kpiItems = [
-    {
-      label: 'Current Plan',
-      value: planName === 'Free' ? 0 : planName === 'Pro' ? 1 : 2,
-      icon: <CreditCardIcon size={18} />,
-    },
     {
       label: 'API Calls (30d)',
       value: billing?.usage?.api_requests_30d ?? 0,
@@ -243,6 +213,11 @@ export default function BillingPage() {
       label: 'Team Seats',
       value: billing?.usage?.seats_limit ?? 0,
       icon: <UsersIcon size={18} />,
+    },
+    {
+      label: 'Approval Actions (30d)',
+      value: billing?.usage?.approval_actions_30d ?? 0,
+      icon: <CreditCardIcon size={18} />,
     },
   ];
 
@@ -269,8 +244,9 @@ export default function BillingPage() {
         'Priority support',
       ],
       planId: 'pro',
-      highlighted: true,
+      highlighted: currentTier === 'free',
       current: currentTier === 'pro',
+      ctaLabel: currentTier === 'free' ? 'Recommended upgrade' : 'Upgrade',
     },
     {
       name: 'Team',
@@ -283,7 +259,9 @@ export default function BillingPage() {
         'Priority support',
       ],
       planId: 'team',
+      highlighted: currentTier === 'pro',
       current: currentTier === 'team',
+      ctaLabel: currentTier === 'pro' ? 'Upgrade to Team' : 'Upgrade',
     },
     {
       name: 'Enterprise',
@@ -326,7 +304,12 @@ export default function BillingPage() {
   return (
     <div className="registry-page-stack">
       <div className="registry-page-intro">
-        <h3 className="text-lg font-semibold">Billing &amp; Plans</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-lg font-semibold">Billing &amp; Plans</h3>
+          <span className="d-annotation" data-status={currentTier === 'free' ? 'info' : currentTier === 'enterprise' ? 'warning' : 'success'}>
+            {planName}
+          </span>
+        </div>
         <p className="registry-dashboard-description">
           Review current entitlements, compare the commercial plan model, and move into Stripe only when you need to manage a paid subscription.
         </p>
@@ -391,7 +374,7 @@ export default function BillingPage() {
                     Org package publishes in the last 30 days: {billing?.usage?.org_package_publishes_30d ?? 0}. Approval actions: {billing?.usage?.approval_actions_30d ?? 0}.
                   </div>
                 </div>
-                {billing?.entitlements?.private_registry_portal ? (
+                {workspace.capabilities.canAccessPrivateRegistry ? (
                   <div className="registry-action-band-actions">
                     <Link href="/dashboard/private-registry" className="d-interactive no-underline" data-variant="primary">
                       Open Private Registry

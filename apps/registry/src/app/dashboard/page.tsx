@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
 import { KPIGrid } from '@/components/kpi-grid';
 import { ActivityFeed } from '@/components/activity-feed';
+import { getWorkspaceState } from '@/lib/workspace-state';
 
 /* ── Inline icons for KPI cards ── */
 
@@ -109,11 +109,8 @@ function ReputationBadge({ score, level }: { score: number; level: string }) {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token ?? '';
+  const workspace = await getWorkspaceState();
+  const token = workspace?.token ?? '';
 
   let profile: {
     reputation_score: number;
@@ -124,19 +121,15 @@ export default async function DashboardPage() {
   let totalDownloads = 0;
 
   try {
-    const [me, billing, myContent] = await Promise.all([
-      api.getMe(token),
-      api.getBillingStatus(token).catch(() => null),
-      api.getMyContent(token).catch(() => null),
-    ]);
-    if (me) {
+    const myContent = await api.getMyContent(token).catch(() => null);
+    if (workspace?.me) {
       profile = {
-        reputation_score: me.reputation_score,
-        tier: me.tier,
+        reputation_score: workspace.me.reputation_score,
+        tier: workspace.tier,
       };
     }
 
-    apiCallsLast30d = billing?.usage?.api_requests_30d ?? 0;
+    apiCallsLast30d = workspace?.billing?.usage?.api_requests_30d ?? 0;
 
     const contentItems = Array.isArray(myContent)
       ? myContent

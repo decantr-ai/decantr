@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
 import { api, type DashboardContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { getWorkspaceState } from '@/lib/workspace-state';
 
 interface PrivateRegistryPageProps {
   searchParams: Promise<{
@@ -21,17 +21,12 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
   const visibility = typeof params.visibility === 'string' ? params.visibility : '';
   const status = typeof params.status === 'string' ? params.status : '';
 
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const token = session?.access_token ?? '';
-
-  const me = token ? await api.getMe(token).catch(() => null) : null;
-  const enterpriseOrgs = (me?.organizations ?? []).filter((org) => org.tier === 'enterprise');
+  const workspace = await getWorkspaceState();
+  const token = workspace?.token ?? '';
+  const enterpriseOrgs = (workspace?.organizations ?? []).filter((org) => org.tier === 'enterprise');
   const activeOrg = enterpriseOrgs.find((org) => org.slug === selectedOrgParam) ?? enterpriseOrgs[0] ?? null;
 
-  if (!me?.entitlements?.private_registry_portal || !activeOrg) {
+  if (!workspace?.capabilities.canAccessPrivateRegistry || !activeOrg) {
     return (
       <div className="registry-page-stack">
         <div className="registry-page-intro">

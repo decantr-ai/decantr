@@ -51,6 +51,8 @@ export async function updateProfile(formData: FormData) {
     });
   }
 
+  revalidatePath('/dashboard', 'layout');
+  revalidatePath('/admin', 'layout');
   revalidatePath('/dashboard/settings');
   return { success: true };
 }

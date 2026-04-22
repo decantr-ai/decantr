@@ -263,7 +263,7 @@ interface FetchOptions {
   apiKey?: string;
 }
 
-function deriveCommercialEntitlements(
+export function deriveCommercialEntitlements(
   tier: 'free' | 'pro' | 'team' | 'enterprise',
 ): CommercialEntitlements {
   switch (tier) {
@@ -319,7 +319,7 @@ function deriveCommercialEntitlements(
   }
 }
 
-function deriveCommercialLimits(
+export function deriveCommercialLimits(
   tier: 'free' | 'pro' | 'team' | 'enterprise',
   activeOrg: OrganizationSummary | null,
 ): CommercialLimits {
