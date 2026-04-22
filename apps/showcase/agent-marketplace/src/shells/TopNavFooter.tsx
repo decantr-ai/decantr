@@ -1,153 +1,166 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { LogIn, Menu, Moon, Search, Sun, X, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { css } from '@decantr/css';
-import { Zap, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { useAuth } from '../App';
+import { useAuth, useUi } from '../App';
+
+const PUBLIC_LINKS = [
+  { to: '/marketplace', label: 'Marketplace' },
+  { to: '/transparency', label: 'Transparency' },
+  { to: '/', label: 'Pricing' },
+];
+
+const FOOTER_GROUPS = [
+  {
+    title: 'Platform',
+    links: [
+      { label: 'Marketplace', href: '#/marketplace' },
+      { label: 'Pricing', href: '#/' },
+      { label: 'Transparency', href: '#/transparency' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { label: 'Documentation', href: '#/' },
+      { label: 'API reference', href: '#/' },
+      { label: 'Status', href: '#/' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '#/' },
+      { label: 'Careers', href: '#/' },
+      { label: 'Contact', href: '#/register' },
+    ],
+  },
+];
 
 export function TopNavFooter() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { openPalette, themeMode, toggleTheme } = useUi();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   return (
-    <div className={css('_flex _col')} style={{ minHeight: '100vh' }} data-theme="carbon-neon">
-      {/* Header — sticky, 52px, border-bottom */}
-      <header
-        className={css('_flex _aic _jcsb _shrink0')}
-        style={{
-          height: 52,
-          padding: '0 1.5rem',
-          borderBottom: '1px solid var(--d-border)',
-          background: 'var(--d-bg)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <Link to="/" className={css('_flex _aic _gap2')} style={{ textDecoration: 'none', color: 'var(--d-text)' }}>
-          <Zap size={20} style={{ color: 'var(--d-accent)' }} />
-          <span className={css('_fontsemi _textlg') + ' mono-data'}>AgentOps</span>
+    <div className="shell-public" data-menu-open={menuOpen} data-theme="carbon-neon">
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <header className="shell-public__header carbon-glass">
+        <Link className="shell-public__brand" to="/">
+          <span className="shell-public__brand-mark">
+            <Zap size={16} />
+          </span>
+          <span className="shell-public__brand-copy">
+            <strong>AgentOps</strong>
+          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className={css('_flex _aic _gap6')} style={{ display: 'var(--nav-display, flex)' }}>
-          <a href="#/marketplace" className={css('_textsm _fontmedium')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none', transition: 'color 150ms' }}>Marketplace</a>
-          <a href="#/transparency" className={css('_textsm _fontmedium')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none', transition: 'color 150ms' }}>Transparency</a>
-          <a href="#/" className={css('_textsm _fontmedium')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none', transition: 'color 150ms' }}>Pricing</a>
+        <nav className="shell-public__nav" aria-label="Public navigation">
+          {PUBLIC_LINKS.map((link) => (
+            <NavLink
+              key={link.to}
+              className={({ isActive }) => `shell-public__nav-link${isActive ? ' is-active' : ''}`}
+              to={link.to}
+            >
+              {link.label}
+            </NavLink>
+          ))}
         </nav>
 
-        <div className={css('_flex _aic _gap2')}>
+        <div className="shell-public__actions">
+          <button type="button" className="d-interactive command-trigger" data-variant="ghost" onClick={openPalette}>
+            <Search size={14} />
+            <span>Search</span>
+            <kbd>⌘K</kbd>
+          </button>
+          <button type="button" className="d-interactive icon-button theme-toggle" data-variant="ghost" onClick={toggleTheme} aria-label="Toggle theme">
+            {themeMode === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
           {isAuthenticated ? (
-            <button className="d-interactive" data-variant="primary" onClick={() => navigate('/agents')}>Dashboard</button>
+            <button type="button" className="d-interactive" data-variant="primary" onClick={() => navigate('/agents')}>
+              Dashboard
+            </button>
           ) : (
             <>
-              <button className="d-interactive" data-variant="ghost" onClick={() => navigate('/login')}>Log in</button>
-              <button className="d-interactive" data-variant="primary" onClick={() => navigate('/register')}>Deploy Agent</button>
+              <button type="button" className="d-interactive" data-variant="ghost" onClick={() => navigate('/login')}>
+                <LogIn size={14} />
+                Log in
+              </button>
+              <button type="button" className="d-interactive" data-variant="primary" onClick={() => navigate('/register')}>
+                Deploy agent
+              </button>
             </>
           )}
-          <button
-            className={css('_none') + ' d-interactive mobile-menu-btn'}
-            data-variant="ghost"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-expanded={menuOpen}
-            aria-label="Toggle navigation menu"
-          >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          <button type="button" className="d-interactive icon-button shell-public__mobile-toggle" data-variant="ghost" onClick={() => setMenuOpen((current) => !current)} aria-label="Toggle navigation">
+            {menuOpen ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
       </header>
 
-      {/* Mobile menu overlay */}
-      {menuOpen && (
-        <div
-          className="carbon-glass"
-          style={{
-            position: 'fixed',
-            top: 52,
-            right: 0,
-            bottom: 0,
-            width: 280,
-            zIndex: 20,
-            padding: '1.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-          }}
-        >
-          <a href="#/marketplace" className="d-interactive" data-variant="ghost" onClick={() => setMenuOpen(false)} style={{ width: '100%', justifyContent: 'flex-start', textDecoration: 'none' }}>Marketplace</a>
-          <a href="#/transparency" className="d-interactive" data-variant="ghost" onClick={() => setMenuOpen(false)} style={{ width: '100%', justifyContent: 'flex-start', textDecoration: 'none' }}>Transparency</a>
-          <a href="#/" className="d-interactive" data-variant="ghost" onClick={() => setMenuOpen(false)} style={{ width: '100%', justifyContent: 'flex-start', textDecoration: 'none' }}>Pricing</a>
-          <hr className="carbon-divider" style={{ margin: '0.5rem 0' }} />
-          {isAuthenticated ? (
-            <button className="d-interactive" data-variant="primary" onClick={() => { navigate('/agents'); setMenuOpen(false); }} style={{ width: '100%' }}>Dashboard</button>
-          ) : (
-            <>
-              <button className="d-interactive" data-variant="ghost" onClick={() => { navigate('/login'); setMenuOpen(false); }} style={{ width: '100%' }}>Log in</button>
-              <button className="d-interactive" data-variant="primary" onClick={() => { navigate('/register'); setMenuOpen(false); }} style={{ width: '100%' }}>Deploy Agent</button>
-            </>
-          )}
-        </div>
-      )}
+      <div className="shell-public__mobile-panel carbon-glass">
+        {PUBLIC_LINKS.map((link) => (
+          <button key={link.to} type="button" className="d-interactive shell-public__mobile-link" data-variant="ghost" onClick={() => navigate(link.to)}>
+            {link.label}
+          </button>
+        ))}
+        {!isAuthenticated ? (
+          <>
+            <button type="button" className="d-interactive shell-public__mobile-link" data-variant="ghost" onClick={() => navigate('/login')}>
+              Log in
+            </button>
+            <button type="button" className="d-interactive shell-public__mobile-link" data-variant="primary" onClick={() => navigate('/register')}>
+              Deploy agent
+            </button>
+          </>
+        ) : (
+          <button type="button" className="d-interactive shell-public__mobile-link" data-variant="primary" onClick={() => navigate('/agents')}>
+            Dashboard
+          </button>
+        )}
+      </div>
 
-      {/* Body — flex:1, no padding (sections own their spacing) */}
-      <main style={{ flex: 1 }}>
+      <main id="main-content" className="shell-public__body">
         <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: '1px solid var(--d-border)',
-          padding: '2rem 1.5rem',
-          marginTop: 'auto',
-        }}
-      >
-        <div className={css('_flex _jcsb _wrap _gap8')} style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div className={css('_flex _col _gap2')}>
-            <div className={css('_flex _aic _gap2')}>
-              <Zap size={16} style={{ color: 'var(--d-accent)' }} />
-              <span className={css('_fontsemi') + ' mono-data'}>AgentOps</span>
+      <footer className="shell-public__footer">
+        <div className="shell-public__footer-inner">
+          <div className={css('_flex _col _gap3')}>
+            <div className="shell-public__brand">
+              <span className="shell-public__brand-mark">
+                <Zap size={16} />
+              </span>
+              <span className="shell-public__brand-copy">
+                <strong>AgentOps</strong>
+                <span className={css('_textxs _fgmuted')}>
+                  Decantr showcase
+                </span>
+              </span>
             </div>
-            <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', maxWidth: 280 }}>
-              Deploy, monitor, and orchestrate autonomous AI agents at scale.
+            <p className="shell-public__footer-copy">
+              Deploy, monitor, and refine autonomous agent swarms with marketplace discovery and model transparency in one authored system.
             </p>
           </div>
-          <div className={css('_flex _gap12 _wrap')}>
-            <div className={css('_flex _col _gap2')}>
-              <span className="d-label">Platform</span>
-              <a href="#/marketplace" className={css('_textsm')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none' }}>Marketplace</a>
-              <a href="#/" className={css('_textsm')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none' }}>Pricing</a>
-              <a href="#/transparency" className={css('_textsm')} style={{ color: 'var(--d-text-muted)', textDecoration: 'none' }}>Transparency</a>
-            </div>
-            <div className={css('_flex _col _gap2')}>
-              <span className="d-label">Resources</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Documentation</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>API Reference</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Status</span>
-            </div>
-            <div className={css('_flex _col _gap2')}>
-              <span className="d-label">Company</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>About</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Blog</span>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Careers</span>
-            </div>
-          </div>
-        </div>
-        <div className="carbon-divider" style={{ margin: '1.5rem 0' }}></div>
-        <p className={css('_textsm _textc')} style={{ color: 'var(--d-text-muted)' }}>
-          &copy; 2026 AgentOps. All rights reserved.
-        </p>
-      </footer>
 
-      <style>{`
-        @media (min-width: 768px) {
-          .mobile-menu-btn { display: none !important; }
-        }
-        @media (max-width: 767px) {
-          nav { display: none !important; }
-          .mobile-menu-btn { display: inline-flex !important; }
-        }
-      `}</style>
+          {FOOTER_GROUPS.map((group) => (
+            <div key={group.title} className="shell-public__footer-group">
+              <span className="d-label">{group.title}</span>
+              {group.links.map((link) => (
+                <a key={link.label} className="shell-public__footer-link" href={link.href}>
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="shell-public__footer-legal">© 2026 AgentOps. Built as a Decantr showcase workspace.</div>
+      </footer>
     </div>
   );
 }

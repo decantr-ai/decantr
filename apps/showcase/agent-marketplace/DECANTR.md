@@ -8,18 +8,18 @@
 - **Guard mode:** strict
 
 ### Decorator Quick Reference
-| Class | Purpose |
-|-------|---------|
-| `.carbon-card` | Surface background, subtle border, 8px radius, hover shadow transition. |
-| `.carbon-code` | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
-| `.carbon-glass` | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
-| `.carbon-input` | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
-| `.carbon-canvas` | Background color using theme background token. Clean, minimal foundation. |
-| `.carbon-divider` | Hairline separator using border-color token. |
-| `.carbon-skeleton` | Loading placeholder with subtle pulse animation for skeleton states. |
-| `.carbon-bubble-ai` | Left-aligned message bubble with surface background for AI responses. |
-| `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
-| `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
+| Class | Intent | Key CSS |
+|-------|--------|---------|
+| `.carbon-card` | Use for content containers. Hover state gains a subtle neon cyan shadow accent for the data-intensive, mission-control feel. |  |
+| `.carbon-code` | Use for code blocks and terminal output. The left border accent uses the neon cyan for a more vivid developer-tool feel. |  |
+| `.carbon-glass` | Use for navigation and floating panels. In carbon-neon, these surfaces receive subtle neon accent highlights on interactive states. |  |
+| `.carbon-input` | Use for form inputs. On focus, the neon cyan accent creates a vivid glow ring that differentiates this from base carbon. |  |
+| `.carbon-canvas` | Use as the root page background. Identical to carbon but serves as the dark canvas for neon accent pops. |  |
+| `.carbon-divider` | Use to separate content sections cleanly. The neon accent appears on interactive elements, not dividers. |  |
+| `.carbon-skeleton` | Use while agent data or dashboard metrics load. The pulse indicates active data fetching without visual noise. |  |
+| `.carbon-bubble-ai` | Use for AI/agent responses in chat interfaces. Neutral surface lets the content and any inline neon status indicators stand out. |  |
+| `.carbon-fade-slide` | Use as the entrance animation for dashboard panels and data cards appearing on load. |  |
+| `.carbon-bubble-user` | Use for user messages in agent chat interfaces. The tint is subtler, letting neon accents on status elements take visual priority. |  |
 
 ## Development Workflow
 
@@ -115,6 +115,11 @@ When a user request would violate guard rules:
 - `decantr_check_drift` -- Check if planned changes violate rules
 - `decantr_accept_drift` -- Accept a detected drift as intentional
 - `decantr_update_essence` -- Update the essence spec to match desired changes
+- `decantr_audit_project` -- Audit the current project against the essence contract and compiled packs
+- `decantr_get_scaffold_context` -- Read the top-level scaffold task, scaffold overview, compiled scaffold pack, and review pack together
+- `decantr_get_page_context` -- Read a route-local page pack together with its parent section context when available
+- `decantr_get_execution_pack` -- Read compiled scaffold, review, mutation, section, and page packs
+- `decantr_get_section_context` -- Read the richer section context with compiled pack data when available
 
 ---
 
@@ -126,15 +131,42 @@ When a user request would violate guard rules:
 
 ### Initial scaffolding
 
-Read `.decantr/context/scaffold.md` for the full app overview, topology, and route map.
+Treat the compiled execution-pack files as the primary source of truth.
+Use narrative docs only as secondary explanation when the compiled packs are not enough.
+Use only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.
+
+Read `.decantr/context/scaffold-pack.md` first for the compact compiled shell, theme, feature, and route contract.
+Then read `.decantr/context/scaffold.md` for the fuller app overview, topology, route map, and voice guidance.
+Start implementation from the shell layouts and shared route structure before filling in section pages.
 
 ### Working on a section
 
-Read `.decantr/context/section-{name}.md` for that section's complete context. Each section file contains guard rules, theme tokens, decorator classes, pattern specs with code examples, zone context, and routes. **Everything you need is in that one file.**
+Read `.decantr/context/section-{name}-pack.md` for the compact compiled section contract.
+Then read `.decantr/context/section-{name}.md` for the fuller context. Prefer the compiled section pack if the two sources differ, and do not invent section features, shells, or themes that are not present in the compiled contract.
+
+### Working on a route
+
+Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page. Route-local packs should win over broader narrative docs when there is any mismatch.
+
+### Editing rules
+
+- Use the real `@decantr/css` runtime for atoms. If `package.json` does not already include `@decantr/css`, add it before implementation.
+- If a local `package.json` is present, trust its declared Decantr dependencies over external assumptions about package availability.
+- Do **not** create local atom-runtime substitutes such as `src/lib/css.js`, `src/lib/css.ts`, or hand-written `src/styles/atoms.css` files unless the task explicitly asks for a fallback runtime.
+- Import `src/styles/global.css`, `src/styles/tokens.css`, and `src/styles/treatments.css`.
+- Reuse the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.
+- Do **not** use inline visual style values or component-scoped `<style>` tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.
+- Shells own spacing, centering, and scroll containers. Page components should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.
+- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.
+- If `dna.accessibility.skip_nav = true`, add a visible-on-focus skip link and a matching main landmark target such as `<main id="main-content">`.
+- If `dna.motion.reduce_motion = true`, add an explicit `prefers-reduced-motion: reduce` path in project CSS.
+- Do not modify generated context files unless you are explicitly regenerating or refreshing Decantr context.
+- If a required context file is missing or inconsistent, stop and report which file is missing before continuing.
 
 ### Validation
 
-Run `decantr check` to validate code against the spec.
+Run `decantr check` to detect drift violations while editing and `decantr audit` to audit the whole project contract after implementation.
+Declared command palettes and hotkeys must be implemented, not merely acknowledged.
 
 ### Quick Commands
 
@@ -168,6 +200,18 @@ import './styles/treatments.css';            // Treatments + theme decorators
 import './styles/global.css';                // Resets
 ```
 
+### Runtime Rules
+
+- Use the real `@decantr/css` runtime for atoms. If `package.json` does not already depend on `@decantr/css`, add it before building.
+- If `package.json`, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists.
+- Do **not** create local atom-runtime substitutes such as `src/lib/css.js`, `src/lib/css.ts`, or hand-written `src/styles/atoms.css` files unless the task explicitly asks for a fallback runtime.
+- Keep atoms in `css(...)`, treatments as semantic classes, and theme decorators as additive classes. Do not blur those roles together.
+- Do **not** use inline visual style values or component-scoped `<style>` tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.
+- Use `d-control` as the default semantic treatment for inputs, selects, and textareas. Theme decorators such as `carbon-input` are additive and should only layer on when the section or theme contract explicitly calls for them.
+- Use loading decorators such as `carbon-skeleton` as optional enhancement on top of a structurally correct loading state — they do not replace the need for a real loading/skeleton branch.
+- Shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.
+- If a required decorator class is referenced in the generated contract but missing from generated CSS, report that contract gap instead of inventing a parallel visual system.
+
 ### Visual Treatments
 
 Six base treatment classes provide semantic styling. Combine with atoms for layout:
@@ -198,11 +242,18 @@ Atoms + treatment + theme decorator:
 
 ```tsx
 // Responsive prefix — applies at breakpoint and above:
-css('_col sm:_row')
+css('_col _sm:row')
 
 // Pseudo prefix:
-css('hover:_opacity80')
+css('_bgprimary _h:bgprimary/80')
 ```
+
+### Prefix and Arbitrary Value Syntax
+
+- Responsive prefixes are part of the atom token itself: `_sm:gc2`, `_md:flex`, `_lg:row`.
+- Pseudo prefixes are also token-prefixed: `_h:bgprimary/80`, `_f:borderprimary`, `_fv:shadowmd`.
+- Arbitrary values use square brackets when the standard scale is not enough: `_w[512px]`, `_h[100vh]`, `_p[clamp(1rem,3vw,2rem)]`, `_z[40]`.
+- When you see bracket atoms in shell or page contracts, treat them as first-class Decantr syntax, not as an error or a cue to fall back to inline styles.
 
 ### Atom Reference
 
@@ -380,7 +431,7 @@ css('hover:_opacity80')
 | `_trans` | `transition:all 0.15s ease` |
 | `_visible`, `_invisible` | visibility |
 
-Responsive prefixes: `_sm:`, `_md:`, `_lg:` (e.g. `_md:gc2`, `_lg:gc4`, `_sm:flex`).
+Responsive prefixes: `_sm:`, `_md:`, `_lg:`, `_xl:` (e.g. `_sm:gc2`, `_md:flex`, `_lg:row`).
 
 ### Section Labels
 
@@ -399,6 +450,7 @@ If the theme provides motion tokens, apply the `entrance-fade` class to page con
 ### Navigation Shortcuts
 
 If the essence defines hotkeys or command_palette, implement as keyboard event listeners (useEffect + keydown) — not as visible UI text.
+Missing declared navigation features are contract drift, not optional polish.
 
 ### Design Tokens
 
@@ -422,8 +474,15 @@ If the essence defines hotkeys or command_palette, implement as keyboard event l
 Check `decantr.essence.json` → `meta.platform.routing` for the routing strategy:
 - `"hash"` → use `HashRouter` (e.g., for static hosting, GitHub Pages)
 - `"history"` → use `BrowserRouter` (e.g., for server-rendered apps)
+- `"pathname"` → use pathname-based routing (e.g., Next.js App Router or React apps using `BrowserRouter`)
 
 Routes are defined in `decantr.essence.json` → `blueprint.routes` and listed in `.decantr/context/scaffold.md`.
+
+### SEO Expectations by Platform
+
+- For hash-routed SPA scaffolds, focus SEO work on the root document: document title, description, Open Graph/Twitter meta, and any root-level JSON-LD that the contract calls for.
+- Do **not** invent SSR-only per-route metadata systems for a clearly hash-routed scaffold.
+- For history/SSR-style projects, per-route metadata can be richer, but it still needs to follow the declared route contract instead of introducing off-contract marketing pages.
 
 ### Layout Rules
 
@@ -432,6 +491,13 @@ Routes are defined in `decantr.essence.json` → `blueprint.routes` and listed i
 3. **One scroll container per region.** Body has overflow-y-auto. Sidebar nav has its own overflow-y-auto. Never nest additional scrollable wrappers.
 4. **d-section spacing is self-contained.** Each d-section owns its padding. The d-section + d-section rule adds a separator. Do NOT add extra margin between adjacent sections.
 5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.
+
+### Accessibility Defaults
+
+- If `dna.accessibility.skip_nav = true`, add a visible-on-focus skip link such as `<a href="#main-content" className="skip-link">Skip to content</a>`.
+- Pair that skip link with a real main landmark target such as `<main id="main-content">`.
+- Keep keyboard focus visible with `:focus-visible` treatments on custom interactive surfaces, not just browser defaults.
+- Implement shell-level accessibility and routing behaviors as reusable structure or shared helpers, not one-off inline patches. Compact header sizing, responsive sidebar collapse, and skip-nav targets should be consistent across the shell, not re-solved page by page.
 
 ### Motion Philosophy
 
@@ -443,6 +509,8 @@ Every interaction should feel responsive and polished. Apply motion by default, 
 - **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
 - **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
 - **Reduced motion:** Wrap all animations in `prefers-reduced-motion` media query — skip animation, keep state changes instant
+
+Never leave this to implication when `dna.motion.reduce_motion = true`. The scaffold should include a reviewed reduced-motion path in project CSS, even when the app initially runs on mock data.
 
 ### Interactivity Philosophy
 

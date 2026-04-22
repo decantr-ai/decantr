@@ -1,130 +1,183 @@
+import { useMemo, useState } from 'react';
+import { Globe, RotateCcw, Save, Settings2, Shield } from 'lucide-react';
+import { PageHeader, SectionHeader } from '../../components/PageHeader';
+import { configurationTabs } from '../../data/mock';
 import { css } from '@decantr/css';
-import { useState } from 'react';
-import { Settings, Save, RotateCcw } from 'lucide-react';
 
 export function AgentConfig() {
+  const [activeTab, setActiveTab] = useState<(typeof configurationTabs)[number]['id']>('model');
   const [model, setModel] = useState('gpt-4o');
   const [temperature, setTemperature] = useState('0.7');
   const [maxTokens, setMaxTokens] = useState('4096');
-  const [systemPrompt, setSystemPrompt] = useState('You are a helpful autonomous agent. Follow instructions precisely and report errors immediately.');
+  const [systemPrompt, setSystemPrompt] = useState('You are a precise autonomous operator. Prefer explicit telemetry, deterministic responses, and actionable recovery guidance.');
   const [retryCount, setRetryCount] = useState('3');
-  const [timeout, setTimeout_] = useState('30000');
+  const [timeout, setTimeoutValue] = useState('30000');
   const [rateLimit, setRateLimit] = useState('100');
   const [webhookUrl, setWebhookUrl] = useState('https://api.example.com/webhooks/agent');
-  const [loggingLevel, setLoggingLevel] = useState('info');
+  const [approvalMode, setApprovalMode] = useState('operator-review');
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    // Dev mode: no-op
-  }
+  const cards = useMemo(() => ({
+    model: [
+      {
+        id: 'model-primary',
+        title: 'Model selection',
+        copy: 'Choose the default runtime, generation style, and prompt baseline for new agents.',
+        icon: Settings2,
+      },
+      {
+        id: 'model-guard',
+        title: 'Prompt framing',
+        copy: 'Keep the system prompt stable and explicit so operator intent remains legible at runtime.',
+        icon: Shield,
+      },
+    ],
+    reliability: [
+      {
+        id: 'reliability-retries',
+        title: 'Retry policy',
+        copy: 'Shape recovery logic so failures surface early instead of hiding behind silent loops.',
+        icon: RotateCcw,
+      },
+    ],
+    integrations: [
+      {
+        id: 'integrations-webhook',
+        title: 'Outbound integrations',
+        copy: 'Manage webhook fanout and external observability handoffs from one dependable configuration surface.',
+        icon: Globe,
+      },
+    ],
+  }), []);
 
   return (
-    <div className={css('_flex _col _gap6')} style={{ maxWidth: '40rem' }}>
-      <div>
-        <h1 className={css('_fontsemi _textxl')} style={{ marginBottom: '0.25rem' }}>Agent Configuration</h1>
-        <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Configure global parameters for your agent fleet.</p>
+    <div className="page-stack">
+      <PageHeader
+        label="Configuration"
+        title="Agent configuration"
+        description="This page keeps the nav-header brief and lets grouped form sections do the heavy lifting. Tabs narrow the view without turning the page into a maze."
+        actions={(
+          <>
+            <button type="button" className="d-interactive" data-variant="ghost">
+              Reset draft
+            </button>
+            <button type="button" className="d-interactive" data-variant="primary">
+              <Save size={14} />
+              Save configuration
+            </button>
+          </>
+        )}
+      />
+
+      <div className="config-nav carbon-fade-slide" role="tablist" aria-label="Configuration sections">
+        {configurationTabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className="config-tab"
+            data-active={activeTab === tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <form onSubmit={handleSubmit} className={css('_flex _col _gap6')} role="form">
-        {/* Model Settings */}
-        <div className="d-surface carbon-card">
-          <div className={css('_flex _aic _gap2')} style={{ marginBottom: '1rem' }}>
-            <Settings size={16} style={{ color: 'var(--d-primary)' }} />
-            <h2 className={css('_fontsemi')}>Model Settings</h2>
-          </div>
-          <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', marginBottom: '1rem' }}>
-            Configure the base model and inference parameters.
-          </p>
+      {cards[activeTab].map((card) => {
+        const Icon = card.icon;
+        return (
+          <article key={card.id} className="d-surface carbon-card config-card carbon-fade-slide">
+            <div className="config-card__header">
+              <span className="config-card__icon">
+                <Icon size={16} />
+              </span>
+              <div className={css('_flex _col _gap1')}>
+                <strong>{card.title}</strong>
+                <p className="config-help">{card.copy}</p>
+              </div>
+            </div>
 
-          <div className={css('_grid _gap4')} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Model</label>
-              <select
-                className="d-control carbon-input"
-                value={model}
-                onChange={e => setModel(e.target.value)}
-                style={{ appearance: 'none' }}
-              >
-                <option value="gpt-4o">GPT-4o</option>
-                <option value="gpt-4o-mini">GPT-4o Mini</option>
-                <option value="claude-3-opus">Claude 3 Opus</option>
-                <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-                <option value="mistral-large">Mistral Large</option>
-              </select>
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Temperature</label>
-              <input className="d-control carbon-input mono-data" type="text" value={temperature} onChange={e => setTemperature(e.target.value)} />
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Max Tokens</label>
-              <input className="d-control carbon-input mono-data" type="text" value={maxTokens} onChange={e => setMaxTokens(e.target.value)} />
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Logging Level</label>
-              <select
-                className="d-control carbon-input"
-                value={loggingLevel}
-                onChange={e => setLoggingLevel(e.target.value)}
-                style={{ appearance: 'none' }}
-              >
-                <option value="debug">Debug</option>
-                <option value="info">Info</option>
-                <option value="warn">Warn</option>
-                <option value="error">Error</option>
-              </select>
-            </div>
-          </div>
+            {activeTab === 'model' ? (
+              <>
+                <SectionHeader label="Model settings" title="Primary inference controls" description="These controls map to the configured form-sections pattern for model behavior." />
+                <div className="config-form-grid">
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Model</span>
+                    <select className="d-control carbon-input" value={model} onChange={(event) => setModel(event.target.value)}>
+                      <option value="gpt-4o">GPT-4o</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini</option>
+                      <option value="claude-3-opus">Claude 3 Opus</option>
+                      <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                      <option value="mistral-large">Mistral Large</option>
+                    </select>
+                  </label>
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Temperature</span>
+                    <input className="d-control carbon-input mono-data" value={temperature} onChange={(event) => setTemperature(event.target.value)} />
+                  </label>
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Max tokens</span>
+                    <input className="d-control carbon-input mono-data" value={maxTokens} onChange={(event) => setMaxTokens(event.target.value)} />
+                  </label>
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Approval mode</span>
+                    <select className="d-control carbon-input" value={approvalMode} onChange={(event) => setApprovalMode(event.target.value)}>
+                      <option value="operator-review">Operator review</option>
+                      <option value="auto-safe">Auto safe paths only</option>
+                      <option value="manual-escalation">Manual escalation required</option>
+                    </select>
+                  </label>
+                </div>
+                <label className="config-field">
+                  <span className={css('_textsm _fontmedium')}>System prompt</span>
+                  <textarea className="d-control carbon-input" value={systemPrompt} onChange={(event) => setSystemPrompt(event.target.value)} rows={5} />
+                </label>
+              </>
+            ) : null}
 
-          <div className={css('_flex _col _gap1')} style={{ marginTop: '1rem' }}>
-            <label className={css('_textsm _fontmedium')}>System Prompt</label>
-            <textarea
-              className="d-control carbon-input"
-              value={systemPrompt}
-              onChange={e => setSystemPrompt(e.target.value)}
-              style={{ minHeight: '6rem', resize: 'vertical' }}
-            />
-          </div>
-        </div>
+            {activeTab === 'reliability' ? (
+              <>
+                <SectionHeader label="Reliability" title="Failure and recovery posture" description="Retries, timeouts, and rate limits sit together so teams can reason about the whole reliability story." />
+                <div className="config-form-grid">
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Retry count</span>
+                    <input className="d-control carbon-input mono-data" value={retryCount} onChange={(event) => setRetryCount(event.target.value)} />
+                  </label>
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Timeout (ms)</span>
+                    <input className="d-control carbon-input mono-data" value={timeout} onChange={(event) => setTimeoutValue(event.target.value)} />
+                  </label>
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Rate limit (req/min)</span>
+                    <input className="d-control carbon-input mono-data" value={rateLimit} onChange={(event) => setRateLimit(event.target.value)} />
+                  </label>
+                </div>
+              </>
+            ) : null}
 
-        {/* Reliability Settings */}
-        <div className="d-surface carbon-card">
-          <div className={css('_flex _aic _gap2')} style={{ marginBottom: '1rem' }}>
-            <RotateCcw size={16} style={{ color: 'var(--d-primary)' }} />
-            <h2 className={css('_fontsemi')}>Reliability</h2>
-          </div>
-          <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)', marginBottom: '1rem' }}>
-            Configure retry policies, timeouts, and rate limits.
-          </p>
-
-          <div className={css('_grid _gap4')} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Retry Count</label>
-              <input className="d-control carbon-input mono-data" type="text" value={retryCount} onChange={e => setRetryCount(e.target.value)} />
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Timeout (ms)</label>
-              <input className="d-control carbon-input mono-data" type="text" value={timeout} onChange={e => setTimeout_(e.target.value)} />
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Rate Limit (req/min)</label>
-              <input className="d-control carbon-input mono-data" type="text" value={rateLimit} onChange={e => setRateLimit(e.target.value)} />
-            </div>
-            <div className={css('_flex _col _gap1')}>
-              <label className={css('_textsm _fontmedium')}>Webhook URL</label>
-              <input className="d-control carbon-input mono-data" type="url" placeholder="https://..." value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} />
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className={css('_flex _jcfe _gap3')}>
-          <button className="d-interactive" data-variant="ghost" type="reset">Cancel</button>
-          <button className="d-interactive neon-glow-hover" data-variant="primary" type="submit">
-            <Save size={14} /> Save Configuration
-          </button>
-        </div>
-      </form>
+            {activeTab === 'integrations' ? (
+              <>
+                <SectionHeader label="Integrations" title="Outbound hooks and escalation targets" description="The operator only needs a few fields here, so the card stays dense and calm instead of over-designed." />
+                <div className="config-form-grid">
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Webhook URL</span>
+                    <input className="d-control carbon-input mono-data" value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} />
+                  </label>
+                  <label className="config-field">
+                    <span className={css('_textsm _fontmedium')}>Escalation channel</span>
+                    <select className="d-control carbon-input" value={approvalMode} onChange={(event) => setApprovalMode(event.target.value)}>
+                      <option value="operator-review">Operator review</option>
+                      <option value="pager-escalation">Pager escalation</option>
+                      <option value="chat-channel">Chat channel</option>
+                    </select>
+                  </label>
+                </div>
+              </>
+            ) : null}
+          </article>
+        );
+      })}
     </div>
   );
 }

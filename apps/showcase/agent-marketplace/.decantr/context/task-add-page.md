@@ -2,119 +2,61 @@
 
 **Enforcement Tier: Guided**
 
-You are adding new pages or features to an existing Decantr project. Guided mode enforces rules 1-5 (DNA) + 6, 7 (Blueprint).
+## Primary Compiled Contract
+
+- Start with `.decantr/context/mutation-add-page-pack.md` for the add-page workflow contract.
+- Use `.decantr/context/scaffold-pack.md` for the current route, shell, and theme contract.
+- Use `.decantr/context/pack-manifest.json` to choose the target section before you add a route.
+- After updating the essence, run `npx @decantr/cli refresh` so the new section/page packs exist before code generation.
+
+## Current Scaffold Contract
+
+- Target: `react-vite` (react)
+- Shell: `sidebar-main`
+- Theme: `carbon-neon` (dark)
+- Existing routes: 13
+
+## Existing Routes
+
+- `/agents` -> `agent-overview` [agent-swarm-canvas, agent-timeline]
+- `/agents/:id` -> `agent-detail` [agent-timeline, neural-feedback-loop]
+- `/agents/config` -> `agent-config` [nav-header, form-sections]
+- `/marketplace` -> `agent-marketplace` [hero, generative-card-grid]
+- `/login` -> `login` [form]
+- `/register` -> `register` [form]
+- `/forgot-password` -> `forgot-password` [form]
+- `/reset-password` -> `reset-password` [form]
+- `/verify-email` -> `verify-email` [form]
+- `/` -> `home` [hero, features, how-it-works, pricing, testimonials, cta]
+- `/transparency` -> `model-overview` [stats-overview, neural-feedback-loop]
+- `/transparency/inference` -> `inference-log` [agent-timeline]
+- `/transparency/confidence` -> `confidence-explorer` [intent-radar, stats-overview]
+
+### Section Packs
+
+- Section `agent-orchestrator` -> `.decantr/context/section-agent-orchestrator-pack.md`
+- Section `auth-full` -> `.decantr/context/section-auth-full-pack.md`
+- Section `marketing-saas` -> `.decantr/context/section-marketing-saas-pack.md`
+- Section `ai-transparency` -> `.decantr/context/section-ai-transparency-pack.md`
+
+### Page Packs
+
+- 13 compiled references available. Use `.decantr/context/pack-manifest.json` to resolve the exact files for this scope.
+
+## Required Workflow
+
+1. Add the new page to the essence before generating any code.
+2. Keep the new page inside a declared section and shell contract.
+3. Refresh derived files so Decantr recompiles the section and page packs.
+4. Read the relevant section pack and the new page pack before implementation.
+
+## Guided Checks
+
+- [error] Theme identity remains `carbon-neon` until the essence changes.
+- [error] The new page exists in the essence before code generation begins.
+- [error] New layouts only use registry-backed patterns.
+- [warn] New routes should fit the current shell and section topology instead of creating off-contract filler pages.
 
 ---
 
-## Enforced Rules
-
-| # | Layer | Rule | Enforcement | What It Means |
-|---|-------|------|-------------|---------------|
-| 1 | DNA | **Style** | ENFORCED | You MUST use theme `carbon-neon` |
-| 2 | DNA | **Density** | ENFORCED | You MUST follow density `comfortable` |
-| 3 | DNA | **Accessibility** | ENFORCED | You MUST meet WCAG level from essence |
-| 4 | DNA | **Theme-mode** | ENFORCED | Theme/mode combination must be compatible |
-| 5 | Blueprint | **Structure** | ENFORCED | Page MUST exist in essence before generating code |
-| 6 | Blueprint | Layout | advisory | Pattern order is flexible |
-| 7 | Blueprint | **Pattern-exists** | ENFORCED | All patterns must exist in the registry |
-
-## Before You Start
-
-### 1. Update the Essence
-
-Before generating code for a new page, add it to the relevant section in the essence:
-
-```json
-{
-  "blueprint": {
-    "sections": [
-      {
-        "id": "section-id",
-        "shell": "sidebar-main",
-        "pages": [
-          // ... existing pages ...
-          {
-            "id": "new-page-id",
-            "layout": ["pattern-1", "pattern-2"]
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### 2. Validate
-
-Run validation to ensure the essence is valid:
-
-```bash
-npx @decantr/cli validate
-```
-
-### 3. Then Generate
-
-Only after the page exists in the essence should you generate code for it.
-
-## Checklist
-
-Before adding a page:
-
-- [ ] The page ID is added to the target `blueprint.sections[].pages[]` in essence
-- [ ] The section has a `shell` defined
-- [ ] The page has a `layout[]` with pattern IDs
-- [ ] Validation passes (`npx @decantr/cli validate`)
-
-During code generation:
-
-- [ ] Use theme `carbon-neon` for all styling
-- [ ] Use theme `carbon-neon` decorators for decoration
-- [ ] Follow the shell structure for the target section (see section context file for shell notes)
-- [ ] Include patterns from the layout array
-
-After generation:
-
-- [ ] Run `npx @decantr/cli validate`
-- [ ] Verify the page matches the theme
-- [ ] Check that the theme decorator styles are applied
-
-## Violation Response
-
-If the user asks you to generate a page that doesn't exist in the essence:
-
-```
-STOP: I cannot generate code for page "{{page}}" because it's not
-in the essence blueprint. This would violate the Structure guard rule.
-
-Would you like me to:
-1. Add "{{page}}" to the essence first, then generate the code?
-2. Skip this page for now?
-
-Please confirm how you'd like to proceed.
-```
-
-**Never generate code for undefined pages.** Always update the essence first.
-
-## Adding Features
-
-When adding features (auth, search, payments, etc.):
-
-1. Add the feature to `features[]` in the essence
-2. Update relevant pages in `blueprint.sections[].pages[]`
-3. Then implement the feature
-
-## Pattern Selection
-
-For new pages, suggest patterns based on page purpose:
-
-| Page Type | Suggested Patterns |
-|-----------|-------------------|
-| Dashboard | `kpi-grid`, `chart-grid`, `data-table` |
-| Settings | `form-sections`, `filter-bar` |
-| Detail | `detail-header`, `activity-feed` |
-| List | `data-table`, `filter-bar`, `card-grid` |
-| Landing | `hero`, `cta-section`, `card-grid` |
-
----
-
-*Task context generated by Decantr CLI*
+*Task context generated from Decantr execution packs*

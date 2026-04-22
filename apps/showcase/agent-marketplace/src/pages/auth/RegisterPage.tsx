@@ -1,66 +1,67 @@
-import { css } from '@decantr/css';
-import { useNavigate, Link } from 'react-router-dom';
-import { Zap, Github, Mail } from 'lucide-react';
 import { useState } from 'react';
+import { Bot, Github, ShieldCheck, UserRound } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthDivider, AuthPanel } from '../../components/AuthPanel';
 import { useAuth } from '../../App';
 
 export function RegisterPage() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     login();
     navigate('/agents');
   }
 
   return (
-    <div className="d-surface carbon-card carbon-fade-slide" style={{ padding: '2rem' }}>
-      <div className={css('_flex _col _aic _gap1')} style={{ marginBottom: '1.5rem' }}>
-        <Zap size={24} style={{ color: 'var(--d-accent)', marginBottom: '0.5rem' }} />
-        <h1 className={css('_fontsemi _textxl')}>Create your account</h1>
-        <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Deploy your first autonomous agent</p>
-      </div>
-
-      <div className={css('_flex _col _gap2')} style={{ marginBottom: '1.5rem' }}>
-        <button className="d-interactive" data-variant="ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSubmit}>
-          <Github size={16} /> Continue with GitHub
+    <AuthPanel
+      eyebrow="Provisioning"
+      icon={Bot}
+      title="Create an operator account"
+      description="Registering here drops straight into the authenticated workspace so the showcase can validate the full public → gateway → app path."
+      footer={(
+        <p>
+          Already have access? <Link className="auth-link" to="/login">Sign in instead</Link>
+        </p>
+      )}
+    >
+      <div className="auth-provider-row">
+        <button type="button" className="d-interactive auth-provider" data-variant="ghost" onClick={handleSubmit}>
+          <Github size={14} />
+          Continue with GitHub
         </button>
-        <button className="d-interactive" data-variant="ghost" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSubmit}>
-          <Mail size={16} /> Continue with Google
+        <button type="button" className="d-interactive auth-provider" data-variant="ghost" onClick={handleSubmit}>
+          <ShieldCheck size={14} />
+          Continue with enterprise SSO
         </button>
       </div>
-
-      <div className={css('_flex _aic _gap3')} style={{ marginBottom: '1.5rem' }}>
-        <hr className="carbon-divider" style={{ flex: 1 }} />
-        <span className={css('_textxs')} style={{ color: 'var(--d-text-muted)' }}>OR</span>
-        <hr className="carbon-divider" style={{ flex: 1 }} />
-      </div>
-
-      <form onSubmit={handleSubmit} className={css('_flex _col _gap4')} role="form">
-        <div className={css('_flex _col _gap1')}>
-          <label className={css('_textsm _fontmedium')}>Name</label>
-          <input className="d-control carbon-input" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
+      <AuthDivider label="or create with email" />
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="auth-field__row">
+          <label className="auth-field">
+            <span>Name</span>
+            <input className="d-control carbon-input" value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" />
+          </label>
+          <label className="auth-field">
+            <span>Email</span>
+            <input className="d-control carbon-input" type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
+          </label>
         </div>
-        <div className={css('_flex _col _gap1')}>
-          <label className={css('_textsm _fontmedium')}>Email</label>
-          <input className="d-control carbon-input" type="email" placeholder="operator@company.dev" value={email} onChange={e => setEmail(e.target.value)} />
+        <label className="auth-field">
+          <span>Password</span>
+          <input className="d-control carbon-input" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
+        </label>
+        <div className="auth-actions">
+          <button type="submit" className="d-interactive" data-variant="primary">
+            <UserRound size={14} />
+            Provision workspace
+          </button>
         </div>
-        <div className={css('_flex _col _gap1')}>
-          <label className={css('_textsm _fontmedium')}>Password</label>
-          <input className="d-control carbon-input" type="password" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} />
-        </div>
-        <button className="d-interactive neon-glow-hover" data-variant="primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
-          Activate Account
-        </button>
       </form>
-
-      <p className={css('_textsm _textc')} style={{ color: 'var(--d-text-muted)', marginTop: '1.5rem' }}>
-        Already have an account? <Link to="/login" style={{ color: 'var(--d-accent)', textDecoration: 'none' }}>Log in</Link>
-      </p>
-    </div>
+    </AuthPanel>
   );
 }

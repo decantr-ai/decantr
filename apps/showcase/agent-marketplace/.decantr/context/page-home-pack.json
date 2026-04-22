@@ -1,0 +1,135 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the home route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home"
+    ],
+    "patternIds": [
+      "hero",
+      "features",
+      "how-it-works",
+      "pricing",
+      "testimonials",
+      "cta"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "home",
+    "top-nav-footer",
+    "marketing-saas",
+    "public",
+    "carbon-neon",
+    "dark",
+    "pricing-toggle",
+    "testimonials",
+    "feature-grid",
+    "hero",
+    "stack",
+    "features",
+    "grid",
+    "how-it-works",
+    "pricing",
+    "cta"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "home",
+    "path": "/",
+    "shell": "top-nav-footer",
+    "sectionId": "marketing-saas",
+    "sectionRole": "public",
+    "features": [
+      "pricing-toggle",
+      "testimonials",
+      "feature-grid"
+    ],
+    "surface": "_flex _col _gap4 _p4 _overauto _flex1",
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "landing",
+        "layout": "stack"
+      },
+      {
+        "id": "features",
+        "alias": "features",
+        "preset": "grid",
+        "layout": "grid"
+      },
+      {
+        "id": "how-it-works",
+        "alias": "how-it-works",
+        "preset": "horizontal",
+        "layout": "grid"
+      },
+      {
+        "id": "pricing",
+        "alias": "pricing",
+        "preset": "standard",
+        "layout": "stack"
+      },
+      {
+        "id": "testimonials",
+        "alias": "testimonials",
+        "preset": "grid",
+        "layout": "grid"
+      },
+      {
+        "id": "cta",
+        "alias": "cta",
+        "preset": "standard",
+        "layout": "hero"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the home route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=home | patterns=hero, features, how-it-works, pricing, testimonials, cta\n\n## Page Contract\n- Page: home\n- Path: /\n- Shell: top-nav-footer\n- Section: marketing-saas (public)\n- Theme: carbon-neon (dark)\n- Features: pricing-toggle, testimonials, feature-grid\n- Surface: _flex _col _gap4 _p4 _overauto _flex1\n\n## Page Patterns\n- hero -> hero [stack | landing]\n- features -> features [grid | grid]\n- how-it-works -> how-it-works [grid | horizontal]\n- pricing -> pricing [stack | standard]\n- testimonials -> testimonials [grid | grid]\n- cta -> cta [hero | standard]\n\n## Required Setup\n- Keep the compiled route and shell contract stable for this page.\n- Treat the listed page patterns as the primary structure for this route.\n\n## Allowed Vocabulary\n- home\n- top-nav-footer\n- marketing-saas\n- public\n- carbon-neon\n- dark\n- pricing-toggle\n- testimonials\n- feature-grid\n- hero\n- stack\n- features\n- grid\n- how-it-works\n- pricing\n- cta\n\n## Success Checks\n- The page keeps the compiled route, shell, and section contract intact. [error]\n- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]\n- Any declared wiring signals remain coherent with the rendered page structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

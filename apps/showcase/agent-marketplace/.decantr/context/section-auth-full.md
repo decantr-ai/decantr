@@ -42,6 +42,7 @@
 ## Shell Notes (centered)
 
 - **Max Width:** Centered content should be constrained to max-width: 28rem (448px) for auth forms, 36rem (576px) for wider content.
+- **Shell Spacing:** Centered shell owns viewport centering, outer padding, and maximum-width rhythm. Route components should render the card contents only and must not add nested full-height centering wrappers.
 - **Vertical Centering:** Center the content card vertically using min-height: 100dvh with flexbox centering.
 
 ## Spacing Guide
@@ -55,6 +56,10 @@
 | Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
 | Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
 | Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
+| Label gap | `--d-label-mb` | `0.75rem` | Gap below d-label section headers |
+| Label indent | `--d-label-px` | `0.75rem` | Anchor indent for d-label[data-anchor] |
+| Section gap | `--d-section-gap` | `1.5rem` | Gap between adjacent d-sections |
+| Annotation gap | `--d-annotation-mt` | `0.5rem` | Top margin on d-annotation |
 
 ---
 
@@ -81,23 +86,35 @@ Full token set: `src/styles/tokens.css`
 **Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
 **Theme decorators:**
 
-| Class | Usage |
-|-------|-------|
-| `.carbon-card` | Surface background, subtle border, 8px radius, hover shadow transition. |
-| `.carbon-code` | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
-| `.carbon-glass` | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
-| `.carbon-input` | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
-| `.carbon-canvas` | Background color using theme background token. Clean, minimal foundation. |
-| `.carbon-divider` | Hairline separator using border-color token. |
-| `.carbon-skeleton` | Loading placeholder with subtle pulse animation for skeleton states. |
-| `.carbon-bubble-ai` | Left-aligned message bubble with surface background for AI responses. |
-| `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
-| `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
+| Class | Intent | Key CSS | Pairs with |
+|-------|--------|---------|------------|
+| `.carbon-card` | Use for content containers. Hover state gains a subtle neon cyan shadow accent for the data-intensive, mission-control feel. |  | carbon-canvas,carbon-divider |
+| `.carbon-code` | Use for code blocks and terminal output. The left border accent uses the neon cyan for a more vivid developer-tool feel. |  | carbon-card,carbon-canvas |
+| `.carbon-glass` | Use for navigation and floating panels. In carbon-neon, these surfaces receive subtle neon accent highlights on interactive states. |  | carbon-canvas,carbon-card |
+| `.carbon-input` | Use for form inputs. On focus, the neon cyan accent creates a vivid glow ring that differentiates this from base carbon. |  | carbon-card,carbon-canvas |
+| `.carbon-canvas` | Use as the root page background. Identical to carbon but serves as the dark canvas for neon accent pops. |  | carbon-glass,carbon-divider |
+| `.carbon-divider` | Use to separate content sections cleanly. The neon accent appears on interactive elements, not dividers. |  | carbon-card,carbon-canvas |
+| `.carbon-skeleton` | Use while agent data or dashboard metrics load. The pulse indicates active data fetching without visual noise. |  | carbon-card,carbon-canvas |
+| `.carbon-bubble-ai` | Use for AI/agent responses in chat interfaces. Neutral surface lets the content and any inline neon status indicators stand out. |  | carbon-bubble-user,carbon-canvas |
+| `.carbon-fade-slide` | Use as the entrance animation for dashboard panels and data cards appearing on load. |  | carbon-card,carbon-glass |
+| `.carbon-bubble-user` | Use for user messages in agent chat interfaces. The tint is subtler, letting neon accents on status elements take visual priority. |  | carbon-bubble-ai,carbon-canvas |
+
+**Decorator usage guide:**
+- `.carbon-card`: Agent status cards, Data panels, Dashboard widgets, Metric containers
+- `.carbon-code`: Code blocks, Terminal output, API responses, Agent logs
+- `.carbon-glass`: Navigation bars, Sidebar panels, Floating panels, Sticky headers
+- `.carbon-input`: Text inputs, Search fields, Text areas, Select dropdowns
+- `.carbon-canvas`: Page root containers, App shell backgrounds
+- `.carbon-divider`: Section dividers, List separators, Content breaks
+- `.carbon-skeleton`: Loading skeletons, Metric placeholders, Agent status placeholders
+- `.carbon-bubble-ai`: Agent responses, System messages, Streaming output
+- `.carbon-fade-slide`: Page entrance animations, Dashboard widget reveals, Card stagger animations
+- `.carbon-bubble-user`: User chat messages, Command inputs
 
 **Compositions:** **auth:** Centered auth forms with clean card styling.
 **chat:** Chat interface with conversation list sidebar and message thread. Anchored input at bottom.
 **marketing:** Marketing pages with top nav and footer. Clean sections with subtle separators.
-**Spatial hints:** Density bias: none. Section padding: 80px. Card wrapping: minimal.
+**Spatial hints:** Density bias: none. Section padding: 5rem. Card wrapping: minimal.
 
 
 Usage: `className={css('_flex _col _gap4') + ' d-surface carbon-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
@@ -124,6 +141,9 @@ auth, mfa, oauth, email-verification, password-reset
 - `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
 
 ## Pattern Reference
+
+Scaffold-tier rule: implement the core visual structure, states, and required slots first.
+Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simulated live streaming as optional unless the slot guidance or section contract makes them explicitly required.
 
 ### form
 

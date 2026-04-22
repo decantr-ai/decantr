@@ -1,0 +1,139 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the agent-orchestrator section using the compiled sidebar-main shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "agent-overview",
+      "agent-detail",
+      "agent-config",
+      "agent-marketplace"
+    ],
+    "patternIds": [
+      "agent-swarm-canvas",
+      "agent-timeline",
+      "neural-feedback-loop",
+      "nav-header",
+      "form-sections",
+      "hero",
+      "generative-card-grid"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "agent-orchestrator",
+    "primary",
+    "sidebar-main",
+    "carbon-neon",
+    "dark",
+    "agents",
+    "monitoring",
+    "orchestration",
+    "real-time",
+    "websockets",
+    "agent-swarm-canvas",
+    "agent-timeline",
+    "neural-feedback-loop",
+    "nav-header",
+    "form-sections",
+    "hero",
+    "generative-card-grid"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "agent-orchestrator",
+    "role": "primary",
+    "shell": "sidebar-main",
+    "description": "Multi-agent management dashboard for monitoring, configuring, and orchestrating autonomous agent swarms with real-time status and marketplace discovery.",
+    "features": [
+      "agents",
+      "monitoring",
+      "orchestration",
+      "real-time",
+      "websockets"
+    ],
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "agent-overview",
+        "path": "/agents",
+        "patternIds": [
+          "agent-swarm-canvas",
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-detail",
+        "path": "/agents/:id",
+        "patternIds": [
+          "agent-timeline",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-config",
+        "path": "/agents/config",
+        "patternIds": [
+          "nav-header",
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-marketplace",
+        "path": "/marketplace",
+        "patternIds": [
+          "hero",
+          "generative-card-grid"
+        ],
+        "shell": "sidebar-main"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the agent-orchestrator section using the compiled sidebar-main shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=agent-overview, agent-detail, agent-config, agent-marketplace | patterns=agent-swarm-canvas, agent-timeline, neural-feedback-loop, nav-header, form-sections, hero, generative-card-grid\n\n## Section Contract\n- Section: agent-orchestrator\n- Role: primary\n- Shell: sidebar-main\n- Theme: carbon-neon (dark)\n- Features: agents, monitoring, orchestration, real-time, websockets\n- Description: Multi-agent management dashboard for monitoring, configuring, and orchestrating autonomous agent swarms with real-time status and marketplace discovery.\n\n## Section Routes\n- /agents -> agent-overview @ sidebar-main [agent-swarm-canvas, agent-timeline]\n- /agents/:id -> agent-detail @ sidebar-main [agent-timeline, neural-feedback-loop]\n- /agents/config -> agent-config @ sidebar-main [nav-header, form-sections]\n- /marketplace -> agent-marketplace @ sidebar-main [hero, generative-card-grid]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- agent-orchestrator\n- primary\n- sidebar-main\n- carbon-neon\n- dark\n- agents\n- monitoring\n- orchestration\n- real-time\n- websockets\n- agent-swarm-canvas\n- agent-timeline\n- neural-feedback-loop\n- nav-header\n- form-sections\n- hero\n- generative-card-grid\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

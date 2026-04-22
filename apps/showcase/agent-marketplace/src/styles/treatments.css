@@ -8,7 +8,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  padding: var(--d-interactive-py) var(--d-interactive-px);
+  padding: calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px);
   border: 1px solid var(--d-border);
   border-radius: var(--d-radius);
   background: transparent;
@@ -66,7 +66,7 @@
   border: 1px solid var(--d-border);
   border-radius: var(--d-radius);
   box-shadow: var(--d-shadow);
-  padding: var(--d-surface-p);
+  padding: calc(var(--d-surface-p) * var(--d-density-scale, 1));
 }
 
 .d-surface[data-elevation="raised"] {
@@ -98,7 +98,7 @@
 }
 
 .d-data-header {
-  padding: var(--d-data-py) var(--d-content-gap);
+  padding: calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap);
   font-weight: 500;
   color: var(--d-text-muted);
   border-bottom: 1px solid var(--d-border);
@@ -117,14 +117,14 @@
 }
 
 .d-data-cell {
-  padding: var(--d-data-py) var(--d-content-gap);
+  padding: calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap);
   vertical-align: middle;
 }
 
 .d-control {
   background: var(--d-surface);
   color: var(--d-text);
-  padding: var(--d-control-py) 0.75rem;
+  padding: calc(var(--d-control-py) * var(--d-density-scale, 1)) 0.75rem;
   border-radius: var(--d-radius);
   border: 1px solid var(--d-border);
   width: 100%;
@@ -153,17 +153,22 @@
 }
 
 .d-section {
-  padding: var(--d-section-py) 0;
+  --d-density-scale: 1;
+  padding: calc(var(--d-section-py) * var(--d-density-scale)) 0;
+}
+
+.d-section[data-density="compact"] {
+  --d-density-scale: 0.65;
+}
+
+.d-section[data-density="spacious"] {
+  --d-density-scale: 1.4;
 }
 
 .d-section + .d-section {
   border-top: 1px solid transparent;
   border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;
-  margin-top: var(--d-gap-2);
-}
-
-.d-section[data-density="compact"] {
-  padding: calc(var(--d-section-py) * 0.5) 0;
+  margin-top: calc(var(--d-section-gap) * var(--d-density-scale, 1));
 }
 
 .d-annotation {
@@ -174,7 +179,8 @@
   font-weight: 500;
   padding: 0.125rem 0.5rem;
   border-radius: var(--d-radius-full);
-  background: var(--d-surface);
+  background: color-mix(in srgb, var(--d-surface-raised) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--d-border) 72%, transparent);
   color: var(--d-text-muted);
   white-space: nowrap;
 }
@@ -206,6 +212,13 @@
   letter-spacing: 0.08em;
   color: var(--d-text-muted);
   font-family: var(--d-font-mono, ui-monospace, monospace);
+  display: block;
+  margin-bottom: calc(var(--d-label-mb) * var(--d-density-scale, 1));
+}
+
+.d-label[data-anchor] {
+  padding-left: var(--d-label-px);
+  border-left: 2px solid var(--d-accent);
 }
 
 /* ── Theme-scoped Treatment Overrides ── */
@@ -225,8 +238,94 @@
 } /* end @layer treatments */
 
 @layer decorators {
-  /* Decorator CSS is AI-generated from structured definitions in section context files. */
-  /* See .decantr/context/section-*.md for intent, suggested properties, and usage guidance. */
+.carbon-card {
+  border: 1px solid var(--d-border, #3F3F46);
+  background: var(--d-surface, #1F1F23);
+  transition: box-shadow 150ms ease;
+  border-radius: var(--d-radius, 8px);
+}
+
+.carbon-code {
+  padding: 16px;
+  background: var(--d-surface-raised, #27272A);
+  border-left: 3px solid var(--d-accent, #00D4FF);
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace;
+  border-radius: var(--d-radius, 6px);
+}
+
+.carbon-glass {
+  border: 1px solid var(--d-border, #3F3F46);
+  background: rgba(31, 31, 35, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.carbon-input {
+  border: 1px solid var(--d-border, #3F3F46);
+  background: var(--d-surface, #1F1F23);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  border-radius: var(--d-radius, 8px);
+}
+
+.carbon-canvas {
+  color: var(--d-fg, #FAFAFA);
+  min-height: 100vh;
+  background-color: var(--d-bg, #18181B);
+}
+
+.carbon-divider {
+  margin: 0;
+  border-top: 1px solid var(--d-border, #3F3F46);
+}
+
+.carbon-skeleton {
+  animation: pulse 1.5s ease-in-out infinite;
+  background: var(--d-surface-raised, #27272A);
+  border-radius: var(--d-radius, 6px);
+}
+
+.carbon-bubble-ai {
+  padding: 12px 16px;
+  max-width: 80%;
+  background: var(--d-surface, #1F1F23);
+  margin-right: auto;
+  border-radius: 16px 16px 16px 4px;
+}
+
+.carbon-fade-slide {
+  opacity: 0;
+  animation: carbon-fade-slide 200ms ease-out both;
+  transform: translateY(12px);
+}
+
+.carbon-bubble-user {
+  padding: 12px 16px;
+  max-width: 80%;
+  background: rgba(124, 147, 176, 0.15);
+  margin-left: auto;
+  border-radius: 16px 16px 4px 16px;
+}
+
+@keyframes carbon-fade-slide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+  /* .carbon-card: Surface background, subtle border, 8px radius, hover shadow transition. */
+  /* .carbon-code: Monospace font, surface-raised background, subtle 3px left border accent in primary color. */
+  /* .carbon-glass: Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. */
+  /* .carbon-input: Soft border with gentle focus ring using primary blue. Border transitions on focus. */
+  /* .carbon-canvas: Background color using theme background token. Clean, minimal foundation. */
+  /* .carbon-divider: Hairline separator using border-color token. */
+  /* .carbon-skeleton: Loading placeholder with subtle pulse animation for skeleton states. */
+  /* .carbon-bubble-ai: Left-aligned message bubble with surface background for AI responses. */
+  /* .carbon-fade-slide: Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. */
+  /* .carbon-bubble-user: Right-aligned message bubble with primary-tinted background for user messages. */
 }
 
 @layer utilities {

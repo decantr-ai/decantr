@@ -10,7 +10,7 @@ export type IRNodeType =
   | 'store';    // Global state signals
 
 export interface IRSpatial {
-  gap: string;            // e.g. "4" (framework maps to _gap4 or gap-4)
+  gap: string;            // e.g. "_gap4", "gap4", or "4" depending on resolution layer
   padding?: string;       // e.g. "4" or "6"
   responsive?: {
     breakpoint: string;   // "sm" | "md" | "lg" | "xl"

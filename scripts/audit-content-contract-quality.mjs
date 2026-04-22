@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveAtomDecl } from '../packages/css/dist/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');
@@ -8,6 +9,29 @@ const defaultContentRoot = process.env.DECANTR_CONTENT_DIR
   ? resolve(process.env.DECANTR_CONTENT_DIR)
   : resolve(repoRoot, '..', 'decantr-content');
 const showcaseManifestPath = join(repoRoot, 'apps', 'showcase', 'manifest.json');
+
+const BP_RE = /^_(sm|md|lg|xl):(.+)$/;
+const CQ_RE = /^_cq(\d+):(.+)$/;
+const GP_RE = /^_(gh|gf|ga|ph|pf|pa):(.+)$/;
+const PSEUDO_RE = /^_(h|f|fv|a|fw):(.+)$/;
+const MOTION_RE = /^_(motionSafe|motionReduce):(.+)$/;
+const ALPHA_RE = /^(_[a-zA-Z0-9]+)\/(\d+)$/;
+const ARB_RE = /^_([a-zA-Z]+)\[([^\]]+)\]$/;
+const SPECIAL_ATOMS = new Set(['_group', '_peer', '_prose', '_divideY', '_divideX']);
+const ARB_PROPS = new Set([
+  'w', 'h', 'mw', 'mh', 'minw', 'minh',
+  'p', 'pt', 'pr', 'pb', 'pl', 'px', 'py',
+  'm', 'mt', 'mr', 'mb', 'ml', 'mx', 'my',
+  'gap', 'gx', 'gy',
+  't', 'fs', 'lh', 'fw', 'ls',
+  'r', 'bg', 'fg', 'bc',
+  'bw', 'bt', 'bb', 'br', 'bl',
+  'z', 'op',
+  'top', 'right', 'bottom', 'left', 'inset',
+  'shadow', 'bf',
+  'outline', 'trans', 'object',
+  'gc', 'gr',
+]);
 
 function parseArgs(argv) {
   const options = {
@@ -122,6 +146,92 @@ function shellReviewEntries(routes, archetypes) {
     roles: [...entry.roles],
     routes: entry.routes,
   }));
+}
+
+function isSupportedAtomToken(token) {
+  if (!token || !token.startsWith('_')) return true;
+  if (SPECIAL_ATOMS.has(token)) return true;
+
+  const motionMatch = token.match(MOTION_RE);
+  if (motionMatch) {
+    return isSupportedAtomToken(`_${motionMatch[2]}`);
+  }
+
+  const bpMatch = token.match(BP_RE);
+  if (bpMatch) {
+    return isSupportedAtomToken(`_${bpMatch[2]}`);
+  }
+
+  const cqMatch = token.match(CQ_RE);
+  if (cqMatch) {
+    return isSupportedAtomToken(`_${cqMatch[2]}`);
+  }
+
+  const gpMatch = token.match(GP_RE);
+  if (gpMatch) {
+    return isSupportedAtomToken(`_${gpMatch[2]}`);
+  }
+
+  const pseudoMatch = token.match(PSEUDO_RE);
+  if (pseudoMatch) {
+    return isSupportedAtomToken(`_${pseudoMatch[2]}`);
+  }
+
+  const alphaMatch = token.match(ALPHA_RE);
+  if (alphaMatch) {
+    return isSupportedAtomToken(alphaMatch[1]);
+  }
+
+  if (resolveAtomDecl(token)) return true;
+
+  const arbitraryMatch = token.match(ARB_RE);
+  if (arbitraryMatch) {
+    const propPrefix = arbitraryMatch[1];
+    return ARB_PROPS.has(propPrefix) || ARB_PROPS.has(propPrefix.toLowerCase());
+  }
+
+  return false;
+}
+
+function collectAtomStringEntries(value, path = 'root', entries = []) {
+  if (!value) return entries;
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => collectAtomStringEntries(item, `${path}[${index}]`, entries));
+    return entries;
+  }
+
+  if (typeof value !== 'object') return entries;
+
+  if (typeof value.atoms === 'string' && value.atoms.trim().length > 0) {
+    entries.push({ path: `${path}.atoms`, atoms: value.atoms.trim() });
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    if (key === 'atoms') continue;
+    collectAtomStringEntries(child, path === 'root' ? key : `${path}.${key}`, entries);
+  }
+
+  return entries;
+}
+
+function findUnsupportedAtoms(value) {
+  const issues = [];
+  for (const entry of collectAtomStringEntries(value)) {
+    const unsupported = entry.atoms
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((token) => !isSupportedAtomToken(token));
+
+    if (unsupported.length > 0) {
+      issues.push({
+        path: entry.path,
+        atoms: entry.atoms,
+        unsupported: [...new Set(unsupported)],
+      });
+    }
+  }
+  return issues;
 }
 
 function manualChecklist(shellSpread) {
@@ -284,6 +394,16 @@ function auditBlueprint(contentRoot, blueprintId) {
     if (!report.layoutHints) {
       addFinding(findings, 'info', 'pattern', `Pattern "${patternId}" is missing layout_hints.`, report);
     }
+
+    for (const issue of findUnsupportedAtoms(pattern)) {
+      addFinding(
+        findings,
+        'warn',
+        'pattern',
+        `Pattern "${patternId}" uses unsupported atom tokens in ${issue.path}: ${issue.unsupported.join(', ')}.`,
+        { patternId, ...issue },
+      );
+    }
   }
 
   const shellReports = [];
@@ -316,6 +436,16 @@ function auditBlueprint(contentRoot, blueprintId) {
     }
     if (report.usesPseudoRuntimeExample) {
       addFinding(findings, 'warn', 'shell', `Shell "${shellId}" still uses pseudo-Decantr runtime code examples rather than target-specific examples.`, report);
+    }
+
+    for (const issue of findUnsupportedAtoms(shell)) {
+      addFinding(
+        findings,
+        'warn',
+        'shell',
+        `Shell "${shellId}" uses unsupported atom tokens in ${issue.path}: ${issue.unsupported.join(', ')}.`,
+        { shellId, ...issue },
+      );
     }
   }
 

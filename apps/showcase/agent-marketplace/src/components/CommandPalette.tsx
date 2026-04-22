@@ -1,25 +1,26 @@
-import { css } from '@decantr/css';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight, Search } from 'lucide-react';
+import type { AppCommand } from '../data/mock';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { Search, LayoutDashboard, Store, Eye, Activity, Target, Settings, ArrowRight } from 'lucide-react';
 
-const COMMANDS = [
-  { label: 'Go to Agents', route: '/agents', icon: LayoutDashboard, shortcut: 'G A' },
-  { label: 'Go to Marketplace', route: '/marketplace', icon: Store, shortcut: 'G M' },
-  { label: 'Go to Transparency', route: '/transparency', icon: Eye, shortcut: 'G T' },
-  { label: 'Inference Log', route: '/transparency/inference', icon: Activity },
-  { label: 'Confidence Explorer', route: '/transparency/confidence', icon: Target },
-  { label: 'Agent Configuration', route: '/agents/config', icon: Settings },
-];
-
-export function CommandPalette({ onClose }: { onClose: () => void }) {
-  const [query, setQuery] = useState('');
+export function CommandPalette({
+  commands,
+  onClose,
+}: {
+  commands: AppCommand[];
+  onClose: () => void;
+}) {
   const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const filtered = COMMANDS.filter(c =>
-    c.label.toLowerCase().includes(query.toLowerCase())
+  const filtered = useMemo(
+    () => commands.filter((command) => {
+      const haystack = `${command.label} ${command.description}`.toLowerCase();
+      return haystack.includes(query.toLowerCase());
+    }),
+    [commands, query],
   );
 
   useEffect(() => {
@@ -27,78 +28,84 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   }, []);
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') { onClose(); return; }
-      if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => Math.min(s + 1, filtered.length - 1)); }
-      if (e.key === 'ArrowUp') { e.preventDefault(); setSelected(s => Math.max(s - 1, 0)); }
-      if (e.key === 'Enter' && filtered[selected]) {
+    setSelected(0);
+  }, [query]);
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setSelected((current) => Math.min(current + 1, Math.max(filtered.length - 1, 0)));
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setSelected((current) => Math.max(current - 1, 0));
+      }
+      if (event.key === 'Enter' && filtered[selected]) {
         navigate(filtered[selected].route);
         onClose();
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [filtered, selected, navigate, onClose]);
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [filtered, navigate, onClose, selected]);
 
   return (
-    <div
-      className={css('_fixed _inset0 _flex _aic _jcc')}
-      style={{ zIndex: 100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-      onClick={onClose}
-    >
-      <div
-        className="d-surface carbon-glass"
-        style={{ width: '100%', maxWidth: 480, padding: 0, overflow: 'hidden' }}
-        onClick={e => e.stopPropagation()}
+    <div className="command-palette" onClick={onClose}>
+      <section
+        className="d-surface carbon-glass command-palette__panel"
+        onClick={(event) => event.stopPropagation()}
+        aria-label="Command palette"
       >
-        <div className={css('_flex _aic _gap3')} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--d-border)' }}>
-          <Search size={16} style={{ color: 'var(--d-text-muted)', flexShrink: 0 }} />
+        <div className="command-palette__search">
+          <Search size={16} />
           <input
             ref={inputRef}
             value={query}
-            onChange={e => { setQuery(e.target.value); setSelected(0); }}
-            placeholder="Type a command..."
-            className="d-control"
-            style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search routes, actions, or sections"
+            className="d-control command-palette__input"
+            aria-label="Search commands"
           />
         </div>
-        <div style={{ maxHeight: 320, overflowY: 'auto', padding: '0.25rem' }}>
-          {filtered.map((cmd, i) => (
-            <button
-              key={cmd.route}
-              className={css('_flex _aic _jcsb _wfull')}
-              style={{
-                padding: '0.5rem 0.75rem',
-                background: i === selected ? 'var(--d-surface-raised)' : 'transparent',
-                border: 'none',
-                borderRadius: 'var(--d-radius-sm)',
-                color: 'var(--d-text)',
-                cursor: 'pointer',
-                transition: 'background 100ms',
-                fontSize: '0.875rem',
-              }}
-              onClick={() => { navigate(cmd.route); onClose(); }}
-              onMouseEnter={() => setSelected(i)}
-            >
-              <span className={css('_flex _aic _gap3')}>
-                <cmd.icon size={16} style={{ color: 'var(--d-text-muted)' }} />
-                <span>{cmd.label}</span>
-              </span>
-              <span className={css('_flex _aic _gap2')}>
-                {cmd.shortcut && (
-                  <kbd className={css('_textxs') + ' mono-data'} style={{ color: 'var(--d-text-muted)', opacity: 0.6 }}>{cmd.shortcut}</kbd>
-                )}
-                <ArrowRight size={12} style={{ color: 'var(--d-text-muted)', opacity: 0.4 }} />
-              </span>
-            </button>
-          ))}
-          {filtered.length === 0 && (
-            <p className={css('_textsm _textc')} style={{ color: 'var(--d-text-muted)', padding: '1.5rem' }}>
-              No commands found
-            </p>
-          )}
+
+        <div className="command-palette__list">
+          {filtered.length === 0 ? (
+            <p className="command-palette__empty">No matching commands yet.</p>
+          ) : filtered.map((command, index) => {
+            const Icon = command.icon;
+            return (
+              <button
+                key={command.route}
+                type="button"
+                className="command-palette__item"
+                data-selected={index === selected}
+                aria-label={`${command.label}. ${command.description}`}
+                onClick={() => {
+                  navigate(command.route);
+                  onClose();
+                }}
+                onMouseEnter={() => setSelected(index)}
+              >
+                <Icon size={16} />
+                <span className="command-palette__item-copy">
+                  <strong>{command.label}</strong>
+                  <span className="command-palette__item-description">{command.description}</span>
+                </span>
+                <span className="command-palette__item-meta">
+                  {command.shortcut ? <kbd>{command.shortcut}</kbd> : null}
+                  <ArrowRight size={14} />
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

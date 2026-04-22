@@ -1,0 +1,269 @@
+{
+  "$schema": "https://decantr.ai/schemas/mutation-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "mutation",
+  "objective": "Execute the add-page workflow against the compiled app contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "agent-overview",
+      "agent-detail",
+      "agent-config",
+      "agent-marketplace",
+      "login",
+      "register",
+      "forgot-password",
+      "reset-password",
+      "verify-email",
+      "home",
+      "model-overview",
+      "inference-log",
+      "confidence-explorer"
+    ],
+    "patternIds": [
+      "agent-swarm-canvas",
+      "agent-timeline",
+      "neural-feedback-loop",
+      "nav-header",
+      "form-sections",
+      "hero",
+      "generative-card-grid",
+      "form",
+      "features",
+      "how-it-works",
+      "pricing",
+      "testimonials",
+      "cta",
+      "stats-overview",
+      "intent-radar"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the compiled topology as the source of truth until the essence changes.",
+    "Refresh Decantr context after structural mutations so downstream tasks read current packs."
+  ],
+  "allowedVocabulary": [
+    "add-page",
+    "sidebar-main",
+    "carbon-neon",
+    "dark",
+    "agents",
+    "monitoring",
+    "orchestration",
+    "real-time",
+    "websockets",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "pricing-toggle",
+    "testimonials",
+    "feature-grid",
+    "analytics",
+    "observability",
+    "theme-toggle",
+    "command-palette",
+    "agent-swarm-canvas",
+    "agent-timeline",
+    "neural-feedback-loop",
+    "nav-header",
+    "form-sections",
+    "hero",
+    "generative-card-grid",
+    "form",
+    "features",
+    "how-it-works",
+    "pricing",
+    "cta",
+    "stats-overview",
+    "intent-radar"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "mutation-essence-first",
+      "label": "New pages are declared in the essence before any code generation begins.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-shell-contract",
+      "label": "New routes inherit an existing shell and section contract unless the essence changes first.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-refresh",
+      "label": "Refresh compiled packs after the mutation so downstream tasks read current topology.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "mutationType": "add-page",
+    "shell": "sidebar-main",
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routing": "hash",
+    "features": [
+      "agents",
+      "monitoring",
+      "orchestration",
+      "real-time",
+      "websockets",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "pricing-toggle",
+      "testimonials",
+      "feature-grid",
+      "analytics",
+      "observability",
+      "theme-toggle",
+      "command-palette"
+    ],
+    "routes": [
+      {
+        "pageId": "agent-overview",
+        "path": "/agents",
+        "patternIds": [
+          "agent-swarm-canvas",
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-detail",
+        "path": "/agents/:id",
+        "patternIds": [
+          "agent-timeline",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-config",
+        "path": "/agents/config",
+        "patternIds": [
+          "nav-header",
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-marketplace",
+        "path": "/marketplace",
+        "patternIds": [
+          "hero",
+          "generative-card-grid"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "login",
+        "path": "/login",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "path": "/register",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "path": "/forgot-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "reset-password",
+        "path": "/reset-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "verify-email",
+        "path": "/verify-email",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "home",
+        "path": "/",
+        "patternIds": [
+          "hero",
+          "features",
+          "how-it-works",
+          "pricing",
+          "testimonials",
+          "cta"
+        ],
+        "shell": "top-nav-footer"
+      },
+      {
+        "pageId": "model-overview",
+        "path": "/transparency",
+        "patternIds": [
+          "stats-overview",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "inference-log",
+        "path": "/transparency/inference",
+        "patternIds": [
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "confidence-explorer",
+        "path": "/transparency/confidence",
+        "patternIds": [
+          "intent-radar",
+          "stats-overview"
+        ],
+        "shell": "sidebar-main"
+      }
+    ],
+    "workflow": [
+      "Declare the new page in the essence before generating code.",
+      "Refresh Decantr context so section and page packs include the new route.",
+      "Read the relevant section pack and new page pack before implementation."
+    ]
+  },
+  "renderedMarkdown": "# Mutation Pack\n\n**Objective:** Execute the add-page workflow against the compiled app contract.\n**Target:** react-vite (react)\n**Scope:** pages=agent-overview, agent-detail, agent-config, agent-marketplace, login, register, forgot-password, reset-password, verify-email, home, model-overview, inference-log, confidence-explorer | patterns=agent-swarm-canvas, agent-timeline, neural-feedback-loop, nav-header, form-sections, hero, generative-card-grid, form, features, how-it-works, pricing, testimonials, cta, stats-overview, intent-radar\n\n## Mutation Contract\n- Operation: add-page\n- Shell: sidebar-main\n- Theme: carbon-neon (dark)\n- Routing: hash\n- Features: agents, monitoring, orchestration, real-time, websockets, auth, mfa, oauth, email-verification, password-reset, pricing-toggle, testimonials, feature-grid, analytics, observability, theme-toggle, command-palette\n\n## Route Topology\n- /agents -> agent-overview @ sidebar-main [agent-swarm-canvas, agent-timeline]\n- /agents/:id -> agent-detail @ sidebar-main [agent-timeline, neural-feedback-loop]\n- /agents/config -> agent-config @ sidebar-main [nav-header, form-sections]\n- /marketplace -> agent-marketplace @ sidebar-main [hero, generative-card-grid]\n- /login -> login @ centered [form]\n- /register -> register @ centered [form]\n- /forgot-password -> forgot-password @ centered [form]\n- /reset-password -> reset-password @ centered [form]\n- /verify-email -> verify-email @ centered [form]\n- / -> home @ top-nav-footer [hero, features, how-it-works, pricing, testimonials, cta]\n- /transparency -> model-overview @ sidebar-main [stats-overview, neural-feedback-loop]\n- /transparency/inference -> inference-log @ sidebar-main [agent-timeline]\n- /transparency/confidence -> confidence-explorer @ sidebar-main [intent-radar, stats-overview]\n\n## Workflow\n- Declare the new page in the essence before generating code.\n- Refresh Decantr context so section and page packs include the new route.\n- Read the relevant section pack and new page pack before implementation.\n\n## Required Setup\n- Treat the compiled topology as the source of truth until the essence changes.\n- Refresh Decantr context after structural mutations so downstream tasks read current packs.\n\n## Allowed Vocabulary\n- add-page\n- sidebar-main\n- carbon-neon\n- dark\n- agents\n- monitoring\n- orchestration\n- real-time\n- websockets\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- pricing-toggle\n- testimonials\n- feature-grid\n- analytics\n- observability\n- theme-toggle\n- command-palette\n- agent-swarm-canvas\n- agent-timeline\n- neural-feedback-loop\n- nav-header\n- form-sections\n- hero\n- generative-card-grid\n- form\n- features\n- how-it-works\n- pricing\n- cta\n- stats-overview\n- intent-radar\n\n## Success Checks\n- New pages are declared in the essence before any code generation begins. [error]\n- New routes inherit an existing shell and section contract unless the essence changes first. [error]\n- Refresh compiled packs after the mutation so downstream tasks read current topology. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

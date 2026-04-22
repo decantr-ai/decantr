@@ -43,5 +43,9 @@
   --d-data-py: 0.625rem;
   --d-control-py: 0.5rem;
   --d-content-gap: 1rem;
+  --d-label-mb: 0.75rem;
+  --d-label-px: 0.75rem;
+  --d-section-gap: 1.5rem;
+  --d-annotation-mt: 0.5rem;
 }
 }

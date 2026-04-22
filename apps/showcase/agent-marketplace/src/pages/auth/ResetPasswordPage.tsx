@@ -1,43 +1,48 @@
-import { css } from '@decantr/css';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock } from 'lucide-react';
 import { useState } from 'react';
+import { Lock, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AuthPanel } from '../../components/AuthPanel';
 
 export function ResetPasswordPage() {
-  const navigate = useNavigate();
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    navigate('/login');
-  }
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [complete, setComplete] = useState(false);
 
   return (
-    <div className="d-surface carbon-card carbon-fade-slide" style={{ padding: '2rem' }}>
-      <div className={css('_flex _col _aic _gap1')} style={{ marginBottom: '1.5rem' }}>
-        <Lock size={24} style={{ color: 'var(--d-accent)', marginBottom: '0.5rem' }} />
-        <h1 className={css('_fontsemi _textxl')}>Set new password</h1>
-        <p className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>Choose a strong password for your account</p>
-      </div>
-
-      <form onSubmit={handleSubmit} className={css('_flex _col _gap4')} role="form">
-        <div className={css('_flex _col _gap1')}>
-          <label className={css('_textsm _fontmedium')}>New password</label>
-          <input className="d-control carbon-input" type="password" placeholder="Enter new password" value={password} onChange={e => setPassword(e.target.value)} />
+    <AuthPanel
+      eyebrow="Recovery"
+      icon={ShieldCheck}
+      title={complete ? 'Password updated' : 'Choose a new password'}
+      description={complete
+        ? 'Your gateway credentials have been refreshed. Continue through verification or head straight back to sign in.'
+        : 'The reset route keeps the focus tight: new password, confirmation, and one clear next action.'}
+      footer={<Link className="auth-link" to="/login">Back to sign in</Link>}
+    >
+      {complete ? (
+        <div className="auth-status-card">
+          <ShieldCheck size={20} />
+          <strong>Recovery complete</strong>
+          <p className="auth-helper">Move to the email verification route to complete the full gateway story.</p>
+          <Link className="d-interactive" data-variant="primary" to="/verify-email">Continue to verification</Link>
         </div>
-        <div className={css('_flex _col _gap1')}>
-          <label className={css('_textsm _fontmedium')}>Confirm password</label>
-          <input className="d-control carbon-input" type="password" placeholder="Confirm new password" value={confirm} onChange={e => setConfirm(e.target.value)} />
-        </div>
-        <button className="d-interactive neon-glow-hover" data-variant="primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
-          Update Password
-        </button>
-      </form>
-
-      <p className={css('_textsm _textc')} style={{ color: 'var(--d-text-muted)', marginTop: '1.5rem' }}>
-        <Link to="/login" style={{ color: 'var(--d-accent)', textDecoration: 'none' }}>Back to login</Link>
-      </p>
-    </div>
+      ) : (
+        <form className="auth-form" onSubmit={(event) => { event.preventDefault(); setComplete(true); }}>
+          <label className="auth-field">
+            <span>New password</span>
+            <input className="d-control carbon-input" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" />
+          </label>
+          <label className="auth-field">
+            <span>Confirm password</span>
+            <input className="d-control carbon-input" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" />
+          </label>
+          <div className="auth-actions">
+            <button type="submit" className="d-interactive" data-variant="primary">
+              <Lock size={14} />
+              Save new password
+            </button>
+          </div>
+        </form>
+      )}
+    </AuthPanel>
   );
 }

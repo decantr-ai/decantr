@@ -1,0 +1,106 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the confidence-explorer route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "confidence-explorer"
+    ],
+    "patternIds": [
+      "intent-radar",
+      "stats-overview"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "confidence-explorer",
+    "sidebar-main",
+    "ai-transparency",
+    "auxiliary",
+    "carbon-neon",
+    "dark",
+    "monitoring",
+    "analytics",
+    "observability",
+    "intent-radar",
+    "confidence-distribution",
+    "spatial",
+    "stats-overview",
+    "metric-breakdown",
+    "grid"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "confidence-explorer",
+    "path": "/transparency/confidence",
+    "shell": "sidebar-main",
+    "sectionId": "ai-transparency",
+    "sectionRole": "auxiliary",
+    "features": [
+      "monitoring",
+      "analytics",
+      "observability"
+    ],
+    "surface": "_flex _col _gap4 _p4 _overauto _flex1",
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "intent-radar",
+        "alias": "confidence-distribution",
+        "preset": "standard",
+        "layout": "spatial"
+      },
+      {
+        "id": "stats-overview",
+        "alias": "metric-breakdown",
+        "preset": "standard",
+        "layout": "grid"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the confidence-explorer route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=confidence-explorer | patterns=intent-radar, stats-overview\n\n## Page Contract\n- Page: confidence-explorer\n- Path: /transparency/confidence\n- Shell: sidebar-main\n- Section: ai-transparency (auxiliary)\n- Theme: carbon-neon (dark)\n- Features: monitoring, analytics, observability\n- Surface: _flex _col _gap4 _p4 _overauto _flex1\n\n## Page Patterns\n- confidence-distribution -> intent-radar [spatial | standard]\n- metric-breakdown -> stats-overview [grid | standard]\n\n## Required Setup\n- Keep the compiled route and shell contract stable for this page.\n- Treat the listed page patterns as the primary structure for this route.\n\n## Allowed Vocabulary\n- confidence-explorer\n- sidebar-main\n- ai-transparency\n- auxiliary\n- carbon-neon\n- dark\n- monitoring\n- analytics\n- observability\n- intent-radar\n- confidence-distribution\n- spatial\n- stats-overview\n- metric-breakdown\n- grid\n\n## Success Checks\n- The page keeps the compiled route, shell, and section contract intact. [error]\n- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]\n- Any declared wiring signals remain coherent with the rendered page structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

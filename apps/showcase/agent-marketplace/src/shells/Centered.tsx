@@ -1,16 +1,12 @@
 import { Outlet } from 'react-router-dom';
-import { css } from '@decantr/css';
 
 export function Centered() {
   return (
-    <div
-      className={css('_flex _aic _jcc')}
-      style={{ minHeight: '100dvh', background: 'var(--d-bg)', padding: '1.5rem' }}
-      data-theme="carbon-neon"
-    >
-      <div style={{ width: '100%', maxWidth: '28rem' }}>
+    <div className="shell-centered" data-theme="carbon-neon">
+      <a href="#main-content" className="skip-link">Skip to content</a>
+      <main id="main-content" className="shell-centered__frame d-surface carbon-glass">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 }

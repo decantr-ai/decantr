@@ -1,0 +1,165 @@
+{
+  "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-04-22T18:44:08.082Z",
+  "scaffold": {
+    "id": "scaffold",
+    "markdown": "scaffold-pack.md",
+    "json": "scaffold-pack.json"
+  },
+  "review": {
+    "id": "review",
+    "markdown": "review-pack.md",
+    "json": "review-pack.json"
+  },
+  "sections": [
+    {
+      "id": "agent-orchestrator",
+      "markdown": "section-agent-orchestrator-pack.md",
+      "json": "section-agent-orchestrator-pack.json",
+      "pageIds": [
+        "agent-overview",
+        "agent-detail",
+        "agent-config",
+        "agent-marketplace"
+      ]
+    },
+    {
+      "id": "auth-full",
+      "markdown": "section-auth-full-pack.md",
+      "json": "section-auth-full-pack.json",
+      "pageIds": [
+        "login",
+        "register",
+        "forgot-password",
+        "reset-password",
+        "verify-email"
+      ]
+    },
+    {
+      "id": "marketing-saas",
+      "markdown": "section-marketing-saas-pack.md",
+      "json": "section-marketing-saas-pack.json",
+      "pageIds": [
+        "home"
+      ]
+    },
+    {
+      "id": "ai-transparency",
+      "markdown": "section-ai-transparency-pack.md",
+      "json": "section-ai-transparency-pack.json",
+      "pageIds": [
+        "model-overview",
+        "inference-log",
+        "confidence-explorer"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "agent-overview",
+      "markdown": "page-agent-overview-pack.md",
+      "json": "page-agent-overview-pack.json",
+      "sectionId": "agent-orchestrator",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "agent-detail",
+      "markdown": "page-agent-detail-pack.md",
+      "json": "page-agent-detail-pack.json",
+      "sectionId": "agent-orchestrator",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "agent-config",
+      "markdown": "page-agent-config-pack.md",
+      "json": "page-agent-config-pack.json",
+      "sectionId": "agent-orchestrator",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "agent-marketplace",
+      "markdown": "page-agent-marketplace-pack.md",
+      "json": "page-agent-marketplace-pack.json",
+      "sectionId": "agent-orchestrator",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "login",
+      "markdown": "page-login-pack.md",
+      "json": "page-login-pack.json",
+      "sectionId": "auth-full",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "register",
+      "markdown": "page-register-pack.md",
+      "json": "page-register-pack.json",
+      "sectionId": "auth-full",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "forgot-password",
+      "markdown": "page-forgot-password-pack.md",
+      "json": "page-forgot-password-pack.json",
+      "sectionId": "auth-full",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "reset-password",
+      "markdown": "page-reset-password-pack.md",
+      "json": "page-reset-password-pack.json",
+      "sectionId": "auth-full",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "verify-email",
+      "markdown": "page-verify-email-pack.md",
+      "json": "page-verify-email-pack.json",
+      "sectionId": "auth-full",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "home",
+      "markdown": "page-home-pack.md",
+      "json": "page-home-pack.json",
+      "sectionId": "marketing-saas",
+      "sectionRole": "public"
+    },
+    {
+      "id": "model-overview",
+      "markdown": "page-model-overview-pack.md",
+      "json": "page-model-overview-pack.json",
+      "sectionId": "ai-transparency",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "inference-log",
+      "markdown": "page-inference-log-pack.md",
+      "json": "page-inference-log-pack.json",
+      "sectionId": "ai-transparency",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "confidence-explorer",
+      "markdown": "page-confidence-explorer-pack.md",
+      "json": "page-confidence-explorer-pack.json",
+      "sectionId": "ai-transparency",
+      "sectionRole": "auxiliary"
+    }
+  ],
+  "mutations": [
+    {
+      "id": "add-page",
+      "markdown": "mutation-add-page-pack.md",
+      "json": "mutation-add-page-pack.json",
+      "mutationType": "add-page"
+    },
+    {
+      "id": "modify",
+      "markdown": "mutation-modify-pack.md",
+      "json": "mutation-modify-pack.json",
+      "mutationType": "modify"
+    }
+  ]
+}

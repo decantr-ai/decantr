@@ -1,0 +1,297 @@
+{
+  "$schema": "https://decantr.ai/schemas/review-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "review",
+  "objective": "Review generated output against the compiled Decantr contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "agent-overview",
+      "agent-detail",
+      "agent-config",
+      "agent-marketplace",
+      "login",
+      "register",
+      "forgot-password",
+      "reset-password",
+      "verify-email",
+      "home",
+      "model-overview",
+      "inference-log",
+      "confidence-explorer"
+    ],
+    "patternIds": [
+      "agent-swarm-canvas",
+      "agent-timeline",
+      "neural-feedback-loop",
+      "nav-header",
+      "form-sections",
+      "hero",
+      "generative-card-grid",
+      "form",
+      "features",
+      "how-it-works",
+      "pricing",
+      "testimonials",
+      "cta",
+      "stats-overview",
+      "intent-radar"
+    ]
+  },
+  "requiredSetup": [
+    "Read the compiled scaffold and route packs before reviewing code.",
+    "Use concrete evidence from the workspace instead of purely stylistic intuition."
+  ],
+  "allowedVocabulary": [
+    "app",
+    "sidebar-main",
+    "carbon-neon",
+    "dark",
+    "agents",
+    "monitoring",
+    "orchestration",
+    "real-time",
+    "websockets",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "pricing-toggle",
+    "testimonials",
+    "feature-grid",
+    "analytics",
+    "observability",
+    "theme-toggle",
+    "command-palette",
+    "agent-swarm-canvas",
+    "agent-timeline",
+    "neural-feedback-loop",
+    "nav-header",
+    "form-sections",
+    "hero",
+    "generative-card-grid",
+    "form",
+    "features",
+    "how-it-works",
+    "pricing",
+    "cta",
+    "stats-overview",
+    "intent-radar",
+    "route-topology",
+    "theme-consistency",
+    "treatment-usage",
+    "accessibility",
+    "responsive-design"
+  ],
+  "examples": [],
+  "antiPatterns": [
+    {
+      "id": "inline-styles",
+      "summary": "Avoid inline style literals as the primary styling path.",
+      "guidance": "Move visual styling into tokens.css and treatments.css instead of component-local style objects."
+    },
+    {
+      "id": "hardcoded-colors",
+      "summary": "Avoid hardcoded color literals.",
+      "guidance": "Use CSS variables and theme decorators instead of hex, rgb, or hsl values."
+    },
+    {
+      "id": "utility-framework-leakage",
+      "summary": "Avoid utility-framework leakage as the primary design language.",
+      "guidance": "Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks."
+    }
+  ],
+  "successChecks": [
+    {
+      "id": "review-contract-baseline",
+      "label": "Review findings should use the compiled route, shell, and theme contract as the baseline.",
+      "severity": "error"
+    },
+    {
+      "id": "review-evidence",
+      "label": "Each critique finding should cite concrete evidence from the generated workspace.",
+      "severity": "error"
+    },
+    {
+      "id": "review-remediation",
+      "label": "Suggested fixes should point back to code changes or essence updates when contract drift exists.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "reviewType": "app",
+    "shell": "sidebar-main",
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routing": "hash",
+    "features": [
+      "agents",
+      "monitoring",
+      "orchestration",
+      "real-time",
+      "websockets",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "pricing-toggle",
+      "testimonials",
+      "feature-grid",
+      "analytics",
+      "observability",
+      "theme-toggle",
+      "command-palette"
+    ],
+    "routes": [
+      {
+        "pageId": "agent-overview",
+        "path": "/agents",
+        "patternIds": [
+          "agent-swarm-canvas",
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-detail",
+        "path": "/agents/:id",
+        "patternIds": [
+          "agent-timeline",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-config",
+        "path": "/agents/config",
+        "patternIds": [
+          "nav-header",
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-marketplace",
+        "path": "/marketplace",
+        "patternIds": [
+          "hero",
+          "generative-card-grid"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "login",
+        "path": "/login",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "path": "/register",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "path": "/forgot-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "reset-password",
+        "path": "/reset-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "verify-email",
+        "path": "/verify-email",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "home",
+        "path": "/",
+        "patternIds": [
+          "hero",
+          "features",
+          "how-it-works",
+          "pricing",
+          "testimonials",
+          "cta"
+        ],
+        "shell": "top-nav-footer"
+      },
+      {
+        "pageId": "model-overview",
+        "path": "/transparency",
+        "patternIds": [
+          "stats-overview",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "inference-log",
+        "path": "/transparency/inference",
+        "patternIds": [
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "confidence-explorer",
+        "path": "/transparency/confidence",
+        "patternIds": [
+          "intent-radar",
+          "stats-overview"
+        ],
+        "shell": "sidebar-main"
+      }
+    ],
+    "focusAreas": [
+      "route-topology",
+      "theme-consistency",
+      "treatment-usage",
+      "accessibility",
+      "responsive-design"
+    ],
+    "workflow": [
+      "Read the scaffold pack and page packs before evaluating generated code.",
+      "Compare findings against the compiled route, shell, and theme contract first.",
+      "Escalate contract drift into essence updates when the requested output intentionally changes topology or theme identity."
+    ]
+  },
+  "renderedMarkdown": "# Review Pack\n\n**Objective:** Review generated output against the compiled Decantr contract.\n**Target:** react-vite (react)\n**Scope:** pages=agent-overview, agent-detail, agent-config, agent-marketplace, login, register, forgot-password, reset-password, verify-email, home, model-overview, inference-log, confidence-explorer | patterns=agent-swarm-canvas, agent-timeline, neural-feedback-loop, nav-header, form-sections, hero, generative-card-grid, form, features, how-it-works, pricing, testimonials, cta, stats-overview, intent-radar\n\n## Review Contract\n- Review Type: app\n- Shell: sidebar-main\n- Theme: carbon-neon (dark)\n- Routing: hash\n- Features: agents, monitoring, orchestration, real-time, websockets, auth, mfa, oauth, email-verification, password-reset, pricing-toggle, testimonials, feature-grid, analytics, observability, theme-toggle, command-palette\n\n## Review Topology\n- /agents -> agent-overview @ sidebar-main [agent-swarm-canvas, agent-timeline]\n- /agents/:id -> agent-detail @ sidebar-main [agent-timeline, neural-feedback-loop]\n- /agents/config -> agent-config @ sidebar-main [nav-header, form-sections]\n- /marketplace -> agent-marketplace @ sidebar-main [hero, generative-card-grid]\n- /login -> login @ centered [form]\n- /register -> register @ centered [form]\n- /forgot-password -> forgot-password @ centered [form]\n- /reset-password -> reset-password @ centered [form]\n- /verify-email -> verify-email @ centered [form]\n- / -> home @ top-nav-footer [hero, features, how-it-works, pricing, testimonials, cta]\n- /transparency -> model-overview @ sidebar-main [stats-overview, neural-feedback-loop]\n- /transparency/inference -> inference-log @ sidebar-main [agent-timeline]\n- /transparency/confidence -> confidence-explorer @ sidebar-main [intent-radar, stats-overview]\n\n## Focus Areas\n- route-topology\n- theme-consistency\n- treatment-usage\n- accessibility\n- responsive-design\n\n## Review Workflow\n- Read the scaffold pack and page packs before evaluating generated code.\n- Compare findings against the compiled route, shell, and theme contract first.\n- Escalate contract drift into essence updates when the requested output intentionally changes topology or theme identity.\n\n## Required Setup\n- Read the compiled scaffold and route packs before reviewing code.\n- Use concrete evidence from the workspace instead of purely stylistic intuition.\n\n## Allowed Vocabulary\n- app\n- sidebar-main\n- carbon-neon\n- dark\n- agents\n- monitoring\n- orchestration\n- real-time\n- websockets\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- pricing-toggle\n- testimonials\n- feature-grid\n- analytics\n- observability\n- theme-toggle\n- command-palette\n- agent-swarm-canvas\n- agent-timeline\n- neural-feedback-loop\n- nav-header\n- form-sections\n- hero\n- generative-card-grid\n- form\n- features\n- how-it-works\n- pricing\n- cta\n- stats-overview\n- intent-radar\n- route-topology\n- theme-consistency\n- treatment-usage\n- accessibility\n- responsive-design\n\n## Success Checks\n- Review findings should use the compiled route, shell, and theme contract as the baseline. [error]\n- Each critique finding should cite concrete evidence from the generated workspace. [error]\n- Suggested fixes should point back to code changes or essence updates when contract drift exists. [warn]\n\n## Anti-Patterns\n- Avoid inline style literals as the primary styling path.: Move visual styling into tokens.css and treatments.css instead of component-local style objects.\n- Avoid hardcoded color literals.: Use CSS variables and theme decorators instead of hex, rgb, or hsl values.\n- Avoid utility-framework leakage as the primary design language.: Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks.\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

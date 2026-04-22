@@ -1,0 +1,132 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the auth-full section using the compiled centered shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "login",
+      "register",
+      "forgot-password",
+      "reset-password",
+      "verify-email"
+    ],
+    "patternIds": [
+      "form"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "auth-full",
+    "gateway",
+    "centered",
+    "carbon-neon",
+    "dark",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "form"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "auth-full",
+    "role": "gateway",
+    "shell": "centered",
+    "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+    "features": [
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset"
+    ],
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "login",
+        "path": "/login",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "path": "/register",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "path": "/forgot-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "reset-password",
+        "path": "/reset-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "verify-email",
+        "path": "/verify-email",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the auth-full section using the compiled centered shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=login, register, forgot-password, reset-password, verify-email | patterns=form\n\n## Section Contract\n- Section: auth-full\n- Role: gateway\n- Shell: centered\n- Theme: carbon-neon (dark)\n- Features: auth, mfa, oauth, email-verification, password-reset\n- Description: Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.\n\n## Section Routes\n- /login -> login @ centered [form]\n- /register -> register @ centered [form]\n- /forgot-password -> forgot-password @ centered [form]\n- /reset-password -> reset-password @ centered [form]\n- /verify-email -> verify-email @ centered [form]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- auth-full\n- gateway\n- centered\n- carbon-neon\n- dark\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- form\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

@@ -5,7 +5,7 @@
 
 ## Quick Start
 
-**Shell:** Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages). (nav: 240px, header: 52px)
+**Shell:** Responsive sidebar shell with a desktop split layout, a compact sticky header, and an overlay drawer below the md breakpoint. Used by dashboards, account workspaces, and admin operations surfaces. (nav: 240px, header: 52px)
 **Pages:** 3 (model-overview, inference-log, confidence-explorer)
 **Key patterns:** stats-overview, neural-feedback-loop [moderate], agent-timeline [moderate], intent-radar [moderate]
 **CSS classes:** `.carbon-card`, `.carbon-code`, `.carbon-glass`, `.neon-glow`, `.mono-data`
@@ -17,9 +17,9 @@
 ### body
 
 - **flex:** 1
-- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet.
+- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet. Inner sections should inherit the shell rhythm rather than redefining page padding.
 - **atoms:** _flex1 _overflow[auto] _p6
-- **padding:** 1.5rem
+- **padding:** clamp(1rem, 2vw, 1.5rem)
 - **overflow_y:** auto
 
 ### root
@@ -36,9 +36,10 @@
 - **height:** 52px
 - **display:** flex
 - **justify:** space-between
-- **padding:** 0 1.5rem
+- **padding:** 0 clamp(1rem, 2vw, 1.5rem)
 - **left_content:** Breadcrumb — omit segment when it equals page title
-- **right_content:** Search/command trigger
+- **button_sizing:** Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar — default d-interactive padding is too large here.
+- **right_content:** Theme toggle (sun/moon icon) + Search/command trigger + mobile navigation toggle when the sidebar is in drawer mode. Theme toggle toggles light/dark class on html element.
 
 ### sidebar
 
@@ -71,6 +72,7 @@
 - **direction:** column
 - **background:** var(--d-surface)
 - **collapsed_width:** 64px
+- **mobile_behavior:** Overlay drawer below md. Closed state occupies no layout width. Open state uses a fixed panel + scrim.
 - **collapse_breakpoint:** md
 
 ### main_wrapper
@@ -86,14 +88,24 @@
 - Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
 - Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
 
+## Section Label Treatment
+
+Apply `d-label[data-anchor]` to section headers in this shell.
+- Uppercase monospace label typography (d-label base treatment)
+- Left accent border anchor (data-anchor variant)
+- Density-responsive bottom gap via `--d-label-mb` x `--d-density-scale`
+
+Section density: compact (--d-density-scale: 0.65)
+
 ## Shell Notes (sidebar-main)
 
 - **Hotkeys:** Navigation hotkeys defined in the essence are keyboard shortcuts. Implement as useEffect keydown event listeners — do NOT render hotkey text in the sidebar UI.
 - **Collapse:** Sidebar collapse toggle should be integrated into the sidebar header area (next to the brand/logo), not floating at the bottom of the sidebar.
-- **Breadcrumbs:** For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area.
+- **Breadcrumbs:** For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area. On narrow widths, truncate gracefully rather than wrapping into a second shell row.
 - **Empty States:** When a section has zero data, show a centered empty state: 48px muted icon + descriptive message + optional CTA button.
-- **Section Labels:** Dashboard section labels should use the d-label class. Anchor with a left accent border: border-left: 2px solid var(--d-accent); padding-left: 0.5rem.
-- **Section Density:** Dashboard sections use compact spacing. Apply data-density='compact' on d-section elements for tighter vertical rhythm than marketing pages.
+- **Mobile Drawer:** Below the md breakpoint, the sidebar leaves the permanent split layout and becomes an overlay drawer. Use a scrim, Escape handling, and a header toggle. The closed drawer must not consume layout width.
+- **Shell Spacing:** Header, body, sidebar, and footer all share one inset rhythm. Use a tighter shell inset on mobile and the full comfortable inset on tablet/desktop instead of page-local padding overrides.
+- **Section Labels:** Dashboard section labels use d-label[data-anchor] for accent-bordered headers with density-responsive spacing.
 - **Page Transitions:** Apply the entrance-fade class (if generated) to the main content area for smooth page transitions.
 
 ## Spacing Guide
@@ -107,6 +119,10 @@
 | Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
 | Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
 | Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
+| Label gap | `--d-label-mb` | `0.75rem` | Gap below d-label section headers |
+| Label indent | `--d-label-px` | `0.75rem` | Anchor indent for d-label[data-anchor] |
+| Section gap | `--d-section-gap` | `1.5rem` | Gap between adjacent d-sections |
+| Annotation gap | `--d-annotation-mt` | `0.5rem` | Top margin on d-annotation |
 
 ---
 
@@ -133,23 +149,35 @@ Full token set: `src/styles/tokens.css`
 **Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
 **Theme decorators:**
 
-| Class | Usage |
-|-------|-------|
-| `.carbon-card` | Surface background, subtle border, 8px radius, hover shadow transition. |
-| `.carbon-code` | Monospace font, surface-raised background, subtle 3px left border accent in primary color. |
-| `.carbon-glass` | Glassmorphic panel with backdrop-filter blur(12px), semi-transparent surface background, 1px border. Use for nav bars, sidebars, floating panels. |
-| `.carbon-input` | Soft border with gentle focus ring using primary blue. Border transitions on focus. |
-| `.carbon-canvas` | Background color using theme background token. Clean, minimal foundation. |
-| `.carbon-divider` | Hairline separator using border-color token. |
-| `.carbon-skeleton` | Loading placeholder with subtle pulse animation for skeleton states. |
-| `.carbon-bubble-ai` | Left-aligned message bubble with surface background for AI responses. |
-| `.carbon-fade-slide` | Entrance animation: opacity 0 to 1, translateY 12px to 0, 200ms ease-out. |
-| `.carbon-bubble-user` | Right-aligned message bubble with primary-tinted background for user messages. |
+| Class | Intent | Key CSS | Pairs with |
+|-------|--------|---------|------------|
+| `.carbon-card` | Use for content containers. Hover state gains a subtle neon cyan shadow accent for the data-intensive, mission-control feel. |  | carbon-canvas,carbon-divider |
+| `.carbon-code` | Use for code blocks and terminal output. The left border accent uses the neon cyan for a more vivid developer-tool feel. |  | carbon-card,carbon-canvas |
+| `.carbon-glass` | Use for navigation and floating panels. In carbon-neon, these surfaces receive subtle neon accent highlights on interactive states. |  | carbon-canvas,carbon-card |
+| `.carbon-input` | Use for form inputs. On focus, the neon cyan accent creates a vivid glow ring that differentiates this from base carbon. |  | carbon-card,carbon-canvas |
+| `.carbon-canvas` | Use as the root page background. Identical to carbon but serves as the dark canvas for neon accent pops. |  | carbon-glass,carbon-divider |
+| `.carbon-divider` | Use to separate content sections cleanly. The neon accent appears on interactive elements, not dividers. |  | carbon-card,carbon-canvas |
+| `.carbon-skeleton` | Use while agent data or dashboard metrics load. The pulse indicates active data fetching without visual noise. |  | carbon-card,carbon-canvas |
+| `.carbon-bubble-ai` | Use for AI/agent responses in chat interfaces. Neutral surface lets the content and any inline neon status indicators stand out. |  | carbon-bubble-user,carbon-canvas |
+| `.carbon-fade-slide` | Use as the entrance animation for dashboard panels and data cards appearing on load. |  | carbon-card,carbon-glass |
+| `.carbon-bubble-user` | Use for user messages in agent chat interfaces. The tint is subtler, letting neon accents on status elements take visual priority. |  | carbon-bubble-ai,carbon-canvas |
+
+**Decorator usage guide:**
+- `.carbon-card`: Agent status cards, Data panels, Dashboard widgets, Metric containers
+- `.carbon-code`: Code blocks, Terminal output, API responses, Agent logs
+- `.carbon-glass`: Navigation bars, Sidebar panels, Floating panels, Sticky headers
+- `.carbon-input`: Text inputs, Search fields, Text areas, Select dropdowns
+- `.carbon-canvas`: Page root containers, App shell backgrounds
+- `.carbon-divider`: Section dividers, List separators, Content breaks
+- `.carbon-skeleton`: Loading skeletons, Metric placeholders, Agent status placeholders
+- `.carbon-bubble-ai`: Agent responses, System messages, Streaming output
+- `.carbon-fade-slide`: Page entrance animations, Dashboard widget reveals, Card stagger animations
+- `.carbon-bubble-user`: User chat messages, Command inputs
 
 **Compositions:** **auth:** Centered auth forms with clean card styling.
 **chat:** Chat interface with conversation list sidebar and message thread. Anchored input at bottom.
 **marketing:** Marketing pages with top nav and footer. Clean sections with subtle separators.
-**Spatial hints:** Density bias: none. Section padding: 80px. Card wrapping: minimal.
+**Spatial hints:** Density bias: none. Section padding: 5rem. Card wrapping: minimal.
 
 
 Usage: `className={css('_flex _col _gap4') + ' d-surface carbon-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
@@ -177,6 +205,9 @@ monitoring, analytics, observability
 
 ## Pattern Reference
 
+Scaffold-tier rule: implement the core visual structure, states, and required slots first.
+Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simulated live streaming as optional unless the slot guidance or section contract makes them explicitly required.
+
 ### stats-overview
 
 Summary row of key statistics with labels, values, and optional trend indicators
@@ -196,6 +227,10 @@ StatsOverview = Row(d-section, responsive: wrap) > StatItem[]
 - `trend`: Badge with percentage change and directional icon
 - `value`: Primary value with _heading2 _fontbold
 - `stat-card`: Card containing label, value, and optional trend
+  **Layout guidance:**
+  - card_balance: Each stat card should keep label, value, and trend tightly grouped so the row scans left-to-right without extra decorative chrome. Trend indicators should support the value, not become a second headline.
+  - grid_ownership: The pattern owns the internal stat grid only. Parent workspace or section patterns should provide the intro copy, surrounding card frame, and larger vertical rhythm.
+  - highlighted_variant: When using the highlighted preset, the featured stat may grow in prominence, but secondary stats should remain aligned as one coherent summary system rather than turning into unrelated cards.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|
@@ -232,7 +267,15 @@ NeuralFeedbackLoop = Container(d-section, centered) > [PulseCore + IntensityRing
 ```
 
 **Layout slots:**
-- `values`: Value cards (icon/emoji, title, description)
+- `flow-track`: A directional flow visualization showing throughput or progress. Renders animated particles (small circles or dots) moving along a track path. Particle speed represents processing rate. Particle count represents queue depth or load. Track can be linear (inline-flow preset) or circular (following IntensityRing). Uses CSS animation with translateX/rotate transforms.
+- `pulse-core`: The central animated element. Renders as a radial gradient that expands and contracts with CSS animation. Pulse frequency: idle (2s cycle), processing (0.8s cycle), high-load (0.4s cycle). Pulse amplitude maps to metric intensity. Uses @keyframes with custom cubic-bezier(0.4, 0, 0.2, 1) for organic feel. Core color is the base metric color.
+- `metric-label`: MetricDisplay showing the current numeric value, unit, and descriptive label. Examples: '94% confidence', '1.2k tok/s', 'Stage 3/7'. Typography should use tabular-nums for stable width during value changes. Color matches the current intensity color. Supports trend arrow (up/down/stable) suffix.
+- `detail-tooltip`: FeedbackTooltip providing expanded context on hover or focus. Shows: current value, min/max range, trend over last N seconds, and a plain-language interpretation (e.g., 'Model is highly confident', 'Processing is slower than usual'). Tooltip positioned above the core element. Includes a small sparkline if trend data is available.
+- `intensity-ring`: IntensityRing renders a circular or arc gauge showing metric fill from 0% to 100%. Implemented with CSS conic-gradient: from transparent to the intensity color, with a smooth gradient edge. Ring thickness and diameter are configurable. The unfilled portion uses a muted background track color. Optional tick marks at 25% intervals.
+  **Layout guidance:**
+  - containment: This pattern should read as one feedback instrument, not a general dashboard section. Parent layouts own outer spacing; the pattern owns the core/ring/track stack and any tooltip anchoring immediately around it.
+  - ambient_usage: Ambient preset is a surface treatment, not a layout wrapper. If used behind other content, keep foreground cards and labels on a separate readable layer so the feedback motion never becomes the structural container.
+  - signal_priority: PulseCore establishes live state first, IntensityRing carries the stable metric read, and MetricDisplay confirms the exact value. FlowTrack should support the interpretation rather than competing with the primary metric.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|
@@ -272,7 +315,11 @@ TimelineSummary = Card(d-surface, sticky) > [AgentName + ModelId + Status(d-anno
 ```
 
 **Layout slots:**
-- `steps`: Numbered steps (step number, title, description)
+- `event-node`: Repeating slot — one per agent action. Each event is a card positioned to the right of the timeline-track, connected by a small horizontal line from the track to the card. The card has a colored left-border indicating event type: tool-call (blue/info), reasoning (purple/accent), output (green/success), error (red/destructive), decision (amber/warning). Each card shows: (1) a type icon matching the color, (2) a one-line summary (e.g., 'Called search_web with query "decantr patterns"'), (3) a relative timestamp ('2.3s ago' or '+1.2s'), and (4) a chevron toggle to expand/collapse the detail section. Cards are collapsed by default. Error events auto-expand and have a stronger visual treatment (background tint, bold border). Events animate in with a subtle slide-up + fade when appended in live mode.
+- `filter-bar`: A horizontal scrollable row of FilterChip components for narrowing visible events. Default chips: 'All', 'Tool Calls', 'Reasoning', 'Outputs', 'Errors', 'Decisions'. Chips are toggleable (multiple can be active simultaneously). Active chips use a filled style with the corresponding event-type color; inactive chips use an outline style. Also includes a text search input at the right edge for filtering events by content. Filter state persists across live updates. Chip counts show how many events match each filter (e.g., 'Tool Calls (12)').
+- `event-detail`: The expandable content area within each event-node. Content varies by event type: For tool-call events — shows the tool name, input parameters as a formatted JSON/key-value block, output/result as a collapsible code block, duration in milliseconds, and token cost. For reasoning events — shows the full reasoning text formatted as markdown with a 'thinking' visual treatment (slightly italic, indented, with a brain icon). For output events — shows the generated text or data, formatted with markdown rendering. For error events — shows the error message, stack trace in a scrollable code block, and a 'retry' button if the error is retryable. For decision events — shows the decision description, alternatives considered as a list, and the selected option highlighted.
+- `summary-header`: A sticky header card at the top of the timeline showing aggregate stats for the current agent session. Displays: total events count, breakdown by type (tool calls, reasoning steps, outputs, errors) as small labeled counts with color-coded dots, total elapsed time, and token usage (input/output tokens). Also shows the agent's name, model identifier, and current status (running/complete/error). In the 'live' preset, the elapsed time and event count update in real time. A small sparkline chart shows event frequency over time (events per second) to visualize bursts of activity.
+- `timeline-track`: The vertical spine of the timeline. Renders as a thin continuous line (2px) running vertically down the left side of the event list (24px from the left edge). The line color uses a muted neutral tone with segments that colorize to match adjacent event nodes. Between events, the line can show elapsed time labels if the gap exceeds a configurable threshold (default 5s). At the bottom of a completed timeline, the track terminates with a small square end-cap. During live streaming, the bottom is an animated pulsing dot.
   **Layout guidance:**
   - orb: Each event has a 12px diameter colored circle (orb) centered ON the vertical line. The orb is vertically aligned with the FIRST line of text (the badge/timestamp row), not the center of the event block.
   - spacing: Compact event spacing: gap-3 to gap-4 between events. Dense timelines are easier to scan than spacious ones.
@@ -316,6 +363,15 @@ SuggestionRings = Layer > Ring(d-annotation, dashed, opacity-low)[]
 ```
 
 **Layout slots:**
+- `action-zone`: The interactive outer ring of the radar. When an intent vector's confidence exceeds the action threshold (configurable, default 0.75), a SuggestionChip materializes at the vector's endpoint on the outer ring. Each chip shows the suggested action label, a keyboard shortcut hint, and a small confidence percentage. Chips are clickable/tappable to execute the action. Multiple high-confidence suggestions can coexist on the ring. Chips pulse gently to draw attention, with the highest-confidence chip pulsing most prominently. Pressing Enter executes the top-confidence chip.
+- `radar-center`: The focal point of the radial display. Renders as a glowing circle (40–56px diameter) at the exact center of the radar. Shows the current input query text or a microphone/search icon when idle. Pulses gently with a ring animation when the system is interpreting intent. Color shifts from neutral (idle) to primary (active) to accent (confident match found). Acts as the origin point from which all intent vectors radiate.
+- `intent-vector`: Repeating slot — one per detected intent category. Each vector is a line segment radiating from radar-center outward at an angle determined by the intent's semantic category (e.g., 'create' at 0°, 'search' at 90°, 'navigate' at 180°, 'configure' at 270°). Length corresponds to confidence score (0–1 maps to 0%–100% of radar radius). Line thickness also scales with confidence (1px at low, 3px at high). The vector terminates in a small labeled dot showing the intent category name. Vectors animate smoothly when confidence values update — growing, shrinking, or rotating as the user types. Color is category-coded using theme accent palette.
+- `confidence-arc`: A filled arc segment drawn along the suggestion rings corresponding to each intent vector's angular spread. Width of the arc represents ambiguity — a narrow arc means precise intent, a wide arc means the system is uncertain between adjacent categories. Fill uses a gradient from the vector's color at center to transparent at edges. Arcs animate smoothly as confidence refines. Multiple overlapping arcs create visual 'heat zones' showing where intent energy clusters.
+- `suggestion-ring`: Concentric rings at 33%, 66%, and 100% of the radar radius. These are subtle dashed circles that provide visual scale for confidence levels. When a suggestion reaches a ring threshold, the ring segment nearest to that vector briefly brightens. The outermost ring represents the action zone — suggestions that reach it are high-confidence and ready to execute. Rings use very low opacity (0.1–0.15) to avoid visual clutter.
+  **Layout guidance:**
+  - compact_fallback: When the pattern collapses to compact or inline modes, preserve the same semantic order: current query or intent core first, ranked suggestions second, execution affordances last. Do not let chip rows drift away from their associated confidence signal.
+  - container_rhythm: Treat the radar as a single focal visualization region. Parent layouts own section spacing; this pattern owns only its square or semi-circular visualization frame and the immediate chip/action zone around it.
+  - radial_hierarchy: Keep radar-center visually dominant, suggestion rings secondary, and action-zone chips tertiary until confidence rises. The outer action ring should feel like the execution boundary, not a second unrelated toolbar.
 **Motion:**
 | Interaction | Animation |
 |-------------|-----------|

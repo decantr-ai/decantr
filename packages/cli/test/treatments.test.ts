@@ -169,7 +169,6 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('var(--d-content-gap)');
     expect(css).toContain('var(--d-label-mb)');
     expect(css).toContain('var(--d-section-gap)');
-    expect(css).toContain('var(--d-annotation-mt)');
     expect(css).toContain('var(--d-density-scale');
   });
 
@@ -205,10 +204,10 @@ describe('generateTreatmentCSS', () => {
     expect(cellBlock).toContain('calc(var(--d-data-py) * var(--d-density-scale, 1))');
   });
 
-  it('includes density-aware margin-top on d-annotation', () => {
+  it('keeps d-annotation compact without legacy top margin coupling', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     const annotationBlock = css.split('.d-annotation {')[1]?.split('}')[0] ?? '';
-    expect(annotationBlock).toContain('calc(var(--d-annotation-mt) * var(--d-density-scale, 1))');
+    expect(annotationBlock).not.toContain('margin-top');
   });
 
   // ── 11. Theme treatment overrides ──
@@ -364,6 +363,32 @@ describe('generateTreatmentCSS', () => {
     const focusBlock = css.split('.d-control:focus {')[1]?.split('}')[0] ?? '';
     expect(focusBlock).not.toContain('border-color: red');
     expect(focusBlock).toContain('border-color: var(--d-primary)');
+  });
+
+  it('emits keyframes required by decorator animation properties', () => {
+    const css = generateTreatmentCSS(
+      baseSpatialTokens,
+      undefined,
+      undefined,
+      'carbon-neon',
+      {
+        'carbon-fade-slide': {
+          suggested_properties: {
+            animation: 'carbon-fade-slide 200ms ease-out both',
+            opacity: '0',
+          },
+        },
+        'carbon-skeleton': {
+          suggested_properties: {
+            animation: 'pulse 1.5s ease-in-out infinite',
+          },
+        },
+      },
+    );
+
+    expect(css).toContain('@keyframes carbon-fade-slide');
+    expect(css).toContain('from { opacity: 0; transform: translateY(12px); }');
+    expect(css).toContain('@keyframes pulse');
   });
 });
 

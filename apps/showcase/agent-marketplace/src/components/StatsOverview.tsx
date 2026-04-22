@@ -1,79 +1,67 @@
-import { css } from '@decantr/css';
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { TrendingDown, TrendingUp } from 'lucide-react';
+import type { StatItem } from '../data/mock';
 
-interface StatItem {
-  label: string;
-  value: number;
-  format?: (v: number) => string;
-  trend?: number;
-  icon?: React.ReactNode;
-}
-
-interface Props {
-  stats: StatItem[];
-}
-
-function AnimatedCounter({ target, format }: { target: number; format?: (v: number) => string }) {
+function AnimatedCounter({
+  target,
+  valueText,
+  format,
+}: {
+  target: number;
+  valueText?: string;
+  format?: (value: number) => string;
+}) {
   const [current, setCurrent] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    let start = 0;
-    const duration = 800;
+    let frame = 0;
     const startTime = performance.now();
-    function step(now: number) {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      start = Math.round(target * eased);
-      setCurrent(start);
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
+    const duration = 700;
+
+    const step = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - (1 - progress) ** 3;
+      setCurrent(Math.round(target * eased));
+      if (progress < 1) {
+        frame = requestAnimationFrame(step);
+      }
+    };
+
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
   }, [target]);
 
-  const display = format ? format(current) : current.toLocaleString();
-  return <span ref={ref}>{display}</span>;
+  if (valueText) return <span>{valueText}</span>;
+  if (format) return <span>{format(current)}</span>;
+  return <span>{current.toLocaleString()}</span>;
 }
 
-export function StatsOverview({ stats }: Props) {
+export function StatsOverview({ stats }: { stats: StatItem[] }) {
   return (
-    <div className={css('_grid _gap4')} style={{ gridTemplateColumns: `repeat(auto-fit, minmax(180px, 1fr))` }}>
-      {stats.map((stat, i) => (
-        <div
-          key={i}
-          className="d-surface carbon-card"
-          style={{
-            animationDelay: `${i * 80}ms`,
-          }}
-        >
-          <div className={css('_flex _col _gap2')}>
-            <div className={css('_flex _aic _jcsb')}>
-              <span className={css('_textsm')} style={{ color: 'var(--d-text-muted)' }}>{stat.label}</span>
-              {stat.icon}
+    <div className="stats-grid carbon-fade-slide">
+      {stats.map((stat) => {
+        const Icon = stat.icon;
+        return (
+          <article key={stat.label} className="d-surface carbon-card stats-card" data-tone={stat.tone ?? 'accent'}>
+            <div className="stats-card__top">
+              <span className="stats-card__label">{stat.label}</span>
+              {Icon ? <Icon size={16} className="stats-card__icon" /> : null}
             </div>
-            <span className={css('_text2xl _fontbold') + ' mono-data'}>
-              <AnimatedCounter target={stat.value} format={stat.format} />
-            </span>
-            {stat.trend !== undefined && (
-              <div className={css('_flex _aic _gap1')}>
-                {stat.trend >= 0 ? (
-                  <TrendingUp size={12} style={{ color: 'var(--d-success)' }} />
-                ) : (
-                  <TrendingDown size={12} style={{ color: 'var(--d-error)' }} />
-                )}
-                <span
-                  className="d-annotation"
-                  data-status={stat.trend >= 0 ? 'success' : 'error'}
-                >
-                  {stat.trend >= 0 ? '+' : ''}{stat.trend}%
+            <div className="stats-card__value">
+              <AnimatedCounter target={stat.value} valueText={stat.valueText} format={stat.format} />
+            </div>
+            {typeof stat.trend === 'number' ? (
+              <div className="stats-card__trend">
+                {stat.trend >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                <span className="d-annotation" data-status={stat.trend >= 0 ? 'success' : 'error'}>
+                  {stat.trend >= 0 ? '+' : ''}
+                  {stat.trend}%
                 </span>
               </div>
-            )}
-          </div>
-        </div>
-      ))}
+            ) : null}
+          </article>
+        );
+      })}
     </div>
   );
 }

@@ -1,0 +1,282 @@
+{
+  "$schema": "https://decantr.ai/schemas/scaffold-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "scaffold",
+  "objective": "Scaffold the carbon-neon app shell and declared routes.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "agent-overview",
+      "agent-detail",
+      "agent-config",
+      "agent-marketplace",
+      "login",
+      "register",
+      "forgot-password",
+      "reset-password",
+      "verify-email",
+      "home",
+      "model-overview",
+      "inference-log",
+      "confidence-explorer"
+    ],
+    "patternIds": [
+      "agent-swarm-canvas",
+      "agent-timeline",
+      "neural-feedback-loop",
+      "nav-header",
+      "form-sections",
+      "hero",
+      "generative-card-grid",
+      "form",
+      "features",
+      "how-it-works",
+      "pricing",
+      "testimonials",
+      "cta",
+      "stats-overview",
+      "intent-radar"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the declared routes as the topology source of truth.",
+    "Preserve the resolved theme and shell contract unless the task explicitly mutates them."
+  ],
+  "allowedVocabulary": [
+    "sidebar-main",
+    "carbon-neon",
+    "dark",
+    "agents",
+    "monitoring",
+    "orchestration",
+    "real-time",
+    "websockets",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "pricing-toggle",
+    "testimonials",
+    "feature-grid",
+    "analytics",
+    "observability",
+    "theme-toggle",
+    "command-palette",
+    "agent-swarm-canvas",
+    "agent-timeline",
+    "neural-feedback-loop",
+    "nav-header",
+    "form-sections",
+    "hero",
+    "generative-card-grid",
+    "form",
+    "features",
+    "how-it-works",
+    "pricing",
+    "cta",
+    "stats-overview",
+    "intent-radar"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "route-topology",
+      "label": "Routes and page IDs match the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "shell-consistency",
+      "label": "The declared shell contract is preserved unless the task explicitly mutates it.",
+      "severity": "error"
+    },
+    {
+      "id": "theme-consistency",
+      "label": "Theme identity and mode remain consistent across scaffolded routes.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "shell": "sidebar-main",
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routing": "hash",
+    "features": [
+      "agents",
+      "monitoring",
+      "orchestration",
+      "real-time",
+      "websockets",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "pricing-toggle",
+      "testimonials",
+      "feature-grid",
+      "analytics",
+      "observability",
+      "theme-toggle",
+      "command-palette"
+    ],
+    "navigation": {
+      "commandPalette": true,
+      "hotkeys": [
+        {
+          "key": "g a",
+          "route": "/agents",
+          "label": "Go to Agents"
+        },
+        {
+          "key": "g m",
+          "route": "/marketplace",
+          "label": "Go to Marketplace"
+        },
+        {
+          "key": "g t",
+          "route": "/transparency",
+          "label": "Go to Transparency"
+        }
+      ]
+    },
+    "routes": [
+      {
+        "pageId": "agent-overview",
+        "path": "/agents",
+        "patternIds": [
+          "agent-swarm-canvas",
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-detail",
+        "path": "/agents/:id",
+        "patternIds": [
+          "agent-timeline",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-config",
+        "path": "/agents/config",
+        "patternIds": [
+          "nav-header",
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "agent-marketplace",
+        "path": "/marketplace",
+        "patternIds": [
+          "hero",
+          "generative-card-grid"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "login",
+        "path": "/login",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "path": "/register",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "path": "/forgot-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "reset-password",
+        "path": "/reset-password",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "verify-email",
+        "path": "/verify-email",
+        "patternIds": [
+          "form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "home",
+        "path": "/",
+        "patternIds": [
+          "hero",
+          "features",
+          "how-it-works",
+          "pricing",
+          "testimonials",
+          "cta"
+        ],
+        "shell": "top-nav-footer"
+      },
+      {
+        "pageId": "model-overview",
+        "path": "/transparency",
+        "patternIds": [
+          "stats-overview",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "inference-log",
+        "path": "/transparency/inference",
+        "patternIds": [
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "confidence-explorer",
+        "path": "/transparency/confidence",
+        "patternIds": [
+          "intent-radar",
+          "stats-overview"
+        ],
+        "shell": "sidebar-main"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Scaffold Pack\n\n**Objective:** Scaffold the carbon-neon app shell and declared routes.\n**Target:** react-vite (react)\n**Scope:** pages=agent-overview, agent-detail, agent-config, agent-marketplace, login, register, forgot-password, reset-password, verify-email, home, model-overview, inference-log, confidence-explorer | patterns=agent-swarm-canvas, agent-timeline, neural-feedback-loop, nav-header, form-sections, hero, generative-card-grid, form, features, how-it-works, pricing, testimonials, cta, stats-overview, intent-radar\n\n## Scaffold Contract\n- Shell: sidebar-main\n- Shells: sidebar-main (primary), centered, top-nav-footer\n- Theme: carbon-neon (dark)\n- Routing: hash\n- Features: agents, monitoring, orchestration, real-time, websockets, auth, mfa, oauth, email-verification, password-reset, pricing-toggle, testimonials, feature-grid, analytics, observability, theme-toggle, command-palette\n- Navigation:\n  - command palette required\n  - g a: Go to Agents — /agents\n  - g m: Go to Marketplace — /marketplace\n  - g t: Go to Transparency — /transparency\n\n## Route Plan\n- /agents -> agent-overview @ sidebar-main [agent-swarm-canvas, agent-timeline]\n- /agents/:id -> agent-detail @ sidebar-main [agent-timeline, neural-feedback-loop]\n- /agents/config -> agent-config @ sidebar-main [nav-header, form-sections]\n- /marketplace -> agent-marketplace @ sidebar-main [hero, generative-card-grid]\n- /login -> login @ centered [form]\n- /register -> register @ centered [form]\n- /forgot-password -> forgot-password @ centered [form]\n- /reset-password -> reset-password @ centered [form]\n- /verify-email -> verify-email @ centered [form]\n- / -> home @ top-nav-footer [hero, features, how-it-works, pricing, testimonials, cta]\n- /transparency -> model-overview @ sidebar-main [stats-overview, neural-feedback-loop]\n- /transparency/inference -> inference-log @ sidebar-main [agent-timeline]\n- /transparency/confidence -> confidence-explorer @ sidebar-main [intent-radar, stats-overview]\n\n## Required Setup\n- Treat the declared routes as the topology source of truth.\n- Preserve the resolved theme and shell contract unless the task explicitly mutates them.\n\n## Allowed Vocabulary\n- sidebar-main\n- carbon-neon\n- dark\n- agents\n- monitoring\n- orchestration\n- real-time\n- websockets\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- pricing-toggle\n- testimonials\n- feature-grid\n- analytics\n- observability\n- theme-toggle\n- command-palette\n- agent-swarm-canvas\n- agent-timeline\n- neural-feedback-loop\n- nav-header\n- form-sections\n- hero\n- generative-card-grid\n- form\n- features\n- how-it-works\n- pricing\n- cta\n- stats-overview\n- intent-radar\n\n## Success Checks\n- Routes and page IDs match the compiled topology. [error]\n- The declared shell contract is preserved unless the task explicitly mutates it. [error]\n- Theme identity and mode remain consistent across scaffolded routes. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

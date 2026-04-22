@@ -3,7 +3,7 @@ import { App } from './App';
 import './styles/global.css';
 import './styles/tokens.css';
 import './styles/treatments.css';
-import './styles/decorators.css';
+import './styles/showcase.css';
 
 const root = document.getElementById('root');
 if (root) {

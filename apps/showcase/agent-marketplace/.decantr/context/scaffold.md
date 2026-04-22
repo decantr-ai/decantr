@@ -118,4 +118,10 @@ These patterns appear on multiple pages. Consider creating shared components:
 ## Navigation
 
 - Command palette: enabled
+- Requirement: implement a real keyboard-triggered command palette, not just placeholder UI text.
 - Hotkeys: 3 configured
+  - `g a`: Go to Agents — /agents
+  - `g m`: Go to Marketplace — /marketplace
+  - `g t`: Go to Transparency — /transparency
+- Requirement: implement these bindings as real keyboard shortcuts, not as decorative text.
+- Presentation rule: do not append hotkey text to persistent nav labels, breadcrumbs, or page titles unless the shell or route contract explicitly requests visible shortcut hints.

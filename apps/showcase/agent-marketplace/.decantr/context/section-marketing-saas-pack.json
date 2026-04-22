@@ -1,0 +1,106 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the marketing-saas section using the compiled top-nav-footer shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home"
+    ],
+    "patternIds": [
+      "hero",
+      "features",
+      "how-it-works",
+      "pricing",
+      "testimonials",
+      "cta"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "marketing-saas",
+    "public",
+    "top-nav-footer",
+    "carbon-neon",
+    "dark",
+    "pricing-toggle",
+    "testimonials",
+    "feature-grid",
+    "hero",
+    "features",
+    "how-it-works",
+    "pricing",
+    "cta"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "marketing-saas",
+    "role": "public",
+    "shell": "top-nav-footer",
+    "description": "SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections.",
+    "features": [
+      "pricing-toggle",
+      "testimonials",
+      "feature-grid"
+    ],
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "home",
+        "path": "/",
+        "patternIds": [
+          "hero",
+          "features",
+          "how-it-works",
+          "pricing",
+          "testimonials",
+          "cta"
+        ],
+        "shell": "top-nav-footer"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the marketing-saas section using the compiled top-nav-footer shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=home | patterns=hero, features, how-it-works, pricing, testimonials, cta\n\n## Section Contract\n- Section: marketing-saas\n- Role: public\n- Shell: top-nav-footer\n- Theme: carbon-neon (dark)\n- Features: pricing-toggle, testimonials, feature-grid\n- Description: SaaS marketing landing page with hero, features, how-it-works timeline, pricing, testimonials, and CTA sections.\n\n## Section Routes\n- / -> home @ top-nav-footer [hero, features, how-it-works, pricing, testimonials, cta]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- marketing-saas\n- public\n- top-nav-footer\n- carbon-neon\n- dark\n- pricing-toggle\n- testimonials\n- feature-grid\n- hero\n- features\n- how-it-works\n- pricing\n- cta\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

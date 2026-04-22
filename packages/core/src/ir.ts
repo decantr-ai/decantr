@@ -185,7 +185,12 @@ export function buildPageIR(
     }
   }
 
-  const surface = page.surface || `_flex _col _gap${density.gap} _p4 _overflow[auto] _flex1`;
+  const gapAtom = density.gap.startsWith('_')
+    ? density.gap
+    : density.gap.startsWith('gap')
+      ? `_${density.gap}`
+      : `_gap${density.gap}`;
+  const surface = page.surface || `_flex _col ${gapAtom} _p4 _overauto _flex1`;
 
   return {
     type: 'page',

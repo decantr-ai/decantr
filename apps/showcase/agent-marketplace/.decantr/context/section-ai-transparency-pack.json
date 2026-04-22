@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the ai-transparency section using the compiled sidebar-main shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "model-overview",
+      "inference-log",
+      "confidence-explorer"
+    ],
+    "patternIds": [
+      "stats-overview",
+      "neural-feedback-loop",
+      "agent-timeline",
+      "intent-radar"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "ai-transparency",
+    "auxiliary",
+    "sidebar-main",
+    "carbon-neon",
+    "dark",
+    "monitoring",
+    "analytics",
+    "observability",
+    "stats-overview",
+    "neural-feedback-loop",
+    "agent-timeline",
+    "intent-radar"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "ai-transparency",
+    "role": "auxiliary",
+    "shell": "sidebar-main",
+    "description": "AI model observability and transparency dashboard for inspecting inference logs, confidence distributions, and neural feedback cycles across deployed models.",
+    "features": [
+      "monitoring",
+      "analytics",
+      "observability"
+    ],
+    "theme": {
+      "id": "carbon-neon",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "model-overview",
+        "path": "/transparency",
+        "patternIds": [
+          "stats-overview",
+          "neural-feedback-loop"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "inference-log",
+        "path": "/transparency/inference",
+        "patternIds": [
+          "agent-timeline"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "confidence-explorer",
+        "path": "/transparency/confidence",
+        "patternIds": [
+          "intent-radar",
+          "stats-overview"
+        ],
+        "shell": "sidebar-main"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the ai-transparency section using the compiled sidebar-main shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=model-overview, inference-log, confidence-explorer | patterns=stats-overview, neural-feedback-loop, agent-timeline, intent-radar\n\n## Section Contract\n- Section: ai-transparency\n- Role: auxiliary\n- Shell: sidebar-main\n- Theme: carbon-neon (dark)\n- Features: monitoring, analytics, observability\n- Description: AI model observability and transparency dashboard for inspecting inference logs, confidence distributions, and neural feedback cycles across deployed models.\n\n## Section Routes\n- /transparency -> model-overview @ sidebar-main [stats-overview, neural-feedback-loop]\n- /transparency/inference -> inference-log @ sidebar-main [agent-timeline]\n- /transparency/confidence -> confidence-explorer @ sidebar-main [intent-radar, stats-overview]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- ai-transparency\n- auxiliary\n- sidebar-main\n- carbon-neon\n- dark\n- monitoring\n- analytics\n- observability\n- stats-overview\n- neural-feedback-loop\n- agent-timeline\n- intent-radar\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}
