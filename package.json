@@ -33,6 +33,7 @@
     "release:preflight": "node scripts/publish-packages.mjs --publish-dry-run",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs",
+    "audit:blueprint-governance": "node scripts/audit-blueprint-governance.mjs",
     "audit:registry-portal": "node scripts/audit-registry-portal.mjs",
     "audit:registry-dogfood": "pnpm --filter ./apps/registry exec node ../../packages/cli/dist/index.js audit",
     "audit:blueprint-matrix": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/cli build && node scripts/audit-blueprint-matrix.mjs",
