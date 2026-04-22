@@ -38,9 +38,9 @@ export interface OfflineRegistrySeedResult {
 /**
  * Seed a fresh Decantr project with local registry content so offline init/new
  * can resolve blueprints, archetypes, themes, shells, and patterns without the
- * hosted API. Resolution order mirrors the strongest local source first:
- * 1. Existing workspace .decantr/cache or .decantr/custom
- * 2. DECANTR_CONTENT_DIR
+ * hosted API. Resolution order favors the most explicit local source first:
+ * 1. DECANTR_CONTENT_DIR
+ * 2. Existing workspace .decantr/cache or .decantr/custom
  * 3. Sibling ../decantr-content checkout
  */
 export function seedOfflineRegistry(
@@ -50,25 +50,20 @@ export function seedOfflineRegistry(
   const projectDecantrRoot = join(projectDir, '.decantr');
   mkdirSync(projectDecantrRoot, { recursive: true });
 
+  const configuredContentRoot = process.env.DECANTR_CONTENT_DIR ? resolve(process.env.DECANTR_CONTENT_DIR) : null;
+  if (configuredContentRoot && hydrateContentRoot(projectDir, configuredContentRoot)) {
+    return { seeded: true, strategy: 'configured-content-root' };
+  }
+
   const copiedCache = copyIfExists(join(workspaceRoot, '.decantr', 'cache'), join(projectDecantrRoot, 'cache'));
   const copiedCustom = copyIfExists(join(workspaceRoot, '.decantr', 'custom'), join(projectDecantrRoot, 'custom'));
   if (copiedCache || copiedCustom) {
     return { seeded: true, strategy: 'workspace-cache' };
   }
 
-  const configuredContentRoot = process.env.DECANTR_CONTENT_DIR ? resolve(process.env.DECANTR_CONTENT_DIR) : null;
   const siblingContentRoot = resolve(workspaceRoot, '..', 'decantr-content');
-  const contentRoot = configuredContentRoot && existsSync(configuredContentRoot)
-    ? configuredContentRoot
-    : siblingContentRoot;
-
-  if (hydrateContentRoot(projectDir, contentRoot)) {
-    return {
-      seeded: true,
-      strategy: configuredContentRoot && existsSync(configuredContentRoot)
-        ? 'configured-content-root'
-        : 'sibling-content-root',
-    };
+  if (hydrateContentRoot(projectDir, siblingContentRoot)) {
+    return { seeded: true, strategy: 'sibling-content-root' };
   }
 
   return { seeded: false, strategy: null };

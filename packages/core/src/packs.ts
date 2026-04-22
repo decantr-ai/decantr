@@ -473,14 +473,14 @@ function collectPatternIds(page: IRPageNode): string[] {
 }
 
 function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
-  return appNode.children.map((page) => {
-    const pageNode = page as IRPageNode;
-    const route = appNode.routes.find((entry) => entry.pageId === pageNode.pageId);
-    return {
+  return appNode.routes.flatMap((route) => {
+    const pageNode = findPageNode(appNode, route.pageId);
+    if (!pageNode) return [];
+    return [{
       pageId: pageNode.pageId,
-      path: route?.path || `/${pageNode.pageId}`,
+      path: route.path,
       patternIds: collectPatternIds(pageNode),
-    };
+    }];
   });
 }
 
@@ -729,14 +729,23 @@ export function resolvePackAdapter(
 export function listPackSections(essence: EssenceV3): SectionPackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
-    return declaredSections.map(section => ({
-      id: section.id,
-      role: section.role,
-      shell: section.shell as string,
-      description: section.description,
-      features: section.features,
-      pageIds: section.pages.map(page => page.id),
-    }));
+    const routedSectionPages = new Set(
+      Object.values(essence.blueprint.routes ?? {}).map((entry) => `${entry.section}:${entry.page}`),
+    );
+    return declaredSections.map((section) => {
+      const pageIds = section.pages
+        .filter((page) => routedSectionPages.size === 0 || routedSectionPages.has(`${section.id}:${page.id}`))
+        .map(page => page.id);
+
+      return {
+        id: section.id,
+        role: section.role,
+        shell: section.shell as string,
+        description: section.description,
+        features: section.features,
+        pageIds,
+      };
+    }).filter((section) => section.pageIds.length > 0);
   }
 
   const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
@@ -753,6 +762,9 @@ export function listPackSections(essence: EssenceV3): SectionPackInput[] {
 export function listPackPages(essence: EssenceV3): PagePackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
+    const routedSectionPages = new Set(
+      Object.values(essence.blueprint.routes ?? {}).map((entry) => `${entry.section}:${entry.page}`),
+    );
     return declaredSections.flatMap(section =>
       section.pages.map(page => ({
         pageId: page.id,
@@ -760,7 +772,7 @@ export function listPackPages(essence: EssenceV3): PagePackInput[] {
         sectionId: section.id,
         sectionRole: section.role,
         features: section.features,
-      })),
+      })).filter((page) => routedSectionPages.size === 0 || routedSectionPages.has(`${page.sectionId}:${page.pageId}`)),
     );
   }
 

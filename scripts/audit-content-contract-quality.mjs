@@ -150,6 +150,7 @@ function auditBlueprint(contentRoot, blueprintId) {
   const routes = compactRouteMap(blueprint);
   const composeEntries = Array.isArray(blueprint.compose) ? blueprint.compose : [];
   const composeArchetypeIds = composeEntries.map((entry) => (typeof entry === 'string' ? entry : entry.archetype)).filter(Boolean);
+  const composedArchetypeIdSet = new Set(composeArchetypeIds);
   const declaredArchetypeIds = Object.keys(blueprint.dependencies?.archetypes ?? {});
   const archetypeIds = [...new Set([...composeArchetypeIds, ...declaredArchetypeIds])];
   const archetypes = new Map();
@@ -187,6 +188,7 @@ function auditBlueprint(contentRoot, blueprintId) {
     }
 
     const pageIds = new Set((archetype.pages ?? []).map((page) => page.id));
+    const routedPagesForArchetype = new Set(routes.filter((entry) => entry.archetype === archetypeId).map((entry) => entry.page));
     for (const route of routes.filter((entry) => entry.archetype === archetypeId)) {
       if (!pageIds.has(route.page)) {
         addFinding(
@@ -212,6 +214,29 @@ function auditBlueprint(contentRoot, blueprintId) {
         addFinding(findings, 'warn', 'archetype', `Archetype "${archetypeId}" is missing a page brief for "${route.page}".`, route);
       }
       if (route.shell && route.shell !== 'inherit') shellIds.add(route.shell);
+    }
+
+    if (routes.length > 0 && composedArchetypeIdSet.has(archetypeId)) {
+      for (const page of archetype.pages ?? []) {
+        if (routedPagesForArchetype.has(page.id)) continue;
+        if (page.route) {
+          addFinding(
+            findings,
+            'info',
+            'route',
+            `Archetype "${archetypeId}" page "${page.id}" relies on its local page.route instead of an explicit blueprint route entry.`,
+            { archetypeId, pageId: page.id, pageRoute: page.route },
+          );
+        } else {
+          addFinding(
+            findings,
+            'warn',
+            'route',
+            `Archetype "${archetypeId}" page "${page.id}" is composed into the blueprint but has no published route.`,
+            { archetypeId, pageId: page.id },
+          );
+        }
+      }
     }
 
     for (const patternId of collectArchetypePatternIds(archetype)) {

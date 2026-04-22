@@ -201,8 +201,15 @@ function buildV3Routes(
     }
   }
 
+  if (explicitRoutes.size > 0) {
+    return structurePages.flatMap((page) => {
+      const path = explicitRoutes.get(page.id);
+      return path ? [{ path, pageId: page.id }] : [];
+    });
+  }
+
   return structurePages.map((page, i) => ({
-    path: explicitRoutes.get(page.id) ?? routePath(page.id, i),
+    path: routePath(page.id, i),
     pageId: page.id,
   }));
 }

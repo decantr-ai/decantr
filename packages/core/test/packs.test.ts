@@ -292,6 +292,7 @@ describe('buildScaffoldPack', () => {
             features: ['agents'],
             pages: [
               { id: 'agent-overview', route: '/agents', layout: ['form-sections'] },
+              { id: 'agent-governance', layout: ['form-sections'] },
             ],
           },
         ],
@@ -315,6 +316,7 @@ describe('buildScaffoldPack', () => {
     const agentPack = bundle.sections.find((pack) => pack.data.sectionId === 'agent-orchestrator');
     const homePack = bundle.pages.find((pack) => pack.data.pageId === 'home');
     const agentOverviewPack = bundle.pages.find((pack) => pack.data.pageId === 'agent-overview');
+    const latentPagePack = bundle.pages.find((pack) => pack.data.pageId === 'agent-governance');
 
     expect(scaffoldRoutes).toEqual([
       { pageId: 'home', path: '/' },
@@ -326,9 +328,12 @@ describe('buildScaffoldPack', () => {
     expect(agentPack?.data.routes).toEqual([
       { pageId: 'agent-overview', path: '/agents', patternIds: ['form-sections'] },
     ]);
+    expect(agentPack?.scope.pageIds).toEqual(['agent-overview']);
     expect(homePack?.data.path).toBe('/');
     expect(agentOverviewPack?.data.path).toBe('/agents');
+    expect(latentPagePack).toBeUndefined();
     expect(bundle.scaffold.renderedMarkdown).toContain('- / -> home [hero]');
     expect(bundle.scaffold.renderedMarkdown).toContain('- /agents -> agent-overview [form-sections]');
+    expect(bundle.scaffold.renderedMarkdown).not.toContain('agent-governance');
   });
 });

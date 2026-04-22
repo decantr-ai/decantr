@@ -104,4 +104,49 @@ describe('new command (e2e)', () => {
     expect(mainTsx).toContain('BrowserRouter');
     expect(appTsx).toContain('Routing: pathname');
   });
+
+  it('prefers DECANTR_CONTENT_DIR over stale workspace cache during offline scaffolding', () => {
+    writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    const fakeBinDir = join(testDir, '.fake-bin');
+    mkdirSync(fakeBinDir, { recursive: true });
+    const fakePnpm = join(fakeBinDir, 'pnpm');
+    writeFileSync(fakePnpm, '#!/bin/sh\nexit 0\n');
+    chmodSync(fakePnpm, 0o755);
+
+    mkdirSync(join(testDir, '.decantr', 'cache', '@official'), { recursive: true });
+    mkdirSync(join(testDir, '.decantr', 'custom'), { recursive: true });
+    for (const type of ['archetypes', 'blueprints', 'patterns', 'themes', 'shells']) {
+      mkdirSync(join(testDir, '.decantr', 'cache', '@official', type), { recursive: true });
+    }
+
+    // Seed a deliberately stale workspace cache that lacks the requested blueprint.
+    cpSync(
+      join(contentRoot, 'blueprints', 'agent-marketplace.json'),
+      join(testDir, '.decantr', 'cache', '@official', 'blueprints', 'agent-marketplace.json'),
+    );
+    writeFileSync(
+      join(testDir, '.decantr', 'cache', '@official', 'blueprints', 'index.json'),
+      JSON.stringify({ items: [{ id: 'agent-marketplace' }] }, null, 2),
+    );
+
+    execSync(`node ${cliPath} new portfolio-smoke --blueprint=portfolio --offline`, {
+      cwd: testDir,
+      env: {
+        ...process.env,
+        DECANTR_CONTENT_DIR: contentRoot,
+        PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
+      },
+      stdio: 'pipe',
+      timeout: 30000,
+    });
+
+    const projectDir = join(testDir, 'portfolio-smoke');
+    const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf-8')) as {
+      blueprint?: { sections?: Array<{ id: string }> };
+    };
+
+    expect(essence.blueprint?.sections?.map((section) => section.id)).toContain('portfolio-showcase');
+    expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
+    expect(existsSync(join(projectDir, '.decantr', 'context', 'section-portfolio-showcase-pack.md'))).toBe(true);
+  });
 });
