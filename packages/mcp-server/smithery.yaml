@@ -1,0 +1,17 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+#
+# Decantr MCP server runs via stdio and requires no configuration.
+# Smithery auto-indexes this file when the repo is claimed.
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction:
+    |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '@decantr/mcp-server@latest'],
+      env: {}
+    })

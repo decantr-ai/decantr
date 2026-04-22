@@ -1,9 +1,18 @@
 # @decantr/mcp-server
 
+[![npm version](https://img.shields.io/npm/v/@decantr/mcp-server?style=flat-square)](https://www.npmjs.com/package/@decantr/mcp-server)
+[![npm downloads](https://img.shields.io/npm/dm/@decantr/mcp-server?style=flat-square)](https://www.npmjs.com/package/@decantr/mcp-server)
+[![license](https://img.shields.io/npm/l/@decantr/mcp-server?style=flat-square)](./LICENSE)
+[![MCP compatible](https://img.shields.io/badge/MCP-compatible-0096FF?style=flat-square)](https://modelcontextprotocol.io)
+
 Support status: `core-supported`  
 Release channel: `stable`
 
 Design intelligence for AI-generated UI. Make Claude, Cursor, and Windsurf generate better code.
+
+<!-- demo-slot: embed asciinema cast or short GIF here once recorded -->
+<!-- e.g. [![asciicast](https://asciinema.org/a/XXXXXX.svg)](https://asciinema.org/a/XXXXXX) -->
+
 
 - **Structured design context** -- gives your AI assistant patterns, layouts, and component specs instead of letting it guess
 - **Drift detection** -- catches when generated code deviates from your design intent
@@ -59,6 +68,58 @@ Add to your Windsurf MCP config (`~/.windsurf/mcp.json`):
   }
 }
 ```
+
+### VS Code
+
+Create `.vscode/mcp.json` in your workspace (or add to your user profile `mcp.json`):
+
+```json
+{
+  "servers": {
+    "decantr": {
+      "command": "npx",
+      "args": ["-y", "@decantr/mcp-server"]
+    }
+  }
+}
+```
+
+MCP tools are available in VS Code Copilot Chat agent mode.
+
+### Zed
+
+Add to your Zed `settings.json`:
+
+```json
+{
+  "context_servers": {
+    "decantr": {
+      "command": "npx",
+      "args": ["-y", "@decantr/mcp-server"],
+      "env": {}
+    }
+  }
+}
+```
+
+### Continue.dev
+
+Create `.continue/mcpServers/decantr.yaml` in your workspace:
+
+```yaml
+name: Decantr MCP Server
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: Decantr
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@decantr/mcp-server"
+```
+
+MCP tools are only available in Continue.dev agent mode.
 
 ## Key Tools
 
