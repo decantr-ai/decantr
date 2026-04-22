@@ -773,6 +773,7 @@ export interface ScaffoldExecutionPack extends ExecutionPackBase<{
   routes: Array<{
     pageId: string;
     path: string;
+    shell?: string;
     patternIds: string[];
   }>;
 }> {
@@ -792,6 +793,7 @@ export interface ReviewExecutionPack extends ExecutionPackBase<{
   routes: Array<{
     pageId: string;
     path: string;
+    shell?: string;
     patternIds: string[];
   }>;
   focusAreas: string[];
@@ -814,6 +816,7 @@ export interface SectionExecutionPack extends ExecutionPackBase<{
   routes: Array<{
     pageId: string;
     path: string;
+    shell?: string;
     patternIds: string[];
   }>;
 }> {
@@ -857,6 +860,7 @@ export interface MutationExecutionPack extends ExecutionPackBase<{
   routes: Array<{
     pageId: string;
     path: string;
+    shell?: string;
     patternIds: string[];
   }>;
   workflow: string[];

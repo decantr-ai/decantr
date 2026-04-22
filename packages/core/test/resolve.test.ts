@@ -76,8 +76,8 @@ describe('resolveEssence', () => {
     const resolver = createResolver({ contentRoot });
     const resolved = await resolveEssence(essence, resolver);
 
-    expect(resolved.routes[0]).toEqual({ path: '/', pageId: 'overview' });
-    expect(resolved.routes[1]).toEqual({ path: '/settings', pageId: 'settings' });
+    expect(resolved.routes[0]).toEqual({ path: '/', pageId: 'overview', shell: 'sidebar-main' });
+    expect(resolved.routes[1]).toEqual({ path: '/settings', pageId: 'settings', shell: 'sidebar-main' });
   });
 
   it('identifies addon styles as isAddon=true', async () => {

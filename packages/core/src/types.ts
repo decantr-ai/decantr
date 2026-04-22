@@ -96,6 +96,7 @@ export interface IRTheme {
 export interface IRRoute {
   path: string;
   pageId: string;
+  shell: string;
 }
 
 // ─── IR Nodes ────────────────────────────────────────────────

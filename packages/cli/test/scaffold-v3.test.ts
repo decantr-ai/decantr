@@ -296,19 +296,20 @@ describe('v3 scaffold', () => {
     const scaffoldTask = readFileSync(join(testDir, '.decantr', 'context', 'task-scaffold.md'), 'utf-8');
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
-    expect(content).toContain('- / -> home [hero]');
+    expect(content).toContain('- / -> home @ sidebar-main [hero]');
     expect(packJson.$schema).toBe('https://decantr.ai/schemas/scaffold-pack.v1.json');
     expect(packJson.packType).toBe('scaffold');
     expect(packJson.data.routes).toEqual([
       {
         pageId: 'home',
         path: '/',
+        shell: 'sidebar-main',
         patternIds: ['hero'],
       },
     ]);
     expect(sectionContent).toContain('# Section Pack');
     expect(sectionContent).toContain('- Section: custom');
-    expect(sectionContent).toContain('- / -> home [hero]');
+    expect(sectionContent).toContain('- / -> home @ sidebar-main [hero]');
     expect(sectionPackJson.$schema).toBe('https://decantr.ai/schemas/section-pack.v1.json');
     expect(sectionPackJson.packType).toBe('section');
     expect(sectionPackJson.data.sectionId).toBe('custom');
@@ -316,6 +317,7 @@ describe('v3 scaffold', () => {
       {
         pageId: 'home',
         path: '/',
+        shell: 'sidebar-main',
         patternIds: ['hero'],
       },
     ]);

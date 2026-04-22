@@ -49,18 +49,20 @@ describe('buildScaffoldPack', () => {
       {
         pageId: 'overview',
         path: '/',
+        shell: 'sidebar-main',
         patternIds: ['kpi-grid', 'filter-bar', 'data-table'],
       },
       {
         pageId: 'settings',
         path: '/settings',
+        shell: 'sidebar-main',
         patternIds: ['form-sections'],
       },
     ]);
     expect(pack.scope.patternIds).toContain('filter-bar');
     expect(pack.allowedVocabulary).toContain('sidebar-main');
     expect(pack.renderedMarkdown).toContain('## Route Plan');
-    expect(pack.renderedMarkdown).toContain('- / -> overview [kpi-grid, filter-bar, data-table]');
+    expect(pack.renderedMarkdown).toContain('- / -> overview @ sidebar-main [kpi-grid, filter-bar, data-table]');
   });
 
   it('includes navigation obligations when provided', async () => {
@@ -124,13 +126,14 @@ describe('buildScaffoldPack', () => {
       {
         pageId: 'overview',
         path: '/',
+        shell: 'sidebar-main',
         patternIds: ['kpi-grid', 'filter-bar', 'data-table'],
       },
     ]);
     expect(pack.allowedVocabulary).toContain('dashboard');
     expect(pack.allowedVocabulary).toContain('sidebar-main');
     expect(pack.renderedMarkdown).toContain('## Section Contract');
-    expect(pack.renderedMarkdown).toContain('- / -> overview [kpi-grid, filter-bar, data-table]');
+    expect(pack.renderedMarkdown).toContain('- / -> overview @ sidebar-main [kpi-grid, filter-bar, data-table]');
   });
 
   it('builds a page pack with route-local patterns and wiring signals', async () => {
@@ -323,17 +326,18 @@ describe('buildScaffoldPack', () => {
       { pageId: 'agent-overview', path: '/agents' },
     ]);
     expect(marketingPack?.data.routes).toEqual([
-      { pageId: 'home', path: '/', patternIds: ['hero'] },
+      { pageId: 'home', path: '/', shell: 'top-nav-footer', patternIds: ['hero'] },
     ]);
     expect(agentPack?.data.routes).toEqual([
-      { pageId: 'agent-overview', path: '/agents', patternIds: ['form-sections'] },
+      { pageId: 'agent-overview', path: '/agents', shell: 'sidebar-main', patternIds: ['form-sections'] },
     ]);
     expect(agentPack?.scope.pageIds).toEqual(['agent-overview']);
     expect(homePack?.data.path).toBe('/');
     expect(agentOverviewPack?.data.path).toBe('/agents');
     expect(latentPagePack).toBeUndefined();
-    expect(bundle.scaffold.renderedMarkdown).toContain('- / -> home [hero]');
-    expect(bundle.scaffold.renderedMarkdown).toContain('- /agents -> agent-overview [form-sections]');
+    expect(bundle.scaffold.renderedMarkdown).toContain('- Shells: top-nav-footer (primary), sidebar-main');
+    expect(bundle.scaffold.renderedMarkdown).toContain('- / -> home @ top-nav-footer [hero]');
+    expect(bundle.scaffold.renderedMarkdown).toContain('- /agents -> agent-overview @ sidebar-main [form-sections]');
     expect(bundle.scaffold.renderedMarkdown).not.toContain('agent-governance');
   });
 });

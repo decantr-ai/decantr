@@ -109,6 +109,7 @@ export interface ScaffoldPackRoute {
   pageId: string;
   path: string;
   patternIds: string[];
+  shell?: string;
 }
 
 export interface ScaffoldPackData {
@@ -148,6 +149,7 @@ export interface SectionPackRoute {
   pageId: string;
   path: string;
   patternIds: string[];
+  shell?: string;
 }
 
 export interface SectionPackData {
@@ -480,6 +482,7 @@ function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
       pageId: pageNode.pageId,
       path: route.path,
       patternIds: collectPatternIds(pageNode),
+      shell: route.shell,
     }];
   });
 }
@@ -537,8 +540,13 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
 
   if (pack.packType === 'scaffold') {
     const scaffoldPack = pack as ScaffoldExecutionPack;
+    const scaffoldShells = [...new Set(scaffoldPack.data.routes.map((route) => route.shell).filter(Boolean))];
     lines.push('## Scaffold Contract');
     lines.push(`- Shell: ${scaffoldPack.data.shell}`);
+    if (scaffoldShells.length > 1) {
+      const secondaryShells = scaffoldShells.filter((shell) => shell !== scaffoldPack.data.shell);
+      lines.push(`- Shells: ${[`${scaffoldPack.data.shell} (primary)`, ...secondaryShells].join(', ')}`);
+    }
     lines.push(`- Theme: ${scaffoldPack.data.theme.id} (${scaffoldPack.data.theme.mode})`);
     lines.push(`- Routing: ${scaffoldPack.data.routing}`);
     if (scaffoldPack.data.features.length > 0) {
@@ -559,7 +567,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Route Plan');
     for (const route of scaffoldPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
     }
     lines.push('');
   }
@@ -582,7 +590,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Section Routes');
     for (const route of sectionPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
     }
     lines.push('');
   }
@@ -636,7 +644,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Route Topology');
     for (const route of mutationPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
     }
     lines.push('');
 
@@ -664,7 +672,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Review Topology');
     for (const route of reviewPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId} [${patterns}]`);
+      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
     }
     lines.push('');
 

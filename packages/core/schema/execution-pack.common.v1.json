@@ -144,6 +144,9 @@
         "path": {
           "$ref": "#/$defs/nonEmptyString"
         },
+        "shell": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
         "patternIds": {
           "$ref": "#/$defs/stringArray"
         }

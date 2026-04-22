@@ -204,13 +204,14 @@ function buildV3Routes(
   if (explicitRoutes.size > 0) {
     return structurePages.flatMap((page) => {
       const path = explicitRoutes.get(page.id);
-      return path ? [{ path, pageId: page.id }] : [];
+      return path ? [{ path, pageId: page.id, shell: page.shell }] : [];
     });
   }
 
   return structurePages.map((page, i) => ({
     path: routePath(page.id, i),
     pageId: page.id,
+    shell: page.shell,
   }));
 }
 
@@ -367,6 +368,7 @@ export async function resolveEssence(
   const routes: IRRoute[] = simpleEssence.structure.map((page, i) => ({
     path: routePath(page.id, i),
     pageId: page.id,
+    shell: page.shell,
   }));
 
   return {
@@ -424,9 +426,13 @@ async function resolveV3Essence(
   const defaultShell = blueprint.shell ?? (
     blueprint.sections?.[0]?.shell ?? 'sidebar-main'
   );
-  const structurePages: StructurePage[] = blueprintPages.map(
-    p => blueprintPageToStructurePage(p, defaultShell),
-  );
+  const structurePages: StructurePage[] = blueprint.pages
+    ? blueprint.pages.map((page) => blueprintPageToStructurePage(page, defaultShell))
+    : blueprint.sections
+      ? blueprint.sections.flatMap((section) =>
+          section.pages.map((page) => blueprintPageToStructurePage(page, section.shell ?? defaultShell)),
+        )
+      : [blueprintPageToStructurePage({ id: 'home', layout: ['hero'] as LayoutItem[] }, defaultShell)];
   const resolvedPages = await resolvePages(structurePages, resolver, registryTheme);
 
   // 5. Shell config from blueprint
