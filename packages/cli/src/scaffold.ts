@@ -3797,6 +3797,7 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
         }
       }
       lines.push('- Requirement: implement these bindings as real keyboard shortcuts, not as decorative text.');
+      lines.push('- Presentation rule: do not append hotkey text to persistent nav labels, breadcrumbs, or page titles unless the shell or route contract explicitly requests visible shortcut hints.');
     }
     lines.push('');
   }

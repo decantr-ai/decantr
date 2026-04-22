@@ -222,6 +222,7 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.');
   lines.push('- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.');
   lines.push('- If command_palette or hotkeys are declared in the generated context, implement them as real features. Do not merely acknowledge them in copy or comments.');
+  lines.push('- Treat declared hotkeys as interaction bindings by default, not visible navigation label text, unless the shell or route contract explicitly calls for shown shortcut hints.');
   lines.push('- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.');
   lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
   lines.push('');
