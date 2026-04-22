@@ -63,6 +63,28 @@ describe('buildScaffoldPack', () => {
     expect(pack.renderedMarkdown).toContain('- / -> overview [kpi-grid, filter-bar, data-table]');
   });
 
+  it('includes navigation obligations when provided', async () => {
+    const essence = loadFixture('essence-saas');
+    const result = await runPipeline(essence, { contentRoot });
+
+    const pack = buildScaffoldPack(result.ir, {
+      navigation: {
+        commandPalette: true,
+        hotkeys: [
+          { key: 'g o', route: '/', label: 'Go to overview' },
+        ],
+      },
+    });
+
+    expect(pack.data.navigation?.commandPalette).toBe(true);
+    expect(pack.data.navigation?.hotkeys).toEqual([
+      { key: 'g o', route: '/', label: 'Go to overview' },
+    ]);
+    expect(pack.renderedMarkdown).toContain('- Navigation:');
+    expect(pack.renderedMarkdown).toContain('command palette required');
+    expect(pack.renderedMarkdown).toContain('g o: Go to overview');
+  });
+
   it('uses default setup and success checks when none are provided', async () => {
     const essence = loadFixture('essence-landing');
     const result = await runPipeline(essence, { contentRoot });

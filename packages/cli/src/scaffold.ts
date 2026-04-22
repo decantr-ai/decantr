@@ -532,6 +532,13 @@ export interface ThemeData {
   motion?: { preference?: string; reduce_motion?: boolean; entrance?: string; timing?: string; durations?: Record<string, string> };
   // Visual treatment (formerly RecipeData)
   decorators?: Record<string, string>;
+  decorator_definitions?: Record<string, {
+    description?: string;
+    intent?: string;
+    suggested_properties?: Record<string, string>;
+    pairs_with?: string[];
+    usage?: string[];
+  }>;
   treatments?: Record<string, Record<string, string>>;
   spatial?: { density_bias?: number; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
   radius?: { philosophy?: string; base?: number };
@@ -551,6 +558,7 @@ export function mapRegistryThemeToThemeData(theme: RegistryTheme): ThemeData {
     typography: theme.typography,
     motion: theme.motion,
     decorators: theme.decorators,
+    decorator_definitions: theme.decorator_definitions,
     treatments: theme.treatments,
     spatial: theme.spatial,
     radius: theme.radius,
@@ -1094,8 +1102,11 @@ import './styles/global.css';                // Resets
 - Use the real \`@decantr/css\` runtime for atoms. If \`package.json\` does not already depend on \`@decantr/css\`, add it before building.
 - Do **not** create local atom-runtime substitutes such as \`src/lib/css.js\`, \`src/lib/css.ts\`, or hand-written \`src/styles/atoms.css\` files unless the task explicitly asks for a fallback runtime.
 - Keep atoms in \`css(...)\`, treatments as semantic classes, and theme decorators as additive classes. Do not blur those roles together.
+- Do **not** use inline visual style values or component-scoped \`<style>\` tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.
 - Use \`d-control\` as the default semantic treatment for inputs, selects, and textareas. Theme decorators such as \`carbon-input\` are additive and should only layer on when the section or theme contract explicitly calls for them.
 - Use loading decorators such as \`carbon-skeleton\` as optional enhancement on top of a structurally correct loading state — they do not replace the need for a real loading/skeleton branch.
+- Shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.
+- If a required decorator class is referenced in the generated contract but missing from generated CSS, report that contract gap instead of inventing a parallel visual system.
 
 ### Visual Treatments
 
@@ -1328,6 +1339,7 @@ If the theme provides motion tokens, apply the \`entrance-fade\` class to page c
 ### Navigation Shortcuts
 
 If the essence defines hotkeys or command_palette, implement as keyboard event listeners (useEffect + keydown) — not as visible UI text.
+Missing declared navigation features are contract drift, not optional polish.
 
 ### Design Tokens
 
@@ -2497,6 +2509,7 @@ export async function refreshDerivedFiles(
     themeData?.treatments,
     themeData?.decorators,
     themeName,
+    themeData?.decorator_definitions,
   );
   const personalityCSS = generatePersonalityCSS(personality || [], themeData || {});
   treatmentCSS += personalityCSS;
@@ -3765,9 +3778,17 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     lines.push('');
     if (navigation.command_palette) {
       lines.push('- Command palette: enabled');
+      lines.push('- Requirement: implement a real keyboard-triggered command palette, not just placeholder UI text.');
     }
     if (navigation.hotkeys && navigation.hotkeys.length > 0) {
       lines.push(`- Hotkeys: ${navigation.hotkeys.length} configured`);
+      for (const hotkey of navigation.hotkeys) {
+        if (typeof hotkey === 'object' && hotkey !== null && typeof hotkey.key === 'string') {
+          const target = [hotkey.label, hotkey.route || hotkey.action].filter(Boolean).join(' — ');
+          lines.push(`  - \`${hotkey.key}\`${target ? `: ${target}` : ''}`);
+        }
+      }
+      lines.push('- Requirement: implement these bindings as real keyboard shortcuts, not as decorative text.');
     }
     lines.push('');
   }

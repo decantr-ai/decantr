@@ -120,6 +120,14 @@ export interface ScaffoldPackData {
   };
   routing: 'hash' | 'history' | 'pathname';
   features: string[];
+  navigation?: {
+    commandPalette: boolean;
+    hotkeys: Array<{
+      key: string;
+      route?: string;
+      label?: string;
+    }>;
+  };
   routes: ScaffoldPackRoute[];
 }
 
@@ -282,6 +290,14 @@ export interface ScaffoldPackBuilderOptions {
   antiPatterns?: ExecutionPackAntiPattern[];
   successChecks?: ExecutionPackSuccessCheck[];
   tokenBudget?: Partial<ExecutionPackTokenBudget>;
+  navigation?: {
+    commandPalette: boolean;
+    hotkeys: Array<{
+      key: string;
+      route?: string;
+      label?: string;
+    }>;
+  };
 }
 
 export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {}
@@ -527,6 +543,16 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push(`- Routing: ${scaffoldPack.data.routing}`);
     if (scaffoldPack.data.features.length > 0) {
       lines.push(`- Features: ${scaffoldPack.data.features.join(', ')}`);
+    }
+    if (scaffoldPack.data.navigation?.commandPalette || scaffoldPack.data.navigation?.hotkeys.length) {
+      lines.push('- Navigation:');
+      if (scaffoldPack.data.navigation.commandPalette) {
+        lines.push('  - command palette required');
+      }
+      for (const hotkey of scaffoldPack.data.navigation.hotkeys) {
+        const target = [hotkey.label, hotkey.route].filter(Boolean).join(' — ');
+        lines.push(`  - ${hotkey.key}${target ? `: ${target}` : ''}`);
+      }
     }
     lines.push('');
 
@@ -795,6 +821,7 @@ export function buildScaffoldPack(
       },
       routing: appNode.routing,
       features: appNode.features,
+      navigation: options.navigation,
       routes,
     },
     renderedMarkdown: '',
@@ -1096,6 +1123,22 @@ export async function compileExecutionPackBundle(
 
   const scaffold = buildScaffoldPack(pipeline.ir, {
     target: sharedTarget,
+    navigation: {
+      commandPalette: Boolean(effectiveEssence.meta.navigation?.command_palette),
+      hotkeys: Array.isArray(effectiveEssence.meta.navigation?.hotkeys)
+        ? effectiveEssence.meta.navigation.hotkeys
+            .filter((hotkey): hotkey is { key: string; route?: string; action?: string; label: string } => Boolean(
+              hotkey
+              && typeof hotkey.key === 'string'
+              && typeof hotkey.label === 'string',
+            ))
+            .map((hotkey) => ({
+              key: hotkey.key,
+              route: hotkey.route,
+              label: hotkey.label,
+            }))
+        : [],
+    },
   });
   const review = buildReviewPack(pipeline.ir, {
     target: sharedTarget,

@@ -374,10 +374,13 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
   const summary: SourceAuditSummary = {
     filesChecked: sourceFiles.length,
     inlineStyles: createSourceAuditBucket(),
+    componentStyleTags: createSourceAuditBucket(),
     localCssRuntimeSignals: createSourceAuditBucket(),
     securityRiskPatterns: createSourceAuditBucket(),
     localhostEndpointSignals: createSourceAuditBucket(),
     placeholderRoutes: createSourceAuditBucket(),
+    commandPaletteSignals: createSourceAuditBucket(),
+    keyboardShortcutSignals: createSourceAuditBucket(),
     protectedSurfaceSignals: createSourceAuditBucket(),
     authProtectedRedirectSignals: createSourceAuditBucket(),
     authAnonymousRedirectSignals: createSourceAuditBucket(),
@@ -484,12 +487,18 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       || /(?:^|\/)styles\/atoms\.css$/i.test(relativePath)
       || /Lightweight @decantr\/css atom runtime/i.test(code)
     ) ? 1 : 0;
+    const componentStyleTagCount = countComponentStyleTagSignals(code);
+    const commandPaletteSignalCount = countCommandPaletteSignals(code);
+    const keyboardShortcutSignalCount = countKeyboardShortcutSignals(code);
 
     recordSourceAudit(summary.inlineStyles, relativePath, signals.inlineStyleAttributeCount);
+    recordSourceAudit(summary.componentStyleTags, relativePath, componentStyleTagCount);
     recordSourceAudit(summary.localCssRuntimeSignals, relativePath, localCssRuntimeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
     recordSourceAudit(summary.localhostEndpointSignals, relativePath, signals.localhostEndpointCount);
     recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
+    recordSourceAudit(summary.commandPaletteSignals, relativePath, commandPaletteSignalCount);
+    recordSourceAudit(summary.keyboardShortcutSignals, relativePath, keyboardShortcutSignalCount);
     recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
     recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
     recordSourceAudit(summary.authAnonymousRedirectSignals, relativePath, signals.authAnonymousRedirectSignalCount);
@@ -677,10 +686,13 @@ interface SourceAuditBucket {
 interface SourceAuditSummary {
   filesChecked: number;
   inlineStyles: SourceAuditBucket;
+  componentStyleTags: SourceAuditBucket;
   localCssRuntimeSignals: SourceAuditBucket;
   securityRiskPatterns: SourceAuditBucket;
   localhostEndpointSignals: SourceAuditBucket;
   placeholderRoutes: SourceAuditBucket;
+  commandPaletteSignals: SourceAuditBucket;
+  keyboardShortcutSignals: SourceAuditBucket;
   protectedSurfaceSignals: SourceAuditBucket;
   authProtectedRedirectSignals: SourceAuditBucket;
   authAnonymousRedirectSignals: SourceAuditBucket;
@@ -1570,6 +1582,17 @@ function appendSourceAuditFindings(
     }));
   }
 
+  if (sourceAudit.componentStyleTags.count > 0) {
+    findings.push(makeFinding({
+      id: 'source-component-style-tags-present',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'Source files inject component-scoped style tags or dynamic style elements, which bypass the compiled Decantr layer contract.',
+      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.componentStyleTags, 'Component-level style tag signals'),
+      suggestedFix: 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so styling stays inside the reviewed Decantr layer stack.',
+    }));
+  }
+
   if (sourceAudit.localCssRuntimeSignals.count > 0) {
     findings.push(makeFinding({
       id: 'source-local-css-runtime-stub-present',
@@ -1611,6 +1634,35 @@ function appendSourceAuditFindings(
       message: 'Source files still include placeholder navigation targets instead of real app routes.',
       evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.placeholderRoutes, 'Placeholder route targets'),
       suggestedFix: 'Replace placeholder href/to values with the actual routes declared in the compiled packs and essence.',
+    }));
+  }
+
+  const navigation = essence && isV3(essence) ? essence.meta.navigation : null;
+  if (navigation?.command_palette && sourceAudit.commandPaletteSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-command-palette-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'The essence declares a command palette, but the source tree does not show an obvious command-palette implementation signal.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        'Command palette declared in essence navigation.',
+      ],
+      suggestedFix: 'Implement a real command palette surface with its keyboard trigger instead of merely acknowledging the feature in copy or comments.',
+    }));
+  }
+
+  if (navigation?.hotkeys?.length && sourceAudit.keyboardShortcutSignals.count === 0) {
+    findings.push(makeFinding({
+      id: 'source-hotkeys-missing',
+      category: 'Source Audit',
+      severity: 'warn',
+      message: 'The essence declares hotkeys, but the source tree does not show obvious keyboard-shortcut handling.',
+      evidence: [
+        `Source files checked: ${sourceAudit.filesChecked}`,
+        `Hotkeys declared: ${navigation.hotkeys.length}`,
+      ],
+      suggestedFix: 'Implement the declared hotkeys with real keydown handlers or a reviewed shortcut helper rather than leaving them as documentation-only features.',
     }));
   }
 
@@ -2813,6 +2865,22 @@ function findHardcodedColors(code: string): string[] {
 function findUtilityFrameworkSignals(code: string): string[] {
   const matches = code.match(/\b(?:bg|text|border|shadow|rounded|px|py|mx|my|gap|grid-cols|col-span|row-span|sm|md|lg|xl|hover):[-\w/.[\]]+/g) ?? [];
   return [...new Set(matches)];
+}
+
+function countComponentStyleTagSignals(code: string): number {
+  const jsxStyleTags = code.match(/<style(?:\s|>)/gi)?.length ?? 0;
+  const dynamicStyleElements = code.match(/document\.createElement\((['"])style\1\)/g)?.length ?? 0;
+  return jsxStyleTags + dynamicStyleElements;
+}
+
+function countCommandPaletteSignals(code: string): number {
+  const matches = code.match(/\b(?:commandpalette|command palette|cmd\+k|⌘k|openCommandPalette|setCommandPaletteOpen|paletteOpen|paletteTrigger)\b/gi) ?? [];
+  return matches.length;
+}
+
+function countKeyboardShortcutSignals(code: string): number {
+  const matches = code.match(/\b(?:keydown|keyup|metaKey|ctrlKey|altKey|shiftKey|hotkey|shortcut)\b/gi) ?? [];
+  return matches.length;
 }
 
 interface AstCritiqueSignals {
@@ -10936,6 +11004,19 @@ export function critiqueSource({
       evidence: [filePath, `Inline style attributes: ${astSignals.inlineStyleAttributeCount}`],
       file: filePath,
       suggestedFix: 'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
+    }));
+  }
+
+  const componentStyleTagSignals = countComponentStyleTagSignals(code);
+  if (componentStyleTagSignals > 0) {
+    findings.push(makeFinding({
+      id: 'anti-pattern-component-style-tags',
+      category: 'Anti-Patterns',
+      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'theme-consistency']),
+      message: 'Component-scoped style tags or dynamic style elements were detected in the reviewed file.',
+      evidence: [filePath, `Component style tag signals: ${componentStyleTagSignals}`],
+      file: filePath,
+      suggestedFix: 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so the file stays aligned with the Decantr layer contract.',
     }));
   }
 

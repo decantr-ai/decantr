@@ -232,15 +232,27 @@ describe('generateTreatmentCSS', () => {
     expect(surfaceBlock).not.toContain('background: var(--d-surface)');
   });
 
-  // ── 12. Decorator layer is an empty stub ──
+  // ── 12. Decorator layer follows theme decorator definitions ──
 
-  it('emits empty @layer decorators block after treatments', () => {
-    const css = generateTreatmentCSS(baseSpatialTokens, undefined, undefined, 'carbon');
+  it('emits decorator rules from theme decorator definitions after treatments', () => {
+    const css = generateTreatmentCSS(
+      baseSpatialTokens,
+      undefined,
+      { 'carbon-glass': 'Glass treatment' },
+      'carbon',
+      {
+        'carbon-glass': {
+          suggested_properties: {
+            background: 'rgba(31, 31, 35, 0.8)',
+            border: '1px solid var(--d-border)',
+          },
+        },
+      },
+    );
     expect(css).toContain('@layer decorators {');
-    expect(css).toContain('Decorator CSS is AI-generated from structured definitions');
-    // No generated decorator class rules
-    expect(css).not.toContain('.carbon-glass');
-    // Decorator block appears after treatments
+    expect(css).toContain('.carbon-glass {');
+    expect(css).toContain('background: rgba(31, 31, 35, 0.8);');
+    expect(css).toContain('border: 1px solid var(--d-border);');
     const treatmentIdx = css.indexOf('end @layer treatments');
     const decoratorIdx = css.indexOf('@layer decorators');
     expect(decoratorIdx).toBeGreaterThan(treatmentIdx);
@@ -270,10 +282,10 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('@keyframes decantr-pulse');
   });
 
-  it('always includes empty @layer decorators block', () => {
+  it('always includes a decorators layer even without theme definitions', () => {
     const css = generateTreatmentCSS(baseSpatialTokens, undefined, undefined, 'carbon');
     expect(css).toContain('@layer decorators');
-    expect(css).toContain('AI-generated from structured definitions');
+    expect(css).toContain('Canonical decorator CSS should be derived from theme decorator definitions');
   });
 
   it('overrides only affect matching base rules, not variant rules', () => {

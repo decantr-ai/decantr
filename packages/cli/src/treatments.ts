@@ -11,6 +11,13 @@ export function generateTreatmentCSS(
   treatmentOverrides?: Record<string, Record<string, string>>,
   themeDecorators?: Record<string, string>,
   themeName?: string,
+  themeDecoratorDefinitions?: Record<string, {
+    description?: string;
+    intent?: string;
+    suggested_properties?: Record<string, string>;
+    pairs_with?: string[];
+    usage?: string[];
+  }>,
 ): string {
   const lines: string[] = [];
 
@@ -326,8 +333,28 @@ export function generateTreatmentCSS(
   lines.push('');
   lines.push('} /* end @layer treatments */');
 
-  // Build empty @layer decorators block — AI generates decorator CSS from structured definitions
-  const decoratorBlock = `\n@layer decorators {\n  /* Decorator CSS is AI-generated from structured definitions in section context files. */\n  /* See .decantr/context/section-*.md for intent, suggested properties, and usage guidance. */\n}\n`;
+  const decoratorRules: string[] = [];
+  if (themeDecoratorDefinitions) {
+    for (const [className, definition] of Object.entries(themeDecoratorDefinitions)) {
+      const props = definition?.suggested_properties ?? {};
+      const entries = Object.entries(props);
+      if (entries.length === 0) continue;
+      decoratorRules.push(`.${className} {`);
+      for (const [prop, value] of entries) {
+        decoratorRules.push(`  ${prop}: ${value};`);
+      }
+      decoratorRules.push('}');
+      decoratorRules.push('');
+    }
+  }
+
+  const decoratorComments = themeDecorators
+    ? Object.entries(themeDecorators).map(([name, description]) => `  /* .${name}: ${description} */`).join('\n')
+    : '  /* No theme decorators available. */';
+  const decoratorBody = decoratorRules.length > 0
+    ? `${decoratorRules.join('\n')}${decoratorComments ? `\n${decoratorComments}` : ''}`
+    : `${decoratorComments}\n  /* Canonical decorator CSS should be derived from theme decorator definitions when available. */`;
+  const decoratorBlock = `\n@layer decorators {\n${decoratorBody}\n}\n`;
   lines.push(decoratorBlock);
 
   return lines.join('\n');

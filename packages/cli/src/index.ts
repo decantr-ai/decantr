@@ -218,6 +218,10 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   lines.push('- Start with the shell layouts and route structure first, then build section pages route by route.');
   lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
   lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.');
+  lines.push('- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.');
+  lines.push('- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.');
+  lines.push('- If command_palette or hotkeys are declared in the generated context, implement them as real features. Do not merely acknowledge them in copy or comments.');
+  lines.push('- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.');
   lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
   lines.push('');
   lines.push('Execution flow:');
