@@ -124,6 +124,41 @@ function inferShellPattern(hasSidebar: boolean, hasTopNav: boolean, hasFooter: b
   return 'main-only';
 }
 
+function inferShellPatternFromDecantrContract(projectRoot: string): string | null {
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  if (!existsSync(essencePath)) return null;
+
+  try {
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint?: {
+        shell?: string;
+        sections?: Array<{ id?: string; role?: string; shell?: string }>;
+      };
+    };
+
+    const sectionShells = essence.blueprint?.sections
+      ?.map((section) => section.shell)
+      .filter((shell): shell is string => typeof shell === 'string' && shell.length > 0) ?? [];
+
+    if (sectionShells.length === 0 && essence.blueprint?.shell) {
+      return `${essence.blueprint.shell} (contract)`;
+    }
+
+    const uniqueShells = [...new Set(sectionShells)];
+    if (uniqueShells.length === 0) return null;
+    if (uniqueShells.length === 1) return `${uniqueShells[0]} (contract)`;
+
+    const primarySection = essence.blueprint?.sections?.find((section) => section.role === 'primary' && section.shell);
+    if (primarySection?.shell) {
+      return `${primarySection.shell} (primary contract)`;
+    }
+
+    return `${uniqueShells[0]} (+${uniqueShells.length - 1} shells, contract)`;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Scan for layout patterns (sidebar, top nav, footer) in the project.
  */
@@ -135,10 +170,15 @@ export function scanLayout(projectRoot: string): LayoutAnalysis {
   const hasTopNav = fromComponents.nav || fromLayouts.nav;
   const hasFooter = fromComponents.footer || fromLayouts.footer;
 
+  const runtimeShellPattern = inferShellPattern(hasSidebar, hasTopNav, hasFooter);
+  const contractShellPattern = inferShellPatternFromDecantrContract(projectRoot);
+
   return {
     hasSidebar,
     hasTopNav,
     hasFooter,
-    shellPattern: inferShellPattern(hasSidebar, hasTopNav, hasFooter),
+    shellPattern: runtimeShellPattern === 'main-only' && contractShellPattern
+      ? contractShellPattern
+      : runtimeShellPattern,
   };
 }

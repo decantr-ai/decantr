@@ -8,6 +8,16 @@ export interface ComponentsAnalysis {
 }
 
 const PAGE_EXTENSIONS = new Set(['.tsx', '.ts', '.jsx', '.js']);
+const ROOT_COMPONENT_CANDIDATES = [
+  'src/App.tsx',
+  'src/App.ts',
+  'src/App.jsx',
+  'src/App.js',
+  'App.tsx',
+  'App.ts',
+  'App.jsx',
+  'App.js',
+];
 
 function countFilesRecursive(dir: string, extensions: Set<string>): number {
   let count = 0;
@@ -123,6 +133,21 @@ export function scanComponents(projectRoot: string): ComponentsAnalysis {
           : dir;
         componentDirs.push(rel);
       }
+    }
+  }
+
+  const hasRootAppComponent = ROOT_COMPONENT_CANDIDATES.some((relativePath) =>
+    existsSync(join(projectRoot, relativePath)),
+  );
+
+  if (pageCount === 0 && hasRootAppComponent) {
+    pageCount = 1;
+  }
+
+  if (componentCount === 0 && hasRootAppComponent) {
+    componentCount = 1;
+    if (!componentDirs.includes('src')) {
+      componentDirs.push('src');
     }
   }
 

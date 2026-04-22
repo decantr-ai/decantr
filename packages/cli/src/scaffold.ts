@@ -1433,6 +1433,7 @@ Build for wow factor. When a pattern describes a canvas, graph, map, or spatial 
 function generateDecantrMdV31(params: {
   guardMode: string;
   cssApproach: string;
+  workflowMode?: 'greenfield-scaffold' | 'brownfield-attach';
   blueprintId?: string;
   themeName?: string;
   themeMode?: string;
@@ -1447,6 +1448,10 @@ function generateDecantrMdV31(params: {
   const body = renderTemplate(template, {
     GUARD_MODE: params.guardMode,
     CSS_APPROACH: params.cssApproach,
+    WORKFLOW_MODE: params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold',
+    WORKFLOW_GUIDANCE: params.workflowMode === 'brownfield-attach'
+      ? `This project is using Decantr in **brownfield attach** mode.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/init-seed.json\` for the recommended attach defaults.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Map existing routes and components onto the declared Decantr sections/pages before creating new files. Registry content is optional in this workflow unless the task explicitly asks for it.`
+      : `This project is using Decantr in **greenfield scaffold** mode.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
   });
 
   // Build project brief
@@ -1456,6 +1461,7 @@ function generateDecantrMdV31(params: {
   briefLines.push(`- **Blueprint:** ${params.blueprintId || 'custom'}`);
   const themeDesc = `${params.themeName || 'default'} (${params.themeMode || 'dark'} mode${params.themeShape ? `, ${params.themeShape} shape` : ''})`;
   briefLines.push(`- **Theme:** ${themeDesc}`);
+  briefLines.push(`- **Workflow:** ${params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold'}`);
   if (params.personality && params.personality.length > 0) {
     briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
   }
@@ -1556,6 +1562,7 @@ function generateProjectJson(
       via: 'cli',
       version: CLI_VERSION,
       flags: buildFlagsString(options),
+      workflowMode: options.workflowMode || 'greenfield-scaffold',
     },
   };
 
@@ -2119,6 +2126,7 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
       via: 'cli',
       version: CLI_VERSION,
       flags: '--offline --minimal',
+      workflowMode: 'greenfield-scaffold',
     },
   };
 
@@ -2412,11 +2420,15 @@ export async function refreshDerivedFiles(
   type StoredProjectJson = {
     blueprintId?: string;
     voice?: RegistryBlueprint['voice'];
+    initialized?: {
+      workflowMode?: 'greenfield-scaffold' | 'brownfield-attach';
+    };
     [key: string]: unknown;
   };
 
   let storedBlueprintId: string | undefined;
   let storedVoice: ScaffoldContextInput['voice'] | undefined;
+  let storedWorkflowMode: 'greenfield-scaffold' | 'brownfield-attach' | undefined;
   const projectJsonFilePath = join(decantrDir, 'project.json');
   let projectJsonData: StoredProjectJson = {};
   if (existsSync(projectJsonFilePath)) {
@@ -2424,6 +2436,7 @@ export async function refreshDerivedFiles(
       projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8')) as StoredProjectJson;
       if (projectJsonData.blueprintId) storedBlueprintId = projectJsonData.blueprintId;
       if (projectJsonData.voice) storedVoice = projectJsonData.voice;
+      if (projectJsonData.initialized?.workflowMode) storedWorkflowMode = projectJsonData.initialized.workflowMode;
     } catch { /* ignore parse errors */ }
   }
 
@@ -2567,6 +2580,7 @@ export async function refreshDerivedFiles(
   writeFileSync(decantrMdPath, generateDecantrMdV31({
     guardMode,
     cssApproach: CSS_APPROACH_CONTENT,
+    workflowMode: storedWorkflowMode,
     blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
     themeName,
     themeMode: mode,

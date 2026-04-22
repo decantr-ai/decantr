@@ -72,11 +72,13 @@ describe('init command', () => {
 
     const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
 
+    expect(output).toContain('This workspace is a new Decantr scaffold.');
     expect(output).toContain('Treat the compiled execution-pack files as the primary source of truth.');
     expect(output).toContain('Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.');
     expect(output).toContain('Use only files present in this workspace as the source of truth.');
     expect(output).toContain('After implementation, run decantr check and decantr audit and fix any contract or drift issues.');
 
+    expect(content).toContain('This project is using Decantr in **greenfield scaffold** mode.');
     expect(content).toContain('Treat the compiled execution-pack files as the primary source of truth.');
     expect(content).toContain('Prefer the compiled section pack if the two sources differ');
     expect(content).toContain('Use only files present in this workspace as the source of truth.');
@@ -172,11 +174,17 @@ describe('init command', () => {
       stdio: 'pipe',
     }).toString();
 
+    const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
     const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8')) as {
       meta?: { target?: string };
     };
 
     expect(output).toContain('Found .decantr/init-seed.json brownfield guidance.');
+    expect(output).toContain('Attach Decantr to this existing application without rebuilding it from scratch.');
+    expect(output).toContain('Treat .decantr/analysis.json as the factual inventory of the current app.');
+    expect(content).toContain('This project is using Decantr in **brownfield attach** mode.');
+    expect(content).toContain('Read `.decantr/analysis.json` first for the detected framework, routes, styling, layout, and dependency facts.');
+    expect(content).toContain('Registry content is optional in this workflow unless the task explicitly asks for it.');
     expect(essence.meta?.target).toBe('angular');
   }, INIT_TIMEOUT_MS);
 });

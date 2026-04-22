@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface StylingAnalysis {
-  approach: 'tailwind' | 'css-modules' | 'css' | 'unknown';
+  approach: 'tailwind' | 'css-modules' | 'css' | 'decantr-css' | 'unknown';
   configFile?: string;
   colors: Record<string, string>;
   darkMode: boolean;
@@ -19,10 +19,17 @@ const TAILWIND_CONFIGS = [
 const GLOBALS_CSS_PATHS = [
   'src/app/globals.css',
   'app/globals.css',
+  'src/styles/global.css',
   'src/styles/globals.css',
   'styles/globals.css',
   'src/index.css',
   'src/global.css',
+];
+
+const DECANTR_STYLE_PATHS = [
+  'src/styles/tokens.css',
+  'src/styles/treatments.css',
+  'src/styles/global.css',
 ];
 
 /**
@@ -60,9 +67,9 @@ function extractCSSVariables(content: string): { colors: Record<string, string>;
 /**
  * Detect dark mode support.
  */
-function detectDarkMode(projectRoot: string, cssContent: string | null): boolean {
+function detectDarkMode(projectRoot: string, cssContents: string[]): boolean {
   // Check CSS for dark mode selectors
-  if (cssContent) {
+  for (const cssContent of cssContents) {
     if (
       cssContent.includes('.dark') ||
       cssContent.includes('[data-theme="dark"]') ||
@@ -109,6 +116,21 @@ function detectDarkMode(projectRoot: string, cssContent: string | null): boolean
     }
   }
 
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  if (existsSync(essencePath)) {
+    try {
+      const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+        dna?: { theme?: { mode?: string } };
+      };
+      const mode = essence.dna?.theme?.mode;
+      if (mode === 'dark' || mode === 'auto') {
+        return true;
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
   return false;
 }
 
@@ -135,6 +157,10 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
       try {
         const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
         const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+        if (allDeps['@decantr/css']) {
+          approach = 'decantr-css';
+          configFile = 'src/styles/tokens.css';
+        }
         if (allDeps.tailwindcss || allDeps['@tailwindcss/postcss'] || allDeps['@tailwindcss/vite']) {
           approach = 'tailwind';
         }
@@ -144,30 +170,54 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
     }
   }
 
+  const decantrStyleFiles = DECANTR_STYLE_PATHS.filter((rel) => existsSync(join(projectRoot, rel)));
+  if (decantrStyleFiles.length >= 2) {
+    approach = 'decantr-css';
+    configFile = decantrStyleFiles.join(' + ');
+  }
+
   // Find and parse globals CSS
-  let cssContent: string | null = null;
+  const cssContents: string[] = [];
   for (const rel of GLOBALS_CSS_PATHS) {
     const fullPath = join(projectRoot, rel);
     if (existsSync(fullPath)) {
       try {
-        cssContent = readFileSync(fullPath, 'utf-8');
+        cssContents.push(readFileSync(fullPath, 'utf-8'));
       } catch {
         // Ignore
       }
-      break;
+    }
+  }
+
+  for (const rel of DECANTR_STYLE_PATHS) {
+    if (GLOBALS_CSS_PATHS.includes(rel)) continue;
+    const fullPath = join(projectRoot, rel);
+    if (existsSync(fullPath)) {
+      try {
+        cssContents.push(readFileSync(fullPath, 'utf-8'));
+      } catch {
+        // Ignore
+      }
     }
   }
 
   let colors: Record<string, string> = {};
   let cssVariables: string[] = [];
 
-  if (cssContent) {
+  for (const cssContent of cssContents) {
     const extracted = extractCSSVariables(cssContent);
-    colors = extracted.colors;
-    cssVariables = extracted.variables;
+    colors = { ...colors, ...extracted.colors };
+    cssVariables.push(...extracted.variables);
   }
 
-  const darkMode = detectDarkMode(projectRoot, cssContent);
+  cssVariables = [...new Set(cssVariables)];
+
+  const darkMode = detectDarkMode(projectRoot, cssContents);
+
+  if (approach === 'unknown' && cssContents.length > 0) {
+    approach = 'css';
+    configFile = GLOBALS_CSS_PATHS.find((rel) => existsSync(join(projectRoot, rel)));
+  }
 
   return {
     approach,

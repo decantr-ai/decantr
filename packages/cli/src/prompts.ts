@@ -22,6 +22,7 @@ export interface InitOptions {
   personality: string[];
   features: string[];
   existing: boolean;
+  workflowMode?: 'greenfield-scaffold' | 'brownfield-attach';
   accessibility?: {
     wcag_level?: string;
     cvd_preference?: string;
@@ -30,7 +31,7 @@ export interface InitOptions {
 
 export type InitWorkflowSeed = Partial<Pick<
   InitOptions,
-  'theme' | 'mode' | 'target' | 'guard' | 'density' | 'shell' | 'existing'
+  'theme' | 'mode' | 'target' | 'guard' | 'density' | 'shell' | 'existing' | 'workflowMode'
 >>;
 
 export interface RegistryItem {
@@ -300,6 +301,7 @@ export async function runInteractivePrompts(
     personality: ['professional'],
     features: [],
     existing: workflowSeed?.existing || detected.existingEssence,
+    workflowMode: workflowSeed?.workflowMode,
   };
 }
 
@@ -346,6 +348,7 @@ export function mergeWithDefaults(
     personality: flags.personality || ['professional'],
     features: flags.features || [],
     existing: flags.existing || workflowSeed?.existing || detected.existingEssence,
+    workflowMode: flags.workflowMode || workflowSeed?.workflowMode,
   };
 }
 

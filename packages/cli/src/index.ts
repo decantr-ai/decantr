@@ -173,6 +173,7 @@ function formatIntelligenceSummary(
 }
 
 interface PromptContext {
+  workflow: 'greenfield-scaffold' | 'brownfield-attach';
   archetype: string;
   blueprint?: string;
   theme: string;
@@ -197,10 +198,12 @@ function extractPatternName(item: unknown): string {
   return 'custom';
 }
 
-function generateCuratedPrompt(ctx: PromptContext): string {
+function generateGreenfieldPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
 
-  lines.push('Build this application using the Decantr design system.');
+  lines.push('Build this greenfield application using the Decantr design system.');
+  lines.push('');
+  lines.push('This workspace is a new Decantr scaffold. Use the contract to create or extend the runtime deliberately, not to reverse-engineer a hidden starter.');
   lines.push('');
   lines.push('Treat the compiled execution-pack files as the primary source of truth.');
   lines.push('Use narrative docs only as secondary explanation when the compiled packs are not enough.');
@@ -236,22 +239,54 @@ function generateCuratedPrompt(ctx: PromptContext): string {
   return lines.join('\n');
 }
 
-function boxedPrompt(content: string, title: string): string {
-  const lines = content.split('\n');
-  const maxLen = Math.max(...lines.map(l => l.length), title.length + 4);
-  const width = maxLen + 4;
+function generateBrownfieldPrompt(ctx: PromptContext): string {
+  const lines: string[] = [];
 
-  const top = `┌${'─'.repeat(width - 2)}┐`;
-  const titleLine = `│ ${BOLD}${title}${RESET}${' '.repeat(width - title.length - 4)} │`;
-  const sep = `├${'─'.repeat(width - 2)}┤`;
-  const bottom = `└${'─'.repeat(width - 2)}┘`;
+  lines.push('Attach Decantr to this existing application without rebuilding it from scratch.');
+  lines.push('');
+  lines.push('Preserve the current framework, package manager, router, build tooling, and working runtime structure unless the generated Decantr contract gives you a reviewed reason to change them.');
+  lines.push('');
+  lines.push('Treat .decantr/analysis.json as the factual inventory of the current app.');
+  lines.push('Treat .decantr/init-seed.json as the recommended Decantr attach defaults.');
+  lines.push('Treat the compiled execution-pack files as the Decantr contract you are layering onto the app.');
+  lines.push('Use only files present in this workspace as the source of truth. If the runtime and contract disagree, call out the drift explicitly instead of improvising a rewrite.');
+  lines.push('');
+  lines.push('Read in this order:');
+  lines.push('1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.');
+  lines.push('2. .decantr/init-seed.json for the intended attach defaults and workflow lane.');
+  lines.push('3. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
+  lines.push('4. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.');
+  lines.push('5. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.');
+  lines.push('6. The matching section and page pack files only when you are working on those specific surfaces.');
+  lines.push('');
+  lines.push('Implementation rules:');
+  lines.push('- Preserve existing files and working flows whenever possible. Prefer incremental attachment over whole-app rewrites.');
+  lines.push('- Map existing routes and components onto the declared Decantr sections/pages before creating new files.');
+  lines.push('- If package.json, router files, or style files already exist, extend them deliberately instead of replacing them with a different starter shape.');
+  lines.push('- If Decantr style files are absent, add src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css in a way that fits the current app structure.');
+  lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a parallel visual system.');
+  lines.push('- Registry content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.');
+  lines.push('- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.');
+  lines.push('- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.');
+  lines.push('- Let shells own spacing, centering, and scroll containers. Preserve app structure, but remove duplicated shell responsibilities when the contract makes them explicit.');
+  lines.push('- If command_palette or hotkeys are declared in the generated context, implement them as real features.');
+  lines.push('- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.');
+  lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
+  lines.push('');
+  lines.push('Execution flow:');
+  lines.push('- Start by inventorying the current runtime and identifying the safest route/component anchors for attachment.');
+  lines.push('- Align the shared shell and route structure incrementally instead of replacing the app shell wholesale.');
+  lines.push('- Then attach or refine section pages using the matching section and page packs.');
+  lines.push('- After implementation, run decantr check and decantr audit and fix contract or drift issues.');
+  lines.push('- If a required context file or runtime anchor is missing, stop and report exactly what is missing before continuing.');
 
-  const body = lines.map(line => {
-    const padding = ' '.repeat(width - line.length - 4);
-    return `│ ${line}${padding} │`;
-  }).join('\n');
+  return lines.join('\n');
+}
 
-  return `${top}\n${titleLine}\n${sep}\n${body}\n${bottom}`;
+function generateCuratedPrompt(ctx: PromptContext): string {
+  return ctx.workflow === 'brownfield-attach'
+    ? generateBrownfieldPrompt(ctx)
+    : generateGreenfieldPrompt(ctx);
 }
 
 function getAPIClient(): RegistryAPIClient {
@@ -1165,6 +1200,10 @@ async function cmdInit(args: InitArgs) {
   let selectedBlueprint = 'default';
   let registrySource: 'api' | 'cache' = 'cache';
   const preferContractOnly = brownfieldAttach && !requestedBlueprint && !requestedArchetype;
+  const workflowMode: 'greenfield-scaffold' | 'brownfield-attach' =
+    workflowSeed || (brownfieldAttach && !requestedBlueprint && !requestedArchetype)
+      ? 'brownfield-attach'
+      : 'greenfield-scaffold';
 
   if (args.yes) {
     // Non-interactive: use --blueprint flag or default
@@ -1254,6 +1293,7 @@ async function cmdInit(args: InitArgs) {
     userExplicit.shape = true;
     userExplicit.personality = true;
   }
+  options.workflowMode = workflowMode;
 
   // Topology markdown (populated when blueprint has composition)
   let topologyMarkdown = '';
@@ -1534,6 +1574,7 @@ async function cmdInit(args: InitArgs) {
   }
 
   const promptCtx: PromptContext = {
+    workflow: options.workflowMode === 'brownfield-attach' ? 'brownfield-attach' : 'greenfield-scaffold',
     archetype: options.archetype || 'custom',
     blueprint: options.blueprint,
     theme: options.theme,

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 export interface RouteInfo {
@@ -8,7 +8,7 @@ export interface RouteInfo {
 }
 
 export interface RoutesAnalysis {
-  strategy: 'app-router' | 'pages-router' | 'none';
+  strategy: 'app-router' | 'pages-router' | 'react-router' | 'none';
   routes: RouteInfo[];
 }
 
@@ -127,9 +127,102 @@ function walkPagesDir(dir: string, baseDir: string, segments: string[]): RouteIn
   return routes;
 }
 
+const ROUTER_FILE_EXTENSIONS = new Set(['.tsx', '.ts', '.jsx', '.js']);
+
+function collectRouteCandidateFiles(dir: string, files: string[], depth = 0): void {
+  if (depth > 5) return;
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    if (entry.startsWith('.') || entry === 'node_modules') continue;
+    const fullPath = join(dir, entry);
+    try {
+      const stat = statSync(fullPath);
+      if (stat.isDirectory()) {
+        collectRouteCandidateFiles(fullPath, files, depth + 1);
+      } else if (stat.isFile()) {
+        const ext = entry.slice(entry.lastIndexOf('.'));
+        if (ROUTER_FILE_EXTENSIONS.has(ext)) {
+          files.push(fullPath);
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+}
+
+function scanReactRouter(projectRoot: string): RouteInfo[] {
+  const candidateDirs = [
+    join(projectRoot, 'src'),
+    projectRoot,
+  ];
+
+  const candidateFiles: string[] = [];
+  for (const dir of candidateDirs) {
+    if (existsSync(dir)) collectRouteCandidateFiles(dir, candidateFiles);
+  }
+
+  const routeMap = new Map<string, RouteInfo>();
+
+  for (const absolutePath of candidateFiles) {
+    let content: string;
+    try {
+      content = readFileSync(absolutePath, 'utf-8');
+    } catch {
+      continue;
+    }
+
+    const isReactRouterFile =
+      content.includes('react-router-dom') ||
+      content.includes('react-router') ||
+      content.includes('<Routes') ||
+      content.includes('createBrowserRouter') ||
+      content.includes('createHashRouter') ||
+      content.includes('RouterProvider') ||
+      content.includes('HashRouter') ||
+      content.includes('BrowserRouter');
+
+    if (!isReactRouterFile) continue;
+
+    const relativePath = relative(projectRoot, absolutePath);
+    const pathMatches = new Set<string>();
+
+    for (const match of content.matchAll(/<Route\b[^>]*\bpath=["'`]([^"'`]+)["'`]/g)) {
+      pathMatches.add(match[1]);
+    }
+
+    for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]+)["'`]/g)) {
+      pathMatches.add(match[1]);
+    }
+
+    if (pathMatches.size === 0 && (content.includes('<Routes') || content.includes('RouterProvider'))) {
+      pathMatches.add('/');
+    }
+
+    for (const path of pathMatches) {
+      if (!routeMap.has(path)) {
+        routeMap.set(path, {
+          path,
+          file: relativePath,
+          hasLayout: false,
+        });
+      }
+    }
+  }
+
+  return [...routeMap.values()];
+}
+
 /**
- * Scan for routes in a Next.js project.
- * Detects App Router (app/ or src/app/) and Pages Router (pages/ or src/pages/).
+ * Scan for routes in an existing project.
+ * Detects App Router, Pages Router, and React Router style route declarations.
  */
 export function scanRoutes(projectRoot: string): RoutesAnalysis {
   // Try App Router first
@@ -160,6 +253,11 @@ export function scanRoutes(projectRoot: string): RoutesAnalysis {
         return { strategy: 'pages-router', routes };
       }
     }
+  }
+
+  const reactRouterRoutes = scanReactRouter(projectRoot);
+  if (reactRouterRoutes.length > 0) {
+    return { strategy: 'react-router', routes: reactRouterRoutes };
   }
 
   return { strategy: 'none', routes: [] };

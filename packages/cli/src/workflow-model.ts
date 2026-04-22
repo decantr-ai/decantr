@@ -51,6 +51,7 @@ export function createBrownfieldInitSeed(
     workflow: 'brownfield-adoption',
     contractOnly: true,
     registryOptional: true,
+    workflowMode: 'brownfield-attach',
     target: detected.framework !== 'unknown' ? detected.framework : 'react',
     shell: inferSuggestedShell(layout),
     guard: 'guided',

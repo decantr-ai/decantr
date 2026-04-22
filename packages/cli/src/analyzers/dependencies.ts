@@ -15,7 +15,7 @@ export interface DependenciesAnalysis {
  */
 const CATEGORIES: Record<string, string[]> = {
   ui: [
-    'react', 'react-dom', 'vue', 'svelte', '@angular/core',
+    'react', 'react-dom', 'react-router', 'react-router-dom', 'vue', 'svelte', '@angular/core',
     'next', 'nuxt', 'astro',
     '@radix-ui', '@headlessui', '@mui', '@chakra-ui',
     'shadcn', 'antd', 'ant-design',
