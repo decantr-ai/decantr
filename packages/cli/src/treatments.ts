@@ -265,9 +265,9 @@ export function generateTreatmentCSS(
     ['font-size', '0.75rem'],
     ['font-weight', '500'],
     ['padding', '0.125rem 0.5rem'],
-    ['margin-top', 'calc(var(--d-annotation-mt) * var(--d-density-scale, 1))'],
     ['border-radius', 'var(--d-radius-full)'],
-    ['background', 'var(--d-surface)'],
+    ['background', 'color-mix(in srgb, var(--d-surface-raised) 88%, transparent)'],
+    ['border', '1px solid color-mix(in srgb, var(--d-border) 72%, transparent)'],
     ['color', 'var(--d-text-muted)'],
     ['white-space', 'nowrap'],
   ]);
