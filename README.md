@@ -1,142 +1,203 @@
 # Decantr
 
-**Design intelligence and governance for AI-generated UI.**
+**Design intelligence, governance, and verification for AI-generated UI.**
 
-Decantr helps AI coding assistants produce coherent, production-grade interfaces by giving them a structured design contract, scoped execution context, registry-backed UI knowledge, and drift checks.
+Decantr is the contract layer between product intent and AI-generated implementation. It gives coding assistants structured design inputs, registry-backed UI knowledge, scoped context files, and verification paths so they can build coherent product surfaces instead of improvising screen by screen.
 
-> AI generates code. Decantr keeps the output aligned.
+Think of it as OpenAPI for AI-generated UI: the model still writes the code, but Decantr defines the shape, vocabulary, and checks around it.
 
-## What Decantr Is
+> AI generates the interface. Decantr keeps the outcome aligned.
 
-Decantr is the control plane between:
+## What It Actually Does
 
-- your app intent
-- curated design intelligence
-- AI coding assistants
-- verification and drift prevention
+- Captures durable intent in `decantr.essence.json`: theme, density, accessibility, personality, sections, routes, shells, and features.
+- Resolves curated registry content such as patterns, archetypes, blueprints, themes, and shells.
+- Generates assistant-readable context like `DECANTR.md` and `.decantr/context/*.md` so an LLM sees the right constraints at the right scope.
+- Produces style outputs like `src/styles/tokens.css`, `src/styles/treatments.css`, and `src/styles/decorators.css`.
+- Compiles local or hosted execution packs for scaffold, section, page, mutation, review, critique, and audit workflows.
+- Detects drift between the contract and the code with checks, critiques, audits, and optional drift-resolution flows.
 
-It is built around a few core ideas:
+## How The Model Works
 
-- `decantr.essence.json` captures durable design intent
-- registry content provides reusable shells, blueprints, archetypes, patterns, and themes
-- the CLI and MCP server expose that intelligence to humans and agents
-- validation and critique help catch drift before it ships
+Decantr separates design governance into two layers:
 
-## What Decantr Is Not
+- **DNA**: durable visual and system axioms such as theme, spacing, motion, accessibility, and personality.
+- **Blueprint**: product topology such as sections, page routes, shells, layouts, and features.
 
-Decantr is not:
+That split matters because not every change should be treated the same way. A theme swap or accessibility regression is different from adding a new auxiliary section or reshaping a route map. Decantr keeps those concerns separate so governance can be strict where it should be strict and flexible where it should be flexible.
 
-- a code generator
-- a frontend framework
-- a React competitor
-- a component library first product
+## Example Shapes
+
+Minimal essence shape:
+
+```json
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": { "id": "terminal", "mode": "dark", "shape": "sharp" },
+    "spacing": { "density": "comfortable", "content_gap": "_gap4" },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true },
+    "personality": [
+      "Technical workspace with terminal-inspired aesthetics."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "pipeline-builder",
+        "role": "primary",
+        "shell": "terminal-split",
+        "pages": [
+          {
+            "id": "pipeline-editor",
+            "layout": ["workflow-canvas"],
+            "route": "/pipelines/:id"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "platform": { "type": "spa", "routing": "hash" },
+    "guard": {
+      "mode": "guided",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    }
+  }
+}
+```
+
+Registry content is also structured, not just prose:
+
+```ts
+const pattern = {
+  $schema: 'https://decantr.ai/schemas/pattern.v2.json',
+  id: 'hero',
+  components: ['eyebrow', 'headline', 'supporting-copy', 'cta'],
+  default_preset: 'split',
+  presets: {
+    split: {
+      description: 'Content left, media right',
+      layout: ['content', 'media']
+    }
+  },
+  visual_brief: 'Confident launch hero with strong hierarchy and clear CTA.'
+};
+
+const theme = {
+  $schema: 'https://decantr.ai/schemas/theme.v1.json',
+  id: 'terminal',
+  personality: 'Technical workspace with terminal-inspired aesthetics.',
+  tokens: { '--d-primary': '#86efac', '--d-bg': '#050816' },
+  decorator_definitions: {
+    glass: { intent: 'Soft elevated blur for overlays and cards.' }
+  }
+};
+```
+
+## Governance In Practice
+
+- `meta.guard.mode` sets the overall posture: `creative`, `guided`, or `strict`.
+- `meta.guard.dna_enforcement` governs visual/system violations like theme, density, and accessibility drift.
+- `meta.guard.blueprint_enforcement` governs structural drift like pages, layout contracts, and registry-backed pattern usage.
+- `decantr check` is the fast local contract check.
+- `decantr audit` and `decantr registry audit-project` are broader verification passes.
+- `decantr registry critique-file` critiques a specific file against the current contract.
+- `decantr sync-drift` exists for reviewing and resolving accepted drift entries over time.
+
+The rule of thumb is simple: if a change is intentional and durable, update the essence and refresh the context. If it is accidental, fix the code. If it is a temporary exception, track it as drift instead of pretending the contract changed.
+
+## Main Surfaces
+
+| Surface | What it does |
+| --- | --- |
+| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, and run checks/audits |
+| MCP server | Exposes Decantr intelligence directly to AI tools: essence reads, registry resolution, context reads, pack compilation, drift checks, critique, and audit |
+| Hosted registry/API | Browse/search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
+| Verifier | Shared audit and critique engine with schema-backed reports |
+| Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
+
+## Current Product Surface
+
+The active public package surface in this monorepo is:
+
+| Package | Role |
+| --- | --- |
+| `@decantr/essence-spec` | Essence schemas, validation, migration, and TypeScript types |
+| `@decantr/registry` | Registry contracts, schemas, content utilities, and API client surfaces |
+| `@decantr/css` | Framework-agnostic CSS atom runtime |
+| `@decantr/core` | Execution-pack compiler primitives and shared Decantr utilities |
+| `@decantr/verifier` | Shared audit, critique, and report-schema engine |
+| `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
+| `@decantr/cli` | Local scaffold, registry, audit, and maintenance workflows |
+| `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
+
+Full release/support status lives in [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md).
 
 ## Quick Start
 
+Create a new project:
+
 ```bash
-npx @decantr/cli init --blueprint=agent-marketplace --yes
+npx @decantr/cli new my-app --blueprint=agent-marketplace
+cd my-app
+decantr status
+decantr check
+decantr audit
 ```
 
-Typical workflow:
-
-1. Scaffold a project from a blueprint or natural-language prompt.
-2. Let your AI assistant read the generated Decantr context files.
-3. Build with guardrails instead of improvising every design decision.
-4. Run `decantr audit` and `decantr check` to catch contract issues and drift.
-
-## Core Surfaces
-
-### CLI
+Initialize Decantr inside an existing project:
 
 ```bash
-decantr init --blueprint=agent-marketplace
-decantr magic "describe your app"
-decantr check
+npx @decantr/cli init --blueprint=agent-marketplace --yes
 decantr refresh
-decantr status
+decantr check
+```
+
+Common commands:
+
+```bash
+decantr magic "AI chatbot with a bold terminal-inspired workspace"
+decantr search dashboard
+decantr suggest leaderboard
 decantr registry summary --namespace @official --json
-decantr registry compile-packs decantr.essence.json --json
-decantr registry get-pack manifest --namespace @official --json
-decantr registry critique-file src/pages/Home.tsx --namespace @official --json --essence decantr.essence.json
-decantr registry audit-project --namespace @official --json --essence decantr.essence.json
 decantr registry compile-packs decantr.essence.json --write-context
+decantr registry critique-file src/pages/Home.tsx --namespace @official --json
+decantr registry audit-project --namespace @official --json
 decantr showcase verification --json
 ```
 
-### MCP Server
+## What Gets Generated
 
-Add to Claude Code:
+Typical Decantr project outputs include:
 
-```bash
-claude mcp add decantr -- npx @decantr/mcp-server
-```
-
-The MCP server exposes Decantr’s design intelligence directly to AI tools, including:
-
-- essence read and validation
-- registry search and content resolution
-- registry intelligence summaries
-- scoped context generation
-- showcase benchmark metadata
-- drift and critique tools
-
-### Registry
-
-Browse the registry at [registry.decantr.ai](https://registry.decantr.ai).
-
-The official curated content source lives in `decantr-content` and syncs to the hosted registry API. The registry currently centers on:
-
-- patterns
-- themes
-- blueprints
-- archetypes
-- shells
-
-Canonical Decantr schemas are published at `https://decantr.ai/schemas/`.
-Registry schemas are owned by `@decantr/registry/schema/*`, essence schemas by `@decantr/essence-spec/schema/*`, execution-pack schemas by `@decantr/core/schema/*`, and verification report schemas by `@decantr/verifier/schema/*`.
-Hosted registry intelligence rollup data is available at `https://api.decantr.ai/v1/intelligence/summary`.
-Hosted execution-pack compilation is available at `https://api.decantr.ai/v1/packs/compile`.
-Hosted selected execution-pack reads are available at `https://api.decantr.ai/v1/packs/select`.
-Hosted file critique is available at `https://api.decantr.ai/v1/critique/file`.
-Hosted project audit is available at `https://api.decantr.ai/v1/audit/project`, with optional dist-snapshot input for runtime verification.
-Public registry API/filter examples live in `docs/reference/registry-public-api.md`, with a static docs page at `https://decantr.ai/reference/registry-public-api.html`.
-
-## Packages
-
-Support matrix: [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)
-
-### Core packages
-
-| Package | Description |
-|---|---|
-| `@decantr/cli` | Local scaffold, validation, and maintenance workflows |
-| `@decantr/mcp-server` | MCP surface for AI coding assistants |
-| `@decantr/essence-spec` | Schema, validation, and core Decantr types |
-| `@decantr/registry` | Registry model, resolution, and content access, with `@decantr/registry/client` as the web-safe API client entrypoint |
-| `@decantr/core` | Internal pipeline and compiler-adjacent foundation |
-| `@decantr/verifier` | Shared audit and critique engine with schema-backed reports |
-| `@decantr/css` | Framework-agnostic CSS atom runtime |
-
-### Secondary surfaces
-
-| Package | Current status |
-|---|---|
-| `@decantr/vite-plugin` | Verification-adjacent and still evolving |
-
-Release policy and dist-tag strategy live in [docs/runbooks/2026-04-09-package-release-strategy.md](docs/runbooks/2026-04-09-package-release-strategy.md).
-Registry portal deployment and health checks live in [docs/runbooks/2026-04-09-registry-portal-deploy.md](docs/runbooks/2026-04-09-registry-portal-deploy.md).
+- `decantr.essence.json` for the durable contract
+- `DECANTR.md` for assistant instructions
+- `.decantr/context/scaffold.md` plus section/page context files
+- `src/styles/tokens.css` for token variables
+- `src/styles/treatments.css` for shared treatments
+- `src/styles/decorators.css` for theme decorators
 
 ## Repo Layout
 
 | Path | Role |
-|---|---|
-| `apps/api` | Hosted API and registry backend |
-| `apps/registry` | Registry portal |
-| `docs/` | Public docs and product documentation |
-| `apps/showcase/*` | Benchmark and evidence corpus of generated blueprint scaffolds |
-| `packages/*` | Core packages and supporting runtime surfaces |
+| --- | --- |
+| `apps/api` | Hosted API for registry, packs, critique, audit, auth, org, and billing-adjacent flows |
+| `apps/registry` | Next.js registry portal and internal dogfood surface |
+| `apps/showcase/*` | Generated benchmark apps used as evidence and verification targets |
+| `packages/*` | Core Decantr packages and supporting runtime surfaces |
+| `docs/` | Public docs, audits, architecture notes, schemas, and runbooks |
+| `scripts/` | Audit, release, showcase, schema, and packaging automation |
 
 ## Development
+
+Requirements:
+
+- Node.js `>=20`
+- pnpm `>=9`
+
+Common repo tasks:
 
 ```bash
 pnpm install
@@ -145,28 +206,22 @@ pnpm test
 pnpm lint
 pnpm audit:public-api
 pnpm audit:registry-dogfood
+pnpm showcase:verify:shortlist
 ```
 
-Requires:
+## Links
 
-- Node.js >= 20
-- pnpm >= 9
-
-## Status
-
-The repo is currently being refocused around the Decantr vNext product boundary:
-
-- control plane for AI-generated UI
-- registry and content intelligence
-- MCP and CLI delivery
-- verification and drift prevention
+- Registry: [registry.decantr.ai](https://registry.decantr.ai)
+- Public API reference: [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)
+- Published schemas: [decantr.ai/schemas](https://decantr.ai/schemas/)
+- Package support matrix: [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)
 
 ## Contributing
 
-Contributions are welcome. See [docs/](docs/) for the current audits, specs, and program documents.
+Contributions are welcome. The most useful repo context lives in `docs/`, especially the architecture notes, audits, runbooks, and package support matrix.
 
 ## License
 
 MIT
 
-The Decantr source repositories are MIT licensed. Hosted services such as the registry and API may also publish Terms of Service and Privacy Policy for service use without changing the source-code license.
+The source repositories are MIT licensed. Hosted services such as the registry and API may publish separate service terms without changing the source-code license.
