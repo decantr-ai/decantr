@@ -180,21 +180,87 @@
         },
         "label": {
           "$ref": "#/$defs/nonEmptyString"
+        },
+        "semantics": {
+          "$ref": "#/$defs/hotkeySemantics"
         }
       },
       "additionalProperties": false
+    },
+    "hotkeySemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Behavioral directives for hotkey handlers. Declared once globally as navigation.hotkey_semantics OR per-hotkey on navigationHotkey.semantics (per-key wins).",
+      "properties": {
+        "chord_window_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 5000
+        },
+        "input_guard": {
+          "type": "boolean"
+        },
+        "modifier_suppression": {
+          "type": "boolean"
+        },
+        "match_case": {
+          "type": "boolean"
+        }
+      }
+    },
+    "commandPaletteContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Structured contract for the command palette. When present, LLMs should match exactly instead of improvising trigger/styling/commands.",
+      "properties": {
+        "trigger": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "width": {
+          "type": "string"
+        },
+        "styling": {
+          "type": "string",
+          "enum": ["modal", "sheet", "inline", "fullscreen"]
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/nonEmptyString" },
+              "label": { "$ref": "#/$defs/nonEmptyString" },
+              "section": { "$ref": "#/$defs/nonEmptyString" },
+              "hotkey": { "$ref": "#/$defs/nonEmptyString" },
+              "action": { "$ref": "#/$defs/nonEmptyString" },
+              "route": { "$ref": "#/$defs/nonEmptyString" }
+            }
+          }
+        }
+      }
     },
     "navigation": {
       "type": "object",
       "properties": {
         "command_palette": {
-          "type": "boolean"
+          "oneOf": [
+            { "type": "boolean" },
+            { "$ref": "#/$defs/commandPaletteContract" }
+          ]
         },
         "hotkeys": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/navigationHotkey"
           }
+        },
+        "hotkey_semantics": {
+          "$ref": "#/$defs/hotkeySemantics"
         }
       },
       "additionalProperties": true
