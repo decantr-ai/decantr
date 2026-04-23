@@ -223,7 +223,6 @@ export default async function ModerationQueuePage({
           ) : (
             filtered.map((item) => {
               const singular = singularType(item.content.type);
-              const typeColor = TYPE_COLORS[singular] ?? 'var(--d-primary)';
               const name =
                 typeof item.content.data?.name === 'string'
                   ? item.content.data.name
@@ -245,27 +244,17 @@ export default async function ModerationQueuePage({
                   className="d-surface lum-card-outlined"
                   data-type={singular}
                 >
-                  <div className="flex flex-col gap-3">
+                  <div className="registry-moderation-card">
                     {/* Header row */}
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="d-annotation"
-                          style={{
-                            background: typeColor,
-                            color: '#141414',
-                            fontWeight: 600,
-                          }}
-                        >
+                    <div className="registry-moderation-card-head">
+                      <div className="registry-moderation-card-title-row">
+                        <span className="d-annotation registry-moderation-type-badge">
                           {singular}
                         </span>
-                        <span
-                          className="font-bold text-lg"
-                          style={{ color: 'var(--d-text)' }}
-                        >
+                        <span className="registry-moderation-title">
                           {name}
                         </span>
-                        <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                        <span className="registry-moderation-version">
                           v{item.content.version}
                         </span>
                       </div>
@@ -277,32 +266,27 @@ export default async function ModerationQueuePage({
 
                     {/* Description */}
                     {description && (
-                      <p
-                        className="text-sm"
-                        style={{ color: 'var(--d-text-muted)', margin: 0 }}
-                      >
+                      <p className="registry-moderation-description">
                         {description}
                       </p>
                     )}
 
                     {/* Submitter row + actions */}
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <div className="flex items-center gap-1">
-                          <span style={{ color: 'var(--d-text-muted)' }}>
+                    <div className="registry-moderation-card-footer">
+                      <div className="registry-moderation-meta-row">
+                        <div className="registry-moderation-meta-item">
+                          <span>
                             <UserIcon size={14} />
                           </span>
-                          <span className="text-sm font-semibold">
+                          <span className="registry-moderation-submittee">
                             {item.submitted_by}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="registry-moderation-meta-item">
                           <StarIcon size={14} />
-                          <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                            — rep
-                          </span>
+                          <span>— rep</span>
                         </div>
-                        <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                        <span className="registry-moderation-meta-item">
                           {formatDate(item.submitted_at)}
                         </span>
                       </div>
@@ -313,16 +297,8 @@ export default async function ModerationQueuePage({
                     </div>
 
                     {item.status === 'rejected' && item.rejection_reason && (
-                      <div
-                        className="text-xs"
-                        style={{
-                          color: 'var(--d-error)',
-                          background: 'color-mix(in srgb, var(--d-error) 10%, transparent)',
-                          borderRadius: 'var(--d-radius-sm)',
-                          padding: '0.5rem 0.75rem',
-                        }}
-                      >
-                        <span style={{ fontWeight: 500 }}>Rejected:</span> {item.rejection_reason}
+                      <div className="registry-moderation-rejection">
+                        <span>Rejected:</span> {item.rejection_reason}
                       </div>
                     )}
                   </div>

@@ -924,6 +924,155 @@
     flex-wrap: wrap;
   }
 
+  .registry-moderation-card {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .registry-moderation-card-head,
+  .registry-moderation-card-footer,
+  .registry-moderation-actions,
+  .registry-moderation-meta-row,
+  .registry-moderation-card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .registry-moderation-card-head,
+  .registry-moderation-card-footer {
+    justify-content: space-between;
+  }
+
+  .registry-moderation-card-title-row {
+    gap: 0.5rem;
+  }
+
+  .registry-moderation-type-badge {
+    background: var(--card-accent, var(--d-primary));
+    color: #141414;
+    font-weight: 600;
+  }
+
+  .registry-moderation-title {
+    color: var(--d-text);
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .registry-moderation-version,
+  .registry-moderation-description,
+  .registry-moderation-meta-row,
+  .registry-moderation-meta-item {
+    color: var(--d-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .registry-moderation-description {
+    margin: 0;
+  }
+
+  .registry-moderation-submittee {
+    color: var(--d-text);
+    font-weight: 600;
+  }
+
+  .registry-moderation-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .registry-moderation-rejection {
+    color: var(--d-error);
+    background: color-mix(in srgb, var(--d-error) 10%, transparent);
+    border-radius: var(--d-radius-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .registry-moderation-rejection span {
+    font-weight: 600;
+  }
+
+  .registry-moderation-panel,
+  .registry-moderation-reject,
+  .registry-moderation-detail-actions {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .registry-moderation-panel {
+    justify-items: end;
+  }
+
+  .registry-moderation-reject {
+    min-width: min(20rem, 100%);
+  }
+
+  .registry-moderation-actions {
+    gap: 0.5rem;
+  }
+
+  .registry-moderation-actions[data-align='end'] {
+    justify-content: flex-end;
+  }
+
+  .registry-moderation-button {
+    font-size: 0.8125rem;
+  }
+
+  .registry-moderation-button[data-tone='success'] {
+    color: var(--d-success);
+  }
+
+  .registry-moderation-button[data-tone='danger'] {
+    color: var(--d-error);
+  }
+
+  .registry-moderation-textarea {
+    width: 100%;
+    resize: none;
+    font-size: 0.8125rem;
+  }
+
+  .registry-moderation-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    color: var(--d-text-muted);
+    font-size: 0.75rem;
+  }
+
+  .registry-moderation-feedback {
+    color: var(--d-text-muted);
+    font-size: 0.875rem;
+  }
+
+  .registry-moderation-feedback[data-status='success'] {
+    color: var(--d-success);
+  }
+
+  .registry-moderation-feedback[data-status='error'] {
+    color: var(--d-error);
+  }
+
+  .registry-moderation-success {
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  .registry-moderation-success-icon {
+    color: var(--d-success);
+  }
+
+  .registry-moderation-link {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+
   .registry-panel-header {
     display: flex;
     align-items: flex-start;
@@ -2930,6 +3079,15 @@
     .registry-admin-row {
       flex-direction: column;
       align-items: flex-start;
+    }
+
+    .registry-moderation-panel {
+      justify-items: stretch;
+    }
+
+    .registry-moderation-actions {
+      width: 100%;
+      justify-content: flex-start;
     }
   }
 

@@ -215,13 +215,7 @@ export default async function ModerationDetailPage({
 
       {/* JSON Viewer */}
       <div className="mb-6">
-        <h2
-          className="d-label text-sm mb-3"
-          style={{
-            borderLeft: '2px solid var(--d-accent)',
-            paddingLeft: '0.5rem',
-          }}
-        >
+        <h2 className="d-label registry-anchor-label">
           Content Data
         </h2>
         <JsonViewer data={detail.content.data} title={`${detail.content.slug}.json`} />
@@ -230,13 +224,7 @@ export default async function ModerationDetailPage({
       {/* Actions */}
       {detail.status === 'pending' && (
         <div className="border-t border-d-border pt-6">
-          <h2
-            className="d-label text-sm mb-4"
-            style={{
-              borderLeft: '2px solid var(--d-accent)',
-              paddingLeft: '0.5rem',
-            }}
-          >
+          <h2 className="d-label registry-anchor-label">
             Actions
           </h2>
           <ModerationDetailActions itemId={detail.id} />

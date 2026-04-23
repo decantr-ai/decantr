@@ -63,11 +63,11 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
 
   if (feedback?.type === 'success') {
     return (
-      <div className="flex items-center gap-2">
-        <span style={{ color: 'var(--d-success)' }}>
+      <div className="registry-moderation-feedback" data-status="success">
+        <span>
           <CheckIcon size={14} />
         </span>
-        <span className="text-sm" style={{ color: 'var(--d-success)' }}>
+        <span>
           {feedback.message}
         </span>
       </div>
@@ -76,32 +76,30 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
 
   if (showReject) {
     return (
-      <div className="flex flex-col gap-2" style={{ minWidth: '20rem' }}>
+      <div className="registry-moderation-reject">
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder="Rejection reason (required)"
-          className="d-control w-full"
-          style={{ resize: 'none', fontSize: '0.8125rem' }}
+          className="d-control registry-moderation-textarea"
           rows={2}
           autoFocus
         />
-        <div className="flex items-center gap-2 justify-end">
+        <div className="registry-moderation-actions" data-align="end">
           <button
-            className="d-interactive"
+            className="d-interactive registry-moderation-button"
             data-variant="ghost"
             onClick={() => { setShowReject(false); setReason(''); }}
             disabled={isPending}
-            style={{ fontSize: '0.8125rem' }}
           >
             Cancel
           </button>
           <button
-            className="d-interactive"
+            className="d-interactive registry-moderation-button"
             data-variant="ghost"
+            data-tone="danger"
             onClick={handleReject}
             disabled={isPending || !reason.trim()}
-            style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
           >
             {isPending ? 'Rejecting...' : 'Confirm Reject'}
           </button>
@@ -111,38 +109,37 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
   }
 
   return (
-    <div className="flex flex-col gap-1 items-end">
+    <div className="registry-moderation-panel">
       {feedback?.type === 'error' && (
-        <p className="text-xs" style={{ color: 'var(--d-error)' }}>
+        <p className="registry-moderation-feedback" data-status="error">
           {feedback.message}
         </p>
       )}
-      <div className="flex items-center gap-2">
+      <div className="registry-moderation-actions">
         <button
-          className="d-interactive"
+          className="d-interactive registry-moderation-button"
           data-variant="ghost"
+          data-tone="success"
           onClick={handleApprove}
           disabled={isPending}
-          style={{ color: 'var(--d-success)', fontSize: '0.8125rem' }}
         >
           <CheckIcon size={14} />
           {isPending ? 'Approving...' : 'Approve'}
         </button>
         <button
-          className="d-interactive"
+          className="d-interactive registry-moderation-button"
           data-variant="ghost"
+          data-tone="danger"
           onClick={() => setShowReject(true)}
           disabled={isPending}
-          style={{ color: 'var(--d-error)', fontSize: '0.8125rem' }}
         >
           <XIcon size={14} />
           Reject
         </button>
         <a
           href={`/admin/moderation/${item.id}`}
-          className="d-interactive"
+          className="d-interactive registry-moderation-button"
           data-variant="ghost"
-          style={{ fontSize: '0.8125rem', textDecoration: 'none' }}
         >
           <ExternalLinkIcon size={14} />
           Details
