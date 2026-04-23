@@ -1427,7 +1427,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         meta: {
           archetype: bestMatch,
           target: framework,
-          platform: { type: 'spa', routing: 'hash' },
+          platform: { type: 'spa', routing: 'history' },
           guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
         },
       };

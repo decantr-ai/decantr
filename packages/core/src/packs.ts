@@ -528,6 +528,22 @@ function renderList(title: string, entries: string[]): string[] {
   return [title, ...entries.map(entry => `- ${entry}`), ''];
 }
 
+// Short, mechanical router-implementation hint so the LLM picks the right
+// imports without having to consult a separate narrative file. Keyed off the
+// same string enum as the schema.
+function routingImplementationHint(routing: 'hash' | 'history' | 'pathname'): string {
+  switch (routing) {
+    case 'hash':
+      return 'HashRouter from react-router-dom; URLs prefixed with /# (e.g. /#/login). Only for static-only hosts without SPA fallback.';
+    case 'history':
+      return 'BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.';
+    case 'pathname':
+      return 'pathname-based routing (Next.js App Router file conventions).';
+    default:
+      return String(routing);
+  }
+}
+
 export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): string {
   const lines: string[] = [];
 
@@ -548,7 +564,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push(`- Shells: ${[`${scaffoldPack.data.shell} (primary)`, ...secondaryShells].join(', ')}`);
     }
     lines.push(`- Theme: ${scaffoldPack.data.theme.id} (${scaffoldPack.data.theme.mode})`);
-    lines.push(`- Routing: ${scaffoldPack.data.routing}`);
+    lines.push(`- Routing: ${scaffoldPack.data.routing} → ${routingImplementationHint(scaffoldPack.data.routing)}`);
     if (scaffoldPack.data.features.length > 0) {
       lines.push(`- Features: ${scaffoldPack.data.features.join(', ')}`);
     }
@@ -635,7 +651,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push(`- Operation: ${mutationPack.data.mutationType}`);
     lines.push(`- Shell: ${mutationPack.data.shell}`);
     lines.push(`- Theme: ${mutationPack.data.theme.id} (${mutationPack.data.theme.mode})`);
-    lines.push(`- Routing: ${mutationPack.data.routing}`);
+    lines.push(`- Routing: ${mutationPack.data.routing} → ${routingImplementationHint(mutationPack.data.routing)}`);
     if (mutationPack.data.features.length > 0) {
       lines.push(`- Features: ${mutationPack.data.features.join(', ')}`);
     }

@@ -60,7 +60,9 @@ describe('new command (e2e)', () => {
     const appTsx = readFileSync(join(projectDir, 'src', 'App.tsx'), 'utf-8');
 
     expect(packageJson.dependencies?.['@decantr/css']).toBe('^1.0.0');
-    expect(mainTsx).toContain('HashRouter');
+    // Modern-SPA default is history-mode (BrowserRouter). Hash-mode can be opted into
+    // explicitly via the blueprint's meta.platform.routing field when needed.
+    expect(mainTsx).toContain('BrowserRouter');
     expect(appTsx).toContain('Skip to content');
     expect(appTsx).toContain('id="main-content"');
     expect(appTsx).toContain("Runtime: @decantr/css");
