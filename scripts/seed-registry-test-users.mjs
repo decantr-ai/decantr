@@ -68,6 +68,7 @@ const EMAIL_DOMAIN = process.env.REGISTRY_TEST_EMAIL_DOMAIN || 'example.com';
 const EMAIL_PREFIX = process.env.REGISTRY_TEST_PREFIX || 'decantr-test';
 const API_URL = process.env.REGISTRY_TEST_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 const ADMIN_KEY = process.env.REGISTRY_TEST_ADMIN_KEY || process.env.DECANTR_ADMIN_KEY || '';
+const BILLING_ENABLED = process.env.REGISTRY_BILLING_ENABLED === 'true';
 
 const personas = [
   {
@@ -545,6 +546,33 @@ async function runPersonaEndpointChecks(persona, token, me, billing) {
     await apiRequest('/admin/commercial/summary', token),
     403,
   );
+
+  if (!BILLING_ENABLED && persona.key === 'free') {
+    checkEndpoint(
+      checks,
+      'POST billing checkout prelaunch gate',
+      await apiRequest('/billing/checkout', token, {
+        method: 'POST',
+        body: {
+          plan: 'pro',
+          success_url: 'https://registry.decantr.ai/dashboard/billing',
+          cancel_url: 'https://registry.decantr.ai/dashboard/billing',
+        },
+      }),
+      403,
+    );
+    checkEndpoint(
+      checks,
+      'POST billing portal prelaunch gate',
+      await apiRequest('/billing/portal', token, {
+        method: 'POST',
+        body: {
+          return_url: 'https://registry.decantr.ai/dashboard/billing',
+        },
+      }),
+      403,
+    );
+  }
 
   if (persona.admin && ADMIN_KEY) {
     checkEndpoint(

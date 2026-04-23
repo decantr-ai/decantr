@@ -85,3 +85,23 @@ These personas bypass Stripe by writing the durable commercial state directly:
 - `organization_policies`
 
 That is appropriate for dashboard, entitlement, governance, private-package, and admin smoke tests. Stripe checkout, portal, and webhook behavior should still be validated separately with Stripe test mode.
+
+## Billing Pre-Launch Mode
+
+Paid-plan checkout is disabled by default.
+
+Keep these unset or set to `false` until Stripe is ready:
+
+- API: `REGISTRY_BILLING_ENABLED=false`
+- Registry: `NEXT_PUBLIC_REGISTRY_BILLING_ENABLED=false`
+- Registry server actions: `REGISTRY_BILLING_ENABLED=false`
+
+In pre-launch mode:
+
+- plan cards render as `Coming Soon`
+- checkout buttons are disabled
+- billing portal buttons are disabled
+- `/billing/checkout` and `/billing/portal` return `403 billing_coming_soon`
+- `/billing/status` still works without requiring Stripe calls
+
+When Stripe is ready, set both API and registry billing flags to `true`, then run Stripe checkout, portal, webhook, downgrade, and cancellation smoke tests before announcing paid-plan availability.

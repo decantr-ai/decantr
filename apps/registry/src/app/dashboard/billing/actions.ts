@@ -19,7 +19,18 @@ async function getSiteUrl() {
   return `${proto}://${host}`;
 }
 
+function isBillingLaunchEnabled(): boolean {
+  return (
+    process.env.REGISTRY_BILLING_ENABLED === 'true' ||
+    process.env.NEXT_PUBLIC_REGISTRY_BILLING_ENABLED === 'true'
+  );
+}
+
 export async function upgradeAction(plan: 'pro' | 'team'): Promise<{ error?: string }> {
+  if (!isBillingLaunchEnabled()) {
+    return { error: 'Paid plan checkout is coming soon. Billing is not active yet.' };
+  }
+
   const token = await getToken();
   if (!token) {
     return { error: 'Not authenticated. Please sign in again.' };
@@ -49,6 +60,10 @@ export async function upgradeAction(plan: 'pro' | 'team'): Promise<{ error?: str
 }
 
 export async function manageBillingAction(): Promise<{ error?: string }> {
+  if (!isBillingLaunchEnabled()) {
+    return { error: 'Billing portal access is coming soon. Billing is not active yet.' };
+  }
+
   const token = await getToken();
   if (!token) {
     return { error: 'Not authenticated. Please sign in again.' };

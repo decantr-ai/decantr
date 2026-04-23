@@ -645,6 +645,12 @@
       color-mix(in srgb, var(--d-surface) 97%, transparent);
   }
 
+  .registry-plan-card[data-coming-soon='true'] {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--d-warning) 6%, transparent) 0%, transparent 100%),
+      color-mix(in srgb, var(--d-surface) 97%, transparent);
+  }
+
   .registry-plan-card-head {
     display: grid;
     gap: 0.75rem;

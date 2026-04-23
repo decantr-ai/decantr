@@ -118,18 +118,23 @@ function TierUpgradeCard({
   tier,
   highlighted,
   isPending,
+  billingLaunchEnabled,
   onUpgrade,
 }: {
   tier: TierDef;
   highlighted: boolean;
   isPending: boolean;
+  billingLaunchEnabled: boolean;
   onUpgrade: (plan: 'pro' | 'team') => void;
 }) {
+  const disabled = tier.current || isPending || !tier.planId || !billingLaunchEnabled;
+
   return (
     <div
       className="d-surface registry-plan-card"
       data-current={tier.current || undefined}
       data-highlighted={highlighted || undefined}
+      data-coming-soon={!tier.current && !billingLaunchEnabled ? true : undefined}
     >
       <div className="registry-plan-card-head">
         <div className="registry-plan-card-title-row">
@@ -139,9 +144,14 @@ function TierUpgradeCard({
               Current
             </span>
           )}
-          {highlighted && !tier.current && (
+          {highlighted && !tier.current && billingLaunchEnabled && (
             <span className="d-annotation" data-status="info">
               Popular
+            </span>
+          )}
+          {!tier.current && !billingLaunchEnabled && (
+            <span className="d-annotation" data-status="warning">
+              Coming Soon
             </span>
           )}
         </div>
@@ -175,13 +185,15 @@ function TierUpgradeCard({
         type="button"
         className="d-interactive registry-plan-card-cta"
         data-variant={tier.current ? 'ghost' : 'primary'}
-        disabled={tier.current || isPending || !tier.planId}
-        onClick={() => tier.planId && onUpgrade(tier.planId)}
+        disabled={disabled}
+        onClick={() => !disabled && tier.planId && onUpgrade(tier.planId)}
       >
         {tier.current
           ? 'Current Plan'
           : isPending
           ? 'Loading...'
+          : !billingLaunchEnabled
+          ? 'Coming Soon'
           : tier.ctaLabel || 'Upgrade'}
       </button>
     </div>
@@ -192,6 +204,7 @@ export default function BillingPage() {
   const workspace = useWorkspaceState();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const billingLaunchEnabled = process.env.NEXT_PUBLIC_REGISTRY_BILLING_ENABLED === 'true';
 
   const billing = workspace.billing;
   const currentTier = workspace.tier.toLowerCase();
@@ -311,9 +324,15 @@ export default function BillingPage() {
           </span>
         </div>
         <p className="registry-dashboard-description">
-          Review current entitlements, compare the commercial plan model, and move into Stripe only when you need to manage a paid subscription.
+          Review current entitlements and compare the commercial plan model. Paid upgrades are coming soon, so Stripe checkout is not active yet.
         </p>
       </div>
+
+      {!billingLaunchEnabled && (
+        <div className="d-annotation registry-settings-message" data-status="warning">
+          Paid plans are coming soon. You can review the plan model now, but checkout and billing portal access are disabled until launch.
+        </div>
+      )}
 
       {error && (
         <div className="d-annotation registry-settings-message" data-status="error">
@@ -392,9 +411,13 @@ export default function BillingPage() {
         <section className="d-section" data-density="compact">
           <div className="registry-action-band" data-tone="billing">
             <div className="registry-action-band-copy">
-              <h4 className="registry-action-band-title">Stripe billing workspace</h4>
+              <h4 className="registry-action-band-title">
+                {billingLaunchEnabled ? 'Stripe billing workspace' : 'Billing portal coming soon'}
+              </h4>
               <p className="registry-dashboard-description">
-                Open the hosted billing portal to manage invoices, payment methods, or subscription status for the active paid plan.
+                {billingLaunchEnabled
+                  ? 'Open the hosted billing portal to manage invoices, payment methods, or subscription status for the active paid plan.'
+                  : 'Paid plan management is disabled while billing is in pre-launch mode. Existing seeded or manually assigned entitlements remain visible for validation.'}
               </p>
             </div>
             <div className="registry-action-band-actions">
@@ -403,9 +426,9 @@ export default function BillingPage() {
                 className="d-interactive"
                 data-variant="primary"
                 onClick={handleManageBilling}
-                disabled={isPending}
+                disabled={isPending || !billingLaunchEnabled}
               >
-                {isPending ? 'Loading...' : 'Manage Billing in Stripe'}
+                {isPending ? 'Loading...' : billingLaunchEnabled ? 'Manage Billing in Stripe' : 'Coming Soon'}
               </button>
             </div>
           </div>
@@ -432,6 +455,7 @@ export default function BillingPage() {
                 tier={tier}
                 highlighted={!!tier.highlighted}
                 isPending={isPending}
+                billingLaunchEnabled={billingLaunchEnabled}
                 onUpgrade={handleUpgrade}
               />
             ))}

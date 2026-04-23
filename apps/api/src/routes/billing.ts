@@ -20,10 +20,25 @@ import { recordAuditEvent } from '../lib/audit-log.js';
 
 export const billingRoutes = new Hono<Env>();
 
+function isBillingLaunchEnabled(): boolean {
+  return process.env.REGISTRY_BILLING_ENABLED === 'true';
+}
+
+function billingComingSoonResponse(c: any) {
+  return c.json({
+    error: 'Paid plan checkout is coming soon. Billing is not active yet.',
+    code: 'billing_coming_soon',
+  }, 403);
+}
+
 // ---------------------------------------------------------------------------
 // POST /billing/checkout -- Create a Stripe Checkout session for Pro or Team
 // ---------------------------------------------------------------------------
 billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
+  if (!isBillingLaunchEnabled()) {
+    return billingComingSoonResponse(c);
+  }
+
   const auth = c.get('auth') as AuthContext;
   const user = auth.user!;
 
@@ -117,6 +132,10 @@ billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
 // POST /billing/portal -- Create a Stripe Billing Portal session
 // ---------------------------------------------------------------------------
 billingRoutes.post('/billing/portal', requireAuth(), async (c) => {
+  if (!isBillingLaunchEnabled()) {
+    return billingComingSoonResponse(c);
+  }
+
   const auth = c.get('auth') as AuthContext;
   const user = auth.user!;
 
@@ -164,7 +183,6 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const user = auth.user!;
 
-  const stripe = getStripe();
   const adminClient = createAdminClient();
   const { data: userRow } = await adminClient
     .from('users')
@@ -246,8 +264,8 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
   const orgPublishes30d = usageTotals.org_package_publish ?? 0;
   const approvalActions30d = usageTotals.approval_action ?? 0;
 
-  // Base response for free users or users without Stripe
-  if (!userRow.stripe_customer_id) {
+  // Base response for free users, users without Stripe, or pre-launch billing.
+  if (!userRow.stripe_customer_id || !isBillingLaunchEnabled()) {
     return c.json({
       tier: userRow.tier,
       entitlements,
@@ -270,6 +288,7 @@ billingRoutes.get('/billing/status', requireAuth(), async (c) => {
   }
 
   // Fetch active subscriptions from Stripe
+  const stripe = getStripe();
   const subscriptions = await stripe.subscriptions.list({
     customer: userRow.stripe_customer_id,
     status: 'active',
