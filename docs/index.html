@@ -757,7 +757,11 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      min-width: 0;
     }
+    .tool-item { min-width: 0; }
     .tool-item:nth-child(1) .tool-name { color: var(--coral); }
     .tool-item:nth-child(2) .tool-name { color: var(--amber); }
     .tool-item:nth-child(3) .tool-name { color: var(--cyan); }
@@ -1564,18 +1568,18 @@
 
     /* -- Hero positioning line -- */
     .hero-positioning {
-      margin-top: 18px;
-      font-size: 0.95rem;
+      margin-top: -20px;
+      margin-bottom: 36px;
+      font-size: 0.98rem;
       color: var(--fg);
-      line-height: 1.5;
-      max-width: 480px;
-      border-left: 2px solid var(--cyan);
-      padding-left: 14px;
-      font-weight: 500;
+      line-height: 1.65;
+      max-width: 540px;
+      font-weight: 400;
     }
-    .hero-positioning-dim { color: var(--muted); font-weight: 400; }
+    .hero-positioning-dim { color: rgba(255,255,255,0.45); }
+    .hero-positioning-emph { color: var(--coral); font-weight: 600; }
     @media (max-width: 768px) {
-      .hero-positioning { margin: 18px auto 0; text-align: left; }
+      .hero-positioning { margin: -20px auto 32px; max-width: 540px; }
     }
 
     /* -- Paths selector (three tiles) -- */
@@ -1750,6 +1754,25 @@
       background: rgba(255,255,255,0.25);
       height: 8px;
     }
+    .tm-hero-terminal .tm-headline-term {
+      height: 12px;
+      border-radius: 0;
+      background: var(--green);
+      width: 82%;
+      opacity: 0.9;
+    }
+    .tm-hero-terminal .tm-headline-term-sub {
+      height: 8px;
+      border-radius: 0;
+      background: rgba(0,224,171,0.35);
+      width: 60%;
+    }
+    .tm-cta-term {
+      border-radius: 0 !important;
+      background: var(--green) !important;
+      width: 86px !important;
+      height: 22px !important;
+    }
     .tm-cta {
       margin-top: 6px;
       width: 72px;
@@ -1757,29 +1780,10 @@
       border-radius: 999px;
     }
     .tm-hero-terminal {
-      background: rgba(0,224,171,0.04);
-      border-radius: 6px;
-      padding: 12px;
-      font-family: var(--mono);
-      font-size: 0.72rem;
+      background: rgba(0,224,171,0.03);
+      border-top: 1px solid rgba(0,224,171,0.08);
+      border-bottom: 1px solid rgba(0,224,171,0.08);
     }
-    .tm-term-line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: rgba(0,224,171,0.65);
-    }
-    .tm-term-prompt { color: rgba(0,224,171,0.8); }
-    .tm-term-text {
-      display: inline-block;
-      height: 6px;
-      border-radius: 2px;
-      background: rgba(0,224,171,0.35);
-      flex: 1;
-      max-width: 72%;
-    }
-    .tm-term-text-2 { max-width: 55%; }
-    .tm-term-text-3 { max-width: 85%; background: rgba(0,224,171,0.55); }
     .tm-hero-carbon {
       position: relative;
     }
@@ -2267,6 +2271,48 @@
       .showcase-step { flex-direction: column; gap: 12px; }
       .blueprint-grid { grid-template-columns: 1fr; }
       .cli-grid { grid-template-columns: 1fr; }
+
+      /* NEW: mobile polish for impact-pass additions */
+      .hero-positioning { max-width: 100%; }
+      .paths-eyebrow { font-size: 0.72rem; }
+      .path-tile { padding: 22px 20px 18px; }
+      .path-tile-cmd { font-size: 0.72rem; }
+      .mcp-install { padding: 18px 16px 14px; }
+      .mcp-install-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .tool-band-label { flex-wrap: wrap; }
+      .hybrid-grid { grid-template-columns: 1fr; gap: 14px; }
+      .critique-panel { gap: 14px; }
+      .critique-side { padding: 18px 18px 16px; }
+      .critique-score-num { font-size: 1.3rem; }
+      .ctx-tab-btn { font-size: 0.74rem; padding: 6px 12px; }
+      .install-tab-btn { font-size: 0.76rem; padding: 5px 10px; }
+      .works-group { margin-bottom: 22px; }
+      .works-tile { min-width: 0; flex: 1 1 calc(50% - 10px); }
+      .works-footnote { font-size: 0.76rem; padding: 0 12px; }
+      .dogfood-note { font-size: 0.72rem; padding: 10px 14px; flex-direction: column; gap: 4px; }
+      .dogfood-note > span { display: block; }
+      /* Reveal stat "Browse" hint on touch — no hover state */
+      .stat-action { opacity: 0.85; }
+      /* Theme-mock mini grid stays 3-col but tightens padding */
+      .tm-grid { gap: 6px; padding: 10px 6px 6px; }
+      .tm-card { padding: 8px; min-height: 36px; }
+      .tm-header { padding: 8px 6px; }
+      .tm-nav-item { width: 26px; }
+    }
+
+    @media (max-width: 420px) {
+      .paths-row { gap: 14px; }
+      .tool-band-sub { display: none; }
+      .hero-title { font-size: 1.9rem; }
+      .critique-arrow-label { display: none; }
+      .tm-nav-item { width: 20px; }
+      .works-tile { flex: 1 1 100%; }
+    }
+
+    /* Touch devices — ensure no hover-only affordances */
+    @media (hover: none) {
+      .stat-action { opacity: 0.85; }
+      .path-tile:hover, .hybrid-card:hover, .works-tile:hover { transform: none; }
     }
   </style>
 </head>
@@ -2360,7 +2406,7 @@
       <p class="hero-body-highlight">We don't care what you build <span class="hero-accent-2">with</span>.</p>
       <p class="hero-body-highlight"> We care <span class="hero-accent underline">what</span> you build.</p>
       <p class="hero-body">Decantr is the design intelligence layer for AI-generated web applications.</p>
-      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> A contract the AI checks itself against.</p>
+      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> A contract the AI <span class="hero-positioning-emph">checks itself against</span>.</p>
       <div class="hero-ctas">
         <a href="#quickstart" class="btn-primary">Get Started</a>
         <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
@@ -2507,20 +2553,20 @@
           <div class="tm-header tm-header-terminal">
             <div class="tm-logo" style="background:var(--green); border-radius:2px"></div>
             <div class="tm-nav">
-              <div class="tm-nav-item" style="background:rgba(0,224,171,0.3)"></div>
-              <div class="tm-nav-item" style="background:rgba(0,224,171,0.15)"></div>
-              <div class="tm-nav-item" style="background:rgba(0,224,171,0.15)"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.4); border-radius:2px"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.18); border-radius:2px"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.18); border-radius:2px"></div>
             </div>
           </div>
           <div class="tm-hero tm-hero-terminal">
-            <div class="tm-term-line"><span class="tm-term-prompt">$</span><span class="tm-term-text"></span></div>
-            <div class="tm-term-line"><span class="tm-term-prompt">$</span><span class="tm-term-text tm-term-text-2"></span></div>
-            <div class="tm-term-line"><span class="tm-term-prompt" style="color:var(--green)">›</span><span class="tm-term-text tm-term-text-3"></span></div>
+            <div class="tm-headline tm-headline-term"></div>
+            <div class="tm-headline tm-headline-sub tm-headline-term-sub"></div>
+            <div class="tm-cta tm-cta-term"></div>
           </div>
           <div class="tm-grid">
-            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green)"></div></div>
-            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.5"></div></div>
-            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.3"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); border-radius:0"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.5; border-radius:0"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.3; border-radius:0"></div></div>
           </div>
         </div>
 
