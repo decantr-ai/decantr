@@ -51,6 +51,7 @@ Authenticated persona seeding for local or preview smoke tests:
 
 ```bash
 pnpm seed:registry-test-users
+pnpm smoke:registry-test-users
 ```
 
 The full test-persona runbook lives in `docs/runbooks/2026-04-23-registry-test-personas.md`.

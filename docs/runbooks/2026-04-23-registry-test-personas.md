@@ -20,6 +20,14 @@ REGISTRY_TEST_USER_PASSWORD='replace-with-a-strong-test-password' \
 pnpm seed:registry-test-users -- --apply
 ```
 
+After applying, verify the personas against Supabase Auth and the hosted API:
+
+```bash
+REGISTRY_TEST_ENV_FILE=apps/api/.env.local \
+REGISTRY_TEST_USER_PASSWORD='same-strong-test-password' \
+pnpm smoke:registry-test-users
+```
+
 Required values for `--apply`:
 
 - `SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_URL`
@@ -31,6 +39,7 @@ Optional values:
 - `REGISTRY_TEST_ENV_FILE`
 - `REGISTRY_TEST_EMAIL_DOMAIN`, default `example.com`
 - `REGISTRY_TEST_PREFIX`, default `decantr-test`
+- `REGISTRY_TEST_API_URL`, default `https://api.decantr.ai/v1`
 
 ## Persona Matrix
 

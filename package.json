@@ -38,6 +38,7 @@
     "audit:registry-authenticated": "node scripts/audit-registry-authenticated-surface.mjs",
     "audit:registry-dogfood": "pnpm --filter ./apps/registry exec node ../../packages/cli/dist/index.js audit",
     "seed:registry-test-users": "node scripts/seed-registry-test-users.mjs",
+    "smoke:registry-test-users": "node scripts/seed-registry-test-users.mjs --verify",
     "audit:blueprint-matrix": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/cli build && node scripts/audit-blueprint-matrix.mjs",
     "audit:content-contract": "node scripts/audit-content-contract-quality.mjs",
     "showcase:build": "node scripts/build-showcases.mjs",

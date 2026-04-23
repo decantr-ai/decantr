@@ -15,6 +15,7 @@
  * - --env-file <path> or REGISTRY_TEST_ENV_FILE
  * - REGISTRY_TEST_EMAIL_DOMAIN (default: example.com)
  * - REGISTRY_TEST_PREFIX (default: decantr-test)
+ * - --verify signs into each persona and checks hosted API identity/billing state
  * - Configure DECANTR_ADMIN_EMAILS with the admin persona email when testing
  *   admin routes. Admin access is environment-driven, not stored on users.
  */
@@ -24,6 +25,7 @@ import { resolve } from 'node:path';
 
 const argv = process.argv.slice(2);
 const APPLY = argv.includes('--apply');
+const VERIFY = argv.includes('--verify');
 const JSON_OUTPUT = argv.includes('--json');
 const explicitEnvFileIndex = argv.indexOf('--env-file');
 const explicitEnvFile = explicitEnvFileIndex !== -1 ? argv[explicitEnvFileIndex + 1] : null;
@@ -59,9 +61,11 @@ loadEnvFile(explicitEnvFile || process.env.REGISTRY_TEST_ENV_FILE || null);
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SERVICE_ROLE_KEY = process.env['SUPABASE_SERVICE_ROLE_KEY'] || '';
+const ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const TEST_PASSWORD = process.env.REGISTRY_TEST_USER_PASSWORD || '';
 const EMAIL_DOMAIN = process.env.REGISTRY_TEST_EMAIL_DOMAIN || 'example.com';
 const EMAIL_PREFIX = process.env.REGISTRY_TEST_PREFIX || 'decantr-test';
+const API_URL = process.env.REGISTRY_TEST_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
 const personas = [
   {
@@ -188,6 +192,17 @@ function requireApplyEnv() {
   }
 }
 
+function requireVerifyEnv() {
+  const missing = [];
+  if (!SUPABASE_URL) missing.push('SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL');
+  if (!ANON_KEY) missing.push('SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  if (!TEST_PASSWORD) missing.push('REGISTRY_TEST_USER_PASSWORD');
+  if (!API_URL) missing.push('REGISTRY_TEST_API_URL or NEXT_PUBLIC_API_URL');
+  if (missing.length) {
+    throw new Error(`Missing required env for --verify: ${missing.join(', ')}`);
+  }
+}
+
 function headers(extra = {}) {
   return {
     apikey: SERVICE_ROLE_KEY,
@@ -212,6 +227,42 @@ async function supabaseFetch(path, options = {}) {
   }
 
   if (response.status === 204) return null;
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function authFetch(path, options = {}) {
+  const response = await fetch(`${SUPABASE_URL}${path}`, {
+    ...options,
+    headers: {
+      apikey: ANON_KEY,
+      'Content-Type': 'application/json',
+      ...(options.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`${options.method ?? 'GET'} ${path} failed (${response.status}): ${text}`);
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function apiFetch(path, token) {
+  const response = await fetch(`${API_URL.replace(/\/$/, '')}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`GET ${path} failed (${response.status}): ${text}`);
+  }
+
   const text = await response.text();
   return text ? JSON.parse(text) : null;
 }
@@ -373,6 +424,74 @@ async function applySeed() {
   };
 }
 
+async function signInPersona(persona) {
+  const result = await authFetch('/auth/v1/token?grant_type=password', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: persona.email,
+      password: TEST_PASSWORD,
+    }),
+  });
+
+  if (!result?.access_token) {
+    throw new Error(`No access token returned for ${persona.email}`);
+  }
+
+  return result.access_token;
+}
+
+async function verifySeed() {
+  requireVerifyEnv();
+
+  const users = [];
+  for (const persona of personas) {
+    const token = await signInPersona(persona);
+    const [me, billing] = await Promise.all([
+      apiFetch('/me', token),
+      apiFetch('/billing/status', token),
+    ]);
+    const orgCount = Array.isArray(me?.organizations) ? me.organizations.length : 0;
+    const billingOrgCount = Array.isArray(billing?.organizations) ? billing.organizations.length : 0;
+    const expectedOrgCount = persona.tier === 'team' || persona.tier === 'enterprise'
+      ? persona.key === 'pro' || persona.key === 'free'
+        ? 0
+        : 1
+      : 0;
+    const checks = [
+      me?.email === persona.email,
+      me?.tier === persona.tier,
+      billing?.tier === persona.tier,
+      orgCount >= expectedOrgCount,
+      billingOrgCount >= expectedOrgCount,
+    ];
+
+    users.push({
+      key: persona.key,
+      email: persona.email,
+      expectedTier: persona.tier,
+      meTier: me?.tier ?? 'missing',
+      billingTier: billing?.tier ?? 'missing',
+      organizations: orgCount,
+      billingOrganizations: billingOrgCount,
+      passed: checks.every(Boolean),
+    });
+  }
+
+  return {
+    mode: 'verify',
+    target: `${new URL(SUPABASE_URL).origin}/...`,
+    api: API_URL,
+    users,
+    organizations: orgs.map(({ key, name, slug, tier, members }) => ({
+      key,
+      name,
+      slug,
+      tier,
+      members: members.map(([memberKey, role]) => ({ memberKey, role })),
+    })),
+  };
+}
+
 function dryRunPlan() {
   return {
     mode: 'dry-run',
@@ -407,17 +526,26 @@ function printResult(result) {
     return;
   }
 
-  console.log(`# Registry Test User Seed ${APPLY ? 'Apply' : 'Dry Run'}`);
+  const titleMode = VERIFY ? 'Verify' : APPLY ? 'Apply' : 'Dry Run';
+  console.log(`# Registry Test User Seed ${titleMode}`);
   console.log('');
   console.log(`- Target: ${result.target ?? 'configured Supabase project'}`);
   console.log(`- Users: ${result.users.length}`);
   console.log(`- Organizations: ${result.organizations.length}`);
   console.log('');
 
-  console.log('| User | Email | Tier | Admin |');
-  console.log('| --- | --- | --- | :---: |');
-  for (const user of result.users) {
-    console.log(`| ${user.key} | ${user.email} | ${user.tier} | ${user.admin ? 'yes' : 'no'} |`);
+  if (VERIFY) {
+    console.log('| User | Email | Expected | /me | Billing | Orgs | Passed |');
+    console.log('| --- | --- | --- | --- | --- | ---: | :---: |');
+    for (const user of result.users) {
+      console.log(`| ${user.key} | ${user.email} | ${user.expectedTier} | ${user.meTier} | ${user.billingTier} | ${user.organizations} | ${user.passed ? 'yes' : 'no'} |`);
+    }
+  } else {
+    console.log('| User | Email | Tier | Admin |');
+    console.log('| --- | --- | --- | :---: |');
+    for (const user of result.users) {
+      console.log(`| ${user.key} | ${user.email} | ${user.tier} | ${user.admin ? 'yes' : 'no'} |`);
+    }
   }
 
   console.log('');
@@ -427,7 +555,7 @@ function printResult(result) {
     console.log(`| ${org.name ?? org.key} | ${org.slug} | ${org.tier} | ${org.members.map((member) => `${member.memberKey}:${member.role}`).join(', ')} |`);
   }
 
-  if (!APPLY) {
+  if (!APPLY && !VERIFY) {
     console.log('');
     console.log('Dry run only. Re-run with `--apply` after confirming the target project and password.');
     if (result.adminEmail) {
@@ -437,7 +565,11 @@ function printResult(result) {
 }
 
 try {
-  const result = APPLY ? await applySeed() : dryRunPlan();
+  if (APPLY && VERIFY) {
+    throw new Error('Use either --apply or --verify, not both.');
+  }
+
+  const result = VERIFY ? await verifySeed() : APPLY ? await applySeed() : dryRunPlan();
   printResult(result);
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
