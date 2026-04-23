@@ -190,7 +190,16 @@ export function buildPageIR(
     : density.gap.startsWith('gap')
       ? `_${density.gap}`
       : `_gap${density.gap}`;
-  const surface = page.surface || `_flex _col ${gapAtom} _p4 _overauto _flex1`;
+  // Page surface declares layout direction + content gap ONLY. Padding, scroll
+  // containment, and flex-grow belong to the shell per the "Layout Rules"
+  // directive in DECANTR.md ("One scroll container per region", "Let shells
+  // own spacing, centering, and scroll containers", "Pages should not
+  // duplicate shell responsibilities"). Previous default (`_p4 _overauto
+  // _flex1`) contradicted that directive and the v3 harness flagged it as
+  // the single most expensive contract-ambiguity friction point. Pages that
+  // genuinely need to claim scroll/padding can still declare it explicitly
+  // via `page.surface` — the fallback just stops prescribing it.
+  const surface = page.surface || `_flex _col ${gapAtom}`;
 
   return {
     type: 'page',

@@ -159,7 +159,10 @@ describe('buildScaffoldPack', () => {
     expect(pack.data.pageId).toBe('overview');
     expect(pack.data.path).toBe('/');
     expect(pack.data.sectionId).toBe('dashboard');
-    expect(pack.data.surface).toBe('_flex _col _gap4 _p4 _overauto _flex1');
+    // R1 fix: page surface declares layout direction + gap only. Padding,
+    // scroll, and flex-grow belong to the shell. Pages that need those can
+    // still declare an explicit `page.surface` string.
+    expect(pack.data.surface).toBe('_flex _col _gap4');
     expect(pack.data.patterns).toEqual([
       {
         id: 'kpi-grid',
