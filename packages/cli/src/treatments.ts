@@ -15,6 +15,18 @@ export function generateTreatmentCSS(
     description?: string;
     intent?: string;
     suggested_properties?: Record<string, string>;
+    /**
+     * Optional state-variant CSS emitted as pseudo-class rules on the same
+     * selector. Each is a flat property map; keys are CSS declarations, not
+     * nested selectors. Missing fields fall back to current behavior (base
+     * properties only). Introduced for P0-1 so decorator prose that
+     * promises hover / focus / active styling (e.g. "carbon-card gains a
+     * neon cyan shadow on hover") can be delivered by the content pipeline
+     * instead of every scaffolded app reaching for inline styles.
+     */
+    hover_properties?: Record<string, string>;
+    focus_properties?: Record<string, string>;
+    active_properties?: Record<string, string>;
     pairs_with?: string[];
     usage?: string[];
   }>,
@@ -336,11 +348,14 @@ export function generateTreatmentCSS(
 
   const decoratorRules: string[] = [];
   if (themeDecoratorDefinitions) {
-    for (const [className, definition] of Object.entries(themeDecoratorDefinitions)) {
-      const props = definition?.suggested_properties ?? {};
+    // Emit a base rule plus optional state-variant pseudo-class rules.
+    // Pseudo-class fields (:hover / :focus-visible / :active) are additive —
+    // absent fields produce no rule, preserving prior behavior for themes
+    // that haven't declared state variants yet.
+    const emitProps = (selector: string, props: Record<string, string>) => {
       const entries = Object.entries(props);
-      if (entries.length === 0) continue;
-      decoratorRules.push(`.${className} {`);
+      if (entries.length === 0) return;
+      decoratorRules.push(`${selector} {`);
       for (const [prop, value] of entries) {
         decoratorRules.push(`  ${prop}: ${value};`);
         if (prop === 'animation') {
@@ -350,6 +365,12 @@ export function generateTreatmentCSS(
       }
       decoratorRules.push('}');
       decoratorRules.push('');
+    };
+    for (const [className, definition] of Object.entries(themeDecoratorDefinitions)) {
+      emitProps(`.${className}`, definition?.suggested_properties ?? {});
+      emitProps(`.${className}:hover`, definition?.hover_properties ?? {});
+      emitProps(`.${className}:focus-visible`, definition?.focus_properties ?? {});
+      emitProps(`.${className}:active`, definition?.active_properties ?? {});
     }
   }
 
