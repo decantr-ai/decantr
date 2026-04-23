@@ -141,12 +141,16 @@ export function prepWorkspace({ blueprint, workspace }) {
   console.log('  decantr sync...');
   execFileSync(cli.command, [...cli.args, 'sync'], { cwd: workspace, stdio: 'inherit' });
 
-  console.log(`  decantr init --blueprint=${blueprint} --existing --yes...`);
-  execFileSync(
-    cli.command,
-    [...cli.args, 'init', `--blueprint=${blueprint}`, '--existing', '--yes'],
-    { cwd: workspace, stdio: 'inherit' },
-  );
+  // If DECANTR_CONTENT_DIR is set, use --offline so the CLI pulls themes/
+  // patterns from that checkout instead of the hosted registry. This is how
+  // we test local edits to decantr-content without publishing.
+  const initArgs = ['init', `--blueprint=${blueprint}`, '--existing', '--yes'];
+  if (process.env.DECANTR_CONTENT_DIR) {
+    initArgs.push('--offline');
+    console.log(`  using DECANTR_CONTENT_DIR=${process.env.DECANTR_CONTENT_DIR} (--offline)`);
+  }
+  console.log(`  decantr ${initArgs.join(' ')}...`);
+  execFileSync(cli.command, [...cli.args, ...initArgs], { cwd: workspace, stdio: 'inherit' });
 
   // Validate scaffold. Tolerate BOTH contract shapes — pack-style (has
   // scaffold-pack.md + pack-manifest.json) and narrative-only (scaffold.md

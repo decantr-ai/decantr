@@ -536,6 +536,12 @@ export interface ThemeData {
     description?: string;
     intent?: string;
     suggested_properties?: Record<string, string>;
+    // State-variant CSS. Emitter generates `.{name}:hover` / `:focus-visible` /
+    // `:active` rules when these fields are present. Optional and additive —
+    // themes without them keep current behavior.
+    hover_properties?: Record<string, string>;
+    focus_properties?: Record<string, string>;
+    active_properties?: Record<string, string>;
     pairs_with?: string[];
     usage?: string[];
   }>;
