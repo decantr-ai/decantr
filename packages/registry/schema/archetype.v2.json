@@ -82,6 +82,23 @@
     "features": {
       "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
     },
+    "navigation_items": {
+      "type": "array",
+      "description": "Items rendered in the shell's primary navigation when this archetype is composed as a section. Propagated to essence.blueprint.sections[].navigation_items.",
+      "items": {
+        "type": "object",
+        "required": ["label", "route"],
+        "additionalProperties": false,
+        "properties": {
+          "label": { "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString" },
+          "route": { "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString" },
+          "icon": { "type": "string", "minLength": 1 },
+          "hotkey": { "type": "string", "minLength": 1 },
+          "active_match": { "type": "string", "minLength": 1 },
+          "badge": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
     "dependencies": {
       "type": "object",
       "additionalProperties": {

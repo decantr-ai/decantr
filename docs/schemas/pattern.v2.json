@@ -110,8 +110,57 @@
     },
     "responsive": {
       "type": "object",
+      "description": "Per-breakpoint adaptation. Keys are viewport breakpoint tokens (e.g., 'mobile', 'tablet', 'desktop', or '<768px', '>=900px'). Values may be either a legacy prose string OR a structured ResponsiveBreakpointRule object. Prefer structured rules so the LLM can adapt mechanically instead of paraphrasing.",
       "additionalProperties": {
-        "type": "string"
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Legacy prose form — kept for backward compatibility."
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "layout": {
+                "type": "string",
+                "enum": ["stack", "grid", "flex-row", "flex-column", "hide", "alternate-pattern"],
+                "description": "Top-level layout strategy at this breakpoint. 'hide' removes the pattern entirely; 'alternate-pattern' swaps to the pattern id in alternate_pattern_id."
+              },
+              "columns": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12,
+                "description": "Grid column count when layout=grid."
+              },
+              "gap": {
+                "type": "string",
+                "description": "Gap as a CSS length, density-token, or atom (e.g., '1rem', 'var(--d-content-gap)', '_gap4')."
+              },
+              "hide_components": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Component ids/aliases rendered by this pattern that should be hidden at this breakpoint."
+              },
+              "stack_order": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Explicit order when layout=stack. Useful when the default DOM order doesn't map to the intended mobile reading order."
+              },
+              "alternate_pattern_id": {
+                "type": "string",
+                "description": "Pattern id to substitute when layout=alternate-pattern. Use for desktop-only patterns that need a mobile-specific counterpart."
+              },
+              "horizontal_scroll": {
+                "type": "boolean",
+                "description": "If true: permit horizontal scroll at this breakpoint (e.g., data table on mobile). Default false."
+              },
+              "notes": {
+                "type": "string",
+                "description": "Prose that doesn't fit the structured fields. Short."
+              }
+            }
+          }
+        ]
       }
     },
     "accessibility": {

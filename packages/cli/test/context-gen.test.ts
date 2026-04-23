@@ -55,26 +55,39 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('| Style guard |');
   });
 
-  it('inlines key palette tokens with semantic roles', () => {
+  it('emits a compact theme reference that points to DECANTR.md for full tables', () => {
+    // P1-2: section files no longer duplicate the full palette-token and
+    // spacing-guide tables. They emit a "Theme Reference" block and defer
+    // to DECANTR.md (project root) for the full tables. This eliminates
+    // ~160 lines of duplication per section file when multiple sections
+    // share the same theme + density.
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('**Key palette tokens:**');
-    expect(result).toContain('| Token | Value | Role |');
-    expect(result).toContain('Full token set: `src/styles/tokens.css`');
-    // Should NOT contain raw CSS blocks
+    expect(result).toContain('## Theme Reference');
+    expect(result).toMatch(/\*\*Theme:\*\*\s+midnight\s+\(dark\)/);
+    expect(result).toContain('**Density:** comfortable');
+    expect(result).toContain('DECANTR.md');
+    // Should NOT duplicate the full palette tokens table anymore.
+    expect(result).not.toContain('| Token | Value | Role |');
+    // Should NOT duplicate the spacing guide table.
+    expect(result).not.toContain('## Spacing Guide');
+    // Should NOT contain raw CSS blocks.
     expect(result).not.toContain('## Theme: midnight');
     expect(result).not.toContain('```css');
   });
 
-  it('renders decorator descriptions as a markdown table', () => {
+  it('renders section decorators as a compact usage list', () => {
+    // P1-2: section files no longer repeat the full decorator table from
+    // DECANTR.md. Each section gets a short "section decorators" bullet
+    // list with the name + description — enough for local decision-making
+    // without repeating the full intent/CSS/pairs table.
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('**Visual Treatments:** All 6 base treatments available');
-    expect(result).toContain('see DECANTR.md for usage');
-    expect(result).toContain('**Theme decorators:**');
-    expect(result).toContain('| Class | Usage |');
-    expect(result).toContain('| `.surface-card` | Surface background with border |');
-    expect(result).toContain('| `.glass-panel` | Backdrop blur glass effect |');
+    expect(result).toContain('**Section decorators:**');
+    expect(result).toContain('`.surface-card` — Surface background with border');
+    expect(result).toContain('`.glass-panel` — Backdrop blur glass effect');
+    // Should NOT re-emit the full decorator table.
+    expect(result).not.toContain('| Class | Usage |');
   });
 
   it('includes zone context inline without heading', () => {

@@ -33,6 +33,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 export type LayoutItem = RegistryLayoutItem | Record<string, unknown>;
 
+export interface ArchetypeNavigationItem {
+  label: string;
+  route: string;
+  icon?: string;
+  hotkey?: string;
+  active_match?: string;
+  badge?: string;
+}
+
 export interface ArchetypeData {
   id: string;
   name?: string;
@@ -49,6 +58,11 @@ export interface ArchetypeData {
     schema_org?: string[];
     meta_priorities?: string[];
   };
+  /**
+   * Items rendered in the shell's primary navigation when this archetype is
+   * composed as a section. Propagated to essence.blueprint.sections[].navigation_items.
+   */
+  navigation_items?: ArchetypeNavigationItem[];
 }
 
 function getPlatformMeta(target: string) {
@@ -112,6 +126,8 @@ export function collectPatternIdsFromItems(items: unknown[]): string[] {
 }
 
 export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype): ArchetypeData {
+  // Registry type may not yet declare navigation_items; read defensively.
+  const registryNavigation = (archetype as { navigation_items?: ArchetypeNavigationItem[] }).navigation_items;
   return {
     id: archetype.id,
     name: archetype.name,
@@ -125,6 +141,9 @@ export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype
     })),
     features: archetype.features,
     seo_hints: archetype.seo_hints,
+    ...(Array.isArray(registryNavigation) && registryNavigation.length > 0
+      ? { navigation_items: registryNavigation }
+      : {}),
   };
 }
 
@@ -290,6 +309,11 @@ export function composeSections(
       features: data.features ?? [],
       description: data.description ?? '',
       pages,
+      // Propagate navigation_items from the archetype so the shell renders
+      // the correct primary-nav list instead of the LLM improvising one.
+      ...(Array.isArray(data.navigation_items) && data.navigation_items.length > 0
+        ? { navigation_items: data.navigation_items }
+        : {}),
     });
 
     if (data.features) {
@@ -1167,6 +1191,42 @@ css('_bgprimary _h:bgprimary/80')
 - Arbitrary values use square brackets when the standard scale is not enough: \`_w[512px]\`, \`_h[100vh]\`, \`_p[clamp(1rem,3vw,2rem)]\`, \`_z[40]\`.
 - When you see bracket atoms in shell or page contracts, treat them as first-class Decantr syntax, not as an error or a cue to fall back to inline styles.
 
+### Responsive Breakpoint Atoms
+
+Decantr ships two families of responsive prefixes. Use them directly inside \`css(...)\` — no \`matchMedia\` JS needed for simple responsive switches.
+
+**Mobile-first (min-width):**
+| Prefix | Breakpoint | Meaning |
+|--------|-----------|---------|
+| \`_sm:\` | ≥ 640px | small tablet / large phone landscape and up |
+| \`_md:\` | ≥ 768px | tablet portrait and up |
+| \`_lg:\` | ≥ 1024px | tablet landscape / small desktop and up |
+| \`_xl:\` | ≥ 1280px | desktop and up |
+
+**Desktop-first (max-width, for "hide below" / "swap at small" expressions):**
+| Prefix | Breakpoint | Meaning |
+|--------|-----------|---------|
+| \`_smmax:\` | < 640px | phone only |
+| \`_mdmax:\` | < 768px | phone + small tablet |
+| \`_lgmax:\` | < 1024px | below tablet-landscape |
+| \`_xlmax:\` | < 1280px | below desktop |
+
+Pseudo-class stacking works with both (e.g., \`_mdmax:h:bgmuted\`, \`_sm:fv:ring2\`).
+
+**Example:**
+\`\`\`
+// 1-column on phone, 2-column from tablet, 3-column from desktop
+css('_grid _gc1 _sm:gc2 _lg:gc3')
+
+// Hide the minimap below tablet portrait
+css('_block _mdmax:none')
+
+// Show the hamburger below tablet portrait, hide it above
+css('_none _mdmax:block')
+\`\`\`
+
+Prefer these atoms over \`window.matchMedia\` in JS. Reserve JS responsive checks for cases where the component tree ITSELF must change shape (e.g., rendering a different React component), not just styling.
+
 ### Atom Reference
 
 #### Display
@@ -1407,6 +1467,20 @@ Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and list
 4. **d-section spacing is self-contained.** Each d-section owns its padding. The d-section + d-section rule adds a separator. Do NOT add extra margin between adjacent sections.
 5. **Responsive nav rules.** Hamburger menus appear ONLY below the shell collapse breakpoint. Full nav shows above it.
 
+### Responsive Breakpoints
+
+The \`@decantr/css\` atom breakpoints are the canonical defaults. See the "Responsive Breakpoint Atoms" section below for the full table. Shell-level guidance:
+
+- **\`_smmax:\` (< 640px — phone):** hamburger drawer, single-column stack, full-bleed content. Pattern-level content stacks vertically unless the pattern explicitly declares otherwise.
+- **\`_mdmax:\` (< 768px — phone + small tablet):** most patterns should use this as the "stack to a single column / hide secondary chrome" breakpoint. This is the level where \`top-nav-footer\` mid-nav links should collapse to a hamburger.
+- **\`_lgmax:\` (< 1024px — below tablet-landscape):** \`sidebar-main\` shells should collapse the persistent sidebar into a drawer here. Do **not** keep the sidebar open below \`_lg:\` — at 768-1023px it leaves the main canvas too cramped for data-dense mission-control content.
+- **\`_lg:\` (≥ 1024px — tablet-landscape / small desktop):** full \`sidebar-main\` layout; responsive multi-column grids.
+- **\`_xl:\` (≥ 1280px — desktop):** canonical layout.
+
+Implementation: prefer the \`@decantr/css\` breakpoint atoms (\`_sm:\`, \`_md:\`, \`_lg:\`, \`_xl:\`, \`_smmax:\`, \`_mdmax:\`, \`_lgmax:\`, \`_xlmax:\`) or structured \`responsive\` fields on patterns. Use \`window.matchMedia\` only when the React component tree itself must change shape per viewport (e.g., rendering a different component), not just styling.
+
+**High-density content patterns** (swarm canvases, trace-waterfall, data tables with 8+ columns) should declare explicit mobile-reflow behavior — stack vertically, collapse to a list, or define a \`desktop-only\` directive and render a lighter alternative pattern below \`_md:\`. Without this, horizontal overflow on phone viewports is the default failure mode.
+
 ### Accessibility Defaults
 
 - If \`dna.accessibility.skip_nav = true\`, add a visible-on-focus skip link such as \`<a href="#main-content" className="skip-link">Skip to content</a>\`.
@@ -1423,9 +1497,9 @@ Every interaction should feel responsive and polished. Apply motion by default, 
 - **Data visualization:** Charts, gauges, progress bars, and counters should animate to their values on mount — never render static
 - **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
 - **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
-- **Reduced motion:** Wrap all animations in \`prefers-reduced-motion\` media query — skip animation, keep state changes instant
+- **Reduced motion:** Wrap all animations in a \`@media (prefers-reduced-motion: reduce)\` media query — skip animation, keep state changes instant. The media query is the correct gate at any time regardless of the DNA \`reduce_motion\` flag — it hands control to the user's OS-level preference.
 
-Never leave this to implication when \`dna.motion.reduce_motion = true\`. The scaffold should include a reviewed reduced-motion path in project CSS, even when the app initially runs on mock data.
+**\`dna.motion.reduce_motion = true\` does NOT mean "disable motion in all code."** It means: the generated CSS must include a reviewed \`@media (prefers-reduced-motion: reduce)\` block (the scaffold already emits one in \`global.css\`). Do not branch component code on the DNA flag to unconditionally suppress animations — that would kill the personality's explicit motion directives (e.g., "pulse animations", "fade-in reveals") even for users whose OS allows motion. Always gate at the CSS level via the media query, never at the TS/JS level via a hardcoded constant.
 
 ### Interactivity Philosophy
 
@@ -3394,10 +3468,27 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('');
   }
 
-  // Spacing Guide
-  const density = (section.dna_overrides?.density as string) || 'comfortable';
-  lines.push(...generateSpacingGuide(density, spatialHints));
+  // Theme reference — compact. Full palette, spacing guide, and decorator
+  // tables live in DECANTR.md (root) to avoid ~160 lines of duplication per
+  // section file. Only DNA-override deltas and decorator usage hints filtered
+  // to this section's patterns are emitted locally.
+  const sectionDensityOverride = section.dna_overrides?.density as string | undefined;
+  const effectiveDensity = sectionDensityOverride || 'comfortable';
 
+  lines.push('## Theme Reference');
+  lines.push('');
+  lines.push(`**Theme:** ${themeName} (${input.themeMode || 'dark'}) · **Density:** ${effectiveDensity}${sectionDensityOverride ? ' _(DNA override)_' : ''}`);
+  lines.push('');
+  lines.push('Full palette tokens, spacing-guide table, and decorator reference live in `DECANTR.md` (project root). These values are identical across sections in this scaffold unless a DNA override above changes density.');
+  if (sectionDensityOverride) {
+    // If the section overrides density, emit JUST the spacing guide to make
+    // the override actionable without re-reading DECANTR.md.
+    lines.push('');
+    lines.push('Because this section overrides density, the spacing guide is emitted below:');
+    lines.push('');
+    lines.push(...generateSpacingGuide(effectiveDensity, spatialHints));
+  }
+  lines.push('');
   lines.push('---');
   lines.push('');
 
@@ -3405,95 +3496,24 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push(`**Guard:** ${guardConfig.mode} mode | DNA violations = ${guardConfig.dna_enforcement} | Blueprint violations = ${guardConfig.blueprint_enforcement}`);
   lines.push('');
 
-  // Theme — inline key palette tokens with semantic roles
-  lines.push('**Key palette tokens:**');
-  lines.push('');
-  lines.push('| Token | Value | Role |');
-  lines.push('|-------|-------|------|');
-  const semanticRoles: Record<string, string> = {
-    background: 'Page canvas / base layer',
-    surface: 'Cards, panels, containers',
-    'surface-raised': 'Elevated containers, modals, popovers',
-    border: 'Dividers, card borders, separators',
-    text: 'Body text, headings, primary content',
-    'text-muted': 'Secondary text, placeholders, labels',
-    primary: 'Brand color, key interactive, selected states',
-    'primary-hover': 'Hover state for primary elements',
-    secondary: 'Secondary brand color, supporting elements',
-    'accent-glow': 'Ambient glow effect for accent-colored elements',
-  };
-  // Map palette keys to CSS variable names to match generateTokensCSS output
-  const paletteToTokenName: Record<string, string> = {
-    'background': 'bg',
-  };
-  const addedTokens = new Set<string>();
-  if (input.themeData?.palette) {
-    const modeKey = input.themeMode || 'dark';
-    for (const [name, values] of Object.entries(input.themeData.palette as Record<string, Record<string, string>>)) {
-      if (!addedTokens.has(name)) {
-        addedTokens.add(name);
-        const tokenName = paletteToTokenName[name] || name;
-        const val = values[modeKey] || values.dark || values.light || Object.values(values)[0];
-        lines.push(`| \`--d-${tokenName}\` | \`${val}\` | ${semanticRoles[name] || ''} |`);
-      }
-    }
-  }
-  if (input.themeData?.seed?.accent && !addedTokens.has('accent')) {
-    addedTokens.add('accent');
-    lines.push(`| \`--d-accent\` | \`${input.themeData.seed.accent}\` | CTAs, links, active states, glow effects |`);
-  }
-  // Add accent-glow if theme provides it and not already added from palette loop
-  if (!addedTokens.has('accent-glow')) {
-    const accentGlowVal = input.themeData?.palette?.['accent-glow']?.[input.themeMode || 'dark']
-      || input.themeData?.tokens?.base?.['accent-glow'];
-    if (accentGlowVal) {
-      addedTokens.add('accent-glow');
-      lines.push(`| \`--d-accent-glow\` | \`${accentGlowVal}\` | Ambient glow effect around accent elements |`);
-    }
-  }
-  lines.push('');
-  lines.push('Full token set: `src/styles/tokens.css`');
-  lines.push('');
-
-  // Visual Treatments (base treatments + theme decorators; full table in .decantr/context/treatments.md)
-  lines.push('**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).');
-
-  // Priority 1: Structured decorator_definitions (rich table with intent, key CSS, pairs)
+  // Decorator usage guide — filtered to section-relevant decorators only.
+  // The exhaustive table stays in DECANTR.md; here we just surface the ones
+  // the LLM actually needs for this section's patterns.
   const decoratorDefs = input.themeData?.decorator_definitions as Record<string, { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }> | undefined;
   if (decoratorDefs && Object.keys(decoratorDefs).length > 0) {
-    lines.push('**Theme decorators:**');
-    lines.push('');
-    lines.push('| Class | Intent | Key CSS | Pairs with |');
-    lines.push('|-------|--------|---------|------------|');
-    for (const [name, def] of Object.entries(decoratorDefs)) {
-      const intent = def.intent || '';
-      const cssProps = def.css ? Object.entries(def.css).map(([p, v]) => `${p}: ${v}`).join('; ') : '';
-      const pairsWith = def.pairs_with || '';
-      lines.push(`| \`.${name}\` | ${intent} | ${cssProps} | ${pairsWith} |`);
-    }
-    lines.push('');
-
-    // Usage guide
-    lines.push('**Decorator usage guide:**');
-    for (const [name, def] of Object.entries(decoratorDefs)) {
-      if (def.usage && def.usage.length > 0) {
-        lines.push(`- \`.${name}\`: ${def.usage.join(', ')}`);
+    const usageEntries = Object.entries(decoratorDefs).filter(([, def]) => def.usage && def.usage.length > 0);
+    if (usageEntries.length > 0) {
+      lines.push('**Section decorators (usage hints):**');
+      for (const [name, def] of usageEntries) {
+        lines.push(`- \`.${name}\`: ${(def.usage || []).join(', ')}`);
       }
+      lines.push('');
     }
-    lines.push('');
-  // Priority 2: Flat decorators array (old description table)
   } else if (decorators.length > 0) {
-    lines.push('**Theme decorators:**');
-    lines.push('');
-    lines.push('| Class | Usage |');
-    lines.push('|-------|-------|');
+    lines.push('**Section decorators:**');
     for (const d of decorators) {
-      lines.push(`| \`.${d.name}\` | ${d.description} |`);
+      lines.push(`- \`.${d.name}\` — ${d.description}`);
     }
-    lines.push('');
-  // Priority 3: Neither
-  } else {
-    lines.push('No theme decorators defined.');
     lines.push('');
   }
   if (themeHints) {

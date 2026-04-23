@@ -51,6 +51,30 @@ describe('css()', () => {
       expect(result).toBe('_lg:gap8');
       expect(extractCSS()).toContain('@media(min-width:1024px)');
     });
+
+    it('handles _mdmax: max-width prefix', () => {
+      const result = css('_mdmax:none');
+      expect(result).toBe('_mdmax:none');
+      const cssText = extractCSS();
+      // (768 - 0.02) = 767.98 — the standard mobile-first / desktop-first
+      // handoff value.
+      expect(cssText).toContain('@media(max-width:767.98px)');
+      expect(cssText).toContain('display:none');
+    });
+
+    it('handles _smmax: max-width prefix with pseudo', () => {
+      const result = css('_smmax:h:bgmuted');
+      expect(result).toBe('_smmax:h:bgmuted');
+      const cssText = extractCSS();
+      expect(cssText).toContain('@media(max-width:639.98px)');
+      expect(cssText).toContain(':hover');
+    });
+
+    it('handles _lgmax: max-width prefix', () => {
+      const result = css('_lgmax:gc1');
+      expect(result).toBe('_lgmax:gc1');
+      expect(extractCSS()).toContain('@media(max-width:1023.98px)');
+    });
   });
 
   describe('pseudo-class prefixes', () => {

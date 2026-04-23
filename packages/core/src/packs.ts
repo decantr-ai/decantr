@@ -122,14 +122,44 @@ export interface ScaffoldPackData {
   routing: 'hash' | 'history' | 'pathname';
   features: string[];
   navigation?: {
-    commandPalette: boolean;
+    /**
+     * true  = palette enabled with implicit defaults.
+     * false = not enabled.
+     * object = explicit structured contract (see CommandPaletteContract).
+     */
+    commandPalette: boolean | CommandPaletteContract;
     hotkeys: Array<{
       key: string;
       route?: string;
       label?: string;
+      semantics?: HotkeySemantics;
     }>;
+    /** Default hotkey semantics applied unless per-hotkey semantics override. */
+    hotkeySemantics?: HotkeySemantics;
   };
   routes: ScaffoldPackRoute[];
+}
+
+export interface CommandPaletteContract {
+  trigger?: string;
+  placeholder?: string;
+  width?: string;
+  styling?: 'modal' | 'sheet' | 'inline' | 'fullscreen';
+  commands?: Array<{
+    id: string;
+    label: string;
+    section?: string;
+    hotkey?: string;
+    action?: string;
+    route?: string;
+  }>;
+}
+
+export interface HotkeySemantics {
+  chord_window_ms?: number;
+  input_guard?: boolean;
+  modifier_suppression?: boolean;
+  match_case?: boolean;
 }
 
 export interface ScaffoldExecutionPack extends ExecutionPackBase<ScaffoldPackData> {
@@ -143,6 +173,17 @@ export interface SectionPackInput {
   description: string;
   features: string[];
   pageIds: string[];
+  navigationItems?: SectionNavigationItemPack[];
+}
+
+/** Navigation item contract for a section's primary navigation. */
+export interface SectionNavigationItemPack {
+  label: string;
+  route: string;
+  icon?: string;
+  hotkey?: string;
+  active_match?: string;
+  badge?: string;
 }
 
 export interface SectionPackRoute {
@@ -164,6 +205,8 @@ export interface SectionPackData {
     shape: string | null;
   };
   routes: SectionPackRoute[];
+  /** Contract for items rendered in this section's primary navigation. */
+  navigationItems?: SectionNavigationItemPack[];
 }
 
 export interface SectionExecutionPack extends ExecutionPackBase<SectionPackData> {
@@ -293,12 +336,14 @@ export interface ScaffoldPackBuilderOptions {
   successChecks?: ExecutionPackSuccessCheck[];
   tokenBudget?: Partial<ExecutionPackTokenBudget>;
   navigation?: {
-    commandPalette: boolean;
+    commandPalette: boolean | CommandPaletteContract;
     hotkeys: Array<{
       key: string;
       route?: string;
       label?: string;
+      semantics?: HotkeySemantics;
     }>;
+    hotkeySemantics?: HotkeySemantics;
   };
 }
 
@@ -528,6 +573,22 @@ function renderList(title: string, entries: string[]): string[] {
   return [title, ...entries.map(entry => `- ${entry}`), ''];
 }
 
+// Compact description of hotkey semantics for pack markdown. Returns empty
+// string when no semantics are declared so the line can be omitted entirely.
+function formatHotkeySemantics(semantics: HotkeySemantics | undefined): string {
+  if (!semantics) return '';
+  const parts: string[] = [];
+  if (typeof semantics.chord_window_ms === 'number') {
+    parts.push(`chord window ${semantics.chord_window_ms}ms`);
+  }
+  if (semantics.input_guard === true) parts.push('suppress during text-input focus');
+  if (semantics.input_guard === false) parts.push('fire even while typing (explicit)');
+  if (semantics.modifier_suppression === true) parts.push('ignore when modifier held');
+  if (semantics.modifier_suppression === false) parts.push('allow modifier passthrough (explicit)');
+  if (semantics.match_case === true) parts.push('case-sensitive');
+  return parts.join('; ');
+}
+
 // Short, mechanical router-implementation hint so the LLM picks the right
 // imports without having to consult a separate narrative file. Keyed off the
 // same string enum as the schema.
@@ -570,12 +631,39 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     }
     if (scaffoldPack.data.navigation?.commandPalette || scaffoldPack.data.navigation?.hotkeys.length) {
       lines.push('- Navigation:');
-      if (scaffoldPack.data.navigation.commandPalette) {
-        lines.push('  - command palette required');
+      const cp = scaffoldPack.data.navigation.commandPalette;
+      if (cp) {
+        if (typeof cp === 'object') {
+          lines.push('  - Command palette:');
+          if (cp.trigger) lines.push(`    - Trigger: ${cp.trigger}`);
+          if (cp.styling) lines.push(`    - Styling: ${cp.styling}${cp.width ? ` (width ${cp.width})` : ''}`);
+          else if (cp.width) lines.push(`    - Width: ${cp.width}`);
+          if (cp.placeholder) lines.push(`    - Placeholder: "${cp.placeholder}"`);
+          if (cp.commands && cp.commands.length > 0) {
+            lines.push(`    - Commands (${cp.commands.length}):`);
+            for (const command of cp.commands) {
+              const parts: string[] = [];
+              if (command.section) parts.push(command.section);
+              parts.push(command.label);
+              if (command.hotkey) parts.push(`[${command.hotkey}]`);
+              if (command.route) parts.push(`→ ${command.route}`);
+              lines.push(`      - ${command.id}: ${parts.join(' · ')}`);
+            }
+          }
+        } else {
+          lines.push('  - command palette required');
+        }
       }
-      for (const hotkey of scaffoldPack.data.navigation.hotkeys) {
-        const target = [hotkey.label, hotkey.route].filter(Boolean).join(' — ');
-        lines.push(`  - ${hotkey.key}${target ? `: ${target}` : ''}`);
+      const globalSemantics = scaffoldPack.data.navigation.hotkeySemantics;
+      if (scaffoldPack.data.navigation.hotkeys.length > 0) {
+        const semanticsSummary = formatHotkeySemantics(globalSemantics);
+        lines.push(`  - Hotkeys${semanticsSummary ? ` (${semanticsSummary})` : ''}:`);
+        for (const hotkey of scaffoldPack.data.navigation.hotkeys) {
+          const target = [hotkey.label, hotkey.route].filter(Boolean).join(' — ');
+          const perKeySemantics = formatHotkeySemantics(hotkey.semantics);
+          const suffix = perKeySemantics ? ` _(${perKeySemantics})_` : '';
+          lines.push(`    - ${hotkey.key}${target ? `: ${target}` : ''}${suffix}`);
+        }
       }
     }
     lines.push('');
@@ -609,6 +697,22 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
     }
     lines.push('');
+
+    if (sectionPack.data.navigationItems && sectionPack.data.navigationItems.length > 0) {
+      lines.push('## Section Navigation');
+      lines.push('');
+      lines.push('Render these items in the shell\'s primary navigation. Exact match on label, route, and icon.');
+      lines.push('');
+      for (const item of sectionPack.data.navigationItems) {
+        const parts: string[] = [`${item.label} → ${item.route}`];
+        if (item.icon) parts.push(`icon: ${item.icon}`);
+        if (item.hotkey) parts.push(`hotkey: ${item.hotkey}`);
+        if (item.badge) parts.push(`badge: ${item.badge}`);
+        if (item.active_match) parts.push(`active match: \`${item.active_match}\``);
+        lines.push(`- ${parts.join(' · ')}`);
+      }
+      lines.push('');
+    }
   }
 
   if (pack.packType === 'page') {
@@ -709,6 +813,20 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     }
   }
 
+  // P1-1 — Page packs skip the universal footer (required setup, allowed
+  // vocabulary, success checks, anti-patterns, examples, token budget).
+  // These blocks are identical across every page in a 16-page scaffold
+  // (~35 lines × N pages of pure boilerplate) and their JSON still carries
+  // all fields for any consumer that needs the raw data. Non-page packs
+  // keep the full footer — each one (scaffold, section, mutation, review)
+  // is a singleton per scaffold so there's no duplication problem.
+  if (pack.packType === 'page') {
+    lines.push('## Shared Contract');
+    lines.push('Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.');
+    lines.push('');
+    return lines.join('\n').trimEnd() + '\n';
+  }
+
   lines.push('## Required Setup');
   if (pack.requiredSetup.length === 0) {
     lines.push('- None declared.');
@@ -768,6 +886,9 @@ export function listPackSections(essence: EssenceV3): SectionPackInput[] {
         description: section.description,
         features: section.features,
         pageIds,
+        ...(Array.isArray(section.navigation_items) && section.navigation_items.length > 0
+          ? { navigationItems: section.navigation_items as SectionNavigationItemPack[] }
+          : {}),
       };
     }).filter((section) => section.pageIds.length > 0);
   }
@@ -919,6 +1040,9 @@ export function buildSectionPack(
         shape: appNode.theme.shape,
       },
       routes,
+      ...(input.navigationItems && input.navigationItems.length > 0
+        ? { navigationItems: input.navigationItems }
+        : {}),
     },
     renderedMarkdown: '',
   };
@@ -1157,13 +1281,27 @@ export async function compileExecutionPackBundle(
     resolver: options.resolver,
   });
 
+  const navMeta = effectiveEssence.meta.navigation;
+  // Preserve the full command_palette value when it's a structured contract;
+  // coerce to boolean only when it's the legacy flag form.
+  const commandPaletteValue: boolean | CommandPaletteContract =
+    typeof navMeta?.command_palette === 'object' && navMeta.command_palette !== null
+      ? (navMeta.command_palette as CommandPaletteContract)
+      : Boolean(navMeta?.command_palette);
+
   const scaffold = buildScaffoldPack(pipeline.ir, {
     target: sharedTarget,
     navigation: {
-      commandPalette: Boolean(effectiveEssence.meta.navigation?.command_palette),
-      hotkeys: Array.isArray(effectiveEssence.meta.navigation?.hotkeys)
-        ? effectiveEssence.meta.navigation.hotkeys
-            .filter((hotkey): hotkey is { key: string; route?: string; action?: string; label: string } => Boolean(
+      commandPalette: commandPaletteValue,
+      hotkeys: Array.isArray(navMeta?.hotkeys)
+        ? navMeta.hotkeys
+            .filter((hotkey): hotkey is {
+              key: string;
+              route?: string;
+              action?: string;
+              label: string;
+              semantics?: HotkeySemantics;
+            } => Boolean(
               hotkey
               && typeof hotkey.key === 'string'
               && typeof hotkey.label === 'string',
@@ -1172,8 +1310,10 @@ export async function compileExecutionPackBundle(
               key: hotkey.key,
               route: hotkey.route,
               label: hotkey.label,
+              ...(hotkey.semantics ? { semantics: hotkey.semantics as HotkeySemantics } : {}),
             }))
         : [],
+      ...(navMeta?.hotkey_semantics ? { hotkeySemantics: navMeta.hotkey_semantics as HotkeySemantics } : {}),
     },
   });
   const review = buildReviewPack(pipeline.ir, {
