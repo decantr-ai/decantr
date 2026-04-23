@@ -30,6 +30,7 @@ jobs:
           node-version: 22
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - run: pnpm audit:registry-authenticated
       - name: Validate Vercel deploy secrets
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

@@ -31,6 +31,7 @@ jobs:
       - run: pnpm test
       - run: pnpm audit:docs-marketing
       - run: pnpm audit:package-surface
+      - run: pnpm audit:registry-authenticated
       - run: DECANTR_CONTENT_DIR="$GITHUB_WORKSPACE/decantr-content" pnpm audit:blueprint-matrix
         if: matrix.node-version == 20
       - run: pnpm audit:registry-dogfood
