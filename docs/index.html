@@ -1556,6 +1556,710 @@
       margin-top: 8px;
     }
 
+    /* =====================================================
+       NEW: hero positioning, paths row, brownfield/hybrid,
+       theme mocks, MCP install, tool bands, critique panel,
+       context tabs, works tiles, dogfood note
+       ===================================================== */
+
+    /* -- Hero positioning line -- */
+    .hero-positioning {
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: var(--fg);
+      line-height: 1.5;
+      max-width: 480px;
+      border-left: 2px solid var(--cyan);
+      padding-left: 14px;
+      font-weight: 500;
+    }
+    .hero-positioning-dim { color: var(--muted); font-weight: 400; }
+    @media (max-width: 768px) {
+      .hero-positioning { margin: 18px auto 0; text-align: left; }
+    }
+
+    /* -- Paths selector (three tiles) -- */
+    .section-paths { padding-top: 64px; padding-bottom: 64px; }
+    .paths-eyebrow {
+      text-align: center;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.78rem;
+      margin-bottom: 28px;
+    }
+    .paths-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .path-tile {
+      display: block;
+      position: relative;
+      padding: 26px 24px 22px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      text-decoration: none;
+      color: var(--fg);
+      transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+      overflow: hidden;
+    }
+    .path-tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 0% 0%, var(--glow, transparent) 0%, transparent 60%);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .path-tile-1 { --glow: rgba(10, 243, 235, 0.25); }
+    .path-tile-2 { --glow: rgba(245, 136, 130, 0.25); }
+    .path-tile-3 { --glow: rgba(253, 163, 3, 0.22); }
+    .path-tile:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.18);
+      background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+    }
+    .path-tile-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .path-tile-icon { width: 22px; height: 22px; }
+    .path-tile-badge {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+    .path-tile-1 .path-tile-badge { color: var(--cyan); border-color: rgba(10,243,235,0.35); }
+    .path-tile-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--fg);
+    }
+    .path-tile-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .path-tile-cmd {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: var(--code-bg);
+      padding: 9px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--fg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .path-tile-cmd .k { color: var(--muted); margin-right: 6px; }
+    .path-tile-flag { color: var(--muted); }
+    @media (max-width: 900px) {
+      .paths-row { grid-template-columns: 1fr; }
+    }
+
+    /* -- Theme-coded mocks (replaces grey boxes on "With" side) -- */
+    .theme-mock {
+      margin-bottom: 18px;
+      padding: 12px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .theme-mock-luminarum {
+      background: linear-gradient(160deg, rgba(10,243,235,0.06) 0%, rgba(13,13,26,0.6) 60%, rgba(101,0,198,0.08) 100%);
+      border: 1px solid rgba(10,243,235,0.22);
+    }
+    .theme-mock-terminal {
+      background: #050D0A;
+      border: 1px solid rgba(0,224,171,0.3);
+    }
+    .theme-mock-carbon {
+      background: linear-gradient(145deg, #0A0A14 0%, #14091F 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .theme-mock-label {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--fg);
+      opacity: 0.7;
+      z-index: 2;
+    }
+    .theme-mock-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .tm-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .tm-logo { width: 18px; height: 18px; border-radius: 4px; }
+    .tm-nav { display: flex; gap: 6px; margin-left: auto; }
+    .tm-nav-item {
+      width: 40px; height: 8px; border-radius: 3px;
+      background: rgba(255,255,255,0.08);
+    }
+    .tm-hero {
+      padding: 18px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tm-hero-luminarum .tm-headline {
+      height: 12px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      width: 82%;
+      opacity: 0.85;
+    }
+    .tm-hero-luminarum .tm-headline-sub {
+      background: rgba(255,255,255,0.2);
+      width: 60%;
+      height: 8px;
+    }
+    .tm-hero-carbon .tm-headline {
+      height: 12px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.75);
+    }
+    .tm-hero-carbon .tm-headline-sub {
+      background: rgba(255,255,255,0.25);
+      height: 8px;
+    }
+    .tm-cta {
+      margin-top: 6px;
+      width: 72px;
+      height: 22px;
+      border-radius: 999px;
+    }
+    .tm-hero-terminal {
+      background: rgba(0,224,171,0.04);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+    .tm-term-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(0,224,171,0.65);
+    }
+    .tm-term-prompt { color: rgba(0,224,171,0.8); }
+    .tm-term-text {
+      display: inline-block;
+      height: 6px;
+      border-radius: 2px;
+      background: rgba(0,224,171,0.35);
+      flex: 1;
+      max-width: 72%;
+    }
+    .tm-term-text-2 { max-width: 55%; }
+    .tm-term-text-3 { max-width: 85%; background: rgba(0,224,171,0.55); }
+    .tm-hero-carbon {
+      position: relative;
+    }
+    .tm-glass-card {
+      padding: 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .tm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px 8px 8px;
+    }
+    .tm-card {
+      padding: 10px;
+      border-radius: 6px;
+      min-height: 44px;
+      position: relative;
+    }
+    .tm-card-glow {
+      background: rgba(10,243,235,0.06);
+      border: 1px solid rgba(10,243,235,0.16);
+    }
+    .tm-card-terminal {
+      background: rgba(0,224,171,0.04);
+      border: 1px solid rgba(0,224,171,0.18);
+      border-radius: 2px;
+    }
+    .tm-card-glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(4px);
+    }
+    .tm-card-bar {
+      height: 5px;
+      border-radius: 3px;
+      width: 70%;
+    }
+
+    /* -- Lane steps (brownfield) + hybrid grid -- */
+    .lane-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-width: 840px;
+      margin: 40px auto 0;
+    }
+    .lane-step {
+      display: flex;
+      gap: 22px;
+      align-items: flex-start;
+      padding: 22px 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lane-step-num {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+    .lane-step-body { flex: 1; }
+    .lane-step-body h3 { font-size: 1.1rem; margin-bottom: 10px; }
+    .lane-step-desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    .lane-step-desc code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--cyan);
+    }
+
+    .hybrid-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      max-width: 960px;
+      margin: 40px auto 0;
+    }
+    .hybrid-card {
+      padding: 22px 24px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+    .hybrid-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.16);
+    }
+    .hybrid-icon { width: 24px; height: 24px; margin-bottom: 12px; }
+    .hybrid-title { font-size: 1.05rem; margin-bottom: 12px; }
+    .hybrid-code {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: var(--code-bg);
+      padding: 9px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--fg);
+      margin-bottom: 10px;
+    }
+    .hybrid-code .k { color: var(--muted); margin-right: 6px; }
+    .hybrid-desc {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+    @media (max-width: 720px) {
+      .hybrid-grid { grid-template-columns: 1fr; }
+      .lane-step { flex-direction: column; gap: 14px; }
+    }
+
+    /* -- MCP install tabs -- */
+    .mcp-install {
+      max-width: 860px;
+      margin: 0 auto 48px;
+      padding: 22px 22px 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .mcp-install-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .mcp-install-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+    }
+    .install-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .install-tab-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--sans);
+    }
+    .install-tab-btn:hover { color: var(--fg); border-color: rgba(255,255,255,0.22); }
+    .install-tab-btn.active {
+      color: var(--bg);
+      background: var(--cyan);
+      border-color: var(--cyan);
+      font-weight: 600;
+    }
+    .install-tab-content { display: none; }
+    .install-tab-content.active { display: block; }
+
+    /* -- Tool bands (grouping the 20 tools) -- */
+    .tool-band-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 36px 0 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .tool-band-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .tool-band-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--fg);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .tool-band-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    @media (max-width: 640px) {
+      .tool-band-sub { display: none; }
+    }
+
+    /* -- Package band label -- */
+    .pkg-band-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+    .pkg-band-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* -- Critique proof panel -- */
+    .critique-panel {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      align-items: stretch;
+      max-width: 1040px;
+      margin: 40px auto 0;
+    }
+    .critique-side {
+      padding: 22px 22px 20px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .critique-before { border-color: rgba(254,68,116,0.2); }
+    .critique-after { border-color: rgba(0,224,171,0.24); }
+    .critique-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+    .critique-side-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+    .critique-score {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+    .critique-score-bad {
+      background: rgba(254,68,116,0.12);
+      color: var(--pink);
+    }
+    .critique-score-good {
+      background: rgba(0,224,171,0.15);
+      color: var(--green);
+    }
+    .critique-score-num { font-size: 1.5rem; font-weight: 700; font-family: var(--mono); }
+    .critique-score-max { font-size: 0.85rem; opacity: 0.7; font-family: var(--mono); }
+    .critique-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .critique-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .critique-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+    .critique-item-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--fg);
+    }
+    .critique-item-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .critique-item-note code {
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.85em;
+      color: var(--cyan);
+    }
+    .critique-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .critique-arrow-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    @media (max-width: 900px) {
+      .critique-panel {
+        grid-template-columns: 1fr;
+      }
+      .critique-arrow {
+        flex-direction: row;
+        padding: 8px 0;
+      }
+      .critique-arrow i { transform: rotate(90deg); }
+    }
+
+    /* -- Stat cards: clickable -- */
+    .stat-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+      cursor: pointer;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.2);
+      color: inherit;
+    }
+    .stat-action {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.22s ease;
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
+    }
+    .stat-card:hover .stat-action { opacity: 1; }
+
+    /* -- Context tabs -- */
+    .context-tabs-wrap { max-width: 900px; margin: 0 auto; }
+    .ctx-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .ctx-tab-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .ctx-tab-btn:hover { color: var(--fg); border-color: rgba(255,255,255,0.22); }
+    .ctx-tab-btn.active {
+      color: var(--bg);
+      background: var(--amber);
+      border-color: var(--amber);
+      font-weight: 600;
+    }
+    .ctx-tab-content { display: none; }
+    .ctx-tab-content.active { display: block; }
+
+    /* -- Works with: rich tiles -- */
+    .works-group {
+      max-width: 1040px;
+      margin: 0 auto 28px;
+    }
+    .works-group-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .works-row-rich {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .works-tile {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-width: 120px;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+    .works-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .works-tile-ready {
+      border-color: rgba(0,224,171,0.35);
+      background: linear-gradient(180deg, rgba(0,224,171,0.06), rgba(0,224,171,0.02));
+    }
+    .works-tile-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .works-tile-sub {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .works-tile-ready .works-tile-sub { color: var(--green); }
+    .works-footnote {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .works-legend-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    /* -- Dogfood footer note -- */
+    .dogfood-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 auto 24px;
+      padding: 10px 16px;
+      max-width: 580px;
+      border-radius: 999px;
+      background: rgba(10,243,235,0.05);
+      border: 1px solid rgba(10,243,235,0.2);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .dogfood-link {
+      color: var(--cyan);
+      text-decoration: underline;
+      text-decoration-color: rgba(10,243,235,0.4);
+    }
+    .dogfood-theme { color: var(--fg); }
+
     /* ===== RESPONSIVE ADDITIONS ===== */
     @media (max-width: 768px) {
       .tier-grid { grid-template-columns: 1fr; }
@@ -1656,6 +2360,7 @@
       <p class="hero-body-highlight">We don't care what you build <span class="hero-accent-2">with</span>.</p>
       <p class="hero-body-highlight"> We care <span class="hero-accent underline">what</span> you build.</p>
       <p class="hero-body">Decantr is the design intelligence layer for AI-generated web applications.</p>
+      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> A contract the AI checks itself against.</p>
       <div class="hero-ctas">
         <a href="#quickstart" class="btn-primary">Get Started</a>
         <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
@@ -1667,6 +2372,45 @@
 <!-- ===== DIVIDER ===== -->
 <div class="section-divider"><span class="divider-dot" style="background:var(--pink)"></span></div>
 
+<!-- ==================== PATHS SELECTOR ==================== -->
+<section class="section section-paths" id="paths">
+  <div class="container">
+    <p class="paths-eyebrow reveal">How are you starting?</p>
+    <div class="paths-row">
+      <a href="#quickstart" class="path-tile path-tile-1 card-decorated reveal reveal-d1">
+        <div class="path-tile-head">
+          <i data-lucide="sparkles" class="path-tile-icon" style="color:var(--cyan)"></i>
+          <span class="path-tile-badge">⭐ Recommended</span>
+        </div>
+        <h3 class="path-tile-name">Greenfield blueprint</h3>
+        <p class="path-tile-desc">New project from a published app composition — theme, sections, voice, and personality baked in.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr new my-app <span class="path-tile-flag">--blueprint=X</span></div>
+      </a>
+      <a href="#brownfield" class="path-tile path-tile-2 card-decorated reveal reveal-d2">
+        <div class="path-tile-head">
+          <i data-lucide="layers" class="path-tile-icon" style="color:var(--coral)"></i>
+          <span class="path-tile-badge">Existing app</span>
+        </div>
+        <h3 class="path-tile-name">Brownfield adoption</h3>
+        <p class="path-tile-desc">Attach Decantr to an Angular, React, Vue, or plain HTML project — no rewrite, no blueprint required.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr analyze <span class="path-tile-flag">&amp;&amp; init --existing</span></div>
+      </a>
+      <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
+        <div class="path-tile-head">
+          <i data-lucide="git-merge" class="path-tile-icon" style="color:var(--amber)"></i>
+          <span class="path-tile-badge">Layer in</span>
+        </div>
+        <h3 class="path-tile-name">Hybrid composition</h3>
+        <p class="path-tile-desc">Any attached project. Add sections, swap themes, pull registry content on demand.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr add section <span class="path-tile-flag">· theme switch</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
+
 <!-- ==================== PROBLEM ==================== -->
 <section id="problem" class="section">
   <div class="container">
@@ -1675,7 +2419,7 @@
 
     <div class="problem-grid">
       <div class="reveal">
-        <p class="problem-col-label" style="color:var(--pink)">Without Decantr</p>
+        <p class="problem-col-label" style="color:var(--pink)">Without Decantr · drift compounds</p>
 
         <div class="problem-card-bad card-decorated">
           <div class="drift-label">Prompt 1</div>
@@ -1728,64 +2472,87 @@
       </div>
 
       <div class="reveal reveal-d2">
-        <p class="problem-col-label" style="color:var(--green)">With Decantr</p>
+        <p class="problem-col-label" style="color:var(--green)">With Decantr · same contract, any theme</p>
 
-        <div class="problem-card-good card-decorated" style="--bracket-color:rgba(13,13,26,0.3)">
-          <div class="drift-label">Prompt 1</div>
+        <div class="theme-mock theme-mock-luminarum card-decorated">
+          <div class="theme-mock-label"><span class="theme-mock-dot" style="background:var(--cyan)"></span>luminarum</div>
           <div class="browser-frame-bar">
             <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
           </div>
-          <div class="mock-card" style="width:40%"></div>
-          <div class="mock-row">
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
+          <div class="tm-header">
+            <div class="tm-logo" style="background:linear-gradient(135deg,var(--cyan),var(--purple))"></div>
+            <div class="tm-nav">
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+            </div>
           </div>
-          <div class="mock-row">
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
+          <div class="tm-hero tm-hero-luminarum">
+            <div class="tm-headline"></div>
+            <div class="tm-headline tm-headline-sub"></div>
+            <div class="tm-cta" style="background:var(--cyan)"></div>
+          </div>
+          <div class="tm-grid">
+            <div class="tm-card tm-card-glow"><div class="tm-card-bar" style="background:var(--cyan)"></div></div>
+            <div class="tm-card tm-card-glow"><div class="tm-card-bar" style="background:var(--coral)"></div></div>
+            <div class="tm-card tm-card-glow"><div class="tm-card-bar" style="background:var(--amber)"></div></div>
           </div>
         </div>
 
-        <div class="problem-card-good card-decorated">
-          <div class="drift-label">Prompt 5</div>
+        <div class="theme-mock theme-mock-terminal card-decorated">
+          <div class="theme-mock-label"><span class="theme-mock-dot" style="background:var(--green)"></span>terminal</div>
           <div class="browser-frame-bar">
             <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
           </div>
-          <div class="mock-card" style="width:40%"></div>
-          <div class="mock-row">
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
+          <div class="tm-header tm-header-terminal">
+            <div class="tm-logo" style="background:var(--green); border-radius:2px"></div>
+            <div class="tm-nav">
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.3)"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.15)"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.15)"></div>
+            </div>
           </div>
-          <div class="mock-row">
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
+          <div class="tm-hero tm-hero-terminal">
+            <div class="tm-term-line"><span class="tm-term-prompt">$</span><span class="tm-term-text"></span></div>
+            <div class="tm-term-line"><span class="tm-term-prompt">$</span><span class="tm-term-text tm-term-text-2"></span></div>
+            <div class="tm-term-line"><span class="tm-term-prompt" style="color:var(--green)">›</span><span class="tm-term-text tm-term-text-3"></span></div>
+          </div>
+          <div class="tm-grid">
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green)"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.5"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.3"></div></div>
           </div>
         </div>
 
-        <div class="problem-card-good card-decorated">
-          <div class="drift-label">Prompt 10</div>
+        <div class="theme-mock theme-mock-carbon card-decorated">
+          <div class="theme-mock-label"><span class="theme-mock-dot" style="background:var(--purple)"></span>carbon</div>
           <div class="browser-frame-bar">
             <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
           </div>
-          <div class="mock-card" style="width:40%"></div>
-          <div class="mock-row">
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
+          <div class="tm-header tm-header-carbon">
+            <div class="tm-logo" style="background:var(--purple); border-radius:50%"></div>
+            <div class="tm-nav">
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+            </div>
           </div>
-          <div class="mock-row">
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
-            <div class="mock-block"></div>
+          <div class="tm-hero tm-hero-carbon">
+            <div class="tm-glass-card">
+              <div class="tm-headline" style="width:70%"></div>
+              <div class="tm-headline tm-headline-sub" style="width:50%"></div>
+            </div>
+            <div class="tm-cta" style="background:linear-gradient(135deg,var(--purple),var(--pink))"></div>
+          </div>
+          <div class="tm-grid">
+            <div class="tm-card tm-card-glass"><div class="tm-card-bar" style="background:rgba(101,0,198,0.6)"></div></div>
+            <div class="tm-card tm-card-glass"><div class="tm-card-bar" style="background:rgba(254,68,116,0.6)"></div></div>
+            <div class="tm-card tm-card-glass"><div class="tm-card-bar" style="background:rgba(101,0,198,0.4)"></div></div>
           </div>
         </div>
 
         <div style="text-align:center">
-          <span class="zero-drift-pill">Zero drift</span>
+          <span class="zero-drift-pill">Zero drift · 3 themes · one essence</span>
         </div>
       </div>
     </div>
@@ -1807,7 +2574,7 @@
         <div class="showcase-step-num showcase-step-num-1">1</div>
         <div class="showcase-step-body">
           <h3>Initialize</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli init --blueprint=agent-marketplace --yes</span></div>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli new my-app --blueprint=agent-marketplace</span></div>
         </div>
       </div>
 
@@ -1929,8 +2696,15 @@ Start with the shell layouts, then build each section's pages.</div>
     <h2 class="section-heading reveal">Rich, actionable context -- not vague instructions</h2>
     <p class="section-sub reveal">Every section context is self-contained. The AI gets everything it needs for each page in one file.</p>
 
-    <div class="reveal">
-      <div class="context-viewer"><span class="ctx-heading">## Quick Start</span>
+    <div class="reveal context-tabs-wrap">
+      <div class="ctx-tabs">
+        <button class="ctx-tab-btn active" data-ctx="section">section-*.md</button>
+        <button class="ctx-tab-btn" data-ctx="scaffold">scaffold.md</button>
+        <button class="ctx-tab-btn" data-ctx="pattern">pattern spec</button>
+      </div>
+
+      <div class="ctx-tab-content active" id="ctx-section">
+        <div class="context-viewer"><span class="ctx-heading">## Quick Start</span>
 
 <span class="ctx-comment"># From section-agent-orchestrator.md:</span>
 
@@ -1947,11 +2721,69 @@ Start with the shell layouts, then build each section's pages.</div>
   <span class="ctx-dim">Connected by a thin vertical line (border-left on</span>
   <span class="ctx-dim">the timeline track).</span>
 
-<span class="ctx-key">Composition:</span>  <span class="ctx-value">timeline-track</span> > <span class="ctx-value">timeline-node[]</span> > <span class="ctx-value">{ icon, meta, detail }</span>
+<span class="ctx-key">Composition:</span>  <span class="ctx-value">timeline-track</span> &gt; <span class="ctx-value">timeline-node[]</span> &gt; <span class="ctx-value">{ icon, meta, detail }</span>
 
 <span class="ctx-key">Spacing:</span>     <span class="ctx-value">gap-4 between nodes, p-4 inside cards</span>
 <span class="ctx-key">Motion:</span>      <span class="ctx-value">nodes fade-in staggered 50ms on mount</span>
 <span class="ctx-key">Responsive:</span>  <span class="ctx-value">single-column, full-width at all breakpoints</span></div>
+      </div>
+
+      <div class="ctx-tab-content" id="ctx-scaffold">
+        <div class="context-viewer"><span class="ctx-heading">## Topology</span>
+
+<span class="ctx-comment"># From scaffold.md — the full app overview</span>
+
+<span class="ctx-key">Zones:</span>
+  <span class="ctx-value">public</span>   → marketing-core (home, pricing, about)
+  <span class="ctx-value">gateway</span>  → auth-full (/login, /register)
+  <span class="ctx-value">app</span>      → agent-orchestrator (/chat, /settings)
+
+<span class="ctx-key">Transitions:</span>
+  <span class="ctx-dim">public → gateway  via CTA clicks (Sign up, Sign in)</span>
+  <span class="ctx-dim">gateway → app     via successful auth (redirect /chat)</span>
+  <span class="ctx-dim">app → gateway     via logout (redirect /login)</span>
+
+<span class="ctx-heading">## Voice &amp; Copy</span>
+
+<span class="ctx-key">Tone:</span>        <span class="ctx-value">confident, technical, warm</span>
+<span class="ctx-key">CTA verbs:</span>   <span class="ctx-value">Start, Build, Compose — never "Click here"</span>
+<span class="ctx-key">Empty:</span>       <span class="ctx-value">"No agents yet. Compose your first one."</span>
+<span class="ctx-key">Errors:</span>      <span class="ctx-value">one sentence, cause + next action</span>
+
+<span class="ctx-heading">## Development Mode</span>
+
+<span class="ctx-key">Mock auth:</span>   <span class="ctx-value">localStorage.decantr_mock = "true"</span> bypasses gateway
+<span class="ctx-key">Mock data:</span>   <span class="ctx-dim">every page ships with realistic seeded fixtures</span></div>
+      </div>
+
+      <div class="ctx-tab-content" id="ctx-pattern">
+        <div class="context-viewer"><span class="ctx-heading">## Pattern: split-feature</span>
+
+<span class="ctx-comment"># Resolved via decantr_resolve_pattern</span>
+
+<span class="ctx-key">Visual brief:</span>
+  <span class="ctx-dim">Two-column feature block. Left column holds a tight</span>
+  <span class="ctx-dim">code snippet or terminal capture; right column carries</span>
+  <span class="ctx-dim">the headline, body copy, and a single CTA. Asymmetric</span>
+  <span class="ctx-dim">alignment — text is top-aligned, media floats.</span>
+
+<span class="ctx-key">Slots:</span>
+  - <span class="ctx-value">media</span>       <span class="ctx-dim">(code-sample · terminal · image)</span>
+  - <span class="ctx-value">eyebrow</span>     <span class="ctx-dim">(optional uppercase label)</span>
+  - <span class="ctx-value">headline</span>
+  - <span class="ctx-value">body</span>
+  - <span class="ctx-value">cta-primary</span>
+
+<span class="ctx-key">Composition:</span>
+  <span class="ctx-value">split-container</span> &gt; [
+    <span class="ctx-value">split-media</span>   &gt; { slot: media },
+    <span class="ctx-value">split-content</span> &gt; { eyebrow, headline, body, cta-primary }
+  ]
+
+<span class="ctx-key">Motion:</span>       <span class="ctx-value">media slides in 80px → 0 on scroll. content fades.</span>
+<span class="ctx-key">Responsive:</span>   <span class="ctx-value">stacks under 720px — media on top, content below</span>
+<span class="ctx-key">A11y:</span>         <span class="ctx-value">media is decorative unless media.role = "demo"</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1965,95 +2797,170 @@ Start with the shell layouts, then build each section's pages.</div>
     <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>20 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
+    <!-- MCP INSTALL -->
+    <div class="mcp-install reveal">
+      <div class="mcp-install-head">
+        <span class="mcp-install-label">Add the MCP server</span>
+        <div class="install-tabs">
+          <button class="install-tab-btn active" data-install="claude">Claude Code</button>
+          <button class="install-tab-btn" data-install="cursor">Cursor</button>
+          <button class="install-tab-btn" data-install="windsurf">Windsurf</button>
+          <button class="install-tab-btn" data-install="manual">Manual</button>
+        </div>
+      </div>
+      <div class="install-tab-content active" id="install-claude">
+        <div class="showcase-code"><span class="k">$</span> <span class="s">claude mcp add decantr -- npx -y @decantr/mcp-server</span></div>
+      </div>
+      <div class="install-tab-content" id="install-cursor">
+        <div class="showcase-code"><span class="ctx-comment"># ~/.cursor/mcp.json</span>
+{
+  <span class="ctx-key">"mcpServers"</span>: {
+    <span class="ctx-key">"decantr"</span>: {
+      <span class="ctx-key">"command"</span>: <span class="ctx-value">"npx"</span>,
+      <span class="ctx-key">"args"</span>: [<span class="ctx-value">"-y"</span>, <span class="ctx-value">"@decantr/mcp-server"</span>]
+    }
+  }
+}</div>
+      </div>
+      <div class="install-tab-content" id="install-windsurf">
+        <div class="showcase-code"><span class="ctx-comment"># ~/.codeium/windsurf/mcp_config.json</span>
+{
+  <span class="ctx-key">"mcpServers"</span>: {
+    <span class="ctx-key">"decantr"</span>: {
+      <span class="ctx-key">"command"</span>: <span class="ctx-value">"npx"</span>,
+      <span class="ctx-key">"args"</span>: [<span class="ctx-value">"-y"</span>, <span class="ctx-value">"@decantr/mcp-server"</span>]
+    }
+  }
+}</div>
+      </div>
+      <div class="install-tab-content" id="install-manual">
+        <div class="showcase-code"><span class="k">$</span> <span class="s">npm i -g @decantr/mcp-server &amp;&amp; decantr-mcp</span>
+<span class="ctx-comment"># Then register the binary in your editor's MCP config</span></div>
+      </div>
+    </div>
+
+    <!-- READ band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--cyan)"></span>
+      <span class="tool-band-name">Read</span>
+      <span class="tool-band-sub">Surface the contract and context the AI needs to work</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-text" class="tool-icon" style="color:var(--cyan)"></i>decantr_read_essence</div>
+        <p class="tool-desc">Read the current design spec</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="layout-grid" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_scaffold_context</div>
+        <p class="tool-desc">Top-level scaffold context for the whole app</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="book-open" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_section_context</div>
+        <p class="tool-desc">Scoped context for a specific app section</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-stack" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_page_context</div>
+        <p class="tool-desc">Page-scoped context for one route or page id</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="package-search" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_execution_pack</div>
+        <p class="tool-desc">Read compiled scaffold, page, section, review, or mutation packs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="gallery-vertical-end" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_showcase_benchmarks</div>
+        <p class="tool-desc">Inspect shortlist, manifest, and showcase verification metadata</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="bar-chart-3" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_registry_intelligence_summary</div>
+        <p class="tool-desc">Hosted aggregate intelligence coverage without crawling the registry</p>
+      </div>
+    </div>
+
+    <!-- REASON band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--amber)"></span>
+      <span class="tool-band-name">Reason</span>
+      <span class="tool-band-sub">Resolve registry content into concrete structural specs</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="search" class="tool-icon" style="color:var(--amber)"></i>decantr_search_registry</div>
+        <p class="tool-desc">Search patterns, archetypes, themes, blueprints, shells</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="puzzle" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_pattern</div>
+        <p class="tool-desc">Full pattern details with layout specs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="boxes" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_archetype</div>
+        <p class="tool-desc">App templates with page maps</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="layout-template" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_blueprint</div>
+        <p class="tool-desc">Composed templates with topology, zones, and transitions</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="lightbulb" class="tool-icon" style="color:var(--amber)"></i>decantr_suggest_patterns</div>
+        <p class="tool-desc">Pattern recommendations for any page description</p>
+      </div>
+    </div>
+
+    <!-- MUTATE band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--coral)"></span>
+      <span class="tool-band-name">Mutate</span>
+      <span class="tool-band-sub">Write structured changes back into the contract</span>
+    </div>
     <div class="tools-list reveal">
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="file-plus" class="tool-icon" style="color:var(--coral)"></i>decantr_create_essence</div>
         <p class="tool-desc">Generate a design spec from a description</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><i data-lucide="lightbulb" class="tool-icon" style="color:var(--amber)"></i>decantr_suggest_patterns</div>
-        <p class="tool-desc">Get pattern recommendations for any page</p>
+        <div class="tool-name"><i data-lucide="pencil" class="tool-icon" style="color:var(--coral)"></i>decantr_update_essence</div>
+        <p class="tool-desc">Apply structured updates to DNA or Blueprint</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><i data-lucide="puzzle" class="tool-icon" style="color:var(--cyan)"></i>decantr_resolve_pattern</div>
-        <p class="tool-desc">Full pattern details with layout specs</p>
+        <div class="tool-name"><i data-lucide="check-circle" class="tool-icon" style="color:var(--coral)"></i>decantr_accept_drift</div>
+        <p class="tool-desc">Resolve violations by accepting, scoping, rejecting, or deferring</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><i data-lucide="boxes" class="tool-icon" style="color:var(--green)"></i>decantr_resolve_archetype</div>
-        <p class="tool-desc">App templates with page maps</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="layout-template" class="tool-icon" style="color:var(--yellow)"></i>decantr_resolve_blueprint</div>
-        <p class="tool-desc">Composed templates with topology, zones, and transitions</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="shield-check" class="tool-icon" style="color:var(--purple)"></i>decantr_check_drift</div>
-        <p class="tool-desc">Detect design spec violations</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="file-check" class="tool-icon" style="color:var(--pink)"></i>decantr_validate</div>
-        <p class="tool-desc">Validate Essence against the schema</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="file-text" class="tool-icon" style="color:var(--crimson)"></i>decantr_read_essence</div>
-        <p class="tool-desc">Read the current design spec</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="search" class="tool-icon" style="color:var(--coral)"></i>decantr_search_registry</div>
-        <p class="tool-desc">Search patterns, archetypes, themes</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="check-circle" class="tool-icon" style="color:var(--amber)"></i>decantr_accept_drift</div>
-        <p class="tool-desc">Accept detected drift as intentional</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="pencil" class="tool-icon" style="color:var(--cyan)"></i>decantr_update_essence</div>
-        <p class="tool-desc">Apply structured updates to the design spec</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="book-open" class="tool-icon" style="color:var(--green)"></i>decantr_get_section_context</div>
-        <p class="tool-desc">Get scoped context for a specific app section</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="star" class="tool-icon" style="color:var(--orange)"></i>decantr_critique</div>
-        <p class="tool-desc">Evaluate generated code for visual quality scoring</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="layout-grid" class="tool-icon" style="color:var(--purple)"></i>decantr_get_scaffold_context</div>
-        <p class="tool-desc">Read the top-level scaffold context for the whole app</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="file-stack" class="tool-icon" style="color:var(--pink)"></i>decantr_get_page_context</div>
-        <p class="tool-desc">Get page-scoped context for one route or page id</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="package-search" class="tool-icon" style="color:var(--crimson)"></i>decantr_get_execution_pack</div>
-        <p class="tool-desc">Read compiled scaffold, page, section, review, or mutation packs</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="gallery-vertical-end" class="tool-icon" style="color:var(--coral)"></i>decantr_get_showcase_benchmarks</div>
-        <p class="tool-desc">Inspect shortlist, manifest, and showcase verification metadata</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="bar-chart-3" class="tool-icon" style="color:var(--amber)"></i>decantr_get_registry_intelligence_summary</div>
-        <p class="tool-desc">Read hosted aggregate intelligence coverage without crawling the registry</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="server-cog" class="tool-icon" style="color:var(--green)"></i>decantr_compile_execution_packs</div>
-        <p class="tool-desc">Compile a hosted execution-pack bundle from a local or inline essence document</p>
-      </div>
-      <div class="tool-item">
-        <div class="tool-name"><i data-lucide="clipboard-check" class="tool-icon" style="color:var(--cyan)"></i>decantr_audit_project</div>
-        <p class="tool-desc">Run a schema-backed project audit against packs, guard rules, and drift checks</p>
+        <div class="tool-name"><i data-lucide="server-cog" class="tool-icon" style="color:var(--coral)"></i>decantr_compile_execution_packs</div>
+        <p class="tool-desc">Compile a hosted execution-pack bundle from an essence</p>
       </div>
     </div>
 
-    <h3 style="margin-top: 2rem; color: var(--amber); text-align: center; font-size: 1.15rem;" class="reveal">CLI Commands</h3>
+    <!-- VERIFY band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--green)"></span>
+      <span class="tool-band-name">Verify</span>
+      <span class="tool-band-sub">Score and audit generated code against the contract</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-check" class="tool-icon" style="color:var(--green)"></i>decantr_validate</div>
+        <p class="tool-desc">Validate an Essence against the schema</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="shield-check" class="tool-icon" style="color:var(--green)"></i>decantr_check_drift</div>
+        <p class="tool-desc">Detect design-spec violations in code changes</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="star" class="tool-icon" style="color:var(--green)"></i>decantr_critique</div>
+        <p class="tool-desc">Score generated code on treatments, decorators, motion, a11y, responsive</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="clipboard-check" class="tool-icon" style="color:var(--green)"></i>decantr_audit_project</div>
+        <p class="tool-desc">Schema-backed project audit against packs, guards, and drift</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 3rem; color: var(--amber); text-align: center; font-size: 1.15rem;" class="reveal">CLI Commands</h3>
     <p class="tool-desc reveal" style="margin-bottom: 1rem; text-align: center;">Manage your project from the terminal</p>
 
     <div class="cli-grid reveal">
       <div class="cli-item">
-        <div class="cli-name"><i data-lucide="rocket" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>init --blueprint=X</div>
+        <div class="cli-name"><i data-lucide="rocket" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>new &lt;name&gt; --blueprint=X</div>
         <p class="cli-desc">Scaffold a new project from a blueprint</p>
       </div>
       <div class="cli-item">
@@ -2079,6 +2986,22 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>status</div>
         <p class="cli-desc">Show project health and drift status</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="sparkles" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>magic "prompt"</div>
+        <p class="cli-desc">Scaffold from natural language — pick archetype + theme</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="scan-line" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>analyze</div>
+        <p class="cli-desc">Scan an existing project for framework, theme, conventions</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="search" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>search &lt;query&gt;</div>
+        <p class="cli-desc">Search the registry across patterns, themes, blueprints</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="clipboard-check" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>audit</div>
+        <p class="cli-desc">Full project audit — drift, packs, guard, critique</p>
       </div>
     </div>
   </div>
@@ -2125,12 +3048,184 @@ Start with the shell layouts, then build each section's pages.</div>
 
     <div class="reveal" style="max-width:780px; margin:0 auto 40px;">
       <h3 style="text-align:center; color:var(--cyan); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 2: Scaffold</h3>
-      <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli init --blueprint=agent-marketplace --yes</span></div>
+      <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli new my-app --blueprint=agent-marketplace</span></div>
     </div>
 
     <div class="reveal" style="max-width:780px; margin:0 auto;">
       <h3 style="text-align:center; color:var(--amber); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 3: Build</h3>
       <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:580px; margin:0 auto;">Paste the generated prompt into Claude Code, Cursor, or any AI coding assistant. The AI reads your context files and builds a production-quality app.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--green)"></span></div>
+
+<!-- ==================== CRITIQUE PROOF ==================== -->
+<section class="section" id="critique">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="star" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>The AI scores its own work.</h2>
+    <p class="section-sub reveal"><code>decantr_critique</code> grades generated code against the essence — treatments, decorators, personality alignment, motion, a11y, responsive. The AI iterates until the score is green.</p>
+
+    <div class="critique-panel reveal">
+      <div class="critique-side critique-before card-decorated">
+        <div class="critique-head">
+          <span class="critique-side-label">First pass</span>
+          <div class="critique-score critique-score-bad">
+            <span class="critique-score-num">42</span><span class="critique-score-max">/100</span>
+          </div>
+        </div>
+        <ul class="critique-list">
+          <li class="critique-item critique-fail">
+            <i data-lucide="x-circle" class="critique-icon" style="color:var(--pink)"></i>
+            <div>
+              <div class="critique-item-name">Treatments</div>
+              <div class="critique-item-note">6 of 18 components use <code>d-surface</code>. Raw Tailwind everywhere else.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-fail">
+            <i data-lucide="x-circle" class="critique-icon" style="color:var(--pink)"></i>
+            <div>
+              <div class="critique-item-name">Decorators</div>
+              <div class="critique-item-note">0 theme decorators applied. Personality says "luminous glass" — not visible.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-warn">
+            <i data-lucide="alert-triangle" class="critique-icon" style="color:var(--amber)"></i>
+            <div>
+              <div class="critique-item-name">Motion</div>
+              <div class="critique-item-note">No entrance transitions. Essence spec requires staggered reveals.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Accessibility</div>
+              <div class="critique-item-note">WCAG AA focus rings, skip nav present.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="critique-arrow">
+        <i data-lucide="arrow-right" style="width:28px;height:28px;color:var(--muted)"></i>
+        <span class="critique-arrow-label">one iteration</span>
+      </div>
+
+      <div class="critique-side critique-after card-decorated">
+        <div class="critique-head">
+          <span class="critique-side-label">After AI re-reads section context</span>
+          <div class="critique-score critique-score-good">
+            <span class="critique-score-num">94</span><span class="critique-score-max">/100</span>
+          </div>
+        </div>
+        <ul class="critique-list">
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Treatments</div>
+              <div class="critique-item-note">17 of 18 components on <code>d-surface</code> / <code>d-interactive</code>.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Decorators</div>
+              <div class="critique-item-note"><code>luminarum-glass</code> applied to cards. <code>luminarum-glow</code> on primary CTAs.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Motion</div>
+              <div class="critique-item-note">50ms staggered fade-in on every list. Respects <code>prefers-reduced-motion</code>.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Accessibility</div>
+              <div class="critique-item-note">WCAG AA · focus visible · skip nav · keyboard nav verified.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
+
+<!-- ==================== BROWNFIELD ==================== -->
+<section class="section" id="brownfield">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="layers" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Already have a project? Adopt Decantr without a rewrite.</h2>
+    <p class="section-sub reveal">Brownfield adoption is a first-class path. Decantr reads what you have, drafts a contract, and leaves your code untouched until you ask it to guard something.</p>
+
+    <div class="lane-steps">
+      <div class="lane-step reveal reveal-d1">
+        <div class="lane-step-num" style="--accent:var(--coral)">1</div>
+        <div class="lane-step-body">
+          <h3>Analyze</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr analyze</span></div>
+          <p class="lane-step-desc">Scans the repo for framework, router, theme system, and existing conventions. Writes <code>analysis.json</code>.</p>
+        </div>
+      </div>
+      <div class="lane-step reveal reveal-d2">
+        <div class="lane-step-num" style="--accent:var(--amber)">2</div>
+        <div class="lane-step-body">
+          <h3>Attach</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr init --existing --yes</span></div>
+          <p class="lane-step-desc">Drops in <code>decantr.essence.json</code>, <code>DECANTR.md</code>, and scoped context files that describe what you <em>already</em> built.</p>
+        </div>
+      </div>
+      <div class="lane-step reveal reveal-d3">
+        <div class="lane-step-num" style="--accent:var(--cyan)">3</div>
+        <div class="lane-step-body">
+          <h3>Guard</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr check</span></div>
+          <p class="lane-step-desc">From now on, every AI-generated change is scored against the contract you just captured.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--amber)"></span></div>
+
+<!-- ==================== HYBRID ==================== -->
+<section class="section" id="hybrid">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="git-merge" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Layer in what you need, when you need it.</h2>
+    <p class="section-sub reveal">Hybrid composition lets you selectively add sections, swap themes, or pull registry content into any attached Decantr project.</p>
+
+    <div class="hybrid-grid">
+      <div class="hybrid-card card-decorated reveal reveal-d1">
+        <i data-lucide="plus-circle" class="hybrid-icon" style="color:var(--cyan)"></i>
+        <h3 class="hybrid-title">Add a section</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr add section auth-full</div>
+        <p class="hybrid-desc">Compose a new archetype into the essence. Context files regenerate automatically.</p>
+      </div>
+      <div class="hybrid-card card-decorated reveal reveal-d2">
+        <i data-lucide="palette" class="hybrid-icon" style="color:var(--coral)"></i>
+        <h3 class="hybrid-title">Switch themes</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr theme switch luminarum</div>
+        <p class="hybrid-desc">One command rewrites tokens, treatments, and decorators. Personality stays intact.</p>
+      </div>
+      <div class="hybrid-card card-decorated reveal reveal-d3">
+        <i data-lucide="toggle-right" class="hybrid-icon" style="color:var(--amber)"></i>
+        <h3 class="hybrid-title">Toggle features</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr add feature search --section=app</div>
+        <p class="hybrid-desc">Flip functional systems on or off — scoped to a section or global.</p>
+      </div>
+      <div class="hybrid-card card-decorated reveal reveal-d4">
+        <i data-lucide="refresh-cw" class="hybrid-icon" style="color:var(--green)"></i>
+        <h3 class="hybrid-title">Pull from the registry</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr upgrade --apply</div>
+        <p class="hybrid-desc">New patterns and theme decorators land in your project the moment they're published.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -2145,26 +3240,30 @@ Start with the shell layouts, then build each section's pages.</div>
     <p class="section-sub reveal">A growing library of community-contributed design intelligence. Browse what's available — or publish your own patterns, themes, and blueprints for others to use.</p>
 
     <div class="stats-grid">
-      <div class="stat-card stat-card-1 reveal reveal-d1">
+      <a href="https://registry.decantr.ai/patterns" target="_blank" rel="noopener" class="stat-card stat-card-1 reveal reveal-d1">
         <div class="stat-icon"><i data-lucide="puzzle" style="width:24px;height:24px;color:var(--coral)"></i></div>
-        <div class="stat-number">190+</div>
+        <div class="stat-number">200+</div>
         <div class="stat-label">Patterns</div>
-      </div>
-      <div class="stat-card stat-card-2 reveal reveal-d2">
+        <div class="stat-action">Browse →</div>
+      </a>
+      <a href="https://registry.decantr.ai/themes" target="_blank" rel="noopener" class="stat-card stat-card-2 reveal reveal-d2">
         <div class="stat-icon"><i data-lucide="palette" style="width:24px;height:24px;color:var(--amber)"></i></div>
         <div class="stat-number">30+</div>
         <div class="stat-label">Themes</div>
-      </div>
-      <div class="stat-card stat-card-3 reveal reveal-d3">
+        <div class="stat-action">Browse →</div>
+      </a>
+      <a href="https://registry.decantr.ai/blueprints" target="_blank" rel="noopener" class="stat-card stat-card-3 reveal reveal-d3">
         <div class="stat-icon"><i data-lucide="layout-template" style="width:24px;height:24px;color:var(--cyan)"></i></div>
         <div class="stat-number">35+</div>
         <div class="stat-label">Blueprints</div>
-      </div>
-      <div class="stat-card stat-card-4 reveal reveal-d4">
+        <div class="stat-action">Browse →</div>
+      </a>
+      <a href="https://registry.decantr.ai/archetypes" target="_blank" rel="noopener" class="stat-card stat-card-4 reveal reveal-d4">
         <div class="stat-icon"><i data-lucide="boxes" style="width:24px;height:24px;color:var(--green)"></i></div>
         <div class="stat-number">200+</div>
         <div class="stat-label">Archetypes</div>
-      </div>
+        <div class="stat-action">Browse →</div>
+      </a>
     </div>
 
     <div style="text-align:center; margin-top:3rem; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;" class="reveal">
@@ -2181,43 +3280,53 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="package" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Open source. MIT licensed.</h2>
-    <p class="section-sub reveal">Seven packages, one mission: make AI-generated UI not suck.</p>
+    <p class="section-sub reveal">Eight packages, one mission: make AI-generated UI not suck.</p>
 
+    <div class="pkg-band-label reveal"><span class="pkg-band-dot" style="background:var(--cyan)"></span>Foundation</div>
     <div class="packages-grid">
-      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
-        <div class="pkg-name">@decantr/cli</div>
-        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, and registry sync</p>
-        <div class="pkg-version">v1.7.5</div>
-      </div>
-      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
-        <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing 19 design intelligence tools to AI assistants</p>
-        <div class="pkg-version">v1.0.0-beta.12</div>
-      </div>
-      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
+      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/essence-spec</div>
         <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
-        <div class="pkg-version">v1.0.0-beta.11</div>
+        <div class="pkg-version">v1.0.1</div>
       </div>
-      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
+      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/registry</div>
         <p class="pkg-desc">Content resolver for patterns, archetypes, themes, blueprints, and shells</p>
-        <div class="pkg-version">v1.0.0-beta.12</div>
+        <div class="pkg-version">v1.0.1</div>
       </div>
-      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
-        <div class="pkg-name">@decantr/core</div>
-        <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
-        <div class="pkg-version">v1.0.0-beta.9</div>
-      </div>
-      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/css</div>
         <p class="pkg-desc">Framework-agnostic CSS atoms runtime for layout utilities</p>
         <div class="pkg-version">v1.0.2</div>
       </div>
+      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d4">
+        <div class="pkg-name">@decantr/core</div>
+        <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
+        <div class="pkg-version">v1.0.0</div>
+      </div>
+    </div>
+
+    <div class="pkg-band-label reveal" style="margin-top:2rem"><span class="pkg-band-dot" style="background:var(--coral)"></span>Delivery</div>
+    <div class="packages-grid">
+      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
+        <div class="pkg-name">@decantr/cli</div>
+        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, and registry sync</p>
+        <div class="pkg-version">v1.7.8</div>
+      </div>
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
+        <div class="pkg-name">@decantr/mcp-server</div>
+        <p class="pkg-desc">MCP server exposing 20 design intelligence tools to AI assistants</p>
+        <div class="pkg-version">v1.0.3</div>
+      </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/verifier</div>
         <p class="pkg-desc">Shared audit and critique engine with schema-backed project and file reports</p>
-        <div class="pkg-version">v1.0.0-beta.1</div>
+        <div class="pkg-version">v1.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
+        <div class="pkg-name">@decantr/vite-plugin</div>
+        <p class="pkg-desc">Local guard feedback overlay surfacing drift during Vite development</p>
+        <div class="pkg-version">v0.1.0 · experimental</div>
       </div>
     </div>
   </div>
@@ -2229,19 +3338,41 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== WORKS WITH ==================== -->
 <section class="works-section">
   <div class="container">
-    <h2 class="section-heading reveal" style="margin-bottom:32px">Works with your stack</h2>
-    <div class="works-row reveal">
-      <span class="works-pill">Claude</span>
-      <span class="works-pill">Cursor</span>
-      <span class="works-pill">Windsurf</span>
-      <span class="works-pill">React</span>
-      <span class="works-pill">Vue</span>
-      <span class="works-pill">Svelte</span>
-      <span class="works-pill">Tailwind</span>
-      <span class="works-pill">Next.js</span>
-      <span class="works-pill">Angular</span>
-      <span class="works-pill">Native HTML/CSS</span>
+    <h2 class="section-heading reveal" style="margin-bottom:16px">Works with your stack</h2>
+    <p class="section-sub reveal" style="margin-bottom:32px">Patterns are framework-agnostic. Your AI assistant writes the code in whatever you're already using.</p>
+
+    <div class="works-group reveal">
+      <div class="works-group-label"><i data-lucide="bot" style="width:14px;height:14px"></i>AI assistants</div>
+      <div class="works-row-rich">
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Claude Code</span><span class="works-tile-sub">MCP · tested</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Cursor</span><span class="works-tile-sub">MCP · tested</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Windsurf</span><span class="works-tile-sub">MCP · tested</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Any MCP client</span><span class="works-tile-sub">stdio · compatible</span></div>
+      </div>
     </div>
+
+    <div class="works-group reveal">
+      <div class="works-group-label"><i data-lucide="code-2" style="width:14px;height:14px"></i>Frameworks</div>
+      <div class="works-row-rich">
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">React + Vite</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Next.js</span><span class="works-tile-sub">contract-only</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Vue</span><span class="works-tile-sub">contract-only</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Svelte</span><span class="works-tile-sub">contract-only</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Angular</span><span class="works-tile-sub">contract-only</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Native HTML/CSS</span><span class="works-tile-sub">contract-only</span></div>
+      </div>
+    </div>
+
+    <div class="works-group reveal">
+      <div class="works-group-label"><i data-lucide="paintbrush" style="width:14px;height:14px"></i>Styling</div>
+      <div class="works-row-rich">
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">CSS tokens</span><span class="works-tile-sub">generated per theme</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">@decantr/css atoms</span><span class="works-tile-sub">framework-agnostic</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Tailwind</span><span class="works-tile-sub">coexists</span></div>
+      </div>
+    </div>
+
+    <p class="works-footnote reveal"><span class="works-legend-dot" style="background:var(--green)"></span>runnable adapter · <span class="works-legend-dot" style="background:var(--muted)"></span>contract-only in this wave — your AI writes the runtime</p>
   </div>
 </section>
 
@@ -2254,12 +3385,16 @@ Start with the shell layouts, then build each section's pages.</div>
 
 <!-- ==================== FOOTER ==================== -->
 <footer>
+  <div class="dogfood-note">
+    <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--cyan)"></i>
+    <span>This page is built with Decantr. Essence: <a href="/decantr.essence.json" class="dogfood-link">decantr.essence.json</a> · Theme: <span class="dogfood-theme">luminarum</span> · Archetype: <span class="dogfood-theme">marketing-saas</span></span>
+  </div>
   <img src="logo.svg" alt="Decantr" class="footer-logo">
   <div class="footer-links">
     <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
     <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">npm</a>
     <a href="/reference/registry-public-api.html">Public API</a>
-    <a href="#tools">API</a>
+    <a href="#tools">MCP Tools</a>
   </div>
   <p class="footer-copy">MIT License. Built by Decantr AI.</p>
 </footer>
@@ -2278,7 +3413,7 @@ Start with the shell layouts, then build each section's pages.</div>
     els.forEach(function(el) { observer.observe(el); });
   })();
 
-  // Config tabs
+  // Config tabs (legacy)
   (function() {
     var btns = document.querySelectorAll('.tab-btn');
     btns.forEach(function(btn) {
@@ -2286,7 +3421,36 @@ Start with the shell layouts, then build each section's pages.</div>
         btns.forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
-        document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+        var target = document.getElementById('tab-' + btn.getAttribute('data-tab'));
+        if (target) target.classList.add('active');
+      });
+    });
+  })();
+
+  // MCP install tabs
+  (function() {
+    var btns = document.querySelectorAll('.install-tab-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.install-tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        var target = document.getElementById('install-' + btn.getAttribute('data-install'));
+        if (target) target.classList.add('active');
+      });
+    });
+  })();
+
+  // Context tabs
+  (function() {
+    var btns = document.querySelectorAll('.ctx-tab-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.ctx-tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        var target = document.getElementById('ctx-' + btn.getAttribute('data-ctx'));
+        if (target) target.classList.add('active');
       });
     });
   })();
