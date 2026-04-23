@@ -1,0 +1,38 @@
+# robots.txt for https://decantr.ai
+#
+# Verified 2026-04-22: no robots.txt currently deployed (404).
+# Deploy this at https://decantr.ai/robots.txt.
+#
+# Default policy: allow everything, including AI crawlers. Decantr wants
+# to be indexed by both search engines and AI training / retrieval
+# pipelines.
+
+User-agent: *
+Allow: /
+
+# Explicit AI-crawler allowlist — these UAs sometimes default-deny
+# when no specific directive is present. Belt-and-braces.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# Point crawlers at our content index and sitemap.
+# Remove the Sitemap line if no sitemap.xml is deployed yet.
+Sitemap: https://decantr.ai/sitemap.xml
