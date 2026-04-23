@@ -33,6 +33,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 export type LayoutItem = RegistryLayoutItem | Record<string, unknown>;
 
+export interface ArchetypeNavigationItem {
+  label: string;
+  route: string;
+  icon?: string;
+  hotkey?: string;
+  active_match?: string;
+  badge?: string;
+}
+
 export interface ArchetypeData {
   id: string;
   name?: string;
@@ -49,6 +58,11 @@ export interface ArchetypeData {
     schema_org?: string[];
     meta_priorities?: string[];
   };
+  /**
+   * Items rendered in the shell's primary navigation when this archetype is
+   * composed as a section. Propagated to essence.blueprint.sections[].navigation_items.
+   */
+  navigation_items?: ArchetypeNavigationItem[];
 }
 
 function getPlatformMeta(target: string) {
@@ -112,6 +126,8 @@ export function collectPatternIdsFromItems(items: unknown[]): string[] {
 }
 
 export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype): ArchetypeData {
+  // Registry type may not yet declare navigation_items; read defensively.
+  const registryNavigation = (archetype as { navigation_items?: ArchetypeNavigationItem[] }).navigation_items;
   return {
     id: archetype.id,
     name: archetype.name,
@@ -125,6 +141,9 @@ export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype
     })),
     features: archetype.features,
     seo_hints: archetype.seo_hints,
+    ...(Array.isArray(registryNavigation) && registryNavigation.length > 0
+      ? { navigation_items: registryNavigation }
+      : {}),
   };
 }
 
@@ -290,6 +309,11 @@ export function composeSections(
       features: data.features ?? [],
       description: data.description ?? '',
       pages,
+      // Propagate navigation_items from the archetype so the shell renders
+      // the correct primary-nav list instead of the LLM improvising one.
+      ...(Array.isArray(data.navigation_items) && data.navigation_items.length > 0
+        ? { navigation_items: data.navigation_items }
+        : {}),
     });
 
     if (data.features) {
