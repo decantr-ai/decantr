@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
-import { isAdmin } from '@/lib/admin';
+import { requireAdminRequestContext } from '@/lib/admin-workspace';
 
 export const metadata: Metadata = {
   title: 'Organization Detail',
@@ -24,17 +23,7 @@ export default async function AdminOrganizationDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
-    redirect('/dashboard');
-  }
-
-  const token = session.access_token;
-  const adminKey = process.env.DECANTR_ADMIN_KEY ?? '';
+  const { token, adminKey } = await requireAdminRequestContext();
 
   let detail = null;
   let error: string | null = null;

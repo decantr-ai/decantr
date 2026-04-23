@@ -1,30 +1,11 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
 import { revalidatePath } from 'next/cache';
-import { isAdmin } from '@/lib/admin';
-
-async function getAdminContext() {
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
-    throw new Error('Unauthorized');
-  }
-
-  const token = session.access_token;
-  const adminKey = process.env.DECANTR_ADMIN_KEY;
-
-  if (!adminKey) {
-    throw new Error('Admin key not configured');
-  }
-
-  return { token, adminKey };
-}
+import { requireAdminRequestContext } from '@/lib/admin-workspace';
 
 export async function approveSubmission(queueId: string) {
-  const { token, adminKey } = await getAdminContext();
+  const { token, adminKey } = await requireAdminRequestContext();
 
   try {
     const result = await api.approveContent(token, adminKey, queueId);
@@ -40,7 +21,7 @@ export async function approveSubmission(queueId: string) {
 }
 
 export async function rejectSubmission(queueId: string, reason: string) {
-  const { token, adminKey } = await getAdminContext();
+  const { token, adminKey } = await requireAdminRequestContext();
 
   if (!reason.trim()) {
     return { success: false, message: 'Rejection reason is required' };

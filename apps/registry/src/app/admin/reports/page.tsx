@@ -1,26 +1,14 @@
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
-import { isAdmin } from '@/lib/admin';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { requireAdminRequestContext } from '@/lib/admin-workspace';
 
 export const metadata: Metadata = {
   title: 'Commercial Reports',
 };
 
 export default async function AdminReportsPage() {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
-    redirect('/dashboard');
-  }
-
-  const token = session.access_token;
-  const adminKey = process.env.DECANTR_ADMIN_KEY ?? '';
+  const { token, adminKey } = await requireAdminRequestContext();
 
   let summary = null;
   let error: string | null = null;

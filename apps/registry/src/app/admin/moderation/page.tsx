@@ -1,7 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
-import { isAdmin } from '@/lib/admin';
-import { redirect } from 'next/navigation';
+import { requireAdminRequestContext } from '@/lib/admin-workspace';
 import { Pagination } from '@/components/pagination';
 import { ModerationCard } from './moderation-card';
 import type { Metadata } from 'next';
@@ -118,15 +116,7 @@ export default async function ModerationQueuePage({
   const offset = typeof params.offset === 'string' ? parseInt(params.offset, 10) || 0 : 0;
   const query = typeof params.q === 'string' ? params.q : '';
 
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
-    redirect('/dashboard');
-  }
-
-  const token = session.access_token;
-  const adminKey = process.env.DECANTR_ADMIN_KEY ?? '';
+  const { token, adminKey } = await requireAdminRequestContext();
 
   let queue = { total: 0, limit: LIMIT, offset, items: [] as ModerationQueueItem[] };
   let error: string | null = null;

@@ -1,11 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
 import { api } from '@/lib/api';
-import { isAdmin } from '@/lib/admin';
 import { redirect, notFound } from 'next/navigation';
 import { JsonViewer } from '@/components/json-viewer';
 import { ModerationDetailActions } from './detail-actions';
 import type { Metadata } from 'next';
 import type { ModerationQueueItem } from '@/lib/api';
+import { requireAdminRequestContext } from '@/lib/admin-workspace';
 
 export const metadata: Metadata = {
   title: 'Moderation Detail',
@@ -65,17 +64,7 @@ export default async function ModerationDetailPage({
 }) {
   const { id } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
-    redirect('/dashboard');
-  }
-
-  const token = session.access_token;
-  const adminKey = process.env.DECANTR_ADMIN_KEY ?? '';
+  const { token, adminKey } = await requireAdminRequestContext();
 
   let item: ModerationQueueItem | null = null;
   let error: string | null = null;
