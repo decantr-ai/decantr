@@ -813,6 +813,20 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     }
   }
 
+  // P1-1 — Page packs skip the universal footer (required setup, allowed
+  // vocabulary, success checks, anti-patterns, examples, token budget).
+  // These blocks are identical across every page in a 16-page scaffold
+  // (~35 lines × N pages of pure boilerplate) and their JSON still carries
+  // all fields for any consumer that needs the raw data. Non-page packs
+  // keep the full footer — each one (scaffold, section, mutation, review)
+  // is a singleton per scaffold so there's no duplication problem.
+  if (pack.packType === 'page') {
+    lines.push('## Shared Contract');
+    lines.push('Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.');
+    lines.push('');
+    return lines.join('\n').trimEnd() + '\n';
+  }
+
   lines.push('## Required Setup');
   if (pack.requiredSetup.length === 0) {
     lines.push('- None declared.');
