@@ -53,7 +53,12 @@ export interface ArchetypeData {
 
 function getPlatformMeta(target: string) {
   const normalized = (target || 'react').toLowerCase();
-  const routing = normalized === 'nextjs' ? 'pathname' : 'hash';
+  // Default to 'history' for modern SPA scaffolds: Vite dev server, Vercel,
+  // Netlify, Cloudflare Pages, and most modern hosts handle SPA fallback
+  // natively. 'hash' is correct only for static-only hosts without fallback
+  // (e.g., vanilla GitHub Pages) — blueprints that need that can declare
+  // routing explicitly.
+  const routing = normalized === 'nextjs' ? 'pathname' : 'history';
 
   return {
     type: 'spa' as const,
@@ -1378,10 +1383,13 @@ Missing declared navigation features are contract drift, not optional polish.
 
 ### Routing
 
-Check \`decantr.essence.json\` → \`meta.platform.routing\` for the routing strategy:
-- \`"hash"\` → use \`HashRouter\` (e.g., for static hosting, GitHub Pages)
-- \`"history"\` → use \`BrowserRouter\` (e.g., for server-rendered apps)
-- \`"pathname"\` → use pathname-based routing (e.g., Next.js App Router or React apps using \`BrowserRouter\`)
+Check \`decantr.essence.json\` → \`meta.platform.routing\` for the routing strategy. The value is also rendered at the top of \`.decantr/context/scaffold-pack.md\` with a mechanical router-name hint — trust the pack.
+
+- \`"history"\` (modern SPA default) → use \`BrowserRouter\` from \`react-router-dom\`. Regular URLs like \`/login\`, \`/agents\`. Works on Vite dev, Vercel, Netlify, Cloudflare Pages, and most modern hosts (SPA fallback is automatic on those platforms).
+- \`"hash"\` → use \`HashRouter\` from \`react-router-dom\`. URLs are prefixed with \`/#\` (e.g., \`/#/login\`). Only needed when deploying to a static host without SPA fallback (e.g., vanilla GitHub Pages).
+- \`"pathname"\` → framework-native file-based routing (Next.js App Router).
+
+Do **not** pick a router based on personal preference. Match the declared \`routing\` value exactly — it's the contract.
 
 Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and listed in \`.decantr/context/scaffold.md\`.
 
@@ -1389,7 +1397,7 @@ Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and list
 
 - For hash-routed SPA scaffolds, focus SEO work on the root document: document title, description, Open Graph/Twitter meta, and any root-level JSON-LD that the contract calls for.
 - Do **not** invent SSR-only per-route metadata systems for a clearly hash-routed scaffold.
-- For history/SSR-style projects, per-route metadata can be richer, but it still needs to follow the declared route contract instead of introducing off-contract marketing pages.
+- For history-mode SPAs and SSR-style projects, per-route metadata can be richer (set \`document.title\` and meta tags via a route-level effect on SPA; use framework primitives on SSR), but it still needs to follow the declared route contract instead of introducing off-contract marketing pages.
 
 ### Layout Rules
 

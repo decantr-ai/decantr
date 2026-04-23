@@ -8,10 +8,11 @@ import { buildPageIR } from './ir.js';
 import { pascalCase } from './utils.js';
 
 function extractRouting(essence: EssenceFile): 'hash' | 'history' | 'pathname' {
+  // Modern-SPA default. See packages/cli/src/scaffold.ts getPlatformMeta for rationale.
   if (isV3(essence)) {
-    return essence.meta.platform.routing || 'hash';
+    return essence.meta.platform.routing || 'history';
   }
-  return (essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' | 'pathname' || 'hash';
+  return (essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' | 'pathname' || 'history';
 }
 
 export interface PipelineOptions {
