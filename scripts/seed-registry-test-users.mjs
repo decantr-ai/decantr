@@ -16,6 +16,7 @@
  * - REGISTRY_TEST_EMAIL_DOMAIN (default: example.com)
  * - REGISTRY_TEST_PREFIX (default: decantr-test)
  * - --verify signs into each persona and checks hosted API identity/billing state
+ * - REGISTRY_TEST_ADMIN_KEY or DECANTR_ADMIN_KEY enables admin endpoint smoke
  * - Configure DECANTR_ADMIN_EMAILS with the admin persona email when testing
  *   admin routes. Admin access is environment-driven, not stored on users.
  */
@@ -66,6 +67,7 @@ const TEST_PASSWORD = process.env.REGISTRY_TEST_USER_PASSWORD || '';
 const EMAIL_DOMAIN = process.env.REGISTRY_TEST_EMAIL_DOMAIN || 'example.com';
 const EMAIL_PREFIX = process.env.REGISTRY_TEST_PREFIX || 'decantr-test';
 const API_URL = process.env.REGISTRY_TEST_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
+const ADMIN_KEY = process.env.REGISTRY_TEST_ADMIN_KEY || process.env.DECANTR_ADMIN_KEY || '';
 
 const personas = [
   {
@@ -92,6 +94,8 @@ const personas = [
     username: 'decantr-team-owner',
     displayName: 'Decantr Team Owner',
     tier: 'team',
+    orgSlug: 'decantr-test-team',
+    orgRole: 'owner',
     trusted: true,
     reputationScore: 75,
   },
@@ -101,6 +105,8 @@ const personas = [
     username: 'decantr-team-admin',
     displayName: 'Decantr Team Admin',
     tier: 'team',
+    orgSlug: 'decantr-test-team',
+    orgRole: 'admin',
     trusted: true,
     reputationScore: 50,
   },
@@ -110,6 +116,8 @@ const personas = [
     username: 'decantr-team-member',
     displayName: 'Decantr Team Member',
     tier: 'team',
+    orgSlug: 'decantr-test-team',
+    orgRole: 'member',
     trusted: false,
     reputationScore: 15,
   },
@@ -119,6 +127,8 @@ const personas = [
     username: 'decantr-enterprise-owner',
     displayName: 'Decantr Enterprise Owner',
     tier: 'enterprise',
+    orgSlug: 'decantr-test-enterprise',
+    orgRole: 'owner',
     trusted: true,
     reputationScore: 125,
   },
@@ -128,6 +138,8 @@ const personas = [
     username: 'decantr-enterprise-admin',
     displayName: 'Decantr Enterprise Admin',
     tier: 'enterprise',
+    orgSlug: 'decantr-test-enterprise',
+    orgRole: 'admin',
     trusted: true,
     reputationScore: 90,
   },
@@ -137,6 +149,8 @@ const personas = [
     username: 'decantr-admin-test',
     displayName: 'Decantr Admin Tester',
     tier: 'enterprise',
+    orgSlug: 'decantr-test-enterprise',
+    orgRole: 'admin',
     trusted: true,
     reputationScore: 200,
     admin: true,
@@ -251,20 +265,42 @@ async function authFetch(path, options = {}) {
 }
 
 async function apiFetch(path, token) {
+  const result = await apiRequest(path, token);
+  if (!result.ok) {
+    throw new Error(`GET ${path} failed (${result.status}): ${JSON.stringify(result.data)}`);
+  }
+  return result.data;
+}
+
+async function apiRequest(path, token, options = {}) {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...(options.adminKey ? { 'X-Admin-Key': options.adminKey } : {}),
+    ...(options.headers ?? {}),
+  };
+
   const response = await fetch(`${API_URL.replace(/\/$/, '')}${path}`, {
+    method: options.method ?? 'GET',
+    body: options.body ? JSON.stringify(options.body) : undefined,
     headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      ...headers,
     },
   });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`GET ${path} failed (${response.status}): ${text}`);
+  const text = await response.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = text;
   }
 
-  const text = await response.text();
-  return text ? JSON.parse(text) : null;
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+  };
 }
 
 function restQuery(table, query = '') {
@@ -440,10 +476,116 @@ async function signInPersona(persona) {
   return result.access_token;
 }
 
+function expectEqual(actual, expected) {
+  return Object.is(actual, expected);
+}
+
+function expectBoolean(actual, expected) {
+  return Boolean(actual) === expected;
+}
+
+function checkEndpoint(checks, label, result, expectedStatus = 200, extra = true) {
+  checks.push({
+    label,
+    status: result.status,
+    expectedStatus,
+    passed: result.status === expectedStatus && Boolean(extra),
+  });
+}
+
+function checkValue(checks, label, passed) {
+  checks.push({
+    label,
+    status: 'value',
+    expectedStatus: 'expected',
+    passed: Boolean(passed),
+  });
+}
+
+async function runPersonaEndpointChecks(persona, token, me, billing) {
+  const checks = [];
+  const entitlements = me?.entitlements ?? {};
+
+  checkValue(checks, 'me.email', expectEqual(me?.email, persona.email));
+  checkValue(checks, 'me.tier', expectEqual(me?.tier, persona.tier));
+  checkValue(checks, 'billing.tier', expectEqual(billing?.tier, persona.tier));
+  checkValue(checks, 'personal-private-entitlement', expectBoolean(entitlements.personal_private_packages, persona.tier !== 'free'));
+  checkValue(checks, 'org-collaboration-entitlement', expectBoolean(entitlements.org_collaboration, persona.tier === 'team' || persona.tier === 'enterprise'));
+  checkValue(checks, 'private-registry-entitlement', expectBoolean(entitlements.private_registry_portal, persona.tier === 'enterprise'));
+
+  checkEndpoint(checks, 'GET /my/content', await apiRequest('/my/content?limit=3', token));
+  checkEndpoint(checks, 'GET /private/content', await apiRequest('/private/content?limit=3', token));
+  checkEndpoint(checks, 'GET /api-keys', await apiRequest('/api-keys', token));
+
+  if (persona.orgSlug) {
+    checkEndpoint(checks, 'GET /orgs/:slug', await apiRequest(`/orgs/${persona.orgSlug}`, token));
+    checkEndpoint(checks, 'GET /orgs/:slug/members', await apiRequest(`/orgs/${persona.orgSlug}/members`, token));
+    checkEndpoint(checks, 'GET /orgs/:slug/usage', await apiRequest(`/orgs/${persona.orgSlug}/usage`, token));
+    checkEndpoint(checks, 'GET /orgs/:slug/policy', await apiRequest(`/orgs/${persona.orgSlug}/policy`, token));
+    checkEndpoint(checks, 'GET /orgs/:slug/content', await apiRequest(`/orgs/${persona.orgSlug}/content?limit=3`, token));
+    checkEndpoint(checks, 'GET /orgs/:slug/audit', await apiRequest(`/orgs/${persona.orgSlug}/audit?limit=3`, token));
+    checkEndpoint(
+      checks,
+      'GET /orgs/:slug/approvals',
+      await apiRequest(`/orgs/${persona.orgSlug}/approvals?limit=3`, token),
+      persona.orgRole === 'member' ? 403 : 200,
+    );
+  } else {
+    checkEndpoint(
+      checks,
+      'GET non-member org gate',
+      await apiRequest('/orgs/decantr-test-team', token),
+      403,
+    );
+  }
+
+  checkEndpoint(
+    checks,
+    'GET admin route without admin key',
+    await apiRequest('/admin/commercial/summary', token),
+    403,
+  );
+
+  if (persona.admin && ADMIN_KEY) {
+    checkEndpoint(
+      checks,
+      'GET admin commercial summary',
+      await apiRequest('/admin/commercial/summary', token, { adminKey: ADMIN_KEY }),
+    );
+    checkEndpoint(
+      checks,
+      'GET admin organizations',
+      await apiRequest('/admin/organizations?limit=5', token, { adminKey: ADMIN_KEY }),
+    );
+    checkEndpoint(
+      checks,
+      'GET admin organization detail',
+      await apiRequest('/admin/organizations/decantr-test-enterprise', token, { adminKey: ADMIN_KEY }),
+    );
+    checkEndpoint(
+      checks,
+      'GET admin moderation queue',
+      await apiRequest('/admin/moderation/queue?limit=5', token, { adminKey: ADMIN_KEY }),
+    );
+  } else if (persona.admin) {
+    checks.push({
+      label: 'admin endpoints',
+      status: 'skipped',
+      expectedStatus: 'REGISTRY_TEST_ADMIN_KEY',
+      passed: true,
+      skipped: true,
+    });
+  }
+
+  return checks;
+}
+
 async function verifySeed() {
   requireVerifyEnv();
 
   const users = [];
+  const failedChecks = [];
+  let skippedChecks = 0;
   for (const persona of personas) {
     const token = await signInPersona(persona);
     const [me, billing] = await Promise.all([
@@ -452,18 +594,21 @@ async function verifySeed() {
     ]);
     const orgCount = Array.isArray(me?.organizations) ? me.organizations.length : 0;
     const billingOrgCount = Array.isArray(billing?.organizations) ? billing.organizations.length : 0;
-    const expectedOrgCount = persona.tier === 'team' || persona.tier === 'enterprise'
-      ? persona.key === 'pro' || persona.key === 'free'
-        ? 0
-        : 1
-      : 0;
-    const checks = [
-      me?.email === persona.email,
-      me?.tier === persona.tier,
-      billing?.tier === persona.tier,
-      orgCount >= expectedOrgCount,
-      billingOrgCount >= expectedOrgCount,
-    ];
+    const expectedOrgCount = persona.orgSlug ? 1 : 0;
+    const checks = await runPersonaEndpointChecks(persona, token, me, billing);
+    checkValue(checks, 'me.organizations', orgCount >= expectedOrgCount);
+    checkValue(checks, 'billing.organizations', billingOrgCount >= expectedOrgCount);
+
+    for (const check of checks) {
+      if (check.skipped) {
+        skippedChecks += 1;
+      } else if (!check.passed) {
+        failedChecks.push({
+          user: persona.key,
+          ...check,
+        });
+      }
+    }
 
     users.push({
       key: persona.key,
@@ -473,7 +618,8 @@ async function verifySeed() {
       billingTier: billing?.tier ?? 'missing',
       organizations: orgCount,
       billingOrganizations: billingOrgCount,
-      passed: checks.every(Boolean),
+      checks: checks.length,
+      passed: checks.every((check) => check.passed),
     });
   }
 
@@ -481,6 +627,8 @@ async function verifySeed() {
     mode: 'verify',
     target: `${new URL(SUPABASE_URL).origin}/...`,
     api: API_URL,
+    failedChecks,
+    skippedChecks,
     users,
     organizations: orgs.map(({ key, name, slug, tier, members }) => ({
       key,
@@ -535,10 +683,22 @@ function printResult(result) {
   console.log('');
 
   if (VERIFY) {
-    console.log('| User | Email | Expected | /me | Billing | Orgs | Passed |');
-    console.log('| --- | --- | --- | --- | --- | ---: | :---: |');
+    console.log(`- Failed checks: ${result.failedChecks?.length ?? 0}`);
+    console.log(`- Skipped checks: ${result.skippedChecks ?? 0}`);
+    console.log('');
+    console.log('| User | Email | Expected | /me | Billing | Orgs | Checks | Passed |');
+    console.log('| --- | --- | --- | --- | --- | ---: | ---: | :---: |');
     for (const user of result.users) {
-      console.log(`| ${user.key} | ${user.email} | ${user.expectedTier} | ${user.meTier} | ${user.billingTier} | ${user.organizations} | ${user.passed ? 'yes' : 'no'} |`);
+      console.log(`| ${user.key} | ${user.email} | ${user.expectedTier} | ${user.meTier} | ${user.billingTier} | ${user.organizations} | ${user.checks} | ${user.passed ? 'yes' : 'no'} |`);
+    }
+
+    if (result.failedChecks?.length) {
+      console.log('');
+      console.log('| Failed check | User | Status | Expected |');
+      console.log('| --- | --- | --- | --- |');
+      for (const check of result.failedChecks) {
+        console.log(`| ${check.label} | ${check.user} | ${check.status} | ${check.expectedStatus} |`);
+      }
     }
   } else {
     console.log('| User | Email | Tier | Admin |');
@@ -571,6 +731,9 @@ try {
 
   const result = VERIFY ? await verifySeed() : APPLY ? await applySeed() : dryRunPlan();
   printResult(result);
+  if (VERIFY && result.failedChecks?.length) {
+    process.exitCode = 1;
+  }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;

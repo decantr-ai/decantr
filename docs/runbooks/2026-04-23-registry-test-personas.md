@@ -20,7 +20,7 @@ REGISTRY_TEST_USER_PASSWORD='replace-with-a-strong-test-password' \
 pnpm seed:registry-test-users -- --apply
 ```
 
-After applying, verify the personas against Supabase Auth and the hosted API:
+After applying, verify the personas against Supabase Auth and the hosted API. This checks identity, billing, API-key listing, owned/private content listing, org member/usage/policy/content/audit routes, approval gates, and the admin-key boundary:
 
 ```bash
 REGISTRY_TEST_ENV_FILE=apps/api/.env.local \
@@ -40,6 +40,7 @@ Optional values:
 - `REGISTRY_TEST_EMAIL_DOMAIN`, default `example.com`
 - `REGISTRY_TEST_PREFIX`, default `decantr-test`
 - `REGISTRY_TEST_API_URL`, default `https://api.decantr.ai/v1`
+- `REGISTRY_TEST_ADMIN_KEY` or `DECANTR_ADMIN_KEY`, optional and only needed for positive admin endpoint checks
 
 ## Persona Matrix
 
