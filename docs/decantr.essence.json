@@ -19,7 +19,7 @@
     },
     "color": {
       "palette": "semantic",
-      "accent_count": 1,
+      "accent_count": 6,
       "cvd_preference": "auto"
     },
     "radius": {
@@ -41,7 +41,7 @@
       "skip_nav": true
     },
     "personality": [
-      "Bold, technical, premium, and vibrant."
+      "Bold, technical, premium, and vibrant. Luminous accents on deep night. Editorial density with motion restraint — the content is the product."
     ]
   },
   "blueprint": {
@@ -54,32 +54,27 @@
           "marketing",
           "seo"
         ],
-        "description": "Public marketing landing experience for a product launch site.",
+        "description": "Public marketing landing that pitches Decantr as the contract layer for AI-generated UI, surfaces the three adoption paths, and funnels readers to the CLI + MCP install.",
         "pages": [
           {
             "id": "home",
             "route": "/",
             "layout": [
-              {
-                "pattern": "hero",
-                "preset": "vision",
-                "as": "product-hero"
-              },
-              {
-                "pattern": "features",
-                "preset": "standard",
-                "as": "feature-grid"
-              },
-              {
-                "pattern": "pricing",
-                "preset": "standard",
-                "as": "pricing"
-              },
-              {
-                "pattern": "cta-section",
-                "preset": "standard",
-                "as": "primary-cta"
-              }
+              { "pattern": "hero",           "preset": "vision",   "as": "product-hero" },
+              { "pattern": "feature-grid",   "preset": "standard", "as": "paths-selector" },
+              { "pattern": "comparison",     "preset": "standard", "as": "drift-contrast" },
+              { "pattern": "how-it-works",   "preset": "standard", "as": "one-command-flow" },
+              { "pattern": "feature-grid",   "preset": "standard", "as": "tier-model" },
+              { "pattern": "code-showcase",  "preset": "standard", "as": "context-viewer" },
+              { "pattern": "feature-grid",   "preset": "standard", "as": "mcp-tool-catalog" },
+              { "pattern": "code-showcase",  "preset": "standard", "as": "mcp-install" },
+              { "pattern": "feature-grid",   "preset": "standard", "as": "cli-commands" },
+              { "pattern": "how-it-works",   "preset": "standard", "as": "quickstart-paths" },
+              { "pattern": "comparison",     "preset": "standard", "as": "critique-proof" },
+              { "pattern": "stats",          "preset": "standard", "as": "registry-stats" },
+              { "pattern": "feature-grid",   "preset": "standard", "as": "package-surface" },
+              { "pattern": "logo-cloud",     "preset": "standard", "as": "stack-compat" },
+              { "pattern": "cta-section",    "preset": "standard", "as": "primary-cta" }
             ]
           }
         ]
@@ -99,10 +94,10 @@
   },
   "meta": {
     "archetype": "marketing-saas",
-    "target": "react",
+    "target": "static-html",
     "platform": {
       "type": "spa",
-      "routing": "history"
+      "routing": "hash"
     },
     "guard": {
       "mode": "guided",
