@@ -80,6 +80,23 @@
           "items": {
             "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
           }
+        },
+        "navigationItems": {
+          "type": "array",
+          "description": "Items rendered in the shell's primary navigation for this section.",
+          "items": {
+            "type": "object",
+            "required": ["label", "route"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "route": { "type": "string", "minLength": 1 },
+              "icon": { "type": "string", "minLength": 1 },
+              "hotkey": { "type": "string", "minLength": 1 },
+              "active_match": { "type": "string", "minLength": 1 },
+              "badge": { "type": "string", "minLength": 1 }
+            }
+          }
         }
       },
       "additionalProperties": false

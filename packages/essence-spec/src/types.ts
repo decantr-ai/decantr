@@ -264,6 +264,16 @@ export interface BlueprintPage {
 
 export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
 
+export interface SectionNavigationItem {
+  label: string;
+  route: string;
+  icon?: string;
+  hotkey?: string;
+  /** Regex or path prefix for "active" matching. Defaults to exact `route` match. */
+  active_match?: string;
+  badge?: string;
+}
+
 export interface EssenceV31Section {
   id: string;
   role: ArchetypeRole;
@@ -272,6 +282,8 @@ export interface EssenceV31Section {
   description: string;
   pages: BlueprintPage[];
   dna_overrides?: DNAOverrides;
+  /** Items rendered in the shell's primary navigation for this section. */
+  navigation_items?: SectionNavigationItem[];
 }
 
 export interface RouteEntry {
@@ -305,9 +317,47 @@ export interface EssenceMeta {
     meta_priorities?: string[];
   };
   navigation?: {
-    hotkeys?: Array<{ key: string; route?: string; action?: string; label: string }>;
-    command_palette?: boolean;
+    hotkeys?: Array<{
+      key: string;
+      route?: string;
+      action?: string;
+      label: string;
+      semantics?: HotkeySemantics;
+    }>;
+    command_palette?: boolean | CommandPaletteContract;
+    /** Default hotkey semantics applied to every hotkey unless overridden per-key. */
+    hotkey_semantics?: HotkeySemantics;
   };
+}
+
+export interface CommandPaletteContract {
+  /** Platform-neutral hotkey (e.g., 'Cmd+K' → Cmd on Mac, Ctrl elsewhere). */
+  trigger?: string;
+  placeholder?: string;
+  /** Preferred width as a CSS length (e.g., '640px' or '40rem'). */
+  width?: string;
+  /** Presentation mode. */
+  styling?: 'modal' | 'sheet' | 'inline' | 'fullscreen';
+  /** Seed command vocabulary. If omitted, LLMs may synthesize a minimal default from declared routes. */
+  commands?: Array<{
+    id: string;
+    label: string;
+    section?: string;
+    hotkey?: string;
+    action?: string;
+    route?: string;
+  }>;
+}
+
+export interface HotkeySemantics {
+  /** Max ms between keystrokes in a chord before it resets. Typical: 900. */
+  chord_window_ms?: number;
+  /** If true (default): hotkeys don't fire while focus is in an editable element. */
+  input_guard?: boolean;
+  /** If true (default): hotkeys don't fire when a modifier is held unless the key string declares it. */
+  modifier_suppression?: boolean;
+  /** If true: hotkey matching is case-sensitive. Default false — uppercase implies Shift. */
+  match_case?: boolean;
 }
 
 export interface EssenceV3 {

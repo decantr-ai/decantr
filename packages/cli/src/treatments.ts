@@ -145,6 +145,29 @@ export function generateTreatmentCSS(
     ['border-color', 'var(--d-error)'],
   ]);
 
+  // Size variants. Default (no data-size) is "md". Use "sm" for compact chrome
+  // (52px-tall headers, 32px nav items) and "lg" for prominent primary CTAs.
+  // Eliminates inline padding/font-size workarounds for non-default sizes.
+  emitRule('.d-interactive[data-size="sm"]', [
+    ['padding', 'calc(var(--d-interactive-py) * 0.5 * var(--d-density-scale, 1)) calc(var(--d-interactive-px) * 0.75)'],
+    ['font-size', '0.875rem'],
+    ['gap', '0.375em'],
+  ]);
+
+  emitRule('.d-interactive[data-size="md"]', [
+    // Explicit md — same as default. Lets authors opt in without inheriting
+    // contextual sizing from an ancestor that may have set data-size.
+    ['padding', 'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)'],
+    ['font-size', '1rem'],
+    ['gap', '0.5em'],
+  ]);
+
+  emitRule('.d-interactive[data-size="lg"]', [
+    ['padding', 'calc(var(--d-interactive-py) * 1.5 * var(--d-density-scale, 1)) calc(var(--d-interactive-px) * 1.25)'],
+    ['font-size', '1.125rem'],
+    ['gap', '0.625em'],
+  ]);
+
   // ── 2. Container Surface — .d-surface ──
 
   emitRule('.d-surface', [
