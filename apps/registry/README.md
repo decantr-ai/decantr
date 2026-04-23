@@ -47,6 +47,14 @@ Hosted portal verification:
 pnpm audit:registry-portal
 ```
 
+Authenticated persona seeding for local or preview smoke tests:
+
+```bash
+pnpm seed:registry-test-users
+```
+
+The full test-persona runbook lives in `docs/runbooks/2026-04-23-registry-test-personas.md`.
+
 ## Deployment
 
 The portal is expected to deploy through Vercel, with the Vercel project root directory set to `apps/registry`.
