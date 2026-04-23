@@ -8,6 +8,15 @@ const injected = new Set<string>();
 /** Responsive breakpoints (mobile-first, min-width) */
 export const BREAKPOINTS = { sm: 640, md: 768, lg: 1024, xl: 1280 } as const;
 const BP_ORDER = ['sm', 'md', 'lg', 'xl'] as const;
+/**
+ * Max-width variants render at (breakpoint - 0.02px). They occupy their own
+ * style buckets so the DOM ordering matches the cascade: min-width rules
+ * (sm → xl) come first, then max-width rules (xlmax → smmax) so the tighter
+ * max-width queries specifically target smaller viewports without being
+ * overridden by larger-viewport min-width rules that happen to be injected
+ * first.
+ */
+const BP_MAX_ORDER = ['xlmax', 'lgmax', 'mdmax', 'smmax'] as const;
 
 /** Container query breakpoints */
 export const CQ_WIDTHS = [320, 480, 640, 768, 1024] as const;
@@ -47,7 +56,16 @@ function flushBuffers(): void {
   if (Object.keys(bpBuffers).length) {
     const els = ensureBpElements();
     if (els) {
+      // Flush min-width (mobile-first) buckets first, then max-width
+      // (desktop-first) buckets in reverse order so tighter queries
+      // win the cascade when both are set on the same element.
       for (const bp of BP_ORDER) {
+        if (bpBuffers[bp]?.length) {
+          els[bp].textContent = (els[bp].textContent || '') + bpBuffers[bp].join('');
+          bpBuffers[bp] = [];
+        }
+      }
+      for (const bp of BP_MAX_ORDER) {
         if (bpBuffers[bp]?.length) {
           els[bp].textContent = (els[bp].textContent || '') + bpBuffers[bp].join('');
           bpBuffers[bp] = [];
@@ -89,6 +107,12 @@ function ensureBpElements(): Record<string, HTMLStyleElement> | null {
   bpEls = {};
   getStyleElement();
   for (const bp of BP_ORDER) {
+    const el = document.createElement('style');
+    el.setAttribute(`data-decantr-${bp}`, '');
+    document.head.appendChild(el);
+    bpEls[bp] = el;
+  }
+  for (const bp of BP_MAX_ORDER) {
     const el = document.createElement('style');
     el.setAttribute(`data-decantr-${bp}`, '');
     document.head.appendChild(el);
@@ -139,6 +163,25 @@ export function injectResponsive(className: string, declaration: string, bp: str
 }
 
 /**
+ * Inject a max-width responsive atom.
+ * @param className - e.g., '_mdmax:none' (hide below md)
+ * @param declaration - CSS declaration(s)
+ * @param bp - breakpoint key (sm|md|lg|xl). The max-width query is (breakpoint - 0.02)px
+ *             so it doesn't overlap with the matching min-width variant.
+ */
+export function injectResponsiveMax(className: string, declaration: string, bp: string): void {
+  if (injected.has(className)) return;
+  injected.add(className);
+  if (typeof document === 'undefined') return;
+  const escaped = className.replace(/:/g, '\\:');
+  const key = `${bp}max`;
+  if (!bpBuffers[key]) bpBuffers[key] = [];
+  const maxPx = BREAKPOINTS[bp as keyof typeof BREAKPOINTS] - 0.02;
+  bpBuffers[key].push(`@layer d.atoms{@media(max-width:${maxPx}px){.${escaped}{${declaration}}}}`);
+  scheduleFlush();
+}
+
+/**
  * Inject a pseudo-class atom.
  * @param className - e.g., '_h:bgprimary'
  * @param declaration - CSS declaration(s)
@@ -171,6 +214,25 @@ export function injectResponsivePseudo(className: string, declaration: string, b
   const escaped = escapeSelector(className);
   if (!bpBuffers[bp]) bpBuffers[bp] = [];
   bpBuffers[bp].push(`@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}:${pseudo}{${declaration}}}}`);
+  scheduleFlush();
+}
+
+/**
+ * Inject a max-width responsive + pseudo-class atom.
+ * @param className - e.g., '_mdmax:h:fgmuted'
+ * @param declaration - CSS declaration(s)
+ * @param bp - breakpoint key (sm|md|lg|xl)
+ * @param pseudo - pseudo-class name
+ */
+export function injectResponsiveMaxPseudo(className: string, declaration: string, bp: string, pseudo: string): void {
+  if (injected.has(className)) return;
+  injected.add(className);
+  if (typeof document === 'undefined') return;
+  const escaped = escapeSelector(className);
+  const key = `${bp}max`;
+  if (!bpBuffers[key]) bpBuffers[key] = [];
+  const maxPx = BREAKPOINTS[bp as keyof typeof BREAKPOINTS] - 0.02;
+  bpBuffers[key].push(`@layer d.atoms{@media(max-width:${maxPx}px){.${escaped}:${pseudo}{${declaration}}}}`);
   scheduleFlush();
 }
 
@@ -251,6 +313,9 @@ export function extractCSS(): string {
     for (const bp of BP_ORDER) {
       if (bpEls[bp]) css += bpEls[bp].textContent || '';
     }
+    for (const bp of BP_MAX_ORDER) {
+      if (bpEls[bp]) css += bpEls[bp].textContent || '';
+    }
   }
   if (cqEl) css += cqEl.textContent || '';
   return css;
@@ -276,6 +341,9 @@ export function reset(): void {
   if (styleEl) styleEl.textContent = '';
   if (bpEls) {
     for (const bp of BP_ORDER) {
+      if (bpEls[bp]) bpEls[bp].textContent = '';
+    }
+    for (const bp of BP_MAX_ORDER) {
       if (bpEls[bp]) bpEls[bp].textContent = '';
     }
   }

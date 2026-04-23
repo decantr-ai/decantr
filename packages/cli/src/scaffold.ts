@@ -1191,6 +1191,42 @@ css('_bgprimary _h:bgprimary/80')
 - Arbitrary values use square brackets when the standard scale is not enough: \`_w[512px]\`, \`_h[100vh]\`, \`_p[clamp(1rem,3vw,2rem)]\`, \`_z[40]\`.
 - When you see bracket atoms in shell or page contracts, treat them as first-class Decantr syntax, not as an error or a cue to fall back to inline styles.
 
+### Responsive Breakpoint Atoms
+
+Decantr ships two families of responsive prefixes. Use them directly inside \`css(...)\` — no \`matchMedia\` JS needed for simple responsive switches.
+
+**Mobile-first (min-width):**
+| Prefix | Breakpoint | Meaning |
+|--------|-----------|---------|
+| \`_sm:\` | ≥ 640px | small tablet / large phone landscape and up |
+| \`_md:\` | ≥ 768px | tablet portrait and up |
+| \`_lg:\` | ≥ 1024px | tablet landscape / small desktop and up |
+| \`_xl:\` | ≥ 1280px | desktop and up |
+
+**Desktop-first (max-width, for "hide below" / "swap at small" expressions):**
+| Prefix | Breakpoint | Meaning |
+|--------|-----------|---------|
+| \`_smmax:\` | < 640px | phone only |
+| \`_mdmax:\` | < 768px | phone + small tablet |
+| \`_lgmax:\` | < 1024px | below tablet-landscape |
+| \`_xlmax:\` | < 1280px | below desktop |
+
+Pseudo-class stacking works with both (e.g., \`_mdmax:h:bgmuted\`, \`_sm:fv:ring2\`).
+
+**Example:**
+\`\`\`
+// 1-column on phone, 2-column from tablet, 3-column from desktop
+css('_grid _gc1 _sm:gc2 _lg:gc3')
+
+// Hide the minimap below tablet portrait
+css('_block _mdmax:none')
+
+// Show the hamburger below tablet portrait, hide it above
+css('_none _mdmax:block')
+\`\`\`
+
+Prefer these atoms over \`window.matchMedia\` in JS. Reserve JS responsive checks for cases where the component tree ITSELF must change shape (e.g., rendering a different React component), not just styling.
+
 ### Atom Reference
 
 #### Display
@@ -1433,16 +1469,17 @@ Routes are defined in \`decantr.essence.json\` → \`blueprint.routes\` and list
 
 ### Responsive Breakpoints
 
-Use these as defaults unless a shell or pattern explicitly overrides them:
+The \`@decantr/css\` atom breakpoints are the canonical defaults. See the "Responsive Breakpoint Atoms" section below for the full table. Shell-level guidance:
 
-- **< 640px (mobile):** hamburger drawer, single-column stack, full-bleed content.
-- **< 900px (tablet):** for \`sidebar-main\` shells, collapse the sidebar into a drawer (do **not** use 768px — at 768px a persistent sidebar leaves the main canvas around 520px, which is too cramped for data-dense mission-control content). For \`top-nav-footer\`, mid-nav links should collapse into a hamburger below this breakpoint.
-- **≥ 900px (tablet-landscape / small desktop):** full sidebar nav visible; responsive multi-column grids.
-- **≥ 1280px (desktop):** canonical layout.
+- **\`_smmax:\` (< 640px — phone):** hamburger drawer, single-column stack, full-bleed content. Pattern-level content stacks vertically unless the pattern explicitly declares otherwise.
+- **\`_mdmax:\` (< 768px — phone + small tablet):** most patterns should use this as the "stack to a single column / hide secondary chrome" breakpoint. This is the level where \`top-nav-footer\` mid-nav links should collapse to a hamburger.
+- **\`_lgmax:\` (< 1024px — below tablet-landscape):** \`sidebar-main\` shells should collapse the persistent sidebar into a drawer here. Do **not** keep the sidebar open below \`_lg:\` — at 768-1023px it leaves the main canvas too cramped for data-dense mission-control content.
+- **\`_lg:\` (≥ 1024px — tablet-landscape / small desktop):** full \`sidebar-main\` layout; responsive multi-column grids.
+- **\`_xl:\` (≥ 1280px — desktop):** canonical layout.
 
-Implementation: prefer CSS \`@media\` queries or structured \`responsive\` fields on patterns. Use \`window.matchMedia\` with \`(max-width: NNNpx)\` only when responsive behavior requires JS (e.g., rendering different React components per viewport). Never hardcode viewport checks scattered across components — centralize them in the shell.
+Implementation: prefer the \`@decantr/css\` breakpoint atoms (\`_sm:\`, \`_md:\`, \`_lg:\`, \`_xl:\`, \`_smmax:\`, \`_mdmax:\`, \`_lgmax:\`, \`_xlmax:\`) or structured \`responsive\` fields on patterns. Use \`window.matchMedia\` only when the React component tree itself must change shape per viewport (e.g., rendering a different component), not just styling.
 
-**High-density content patterns** (swarm canvases, trace-waterfall, data tables with 8+ columns) should declare explicit mobile-reflow behavior — stack vertically, collapse to a list, or define a \`desktop-only\` directive and render a lighter alternative pattern below 768px. Without this, horizontal overflow on phone viewports is the default failure mode.
+**High-density content patterns** (swarm canvases, trace-waterfall, data tables with 8+ columns) should declare explicit mobile-reflow behavior — stack vertically, collapse to a list, or define a \`desktop-only\` directive and render a lighter alternative pattern below \`_md:\`. Without this, horizontal overflow on phone viewports is the default failure mode.
 
 ### Accessibility Defaults
 

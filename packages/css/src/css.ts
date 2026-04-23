@@ -6,7 +6,9 @@ import { resolveAtomDecl } from './atoms.js';
 import {
   inject,
   injectResponsive,
+  injectResponsiveMax,
   injectResponsivePseudo,
+  injectResponsiveMaxPseudo,
   injectContainer,
   injectGroupPeer,
   injectPseudo,
@@ -19,6 +21,14 @@ const customAtoms = new Map<string, string>();
 
 /** Regex patterns for prefix detection */
 const BP_RE = /^_(sm|md|lg|xl):(.+)$/;
+/**
+ * Max-width variants: '_mdmax:none' → `display:none` at (md - 0.02)px and below.
+ * Mirrors the min-width BP_RE form but with the 'max' suffix appended to the
+ * breakpoint key. Useful for "hide below this breakpoint" / "swap layout at
+ * small viewports" expressions that mobile-first min-width queries can't
+ * directly express.
+ */
+const BP_MAX_RE = /^_(sm|md|lg|xl)max:(.+)$/;
 const CQ_RE = /^_cq(\d+):(.+)$/;
 const GP_RE = /^_(gh|gf|ga|ph|pf|pa):(.+)$/;
 const PSEUDO_RE = /^_(h|f|fv|a|fw):(.+)$/;
@@ -162,6 +172,31 @@ export function css(...classes: (string | undefined | null | false)[]): string {
         const resolved = resolveAtom(`_${innerAtom}`);
         if (resolved) {
           injectMediaQuery(part, resolved.decl, MOTION_QUERIES[motionPrefix]);
+        }
+        result.push(part);
+        continue;
+      }
+
+      // Max-width responsive prefix: _mdmax:none  (check before BP_RE because
+      // 'mdmax' would partially match 'md' under looser rules).
+      const bpMaxMatch = part.match(BP_MAX_RE);
+      if (bpMaxMatch) {
+        const [, bp, innerAtom] = bpMaxMatch;
+
+        const pseudoInner = innerAtom.match(/^(h|f|fv|a|fw):(.+)$/);
+        if (pseudoInner) {
+          const [, pseudoPrefix, atomName] = pseudoInner;
+          const resolved = resolveAtom(`_${atomName}`);
+          if (resolved) {
+            injectResponsiveMaxPseudo(part, resolved.decl, bp, PSEUDO_NAMES[pseudoPrefix]);
+          }
+          result.push(part);
+          continue;
+        }
+
+        const resolved = resolveAtom(`_${innerAtom}`);
+        if (resolved) {
+          injectResponsiveMax(part, resolved.decl, bp);
         }
         result.push(part);
         continue;
