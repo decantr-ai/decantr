@@ -831,6 +831,99 @@
     gap: 0.875rem;
   }
 
+  .registry-admin-head {
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .registry-inline-error {
+    display: block;
+  }
+
+  .registry-admin-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+    gap: 1rem;
+  }
+
+  .registry-admin-card {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .registry-admin-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .registry-admin-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--d-text);
+  }
+
+  .registry-admin-card-subtitle {
+    font-size: 0.875rem;
+    color: var(--d-text-muted);
+  }
+
+  .registry-admin-card-list,
+  .registry-admin-summary-list {
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--d-text-muted);
+  }
+
+  .registry-admin-stack {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .registry-admin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--d-border);
+  }
+
+  .registry-admin-row-copy {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+
+  .registry-admin-row-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--d-text);
+  }
+
+  .registry-admin-row-meta {
+    font-size: 0.875rem;
+    color: var(--d-text-muted);
+  }
+
+  .registry-admin-log-entry {
+    display: grid;
+    gap: 0.35rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--d-border);
+  }
+
+  .registry-admin-log-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
   .registry-panel-header {
     display: flex;
     align-items: flex-start;
@@ -2832,6 +2925,11 @@
 
     .registry-team-select {
       width: 100%;
+    }
+
+    .registry-admin-row {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 

@@ -45,11 +45,11 @@ export default async function AdminOrganizationDetailPage({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex flex-col gap-2">
+    <div className="registry-page-stack">
+      <div className="registry-page-intro registry-admin-head">
+        <div>
           <h3 className="text-lg font-semibold">Organization Operations</h3>
-          <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+          <p className="registry-muted-copy">
             Support and inspect a single org across seats, package posture, governance, and recent operational events.
           </p>
         </div>
@@ -59,7 +59,7 @@ export default async function AdminOrganizationDetailPage({
       </div>
 
       {error ? (
-        <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
+        <div className="d-annotation registry-inline-error" data-status="error">
           {error}
         </div>
       ) : null}
@@ -67,22 +67,18 @@ export default async function AdminOrganizationDetailPage({
       {detail ? (
         <>
           <section className="d-section" data-density="compact">
-            <div className="d-surface grid gap-3">
-              <div className="flex items-start justify-between gap-3">
+            <div className="d-surface registry-admin-card">
+              <div className="registry-admin-card-head">
                 <div>
-                  <div className="text-base" style={{ fontWeight: 600 }}>
-                    {detail.organization.name}
-                  </div>
-                  <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                    {detail.organization.slug}
-                  </div>
+                  <div className="registry-admin-card-title">{detail.organization.name}</div>
+                  <div className="registry-admin-card-subtitle">{detail.organization.slug}</div>
                 </div>
                 <span className="d-annotation" data-status={detail.organization.tier === 'enterprise' ? 'warning' : 'info'}>
                   {detail.organization.tier}
                 </span>
               </div>
 
-              <div className="grid gap-1 text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div className="registry-admin-card-list">
                 <div>Seats: {detail.usage.member_count} / {detail.organization.seat_limit}</div>
                 <div>Public packages: {detail.usage.public_packages}</div>
                 <div>Private packages: {detail.usage.private_packages}</div>
@@ -96,24 +92,18 @@ export default async function AdminOrganizationDetailPage({
           </section>
 
           <section className="d-section" data-density="compact">
-            <span
-              className="d-label block mb-4"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               Members ({detail.members.length})
             </span>
 
-            <div className="d-surface grid gap-3">
+            <div className="d-surface registry-admin-stack">
               {detail.members.map((member) => (
-                <div key={member.user_id} className="flex items-center justify-between gap-3" style={{ borderTop: '1px solid var(--d-border)', paddingTop: '0.75rem' }}>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm" style={{ fontWeight: 600 }}>
+                <div key={member.user_id} className="registry-admin-row">
+                  <div className="registry-admin-row-copy">
+                    <span className="registry-admin-row-title">
                       {member.display_name || member.email}
                     </span>
-                    <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    <span className="registry-admin-row-meta">
                       {member.email}
                     </span>
                   </div>
@@ -124,24 +114,18 @@ export default async function AdminOrganizationDetailPage({
           </section>
 
           <section className="d-section" data-density="compact">
-            <span
-              className="d-label block mb-4"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               Recent Package Activity
             </span>
 
-            <div className="d-surface grid gap-3">
+            <div className="d-surface registry-admin-stack">
               {detail.recent_content.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-3" style={{ borderTop: '1px solid var(--d-border)', paddingTop: '0.75rem' }}>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm" style={{ fontWeight: 600 }}>
+                <div key={item.id} className="registry-admin-row">
+                  <div className="registry-admin-row-copy">
+                    <span className="registry-admin-row-title">
                       {item.name || item.slug}
                     </span>
-                    <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                    <span className="registry-admin-row-meta">
                       {item.type} · {item.visibility} · {item.status}
                     </span>
                   </div>
@@ -154,31 +138,25 @@ export default async function AdminOrganizationDetailPage({
           </section>
 
           <section className="d-section" data-density="compact">
-            <span
-              className="d-label block mb-4"
-              style={{
-                paddingLeft: '0.75rem',
-                borderLeft: '2px solid var(--d-accent)',
-              }}
-            >
+            <span className="d-label registry-anchor-label">
               Recent Audit
             </span>
 
-            <div className="d-surface grid gap-3">
+            <div className="d-surface registry-admin-stack">
               {detail.recent_audit.map((entry) => (
-                <div key={entry.id} className="grid gap-1" style={{ borderTop: '1px solid var(--d-border)', paddingTop: '0.75rem' }}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm" style={{ fontWeight: 600 }}>
+                <div key={entry.id} className="registry-admin-log-entry">
+                  <div className="registry-admin-log-head">
+                    <span className="registry-admin-row-title">
                       {entry.action}
                     </span>
                     <span className="d-annotation" data-status="info">
                       {entry.scope}
                     </span>
                   </div>
-                  <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  <div className="registry-admin-row-meta">
                     {entry.target_type}{entry.target_id ? ` · ${entry.target_id}` : ''}
                   </div>
-                  <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                  <div className="registry-admin-row-meta">
                     {formatTimestamp(entry.created_at)}
                   </div>
                 </div>

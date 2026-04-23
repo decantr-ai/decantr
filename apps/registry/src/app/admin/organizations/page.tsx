@@ -47,7 +47,7 @@ export default async function AdminOrganizationsPage({
     <div className="registry-page-stack">
       <div className="registry-page-intro">
         <h3 className="text-lg font-semibold">Organizations</h3>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+        <p className="registry-muted-copy">
           Inspect seat footprint, package mix, approval posture, and recent usage across Team and Enterprise customers.
         </p>
       </div>
@@ -75,7 +75,7 @@ export default async function AdminOrganizationsPage({
       </section>
 
       {error ? (
-        <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
+        <div className="d-annotation registry-inline-error" data-status="error">
           {error}
         </div>
       ) : null}
@@ -86,24 +86,20 @@ export default async function AdminOrganizationsPage({
             Organization Footprint ({organizations.total})
           </span>
 
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+          <div className="registry-admin-card-grid">
             {organizations.items.map((org) => (
-              <div key={org.id} className="d-surface" style={{ display: 'grid', gap: '0.75rem' }}>
-                <div className="flex items-start justify-between gap-3">
+              <div key={org.id} className="d-surface registry-admin-card">
+                <div className="registry-admin-card-head">
                   <div>
-                    <div className="text-base" style={{ fontWeight: 600 }}>
-                      {org.name}
-                    </div>
-                    <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
-                      {org.slug}
-                    </div>
+                    <div className="registry-admin-card-title">{org.name}</div>
+                    <div className="registry-admin-card-subtitle">{org.slug}</div>
                   </div>
                   <span className="d-annotation" data-status={org.tier === 'enterprise' ? 'warning' : 'info'}>
                     {org.tier}
                   </span>
                 </div>
 
-                <div className="grid gap-1 text-sm" style={{ color: 'var(--d-text-muted)' }}>
+                <div className="registry-admin-card-list">
                   <div>Seats: {org.member_count} / {org.seat_limit}</div>
                   <div>Packages: {org.package_count} total · {org.private_packages} private · {org.public_packages} public</div>
                   <div>Pending approvals: {org.pending_approvals}</div>
@@ -111,7 +107,7 @@ export default async function AdminOrganizationsPage({
                   <div>Approval policy: {org.require_public_content_approval ? 'Required' : 'Open publish'}</div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="registry-inline-actions">
                   <Link href={`/admin/organizations/${org.slug}`} className="d-interactive" data-variant="primary">
                     Open details
                   </Link>

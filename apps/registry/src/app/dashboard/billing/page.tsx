@@ -333,17 +333,17 @@ export default function BillingPage() {
               <h4 className="registry-panel-title">What this plan currently unlocks</h4>
               <div className="registry-detail-list">
                 <div>
-                  {billing?.entitlements?.personal_private_packages
+                  {workspace.entitlements.personal_private_packages
                     ? 'Personal private packages are enabled.'
                     : 'Personal private packages are not enabled on this plan.'}
                 </div>
                 <div>
-                  {billing?.entitlements?.org_collaboration
+                  {workspace.entitlements.org_collaboration
                     ? `Organization collaboration is enabled${activeOrg ? ` for ${activeOrg.name}` : ''}.`
                     : 'Organization collaboration is not enabled on this plan.'}
                 </div>
                 <div>
-                  {billing?.entitlements?.private_registry_portal
+                  {workspace.entitlements.private_registry_portal
                     ? 'Private registry browsing is enabled for your organization.'
                     : 'Private registry browsing is not enabled on this plan.'}
                 </div>

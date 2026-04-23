@@ -32,15 +32,20 @@ export default async function AdminReportsPage() {
 
   return (
     <div className="registry-page-stack">
-      <div className="registry-inline-actions" style={{ justifyContent: 'space-between' }}>
-        <h3 className="text-lg font-semibold">Commercial Reports</h3>
+      <div className="registry-page-intro registry-admin-head">
+        <div>
+          <h3 className="text-lg font-semibold">Commercial Reports</h3>
+          <p className="registry-muted-copy">
+            Review customer distribution, package footprint, and the recent commercial usage signal in one admin workspace.
+          </p>
+        </div>
         <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
           Open organizations
         </Link>
       </div>
 
       {error ? (
-        <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
+        <div className="d-annotation registry-inline-error" data-status="error">
           {error}
         </div>
       ) : null}
@@ -51,14 +56,14 @@ export default async function AdminReportsPage() {
             <span className="d-label registry-anchor-label">
               Tier Distribution
             </span>
-            <div className="d-surface registry-surface-stack">
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <div className="d-surface registry-surface-stack registry-admin-summary-list">
+              <div>
                 Users — Free: {summary.users_by_tier.free} · Pro: {summary.users_by_tier.pro} · Team: {summary.users_by_tier.team} · Enterprise: {summary.users_by_tier.enterprise}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Organizations — Team: {summary.organizations_by_tier.team} · Enterprise: {summary.organizations_by_tier.enterprise}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Total seat capacity: {summary.totals.seat_limit_total}
               </div>
             </div>
@@ -68,17 +73,17 @@ export default async function AdminReportsPage() {
             <span className="d-label registry-anchor-label">
               Package Footprint
             </span>
-            <div className="d-surface registry-surface-stack">
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <div className="d-surface registry-surface-stack registry-admin-summary-list">
+              <div>
                 Public packages: {summary.totals.public_packages}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Private packages: {summary.totals.private_packages}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Org packages: {summary.totals.org_packages}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Pending approvals: {summary.totals.pending_approvals}
               </div>
             </div>
@@ -88,23 +93,23 @@ export default async function AdminReportsPage() {
             <span className="d-label registry-anchor-label">
               30-Day Usage
             </span>
-            <div className="d-surface registry-surface-stack">
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <div className="d-surface registry-surface-stack registry-admin-summary-list">
+              <div>
                 API requests: {summary.totals.api_requests_30d}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Personal publishes: {summary.totals.content_publishes_30d}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Private package publishes: {summary.totals.private_package_publishes_30d}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Org package publishes: {summary.totals.org_package_publishes_30d}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Approval actions: {summary.totals.approval_actions_30d}
               </div>
-              <div className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+              <div>
                 Audit events: {summary.totals.audit_events_30d}
               </div>
             </div>
