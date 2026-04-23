@@ -10,8 +10,7 @@ Release channel: `stable`
 
 Design intelligence for AI-generated UI. Make Claude, Cursor, and Windsurf generate better code.
 
-<!-- demo-slot: embed asciinema cast or short GIF here once recorded -->
-<!-- e.g. [![asciicast](https://asciinema.org/a/XXXXXX.svg)](https://asciinema.org/a/XXXXXX) -->
+![Decantr in action — one prompt, coherent AI-generated UI](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
 
 - **Structured design context** -- gives your AI assistant patterns, layouts, and component specs instead of letting it guess
