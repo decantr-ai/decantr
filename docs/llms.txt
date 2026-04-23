@@ -1,0 +1,49 @@
+# Decantr
+
+> Design intelligence, governance, and verification for AI-generated UI. Decantr is the contract layer between product intent and AI-generated implementation — giving coding assistants structured design inputs, registry-backed UI knowledge, and scoped context files so they build coherent product surfaces instead of improvising screen by screen.
+
+Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the code, but Decantr defines the shape, vocabulary, and governance around it. Decantr separates design governance into two layers — **DNA** (durable visual axioms: theme, spacing, motion, accessibility, personality) and **Blueprint** (product topology: sections, page routes, shells, layouts, features). Strict where it should be strict, flexible where it should be flexible.
+
+## Docs
+
+- [Homepage](https://decantr.ai/): What Decantr is and why AI-generated UI needs a contract layer.
+- [Workflow model](https://decantr.ai/reference/workflow-model.html): Brand new app, brownfield adoption, hybrid composition.
+- [Public API reference](https://decantr.ai/reference/registry-public-api.html): Registry endpoints, pack compilation, critique, audit.
+- [Package support matrix](https://decantr.ai/reference/package-support-matrix.html): Which packages are stable, beta, or experimental.
+
+## Packages
+
+- [@decantr/cli](https://www.npmjs.com/package/@decantr/cli): Scaffold new apps, run checks, manage essence, search registry content.
+- [@decantr/mcp-server](https://www.npmjs.com/package/@decantr/mcp-server): MCP server exposing design intelligence to Claude, Cursor, Windsurf, VS Code, Zed, Continue.dev. Listed at `io.github.decantr-ai/mcp-server` in the official MCP Registry.
+- [@decantr/essence-spec](https://www.npmjs.com/package/@decantr/essence-spec): Essence schemas, validation, migration, TypeScript types.
+- [@decantr/registry](https://www.npmjs.com/package/@decantr/registry): Registry contracts, content utilities, API client surfaces.
+- [@decantr/core](https://www.npmjs.com/package/@decantr/core): Execution-pack compiler primitives.
+- [@decantr/verifier](https://www.npmjs.com/package/@decantr/verifier): Audit, critique, and report-schema engine.
+- [@decantr/css](https://www.npmjs.com/package/@decantr/css): Framework-agnostic CSS atom runtime.
+
+## Registry
+
+The registry is open — both the Decantr team (under the `@official` namespace) and the community can publish patterns, archetypes, themes, blueprints, and shells. This makes Decantr a platform, not just a tool: every published contribution extends the design vocabulary available to every AI coding assistant that uses Decantr.
+
+- [Registry portal](https://registry.decantr.ai/): Browse and publish patterns, archetypes, themes, blueprints, shells. Community contributions live alongside `@official` content.
+- [Registry API](https://api.decantr.ai/v1/): Hosted API for content resolution, pack compilation, critique, audit. Public read access requires no API key.
+- [decantr-ai/decantr-content](https://github.com/decantr-ai/decantr-content): Source of truth for all `@official` namespace content — patterns, archetypes, themes, blueprints, shells. PRs to this repo auto-sync to the live registry.
+- [Publish your own content](https://registry.decantr.ai/): Sign in to the registry portal to publish under your own namespace.
+
+## Concepts
+
+- [Essence spec](https://decantr.ai/schemas/): The durable contract — theme, sections, routes, features, guard rules.
+- [Design Pipeline](https://github.com/decantr-ai/decantr/blob/main/README.md#the-model): Seven stages — Intent, Interpret, Decompose, Specify, Compose, Generate, Guard.
+- [Guard rules](https://github.com/decantr-ai/decantr/blob/main/CLAUDE.md#guard-rules): DNA guards (style, density, accessibility, theme-mode compatibility) and Blueprint guards (structure, layout, pattern existence).
+- [CSS scaffolding guide](https://decantr.ai/css-scaffolding-guide.html): Full CSS implementation spec covering `@layer` structure, theme scoping, and variable naming.
+
+## Repositories
+
+- [decantr-ai/decantr](https://github.com/decantr-ai/decantr): Monorepo — CLI, MCP server, packages, apps.
+- [decantr-ai/decantr-content](https://github.com/decantr-ai/decantr-content): Content registry — patterns, archetypes, themes, blueprints, shells.
+
+## Optional
+
+- [Published schemas](https://decantr.ai/schemas/): JSON Schema files for essence, patterns, archetypes, themes, blueprints, shells.
+- [Showcase apps](https://github.com/decantr-ai/decantr/tree/main/apps/showcase): Audited benchmark corpus demonstrating Decantr-generated scaffolds.
+- [MCP Registry listing](https://registry.modelcontextprotocol.io/v0.1/servers?search=decantr): Decantr's entry in the official Model Context Protocol Registry.
