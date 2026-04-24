@@ -9,6 +9,13 @@ import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.
 
 export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
 export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
+// v2.1 C4 — experiential interaction verifier.
+export {
+  INTERACTION_SIGNALS,
+  verifyInteractionsInSource,
+  listKnownInteractions,
+} from './interactions.js';
+export type { InteractionSignal, InteractionRequirement, InteractionMissingFinding } from './interactions.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',

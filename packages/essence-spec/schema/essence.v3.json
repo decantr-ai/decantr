@@ -307,7 +307,12 @@
       "properties": {
         "mode": { "type": "string", "enum": ["creative", "guided", "strict"] },
         "dna_enforcement": { "type": "string", "enum": ["error", "warn", "off"] },
-        "blueprint_enforcement": { "type": "string", "enum": ["warn", "off"] }
+        "blueprint_enforcement": { "type": "string", "enum": ["warn", "off"] },
+        "interactions_enforcement": {
+          "type": "string",
+          "enum": ["error", "warn", "off"],
+          "description": "v2.1 C5. Severity for the experiential interactions guard rule (8th rule). Defaults: creative → off, guided → warn, strict → error."
+        }
       }
     },
     "SeoHints": {

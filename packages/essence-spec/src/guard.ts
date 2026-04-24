@@ -21,7 +21,15 @@ export interface GuardViolation {
     | 'density'
     | 'theme-mode'
     | 'pattern-exists'
-    | 'accessibility';
+    | 'accessibility'
+    /**
+     * v2.1 C5. Experiential interactions guard rule. Fires when patterns
+     * declare `interactions: [...]` but the source tree is missing the
+     * canonical implementations. Severity controlled by
+     * `meta.guard.interactions_enforcement` (defaults: creative=off,
+     * guided=warn, strict=error).
+     */
+    | 'interactions';
   severity: 'error' | 'warning';
   message: string;
   suggestion?: string;
@@ -40,6 +48,17 @@ export interface GuardContext {
   themeRegistry?: Map<string, { modes: string[] }>;
   patternRegistry?: Map<string, unknown>;
   a11y_issues?: string[];
+  /**
+   * v2.1 C5. Pre-computed list of declared interactions whose canonical
+   * implementations are missing from the source tree. Produced by
+   * `verifyInteractionsInSource` from @decantr/verifier; passed in here
+   * so the guard rule can emit violations without owning the source-scan
+   * logic. Mirrors the existing `a11y_issues` pattern.
+   *
+   * Each entry is a short descriptor like
+   * `status-pulse (suggestion: Apply 'd-pulse' to the indicator)`.
+   */
+  interaction_issues?: string[];
 }
 
 /**
@@ -201,6 +220,63 @@ function checkAccessibility(essence: EssenceFile, context: GuardContext): GuardV
   return null;
 }
 
+/**
+ * v2.1 C5. Experiential interactions guard rule (8th rule). Patterns
+ * declare runtime interactions in pattern.v2.json (e.g., status-pulse,
+ * drag-nodes, hover-tooltip). When the source tree doesn't implement
+ * those interactions, this rule emits a violation. Source scanning
+ * happens in @decantr/verifier; pre-computed results land here as
+ * `context.interaction_issues`.
+ *
+ * Severity is governed by `meta.guard.interactions_enforcement`:
+ *   - 'error'  → emits as error (build fails)
+ *   - 'warn'   → emits as warning (build passes, surfaces in CLI)
+ *   - 'off'    → suppresses entirely
+ *
+ * Defaults when the field is omitted, derived from guard.mode:
+ *   - creative → 'off'
+ *   - guided   → 'warn'
+ *   - strict   → 'error'
+ */
+function checkInteractions(essence: EssenceFile, context: GuardContext): GuardViolation | null {
+  if (!context.interaction_issues || context.interaction_issues.length === 0) {
+    return null;
+  }
+
+  const guard = isV3(essence) ? essence.meta.guard : null;
+  if (!guard) return null; // v2 essences don't carry the field — skip silently.
+
+  // Resolve enforcement: explicit field wins, otherwise mode-derived default.
+  let enforcement: 'error' | 'warn' | 'off';
+  if (guard.interactions_enforcement) {
+    enforcement = guard.interactions_enforcement;
+  } else if (guard.mode === 'strict') {
+    enforcement = 'error';
+  } else if (guard.mode === 'guided') {
+    enforcement = 'warn';
+  } else {
+    enforcement = 'off';
+  }
+
+  if (enforcement === 'off') return null;
+
+  const issueList = context.interaction_issues.slice(0, 3).join('; ');
+  const moreCount =
+    context.interaction_issues.length > 3
+      ? ` (+${context.interaction_issues.length - 3} more)`
+      : '';
+
+  return {
+    rule: 'interactions',
+    severity: enforcement === 'error' ? 'error' : 'warning',
+    message: `Declared pattern interactions are not implemented in source: ${issueList}${moreCount}`,
+    suggestion:
+      'See "Interaction Requirements" in DECANTR.md for canonical implementations. Each declared interaction maps to a treatment class or handler pattern.',
+    layer: 'blueprint' as const,
+    autoFixable: false,
+  };
+}
+
 export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}): GuardViolation[] {
   const guard = isV3(essence) ? essence.meta.guard : essence.guard;
 
@@ -319,6 +395,15 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
   const accessibilityViolation = checkAccessibility(essence, context);
   if (accessibilityViolation) {
     violations.push(accessibilityViolation);
+  }
+
+  // Rule 9: Experiential interactions (v2.1 C5). Only fires when caller
+  // pre-computed `interaction_issues` from the source-tree scan; severity
+  // governed by `meta.guard.interactions_enforcement` with mode-derived
+  // defaults. See checkInteractions for the full resolution table.
+  const interactionsViolation = checkInteractions(essence, context);
+  if (interactionsViolation) {
+    violations.push(interactionsViolation);
   }
 
   // Apply v3 enforcement level filtering
