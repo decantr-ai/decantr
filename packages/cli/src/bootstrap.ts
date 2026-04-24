@@ -39,6 +39,12 @@ const reactViteBootstrapAdapter: BootstrapAdapter = {
         'react-dom': '^19.0.0',
         'react-router-dom': '^7.0.0',
         '@decantr/css': '^1.0.0',
+        // P0-4: Lucide is the canonical icon library Decantr blueprints
+        // reference in personality prose ("Lucide icons"). Including it by
+        // default means cold scaffolds don't have to hand-roll inline SVGs.
+        // Tree-shaking eliminates unused imports, so the bundle cost is
+        // zero when unused and ~2KB per icon when used.
+        'lucide-react': '^0.468.0',
       },
       devDependencies: {
         '@types/react': '^19.0.0',

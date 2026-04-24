@@ -1235,6 +1235,20 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 | **Stepper Chip** | \`d-step-chip\` | \`data-step-state="pending\\|active\\|done"\` |
 | **Divider utilities** | \`d-divider-top\`, \`d-divider-bottom\`, \`d-divider-left\`, \`d-divider-right\`, \`d-divider\` | Single-side border rule, or standalone \`<hr className="d-divider">\` |
 
+**Spatial / graph patterns (for canvases with positioned nodes):**
+
+| Treatment | Class | Variants / States |
+|-----------|-------|-------------------|
+| **Agent Node** | \`d-agent-node\` | Card sized for graph canvases (200-260px wide). \`data-status="active\\|error"\` for highlights (error adds red border-glow shadow, active adds accent border). Pair with absolute positioning on the canvas parent. |
+| **Connection Port** | \`d-port\` | \`data-side="left\\|right\\|top\\|bottom"\` positions the 8px dot on the node edge. \`data-active="true"\` colors it with accent. Use as a slot inside \`d-agent-node\` so SVG connection paths can anchor to predictable element coordinates via \`getBoundingClientRect\`. |
+
+**Banners / prominent CTAs:**
+
+| Treatment | Class | Variants / States |
+|-----------|-------|-------------------|
+| **CTA Banner** | \`d-cta-banner\` | \`data-size="compact\\|hero"\` (default is between). Gradient wash from primary to accent. Theme can override via \`--d-cta-gradient\` / \`--d-cta-text\` CSS vars. |
+| **Dark-Pill Button** | \`d-interactive\` + \`data-variant="dark"\` | Pill-shaped dark-on-accent CTA for use inside \`d-cta-banner\`. Theme can override via \`--d-cta-pill-bg\` / \`--d-cta-pill-text\`. |
+
 **Guidance for cold scaffolds:**
 - If your component is an icon-only action trigger, it's a \`d-icon-btn\`, not a stripped-down \`d-interactive\`.
 - Breadcrumb / footer / inline body-copy links use \`d-link\`.
@@ -1242,6 +1256,21 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 - Checkout / onboarding stepper position indicators use \`d-step-chip\`.
 - Horizontal rules between card sections use \`d-divider-top\` / \`d-divider-bottom\` as a container modifier, or \`<hr className="d-divider">\` as a standalone element.
 - Do NOT create \`.nav-link\`, \`.icon-btn\`, \`.sidebar-link\`, \`.step-chip\`, \`.divider-top\` (or similar) as custom classes. They exist as treatments.
+
+### Icons — use Lucide
+
+Decantr scaffolds ship with \`lucide-react\` pre-installed. When personality prose says "Lucide icons" (or the section/pattern contract references icon names), import them from there:
+
+\`\`\`tsx
+import { Bot, ShoppingBag, Settings, Activity, Gauge, Cpu } from 'lucide-react';
+
+<Bot className={css('_w5 _h5')} aria-hidden="true" />
+\`\`\`
+
+- Tree-shaking keeps the bundle at ~1.5-3 KB per icon used.
+- Do NOT inline SVGs or import an alternative icon library without an explicit contract directive.
+- When a navigation item declares an \`icon\` field (see section \`navigation_items\`), the value is the Lucide icon name in kebab-case — e.g., \`"shopping-bag"\` → \`import { ShoppingBag } from 'lucide-react'\`.
+- Default sizing: \`_w5 _h5\` (20px) for inline icons, \`_w4 _h4\` (16px) inside dense chrome, \`_w6 _h6\` (24px) for primary slots.
 
 ### Composition
 
@@ -1366,6 +1395,10 @@ Prefer these atoms over \`window.matchMedia\` in JS. Reserve JS responsive check
 | \`_py{n}\` | \`padding-block:{scale}\` | vertical |
 | \`_m{n}\` | \`margin:{scale}\` | same as padding variants |
 | \`_mx{n}\`, \`_my{n}\` | inline/block margin | horizontal/vertical |
+| \`_mauto\` | \`margin:auto\` | center in flex/grid |
+| \`_mtauto\`, \`_mbauto\` | \`margin-top:auto\` / \`margin-bottom:auto\` | pin to bottom/top of flex column |
+| \`_mlauto\`, \`_mrauto\` | \`margin-left:auto\` / \`margin-right:auto\` | pin to right/left in a row |
+| \`_mxauto\`, \`_myauto\` | inline/block margin: auto | center horizontally/vertically |
 
 #### Sizing
 | Atom | CSS |

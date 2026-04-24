@@ -37,6 +37,7 @@ const PACKAGE_JSON = {
     'react-dom': '^19.0.0',
     'react-router-dom': '^7.0.0',
     '@decantr/css': '^1.0.0',
+    'lucide-react': '^0.468.0',
   },
   devDependencies: {
     '@types/react': '^19.0.0',
