@@ -635,20 +635,44 @@ export function generateTokensCSS(themeData: ThemeData | undefined, mode: string
   // When mode is 'auto', use 'dark' as the :root default
   const resolvedMode = mode === 'auto' ? 'dark' : mode;
 
+  // Mode-aware hardcoded fallbacks for when a theme's palette doesn't
+  // define the requested mode. Previously every fallback was a dark hex
+  // (e.g., --d-bg: #18181b), so a light-mode blueprint against a
+  // dark-only theme would silently get a dark scaffold — a High-severity
+  // finding from the ecommerce harness run. These fallbacks at least
+  // produce a legible scaffold in the requested mode even if the theme
+  // doesn't carry its own values for that mode.
+  const FALLBACKS: Record<string, { light: string; dark: string }> = {
+    bg: { light: '#ffffff', dark: '#18181b' },
+    surface: { light: '#f9fafb', dark: '#1f1f23' },
+    'surface-raised': { light: '#ffffff', dark: '#27272a' },
+    border: { light: '#e5e7eb', dark: '#3f3f46' },
+    text: { light: '#111827', dark: '#fafafa' },
+    'text-muted': { light: '#6b7280', dark: '#a1a1aa' },
+    secondary: { light: '#6b7280', dark: '#A1A1AA' },
+  };
+
   function buildTokens(tokenMode: string): Record<string, string> {
+    const tokenModeKey: 'light' | 'dark' = tokenMode === 'light' ? 'light' : 'dark';
+    const pickFb = (key: string) => {
+      const fallbacks = FALLBACKS[key];
+      if (!fallbacks) return tokenModeKey === 'light' ? '#ffffff' : '#18181b';
+      return fallbacks[tokenModeKey];
+    };
+
     return {
       // Seed colors
       '--d-primary': seed.primary || '#6366f1',
-      '--d-secondary': palette.secondary?.[tokenMode] || palette.secondary?.dark || seed.secondary || '#A1A1AA',
+      '--d-secondary': palette.secondary?.[tokenMode] || pickFb('secondary'),
       '--d-accent': seed.accent || '#f59e0b',
 
-      // Palette colors (mode-aware)
-      '--d-bg': palette.background?.[tokenMode] || '#18181b',
-      '--d-surface': palette.surface?.[tokenMode] || '#1f1f23',
-      '--d-surface-raised': palette['surface-raised']?.[tokenMode] || '#27272a',
-      '--d-border': palette.border?.[tokenMode] || '#3f3f46',
-      '--d-text': palette.text?.[tokenMode] || '#fafafa',
-      '--d-text-muted': palette['text-muted']?.[tokenMode] || '#a1a1aa',
+      // Palette colors (mode-aware with mode-aware fallbacks)
+      '--d-bg': palette.background?.[tokenMode] || pickFb('bg'),
+      '--d-surface': palette.surface?.[tokenMode] || pickFb('surface'),
+      '--d-surface-raised': palette['surface-raised']?.[tokenMode] || pickFb('surface-raised'),
+      '--d-border': palette.border?.[tokenMode] || pickFb('border'),
+      '--d-text': palette.text?.[tokenMode] || pickFb('text'),
+      '--d-text-muted': palette['text-muted']?.[tokenMode] || pickFb('text-muted'),
       '--d-primary-hover': palette['primary-hover']?.[tokenMode] || seed.primary || '#6366f1',
 
       // Spacing scale
@@ -2612,6 +2636,26 @@ export async function refreshDerivedFiles(
   // preserve existing file if theme fetch returned empty/incomplete data
   const hasRealThemeData = themeData?.seed?.primary || themeData?.palette?.background;
   if (hasRealThemeData || !existsSync(tokensPath)) {
+    // Warn loudly when the blueprint asks for a theme-mode the theme doesn't
+    // carry palette values for. Previously this was silent and scaffolds got
+    // the "wrong" visual mode vs. their personality directive. The token
+    // emitter falls back to mode-aware defaults, but the user should know.
+    if (themeData?.palette && mode && mode !== 'auto') {
+      const paletteEntries = Object.values(themeData.palette) as Array<Record<string, string> | undefined>;
+      const modeDefined = paletteEntries.some((entry) => entry && typeof entry === 'object' && entry[mode]);
+      if (!modeDefined) {
+        const supportedModes = Array.from(new Set(
+          paletteEntries.flatMap((entry) => (entry && typeof entry === 'object') ? Object.keys(entry) : []),
+        )).sort();
+        const YELLOW = '\x1b[33m';
+        const RESET = '\x1b[0m';
+        console.warn(`${YELLOW}⚠  Theme "${themeName}" does not define a "${mode}" palette variant.${RESET}`);
+        console.warn(`${YELLOW}   Supported modes in palette: ${supportedModes.join(', ') || 'none'}.${RESET}`);
+        console.warn(`${YELLOW}   Tokens will use mode-aware defaults so the scaffold still renders a legible "${mode}" UI,`);
+        console.warn(`${YELLOW}   but the theme's personality may not land. Consider picking a different theme or adding`);
+        console.warn(`${YELLOW}   "${mode}" keys to the theme's palette in decantr-content.${RESET}`);
+      }
+    }
     writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens));
   }
 
