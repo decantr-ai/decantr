@@ -2604,7 +2604,26 @@ async function generatePackContexts(
       scaffoldPack: bundle.scaffold,
       manifest: bundle.manifest,
     };
-  } catch {
+  } catch (err) {
+    // P0-A1 fix: log the compilation failure instead of silently falling
+    // through to narrative-only output. The cloud-platform harness run
+    // (2026-04-24) found a 200-inline-style drift directly caused by
+    // pack files being silently absent. The user now sees the actual
+    // reason (essence validation failed, pattern resolution failed, etc.)
+    // and can fix it instead of guessing why packs are missing.
+    const YELLOW = '\x1b[33m';
+    const DIM = '\x1b[2m';
+    const RESET = '\x1b[0m';
+    const message = err instanceof Error ? err.message : String(err);
+    // Trim AJV-style long validation messages to something an LLM / user
+    // can scan. Keep the first sentence, drop the repeated " , ..." joins.
+    const short = message.length > 240
+      ? message.slice(0, 220) + '… (truncated)'
+      : message;
+    console.warn(`${YELLOW}⚠  Execution pack compilation failed — scaffold will ship narrative-only context.${RESET}`);
+    console.warn(`${DIM}   Reason: ${short}${RESET}`);
+    console.warn(`${DIM}   Cold-scaffolding LLMs won't get scaffold-pack.md / section-*-pack.md / page-*-pack.md.${RESET}`);
+    console.warn(`${DIM}   This is a known drift source — fix the underlying issue and re-run \`decantr refresh\`.${RESET}`);
     return emptyResult;
   }
 }
