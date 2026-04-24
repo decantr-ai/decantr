@@ -156,6 +156,11 @@
         "route": { "type": "string", "minLength": 1 },
         "shell_override": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
         "layout": { "type": "array", "items": { "$ref": "#/$defs/LayoutItem" }, "minItems": 1 },
+        "default_layout": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LayoutItem" },
+          "description": "Legacy / archetype-derived layout field. Carries through from archetype.pages[].default_layout and is retained on the essence for traceability. Runtime uses `layout` as the effective composition."
+        },
         "dna_overrides": { "$ref": "#/$defs/DNAOverrides" },
         "surface": { "type": "string" },
         "directives": {
@@ -257,7 +262,16 @@
       "required": ["cols"],
       "additionalProperties": false,
       "properties": {
-        "cols": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "cols": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              { "$ref": "#/$defs/PatternRef" }
+            ]
+          },
+          "minItems": 2
+        },
         "at": { "type": "string", "enum": ["sm", "md", "lg", "xl", "2xl"] },
         "span": { "type": "object", "additionalProperties": { "type": "number", "minimum": 1 } },
         "breakpoints": { "type": "array", "items": { "type": "object", "required": ["at", "cols"], "properties": { "at": { "type": "string" }, "cols": { "type": "number" } } } },
