@@ -157,7 +157,12 @@
         "shell_override": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
         "layout": { "type": "array", "items": { "$ref": "#/$defs/LayoutItem" }, "minItems": 1 },
         "dna_overrides": { "$ref": "#/$defs/DNAOverrides" },
-        "surface": { "type": "string" }
+        "surface": { "type": "string" },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives for this page — short imperative guidance that belongs in the pack contract (not the narrative doc). Each entry is one actionable rule the cold LLM should obey when implementing this route. Examples: '3-step checkout flow (Shipping → Payment → Review)', 'Auth bypass: accept any credentials and redirect to /shop', 'Skeleton placeholders render with d-annotation[data-loading]'.",
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     },
     "BlueprintSection": {
@@ -176,6 +181,11 @@
           "type": "array",
           "description": "Items to render in the shell's primary navigation for this section. Provides the contract so LLMs don't have to improvise sidebar/top-nav lists.",
           "items": { "$ref": "#/$defs/SectionNavigationItem" }
+        },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives for this section — short imperative rules the cold LLM should obey when implementing any page in this section. Belongs in the pack contract (not the narrative doc). Examples: 'Header is 52px, use d-interactive[data-size=sm] for all action buttons', 'Dev mode: localStorage flag `decantr_authenticated` gates protected routes', 'Hotkey chords bind keyboard only — never render them as visible nav labels'.",
+          "items": { "type": "string", "minLength": 1 }
         }
       }
     },

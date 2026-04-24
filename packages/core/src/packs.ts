@@ -174,6 +174,8 @@ export interface SectionPackInput {
   features: string[];
   pageIds: string[];
   navigationItems?: SectionNavigationItemPack[];
+  /** Execution-level directives — short imperative rules for this section. */
+  directives?: string[];
 }
 
 /** Navigation item contract for a section's primary navigation. */
@@ -207,6 +209,8 @@ export interface SectionPackData {
   routes: SectionPackRoute[];
   /** Contract for items rendered in this section's primary navigation. */
   navigationItems?: SectionNavigationItemPack[];
+  /** Execution-level directives emitted into the section-pack rendering. */
+  directives?: string[];
 }
 
 export interface SectionExecutionPack extends ExecutionPackBase<SectionPackData> {
@@ -219,6 +223,8 @@ export interface PagePackInput {
   sectionId: string | null;
   sectionRole: string | null;
   features: string[];
+  /** Execution-level directives — short imperative rules for this page. */
+  directives?: string[];
 }
 
 export interface PagePackPattern {
@@ -226,6 +232,13 @@ export interface PagePackPattern {
   alias: string;
   preset: string;
   layout: string;
+  /**
+   * Per-preset prose from the pattern's preset.description. When present,
+   * the page-pack renderer emits it as a short description line so cold
+   * LLMs read preset-specific guidance instead of having to look up the
+   * pattern's root description.
+   */
+  presetDescription?: string;
 }
 
 export interface PagePackData {
@@ -243,6 +256,8 @@ export interface PagePackData {
   };
   wiringSignals: string[];
   patterns: PagePackPattern[];
+  /** Execution-level directives emitted into the page-pack rendering. */
+  directives?: string[];
 }
 
 export interface PageExecutionPack extends ExecutionPackBase<PagePackData> {
@@ -555,6 +570,9 @@ function collectPagePatterns(page: IRPageNode): PagePackPattern[] {
       alias: patternNode.pattern.alias,
       preset: patternNode.pattern.preset,
       layout: patternNode.pattern.layout,
+      ...(patternNode.pattern.presetDescription
+        ? { presetDescription: patternNode.pattern.presetDescription }
+        : {}),
     });
   });
   return patterns;
@@ -713,6 +731,17 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       }
       lines.push('');
     }
+
+    if (sectionPack.data.directives && sectionPack.data.directives.length > 0) {
+      lines.push('## Section Directives');
+      lines.push('');
+      lines.push('Execution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.');
+      lines.push('');
+      for (const directive of sectionPack.data.directives) {
+        lines.push(`- ${directive}`);
+      }
+      lines.push('');
+    }
   }
 
   if (pack.packType === 'page') {
@@ -737,6 +766,12 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Page Patterns');
     for (const pattern of pagePack.data.patterns) {
       lines.push(`- ${pattern.alias} -> ${pattern.id} [${pattern.layout}${pattern.preset ? ` | ${pattern.preset}` : ''}]`);
+      // Emit preset-specific description on the next line (indented) when
+      // the pattern's preset carries its own prose. This stops cold LLMs
+      // from falling back to the blueprint-generic root description.
+      if (pattern.presetDescription) {
+        lines.push(`  > ${pattern.presetDescription}`);
+      }
     }
     lines.push('');
 
@@ -744,6 +779,17 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push('## Wiring Signals');
       for (const signal of pagePack.data.wiringSignals) {
         lines.push(`- ${signal}`);
+      }
+      lines.push('');
+    }
+
+    if (pagePack.data.directives && pagePack.data.directives.length > 0) {
+      lines.push('## Page Directives');
+      lines.push('');
+      lines.push('Execution-level rules for this route. Follow exactly.');
+      lines.push('');
+      for (const directive of pagePack.data.directives) {
+        lines.push(`- ${directive}`);
       }
       lines.push('');
     }
@@ -889,6 +935,9 @@ export function listPackSections(essence: EssenceV3): SectionPackInput[] {
         ...(Array.isArray(section.navigation_items) && section.navigation_items.length > 0
           ? { navigationItems: section.navigation_items as SectionNavigationItemPack[] }
           : {}),
+        ...(Array.isArray(section.directives) && section.directives.length > 0
+          ? { directives: section.directives }
+          : {}),
       };
     }).filter((section) => section.pageIds.length > 0);
   }
@@ -917,6 +966,9 @@ export function listPackPages(essence: EssenceV3): PagePackInput[] {
         sectionId: section.id,
         sectionRole: section.role,
         features: section.features,
+        ...(Array.isArray(page.directives) && page.directives.length > 0
+          ? { directives: page.directives }
+          : {}),
       })).filter((page) => routedSectionPages.size === 0 || routedSectionPages.has(`${page.sectionId}:${page.pageId}`)),
     );
   }
@@ -1043,6 +1095,9 @@ export function buildSectionPack(
       ...(input.navigationItems && input.navigationItems.length > 0
         ? { navigationItems: input.navigationItems }
         : {}),
+      ...(input.directives && input.directives.length > 0
+        ? { directives: input.directives }
+        : {}),
     },
     renderedMarkdown: '',
   };
@@ -1113,6 +1168,9 @@ export function buildPagePack(
       },
       wiringSignals: pageNode.wiring?.signals.map(signal => signal.name) ?? [],
       patterns,
+      ...(input.directives && input.directives.length > 0
+        ? { directives: input.directives }
+        : {}),
     },
     renderedMarkdown: '',
   };

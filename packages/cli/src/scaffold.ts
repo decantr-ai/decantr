@@ -52,6 +52,11 @@ export interface ArchetypeData {
     shell: string;
     default_layout: LayoutItem[];
     patterns?: PatternReferenceObject[];
+    /**
+     * Per-page execution directives that propagate to
+     * essence.blueprint.sections[].pages[].directives.
+     */
+    directives?: string[];
   }>;
   features?: string[];
   seo_hints?: {
@@ -63,6 +68,12 @@ export interface ArchetypeData {
    * composed as a section. Propagated to essence.blueprint.sections[].navigation_items.
    */
   navigation_items?: ArchetypeNavigationItem[];
+  /**
+   * Execution-level directives emitted into the section-pack contract.
+   * Short imperative rules every page in this section must obey.
+   * Propagated to essence.blueprint.sections[].directives.
+   */
+  directives?: string[];
 }
 
 function getPlatformMeta(target: string) {
@@ -126,23 +137,37 @@ export function collectPatternIdsFromItems(items: unknown[]): string[] {
 }
 
 export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype): ArchetypeData {
-  // Registry type may not yet declare navigation_items; read defensively.
-  const registryNavigation = (archetype as { navigation_items?: ArchetypeNavigationItem[] }).navigation_items;
+  // Registry type may not yet declare navigation_items / directives; read defensively.
+  const registryExtras = archetype as {
+    navigation_items?: ArchetypeNavigationItem[];
+    directives?: string[];
+  };
+  const registryNavigation = registryExtras.navigation_items;
+  const registryDirectives = registryExtras.directives;
   return {
     id: archetype.id,
     name: archetype.name,
     role: archetype.role,
     description: archetype.description,
-    pages: archetype.pages?.map(page => ({
-      id: page.id,
-      shell: page.shell,
-      default_layout: page.default_layout?.length ? page.default_layout : ['hero'],
-      patterns: page.patterns?.map(toPatternReferenceObject),
-    })),
+    pages: archetype.pages?.map(page => {
+      const pageExtras = page as { directives?: string[] };
+      return {
+        id: page.id,
+        shell: page.shell,
+        default_layout: page.default_layout?.length ? page.default_layout : ['hero'],
+        patterns: page.patterns?.map(toPatternReferenceObject),
+        ...(Array.isArray(pageExtras.directives) && pageExtras.directives.length > 0
+          ? { directives: pageExtras.directives }
+          : {}),
+      };
+    }),
     features: archetype.features,
     seo_hints: archetype.seo_hints,
     ...(Array.isArray(registryNavigation) && registryNavigation.length > 0
       ? { navigation_items: registryNavigation }
+      : {}),
+    ...(Array.isArray(registryDirectives) && registryDirectives.length > 0
+      ? { directives: registryDirectives }
       : {}),
   };
 }
@@ -298,6 +323,12 @@ export function composeSections(
         id: page.id,
         layout: (page.default_layout?.length ? page.default_layout : ['hero'])
           .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
+        // Propagate per-page directives from the archetype so cold LLMs
+        // see execution-level rules in the page-pack contract instead of
+        // having to read the section narrative.
+        ...(Array.isArray(page.directives) && page.directives.length > 0
+          ? { directives: page.directives }
+          : {}),
         ...overriddenPage,
       });
     }
@@ -313,6 +344,12 @@ export function composeSections(
       // the correct primary-nav list instead of the LLM improvising one.
       ...(Array.isArray(data.navigation_items) && data.navigation_items.length > 0
         ? { navigation_items: data.navigation_items }
+        : {}),
+      // Propagate section-level directives from the archetype into the
+      // essence so the section-pack renderer can surface them in the
+      // pack contract.
+      ...(Array.isArray(data.directives) && data.directives.length > 0
+        ? { directives: data.directives }
         : {}),
     });
 
@@ -1174,16 +1211,37 @@ import './styles/global.css';                // Resets
 
 ### Visual Treatments
 
-Six base treatment classes provide semantic styling. Combine with atoms for layout:
+Decantr ships semantic treatment classes that cover the recurring UI idioms. Combine with atoms for layout — don't hand-roll equivalent CSS classes.
+
+**Core treatments (every app uses these):**
 
 | Treatment | Class | Variants / States |
 |-----------|-------|-------------------|
-| **Interactive Surface** | \`d-interactive\` | \`data-variant="primary\\|ghost\\|danger"\`, hover/focus-visible/disabled states |
+| **Interactive Surface** | \`d-interactive\` | \`data-variant="primary\\|ghost\\|danger"\`, \`data-size="sm\\|md\\|lg"\`, hover/focus-visible/disabled states |
 | **Container Surface** | \`d-surface\` | \`data-variant="raised\\|overlay"\`, optional \`data-interactive\` for hover |
 | **Data Display** | \`d-data\`, \`d-data-header\`, \`d-data-row\`, \`d-data-cell\` | Row hover highlight |
 | **Form Control** | \`d-control\` | Focus ring, placeholder, disabled, error via \`aria-invalid\` |
 | **Section Rhythm** | \`d-section\` | Auto-spacing between adjacent sections, density-aware |
 | **Inline Annotation** | \`d-annotation\` | \`data-status="success\\|error\\|warning\\|info"\` |
+| **Section Label** | \`d-label\` | \`data-anchor\` for accent-border section headers |
+
+**Common UI idioms (use these before hand-rolling):**
+
+| Treatment | Class | Variants / States |
+|-----------|-------|-------------------|
+| **Text Link** | \`d-link\` | \`data-variant="subtle\\|strong"\`, active state via \`aria-current="page"\` or \`data-active="true"\` |
+| **Icon Button** | \`d-icon-btn\` | \`data-size="sm\\|lg"\`, \`data-variant="primary"\`, hover/focus-visible/disabled |
+| **Nav Link** | \`d-nav-link\` | Active state via \`aria-current="page"\` or \`data-active="true"\` (accent left-border pill) |
+| **Stepper Chip** | \`d-step-chip\` | \`data-step-state="pending\\|active\\|done"\` |
+| **Divider utilities** | \`d-divider-top\`, \`d-divider-bottom\`, \`d-divider-left\`, \`d-divider-right\`, \`d-divider\` | Single-side border rule, or standalone \`<hr className="d-divider">\` |
+
+**Guidance for cold scaffolds:**
+- If your component is an icon-only action trigger, it's a \`d-icon-btn\`, not a stripped-down \`d-interactive\`.
+- Breadcrumb / footer / inline body-copy links use \`d-link\`.
+- Sidebar and top-nav route links use \`d-nav-link\`. Match active state by setting \`aria-current="page"\` (preferred — accessible) or \`data-active="true"\`.
+- Checkout / onboarding stepper position indicators use \`d-step-chip\`.
+- Horizontal rules between card sections use \`d-divider-top\` / \`d-divider-bottom\` as a container modifier, or \`<hr className="d-divider">\` as a standalone element.
+- Do NOT create \`.nav-link\`, \`.icon-btn\`, \`.sidebar-link\`, \`.step-chip\`, \`.divider-top\` (or similar) as custom classes. They exist as treatments.
 
 ### Composition
 

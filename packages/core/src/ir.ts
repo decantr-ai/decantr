@@ -84,15 +84,19 @@ function buildPatternNode(
   const contained = pattern && preset ? shouldWrapInCard(pattern, preset, theme) : false;
   const components = pattern?.components || [];
 
+  const presetName = preset?.preset || 'default';
+  const presetDescription = pattern?.presets?.[presetName]?.description;
+
   const patternMeta: IRPatternMeta = {
     patternId,
-    preset: preset?.preset || 'default',
+    preset: presetName,
     alias,
     layout,
     contained,
     standalone: isStandalone,
     code: preset?.code ? { imports: preset.code.imports, example: preset.code.example } : null,
     components,
+    ...(presetDescription ? { presetDescription } : {}),
   };
 
   const card = contained && !isStandalone && pattern
