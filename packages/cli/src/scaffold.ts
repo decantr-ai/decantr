@@ -1692,7 +1692,16 @@ function generateDecantrMdV31(params: {
   sections?: Array<{ id: string; role: string }>;
   features?: string[];
   decorators?: Array<{ name: string; description: string }>;
-  decoratorDefinitions?: Record<string, { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }>;
+  decoratorDefinitions?: Record<string, {
+    intent?: string;
+    css?: Record<string, string>;
+    suggested_properties?: Record<string, string>;
+    hover_properties?: Record<string, string>;
+    focus_properties?: Record<string, string>;
+    active_properties?: Record<string, string>;
+    pairs_with?: string[] | string;
+    usage?: string[];
+  }>;
 }): string {
   const template = loadTemplate('DECANTR.md.template');
   const body = renderTemplate(template, {
@@ -1731,8 +1740,22 @@ function generateDecantrMdV31(params: {
     briefLines.push('|-------|--------|---------|');
     for (const [name, def] of Object.entries(params.decoratorDefinitions)) {
       const intent = def.intent || '';
-      const cssProps = def.css ? Object.entries(def.css).map(([p, v]) => `${p}: ${v}`).join('; ') : '';
-      briefLines.push(`| \`.${name}\` | ${intent} | ${cssProps} |`);
+      // P0-5 fix: theme JSONs use `suggested_properties` (plus hover/focus/
+      // active variants), not a `css` key. Prior logic read `def.css` which
+      // was always undefined, leaving the column empty for every decorator.
+      // Compose a concise summary preferring suggested_properties, falling
+      // back to `css` for legacy content, and summarizing state-variants.
+      const props = def.suggested_properties ?? def.css ?? {};
+      const base = Object.entries(props)
+        .map(([p, v]) => `${p}: ${v}`)
+        .join('; ');
+      const hasHover = def.hover_properties && Object.keys(def.hover_properties).length > 0;
+      const hasFocus = def.focus_properties && Object.keys(def.focus_properties).length > 0;
+      const hasActive = def.active_properties && Object.keys(def.active_properties).length > 0;
+      const stateMarkers = [hasHover && ':hover', hasFocus && ':focus-visible', hasActive && ':active']
+        .filter((m): m is string => Boolean(m));
+      const stateSuffix = stateMarkers.length > 0 ? ` _(+ ${stateMarkers.join(', ')})_` : '';
+      briefLines.push(`| \`.${name}\` | ${intent} | ${base}${stateSuffix} |`);
     }
     briefLines.push('');
   } else if (params.decorators && params.decorators.length > 0) {
@@ -2581,7 +2604,26 @@ async function generatePackContexts(
       scaffoldPack: bundle.scaffold,
       manifest: bundle.manifest,
     };
-  } catch {
+  } catch (err) {
+    // P0-A1 fix: log the compilation failure instead of silently falling
+    // through to narrative-only output. The cloud-platform harness run
+    // (2026-04-24) found a 200-inline-style drift directly caused by
+    // pack files being silently absent. The user now sees the actual
+    // reason (essence validation failed, pattern resolution failed, etc.)
+    // and can fix it instead of guessing why packs are missing.
+    const YELLOW = '\x1b[33m';
+    const DIM = '\x1b[2m';
+    const RESET = '\x1b[0m';
+    const message = err instanceof Error ? err.message : String(err);
+    // Trim AJV-style long validation messages to something an LLM / user
+    // can scan. Keep the first sentence, drop the repeated " , ..." joins.
+    const short = message.length > 240
+      ? message.slice(0, 220) + '… (truncated)'
+      : message;
+    console.warn(`${YELLOW}⚠  Execution pack compilation failed — scaffold will ship narrative-only context.${RESET}`);
+    console.warn(`${DIM}   Reason: ${short}${RESET}`);
+    console.warn(`${DIM}   Cold-scaffolding LLMs won't get scaffold-pack.md / section-*-pack.md / page-*-pack.md.${RESET}`);
+    console.warn(`${DIM}   This is a known drift source — fix the underlying issue and re-run \`decantr refresh\`.${RESET}`);
     return emptyResult;
   }
 }
