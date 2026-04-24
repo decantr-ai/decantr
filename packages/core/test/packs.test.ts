@@ -163,24 +163,30 @@ describe('buildScaffoldPack', () => {
     // scroll, and flex-grow belong to the shell. Pages that need those can
     // still declare an explicit `page.surface` string.
     expect(pack.data.surface).toBe('_flex _col _gap4');
+    // N4: preset-specific description is threaded through from the pattern
+    // registry fixture's preset.description so cold LLMs see preset-aware
+    // prose in the page-pack rendering.
     expect(pack.data.patterns).toEqual([
       {
         id: 'kpi-grid',
         alias: 'kpi-grid',
         preset: 'dashboard',
         layout: 'grid',
+        presetDescription: '4-column grid of stat cards with icon, label, value, and change percentage',
       },
       {
         id: 'filter-bar',
         alias: 'filter-bar',
         preset: 'standard',
         layout: 'row',
+        presetDescription: 'Search input + dropdown filters + action buttons in a horizontal bar',
       },
       {
         id: 'data-table',
         alias: 'data-table',
         preset: 'standard',
         layout: 'column',
+        presetDescription: 'Full-featured table with column headers, sortable columns, row selection checkboxes, pagination footer',
       },
     ]);
     expect(pack.data.wiringSignals).toContain('pageSearch');

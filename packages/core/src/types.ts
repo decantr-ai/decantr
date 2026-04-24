@@ -49,6 +49,12 @@ export interface IRPatternMeta {
     example?: string;
   } | null;
   components: string[];   // Components used by this pattern
+  /**
+   * Per-preset prose from pattern.presets[preset].description. Threaded
+   * into PagePackPattern so the page-pack renderer can emit preset-specific
+   * guidance instead of the blueprint-generic pattern root description.
+   */
+  presetDescription?: string;
 }
 
 export interface IRVisualEffect {

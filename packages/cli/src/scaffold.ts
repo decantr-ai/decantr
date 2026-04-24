@@ -1174,16 +1174,37 @@ import './styles/global.css';                // Resets
 
 ### Visual Treatments
 
-Six base treatment classes provide semantic styling. Combine with atoms for layout:
+Decantr ships semantic treatment classes that cover the recurring UI idioms. Combine with atoms for layout — don't hand-roll equivalent CSS classes.
+
+**Core treatments (every app uses these):**
 
 | Treatment | Class | Variants / States |
 |-----------|-------|-------------------|
-| **Interactive Surface** | \`d-interactive\` | \`data-variant="primary\\|ghost\\|danger"\`, hover/focus-visible/disabled states |
+| **Interactive Surface** | \`d-interactive\` | \`data-variant="primary\\|ghost\\|danger"\`, \`data-size="sm\\|md\\|lg"\`, hover/focus-visible/disabled states |
 | **Container Surface** | \`d-surface\` | \`data-variant="raised\\|overlay"\`, optional \`data-interactive\` for hover |
 | **Data Display** | \`d-data\`, \`d-data-header\`, \`d-data-row\`, \`d-data-cell\` | Row hover highlight |
 | **Form Control** | \`d-control\` | Focus ring, placeholder, disabled, error via \`aria-invalid\` |
 | **Section Rhythm** | \`d-section\` | Auto-spacing between adjacent sections, density-aware |
 | **Inline Annotation** | \`d-annotation\` | \`data-status="success\\|error\\|warning\\|info"\` |
+| **Section Label** | \`d-label\` | \`data-anchor\` for accent-border section headers |
+
+**Common UI idioms (use these before hand-rolling):**
+
+| Treatment | Class | Variants / States |
+|-----------|-------|-------------------|
+| **Text Link** | \`d-link\` | \`data-variant="subtle\\|strong"\`, active state via \`aria-current="page"\` or \`data-active="true"\` |
+| **Icon Button** | \`d-icon-btn\` | \`data-size="sm\\|lg"\`, \`data-variant="primary"\`, hover/focus-visible/disabled |
+| **Nav Link** | \`d-nav-link\` | Active state via \`aria-current="page"\` or \`data-active="true"\` (accent left-border pill) |
+| **Stepper Chip** | \`d-step-chip\` | \`data-step-state="pending\\|active\\|done"\` |
+| **Divider utilities** | \`d-divider-top\`, \`d-divider-bottom\`, \`d-divider-left\`, \`d-divider-right\`, \`d-divider\` | Single-side border rule, or standalone \`<hr className="d-divider">\` |
+
+**Guidance for cold scaffolds:**
+- If your component is an icon-only action trigger, it's a \`d-icon-btn\`, not a stripped-down \`d-interactive\`.
+- Breadcrumb / footer / inline body-copy links use \`d-link\`.
+- Sidebar and top-nav route links use \`d-nav-link\`. Match active state by setting \`aria-current="page"\` (preferred — accessible) or \`data-active="true"\`.
+- Checkout / onboarding stepper position indicators use \`d-step-chip\`.
+- Horizontal rules between card sections use \`d-divider-top\` / \`d-divider-bottom\` as a container modifier, or \`<hr className="d-divider">\` as a standalone element.
+- Do NOT create \`.nav-link\`, \`.icon-btn\`, \`.sidebar-link\`, \`.step-chip\`, \`.divider-top\` (or similar) as custom classes. They exist as treatments.
 
 ### Composition
 

@@ -348,6 +348,209 @@ export function generateTreatmentCSS(
     ['border-left', '2px solid var(--d-accent)'],
   ]);
 
+  // ── 8. Text Link — .d-link ──
+  // Chromeless inline anchor. Covers breadcrumbs, footer links, inline
+  // body-copy links, and "learn more" affordances. The v4 ecommerce
+  // harness forced 5+ hand-rolled `.nav-link` / `.nav-link-active`
+  // classes because there was no link treatment.
+
+  emitRule('.d-link', [
+    ['color', 'var(--d-text)'],
+    ['text-decoration', 'none'],
+    ['border-bottom', '1px solid transparent'],
+    ['transition', 'color 0.15s ease, border-color 0.15s ease'],
+    ['cursor', 'pointer'],
+  ]);
+
+  emitRule('.d-link:hover', [
+    ['color', 'var(--d-primary)'],
+    ['border-bottom-color', 'var(--d-primary)'],
+  ]);
+
+  emitRule('.d-link:focus-visible', [
+    ['outline', '2px solid var(--d-primary)'],
+    ['outline-offset', '2px'],
+    ['border-radius', '2px'],
+  ]);
+
+  emitRule('.d-link[data-variant="subtle"]', [
+    ['color', 'var(--d-text-muted)'],
+  ]);
+
+  emitRule('.d-link[data-variant="subtle"]:hover', [
+    ['color', 'var(--d-text)'],
+    ['border-bottom-color', 'var(--d-text)'],
+  ]);
+
+  emitRule('.d-link[data-variant="strong"]', [
+    ['color', 'var(--d-primary)'],
+    ['font-weight', '500'],
+  ]);
+
+  emitRule('.d-link[data-variant="strong"]:hover', [
+    ['color', 'var(--d-primary-hover)'],
+    ['border-bottom-color', 'var(--d-primary-hover)'],
+  ]);
+
+  // Active state for nav-link-style usage (e.g., sidebar/topnav when
+  // current route matches). Pair with aria-current="page" for a11y.
+  emitRule('.d-link[aria-current="page"], .d-link[data-active="true"]', [
+    ['color', 'var(--d-primary)'],
+    ['font-weight', '500'],
+  ]);
+
+  // ── 9. Icon Button — .d-icon-btn ──
+  // Chromeless square button for icon-only actions (header actions,
+  // card overflow menus, close X, etc.). Avoids the hand-rolled
+  // `.icon-btn` / `.header-btn` classes the ecommerce harness produced.
+
+  emitRule('.d-icon-btn', [
+    ['display', 'inline-flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['width', '2rem'],
+    ['height', '2rem'],
+    ['border', 'none'],
+    ['background', 'transparent'],
+    ['color', 'var(--d-text-muted)'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['cursor', 'pointer'],
+    ['transition', 'background 0.15s ease, color 0.15s ease'],
+  ]);
+
+  emitRule('.d-icon-btn:hover', [
+    ['background', 'color-mix(in srgb, var(--d-text) 8%, transparent)'],
+    ['color', 'var(--d-text)'],
+  ]);
+
+  emitRule('.d-icon-btn:focus-visible', [
+    ['outline', '2px solid var(--d-primary)'],
+    ['outline-offset', '2px'],
+  ]);
+
+  emitRule('.d-icon-btn:disabled', [
+    ['opacity', '0.5'],
+    ['cursor', 'not-allowed'],
+    ['pointer-events', 'none'],
+  ]);
+
+  emitRule('.d-icon-btn[data-size="sm"]', [
+    ['width', '1.5rem'],
+    ['height', '1.5rem'],
+  ]);
+
+  emitRule('.d-icon-btn[data-size="lg"]', [
+    ['width', '2.5rem'],
+    ['height', '2.5rem'],
+  ]);
+
+  emitRule('.d-icon-btn[data-variant="primary"]', [
+    ['background', 'var(--d-primary)'],
+    ['color', '#fff'],
+  ]);
+
+  emitRule('.d-icon-btn[data-variant="primary"]:hover', [
+    ['background', 'var(--d-primary-hover)'],
+  ]);
+
+  // ── 10. Sidebar Nav Link — .d-nav-link ──
+  // Muted-by-default nav-link row. `[data-active]` or `aria-current="page"`
+  // switches to the "current route" pill style with primary accent.
+  // Replaces hand-rolled `.sidebar-link` / `.nav-link-active` classes.
+
+  emitRule('.d-nav-link', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['gap', '0.5rem'],
+    ['padding', '0.5rem 0.75rem'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['color', 'var(--d-text-muted)'],
+    ['text-decoration', 'none'],
+    ['font-size', '0.875rem'],
+    ['cursor', 'pointer'],
+    ['transition', 'background 0.15s ease, color 0.15s ease'],
+    ['border-left', '2px solid transparent'],
+  ]);
+
+  emitRule('.d-nav-link:hover', [
+    ['color', 'var(--d-text)'],
+    ['background', 'color-mix(in srgb, var(--d-text) 6%, transparent)'],
+  ]);
+
+  emitRule('.d-nav-link:focus-visible', [
+    ['outline', '2px solid var(--d-primary)'],
+    ['outline-offset', '2px'],
+  ]);
+
+  // Active state — matches whichever attribute the framework produces.
+  emitRule('.d-nav-link[aria-current="page"], .d-nav-link[data-active="true"]', [
+    ['color', 'var(--d-primary)'],
+    ['background', 'color-mix(in srgb, var(--d-primary) 10%, transparent)'],
+    ['border-left-color', 'var(--d-primary)'],
+    ['font-weight', '500'],
+  ]);
+
+  // ── 11. Stepper Chip — .d-step-chip ──
+  // Circular badge for wizard/checkout steppers. Handles the three
+  // canonical states (pending / active / done).
+
+  emitRule('.d-step-chip', [
+    ['display', 'inline-flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['width', '2rem'],
+    ['height', '2rem'],
+    ['border-radius', '50%'],
+    ['border', '1.5px solid var(--d-border)'],
+    ['background', 'transparent'],
+    ['color', 'var(--d-text-muted)'],
+    ['font-size', '0.875rem'],
+    ['font-weight', '600'],
+    ['font-variant-numeric', 'tabular-nums'],
+    ['transition', 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease'],
+  ]);
+
+  emitRule('.d-step-chip[data-step-state="active"]', [
+    ['background', 'var(--d-primary)'],
+    ['border-color', 'var(--d-primary)'],
+    ['color', '#fff'],
+  ]);
+
+  emitRule('.d-step-chip[data-step-state="done"]', [
+    ['background', 'color-mix(in srgb, var(--d-success) 15%, transparent)'],
+    ['border-color', 'var(--d-success)'],
+    ['color', 'var(--d-success)'],
+  ]);
+
+  // ── 12. Divider Utilities ──
+  // Single-side border rules. Use these as plain class additions on
+  // containers instead of hand-rolling `.divider-top` / `.divider-bottom`.
+
+  emitRule('.d-divider-top', [
+    ['border-top', '1px solid var(--d-border)'],
+  ]);
+
+  emitRule('.d-divider-bottom', [
+    ['border-bottom', '1px solid var(--d-border)'],
+  ]);
+
+  emitRule('.d-divider-left', [
+    ['border-left', '1px solid var(--d-border)'],
+  ]);
+
+  emitRule('.d-divider-right', [
+    ['border-right', '1px solid var(--d-border)'],
+  ]);
+
+  // Horizontal standalone divider element (<hr class="d-divider">).
+  emitRule('.d-divider', [
+    ['border', '0'],
+    ['border-top', '1px solid var(--d-border)'],
+    ['margin', '0'],
+    ['width', '100%'],
+    ['height', '0'],
+  ]);
+
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──
   if (themeOverrideRules.length > 0) {
     lines.push('/* ── Theme-scoped Treatment Overrides ── */');

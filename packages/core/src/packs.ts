@@ -226,6 +226,13 @@ export interface PagePackPattern {
   alias: string;
   preset: string;
   layout: string;
+  /**
+   * Per-preset prose from the pattern's preset.description. When present,
+   * the page-pack renderer emits it as a short description line so cold
+   * LLMs read preset-specific guidance instead of having to look up the
+   * pattern's root description.
+   */
+  presetDescription?: string;
 }
 
 export interface PagePackData {
@@ -555,6 +562,9 @@ function collectPagePatterns(page: IRPageNode): PagePackPattern[] {
       alias: patternNode.pattern.alias,
       preset: patternNode.pattern.preset,
       layout: patternNode.pattern.layout,
+      ...(patternNode.pattern.presetDescription
+        ? { presetDescription: patternNode.pattern.presetDescription }
+        : {}),
     });
   });
   return patterns;
@@ -737,6 +747,12 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Page Patterns');
     for (const pattern of pagePack.data.patterns) {
       lines.push(`- ${pattern.alias} -> ${pattern.id} [${pattern.layout}${pattern.preset ? ` | ${pattern.preset}` : ''}]`);
+      // Emit preset-specific description on the next line (indented) when
+      // the pattern's preset carries its own prose. This stops cold LLMs
+      // from falling back to the blueprint-generic root description.
+      if (pattern.presetDescription) {
+        lines.push(`  > ${pattern.presetDescription}`);
+      }
     }
     lines.push('');
 
