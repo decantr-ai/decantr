@@ -616,7 +616,16 @@ export interface ThemeData {
   tokens?: { base?: Record<string, string>; cvd?: Record<string, Record<string, string>> };
   cvd_support?: string[];
   // Typography
-  typography?: { scale?: string; heading_weight?: number; body_weight?: number; mono?: string };
+  typography?: {
+    scale?: string;
+    heading_weight?: number;
+    body_weight?: number;
+    mono?: string;
+    /** v2.1 B2: font stack for display type (headlines, hero). */
+    display?: string;
+    /** v2.1 B2: font stack for body text. */
+    body?: string;
+  };
   // Motion
   motion?: {
     preference?: string;
@@ -624,7 +633,14 @@ export interface ThemeData {
     entrance?: string;
     timing?: string;
     durations?: Record<string, string>;
+    /** v2.1 B1: easings keyed by semantic intent (ease, easeOut, easeIn, spring). */
+    easings?: Record<string, string>;
   };
+  /**
+   * v2.1 B3: Elevation scale. Each level is either a single CSS shadow value
+   * or a mode-split object { light, dark }. Overrides the token defaults.
+   */
+  elevation?: Record<string, string | { light?: string; dark?: string }>;
   // Visual treatment (formerly RecipeData)
   decorators?: Record<string, string>;
   decorator_definitions?: Record<
@@ -784,11 +800,70 @@ export function generateTokensCSS(
       '--d-shadow-lg':
         tokenMode === 'light' ? '0 10px 15px rgba(0,0,0,0.1)' : '0 10px 15px rgba(0,0,0,0.4)',
 
+      // Elevation scale (v2.1 Tier B3). Formal cross-theme depth system.
+      // .d-elevate[data-level="N"] reads these. Dark themes need stronger
+      // alpha to register on dark backgrounds.
+      '--d-elevation-0': 'none',
+      '--d-elevation-1':
+        tokenMode === 'light' ? '0 1px 2px rgba(0,0,0,0.06)' : '0 1px 2px rgba(0,0,0,0.3)',
+      '--d-elevation-2':
+        tokenMode === 'light' ? '0 2px 4px rgba(0,0,0,0.08)' : '0 2px 4px rgba(0,0,0,0.4)',
+      '--d-elevation-3':
+        tokenMode === 'light' ? '0 4px 12px rgba(0,0,0,0.10)' : '0 4px 12px rgba(0,0,0,0.5)',
+      '--d-elevation-4':
+        tokenMode === 'light' ? '0 8px 24px rgba(0,0,0,0.14)' : '0 8px 24px rgba(0,0,0,0.55)',
+      '--d-elevation-5':
+        tokenMode === 'light' ? '0 16px 48px rgba(0,0,0,0.18)' : '0 16px 48px rgba(0,0,0,0.6)',
+
       // Status colors
       '--d-success': themeData.tokens?.base?.success || '#22c55e',
       '--d-error': themeData.tokens?.base?.danger || '#ef4444',
       '--d-warning': themeData.tokens?.base?.warning || '#f59e0b',
       '--d-info': '#3b82f6',
+
+      // Motion scale (v2.1 Tier B1). Canonical durations + easings.
+      // d-enter-fade, d-pulse, d-glow-hover, etc. all read these.
+      // Themes can override via theme.motion.* and this picks them up
+      // below. Defaults here ensure treatments work even without theme.
+      '--d-motion-instant': '80ms',
+      '--d-motion-fast': '150ms',
+      '--d-motion-base': '250ms',
+      '--d-motion-slow': '400ms',
+      '--d-motion-slower': '600ms',
+      '--d-motion-stagger': '60ms',
+      '--d-motion-ease': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      '--d-motion-ease-out': 'cubic-bezier(0, 0, 0.2, 1)',
+      '--d-motion-ease-in': 'cubic-bezier(0.4, 0, 1, 1)',
+      '--d-motion-ease-spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+
+      // Typography scale (v2.1 Tier B2). Canonical sizes + weights +
+      // tracking + leading. d-display, d-headline, d-title, d-prose,
+      // d-caption, d-eyebrow read these. Themes override via
+      // theme.typography.* below.
+      '--d-font-body': 'ui-sans-serif, system-ui, -apple-system, sans-serif',
+      '--d-font-display': 'ui-sans-serif, system-ui, -apple-system, sans-serif',
+      '--d-weight-regular': '400',
+      '--d-weight-medium': '500',
+      '--d-weight-semibold': '600',
+      '--d-weight-bold': '700',
+      '--d-tracking-tight': '-0.02em',
+      '--d-tracking-normal': '0',
+      '--d-tracking-wide': '0.04em',
+      '--d-tracking-wider': '0.08em',
+      '--d-leading-tight': '1.1',
+      '--d-leading-snug': '1.25',
+      '--d-leading-normal': '1.5',
+      '--d-leading-relaxed': '1.625',
+      '--d-text-xs': '0.75rem',
+      '--d-text-sm': '0.875rem',
+      '--d-text-base': '1rem',
+      '--d-text-lg': '1.125rem',
+      '--d-text-xl': '1.25rem',
+      '--d-text-2xl': '1.5rem',
+      '--d-text-3xl': '1.875rem',
+      '--d-text-4xl': '2.25rem',
+      '--d-text-5xl': '3rem',
+      '--d-text-6xl': '4rem',
     };
   }
 
@@ -811,6 +886,58 @@ export function generateTokensCSS(
     tokens['--d-easing'] = themeData.motion.timing;
   }
 
+  // v2.1 Tier B — theme-provided motion / typography / elevation extensions.
+  // Themes can override the token defaults emitted above by declaring these
+  // in their JSON. All optional; missing fields keep the defaults.
+  if (themeData?.typography?.display) {
+    tokens['--d-font-display'] = themeData.typography.display;
+  }
+  if (themeData?.typography?.body) {
+    tokens['--d-font-body'] = themeData.typography.body;
+  }
+  if (themeData?.motion?.durations?.instant) {
+    tokens['--d-motion-instant'] = themeData.motion.durations.instant;
+  }
+  if (themeData?.motion?.durations?.fast) {
+    tokens['--d-motion-fast'] = themeData.motion.durations.fast;
+  }
+  if (themeData?.motion?.durations?.base) {
+    tokens['--d-motion-base'] = themeData.motion.durations.base;
+  }
+  if (themeData?.motion?.durations?.slow) {
+    tokens['--d-motion-slow'] = themeData.motion.durations.slow;
+  }
+  if (themeData?.motion?.durations?.slower) {
+    tokens['--d-motion-slower'] = themeData.motion.durations.slower;
+  }
+  if (themeData?.motion?.durations?.stagger) {
+    tokens['--d-motion-stagger'] = themeData.motion.durations.stagger;
+  }
+  if (themeData?.motion?.easings?.ease) {
+    tokens['--d-motion-ease'] = themeData.motion.easings.ease;
+  }
+  if (themeData?.motion?.easings?.easeOut) {
+    tokens['--d-motion-ease-out'] = themeData.motion.easings.easeOut;
+  }
+  if (themeData?.motion?.easings?.easeIn) {
+    tokens['--d-motion-ease-in'] = themeData.motion.easings.easeIn;
+  }
+  if (themeData?.motion?.easings?.spring) {
+    tokens['--d-motion-ease-spring'] = themeData.motion.easings.spring;
+  }
+  if (themeData?.elevation) {
+    for (let i = 1; i <= 5; i++) {
+      const value = themeData.elevation[String(i)];
+      if (typeof value === 'string') {
+        tokens[`--d-elevation-${i}`] = value;
+      } else if (value && typeof value === 'object') {
+        const modeKey = resolvedMode === 'light' ? 'light' : 'dark';
+        const modeValue = value[modeKey as 'light' | 'dark'];
+        if (modeValue) tokens[`--d-elevation-${i}`] = modeValue;
+      }
+    }
+  }
+
   const lines = Object.entries(tokens)
     .map(([key, value]) => `  ${key}: ${value};`)
     .join('\n');
@@ -830,7 +957,8 @@ ${lines}${spatialLines}
 `;
 
   // Palette keys that differ between light and dark (everything non-palette
-  // stays stable across modes).
+  // stays stable across modes). Includes shadow + elevation because both
+  // need mode-dependent alpha to register on their respective backgrounds.
   const paletteKeys = [
     '--d-bg',
     '--d-surface',
@@ -843,6 +971,11 @@ ${lines}${spatialLines}
     '--d-shadow',
     '--d-shadow-md',
     '--d-shadow-lg',
+    '--d-elevation-1',
+    '--d-elevation-2',
+    '--d-elevation-3',
+    '--d-elevation-4',
+    '--d-elevation-5',
   ];
 
   // When mode is 'auto', add a light-mode media query block (OS-preference
@@ -1336,6 +1469,17 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 | **Agent Node** | \`d-agent-node\` | Card sized for graph canvases (200-260px wide). \`data-status="active\\|error"\` for highlights (error adds red border-glow shadow, active adds accent border). Pair with absolute positioning on the canvas parent. |
 | **Connection Port** | \`d-port\` | \`data-side="left\\|right\\|top\\|bottom"\` positions the 8px dot on the node edge. \`data-active="true"\` colors it with accent. Use as a slot inside \`d-agent-node\` so SVG connection paths can anchor to predictable element coordinates via \`getBoundingClientRect\`. |
 
+**Composite card (structural companion to theme card decorators):**
+
+| Treatment | Class | Variants / States |
+|-----------|-------|-------------------|
+| **Card** | \`d-card\` | \`data-padding="compact\\|spacious\\|none"\`, \`data-interactive\` for hover elevation + border accent |
+| **Card header** | \`d-card-header\` | Flex row, bottom-bordered; pair with \`d-title\` + \`d-icon-btn\` slots |
+| **Card body** | \`d-card-body\` | Content region, flex col, \`flex: 1 1 auto\` |
+| **Card footer** | \`d-card-footer\` | Right-aligned action row, top-bordered |
+
+Pair \`d-card\` with a theme card decorator (e.g., \`carbon-card\`) for hover glow / gradient border. The composite handles layout; the decorator handles aesthetic polish.
+
 **Banners / prominent CTAs:**
 
 | Treatment | Class | Variants / States |
@@ -1767,29 +1911,93 @@ Implementation: prefer the \`@decantr/css\` breakpoint atoms (\`_sm:\`, \`_md:\`
 - Keep keyboard focus visible with \`:focus-visible\` treatments on custom interactive surfaces, not just browser defaults.
 - Implement shell-level accessibility and routing behaviors as reusable structure or shared helpers, not one-off inline patches. Compact header sizing, responsive sidebar collapse, and skip-nav targets should be consistent across the shell, not re-solved page by page.
 
-### Motion Philosophy
+### Motion Treatments
 
-Every interaction should feel responsive and polished. Apply motion by default, not as an afterthought:
+**Hard rule:** Every animation MUST use one of the treatments below. Do **not** hand-roll \`@keyframes\` or inline \`transition\` rules — the treatments ship tuned durations, easings, and \`prefers-reduced-motion\` handling.
 
-- **Page transitions:** Apply entrance-fade (or the personality entrance animation) to the main content area on route change
-- **Stagger children:** Lists, grids, and card groups should stagger-animate on mount (50-100ms delay per item)
-- **Data visualization:** Charts, gauges, progress bars, and counters should animate to their values on mount — never render static
-- **Micro-interactions:** All interactive elements (buttons, toggles, cards, nav items) need hover/press transitions. Use the motion tokens (--d-duration-hover, --d-easing) for consistency.
-- **Scroll reveals:** Sections below the fold should fade-in on scroll intersection (IntersectionObserver, once)
-- **Reduced motion:** Wrap all animations in a \`@media (prefers-reduced-motion: reduce)\` media query — skip animation, keep state changes instant. The media query is the correct gate at any time regardless of the DNA \`reduce_motion\` flag — it hands control to the user's OS-level preference.
+| Treatment | Class | Intent | When to use |
+|-----------|-------|--------|-------------|
+| Fade entrance | \`d-enter-fade\` | Soft mount | Cards, sections, modals on mount |
+| Slide-up entrance | \`d-enter-slide-up\` | Forceful mount | Hero blocks, primary content |
+| Scale entrance | \`d-enter-scale\` | Spring mount | Dialogs, popovers, callouts |
+| Stagger children | \`d-stagger-children > *\` | Sequential reveal | Lists, grids — set \`style={{ '--d-stagger-index': i }}\` on each child |
+| Status pulse | \`d-pulse\` | Opacity cycle | Live indicators, processing badges |
+| Ring pulse | \`d-pulse-ring\` | Expanding halo | Notification dots, focus attractors |
+| Shimmer | \`d-shimmer\` | Loading skeleton | Skeleton screens on surface-raised |
+| Float | \`d-float\` | Idle vertical drift | Decorative elements, empty-state graphics |
+| Glow on hover | \`d-glow-hover\` | Accent glow | Primary CTAs, feature cards |
+| Scale on hover | \`d-scale-hover\` | 1.02× pop | Clickable cards, tiles |
+| Lift on hover | \`d-lift-hover\` | Translate + elevate | Product cards (elevation jumps to 3) |
+| Click ripple | \`d-ripple\` | Material ripple | Buttons inside disclosure surfaces |
 
-**\`dna.motion.reduce_motion = true\` does NOT mean "disable motion in all code."** It means: the generated CSS must include a reviewed \`@media (prefers-reduced-motion: reduce)\` block (the scaffold already emits one in \`global.css\`). Do not branch component code on the DNA flag to unconditionally suppress animations — that would kill the personality's explicit motion directives (e.g., "pulse animations", "fade-in reveals") even for users whose OS allows motion. Always gate at the CSS level via the media query, never at the TS/JS level via a hardcoded constant.
+**Motion tokens** (theme-tunable via \`theme.motion.durations\` / \`theme.motion.easings\`):
 
-### Interactivity Philosophy
+| Token | Default | Meaning |
+|-------|---------|---------|
+| \`--d-motion-instant\` | 80ms | Color swaps, focus rings |
+| \`--d-motion-fast\` | 150ms | Hover transitions, button press |
+| \`--d-motion-base\` | 250ms | Entrances, section reveals |
+| \`--d-motion-slow\` | 400ms | Modals, page transitions |
+| \`--d-motion-slower\` | 600ms | Hero reveals |
+| \`--d-motion-stagger\` | 60ms | Per-child stagger delay |
+| \`--d-motion-ease\` | cubic-bezier(0.4, 0, 0.2, 1) | Balanced ease in/out |
+| \`--d-motion-ease-out\` | cubic-bezier(0, 0, 0.2, 1) | Decelerate (entrances) |
+| \`--d-motion-ease-in\` | cubic-bezier(0.4, 0, 1, 1) | Accelerate (exits) |
+| \`--d-motion-ease-spring\` | cubic-bezier(0.34, 1.56, 0.64, 1) | Bounce overshoot |
 
-Build for wow factor. When a pattern describes a canvas, graph, map, or spatial visualization, implement it as a **fully interactive surface**, not a static illustration:
+**Reduced motion is handled inside the treatments themselves** — do NOT wrap each usage in a media query. Do NOT branch React/TS code on \`dna.motion.reduce_motion\`. The treatments' \`@media (prefers-reduced-motion: reduce)\` block hands control to the user's OS preference automatically.
 
-- **Drag and drop:** Nodes, cards, and items on spatial canvases should be draggable. Use pointer events with proper grab/grabbing cursors.
-- **Pan and zoom:** Canvases and large visualizations should support pan (click-drag on background) and zoom (scroll wheel or pinch). Show zoom level indicator.
-- **Connections:** When nodes exist in a graph/topology view, they should have visible connection lines. Implement click-to-select + click-target for connecting nodes.
-- **Live state:** Data-driven visualizations should update in real-time with simulated data. Status changes should animate (color transitions, pulse effects).
-- **Direct manipulation:** Prefer drag-to-reorder over dropdown menus. Prefer inline editing over modal forms. Prefer resize handles over fixed layouts.
-- **Hover reveals:** Show contextual information (tooltips, expanded cards, action menus) on hover — don't require clicks to discover functionality.`;
+### Typography Treatments
+
+**Hard rule:** Every text node with a distinct visual role MUST use one of these treatments. Do **not** set \`font-size\` / \`font-weight\` / \`letter-spacing\` / \`line-height\` via inline styles or hand-rolled classes.
+
+| Treatment | Class | Role | Default size / weight |
+|-----------|-------|------|----------------------|
+| Display | \`d-display\` | Hero headings | 3rem / 700 / tight leading / tight tracking |
+| Headline | \`d-headline\` | Section H1/H2 | 1.875rem / 600 / snug leading |
+| Title | \`d-title\` | Card titles, dialog headers | 1.25rem / 600 |
+| Subtitle | \`d-subtitle\` | Under-title explainer | 1.125rem / 400 / muted |
+| Prose | \`d-prose\` | Long-form reading copy | 1rem / 1.625 leading |
+| Body | \`d-body\` | UI body text | 1rem / 1.5 leading |
+| Caption | \`d-caption\` | Help text, fine print | 0.875rem / muted |
+| Eyebrow | \`d-eyebrow\` | Category kicker above headline | 0.75rem / 600 / uppercase / wider tracking / accent |
+| Numeric modifier | \`d-numeric\` | Adds tabular-nums to any text | Mix with other treatments |
+| Monospace | \`d-mono-text\` | Code, IDs, timestamps, metric values | Mono font + tabular nums |
+
+### Elevation Scale
+
+**Hard rule:** When a surface needs a shadow, use \`d-elevate[data-level="1..5"]\`. Do **not** hand-roll \`box-shadow\` values.
+
+| Level | Token | Typical use |
+|-------|-------|-------------|
+| 0 | \`--d-elevation-0\` (none) | Flat surfaces (default) |
+| 1 | \`--d-elevation-1\` | Subtle — resting cards |
+| 2 | \`--d-elevation-2\` | Raised — default cards |
+| 3 | \`--d-elevation-3\` | Hover / active |
+| 4 | \`--d-elevation-4\` | Floating panels, popovers |
+| 5 | \`--d-elevation-5\` | Modals, overlays |
+
+Dark themes emit stronger alpha values automatically.
+
+### Interaction Requirements
+
+**Hard rule:** Every pattern declares its required interactions in its page-pack \`Interactions\` checklist. **A pattern that declares \`interactions: [...]\` MUST implement each one in source.** \`decantr check --strict\` fails when a declared interaction has no matching treatment or handler in the generated code.
+
+| Declared interaction | Canonical implementation |
+|----------------------|-------------------------|
+| \`animate-on-mount\` | \`d-enter-fade\` / \`d-enter-slide-up\` / \`d-enter-scale\` on the pattern root |
+| \`stagger-children\` | \`d-stagger-children\` on parent + \`style={{ '--d-stagger-index': i }}\` on each child |
+| \`status-pulse\` | \`d-pulse\` on the indicator |
+| \`glow-hover\` | \`d-glow-hover\` on the interactive surface |
+| \`lift-hover\` | \`d-lift-hover\` on the interactive surface |
+| \`scale-hover\` | \`d-scale-hover\` on the interactive surface |
+| \`drag-nodes\` | \`pointerdown\` → \`pointermove\` with 4px threshold before drag engages. \`cursor: grab\` default, \`cursor: grabbing\` during. |
+| \`pan-background\` | Pointer handlers on canvas background only (not nodes); translate the viewport transform |
+| \`zoom-scroll\` | Wheel handler adjusting a \`scale\` transform, clamped [0.25, 4]; show zoom indicator |
+| \`click-connect\` | Two-click state machine: select a port, click another port to create a connection |
+| \`inline-edit\` | Replace static text with controlled \`<input>\` on click; commit on blur or Enter |
+| \`hover-tooltip\` | \`data-tooltip\` attribute + hover handler positioning a popover (mount with \`d-enter-scale\`) |
+| \`live-simulation\` | \`setInterval\` updating mock state every 2-4 seconds; animate changes with \`d-pulse\` |`;
 
 /**
  * Generate DECANTR.md for v3.1 essences.
