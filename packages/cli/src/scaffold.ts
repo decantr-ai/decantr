@@ -1480,6 +1480,18 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 
 Pair \`d-card\` with a theme card decorator (e.g., \`carbon-card\`) for hover glow / gradient border. The composite handles layout; the decorator handles aesthetic polish.
 
+**Data-viz primitives (do NOT hand-roll inline SVGs for these):**
+
+| Treatment | Class | Purpose / Variants |
+|-----------|-------|---------------------|
+| **Timeline rail** | \`d-timeline-rail\` + \`d-timeline-dot\` | Vertical timeline. Dot has \`data-state="active\\|done\\|error\\|warning"\` controlling color. |
+| **Sparkline** | \`d-sparkline\` + \`d-sparkline-path\` + \`d-sparkline-area\` | Inline trend SVG. \`data-trend="up\\|down"\` colors stroke + area accent. |
+| **Intent radar** | \`d-intent-radar\` + \`d-intent-radar-ring[data-level]\` + \`d-intent-radar-axis\` | Concentric ring backdrop (5 levels) for confidence/score wheels. \`--d-radar-axis-angle\` for rotated axes. |
+| **Waveform** | \`d-waveform\` + \`d-waveform-path\` | Audio/signal waveform path container. \`data-state="active"\` switches to success color. |
+| **QR placeholder** | \`d-qr-placeholder\` | Pure-CSS QR-code placeholder (repeating gradients). \`--d-qr-size\` for size override. |
+| **Conic ring** | \`d-conic-ring\` | Gauge/confidence ring. Set \`--d-conic-value\` (0..1) to fill arc. \`data-state="success\\|warning\\|error"\` switches color. \`--d-conic-thickness\` for ring width. |
+| **Heatmap cell** | \`d-heatmap-cell\` | Single heatmap cell. \`--d-heatmap-intensity\` 0..1 blends primary→surface. \`data-status="error\\|success"\` switches base color. |
+
 **Banners / prominent CTAs:**
 
 | Treatment | Class | Variants / States |
