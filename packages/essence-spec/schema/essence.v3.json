@@ -408,6 +408,10 @@
         "match_case": {
           "type": "boolean",
           "description": "If true: hotkey key matching is case-sensitive (distinguishes 'g' from 'G'). Default: false — uppercase letter implies Shift modifier."
+        },
+        "show_chord_indicator": {
+          "type": "boolean",
+          "description": "v2.1 C3. If true (default): render the .d-hotkey-indicator corner badge when a chord hotkey prefix is armed. If false: silent chord tracking (no visual feedback)."
         }
       }
     },

@@ -90,6 +90,11 @@ function buildPatternNode(
 
   const presetName = preset?.preset || 'default';
   const presetDescription = pattern?.presets?.[presetName]?.description;
+  // v2.1 C1: thread interactions[] from the pattern through to PagePackPattern
+  // so the page-pack renderer can surface them as a checkbox checklist.
+  const interactions = Array.isArray((pattern as { interactions?: unknown })?.interactions)
+    ? ((pattern as { interactions?: unknown }).interactions as string[])
+    : undefined;
 
   const patternMeta: IRPatternMeta = {
     patternId,
@@ -101,6 +106,7 @@ function buildPatternNode(
     code: preset?.code ? { imports: preset.code.imports, example: preset.code.example } : null,
     components,
     ...(presetDescription ? { presetDescription } : {}),
+    ...(interactions && interactions.length > 0 ? { interactions } : {}),
   };
 
   const card = contained && !isStandalone && pattern ? buildCardWrapping(pattern, theme) : null;

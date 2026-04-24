@@ -108,6 +108,40 @@
       "type": "object",
       "additionalProperties": true
     },
+    "interactions": {
+      "type": "array",
+      "description": "v2.1 Tier C1. Declared runtime interactions that the rendered pattern MUST implement. Surfaced as a checkbox checklist in the per-page execution pack; enforced by decantr check --strict (C5 guard rule). Each value maps to a canonical implementation: a specific treatment class, handler pattern, or both — see 'Interaction Requirements' table in DECANTR.md for the mapping. Before this field, motion/interactivity lived only as prose philosophy that cold LLMs categorized as 'nice to have'.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "animate-on-mount",
+          "stagger-children",
+          "status-pulse",
+          "shimmer-skeleton",
+          "float-idle",
+          "glow-hover",
+          "lift-hover",
+          "scale-hover",
+          "ripple-click",
+          "drag-nodes",
+          "drag-reorder",
+          "pan-background",
+          "zoom-scroll",
+          "zoom-pinch",
+          "click-select",
+          "click-connect",
+          "inline-edit",
+          "hover-tooltip",
+          "hover-reveal",
+          "live-simulation",
+          "real-time-updates",
+          "scroll-reveal",
+          "keyboard-navigation",
+          "focus-trap"
+        ]
+      },
+      "uniqueItems": true
+    },
     "responsive": {
       "type": "object",
       "description": "Per-breakpoint adaptation. Keys are viewport breakpoint tokens (e.g., 'mobile', 'tablet', 'desktop', or '<768px', '>=900px'). Values may be either a legacy prose string OR a structured ResponsiveBreakpointRule object. Prefer structured rules so the LLM can adapt mechanically instead of paraphrasing.",

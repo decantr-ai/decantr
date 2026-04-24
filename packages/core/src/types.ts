@@ -56,6 +56,11 @@ export interface IRPatternMeta {
    * guidance instead of the blueprint-generic pattern root description.
    */
   presetDescription?: string;
+  /**
+   * v2.1 Tier C1. Declared runtime interactions from the pattern JSON.
+   * Page-pack renderer surfaces these as a checkbox checklist.
+   */
+  interactions?: string[];
 }
 
 export interface IRVisualEffect {

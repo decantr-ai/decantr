@@ -370,6 +370,12 @@ export interface HotkeySemantics {
   modifier_suppression?: boolean;
   /** If true: hotkey matching is case-sensitive. Default false — uppercase implies Shift. */
   match_case?: boolean;
+  /**
+   * v2.1 C3. If true (default): render the .d-hotkey-indicator corner badge
+   * when a chord hotkey prefix is armed. If false: silent chord tracking
+   * (no visual feedback). Recommended true for discoverability.
+   */
+  show_chord_indicator?: boolean;
 }
 
 export interface EssenceV3 {
