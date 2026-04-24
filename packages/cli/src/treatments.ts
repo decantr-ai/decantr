@@ -704,6 +704,66 @@ export function generateTreatmentCSS(
     ['padding', '1rem'],
   ]);
 
+  // Top-nav-footer variant — explicit marker for the default vertical-column
+  // layout with sticky header and footer. Default behaviour if no
+  // data-layout is set, but naming the variant explicitly makes the
+  // contract readable and lets authors match the blueprint's declared
+  // shell name exactly.
+  emitRule('.d-shell[data-layout="top-nav-footer"]', [
+    ['flex-direction', 'column'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // Sidebar-aside variant — 3-column dashboard layout with primary
+  // navigation on the left, main content in the centre, and a context
+  // aside on the right. Used by video editors, trace explorers, and any
+  // workspace where a persistent auxiliary panel (inspector, timeline,
+  // minimap) lives alongside the main canvas. The v4 ai-video-studio
+  // harness run reported this as the single biggest contributor to
+  // inline-style count (11 in SidebarAsideShell.tsx alone) because the
+  // treatment didn't exist and the grid had to be hand-rolled.
+  //
+  // Usage: wrap `<div className="d-shell" data-layout="sidebar-aside">`
+  // with three children — `d-shell-sidebar`, `d-shell-main`, `d-shell-aside`.
+  emitRule('.d-shell[data-layout="sidebar-aside"]', [
+    ['display', 'grid'],
+    ['grid-template-columns', '240px 1fr 320px'],
+    ['grid-template-rows', '1fr'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // Aside region — right-side auxiliary panel for inspector/timeline/minimap.
+  emitRule('.d-shell-aside', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['border-left', '1px solid var(--d-border)'],
+    ['background', 'var(--d-surface)'],
+    ['overflow-y', 'auto'],
+  ]);
+
+  // Below md, the aside collapses out of the grid. Pair with a drawer
+  // toggle when the pattern's mobile reflow asks for it, or simply hide
+  // the auxiliary panel entirely on phone viewports.
+  lines.push('@media (max-width: 767.98px) {');
+  lines.push('  .d-shell[data-layout="sidebar-aside"] {');
+  lines.push('    grid-template-columns: 1fr;');
+  lines.push('    grid-template-rows: auto 1fr;');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="sidebar-aside"] .d-shell-aside {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="sidebar-aside"] .d-shell-aside[data-mobile-open="true"] {');
+  lines.push('    display: flex;');
+  lines.push('    position: fixed;');
+  lines.push('    inset: 0 0 0 auto;');
+  lines.push('    width: min(320px, 100vw);');
+  lines.push('    z-index: 50;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
   // Sidebar region — 240px persistent nav column.
   emitRule('.d-shell-sidebar', [
     ['display', 'flex'],

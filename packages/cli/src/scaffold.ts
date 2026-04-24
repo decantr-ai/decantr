@@ -644,7 +644,12 @@ export function mapRegistryThemeToThemeData(theme: RegistryTheme): ThemeData {
 /**
  * Generate tokens.css from theme data.
  */
-export function generateTokensCSS(themeData: ThemeData | undefined, mode: string, spatialTokens?: Record<string, string>): string {
+export function generateTokensCSS(
+  themeData: ThemeData | undefined,
+  mode: string,
+  spatialTokens?: Record<string, string>,
+  options?: { hasThemeToggle?: boolean },
+): string {
   if (!themeData) {
     const spatialLines = spatialTokens
       ? '\n' + Object.entries(spatialTokens).map(([k, v]) => `  ${k}: ${v};`).join('\n')
@@ -784,15 +789,18 @@ ${lines}${spatialLines}
 }
 `;
 
-  // When mode is 'auto', add a light-mode media query block
+  // Palette keys that differ between light and dark (everything non-palette
+  // stays stable across modes).
+  const paletteKeys = [
+    '--d-bg', '--d-surface', '--d-surface-raised', '--d-border',
+    '--d-text', '--d-text-muted', '--d-primary-hover',
+    '--d-shadow-sm', '--d-shadow', '--d-shadow-md', '--d-shadow-lg',
+  ];
+
+  // When mode is 'auto', add a light-mode media query block (OS-preference
+  // driven).
   if (mode === 'auto') {
     const lightTokens = buildTokens('light');
-    // Only emit palette tokens that differ between modes
-    const paletteKeys = [
-      '--d-bg', '--d-surface', '--d-surface-raised', '--d-border',
-      '--d-text', '--d-text-muted', '--d-primary-hover',
-      '--d-shadow-sm', '--d-shadow', '--d-shadow-md', '--d-shadow-lg',
-    ];
     const lightLines = Object.entries(lightTokens)
       .filter(([key]) => paletteKeys.includes(key))
       .map(([key, value]) => `    ${key}: ${value};`)
@@ -803,6 +811,33 @@ ${lines}${spatialLines}
   :root {
 ${lightLines}
   }
+}
+`;
+  }
+
+  // H5 fix: when the blueprint declares a `theme-toggle` feature, the user
+  // actively flips modes (typically by setting `data-mode` on <html>) —
+  // not via OS preference. Emit a `[data-mode="<opposite>"]` selector so
+  // the JS toggle actually changes the active tokens. Without this, the
+  // toggle flips an attribute that has nothing to respond to it and the
+  // visual is a no-op.
+  if (options?.hasThemeToggle) {
+    const opposite = resolvedMode === 'light' ? 'dark' : 'light';
+    const oppositeTokens = buildTokens(opposite);
+    const oppositeLines = Object.entries(oppositeTokens)
+      .filter(([key]) => paletteKeys.includes(key))
+      .map(([key, value]) => `    ${key}: ${value};`)
+      .join('\n');
+
+    css += `
+/*
+ * Theme-toggle variant. Blueprint declared the \`theme-toggle\` feature,
+ * so the user-facing toggle sets \`data-mode\` on <html>. Apply the
+ * opposite mode's palette when that attribute is set.
+ */
+:root[data-mode="${opposite}"],
+[data-mode="${opposite}"] {
+${oppositeLines}
 }
 `;
   }
@@ -1253,17 +1288,40 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 
 | Treatment | Class | Purpose / States |
 |-----------|-------|------------------|
-| **Shell root** | \`d-shell\` | Full-viewport root container. \`data-layout="sidebar-main\\|centered"\` switches the layout model (default is top-nav-footer-style: vertical flex with sticky header). |
+| **Shell root** | \`d-shell\` | Full-viewport root container. \`data-layout="sidebar-main\\|centered\\|top-nav-footer\\|sidebar-aside"\` switches the layout model (default equivalent to top-nav-footer: vertical flex with sticky header). |
 | **Sidebar** | \`d-shell-sidebar\` | Left 240px nav column. \`data-collapsed="true"\` switches to a 64px rail. Below \`_mdmax:\` auto-becomes an off-canvas drawer — toggle via \`data-mobile-open="true"\`. |
 | **Main** | \`d-shell-main\` | Remaining-width column to the right of the sidebar (or the full content area in top-nav shells). Handles scroll internally. |
+| **Aside** | \`d-shell-aside\` | Right 320px auxiliary panel for inspector / timeline / minimap in \`sidebar-aside\` layouts. Below \`_mdmax:\` hides by default; toggle with \`data-mobile-open="true"\`. |
 | **Header** | \`d-shell-header\` | 52px sticky top bar with horizontal flex layout. Use inside \`d-shell-main\` (sidebar-main shells) or at the top of \`d-shell\` (top-nav shells). |
 | **Body** | \`d-shell-body\` | Scrollable main region. \`data-padding="compact\\|spacious\\|none"\` overrides the default 1rem padding. |
 | **Footer** | \`d-shell-footer\` | Narrow band below the body with top border. |
 | **Centered card** | \`d-shell-centered-card\` | The content parent inside \`d-shell[data-layout="centered"]\`. Caps width at 28rem. |
 
-**Auth / confirmation layouts use \`d-shell[data-layout="centered"] + d-shell-centered-card\`. Dashboard-style layouts use \`d-shell[data-layout="sidebar-main"] + d-shell-sidebar + d-shell-main (> d-shell-header + d-shell-body)\`. Marketing / public pages use \`d-shell\` (default) with \`d-shell-header\` at the top and \`d-shell-body\` + \`d-shell-footer\`.**
+**Shell layout recipes:**
+- **Auth / confirmation:** \`d-shell[data-layout="centered"] + d-shell-centered-card\`.
+- **Dashboard with sidebar:** \`d-shell[data-layout="sidebar-main"] + d-shell-sidebar + d-shell-main (> d-shell-header + d-shell-body)\`.
+- **Dashboard with inspector / timeline / minimap:** \`d-shell[data-layout="sidebar-aside"] + d-shell-sidebar + d-shell-main + d-shell-aside\` (3-column grid; aside collapses off-canvas below md).
+- **Marketing / public pages:** \`d-shell[data-layout="top-nav-footer"]\` (or bare \`d-shell\`) with \`d-shell-header\` at the top and \`d-shell-body\` + \`d-shell-footer\`.
 
-Do NOT hand-roll \`.shell-sidebar\`, \`.shell-centered\`, \`.shell-tnf\`, \`.sidebar-main-layout\`, or similar class names. They exist as treatments.
+Do NOT hand-roll \`.shell-sidebar\`, \`.shell-centered\`, \`.shell-tnf\`, \`.shell-aside\`, \`.sidebar-main-layout\`, or similar class names. They exist as treatments.
+
+### Theme toggle
+
+If the blueprint declares the \`theme-toggle\` feature, \`tokens.css\` includes a \`[data-mode="<opposite>"]\` selector block. Flip the visible mode by setting \`data-mode\` on \`<html>\` (or any ancestor):
+
+\`\`\`tsx
+// Toggle between the blueprint's primary mode and its opposite.
+function ThemeToggle() {
+  const toggle = () => {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-mode');
+    html.setAttribute('data-mode', current === 'dark' ? 'light' : 'dark');
+  };
+  return <button className="d-icon-btn" onClick={toggle}><SunMoon /></button>;
+}
+\`\`\`
+
+Do NOT branch component code on the current mode via JS to re-style elements — the token switch handles it CSS-side.
 
 **Modal / palette chrome:**
 
@@ -2836,7 +2894,13 @@ export async function refreshDerivedFiles(
         console.warn(`${YELLOW}   "${mode}" keys to the theme's palette in decantr-content.${RESET}`);
       }
     }
-    writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens));
+    // H5 fix: if the blueprint declares the `theme-toggle` feature, emit
+    // a [data-mode="<opposite>"] selector block so the user's toggle
+    // actually changes the active palette. Without this the toggle flips
+    // data-mode on <html> and nothing responds.
+    const features = essence.blueprint?.features ?? [];
+    const hasThemeToggle = features.includes('theme-toggle') || features.includes('theme_toggle');
+    writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens, { hasThemeToggle }));
   }
 
   // Write treatments.css (replaces decorators.css)
