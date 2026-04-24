@@ -1692,7 +1692,16 @@ function generateDecantrMdV31(params: {
   sections?: Array<{ id: string; role: string }>;
   features?: string[];
   decorators?: Array<{ name: string; description: string }>;
-  decoratorDefinitions?: Record<string, { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }>;
+  decoratorDefinitions?: Record<string, {
+    intent?: string;
+    css?: Record<string, string>;
+    suggested_properties?: Record<string, string>;
+    hover_properties?: Record<string, string>;
+    focus_properties?: Record<string, string>;
+    active_properties?: Record<string, string>;
+    pairs_with?: string[] | string;
+    usage?: string[];
+  }>;
 }): string {
   const template = loadTemplate('DECANTR.md.template');
   const body = renderTemplate(template, {
@@ -1731,8 +1740,22 @@ function generateDecantrMdV31(params: {
     briefLines.push('|-------|--------|---------|');
     for (const [name, def] of Object.entries(params.decoratorDefinitions)) {
       const intent = def.intent || '';
-      const cssProps = def.css ? Object.entries(def.css).map(([p, v]) => `${p}: ${v}`).join('; ') : '';
-      briefLines.push(`| \`.${name}\` | ${intent} | ${cssProps} |`);
+      // P0-5 fix: theme JSONs use `suggested_properties` (plus hover/focus/
+      // active variants), not a `css` key. Prior logic read `def.css` which
+      // was always undefined, leaving the column empty for every decorator.
+      // Compose a concise summary preferring suggested_properties, falling
+      // back to `css` for legacy content, and summarizing state-variants.
+      const props = def.suggested_properties ?? def.css ?? {};
+      const base = Object.entries(props)
+        .map(([p, v]) => `${p}: ${v}`)
+        .join('; ');
+      const hasHover = def.hover_properties && Object.keys(def.hover_properties).length > 0;
+      const hasFocus = def.focus_properties && Object.keys(def.focus_properties).length > 0;
+      const hasActive = def.active_properties && Object.keys(def.active_properties).length > 0;
+      const stateMarkers = [hasHover && ':hover', hasFocus && ':focus-visible', hasActive && ':active']
+        .filter((m): m is string => Boolean(m));
+      const stateSuffix = stateMarkers.length > 0 ? ` _(+ ${stateMarkers.join(', ')})_` : '';
+      briefLines.push(`| \`.${name}\` | ${intent} | ${base}${stateSuffix} |`);
     }
     briefLines.push('');
   } else if (params.decorators && params.decorators.length > 0) {

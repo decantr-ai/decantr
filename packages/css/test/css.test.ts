@@ -109,6 +109,43 @@ describe('css()', () => {
       expect(result).toBe('_w[512px]');
       expect(extractCSS()).toContain('width:512px');
     });
+
+    it('handles _overflow[auto] (P0-3 ARB expansion)', () => {
+      const result = css('_overflow[auto]');
+      expect(result).toBe('_overflow[auto]');
+      expect(extractCSS()).toContain('overflow:auto');
+    });
+
+    it('handles _whitespace[pre] (P0-3 ARB expansion)', () => {
+      const result = css('_whitespace[pre]');
+      expect(result).toBe('_whitespace[pre]');
+      expect(extractCSS()).toContain('white-space:pre');
+    });
+
+    it('handles _text[left] (P0-3 ARB expansion)', () => {
+      const result = css('_text[left]');
+      expect(result).toBe('_text[left]');
+      expect(extractCSS()).toContain('text-align:left');
+    });
+
+    it('handles _border[1px_solid_var(--d-border)] (P0-3 ARB expansion)', () => {
+      const result = css('_border[1px_solid_var(--d-border)]');
+      expect(result).toBe('_border[1px_solid_var(--d-border)]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('border:1px solid var(--d-border)');
+    });
+
+    it('handles _aspect[16/9] (P0-3 ARB expansion)', () => {
+      const result = css('_aspect[16/9]');
+      expect(result).toBe('_aspect[16/9]');
+      expect(extractCSS()).toContain('aspect-ratio:16/9');
+    });
+
+    it('handles _rounded[100px] (P0-3 ARB expansion)', () => {
+      const result = css('_rounded[100px]');
+      expect(result).toBe('_rounded[100px]');
+      expect(extractCSS()).toContain('border-radius:100px');
+    });
   });
 });
 

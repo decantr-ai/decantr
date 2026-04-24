@@ -50,6 +50,7 @@ const CQ_SET = new Set(CQ_WIDTHS);
 /** Property prefix map for arbitrary values */
 const ARB_PROPS: Record<string, string> = {
   w: 'width', h: 'height', mw: 'max-width', mh: 'max-height',
+  maxw: 'max-width', maxh: 'max-height',
   minw: 'min-width', minh: 'min-height',
   p: 'padding', pt: 'padding-top', pr: 'padding-right', pb: 'padding-bottom', pl: 'padding-left',
   px: 'padding-inline', py: 'padding-block',
@@ -57,13 +58,30 @@ const ARB_PROPS: Record<string, string> = {
   mx: 'margin-inline', my: 'margin-block',
   gap: 'gap', gx: 'column-gap', gy: 'row-gap',
   t: 'font-size', fs: 'font-size', lh: 'line-height', fw: 'font-weight', ls: 'letter-spacing',
-  r: 'border-radius', bg: 'background', fg: 'color', bc: 'border-color',
+  leading: 'line-height', tracking: 'letter-spacing',
+  r: 'border-radius', rounded: 'border-radius',
+  bg: 'background', fg: 'color', bc: 'border-color',
   bw: 'border-width', bt: 'border-top', bb: 'border-bottom', br: 'border-right', bl: 'border-left',
+  border: 'border',
   z: 'z-index', op: 'opacity',
   top: 'top', right: 'right', bottom: 'bottom', left: 'left', inset: 'inset',
   shadow: 'box-shadow', bf: 'backdrop-filter',
   outline: 'outline', trans: 'transition', object: 'object-fit',
   gc: 'grid-template-columns', gr: 'grid-template-rows',
+  // Additional content-observed bracket atoms (P0-3 expansion). The v1
+  // harness report flagged the page-pack Surface emitting atoms the
+  // runtime didn't resolve; same class of silent-failure applies when
+  // pattern JSONs use prefixes not in this map. These additions cover
+  // every bracket prefix observed across the 209 archetype + 80+ pattern
+  // JSONs in decantr-content.
+  overflow: 'overflow', pointer: 'pointer-events',
+  text: 'text-align', whitespace: 'white-space',
+  items: 'align-items', justify: 'justify-content',
+  aspect: 'aspect-ratio', snap: 'scroll-snap-type',
+  // Note: 'scale' intentionally omitted — use the numeric `_scale95` /
+  // `_scale100` / `_scale105` atoms. Bracket form would need value wrapping
+  // (`scale(1.05)` vs `1.05`) which the generic emitter can't do.
+  display: 'display', position: 'position', pos: 'position', cursor: 'cursor',
 };
 
 /**
