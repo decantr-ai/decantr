@@ -16,6 +16,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "pnpm --filter './apps/api' typecheck && pnpm --filter './apps/registry' lint",
+    "biome:check": "biome check packages/",
+    "biome:format": "biome format --write packages/",
+    "biome:fix": "biome check --write packages/",
     "clean": "pnpm -r exec rm -rf dist",
     "mcp": "node packages/mcp-server/dist/index.js",
     "schemas:sync": "node scripts/sync-schema-copies.mjs",
@@ -53,6 +56,7 @@
     "npm-surface:normalize": "node scripts/normalize-npm-dist-tags.mjs --write"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.13",
     "@types/node": "^25.5.0",
     "tsup": "^8.0.0",
     "tsx": "^4.21.0",
