@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import type { ExecutionPackBundle } from '@decantr/core';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
+// v2.1 C5 wiring — scan source for missing interaction implementations.
+import { scanProjectInteractions } from './lib/scan-interactions.js';
 import type {
   ApiContentType,
   ComposeEntry,
@@ -1200,7 +1202,21 @@ async function cmdValidate(path?: string) {
   try {
     // Build registry context for guard validation
     const { themeRegistry, patternRegistry } = buildGuardRegistryContext(process.cwd());
-    const violations = evaluateGuard(essence, { themeRegistry, patternRegistry });
+    // v2.1 C5: scan project source for missing interaction implementations.
+    // Returns formatted issues for the experiential guard rule (8th rule).
+    // Gracefully no-ops when the project has no pack-manifest or no
+    // declared interactions.
+    let interactionIssues: string[] = [];
+    try {
+      interactionIssues = scanProjectInteractions(process.cwd());
+    } catch {
+      // Source-scan is non-fatal — guard runs without it
+    }
+    const violations = evaluateGuard(essence, {
+      themeRegistry,
+      patternRegistry,
+      interaction_issues: interactionIssues,
+    });
     if (violations.length > 0) {
       console.log(heading('Guard violations:'));
       for (const v of violations) {
@@ -1209,6 +1225,11 @@ async function cmdValidate(path?: string) {
         if (vr.suggestion) {
           console.log(`    ${DIM}Suggestion: ${vr.suggestion}${RESET}`);
         }
+      }
+      // C5 strict mode → process exits with code 1 (build failure semantics)
+      const hasError = violations.some((v) => (v as Record<string, string>).severity === 'error');
+      if (hasError) {
+        process.exitCode = 1;
       }
     } else if (result.valid) {
       console.log(success('No guard violations.'));
