@@ -1,9 +1,9 @@
-import type { Plugin, ViteDevServer } from 'vite';
 import { join } from 'node:path';
-import { evaluateGuard } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { loadEssence, shouldTriggerGuard, createDebouncedGuard } from './watcher.js';
+import { evaluateGuard } from '@decantr/essence-spec';
+import type { Plugin, ViteDevServer } from 'vite';
 import { formatViolations } from './overlay.js';
+import { createDebouncedGuard, loadEssence, shouldTriggerGuard } from './watcher.js';
 
 export interface DecantrPluginOptions {
   /** Path to the essence file, relative to project root. Default: 'decantr.essence.json' */
@@ -35,10 +35,9 @@ export function decantrPlugin(options: DecantrPluginOptions = {}): Plugin {
     const overlayError = formatViolations(violations);
 
     if (overlayError) {
-      server.config.logger.warn(
-        `[decantr] ${violations.length} guard violation(s) detected`,
-        { timestamp: true },
-      );
+      server.config.logger.warn(`[decantr] ${violations.length} guard violation(s) detected`, {
+        timestamp: true,
+      });
       server.hot.send({
         type: 'error',
         err: {
@@ -63,9 +62,7 @@ export function decantrPlugin(options: DecantrPluginOptions = {}): Plugin {
       });
 
       server.watcher.on('change', (filePath: string) => {
-        const relative = filePath.startsWith(root)
-          ? filePath.slice(root.length + 1)
-          : filePath;
+        const relative = filePath.startsWith(root) ? filePath.slice(root.length + 1) : filePath;
 
         if (relative === essenceFileName || relative.endsWith('decantr.essence.json')) {
           runGuard(server);
@@ -78,4 +75,4 @@ export function decantrPlugin(options: DecantrPluginOptions = {}): Plugin {
 }
 
 export default decantrPlugin;
-export type { GuardViolation, GuardContext, EssenceFile } from '@decantr/essence-spec';
+export type { EssenceFile, GuardContext, GuardViolation } from '@decantr/essence-spec';

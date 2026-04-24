@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { resolveEssence, resolveVisualEffects } from '../src/resolve.js';
-import { createResolver } from '@decantr/registry';
+import { join } from 'node:path';
 import type { Essence } from '@decantr/essence-spec';
 import type { Pattern, Theme as RegistryTheme } from '@decantr/registry';
-import { join } from 'node:path';
+import { createResolver } from '@decantr/registry';
+import { describe, expect, it } from 'vitest';
+import { resolveEssence, resolveVisualEffects } from '../src/resolve.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -77,7 +77,11 @@ describe('resolveEssence', () => {
     const resolved = await resolveEssence(essence, resolver);
 
     expect(resolved.routes[0]).toEqual({ path: '/', pageId: 'overview', shell: 'sidebar-main' });
-    expect(resolved.routes[1]).toEqual({ path: '/settings', pageId: 'settings', shell: 'sidebar-main' });
+    expect(resolved.routes[1]).toEqual({
+      path: '/settings',
+      pageId: 'settings',
+      shell: 'sidebar-main',
+    });
   });
 
   it('identifies addon styles as isAddon=true', async () => {

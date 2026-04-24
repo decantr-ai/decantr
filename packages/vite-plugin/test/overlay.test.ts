@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { formatViolations, formatViolation } from '../src/overlay.js';
 import type { GuardViolation } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
+import { formatViolation, formatViolations } from '../src/overlay.js';
 
 describe('formatViolation', () => {
   it('formats a DNA error violation', () => {

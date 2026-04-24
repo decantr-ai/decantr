@@ -11,25 +11,28 @@ export function generateTreatmentCSS(
   treatmentOverrides?: Record<string, Record<string, string>>,
   themeDecorators?: Record<string, string>,
   themeName?: string,
-  themeDecoratorDefinitions?: Record<string, {
-    description?: string;
-    intent?: string;
-    suggested_properties?: Record<string, string>;
-    /**
-     * Optional state-variant CSS emitted as pseudo-class rules on the same
-     * selector. Each is a flat property map; keys are CSS declarations, not
-     * nested selectors. Missing fields fall back to current behavior (base
-     * properties only). Introduced for P0-1 so decorator prose that
-     * promises hover / focus / active styling (e.g. "carbon-card gains a
-     * neon cyan shadow on hover") can be delivered by the content pipeline
-     * instead of every scaffolded app reaching for inline styles.
-     */
-    hover_properties?: Record<string, string>;
-    focus_properties?: Record<string, string>;
-    active_properties?: Record<string, string>;
-    pairs_with?: string[];
-    usage?: string[];
-  }>,
+  themeDecoratorDefinitions?: Record<
+    string,
+    {
+      description?: string;
+      intent?: string;
+      suggested_properties?: Record<string, string>;
+      /**
+       * Optional state-variant CSS emitted as pseudo-class rules on the same
+       * selector. Each is a flat property map; keys are CSS declarations, not
+       * nested selectors. Missing fields fall back to current behavior (base
+       * properties only). Introduced for P0-1 so decorator prose that
+       * promises hover / focus / active styling (e.g. "carbon-card gains a
+       * neon cyan shadow on hover") can be delivered by the content pipeline
+       * instead of every scaffolded app reaching for inline styles.
+       */
+      hover_properties?: Record<string, string>;
+      focus_properties?: Record<string, string>;
+      active_properties?: Record<string, string>;
+      pairs_with?: string[];
+      usage?: string[];
+    }
+  >,
 ): string {
   const lines: string[] = [];
   const decoratorAnimationNames = new Set<string>();
@@ -92,7 +95,10 @@ export function generateTreatmentCSS(
     ['display', 'inline-flex'],
     ['align-items', 'center'],
     ['gap', '0.5em'],
-    ['padding', 'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)'],
+    [
+      'padding',
+      'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)',
+    ],
     ['border', '1px solid var(--d-border)'],
     ['border-radius', 'var(--d-radius)'],
     ['background', 'transparent'],
@@ -100,7 +106,10 @@ export function generateTreatmentCSS(
     ['font', 'inherit'],
     ['cursor', 'pointer'],
     ['text-decoration', 'none'],
-    ['transition', 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease'],
+    [
+      'transition',
+      'background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease',
+    ],
   ]);
 
   emitRule('.d-interactive:hover', [
@@ -135,9 +144,7 @@ export function generateTreatmentCSS(
     ['background', 'transparent'],
   ]);
 
-  emitRule('.d-interactive[data-variant="ghost"]:hover', [
-    ['background', 'var(--d-surface)'],
-  ]);
+  emitRule('.d-interactive[data-variant="ghost"]:hover', [['background', 'var(--d-surface)']]);
 
   emitRule('.d-interactive[data-variant="danger"]', [
     ['background', 'var(--d-error)'],
@@ -149,7 +156,10 @@ export function generateTreatmentCSS(
   // (52px-tall headers, 32px nav items) and "lg" for prominent primary CTAs.
   // Eliminates inline padding/font-size workarounds for non-default sizes.
   emitRule('.d-interactive[data-size="sm"]', [
-    ['padding', 'calc(var(--d-interactive-py) * 0.5 * var(--d-density-scale, 1)) calc(var(--d-interactive-px) * 0.75)'],
+    [
+      'padding',
+      'calc(var(--d-interactive-py) * 0.5 * var(--d-density-scale, 1)) calc(var(--d-interactive-px) * 0.75)',
+    ],
     ['font-size', '0.875rem'],
     ['gap', '0.375em'],
   ]);
@@ -157,13 +167,19 @@ export function generateTreatmentCSS(
   emitRule('.d-interactive[data-size="md"]', [
     // Explicit md — same as default. Lets authors opt in without inheriting
     // contextual sizing from an ancestor that may have set data-size.
-    ['padding', 'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)'],
+    [
+      'padding',
+      'calc(var(--d-interactive-py) * var(--d-density-scale, 1)) var(--d-interactive-px)',
+    ],
     ['font-size', '1rem'],
     ['gap', '0.5em'],
   ]);
 
   emitRule('.d-interactive[data-size="lg"]', [
-    ['padding', 'calc(var(--d-interactive-py) * 1.5 * var(--d-density-scale, 1)) calc(var(--d-interactive-px) * 1.25)'],
+    [
+      'padding',
+      'calc(var(--d-interactive-py) * 1.5 * var(--d-density-scale, 1)) calc(var(--d-interactive-px) * 1.25)',
+    ],
     ['font-size', '1.125rem'],
     ['gap', '0.625em'],
   ]);
@@ -189,9 +205,7 @@ export function generateTreatmentCSS(
     ['z-index', '50'],
   ]);
 
-  emitRule('.d-surface[data-interactive]', [
-    ['cursor', 'pointer'],
-  ]);
+  emitRule('.d-surface[data-interactive]', [['cursor', 'pointer']]);
 
   emitRule('.d-surface[data-interactive]:hover', [
     ['border-color', 'var(--d-primary-hover, var(--d-border))'],
@@ -223,9 +237,7 @@ export function generateTreatmentCSS(
     ['transition', 'background 0.1s ease'],
   ]);
 
-  emitRule('.d-data-row:hover', [
-    ['background', 'var(--d-surface)'],
-  ]);
+  emitRule('.d-data-row:hover', [['background', 'var(--d-surface)']]);
 
   emitRule('.d-data-cell', [
     ['padding', 'calc(var(--d-data-py) * var(--d-density-scale, 1)) var(--d-content-gap)'],
@@ -251,9 +263,7 @@ export function generateTreatmentCSS(
     ['box-shadow', '0 0 0 3px color-mix(in srgb, var(--d-primary) 25%, transparent)'],
   ]);
 
-  emitRule('.d-control::placeholder', [
-    ['color', 'var(--d-text-muted)'],
-  ]);
+  emitRule('.d-control::placeholder', [['color', 'var(--d-text-muted)']]);
 
   emitRule('.d-control:disabled', [
     ['opacity', '0.5'],
@@ -287,7 +297,9 @@ export function generateTreatmentCSS(
   // Adjacent section separator — density-aware gap
   lines.push('.d-section + .d-section {');
   lines.push('  border-top: 1px solid transparent;');
-  lines.push('  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;');
+  lines.push(
+    '  border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1;',
+  );
   lines.push('  margin-top: calc(var(--d-section-gap) * var(--d-density-scale, 1));');
   lines.push('}');
   lines.push('');
@@ -373,9 +385,7 @@ export function generateTreatmentCSS(
     ['border-radius', '2px'],
   ]);
 
-  emitRule('.d-link[data-variant="subtle"]', [
-    ['color', 'var(--d-text-muted)'],
-  ]);
+  emitRule('.d-link[data-variant="subtle"]', [['color', 'var(--d-text-muted)']]);
 
   emitRule('.d-link[data-variant="subtle"]:hover', [
     ['color', 'var(--d-text)'],
@@ -449,9 +459,7 @@ export function generateTreatmentCSS(
     ['color', '#fff'],
   ]);
 
-  emitRule('.d-icon-btn[data-variant="primary"]:hover', [
-    ['background', 'var(--d-primary-hover)'],
-  ]);
+  emitRule('.d-icon-btn[data-variant="primary"]:hover', [['background', 'var(--d-primary-hover)']]);
 
   // ── 10. Sidebar Nav Link — .d-nav-link ──
   // Muted-by-default nav-link row. `[data-active]` or `aria-current="page"`
@@ -554,9 +562,7 @@ export function generateTreatmentCSS(
     ['border-color', 'color-mix(in srgb, var(--d-error) 60%, transparent)'],
   ]);
 
-  emitRule('.d-agent-node[data-status="active"]', [
-    ['border-color', 'var(--d-primary)'],
-  ]);
+  emitRule('.d-agent-node[data-status="active"]', [['border-color', 'var(--d-primary)']]);
 
   // Connection ports — positioned absolutely on the node edges so SVG
   // connection paths can anchor to predictable coordinates instead of
@@ -573,13 +579,9 @@ export function generateTreatmentCSS(
     ['transition', 'background 0.15s ease'],
   ]);
 
-  emitRule('.d-port[data-side="left"]', [
-    ['left', '-4px'],
-  ]);
+  emitRule('.d-port[data-side="left"]', [['left', '-4px']]);
 
-  emitRule('.d-port[data-side="right"]', [
-    ['right', '-4px'],
-  ]);
+  emitRule('.d-port[data-side="right"]', [['right', '-4px']]);
 
   emitRule('.d-port[data-side="top"]', [
     ['top', '-4px'],
@@ -594,9 +596,7 @@ export function generateTreatmentCSS(
     ['transform', 'translateX(-50%)'],
   ]);
 
-  emitRule('.d-port[data-active="true"]', [
-    ['background', 'var(--d-primary)'],
-  ]);
+  emitRule('.d-port[data-active="true"]', [['background', 'var(--d-primary)']]);
 
   // ── 12b. CTA Banner — .d-cta-banner ──
   // Prominent full-width CTA with gradient wash + dark pill action.
@@ -617,7 +617,10 @@ export function generateTreatmentCSS(
     ['overflow', 'hidden'],
     // Default gradient uses theme tokens — themes can override the stops
     // via CSS variables --d-cta-gradient if desired.
-    ['background', 'var(--d-cta-gradient, linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 85%, transparent), color-mix(in srgb, var(--d-accent) 80%, transparent)))'],
+    [
+      'background',
+      'var(--d-cta-gradient, linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 85%, transparent), color-mix(in srgb, var(--d-accent) 80%, transparent)))',
+    ],
     ['color', 'var(--d-cta-text, #ffffff)'],
   ]);
 
@@ -649,21 +652,13 @@ export function generateTreatmentCSS(
   // Single-side border rules. Use these as plain class additions on
   // containers instead of hand-rolling `.divider-top` / `.divider-bottom`.
 
-  emitRule('.d-divider-top', [
-    ['border-top', '1px solid var(--d-border)'],
-  ]);
+  emitRule('.d-divider-top', [['border-top', '1px solid var(--d-border)']]);
 
-  emitRule('.d-divider-bottom', [
-    ['border-bottom', '1px solid var(--d-border)'],
-  ]);
+  emitRule('.d-divider-bottom', [['border-bottom', '1px solid var(--d-border)']]);
 
-  emitRule('.d-divider-left', [
-    ['border-left', '1px solid var(--d-border)'],
-  ]);
+  emitRule('.d-divider-left', [['border-left', '1px solid var(--d-border)']]);
 
-  emitRule('.d-divider-right', [
-    ['border-right', '1px solid var(--d-border)'],
-  ]);
+  emitRule('.d-divider-right', [['border-right', '1px solid var(--d-border)']]);
 
   // Horizontal standalone divider element (<hr class="d-divider">).
   emitRule('.d-divider', [
@@ -777,9 +772,7 @@ export function generateTreatmentCSS(
   ]);
 
   // Collapsed rail variant — 64px icon-only.
-  emitRule('.d-shell-sidebar[data-collapsed="true"]', [
-    ['width', '64px'],
-  ]);
+  emitRule('.d-shell-sidebar[data-collapsed="true"]', [['width', '64px']]);
 
   // Below md: sidebar becomes an off-canvas drawer controlled by
   // `data-mobile-open="true|false"`. Hidden by default (translate off-screen).
@@ -833,17 +826,11 @@ export function generateTreatmentCSS(
   ]);
 
   // Body size variants.
-  emitRule('.d-shell-body[data-padding="compact"]', [
-    ['padding', '0.75rem'],
-  ]);
+  emitRule('.d-shell-body[data-padding="compact"]', [['padding', '0.75rem']]);
 
-  emitRule('.d-shell-body[data-padding="spacious"]', [
-    ['padding', '1.5rem'],
-  ]);
+  emitRule('.d-shell-body[data-padding="spacious"]', [['padding', '1.5rem']]);
 
-  emitRule('.d-shell-body[data-padding="none"]', [
-    ['padding', '0'],
-  ]);
+  emitRule('.d-shell-body[data-padding="none"]', [['padding', '0']]);
 
   // Footer — narrow band below body.
   emitRule('.d-shell-footer', [
@@ -906,13 +893,9 @@ export function generateTreatmentCSS(
     ['overflow', 'hidden'],
   ]);
 
-  emitRule('.d-modal-panel[data-size="sm"]', [
-    ['max-width', '24rem'],
-  ]);
+  emitRule('.d-modal-panel[data-size="sm"]', [['max-width', '24rem']]);
 
-  emitRule('.d-modal-panel[data-size="lg"]', [
-    ['max-width', '48rem'],
-  ]);
+  emitRule('.d-modal-panel[data-size="lg"]', [['max-width', '48rem']]);
 
   // Command palette — specialized modal variant with fixed 640px width
   // and specific search + list internal rhythm.
@@ -1060,11 +1043,14 @@ export function generateTreatmentCSS(
   }
 
   const decoratorComments = themeDecorators
-    ? Object.entries(themeDecorators).map(([name, description]) => `  /* .${name}: ${description} */`).join('\n')
+    ? Object.entries(themeDecorators)
+        .map(([name, description]) => `  /* .${name}: ${description} */`)
+        .join('\n')
     : '  /* No theme decorators available. */';
-  const decoratorBody = decoratorRules.length > 0
-    ? `${decoratorRules.join('\n')}${decoratorKeyframes.length > 0 ? `\n${decoratorKeyframes.join('\n')}` : ''}${decoratorComments ? `\n${decoratorComments}` : ''}`
-    : `${decoratorComments}\n  /* Canonical decorator CSS should be derived from theme decorator definitions when available. */`;
+  const decoratorBody =
+    decoratorRules.length > 0
+      ? `${decoratorRules.join('\n')}${decoratorKeyframes.length > 0 ? `\n${decoratorKeyframes.join('\n')}` : ''}${decoratorComments ? `\n${decoratorComments}` : ''}`
+      : `${decoratorComments}\n  /* Canonical decorator CSS should be derived from theme decorator definitions when available. */`;
   const decoratorBlock = `\n@layer decorators {\n${decoratorBody}\n}\n`;
   lines.push(decoratorBlock);
 
@@ -1075,7 +1061,10 @@ export function generateTreatmentCSS(
  * Generate personality-derived CSS utility classes based on keyword analysis.
  * Scans personality array for known keywords and emits matching utility rules.
  */
-export function generatePersonalityCSS(personality: string[], themeData: { motion?: { entrance?: string }; palette?: Record<string, Record<string, string>> }): string {
+export function generatePersonalityCSS(
+  personality: string[],
+  themeData: { motion?: { entrance?: string }; palette?: Record<string, Record<string, string>> },
+): string {
   const text = personality.join(' ').toLowerCase();
   const rules: string[] = [];
 
@@ -1083,34 +1072,58 @@ export function generatePersonalityCSS(personality: string[], themeData: { motio
   if (text.includes('neon') || text.includes('glow')) {
     const glowColor = 'var(--d-accent-glow, rgba(0, 212, 255, 0.3))';
     rules.push(`.neon-glow { box-shadow: 0 0 20px ${glowColor}; }`);
-    rules.push(`.neon-glow-hover:hover { box-shadow: 0 0 24px ${glowColor}; transition: box-shadow var(--d-duration-hover, 0.15s) var(--d-easing, ease); }`);
+    rules.push(
+      `.neon-glow-hover:hover { box-shadow: 0 0 24px ${glowColor}; transition: box-shadow var(--d-duration-hover, 0.15s) var(--d-easing, ease); }`,
+    );
     rules.push(`.neon-text-glow { text-shadow: 0 0 12px ${glowColor}; }`);
-    rules.push(`.neon-border-glow { border-color: var(--d-accent); box-shadow: 0 0 8px ${glowColor}; }`);
+    rules.push(
+      `.neon-border-glow { border-color: var(--d-accent); box-shadow: 0 0 8px ${glowColor}; }`,
+    );
   }
 
   // Monospace data utility
   if (text.includes('monospace') || text.includes('mono')) {
-    rules.push(`.mono-data { font-family: var(--d-font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }`);
+    rules.push(
+      `.mono-data { font-family: var(--d-font-mono, ui-monospace, monospace); font-variant-numeric: tabular-nums; }`,
+    );
   }
 
   // Status ring utilities
   if (text.includes('pulse') || text.includes('ring') || text.includes('status')) {
-    rules.push(`.status-ring { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--d-border); display: flex; align-items: center; justify-content: center; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease; }`);
+    rules.push(
+      `.status-ring { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--d-border); display: flex; align-items: center; justify-content: center; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease; }`,
+    );
     rules.push(`.status-ring[data-status="active"] { border-color: var(--d-success); }`);
-    rules.push(`.status-ring[data-status="error"] { border-color: var(--d-error); box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent); }`);
+    rules.push(
+      `.status-ring[data-status="error"] { border-color: var(--d-error); box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent); }`,
+    );
     rules.push(`.status-ring[data-status="warning"] { border-color: var(--d-warning); }`);
     rules.push(`.status-ring[data-status="idle"] { border-color: var(--d-text-muted); }`);
-    rules.push(`.status-ring[data-status="processing"] { border-color: var(--d-primary); animation: pulse-ring 2s ease-in-out infinite; }`);
-    rules.push(`@keyframes pulse-ring { 0% { opacity: 0.6; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }`);
-    rules.push(`.status-ring[data-status="active"]::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--d-success); opacity: 0; animation: pulse-ring 2s ease-out infinite; }`);
+    rules.push(
+      `.status-ring[data-status="processing"] { border-color: var(--d-primary); animation: pulse-ring 2s ease-in-out infinite; }`,
+    );
+    rules.push(
+      `@keyframes pulse-ring { 0% { opacity: 0.6; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }`,
+    );
+    rules.push(
+      `.status-ring[data-status="active"]::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--d-success); opacity: 0; animation: pulse-ring 2s ease-out infinite; }`,
+    );
   }
 
   // Entrance animation
   if (themeData.motion?.entrance) {
-    rules.push(`.entrance-fade { animation: decantr-entrance var(--d-duration-entrance, 0.2s) var(--d-easing, ease-out); }`);
-    rules.push(`@keyframes decantr-entrance { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`);
+    rules.push(
+      `.entrance-fade { animation: decantr-entrance var(--d-duration-entrance, 0.2s) var(--d-easing, ease-out); }`,
+    );
+    rules.push(
+      `@keyframes decantr-entrance { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`,
+    );
   }
 
   if (rules.length === 0) return '';
-  return '\n@layer utilities {\n\n/* ── Personality-Derived Utilities ── */\n\n' + rules.join('\n\n') + '\n\n} /* end @layer utilities */\n';
+  return (
+    '\n@layer utilities {\n\n/* ── Personality-Derived Utilities ── */\n\n' +
+    rules.join('\n\n') +
+    '\n\n} /* end @layer utilities */\n'
+  );
 }

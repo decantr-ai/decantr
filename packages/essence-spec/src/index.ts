@@ -1,52 +1,48 @@
+export { computeDensity, computeSpatialTokens } from './density.js';
+export type { AutoFix, GuardContext, GuardViolation } from './guard.js';
+export { evaluateGuard } from './guard.js';
+export { migrateV2ToV3, migrateV30ToV31 } from './migrate.js';
+export { normalizeEssence } from './normalize.js';
 export type {
-  Essence,
-  SectionedEssence,
-  EssenceV3,
-  EssenceDNA,
-  EssenceBlueprint,
-  EssenceMeta,
-  EssenceV3Guard,
+  Accessibility,
+  ArchetypeRole,
   BlueprintPage,
-  DNAOverrides,
-  EssenceFile,
-  EssenceSection,
-  Theme,
-  ThemeStyle,
-  ThemeMode,
-  ThemeShape,
-  Platform,
-  PlatformType,
-  RoutingStrategy,
-  StructurePage,
-  ShellType,
-  LayoutItem,
-  PatternRef,
   ColumnLayout,
+  CvdPreference,
   Density,
   DensityLevel,
+  DNAOverrides,
+  Essence,
+  EssenceBlueprint,
+  EssenceDNA,
+  EssenceFile,
+  EssenceMeta,
+  EssenceSection,
+  EssenceV3,
+  EssenceV3Guard,
+  EssenceV31Section,
+  GeneratorTarget,
   Guard,
   GuardMode,
   Impression,
-  GeneratorTarget,
-  Accessibility,
-  WcagLevel,
-  CvdPreference,
-  ArchetypeRole,
-  EssenceV31Section,
+  LayoutItem,
+  PatternRef,
+  Platform,
+  PlatformType,
   RouteEntry,
+  RoutingStrategy,
+  SectionedEssence,
+  ShellGuidance,
+  ShellType,
+  SpatialTokenHints,
+  SpatialTokens,
+  StructurePage,
+  Theme,
+  ThemeMode,
+  ThemeShape,
+  ThemeStyle,
+  WcagLevel,
 } from './types.js';
-
-export { isSectioned, isSimple, isV3, flattenPages } from './types.js';
-
-export { validateEssence } from './validate.js';
+export { flattenPages, isSectioned, isSimple, isV3 } from './types.js';
 export type { ValidationResult } from './validate.js';
-
-export { computeDensity, computeSpatialTokens } from './density.js';
-export type { SpatialTokens, SpatialTokenHints, ShellGuidance } from './types.js';
-
-export { evaluateGuard } from './guard.js';
-export type { GuardViolation, GuardContext, AutoFix } from './guard.js';
-
-export { normalizeEssence } from './normalize.js';
-
-export { migrateV2ToV3, migrateV30ToV31 } from './migrate.js';
+export { validateEssence } from './validate.js';

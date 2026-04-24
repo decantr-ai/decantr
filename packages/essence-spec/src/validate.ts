@@ -1,7 +1,7 @@
-import Ajv from 'ajv';
-import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import Ajv from 'ajv';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const v2SchemaPath = join(__dirname, '..', 'schema', 'essence.v2.json');

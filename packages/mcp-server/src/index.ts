@@ -1,17 +1,11 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  ListToolsRequestSchema,
-  CallToolRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
-import { TOOLS, handleTool } from './tools.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { handleTool, TOOLS } from './tools.js';
 
 const VERSION = '0.2.0';
 
-const server = new Server(
-  { name: 'decantr', version: VERSION },
-  { capabilities: { tools: {} } },
-);
+const server = new Server({ name: 'decantr', version: VERSION }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return { tools: TOOLS };

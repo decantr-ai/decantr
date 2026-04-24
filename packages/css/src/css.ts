@@ -4,16 +4,16 @@
 
 import { resolveAtomDecl } from './atoms.js';
 import {
+  CQ_WIDTHS,
   inject,
-  injectResponsive,
-  injectResponsiveMax,
-  injectResponsivePseudo,
-  injectResponsiveMaxPseudo,
   injectContainer,
   injectGroupPeer,
-  injectPseudo,
   injectMediaQuery,
-  CQ_WIDTHS,
+  injectPseudo,
+  injectResponsive,
+  injectResponsiveMax,
+  injectResponsiveMaxPseudo,
+  injectResponsivePseudo,
 } from './runtime.js';
 
 /** Custom atoms defined by user */
@@ -42,46 +42,95 @@ const MOTION_QUERIES: Record<string, string> = {
 };
 
 const PSEUDO_NAMES: Record<string, string> = {
-  h: 'hover', f: 'focus', fv: 'focus-visible', a: 'active', fw: 'focus-within',
+  h: 'hover',
+  f: 'focus',
+  fv: 'focus-visible',
+  a: 'active',
+  fw: 'focus-within',
 };
 
 const CQ_SET = new Set(CQ_WIDTHS);
 
 /** Property prefix map for arbitrary values */
 const ARB_PROPS: Record<string, string> = {
-  w: 'width', h: 'height', mw: 'max-width', mh: 'max-height',
-  maxw: 'max-width', maxh: 'max-height',
-  minw: 'min-width', minh: 'min-height',
-  p: 'padding', pt: 'padding-top', pr: 'padding-right', pb: 'padding-bottom', pl: 'padding-left',
-  px: 'padding-inline', py: 'padding-block',
-  m: 'margin', mt: 'margin-top', mr: 'margin-right', mb: 'margin-bottom', ml: 'margin-left',
-  mx: 'margin-inline', my: 'margin-block',
-  gap: 'gap', gx: 'column-gap', gy: 'row-gap',
-  t: 'font-size', fs: 'font-size', lh: 'line-height', fw: 'font-weight', ls: 'letter-spacing',
-  leading: 'line-height', tracking: 'letter-spacing',
-  r: 'border-radius', rounded: 'border-radius',
-  bg: 'background', fg: 'color', bc: 'border-color',
-  bw: 'border-width', bt: 'border-top', bb: 'border-bottom', br: 'border-right', bl: 'border-left',
+  w: 'width',
+  h: 'height',
+  mw: 'max-width',
+  mh: 'max-height',
+  maxw: 'max-width',
+  maxh: 'max-height',
+  minw: 'min-width',
+  minh: 'min-height',
+  p: 'padding',
+  pt: 'padding-top',
+  pr: 'padding-right',
+  pb: 'padding-bottom',
+  pl: 'padding-left',
+  px: 'padding-inline',
+  py: 'padding-block',
+  m: 'margin',
+  mt: 'margin-top',
+  mr: 'margin-right',
+  mb: 'margin-bottom',
+  ml: 'margin-left',
+  mx: 'margin-inline',
+  my: 'margin-block',
+  gap: 'gap',
+  gx: 'column-gap',
+  gy: 'row-gap',
+  t: 'font-size',
+  fs: 'font-size',
+  lh: 'line-height',
+  fw: 'font-weight',
+  ls: 'letter-spacing',
+  leading: 'line-height',
+  tracking: 'letter-spacing',
+  r: 'border-radius',
+  rounded: 'border-radius',
+  bg: 'background',
+  fg: 'color',
+  bc: 'border-color',
+  bw: 'border-width',
+  bt: 'border-top',
+  bb: 'border-bottom',
+  br: 'border-right',
+  bl: 'border-left',
   border: 'border',
-  z: 'z-index', op: 'opacity',
-  top: 'top', right: 'right', bottom: 'bottom', left: 'left', inset: 'inset',
-  shadow: 'box-shadow', bf: 'backdrop-filter',
-  outline: 'outline', trans: 'transition', object: 'object-fit',
-  gc: 'grid-template-columns', gr: 'grid-template-rows',
+  z: 'z-index',
+  op: 'opacity',
+  top: 'top',
+  right: 'right',
+  bottom: 'bottom',
+  left: 'left',
+  inset: 'inset',
+  shadow: 'box-shadow',
+  bf: 'backdrop-filter',
+  outline: 'outline',
+  trans: 'transition',
+  object: 'object-fit',
+  gc: 'grid-template-columns',
+  gr: 'grid-template-rows',
   // Additional content-observed bracket atoms (P0-3 expansion). The v1
   // harness report flagged the page-pack Surface emitting atoms the
   // runtime didn't resolve; same class of silent-failure applies when
   // pattern JSONs use prefixes not in this map. These additions cover
   // every bracket prefix observed across the 209 archetype + 80+ pattern
   // JSONs in decantr-content.
-  overflow: 'overflow', pointer: 'pointer-events',
-  text: 'text-align', whitespace: 'white-space',
-  items: 'align-items', justify: 'justify-content',
-  aspect: 'aspect-ratio', snap: 'scroll-snap-type',
+  overflow: 'overflow',
+  pointer: 'pointer-events',
+  text: 'text-align',
+  whitespace: 'white-space',
+  items: 'align-items',
+  justify: 'justify-content',
+  aspect: 'aspect-ratio',
+  snap: 'scroll-snap-type',
   // Note: 'scale' intentionally omitted — use the numeric `_scale95` /
   // `_scale100` / `_scale105` atoms. Bracket form would need value wrapping
   // (`scale(1.05)` vs `1.05`) which the generic emitter can't do.
-  display: 'display', position: 'position', pos: 'position', cursor: 'cursor',
+  display: 'display',
+  position: 'position',
+  pos: 'position',
+  cursor: 'cursor',
 };
 
 /**
@@ -177,11 +226,26 @@ export function css(...classes: (string | undefined | null | false)[]): string {
       if (!part) continue;
 
       // Special handling: _group -> d-group, _peer -> d-peer
-      if (part === '_group') { result.push('d-group'); continue; }
-      if (part === '_peer') { result.push('d-peer'); continue; }
-      if (part === '_prose') { result.push('d-prose'); continue; }
-      if (part === '_divideY') { result.push('d-divide-y'); continue; }
-      if (part === '_divideX') { result.push('d-divide-x'); continue; }
+      if (part === '_group') {
+        result.push('d-group');
+        continue;
+      }
+      if (part === '_peer') {
+        result.push('d-peer');
+        continue;
+      }
+      if (part === '_prose') {
+        result.push('d-prose');
+        continue;
+      }
+      if (part === '_divideY') {
+        result.push('d-divide-y');
+        continue;
+      }
+      if (part === '_divideX') {
+        result.push('d-divide-x');
+        continue;
+      }
 
       // Motion preference prefix
       const motionMatch = part.match(MOTION_RE);
@@ -250,7 +314,7 @@ export function css(...classes: (string | undefined | null | false)[]): string {
       if (cqMatch) {
         const width = Number(cqMatch[1]);
         const innerAtom = cqMatch[2];
-        if (CQ_SET.has(width as typeof CQ_WIDTHS[number])) {
+        if (CQ_SET.has(width as (typeof CQ_WIDTHS)[number])) {
           const resolved = resolveAtom(`_${innerAtom}`);
           if (resolved) {
             injectContainer(part, resolved.decl, width);
@@ -287,8 +351,12 @@ export function css(...classes: (string | undefined | null | false)[]): string {
       // Try to resolve atom
       const resolved = resolveAtom(part);
       if (resolved) {
-        const needsEscape = /[/\[\]#%(),+]/.test(resolved.className);
-        inject(resolved.className, resolved.decl, needsEscape ? escapeClass(resolved.className) : undefined);
+        const needsEscape = /[/[\]#%(),+]/.test(resolved.className);
+        inject(
+          resolved.className,
+          resolved.decl,
+          needsEscape ? escapeClass(resolved.className) : undefined,
+        );
         result.push(part);
       } else {
         // Pass through unknown classes

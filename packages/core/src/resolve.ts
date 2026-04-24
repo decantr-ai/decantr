@@ -1,15 +1,33 @@
 import type {
-  EssenceFile, Essence, SectionedEssence, EssenceV3, StructurePage,
-  LayoutItem, PatternRef, ColumnLayout, BlueprintPage,
+  BlueprintPage,
+  ColumnLayout,
+  Essence,
+  EssenceFile,
+  EssenceV3,
+  LayoutItem,
+  PatternRef,
+  SectionedEssence,
+  StructurePage,
 } from '@decantr/essence-spec';
-import { isSimple, isSectioned, isV3, computeDensity } from '@decantr/essence-spec';
-import { pascalCase } from './utils.js';
-import type { ContentResolver, Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
-import { resolvePatternPreset, detectWirings } from '@decantr/registry';
+import { computeDensity, isSectioned, isSimple, isV3 } from '@decantr/essence-spec';
 import type {
-  IRWiring, IRWiringSignal, IRShellConfig, IRNavItem,
-  IRThemeDecoration, IRTheme, IRRoute, IRVisualEffect,
+  ContentResolver,
+  Pattern,
+  Theme as RegistryTheme,
+  ResolvedPreset,
+} from '@decantr/registry';
+import { detectWirings, resolvePatternPreset } from '@decantr/registry';
+import type {
+  IRNavItem,
+  IRRoute,
+  IRShellConfig,
+  IRTheme,
+  IRThemeDecoration,
+  IRVisualEffect,
+  IRWiring,
+  IRWiringSignal,
 } from './types.js';
+import { pascalCase } from './utils.js';
 
 export interface ResolvedPage {
   page: StructurePage;
@@ -77,7 +95,9 @@ function isColumnLayout(item: LayoutItem): item is ColumnLayout {
   return typeof item === 'object' && 'cols' in item;
 }
 
-function extractLayoutRefs(layout: LayoutItem[]): { id: string; explicitPreset?: string; alias?: string }[] {
+function extractLayoutRefs(
+  layout: LayoutItem[],
+): { id: string; explicitPreset?: string; alias?: string }[] {
   const refs: { id: string; explicitPreset?: string; alias?: string }[] = [];
   for (const item of layout) {
     if (typeof item === 'string') {
@@ -226,7 +246,7 @@ function convertWiring(wiringResults: ReturnType<typeof detectWirings>): IRWirin
   for (const result of wiringResults) {
     for (const signal of result.signals) {
       // Avoid duplicate signals
-      if (!signals.some(s => s.name === signal.name)) {
+      if (!signals.some((s) => s.name === signal.name)) {
         const setter = 'set' + signal.name.charAt(0).toUpperCase() + signal.name.slice(1);
         signals.push({
           name: signal.name,
@@ -307,8 +327,8 @@ export async function resolveEssence(
     if (sectioned.sections.length > 1) {
       throw new Error(
         `Sectioned essences with ${sectioned.sections.length} sections are not yet supported. ` +
-        `Only single-section sectioned essences can be processed. ` +
-        `Consider migrating to v3 format using migrateV2ToV3().`,
+          `Only single-section sectioned essences can be processed. ` +
+          `Consider migrating to v3 format using migrateV2ToV3().`,
       );
     }
     const firstSection = sectioned.sections[0];
@@ -337,10 +357,15 @@ export async function resolveEssence(
 
   // 2. Density computation
   const themeSpatial = registryTheme?.spatial;
-  const density = computeDensity(simpleEssence.personality, themeSpatial ? {
-    density_bias: themeSpatial.density_bias,
-    content_gap_shift: themeSpatial.content_gap_shift,
-  } : undefined);
+  const density = computeDensity(
+    simpleEssence.personality,
+    themeSpatial
+      ? {
+          density_bias: themeSpatial.density_bias,
+          content_gap_shift: themeSpatial.content_gap_shift,
+        }
+      : undefined,
+  );
 
   // 3. Theme
   const themeId = simpleEssence.theme.id;
@@ -401,10 +426,15 @@ async function resolveV3Essence(
 
   // 2. Density — v3 carries density directly in dna.spacing
   const themeSpatial = registryTheme?.spatial;
-  const density = computeDensity(dna.personality, themeSpatial ? {
-    density_bias: themeSpatial.density_bias,
-    content_gap_shift: themeSpatial.content_gap_shift,
-  } : undefined);
+  const density = computeDensity(
+    dna.personality,
+    themeSpatial
+      ? {
+          density_bias: themeSpatial.density_bias,
+          content_gap_shift: themeSpatial.content_gap_shift,
+        }
+      : undefined,
+  );
   // V3 dna.spacing is authoritative; override computed density with DNA values
   const densityResult = {
     gap: dna.spacing.content_gap || density.content_gap,
@@ -418,21 +448,26 @@ async function resolveV3Essence(
 
   // 4. Convert blueprint pages to StructurePage and resolve
   // V3.1 essences may use sections instead of pages; flatten sections into pages
-  const blueprintPages = blueprint.pages ?? (
-    blueprint.sections
-      ? blueprint.sections.flatMap(s => s.pages)
-      : [{ id: 'home', layout: ['hero'] as LayoutItem[] }]
-  );
-  const defaultShell = blueprint.shell ?? (
-    blueprint.sections?.[0]?.shell ?? 'sidebar-main'
-  );
+  const blueprintPages =
+    blueprint.pages ??
+    (blueprint.sections
+      ? blueprint.sections.flatMap((s) => s.pages)
+      : [{ id: 'home', layout: ['hero'] as LayoutItem[] }]);
+  const defaultShell = blueprint.shell ?? blueprint.sections?.[0]?.shell ?? 'sidebar-main';
   const structurePages: StructurePage[] = blueprint.pages
     ? blueprint.pages.map((page) => blueprintPageToStructurePage(page, defaultShell))
     : blueprint.sections
       ? blueprint.sections.flatMap((section) =>
-          section.pages.map((page) => blueprintPageToStructurePage(page, section.shell ?? defaultShell)),
+          section.pages.map((page) =>
+            blueprintPageToStructurePage(page, section.shell ?? defaultShell),
+          ),
         )
-      : [blueprintPageToStructurePage({ id: 'home', layout: ['hero'] as LayoutItem[] }, defaultShell)];
+      : [
+          blueprintPageToStructurePage(
+            { id: 'home', layout: ['hero'] as LayoutItem[] },
+            defaultShell,
+          ),
+        ];
   const resolvedPages = await resolvePages(structurePages, resolver, registryTheme);
 
   // 5. Shell config from blueprint

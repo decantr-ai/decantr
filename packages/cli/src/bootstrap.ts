@@ -110,7 +110,10 @@ export default defineConfig({
       },
       include: ['src'],
     };
-    writeFileSync(join(projectDir, 'tsconfig.app.json'), JSON.stringify(tsconfigApp, null, 2) + '\n');
+    writeFileSync(
+      join(projectDir, 'tsconfig.app.json'),
+      JSON.stringify(tsconfigApp, null, 2) + '\n',
+    );
 
     const indexHtml = `<!doctype html>
 <html lang="en">
@@ -204,7 +207,9 @@ export function resolveBootstrapTarget(target: string | undefined): BootstrapTar
   };
 }
 
-export function getBootstrapAdapter(resolution: BootstrapTargetResolution): BootstrapAdapter | null {
+export function getBootstrapAdapter(
+  resolution: BootstrapTargetResolution,
+): BootstrapAdapter | null {
   if (!resolution.bootstrapAdapterId) {
     return null;
   }

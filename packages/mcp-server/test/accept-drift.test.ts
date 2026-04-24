@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { writeFile, readFile, mkdir, rm } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { handleTool } from '../src/tools.js';
+import { join } from 'node:path';
 import type { EssenceV3 } from '@decantr/essence-spec';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { handleTool } from '../src/tools.js';
 
 function makeV3Essence(): EssenceV3 {
   return {
@@ -39,7 +39,10 @@ function makeV3Essence(): EssenceV3 {
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = join(tmpdir(), `decantr-mcp-test-drift-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  testDir = join(
+    tmpdir(),
+    `decantr-mcp-test-drift-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
   await mkdir(testDir, { recursive: true });
 });
 
@@ -49,35 +52,35 @@ afterEach(async () => {
 
 describe('decantr_accept_drift', () => {
   it('should reject when violations array is empty', async () => {
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [],
       resolution: 'accept',
-    }) as { error: string };
+    })) as { error: string };
     expect(result.error).toBeDefined();
   });
 
   it('should reject with invalid resolution', async () => {
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'theme' }],
       resolution: 'invalid',
-    }) as { error: string };
+    })) as { error: string };
     expect(result.error).toBeDefined();
   });
 
   it('should require confirm_dna for DNA violations', async () => {
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'accept',
-    }) as { error: string; requires_confirmation: boolean };
+    })) as { error: string; requires_confirmation: boolean };
     expect(result.error).toBeDefined();
     expect(result.requires_confirmation).toBe(true);
   });
 
   it('should allow reject without confirm_dna', async () => {
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'reject',
-    }) as { status: string };
+    })) as { status: string };
     expect(result.status).toBe('rejected');
   });
 
@@ -85,17 +88,17 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'structure', page_id: 'billing' }],
       resolution: 'accept',
       path: essencePath,
-    }) as { status: string; path: string };
+    })) as { status: string; path: string };
 
     expect(result.status).toBe('accepted');
 
     // Verify the page was added
     const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    const billingPage = updated.blueprint.pages.find(p => p.id === 'billing');
+    const billingPage = updated.blueprint.pages.find((p) => p.id === 'billing');
     expect(billingPage).toBeDefined();
   });
 
@@ -103,12 +106,12 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'accept',
       path: essencePath,
       confirm_dna: true,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('accepted');
 
@@ -120,14 +123,14 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [
         { rule: 'layout', page_id: 'overview', details: 'reordered patterns' },
         { rule: 'page-exists', page_id: 'billing' },
       ],
       resolution: 'defer',
       path: essencePath,
-    }) as { status: string; total_deferred: number; log_path: string };
+    })) as { status: string; total_deferred: number; log_path: string };
 
     expect(result.status).toBe('deferred');
     expect(result.total_deferred).toBe(2);
@@ -145,12 +148,12 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_accept_drift', {
+    const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'structure', page_id: 'billing' }],
       resolution: 'accept_scoped',
       scope: 'overview',
       path: essencePath,
-    }) as { status: string; scope: string };
+    })) as { status: string; scope: string };
 
     expect(result.status).toBe('accepted_scoped');
     expect(result.scope).toBe('overview');

@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { writeFile, readFile, mkdir, rm } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { handleTool } from '../src/tools.js';
+import { join } from 'node:path';
 import type { EssenceV3 } from '@decantr/essence-spec';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { handleTool } from '../src/tools.js';
 
 function makeV3Essence(): EssenceV3 {
   return {
@@ -43,9 +43,7 @@ function makeV2Essence() {
     theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
     personality: ['professional'],
     platform: { type: 'spa', routing: 'hash' },
-    structure: [
-      { id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] },
-    ],
+    structure: [{ id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] }],
     features: ['auth'],
     density: { level: 'comfortable', content_gap: '4' },
     guard: { enforce_style: true, mode: 'strict' },
@@ -56,7 +54,10 @@ function makeV2Essence() {
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = join(tmpdir(), `decantr-mcp-test-update-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  testDir = join(
+    tmpdir(),
+    `decantr-mcp-test-update-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
   await mkdir(testDir, { recursive: true });
 });
 
@@ -69,17 +70,17 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'add_page',
       payload: { id: 'billing', layout: ['form-sections', 'data-table'] },
       path: essencePath,
-    }) as { status: string; summary: string };
+    })) as { status: string; summary: string };
 
     expect(result.status).toBe('updated');
     expect(result.summary).toContain('billing');
 
     const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    const billing = updated.blueprint.pages.find(p => p.id === 'billing');
+    const billing = updated.blueprint.pages.find((p) => p.id === 'billing');
     expect(billing).toBeDefined();
     expect(billing?.layout).toEqual(['form-sections', 'data-table']);
   });
@@ -88,11 +89,11 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'add_page',
       payload: { id: 'overview' },
       path: essencePath,
-    }) as { error: string };
+    })) as { error: string };
 
     expect(result.error).toContain('already exists');
   });
@@ -101,16 +102,16 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'remove_page',
       payload: { id: 'settings' },
       path: essencePath,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('updated');
 
     const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    expect(updated.blueprint.pages.find(p => p.id === 'settings')).toBeUndefined();
+    expect(updated.blueprint.pages.find((p) => p.id === 'settings')).toBeUndefined();
     expect(updated.blueprint.pages).toHaveLength(1);
   });
 
@@ -118,11 +119,11 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'remove_page',
       payload: { id: 'nonexistent' },
       path: essencePath,
-    }) as { error: string };
+    })) as { error: string };
 
     expect(result.error).toContain('not found');
   });
@@ -132,16 +133,16 @@ describe('decantr_update_essence', () => {
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
     const newLayout = ['hero', 'kpi-grid', 'activity-feed'];
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'update_page_layout',
       payload: { id: 'overview', layout: newLayout },
       path: essencePath,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('updated');
 
     const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    const overview = updated.blueprint.pages.find(p => p.id === 'overview');
+    const overview = updated.blueprint.pages.find((p) => p.id === 'overview');
     expect(overview?.layout).toEqual(newLayout);
   });
 
@@ -149,11 +150,11 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'update_dna',
       payload: { theme: { id: 'glassmorphism' }, personality: ['playful', 'bold'] },
       path: essencePath,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('updated');
 
@@ -168,11 +169,11 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'add_feature',
       payload: { feature: 'payments' },
       path: essencePath,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('updated');
 
@@ -185,11 +186,11 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV3Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'remove_feature',
       payload: { feature: 'search' },
       path: essencePath,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('updated');
 
@@ -202,11 +203,11 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'add_feature',
       payload: { feature: 'payments' },
       path: essencePath,
-    }) as { status: string };
+    })) as { status: string };
 
     expect(result.status).toBe('updated');
 
@@ -217,18 +218,18 @@ describe('decantr_update_essence', () => {
   });
 
   it('should reject invalid operation', async () => {
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'invalid_op',
       payload: {},
-    }) as { error: string };
+    })) as { error: string };
 
     expect(result.error).toContain('Invalid operation');
   });
 
   it('should reject missing payload', async () => {
-    const result = await handleTool('decantr_update_essence', {
+    const result = (await handleTool('decantr_update_essence', {
       operation: 'add_page',
-    }) as { error: string };
+    })) as { error: string };
 
     expect(result.error).toContain('payload');
   });

@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { runPipeline } from '../src/pipeline.js';
-import type { EssenceFile } from '@decantr/essence-spec';
-import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import type { EssenceFile } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
+import { runPipeline } from '../src/pipeline.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -92,8 +92,6 @@ describe('runPipeline', () => {
 
   it('throws on invalid essence', async () => {
     const invalidEssence = { version: '1.0.0' } as unknown as EssenceFile;
-    await expect(
-      runPipeline(invalidEssence, { contentRoot })
-    ).rejects.toThrow('Invalid essence');
+    await expect(runPipeline(invalidEssence, { contentRoot })).rejects.toThrow('Invalid essence');
   });
 });

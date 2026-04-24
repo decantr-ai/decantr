@@ -11,11 +11,35 @@ export interface FeaturesAnalysis {
  * Each feature maps to route/file name fragments that indicate its presence.
  */
 const FEATURE_PATTERNS: Record<string, string[]> = {
-  auth: ['login', 'signin', 'sign-in', 'signup', 'sign-up', 'register', 'auth', 'callback', 'signout', 'sign-out', 'logout', 'forgot-password', 'reset-password', 'verify-email'],
+  auth: [
+    'login',
+    'signin',
+    'sign-in',
+    'signup',
+    'sign-up',
+    'register',
+    'auth',
+    'callback',
+    'signout',
+    'sign-out',
+    'logout',
+    'forgot-password',
+    'reset-password',
+    'verify-email',
+  ],
   dashboard: ['dashboard', 'overview', 'analytics', 'metrics', 'stats'],
   settings: ['settings', 'preferences', 'configuration', 'config', 'account'],
   profile: ['profile', 'user', 'me', 'avatar'],
-  billing: ['billing', 'subscription', 'pricing', 'plans', 'checkout', 'payment', 'stripe', 'invoice'],
+  billing: [
+    'billing',
+    'subscription',
+    'pricing',
+    'plans',
+    'checkout',
+    'payment',
+    'stripe',
+    'invoice',
+  ],
   admin: ['admin', 'moderation', 'moderate', 'manage-users'],
   chat: ['chat', 'messaging', 'messages', 'conversations', 'inbox'],
   search: ['search', 'explore', 'browse', 'discover'],
@@ -43,7 +67,13 @@ function collectPaths(dir: string, baseDir: string, depth: number = 0): string[]
   }
 
   for (const entry of entries) {
-    if (entry.startsWith('.') || entry.startsWith('_') || entry === 'node_modules' || entry === 'api') continue;
+    if (
+      entry.startsWith('.') ||
+      entry.startsWith('_') ||
+      entry === 'node_modules' ||
+      entry === 'api'
+    )
+      continue;
     const fullPath = join(dir, entry);
 
     // Store relative path
@@ -54,9 +84,7 @@ function collectPaths(dir: string, baseDir: string, depth: number = 0): string[]
       if (statSync(fullPath).isDirectory()) {
         paths.push(...collectPaths(fullPath, baseDir, depth + 1));
       }
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return paths;
@@ -93,7 +121,7 @@ export function scanFeatures(projectRoot: string): FeaturesAnalysis {
     for (const filePath of allPaths) {
       const segments = filePath.toLowerCase().split(/[\\/]/);
       for (const pattern of patterns) {
-        if (segments.some(seg => seg === pattern || seg.includes(pattern))) {
+        if (segments.some((seg) => seg === pattern || seg.includes(pattern))) {
           matches.push(filePath);
           break;
         }

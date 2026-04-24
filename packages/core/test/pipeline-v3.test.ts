@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { runPipeline } from '../src/pipeline.js';
-import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import type { IRPatternNode, IRPageNode } from '../src/types.js';
-import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
+import { runPipeline } from '../src/pipeline.js';
+import type { IRPageNode, IRPatternNode } from '../src/types.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 

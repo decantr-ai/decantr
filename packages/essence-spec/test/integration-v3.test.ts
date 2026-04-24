@@ -2,13 +2,13 @@
  * Integration test: v3 essence through the full essence-spec lifecycle
  * normalize → validate → guard → migrate (round-trip)
  */
-import { describe, it, expect } from 'vitest';
-import { normalizeEssence } from '../src/normalize.js';
-import { validateEssence } from '../src/validate.js';
+import { describe, expect, it } from 'vitest';
 import { evaluateGuard } from '../src/guard.js';
 import { migrateV2ToV3 } from '../src/migrate.js';
-import { isV3, isSimple } from '../src/types.js';
-import { VALID_V3, VALID_V31, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
+import { normalizeEssence } from '../src/normalize.js';
+import { isSimple, isV3 } from '../src/types.js';
+import { validateEssence } from '../src/validate.js';
+import { VALID_V2_SECTIONED, VALID_V2_SIMPLE, VALID_V3, VALID_V31 } from './fixtures.js';
 
 describe('v3 integration: full lifecycle', () => {
   it('v3 document passes through normalize → validate → guard without corruption', () => {
@@ -25,11 +25,11 @@ describe('v3 integration: full lifecycle', () => {
     // Step 3: Guard evaluation reads from correct paths
     if (!isV3(normalized)) throw new Error('Expected v3');
     const violations = evaluateGuard(normalized, {
-      theme: 'luminarum',  // matches dna.theme.id
-      pageId: 'main',      // exists in blueprint.pages
+      theme: 'luminarum', // matches dna.theme.id
+      pageId: 'main', // exists in blueprint.pages
     });
-    expect(violations.filter(v => v.rule === 'theme')).toHaveLength(0);
-    expect(violations.filter(v => v.rule === 'structure')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'theme')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'structure')).toHaveLength(0);
   });
 
   it('v2 simple → migrate → validate → guard produces consistent results', () => {
@@ -45,19 +45,19 @@ describe('v3 integration: full lifecycle', () => {
     // Step 3: Guard should work the same as with v2
     const v2Violations = evaluateGuard(VALID_V2_SIMPLE, {
       theme: 'glassmorphism', // wrong theme
-      pageId: 'overview',     // exists
+      pageId: 'overview', // exists
     });
     const v3Violations = evaluateGuard(v3, {
       theme: 'glassmorphism', // wrong theme
-      pageId: 'overview',     // exists in blueprint.pages
+      pageId: 'overview', // exists in blueprint.pages
     });
 
     // Both should flag theme mismatch
-    expect(v2Violations.some(v => v.rule === 'theme')).toBe(true);
-    expect(v3Violations.some(v => v.rule === 'theme')).toBe(true);
+    expect(v2Violations.some((v) => v.rule === 'theme')).toBe(true);
+    expect(v3Violations.some((v) => v.rule === 'theme')).toBe(true);
 
     // v3 violation should have layer metadata
-    const v3Theme = v3Violations.find(v => v.rule === 'theme');
+    const v3Theme = v3Violations.find((v) => v.rule === 'theme');
     expect(v3Theme!.layer).toBe('dna');
   });
 
@@ -74,20 +74,20 @@ describe('v3 integration: full lifecycle', () => {
 
   it('v3 guard correctly classifies DNA vs Blueprint violations', () => {
     const violations = evaluateGuard(VALID_V3, {
-      theme: 'wrong-theme',       // DNA violation
+      theme: 'wrong-theme', // DNA violation
       pageId: 'nonexistent-page', // Blueprint violation
     });
 
-    const dnaViolations = violations.filter(v => v.layer === 'dna');
-    const blueprintViolations = violations.filter(v => v.layer === 'blueprint');
+    const dnaViolations = violations.filter((v) => v.layer === 'dna');
+    const blueprintViolations = violations.filter((v) => v.layer === 'blueprint');
 
     expect(dnaViolations.length).toBeGreaterThan(0);
     expect(blueprintViolations.length).toBeGreaterThan(0);
 
     // DNA violations are errors
-    expect(dnaViolations.every(v => v.severity === 'error')).toBe(true);
+    expect(dnaViolations.every((v) => v.severity === 'error')).toBe(true);
     // Blueprint violations are warnings for v3
-    expect(blueprintViolations.every(v => v.severity === 'warning')).toBe(true);
+    expect(blueprintViolations.every((v) => v.severity === 'warning')).toBe(true);
   });
 
   it('v3.1 sectioned documents validate and flatten correctly for guard evaluation', () => {
@@ -99,8 +99,8 @@ describe('v3 integration: full lifecycle', () => {
       pageId: 'settings',
     });
 
-    expect(violations.filter(v => v.rule === 'theme')).toHaveLength(0);
-    expect(violations.filter(v => v.rule === 'structure')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'theme')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'structure')).toHaveLength(0);
   });
 
   it('normalize does NOT use structural fallback for v3 detection', () => {
@@ -135,11 +135,13 @@ describe('v3 integration: full lifecycle', () => {
       ...VALID_V3,
       blueprint: {
         ...VALID_V3.blueprint,
-        pages: [{
-          id: 'main',
-          layout: ['hero'],
-          dna_overrides: { wcag_level: 'A', density: 'spacious' },
-        }],
+        pages: [
+          {
+            id: 'main',
+            layout: ['hero'],
+            dna_overrides: { wcag_level: 'A', density: 'spacious' },
+          },
+        ],
       },
     };
     const validation = validateEssence(withBadOverride);
@@ -150,11 +152,13 @@ describe('v3 integration: full lifecycle', () => {
       ...VALID_V3,
       blueprint: {
         ...VALID_V3.blueprint,
-        pages: [{
-          id: 'main',
-          layout: ['hero'],
-          dna_overrides: { density: 'spacious', mode: 'light' },
-        }],
+        pages: [
+          {
+            id: 'main',
+            layout: ['hero'],
+            dna_overrides: { density: 'spacious', mode: 'light' },
+          },
+        ],
       },
     };
     const validation2 = validateEssence(withGoodOverride);

@@ -1,9 +1,9 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isV3 } from '@decantr/essence-spec';
 import type { EssenceV3 } from '@decantr/essence-spec';
-import { refreshDerivedFiles } from '../scaffold.js';
+import { isV3 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
+import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -12,7 +12,7 @@ const RESET = '\x1b[0m';
 
 export async function cmdRefresh(
   projectRoot: string = process.cwd(),
-  options: { offline?: boolean } = {}
+  options: { offline?: boolean } = {},
 ): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 

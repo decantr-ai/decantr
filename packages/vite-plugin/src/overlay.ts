@@ -16,8 +16,8 @@ export function formatViolation(v: GuardViolation): string {
 export function formatViolations(violations: GuardViolation[]): OverlayError | null {
   if (violations.length === 0) return null;
 
-  const errors = violations.filter(v => v.severity === 'error');
-  const warnings = violations.filter(v => v.severity === 'warning');
+  const errors = violations.filter((v) => v.severity === 'error');
+  const warnings = violations.filter((v) => v.severity === 'warning');
 
   const sections: string[] = [];
 

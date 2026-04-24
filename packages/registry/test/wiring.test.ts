@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { detectWirings, WIRING_RULES } from '../src/wiring.js';
 import type { LayoutItem } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
+import { detectWirings, WIRING_RULES } from '../src/wiring.js';
 
 describe('detectWirings', () => {
   it('detects filter-bar + data-table wiring', () => {

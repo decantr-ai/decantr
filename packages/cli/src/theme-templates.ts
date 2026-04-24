@@ -10,13 +10,13 @@ export function getThemeSkeleton(id: string, name: string): object {
       primary: '#6366F1',
       secondary: '#8B5CF6',
       accent: '#EC4899',
-      background: '#0F172A'
+      background: '#0F172A',
     },
     palette: {},
     modes: ['dark'],
     shapes: ['rounded'],
     decantr_compat: '>=1.0.0',
-    source: 'custom'
+    source: 'custom',
   };
 }
 

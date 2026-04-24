@@ -330,8 +330,10 @@ const DIRECT: Record<string, string> = {
   snapend: 'scroll-snap-align:end',
 
   // SR only
-  sronly: 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0',
-  notsr: 'position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip:auto;white-space:normal',
+  sronly:
+    'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0',
+  notsr:
+    'position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip:auto;white-space:normal',
 };
 
 /** Spacing scale (rem-based, 4px = 0.25rem) */

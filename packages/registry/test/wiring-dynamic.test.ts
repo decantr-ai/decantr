@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { detectWirings, deriveIOWirings, buildIOMap, WIRING_RULES } from '../src/wiring.js';
-import type { PatternIO } from '../src/types.js';
 import type { LayoutItem } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
+import type { PatternIO } from '../src/types.js';
+import { buildIOMap, deriveIOWirings, detectWirings, WIRING_RULES } from '../src/wiring.js';
 
 /**
  * IO declarations for the core patterns, matching the fixture JSON files.
@@ -13,7 +13,7 @@ const PATTERN_IO: Record<string, PatternIO> = {
   'card-grid': { consumes: ['search', 'filters', 'data'], produces: ['selection'] },
   'kpi-grid': { produces: ['kpi-data'], consumes: ['date-range'] },
   'chart-grid': { consumes: ['date-range', 'filters'], produces: [] },
-  'hero': { produces: [], consumes: [] },
+  hero: { produces: [], consumes: [] },
   'cta-section': { produces: [], consumes: [], actions: ['cta-click'] },
   'detail-header': { consumes: ['data'], produces: ['actions'] },
   'form-sections': { consumes: ['data'], produces: ['form-data'] },
@@ -25,7 +25,10 @@ function makeIOMap(ids: string[]): Map<string, PatternIO> {
 
 describe('deriveIOWirings', () => {
   it('derives filter-bar -> data-table wiring via shared search and filters signals', () => {
-    const edges = deriveIOWirings(['filter-bar', 'data-table'], makeIOMap(['filter-bar', 'data-table']));
+    const edges = deriveIOWirings(
+      ['filter-bar', 'data-table'],
+      makeIOMap(['filter-bar', 'data-table']),
+    );
     expect(edges).toHaveLength(1);
     expect(edges[0].producer).toBe('filter-bar');
     expect(edges[0].consumer).toBe('data-table');
@@ -79,7 +82,10 @@ describe('deriveIOWirings', () => {
 
   it('only considers patterns present in the layout', () => {
     // kpi-grid produces date-range, but chart-grid is not in the layout
-    const edges = deriveIOWirings(['kpi-grid', 'hero'], makeIOMap(['kpi-grid', 'hero', 'chart-grid']));
+    const edges = deriveIOWirings(
+      ['kpi-grid', 'hero'],
+      makeIOMap(['kpi-grid', 'hero', 'chart-grid']),
+    );
     expect(edges).toHaveLength(0);
   });
 
@@ -91,12 +97,16 @@ describe('deriveIOWirings', () => {
     // filter-bar -> activity-feed (search, filters)
     expect(edges.length).toBeGreaterThanOrEqual(3);
 
-    const filterToTable = edges.find((e) => e.producer === 'filter-bar' && e.consumer === 'data-table');
+    const filterToTable = edges.find(
+      (e) => e.producer === 'filter-bar' && e.consumer === 'data-table',
+    );
     expect(filterToTable).toBeDefined();
     expect(filterToTable!.signals).toContain('search');
     expect(filterToTable!.signals).toContain('filters');
 
-    const filterToFeed = edges.find((e) => e.producer === 'filter-bar' && e.consumer === 'activity-feed');
+    const filterToFeed = edges.find(
+      (e) => e.producer === 'filter-bar' && e.consumer === 'activity-feed',
+    );
     expect(filterToFeed).toBeDefined();
     expect(filterToFeed!.signals).toContain('search');
   });

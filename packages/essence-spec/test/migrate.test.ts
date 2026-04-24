@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { migrateV2ToV3, migrateV30ToV31 } from '../src/migrate.js';
-import { isV3 } from '../src/types.js';
 import type { EssenceV3 } from '../src/types.js';
+import { isV3 } from '../src/types.js';
 import { validateEssence } from '../src/validate.js';
-import { VALID_V2_SIMPLE, VALID_V2_SECTIONED, VALID_V3 } from './fixtures.js';
+import { VALID_V2_SECTIONED, VALID_V2_SIMPLE, VALID_V3 } from './fixtures.js';
 
 describe('migrateV2ToV3', () => {
   it('produces valid v3 from simple v2', () => {
@@ -77,7 +77,10 @@ describe('migrateV2ToV3', () => {
   });
 
   it('infers radius for pill shape', () => {
-    const pill = { ...VALID_V2_SIMPLE, theme: { ...VALID_V2_SIMPLE.theme, shape: 'pill' as const } };
+    const pill = {
+      ...VALID_V2_SIMPLE,
+      theme: { ...VALID_V2_SIMPLE.theme, shape: 'pill' as const },
+    };
     const v3 = migrateV2ToV3(pill);
     expect(v3.dna.radius.base).toBe(12);
   });
@@ -98,7 +101,13 @@ describe('migrateV2ToV3', () => {
   it('preserves _impression if present', () => {
     const withImpression = {
       ...VALID_V2_SIMPLE,
-      _impression: { vibe: ['modern'], references: [], density_intent: 'comfortable', layout_intent: 'sidebar-main', novel_elements: [] },
+      _impression: {
+        vibe: ['modern'],
+        references: [],
+        density_intent: 'comfortable',
+        layout_intent: 'sidebar-main',
+        novel_elements: [],
+      },
     };
     const v3 = migrateV2ToV3(withImpression);
     expect(v3._impression?.vibe).toEqual(['modern']);
@@ -122,10 +131,12 @@ describe('migrateV2ToV3', () => {
     const sectioned = {
       ...VALID_V2_SECTIONED,
       shared_features: ['auth'],
-      sections: [{
-        ...VALID_V2_SECTIONED.sections[0],
-        features: ['auth', 'analytics'],
-      }],
+      sections: [
+        {
+          ...VALID_V2_SECTIONED.sections[0],
+          features: ['auth', 'analytics'],
+        },
+      ],
     };
     const v3 = migrateV2ToV3(sectioned);
     expect(v3.blueprint.features).toEqual(['auth', 'analytics']);

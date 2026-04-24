@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,42 +55,78 @@ function runCli(cliPath, cwd, args, contentRoot) {
 }
 
 function seedReactProject(projectDir) {
-  writeFileSync(join(projectDir, 'package.json'), JSON.stringify({
-    name: 'brownfield-react',
-    private: true,
-    version: '0.0.0',
-    dependencies: {
-      react: '^19.0.0',
-      'react-dom': '^19.0.0',
-    },
-  }, null, 2) + '\n');
-  writeFileSync(join(projectDir, 'tsconfig.json'), JSON.stringify({
-    compilerOptions: { jsx: 'react-jsx' },
-  }, null, 2) + '\n');
+  writeFileSync(
+    join(projectDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'brownfield-react',
+        private: true,
+        version: '0.0.0',
+        dependencies: {
+          react: '^19.0.0',
+          'react-dom': '^19.0.0',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeFileSync(
+    join(projectDir, 'tsconfig.json'),
+    JSON.stringify(
+      {
+        compilerOptions: { jsx: 'react-jsx' },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
   mkdirSync(join(projectDir, 'src'), { recursive: true });
-  writeFileSync(join(projectDir, 'src', 'App.tsx'), 'export function App() { return <main>hello</main>; }\n');
+  writeFileSync(
+    join(projectDir, 'src', 'App.tsx'),
+    'export function App() { return <main>hello</main>; }\n',
+  );
 }
 
 function seedAngularProject(projectDir) {
-  writeFileSync(join(projectDir, 'package.json'), JSON.stringify({
-    name: 'brownfield-angular',
-    private: true,
-    version: '0.0.0',
-    dependencies: {
-      '@angular/core': '^19.0.0',
-    },
-  }, null, 2) + '\n');
-  writeFileSync(join(projectDir, 'angular.json'), JSON.stringify({
-    version: 1,
-    projects: {},
-  }, null, 2) + '\n');
+  writeFileSync(
+    join(projectDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'brownfield-angular',
+        private: true,
+        version: '0.0.0',
+        dependencies: {
+          '@angular/core': '^19.0.0',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeFileSync(
+    join(projectDir, 'angular.json'),
+    JSON.stringify(
+      {
+        version: 1,
+        projects: {},
+      },
+      null,
+      2,
+    ) + '\n',
+  );
   mkdirSync(join(projectDir, 'src', 'app'), { recursive: true });
   writeFileSync(join(projectDir, 'src', 'main.ts'), 'console.log("angular");\n');
 }
 
 function certifyGreenfield(tmpRoot, cliPath, contentRoot) {
   const projectName = 'workflow-greenfield';
-  runCli(cliPath, tmpRoot, ['new', projectName, '--blueprint=agent-marketplace', '--offline'], contentRoot);
+  runCli(
+    cliPath,
+    tmpRoot,
+    ['new', projectName, '--blueprint=agent-marketplace', '--offline'],
+    contentRoot,
+  );
 
   const projectDir = join(tmpRoot, projectName);
   const mainTsx = readFileSync(join(projectDir, 'src', 'main.tsx'), 'utf8');
@@ -119,7 +155,10 @@ function certifyBrownfield(tmpRoot, cliPath, contentRoot, framework) {
   runCli(cliPath, projectDir, ['init', '--existing', '--yes', '--offline'], contentRoot);
 
   const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf8'));
-  if (!existsSync(join(projectDir, '.decantr', 'analysis.json')) || !existsSync(join(projectDir, '.decantr', 'init-seed.json'))) {
+  if (
+    !existsSync(join(projectDir, '.decantr', 'analysis.json')) ||
+    !existsSync(join(projectDir, '.decantr', 'init-seed.json'))
+  ) {
     throw new Error(`${framework} brownfield workflow did not emit analyze artifacts`);
   }
   if (essence.meta?.target !== framework) {
@@ -157,7 +196,9 @@ function main() {
   }
 
   if (!contentRoot) {
-    console.error(`${RED}Could not resolve decantr-content. Set DECANTR_CONTENT_DIR or pass a valid content root.${RESET}`);
+    console.error(
+      `${RED}Could not resolve decantr-content. Set DECANTR_CONTENT_DIR or pass a valid content root.${RESET}`,
+    );
     process.exit(1);
   }
 
@@ -178,7 +219,9 @@ function main() {
         const result = check();
         results.push(result);
         if (!options.json) {
-          console.log(`${GREEN}passed${RESET} ${result.workflow}${result.framework ? ` (${result.framework})` : ''}`);
+          console.log(
+            `${GREEN}passed${RESET} ${result.workflow}${result.framework ? ` (${result.framework})` : ''}`,
+          );
         }
       } catch (error) {
         failed = true;
@@ -196,7 +239,9 @@ function main() {
       console.log('');
       console.log(`${DIM}Content root:${RESET} ${contentRoot}`);
       console.log(`${DIM}Temp root:${RESET} ${tmpRoot}`);
-      console.log(`${DIM}Summary:${RESET} ${results.filter(result => result.status === 'passed').length}/${results.length} passed`);
+      console.log(
+        `${DIM}Summary:${RESET} ${results.filter((result) => result.status === 'passed').length}/${results.length} passed`,
+      );
     }
   } finally {
     if (!options.keepTmp) {

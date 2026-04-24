@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { validateEssence } from '../src/validate.js';
-import { VALID_V3, VALID_V31, VALID_V2_SIMPLE, VALID_V2_SECTIONED } from './fixtures.js';
+import { VALID_V2_SECTIONED, VALID_V2_SIMPLE, VALID_V3, VALID_V31 } from './fixtures.js';
 
 describe('validateEssence - v3', () => {
   it('accepts a valid v3 document', () => {
@@ -61,21 +61,21 @@ describe('validateEssence - v3', () => {
     const { dna, ...noData } = VALID_V3;
     const result = validateEssence(noData);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('dna'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('dna'))).toBe(true);
   });
 
   it('rejects v3 with missing blueprint', () => {
     const { blueprint, ...noBlueprint } = VALID_V3;
     const result = validateEssence(noBlueprint);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('blueprint'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('blueprint'))).toBe(true);
   });
 
   it('rejects v3 with missing meta', () => {
     const { meta, ...noMeta } = VALID_V3;
     const result = validateEssence(noMeta);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('meta'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('meta'))).toBe(true);
   });
 
   it('rejects v3 with invalid dna.theme.mode', () => {
@@ -107,10 +107,12 @@ describe('validateEssence - v3', () => {
       ...VALID_V3,
       blueprint: {
         ...VALID_V3.blueprint,
-        pages: [{
-          ...VALID_V3.blueprint.pages[0],
-          dna_overrides: { wcag_level: 'A' },
-        }],
+        pages: [
+          {
+            ...VALID_V3.blueprint.pages[0],
+            dna_overrides: { wcag_level: 'A' },
+          },
+        ],
       },
     };
     const result = validateEssence(bad);

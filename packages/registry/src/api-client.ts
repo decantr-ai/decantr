@@ -1,35 +1,35 @@
+import type { EssenceFile } from '@decantr/essence-spec';
 import type {
-  Pattern,
-  Archetype,
-  Theme,
-  Blueprint,
-  Shell,
   ApiContentType,
-  ContentListResponse,
-  PublicContentSummary,
-  PublicContentRecord,
+  Archetype,
+  Blueprint,
   ContentItem,
-  OwnedContentSummary,
-  PublishPayload,
-  PublishResponse,
-  SearchParams,
-  SearchResponse,
-  RegistryIntelligenceSummaryResponse,
-  UserProfile,
-  PublicUserProfile,
-  ShowcaseManifestResponse,
-  ShowcaseShortlistResponse,
-  ShowcaseShortlistReport,
+  ContentListResponse,
+  ExecutionPackBundleResponse,
+  ExecutionPackManifest,
+  FileCritiqueReport,
   HostedFileCritiqueRequest,
   HostedProjectAuditRequest,
-  FileCritiqueReport,
-  ProjectAuditReport,
-  ExecutionPackManifest,
-  ExecutionPackBundleResponse,
   HostedSelectedExecutionPackRequest,
+  OwnedContentSummary,
+  Pattern,
+  ProjectAuditReport,
+  PublicContentRecord,
+  PublicContentSummary,
+  PublicUserProfile,
+  PublishPayload,
+  PublishResponse,
+  RegistryIntelligenceSummaryResponse,
+  SearchParams,
+  SearchResponse,
   SelectedExecutionPackResponse,
+  Shell,
+  ShowcaseManifestResponse,
+  ShowcaseShortlistReport,
+  ShowcaseShortlistResponse,
+  Theme,
+  UserProfile,
 } from './types.js';
-import type { EssenceFile } from '@decantr/essence-spec';
 
 const DEFAULT_BASE_URL = 'https://api.decantr.ai/v1';
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -91,7 +91,7 @@ export class RegistryAPIClient {
 
   private buildHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
-      'Accept': 'application/json',
+      Accept: 'application/json',
     };
     if (this.apiKey) {
       headers['X-API-Key'] = this.apiKey;
@@ -185,7 +185,7 @@ export class RegistryAPIClient {
       intelligenceSource?: SearchParams['intelligenceSource'];
       limit?: number;
       offset?: number;
-    }
+    },
   ): Promise<ContentListResponse<T>> {
     const cacheKey = `list:${type}:${JSON.stringify(params ?? {})}`;
     const cached = this.getCached<ContentListResponse<T>>(cacheKey);
@@ -196,7 +196,8 @@ export class RegistryAPIClient {
     if (params?.source) searchParams.set('source', params.source);
     if (params?.sort) searchParams.set('sort', params.sort);
     if (params?.recommended) searchParams.set('recommended', 'true');
-    if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params?.intelligenceSource)
+      searchParams.set('intelligence_source', params.intelligenceSource);
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.offset) searchParams.set('offset', String(params.offset));
 
@@ -210,7 +211,7 @@ export class RegistryAPIClient {
   async getContent<T = Record<string, unknown>>(
     type: ApiContentType,
     namespace: string,
-    slug: string
+    slug: string,
   ): Promise<T> {
     const cacheKey = `get:${type}:${namespace}:${slug}`;
     const cached = this.getCached<T>(cacheKey);
@@ -282,7 +283,8 @@ export class RegistryAPIClient {
     if (params.source) searchParams.set('source', params.source);
     if (params.sort) searchParams.set('sort', params.sort);
     if (params.recommended) searchParams.set('recommended', 'true');
-    if (params.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params.intelligenceSource)
+      searchParams.set('intelligence_source', params.intelligenceSource);
     if (params.limit) searchParams.set('limit', String(params.limit));
     if (params.offset) searchParams.set('offset', String(params.offset));
 
@@ -320,7 +322,8 @@ export class RegistryAPIClient {
     if (params?.source) searchParams.set('source', params.source);
     if (params?.sort) searchParams.set('sort', params.sort);
     if (params?.recommended) searchParams.set('recommended', 'true');
-    if (params?.intelligenceSource) searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params?.intelligenceSource)
+      searchParams.set('intelligence_source', params.intelligenceSource);
     if (params?.limit != null) searchParams.set('limit', String(params.limit));
     if (params?.offset != null) searchParams.set('offset', String(params.offset));
 
@@ -350,15 +353,13 @@ export class RegistryAPIClient {
     return this.request<ContentListResponse<OwnedContentSummary>>('/my/content');
   }
 
-  async getAccessiblePrivateContent(
-    params?: {
-      type?: string;
-      scope?: 'all' | 'personal' | 'organization';
-      q?: string;
-      limit?: number;
-      offset?: number;
-    },
-  ): Promise<ContentListResponse<OwnedContentSummary>> {
+  async getAccessiblePrivateContent(params?: {
+    type?: string;
+    scope?: 'all' | 'personal' | 'organization';
+    q?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<ContentListResponse<OwnedContentSummary>> {
     const searchParams = new URLSearchParams();
     if (params?.type) searchParams.set('type', params.type);
     if (params?.scope) searchParams.set('scope', params.scope);
@@ -410,9 +411,9 @@ export class RegistryAPIClient {
     return result;
   }
 
-  async getRegistryIntelligenceSummary(
-    params?: { namespace?: string },
-  ): Promise<RegistryIntelligenceSummaryResponse> {
+  async getRegistryIntelligenceSummary(params?: {
+    namespace?: string;
+  }): Promise<RegistryIntelligenceSummaryResponse> {
     const cacheKey = `registry-intelligence-summary:${JSON.stringify(params ?? {})}`;
     const cached = this.getCached<RegistryIntelligenceSummaryResponse>(cacheKey);
     if (cached) return cached;
@@ -435,14 +436,11 @@ export class RegistryAPIClient {
     if (params?.namespace) searchParams.set('namespace', params.namespace);
     const query = searchParams.toString();
 
-    return this.request<ExecutionPackBundleResponse>(
-      `/packs/compile${query ? `?${query}` : ''}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(essence),
-      },
-    );
+    return this.request<ExecutionPackBundleResponse>(`/packs/compile${query ? `?${query}` : ''}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(essence),
+    });
   }
 
   async selectExecutionPack(
@@ -453,14 +451,11 @@ export class RegistryAPIClient {
     if (params?.namespace) searchParams.set('namespace', params.namespace);
     const query = searchParams.toString();
 
-    return this.request<SelectedExecutionPackResponse>(
-      `/packs/select${query ? `?${query}` : ''}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    );
+    return this.request<SelectedExecutionPackResponse>(`/packs/select${query ? `?${query}` : ''}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
   }
 
   async getExecutionPackManifest(
@@ -486,14 +481,11 @@ export class RegistryAPIClient {
     if (params?.namespace) searchParams.set('namespace', params.namespace);
     const query = searchParams.toString();
 
-    return this.request<FileCritiqueReport>(
-      `/critique/file${query ? `?${query}` : ''}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    );
+    return this.request<FileCritiqueReport>(`/critique/file${query ? `?${query}` : ''}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
   }
 
   async auditProject(
@@ -504,14 +496,11 @@ export class RegistryAPIClient {
     if (params?.namespace) searchParams.set('namespace', params.namespace);
     const query = searchParams.toString();
 
-    return this.request<ProjectAuditReport>(
-      `/audit/project${query ? `?${query}` : ''}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    );
+    return this.request<ProjectAuditReport>(`/audit/project${query ? `?${query}` : ''}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
   }
 }
 
@@ -543,13 +532,17 @@ export function createRegistryClient(options: RegistryClientOptions = {}): Regis
       if (type) params.set('type', type);
       const res = await fetch(`${baseUrl}/search?${params}`);
       if (!res.ok) return [];
-      const data = await res.json() as { results?: SearchResult[]; total?: number } | SearchResult[];
+      const data = (await res.json()) as
+        | { results?: SearchResult[]; total?: number }
+        | SearchResult[];
       // API returns { total, results } wrapper
       if (Array.isArray(data)) return data;
       return (data as { results: SearchResult[] }).results ?? [];
     },
     async fetch(type: string, id: string, version?: string): Promise<unknown> {
-      const url = version ? `${baseUrl}/content/${type}/${id}/${version}` : `${baseUrl}/content/${type}/${id}`;
+      const url = version
+        ? `${baseUrl}/content/${type}/${id}/${version}`
+        : `${baseUrl}/content/${type}/${id}`;
       const res = await fetch(url);
       if (!res.ok) return null;
       return res.json();

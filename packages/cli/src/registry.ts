@@ -1,7 +1,14 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient, API_CONTENT_TYPES } from '@decantr/registry';
-import type { ApiContentType, Archetype, Blueprint, Pattern, Shell, Theme } from '@decantr/registry';
+import type {
+  ApiContentType,
+  Archetype,
+  Blueprint,
+  Pattern,
+  Shell,
+  Theme,
+} from '@decantr/registry';
+import { API_CONTENT_TYPES, RegistryAPIClient } from '@decantr/registry';
 
 type RegistryContentMap = {
   patterns: Pattern;
@@ -38,7 +45,7 @@ function loadFromCache<T>(
   cacheDir: string,
   contentType: string,
   id?: string,
-  namespace?: string
+  namespace?: string,
 ): FetchResult<T> | null {
   const nsDir = namespace ? join(cacheDir, namespace) : cacheDir;
   const cachePath = id
@@ -63,14 +70,12 @@ function saveToCache(
   contentType: string,
   id: string | null,
   data: unknown,
-  namespace: string = '@official'
+  namespace: string = '@official',
 ): void {
   const dir = join(cacheDir, namespace, contentType);
   mkdirSync(dir, { recursive: true });
 
-  const cachePath = id
-    ? join(dir, `${id}.json`)
-    : join(dir, 'index.json');
+  const cachePath = id ? join(dir, `${id}.json`) : join(dir, 'index.json');
 
   writeFileSync(cachePath, JSON.stringify(data, null, 2));
 }
@@ -90,13 +95,15 @@ export class RegistryClient {
   private projectRoot: string;
   private apiClient: RegistryAPIClient;
 
-  constructor(options: {
-    cacheDir?: string;
-    apiUrl?: string;
-    apiKey?: string;
-    offline?: boolean;
-    projectRoot?: string;
-  } = {}) {
+  constructor(
+    options: {
+      cacheDir?: string;
+      apiUrl?: string;
+      apiKey?: string;
+      offline?: boolean;
+      projectRoot?: string;
+    } = {},
+  ) {
     this.projectRoot = options.projectRoot || process.cwd();
     this.cacheDir = options.cacheDir || join(this.projectRoot, '.decantr', 'cache');
     this.apiUrl = options.apiUrl || process.env.DECANTR_API_URL || DEFAULT_API_URL;
@@ -115,17 +122,8 @@ export class RegistryClient {
    * Load content from .decantr/custom/{contentType}/{id}.json
    * Works for ALL content types, not just themes.
    */
-  private loadCustomContent<T>(
-    contentType: string,
-    id: string
-  ): FetchResult<T> | null {
-    const customPath = join(
-      this.projectRoot,
-      '.decantr',
-      'custom',
-      contentType,
-      `${id}.json`
-    );
+  private loadCustomContent<T>(contentType: string, id: string): FetchResult<T> | null {
+    const customPath = join(this.projectRoot, '.decantr', 'custom', contentType, `${id}.json`);
 
     if (!existsSync(customPath)) return null;
 
@@ -146,8 +144,8 @@ export class RegistryClient {
 
     try {
       return readdirSync(dir)
-        .filter(f => f.endsWith('.json'))
-        .map(f => {
+        .filter((f) => f.endsWith('.json'))
+        .map((f) => {
           const data = JSON.parse(readFileSync(join(dir, f), 'utf-8')) as RegistryContentMap[T];
           return { id: data.id || f.replace('.json', ''), ...data };
         });
@@ -194,7 +192,7 @@ export class RegistryClient {
         this.cacheDir,
         contentType,
         undefined,
-        namespace
+        namespace,
       );
       if (cacheResult) {
         apiItems = cacheResult.data.items;
@@ -219,7 +217,7 @@ export class RegistryClient {
   async fetchContentItem<T extends ApiContentType>(
     contentType: T,
     id: string,
-    namespace: string = '@official'
+    namespace: string = '@official',
   ): Promise<FetchResult<RegistryContentMap[T]> | null> {
     // 1. Check custom content first (strip "custom:" prefix if present)
     const customId = id.startsWith('custom:') ? id.slice(7) : id;
@@ -233,16 +231,22 @@ export class RegistryClient {
     if (!this.offline) {
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
-          const data = await this.apiClient.getContent<RegistryContentMap[T]>(contentType, namespace, id);
+          const data = await this.apiClient.getContent<RegistryContentMap[T]>(
+            contentType,
+            namespace,
+            id,
+          );
           saveToCache(this.cacheDir, contentType, id, data, namespace);
           return { data, source: { type: 'api', url: this.apiUrl } };
         } catch (e) {
           if (process.env.DECANTR_DEBUG) {
-            console.error(`  [debug] API fetch ${attempt === 0 ? 'failed' : 'retry failed'} for ${contentType}/${namespace}/${id}: ${(e as Error).message}`);
+            console.error(
+              `  [debug] API fetch ${attempt === 0 ? 'failed' : 'retry failed'} for ${contentType}/${namespace}/${id}: ${(e as Error).message}`,
+            );
           }
           if (attempt === 0) {
             // Brief pause before retry
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, 500));
           }
         }
       }
@@ -324,7 +328,7 @@ export function createRegistryClient(options?: {
  */
 export async function syncRegistry(
   cacheDir: string,
-  apiUrl: string = DEFAULT_API_URL
+  apiUrl: string = DEFAULT_API_URL,
 ): Promise<{
   synced: string[];
   failed: string[];
@@ -351,8 +355,8 @@ export async function syncRegistry(
       for (const item of result.items) {
         const slug = (item as Record<string, unknown>).slug as string;
         const data = (item as Record<string, unknown>).data as Record<string, unknown> | undefined;
-        const innerSlug = data?.id as string || data?.slug as string;
-        const cacheKey = slug || innerSlug || (item as Record<string, unknown>).id as string;
+        const innerSlug = (data?.id as string) || (data?.slug as string);
+        const cacheKey = slug || innerSlug || ((item as Record<string, unknown>).id as string);
         if (cacheKey) {
           saveToCache(cacheDir, type, cacheKey, item, '@official');
         }

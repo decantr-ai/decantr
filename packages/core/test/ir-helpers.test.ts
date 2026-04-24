@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { walkIR, findNodes, countPatterns, validateIR } from '../src/ir-helpers.js';
-import type { IRNode, IRPageNode, IRPatternNode, IRGridNode } from '../src/types.js';
+import { describe, expect, it } from 'vitest';
+import { countPatterns, findNodes, validateIR, walkIR } from '../src/ir-helpers.js';
+import type { IRGridNode, IRNode, IRPageNode, IRPatternNode } from '../src/types.js';
 
 function makePage(children: IRNode[]): IRPageNode {
   return {
@@ -69,7 +69,7 @@ describe('findNodes', () => {
 
     const patterns = findNodes<IRPatternNode>(page, 'pattern');
     expect(patterns.length).toBe(3);
-    expect(patterns.map(p => p.id)).toEqual(['a', 'b', 'c']);
+    expect(patterns.map((p) => p.id)).toEqual(['a', 'b', 'c']);
   });
 });
 

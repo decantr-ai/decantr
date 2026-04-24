@@ -1,20 +1,31 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { resolvePatternPreset } from '../src/pattern.js';
 import type { Pattern } from '../src/types.js';
 
 const HERO_PATTERN: Pattern = {
-  id: 'hero', version: '1.0.0', name: 'Hero', description: 'Landing hero',
-  tags: ['hero'], components: ['Button'], default_preset: 'landing',
+  id: 'hero',
+  version: '1.0.0',
+  name: 'Hero',
+  description: 'Landing hero',
+  tags: ['hero'],
+  components: ['Button'],
+  default_preset: 'landing',
   presets: {
     landing: {
       description: 'Standard landing',
       layout: { layout: 'hero', atoms: '_flex _col _aic _tc _gap6' },
-      code: { imports: 'import { Button } from "decantr/components";', example: 'function HeroLanding() {}' },
+      code: {
+        imports: 'import { Button } from "decantr/components";',
+        example: 'function HeroLanding() {}',
+      },
     },
     'image-overlay': {
       description: 'Image background hero',
       layout: { layout: 'hero', atoms: '_flex _col _aic _tc _gap4 _py16' },
-      code: { imports: 'import { Button } from "decantr/components";', example: 'function HeroImageOverlay() {}' },
+      code: {
+        imports: 'import { Button } from "decantr/components";',
+        example: 'function HeroImageOverlay() {}',
+      },
     },
   },
 };
@@ -49,7 +60,9 @@ describe('resolvePatternPreset', () => {
 
   it('falls back to pattern code when no presets exist', () => {
     const noPresets: Pattern = {
-      ...HERO_PATTERN, presets: {}, default_preset: '',
+      ...HERO_PATTERN,
+      presets: {},
+      default_preset: '',
       code: { imports: 'import { h } from "decantr/core";', example: 'function HeroFallback() {}' },
     };
     const result = resolvePatternPreset(noPresets);

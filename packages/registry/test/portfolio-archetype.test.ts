@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { createResolver } from '../src/resolver.js';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { createResolver } from '../src/resolver.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentRoot = join(__dirname, 'fixtures');
@@ -33,7 +33,10 @@ describe('portfolio archetype', () => {
   it('each page has a default_layout', () => {
     for (const page of archetype.pages) {
       expect(page.default_layout, `page ${page.id} missing default_layout`).toBeInstanceOf(Array);
-      expect(page.default_layout.length, `page ${page.id} has empty default_layout`).toBeGreaterThan(0);
+      expect(
+        page.default_layout.length,
+        `page ${page.id} has empty default_layout`,
+      ).toBeGreaterThan(0);
     }
   });
 
@@ -41,7 +44,10 @@ describe('portfolio archetype', () => {
     const aboutPage = archetype.pages.find((p: { id: string }) => p.id === 'about');
     expect(aboutPage).toBeDefined();
     const heroEntry = aboutPage.default_layout.find(
-      (item: unknown) => typeof item === 'object' && item !== null && (item as { pattern: string }).pattern === 'hero'
+      (item: unknown) =>
+        typeof item === 'object' &&
+        item !== null &&
+        (item as { pattern: string }).pattern === 'hero',
     );
     expect(heroEntry).toBeDefined();
     expect(heroEntry.preset).toBe('split');
@@ -51,7 +57,10 @@ describe('portfolio archetype', () => {
     const contactPage = archetype.pages.find((p: { id: string }) => p.id === 'contact');
     expect(contactPage).toBeDefined();
     const formEntry = contactPage.default_layout.find(
-      (item: unknown) => typeof item === 'object' && item !== null && (item as { pattern: string }).pattern === 'form-sections'
+      (item: unknown) =>
+        typeof item === 'object' &&
+        item !== null &&
+        (item as { pattern: string }).pattern === 'form-sections',
     );
     expect(formEntry).toBeDefined();
     expect(formEntry.preset).toBe('creation');
@@ -60,7 +69,15 @@ describe('portfolio archetype', () => {
   it('pattern references use correct preset names', () => {
     // AUTO: Valid presets per pattern, derived from content/patterns/*.json and content/core/patterns/*.json
     const validPresets: Record<string, string[]> = {
-      'hero': ['landing', 'image-overlay', 'brand', 'vision', 'split', 'image-overlay-compact', 'empty-state'],
+      hero: [
+        'landing',
+        'image-overlay',
+        'brand',
+        'vision',
+        'split',
+        'image-overlay-compact',
+        'empty-state',
+      ],
       'card-grid': ['product', 'content', 'collection', 'icon'],
       'cta-section': ['standard', 'split', 'banner'],
       'detail-header': ['standard', 'profile'],
@@ -72,7 +89,10 @@ describe('portfolio archetype', () => {
         if (typeof item === 'object' && item.pattern && item.preset) {
           const allowed = validPresets[item.pattern];
           expect(allowed, `unknown pattern ${item.pattern}`).toBeDefined();
-          expect(allowed, `invalid preset "${item.preset}" for pattern "${item.pattern}"`).toContain(item.preset);
+          expect(
+            allowed,
+            `invalid preset "${item.preset}" for pattern "${item.pattern}"`,
+          ).toContain(item.preset);
         }
       }
     }

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockCheckHealth = vi.fn().mockResolvedValue(true);
 const mockListContent = vi.fn().mockImplementation((type: string) => {
@@ -9,16 +9,10 @@ const mockListContent = vi.fn().mockImplementation((type: string) => {
       { slug: 'hero', id: 'hero', name: 'Hero', description: 'Hero section' },
       { slug: 'footer', id: 'footer', name: 'Footer', description: 'Footer section' },
     ],
-    archetypes: [
-      { slug: 'dashboard', id: 'dashboard', name: 'Dashboard' },
-    ],
-    themes: [
-      { slug: 'carbon', id: 'carbon', name: 'Carbon' },
-    ],
+    archetypes: [{ slug: 'dashboard', id: 'dashboard', name: 'Dashboard' }],
+    themes: [{ slug: 'carbon', id: 'carbon', name: 'Carbon' }],
     blueprints: [],
-    shells: [
-      { slug: 'top-nav-footer', id: 'top-nav-footer', name: 'Top Nav Footer' },
-    ],
+    shells: [{ slug: 'top-nav-footer', id: 'top-nav-footer', name: 'Top Nav Footer' }],
   };
   return Promise.resolve({ items: items[type] || [], total: (items[type] || []).length });
 });
@@ -138,7 +132,7 @@ describe('RegistryClient offline mode', () => {
     mkdirSync(themesDir, { recursive: true });
     writeFileSync(
       join(themesDir, 'carbon.json'),
-      JSON.stringify({ id: 'carbon', name: 'Carbon', seed: {} })
+      JSON.stringify({ id: 'carbon', name: 'Carbon', seed: {} }),
     );
 
     // Import real RegistryClient (not mocked — different module)

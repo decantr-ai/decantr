@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { generateTokensCSS, generateDecoratorsCSS, generateGlobalCSS, generateSectionContext } from '../src/scaffold.js';
+import { describe, expect, it } from 'vitest';
 import type { SectionContextInput } from '../src/scaffold.js';
+import {
+  generateDecoratorsCSS,
+  generateGlobalCSS,
+  generateSectionContext,
+  generateTokensCSS,
+} from '../src/scaffold.js';
 
 describe('generateTokensCSS', () => {
   it('returns fallback CSS when themeData is undefined', () => {
@@ -120,7 +125,6 @@ describe('generateTokensCSS shadow tokens', () => {
   });
 });
 
-
 describe('generateDecoratorsCSS', () => {
   it('returns comment when no theme data', () => {
     const result = generateDecoratorsCSS(undefined, 'test');
@@ -218,7 +222,7 @@ describe('generateSectionContext pattern deduplication', () => {
       themeName: 'luminarum',
       zoneContext: '',
       patternSpecs: {
-        'form': {
+        form: {
           description: 'A form pattern',
           components: ['Input', 'Button', 'Label'],
           slots: { header: 'Form title', body: 'Form fields', actions: 'Submit/cancel buttons' },

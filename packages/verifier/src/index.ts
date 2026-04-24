@@ -1,14 +1,14 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, isAbsolute, join, relative, resolve } from 'node:path';
-import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
-import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import type { ReviewExecutionPack } from '@decantr/core';
+import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
+import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import * as ts from 'typescript';
 import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.js';
 
-export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
 export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
+export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
@@ -199,8 +199,23 @@ const DEFAULT_FOCUS_AREAS = [
   'responsive-design',
 ];
 
-const TREATMENT_CLASSES = ['d-interactive', 'd-surface', 'd-data', 'd-control', 'd-section', 'd-annotation', 'd-label'];
-const PERSONALITY_UTILS = ['neon-glow', 'neon-text-glow', 'neon-border-glow', 'mono-data', 'status-ring', 'entrance-fade'];
+const TREATMENT_CLASSES = [
+  'd-interactive',
+  'd-surface',
+  'd-data',
+  'd-control',
+  'd-section',
+  'd-annotation',
+  'd-label',
+];
+const PERSONALITY_UTILS = [
+  'neon-glow',
+  'neon-text-glow',
+  'neon-border-glow',
+  'mono-data',
+  'status-ring',
+  'entrance-fade',
+];
 const PERFORMANCE_BUDGETS = {
   largestJsAssetWarnBytes: 350_000,
   totalJsWarnBytes: 700_000,
@@ -223,11 +238,15 @@ function readJsonIfExists<T>(path: string): T | null {
 }
 
 function loadReviewPack(projectRoot: string): ReviewExecutionPack | null {
-  return readJsonIfExists<ReviewExecutionPack>(join(projectRoot, '.decantr', 'context', 'review-pack.json'));
+  return readJsonIfExists<ReviewExecutionPack>(
+    join(projectRoot, '.decantr', 'context', 'review-pack.json'),
+  );
 }
 
 function loadPackManifest(projectRoot: string): PackManifest | null {
-  return readJsonIfExists<PackManifest>(join(projectRoot, '.decantr', 'context', 'pack-manifest.json'));
+  return readJsonIfExists<PackManifest>(
+    join(projectRoot, '.decantr', 'context', 'pack-manifest.json'),
+  );
 }
 
 function readTextIfExists(path: string): string {
@@ -260,9 +279,19 @@ function isAuditableSourceFile(filePath: string): boolean {
 }
 
 function collectProjectSourceFiles(projectRoot: string): string[] {
-  const candidates = ['src', 'app', 'pages', 'components', 'lib', 'utils', 'hooks', 'providers', 'server']
-    .map(dir => join(projectRoot, dir))
-    .filter(dir => existsSync(dir));
+  const candidates = [
+    'src',
+    'app',
+    'pages',
+    'components',
+    'lib',
+    'utils',
+    'hooks',
+    'providers',
+    'server',
+  ]
+    .map((dir) => join(projectRoot, dir))
+    .filter((dir) => existsSync(dir));
   const rootFileCandidates = [
     'middleware.ts',
     'middleware.tsx',
@@ -277,10 +306,17 @@ function collectProjectSourceFiles(projectRoot: string): string[] {
     'proxy.mts',
     'proxy.cts',
   ]
-    .map(file => join(projectRoot, file))
-    .filter(file => existsSync(file));
+    .map((file) => join(projectRoot, file))
+    .filter((file) => existsSync(file));
   const files = new Set<string>();
-  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const ignoredDirNames = new Set([
+    'node_modules',
+    '.git',
+    '.decantr',
+    'dist',
+    'build',
+    'coverage',
+  ]);
 
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -309,7 +345,11 @@ function collectProjectSourceFiles(projectRoot: string): string[] {
   return [...files].sort();
 }
 
-function buildSourceAuditEvidence(summary: SourceAuditSummary, bucket: SourceAuditBucket, label: string): string[] {
+function buildSourceAuditEvidence(
+  summary: SourceAuditSummary,
+  bucket: SourceAuditBucket,
+  label: string,
+): string[] {
   return [
     `Source files checked: ${summary.filesChecked}`,
     `${label}: ${bucket.count}`,
@@ -326,7 +366,14 @@ function collectProjectStyleFiles(projectRoot: string): string[] {
     .map((dir) => join(projectRoot, dir))
     .filter((dir) => existsSync(dir));
   const files = new Set<string>();
-  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const ignoredDirNames = new Set([
+    'node_modules',
+    '.git',
+    '.decantr',
+    'dist',
+    'build',
+    'coverage',
+  ]);
 
   const walk = (dir: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -350,11 +397,7 @@ function collectProjectStyleFiles(projectRoot: string): string[] {
 }
 
 function countFocusVisibleSignals(code: string): number {
-  const patterns = [
-    /:focus-visible\b/i,
-    /\.focus-visible\b/i,
-    /\[data-focus-visible-added\]/i,
-  ];
+  const patterns = [/:focus-visible\b/i, /\.focus-visible\b/i, /\[data-focus-visible-added\]/i];
 
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
@@ -444,49 +487,53 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     const relativePath = relative(projectRoot, sourceFile) || sourceFile;
     const code = readFileSync(sourceFile, 'utf-8');
     const signals = analyzeAstSignals(relativePath, code);
-    const accessibilityIssueCount = signals.iconOnlyButtonWithoutLabelCount
-      + signals.iconOnlyLinkWithoutLabelCount
-      + signals.clickableNonSemanticCount
-      + signals.unlabeledNavigationLandmarkCount
-      + signals.imageWithoutAltCount
-      + signals.iframeWithoutTitleCount
-      + signals.dialogWithoutLabelCount
-      + signals.dialogWithoutModalHintCount
-      + signals.tableWithoutHeaderCount
-      + signals.tableWithoutCaptionCount
-      + signals.formControlWithoutLabelCount;
-    const securityRiskPatternCount = signals.dangerousHtmlCount
-      + signals.rawHtmlInjectionCount
-      + signals.dynamicEvalCount
-      + signals.hardcodedSecretSignalCount
-      + signals.clientSecretEnvReferenceCount
-      + signals.localhostEndpointCount
-      + signals.wildcardPostMessageCount
-      + signals.windowOpenWithoutNoopenerCount
-      + signals.externalIframeWithoutSandboxCount
-      + signals.insecureExternalIframeCount
-      + signals.insecureFormActionCount
-      + signals.insecureAuthFormMethodCount
-      + signals.insecureTransportEndpointCount
-      + signals.insecureExternalImageCount
-      + signals.authCookieMissingHardeningCount
-      + signals.authOpenRedirectSignalCount
-      + signals.authExternalRedirectSignalCount
-      + signals.authProviderStateMissingCount
-      + signals.authProviderPkceMissingCount
-      + signals.authProviderNonceMissingCount
-      + signals.externalBlankLinkWithoutRelCount;
-    const authInputHintIssueCount = signals.emailAutocompleteMissingCount
-      + signals.passwordAutocompleteMissingCount
-      + signals.otpAutocompleteMissingCount
-      + signals.authAutocompleteDisabledCount
-      + signals.authAutocompleteSemanticMismatchCount
-      + signals.authInputTypeMismatchCount;
-    const localCssRuntimeCount = (
-      /(?:^|\/)(?:lib|utils)\/css\.(?:[cm]?[jt]sx?)$/i.test(relativePath)
-      || /(?:^|\/)styles\/atoms\.css$/i.test(relativePath)
-      || /Lightweight @decantr\/css atom runtime/i.test(code)
-    ) ? 1 : 0;
+    const accessibilityIssueCount =
+      signals.iconOnlyButtonWithoutLabelCount +
+      signals.iconOnlyLinkWithoutLabelCount +
+      signals.clickableNonSemanticCount +
+      signals.unlabeledNavigationLandmarkCount +
+      signals.imageWithoutAltCount +
+      signals.iframeWithoutTitleCount +
+      signals.dialogWithoutLabelCount +
+      signals.dialogWithoutModalHintCount +
+      signals.tableWithoutHeaderCount +
+      signals.tableWithoutCaptionCount +
+      signals.formControlWithoutLabelCount;
+    const securityRiskPatternCount =
+      signals.dangerousHtmlCount +
+      signals.rawHtmlInjectionCount +
+      signals.dynamicEvalCount +
+      signals.hardcodedSecretSignalCount +
+      signals.clientSecretEnvReferenceCount +
+      signals.localhostEndpointCount +
+      signals.wildcardPostMessageCount +
+      signals.windowOpenWithoutNoopenerCount +
+      signals.externalIframeWithoutSandboxCount +
+      signals.insecureExternalIframeCount +
+      signals.insecureFormActionCount +
+      signals.insecureAuthFormMethodCount +
+      signals.insecureTransportEndpointCount +
+      signals.insecureExternalImageCount +
+      signals.authCookieMissingHardeningCount +
+      signals.authOpenRedirectSignalCount +
+      signals.authExternalRedirectSignalCount +
+      signals.authProviderStateMissingCount +
+      signals.authProviderPkceMissingCount +
+      signals.authProviderNonceMissingCount +
+      signals.externalBlankLinkWithoutRelCount;
+    const authInputHintIssueCount =
+      signals.emailAutocompleteMissingCount +
+      signals.passwordAutocompleteMissingCount +
+      signals.otpAutocompleteMissingCount +
+      signals.authAutocompleteDisabledCount +
+      signals.authAutocompleteSemanticMismatchCount +
+      signals.authInputTypeMismatchCount;
+    const localCssRuntimeCount =
+      /(?:^|\/)(?:lib|utils)\/css\.(?:[cm]?[jt]sx?)$/i.test(relativePath) ||
+      /(?:^|\/)styles\/atoms\.css$/i.test(relativePath) ||
+      /Lightweight @decantr\/css atom runtime/i.test(code)
+        ? 1
+        : 0;
     const componentStyleTagCount = countComponentStyleTagSignals(code);
     const commandPaletteSignalCount = countCommandPaletteSignals(code);
     const keyboardShortcutSignalCount = countKeyboardShortcutSignals(code);
@@ -495,18 +542,58 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.componentStyleTags, relativePath, componentStyleTagCount);
     recordSourceAudit(summary.localCssRuntimeSignals, relativePath, localCssRuntimeCount);
     recordSourceAudit(summary.securityRiskPatterns, relativePath, securityRiskPatternCount);
-    recordSourceAudit(summary.localhostEndpointSignals, relativePath, signals.localhostEndpointCount);
-    recordSourceAudit(summary.placeholderRoutes, relativePath, signals.placeholderNavigationTargetCount);
+    recordSourceAudit(
+      summary.localhostEndpointSignals,
+      relativePath,
+      signals.localhostEndpointCount,
+    );
+    recordSourceAudit(
+      summary.placeholderRoutes,
+      relativePath,
+      signals.placeholderNavigationTargetCount,
+    );
     recordSourceAudit(summary.commandPaletteSignals, relativePath, commandPaletteSignalCount);
     recordSourceAudit(summary.keyboardShortcutSignals, relativePath, keyboardShortcutSignalCount);
-    recordSourceAudit(summary.protectedSurfaceSignals, relativePath, signals.protectedSurfaceSignalCount);
-    recordSourceAudit(summary.authProtectedRedirectSignals, relativePath, signals.authProtectedRedirectSignalCount);
-    recordSourceAudit(summary.authAnonymousRedirectSignals, relativePath, signals.authAnonymousRedirectSignalCount);
-    recordSourceAudit(summary.authOpenRedirectSignals, relativePath, signals.authOpenRedirectSignalCount);
-    recordSourceAudit(summary.authExternalRedirectSignals, relativePath, signals.authExternalRedirectSignalCount);
-    recordSourceAudit(summary.authProviderStateSignals, relativePath, signals.authProviderStateMissingCount);
-    recordSourceAudit(summary.authProviderPkceSignals, relativePath, signals.authProviderPkceMissingCount);
-    recordSourceAudit(summary.authProviderNonceSignals, relativePath, signals.authProviderNonceMissingCount);
+    recordSourceAudit(
+      summary.protectedSurfaceSignals,
+      relativePath,
+      signals.protectedSurfaceSignalCount,
+    );
+    recordSourceAudit(
+      summary.authProtectedRedirectSignals,
+      relativePath,
+      signals.authProtectedRedirectSignalCount,
+    );
+    recordSourceAudit(
+      summary.authAnonymousRedirectSignals,
+      relativePath,
+      signals.authAnonymousRedirectSignalCount,
+    );
+    recordSourceAudit(
+      summary.authOpenRedirectSignals,
+      relativePath,
+      signals.authOpenRedirectSignalCount,
+    );
+    recordSourceAudit(
+      summary.authExternalRedirectSignals,
+      relativePath,
+      signals.authExternalRedirectSignalCount,
+    );
+    recordSourceAudit(
+      summary.authProviderStateSignals,
+      relativePath,
+      signals.authProviderStateMissingCount,
+    );
+    recordSourceAudit(
+      summary.authProviderPkceSignals,
+      relativePath,
+      signals.authProviderPkceMissingCount,
+    );
+    recordSourceAudit(
+      summary.authProviderNonceSignals,
+      relativePath,
+      signals.authProviderNonceMissingCount,
+    );
     recordSourceAudit(summary.skipNavSignals, relativePath, signals.skipNavSignalCount);
     recordSourceAudit(summary.mainLandmarkSignals, relativePath, signals.mainLandmarkCount);
     for (const targetId of signals.skipNavTargetIds) {
@@ -520,27 +607,95 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
       }
     }
     recordSourceAudit(summary.authEntrySignals, relativePath, signals.authEntrySignalCount);
-    recordSourceAudit(summary.signInFlowSignals, relativePath, countSignInFlowSignals(code, relativePath));
-    recordSourceAudit(summary.signUpFlowSignals, relativePath, countSignUpFlowSignals(code, relativePath));
-    recordSourceAudit(summary.recoveryFlowSignals, relativePath, countRecoveryFlowSignals(code, relativePath));
+    recordSourceAudit(
+      summary.signInFlowSignals,
+      relativePath,
+      countSignInFlowSignals(code, relativePath),
+    );
+    recordSourceAudit(
+      summary.signUpFlowSignals,
+      relativePath,
+      countSignUpFlowSignals(code, relativePath),
+    );
+    recordSourceAudit(
+      summary.recoveryFlowSignals,
+      relativePath,
+      countRecoveryFlowSignals(code, relativePath),
+    );
     recordSourceAudit(summary.authSessionSignals, relativePath, signals.authSessionSignalCount);
-    recordSourceAudit(summary.authUnauthenticatedBranchSignals, relativePath, countAuthUnauthenticatedBranchSignals(code));
+    recordSourceAudit(
+      summary.authUnauthenticatedBranchSignals,
+      relativePath,
+      countAuthUnauthenticatedBranchSignals(code),
+    );
     recordSourceAudit(summary.authLoadingSignals, relativePath, signals.authLoadingSignalCount);
-    recordSourceAudit(summary.authProtectedLoadingRenderSignals, relativePath, signals.authProtectedLoadingRenderCount);
-    recordSourceAudit(summary.authBlankLoadingRenderSignals, relativePath, signals.authBlankLoadingRenderCount);
-    recordSourceAudit(summary.authAnonymousLoadingRedirectSignals, relativePath, signals.authAnonymousLoadingRedirectCount);
-    recordSourceAudit(summary.authProtectedUnauthenticatedRenderSignals, relativePath, signals.authProtectedUnauthenticatedRenderCount);
+    recordSourceAudit(
+      summary.authProtectedLoadingRenderSignals,
+      relativePath,
+      signals.authProtectedLoadingRenderCount,
+    );
+    recordSourceAudit(
+      summary.authBlankLoadingRenderSignals,
+      relativePath,
+      signals.authBlankLoadingRenderCount,
+    );
+    recordSourceAudit(
+      summary.authAnonymousLoadingRedirectSignals,
+      relativePath,
+      signals.authAnonymousLoadingRedirectCount,
+    );
+    recordSourceAudit(
+      summary.authProtectedUnauthenticatedRenderSignals,
+      relativePath,
+      signals.authProtectedUnauthenticatedRenderCount,
+    );
     recordSourceAudit(summary.authErrorSignals, relativePath, countAuthErrorSignals(code));
     recordSourceAudit(summary.authSuccessSignals, relativePath, countAuthSuccessSignals(code));
-    recordSourceAudit(summary.authCallbackTokenSignals, relativePath, countAuthCallbackTokenSignals(code, relativePath));
-    recordSourceAudit(summary.authCallbackExchangeSignals, relativePath, countAuthCallbackExchangeSignals(code));
-    recordSourceAudit(summary.authCallbackExchangeErrorSignals, relativePath, countAuthCallbackExchangeErrorSignals(code));
-    recordSourceAudit(summary.authCallbackErrorSignals, relativePath, countAuthCallbackErrorSignals(code, relativePath));
-    recordSourceAudit(summary.authCallbackStateSignals, relativePath, countAuthCallbackStateSignals(code));
-    recordSourceAudit(summary.authCallbackStateValidationSignals, relativePath, countAuthCallbackStateValidationSignals(code));
-    recordSourceAudit(summary.authCallbackStateStorageSignals, relativePath, countAuthCallbackStateStorageSignals(code));
-    recordSourceAudit(summary.authCallbackStateStorageClearSignals, relativePath, countAuthCallbackStateStorageClearSignals(code));
-    recordSourceAudit(summary.authCallbackUrlScrubSignals, relativePath, countAuthCallbackUrlScrubSignals(code));
+    recordSourceAudit(
+      summary.authCallbackTokenSignals,
+      relativePath,
+      countAuthCallbackTokenSignals(code, relativePath),
+    );
+    recordSourceAudit(
+      summary.authCallbackExchangeSignals,
+      relativePath,
+      countAuthCallbackExchangeSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCallbackExchangeErrorSignals,
+      relativePath,
+      countAuthCallbackExchangeErrorSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCallbackErrorSignals,
+      relativePath,
+      countAuthCallbackErrorSignals(code, relativePath),
+    );
+    recordSourceAudit(
+      summary.authCallbackStateSignals,
+      relativePath,
+      countAuthCallbackStateSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCallbackStateValidationSignals,
+      relativePath,
+      countAuthCallbackStateValidationSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCallbackStateStorageSignals,
+      relativePath,
+      countAuthCallbackStateStorageSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCallbackStateStorageClearSignals,
+      relativePath,
+      countAuthCallbackStateStorageClearSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCallbackUrlScrubSignals,
+      relativePath,
+      countAuthCallbackUrlScrubSignals(code),
+    );
     recordSourceAudit(summary.authStorageWrites, relativePath, signals.authStorageWriteCount);
     recordSourceAudit(summary.authStorageClears, relativePath, signals.authStorageClearCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
@@ -552,22 +707,46 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authRefreshSignals, relativePath, signals.authRefreshSignalCount);
     recordSourceAudit(summary.authRefreshClears, relativePath, signals.authRefreshClearCount);
     recordSourceAudit(summary.authRealtimeSignals, relativePath, countAuthRealtimeSignals(code));
-    recordSourceAudit(summary.authRealtimeClears, relativePath, countAuthRealtimeClearSignals(code));
-    recordSourceAudit(summary.authCoordinationSignals, relativePath, countAuthCoordinationSignals(code));
-    recordSourceAudit(summary.authCoordinationClears, relativePath, countAuthCoordinationClearSignals(code));
+    recordSourceAudit(
+      summary.authRealtimeClears,
+      relativePath,
+      countAuthRealtimeClearSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCoordinationSignals,
+      relativePath,
+      countAuthCoordinationSignals(code),
+    );
+    recordSourceAudit(
+      summary.authCoordinationClears,
+      relativePath,
+      countAuthCoordinationClearSignals(code),
+    );
     recordSourceAudit(summary.authGuardSignals, relativePath, signals.authGuardSignalCount);
     recordSourceAudit(summary.authExitSignals, relativePath, signals.authExitSignalCount);
-    recordSourceAudit(summary.authSessionTeardownSignals, relativePath, signals.authSessionTeardownSignalCount);
+    recordSourceAudit(
+      summary.authSessionTeardownSignals,
+      relativePath,
+      signals.authSessionTeardownSignalCount,
+    );
     recordSourceAudit(summary.signInRouteSignals, relativePath, countSignInRouteSignals(code));
-    recordSourceAudit(summary.registrationRouteSignals, relativePath, countRegistrationRouteSignals(code));
-    recordSourceAudit(summary.recoveryRouteSignals, relativePath, countAuthRecoveryRouteSignals(code));
+    recordSourceAudit(
+      summary.registrationRouteSignals,
+      relativePath,
+      countRegistrationRouteSignals(code),
+    );
+    recordSourceAudit(
+      summary.recoveryRouteSignals,
+      relativePath,
+      countAuthRecoveryRouteSignals(code),
+    );
     recordSourceAudit(summary.accessibilityIssues, relativePath, accessibilityIssueCount);
     recordSourceAudit(
       summary.interactionSafetyIssues,
       relativePath,
-      signals.buttonInFormWithoutTypeCount
-        + signals.authFormWithoutSubmitCount
-        + signals.authInputWithoutNameCount,
+      signals.buttonInFormWithoutTypeCount +
+        signals.authFormWithoutSubmitCount +
+        signals.authInputWithoutNameCount,
     );
     recordSourceAudit(summary.authInputHintIssues, relativePath, authInputHintIssueCount);
   }
@@ -605,38 +784,56 @@ function buildRegistryContext(projectRoot: string): {
   const cachedThemesDir = join(cacheDir, '@official', 'themes');
   try {
     if (existsSync(cachedThemesDir)) {
-      for (const file of readdirSync(cachedThemesDir).filter(name => name.endsWith('.json') && name !== 'index.json')) {
-        const data = JSON.parse(readFileSync(join(cachedThemesDir, file), 'utf-8')) as { id?: string; modes?: string[] };
+      for (const file of readdirSync(cachedThemesDir).filter(
+        (name) => name.endsWith('.json') && name !== 'index.json',
+      )) {
+        const data = JSON.parse(readFileSync(join(cachedThemesDir, file), 'utf-8')) as {
+          id?: string;
+          modes?: string[];
+        };
         if (data.id && !themeRegistry.has(data.id)) {
           themeRegistry.set(data.id, { modes: data.modes || ['light', 'dark'] });
         }
       }
     }
-  } catch { /* best effort */ }
+  } catch {
+    /* best effort */
+  }
 
   const customThemesDir = join(customDir, 'themes');
   try {
     if (existsSync(customThemesDir)) {
-      for (const file of readdirSync(customThemesDir).filter(name => name.endsWith('.json'))) {
-        const data = JSON.parse(readFileSync(join(customThemesDir, file), 'utf-8')) as { id?: string; modes?: string[] };
+      for (const file of readdirSync(customThemesDir).filter((name) => name.endsWith('.json'))) {
+        const data = JSON.parse(readFileSync(join(customThemesDir, file), 'utf-8')) as {
+          id?: string;
+          modes?: string[];
+        };
         if (data.id) {
           themeRegistry.set(`custom:${data.id}`, { modes: data.modes || ['light', 'dark'] });
         }
       }
     }
-  } catch { /* best effort */ }
+  } catch {
+    /* best effort */
+  }
 
   const cachedPatternsDir = join(cacheDir, '@official', 'patterns');
   try {
     if (existsSync(cachedPatternsDir)) {
-      for (const file of readdirSync(cachedPatternsDir).filter(name => name.endsWith('.json') && name !== 'index.json')) {
-        const data = JSON.parse(readFileSync(join(cachedPatternsDir, file), 'utf-8')) as { id?: string };
+      for (const file of readdirSync(cachedPatternsDir).filter(
+        (name) => name.endsWith('.json') && name !== 'index.json',
+      )) {
+        const data = JSON.parse(readFileSync(join(cachedPatternsDir, file), 'utf-8')) as {
+          id?: string;
+        };
         if (data.id && !patternRegistry.has(data.id)) {
           patternRegistry.set(data.id, data);
         }
       }
     }
-  } catch { /* best effort */ }
+  } catch {
+    /* best effort */
+  }
 
   return { themeRegistry, patternRegistry };
 }
@@ -782,11 +979,15 @@ function normalizeRouteHint(route: string | null | undefined): string {
 }
 
 function isAuthLikeRoute(route: string): boolean {
-  return /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register|forgot-password|reset-password|password-reset)(?:\/|$)/i.test(route);
+  return /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register|forgot-password|reset-password|password-reset)(?:\/|$)/i.test(
+    route,
+  );
 }
 
 function isRecoveryLikeRoute(route: string): boolean {
-  return /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|$)/i.test(route);
+  return /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|$)/i.test(
+    route,
+  );
 }
 
 function isSignInLikeRoute(route: string): boolean {
@@ -798,11 +999,16 @@ function isRegistrationLikeRoute(route: string): boolean {
 }
 
 function isAnonymousEntryLikeRoute(route: string): boolean {
-  return route === '/' || /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register)(?:\/|$)/i.test(route);
+  return (
+    route === '/' ||
+    /(?:^|\/)(?:auth|login|log-in|signin|sign-in|signup|sign-up|register)(?:\/|$)/i.test(route)
+  );
 }
 
 function isProtectedLikeRoute(route: string): boolean {
-  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin|agents?|marketplace|transparency|logs?|metrics|config|console|studio|pipelines?|projects?|monitoring|overview)(?:\/|$)/i.test(route);
+  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin|agents?|marketplace|transparency|logs?|metrics|config|console|studio|pipelines?|projects?|monitoring|overview)(?:\/|$)/i.test(
+    route,
+  );
 }
 
 function essenceRequiresFocusVisible(essence: EssenceFile | null): boolean {
@@ -863,7 +1069,13 @@ export function extractRouteHintsFromEssence(essence: EssenceFile | null): strin
     }
   } else if ('structure' in essence && Array.isArray(essence.structure)) {
     for (const page of essence.structure) {
-      if (page && typeof page === 'object' && 'route' in page && typeof page.route === 'string' && page.route.length > 0) {
+      if (
+        page &&
+        typeof page === 'object' &&
+        'route' in page &&
+        typeof page.route === 'string' &&
+        page.route.length > 0
+      ) {
         routes.add(normalizeRouteHint(page.route));
       }
     }
@@ -872,7 +1084,10 @@ export function extractRouteHintsFromEssence(essence: EssenceFile | null): strin
   return [...routes].filter(Boolean).slice(0, 8);
 }
 
-function summarizeTopology(essence: EssenceFile | null, reviewPack: ReviewExecutionPack | null): TopologySummary {
+function summarizeTopology(
+  essence: EssenceFile | null,
+  reviewPack: ReviewExecutionPack | null,
+): TopologySummary {
   const features = new Set<string>(reviewPack?.data.features ?? []);
   const sectionRoles = new Set<string>();
   const gatewayRoutes = new Set<string>();
@@ -890,7 +1105,8 @@ function summarizeTopology(essence: EssenceFile | null, reviewPack: ReviewExecut
     }
 
     for (const section of v3.blueprint.sections ?? []) {
-      const role = typeof section.role === 'string' && section.role.length > 0 ? section.role : 'unknown';
+      const role =
+        typeof section.role === 'string' && section.role.length > 0 ? section.role : 'unknown';
       sectionRoles.add(role);
 
       for (const page of section.pages ?? []) {
@@ -928,153 +1144,181 @@ function appendTopologyFindings(
 ): void {
   const topology = summarizeTopology(essence, reviewPack);
   if (!topology.hasAuthFeature) return;
-  const overlappingAuthRoutes = topology.gatewayRoutes.filter(route => topology.primaryRoutes.includes(route));
+  const overlappingAuthRoutes = topology.gatewayRoutes.filter((route) =>
+    topology.primaryRoutes.includes(route),
+  );
 
   if (!topology.sectionRoles.includes('gateway')) {
-    findings.push(makeFinding({
-      id: 'auth-gateway-section-missing',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Authentication is declared, but the essence topology does not define a gateway section.',
-      evidence: [
-        'Expected a gateway section for login, registration, or recovery flows.',
-        `Observed section roles: ${topology.sectionRoles.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Add a gateway section for authentication flows so anonymous users have a clear entry path before protected routes.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-gateway-section-missing',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Authentication is declared, but the essence topology does not define a gateway section.',
+        evidence: [
+          'Expected a gateway section for login, registration, or recovery flows.',
+          `Observed section roles: ${topology.sectionRoles.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Add a gateway section for authentication flows so anonymous users have a clear entry path before protected routes.',
+      }),
+    );
   }
 
   if (!topology.sectionRoles.includes('primary')) {
-    findings.push(makeFinding({
-      id: 'auth-primary-section-missing',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Authentication is declared, but no primary app section was found in the compiled topology.',
-      evidence: [
-        `Observed section roles: ${topology.sectionRoles.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Add a primary section so authenticated users have a clear post-auth destination.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-primary-section-missing',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Authentication is declared, but no primary app section was found in the compiled topology.',
+        evidence: [`Observed section roles: ${topology.sectionRoles.join(', ') || 'none'}`],
+        suggestedFix:
+          'Add a primary section so authenticated users have a clear post-auth destination.',
+      }),
+    );
   }
 
   if (topology.sectionRoles.includes('gateway') && topology.gatewayRouteCount === 0) {
-    findings.push(makeFinding({
-      id: 'auth-gateway-routes-missing',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'A gateway section exists, but none of its pages declare explicit routes.',
-      evidence: [
-        'Gateway pages should expose routable login, registration, or recovery paths.',
-      ],
-      suggestedFix: 'Give gateway pages explicit routes such as `/login`, `/register`, or `/forgot-password`.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-gateway-routes-missing',
+        category: 'Route Topology',
+        severity: 'warn',
+        message: 'A gateway section exists, but none of its pages declare explicit routes.',
+        evidence: ['Gateway pages should expose routable login, registration, or recovery paths.'],
+        suggestedFix:
+          'Give gateway pages explicit routes such as `/login`, `/register`, or `/forgot-password`.',
+      }),
+    );
   }
 
   if (topology.primaryRouteCount === 0) {
-    findings.push(makeFinding({
-      id: 'auth-primary-routes-missing',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Authentication is declared, but no primary section pages expose explicit routes.',
-      evidence: [
-        'Protected app surfaces need explicit routes so post-auth entry points are unambiguous.',
-      ],
-      suggestedFix: 'Add explicit primary routes such as `/dashboard` or `/app` for the authenticated experience.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-primary-routes-missing',
+        category: 'Route Topology',
+        severity: 'warn',
+        message: 'Authentication is declared, but no primary section pages expose explicit routes.',
+        evidence: [
+          'Protected app surfaces need explicit routes so post-auth entry points are unambiguous.',
+        ],
+        suggestedFix:
+          'Add explicit primary routes such as `/dashboard` or `/app` for the authenticated experience.',
+      }),
+    );
   }
 
   if (
-    topology.gatewayRoutes.length > 0
-    && topology.gatewayRoutes.some(route => route !== '/' && isProtectedLikeRoute(route))
+    topology.gatewayRoutes.length > 0 &&
+    topology.gatewayRoutes.some((route) => route !== '/' && isProtectedLikeRoute(route))
   ) {
-    findings.push(makeFinding({
-      id: 'auth-gateway-routes-look-protected',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Gateway routes include paths that look like authenticated app destinations.',
-      evidence: [
-        `Gateway routes: ${topology.gatewayRoutes.join(', ')}`,
-      ],
-      suggestedFix: 'Keep gateway routes focused on anonymous entry flows such as `/`, `/login`, `/register`, or `/forgot-password`, and move protected destinations into the primary section.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-gateway-routes-look-protected',
+        category: 'Route Topology',
+        severity: 'warn',
+        message: 'Gateway routes include paths that look like authenticated app destinations.',
+        evidence: [`Gateway routes: ${topology.gatewayRoutes.join(', ')}`],
+        suggestedFix:
+          'Keep gateway routes focused on anonymous entry flows such as `/`, `/login`, `/register`, or `/forgot-password`, and move protected destinations into the primary section.',
+      }),
+    );
   }
 
   if (
-    topology.gatewayRoutes.length > 0
-    && topology.gatewayRoutes.every(route => route !== '/' && !isAuthLikeRoute(route))
+    topology.gatewayRoutes.length > 0 &&
+    topology.gatewayRoutes.every((route) => route !== '/' && !isAuthLikeRoute(route))
   ) {
-    findings.push(makeFinding({
-      id: 'auth-gateway-routes-not-auth-like',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Gateway routes do not appear to expose anonymous entry or authentication-focused destinations.',
-      evidence: [
-        `Gateway routes: ${topology.gatewayRoutes.join(', ')}`,
-      ],
-      suggestedFix: 'Use gateway routes like `/`, `/login`, `/register`, or `/forgot-password` so the anonymous/auth entry surface is explicit.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-gateway-routes-not-auth-like',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Gateway routes do not appear to expose anonymous entry or authentication-focused destinations.',
+        evidence: [`Gateway routes: ${topology.gatewayRoutes.join(', ')}`],
+        suggestedFix:
+          'Use gateway routes like `/`, `/login`, `/register`, or `/forgot-password` so the anonymous/auth entry surface is explicit.',
+      }),
+    );
   }
 
   if (
-    topology.primaryRoutes.length > 0
-    && topology.primaryRoutes.every(route => isAuthLikeRoute(route))
+    topology.primaryRoutes.length > 0 &&
+    topology.primaryRoutes.every((route) => isAuthLikeRoute(route))
   ) {
-    findings.push(makeFinding({
-      id: 'auth-primary-routes-look-auth-only',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Primary routes only expose auth-like destinations and do not appear to include a post-auth application surface.',
-      evidence: [
-        `Primary routes: ${topology.primaryRoutes.join(', ')}`,
-      ],
-      suggestedFix: 'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, or `/app`.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-primary-routes-look-auth-only',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Primary routes only expose auth-like destinations and do not appear to include a post-auth application surface.',
+        evidence: [`Primary routes: ${topology.primaryRoutes.join(', ')}`],
+        suggestedFix:
+          'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, or `/app`.',
+      }),
+    );
   }
 
   if (
-    topology.primaryRoutes.length > 0
-    && topology.primaryRoutes.every(route => !isProtectedLikeRoute(route))
+    topology.primaryRoutes.length > 0 &&
+    topology.primaryRoutes.every((route) => !isProtectedLikeRoute(route))
   ) {
-    findings.push(makeFinding({
-      id: 'auth-primary-routes-not-app-like',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Primary routes do not appear to include a clear post-auth application destination.',
-      evidence: [
-        `Primary routes: ${topology.primaryRoutes.join(', ')}`,
-      ],
-      suggestedFix: 'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, or `/app` so the authenticated surface is explicit.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-primary-routes-not-app-like',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Primary routes do not appear to include a clear post-auth application destination.',
+        evidence: [`Primary routes: ${topology.primaryRoutes.join(', ')}`],
+        suggestedFix:
+          'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, or `/app` so the authenticated surface is explicit.',
+      }),
+    );
   }
 
   if (overlappingAuthRoutes.length > 0) {
-    findings.push(makeFinding({
-      id: 'auth-gateway-primary-route-overlap',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Gateway and primary sections expose overlapping routes, which blurs the anonymous-to-authenticated boundary.',
-      evidence: [
-        `Overlapping routes: ${overlappingAuthRoutes.join(', ')}`,
-      ],
-      suggestedFix: 'Keep gateway routes focused on anonymous entry flows and reserve primary routes for authenticated destinations so the route boundary stays explicit.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-gateway-primary-route-overlap',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Gateway and primary sections expose overlapping routes, which blurs the anonymous-to-authenticated boundary.',
+        evidence: [`Overlapping routes: ${overlappingAuthRoutes.join(', ')}`],
+        suggestedFix:
+          'Keep gateway routes focused on anonymous entry flows and reserve primary routes for authenticated destinations so the route boundary stays explicit.',
+      }),
+    );
   }
 
   if (!topology.hasAnonymousEntryRoute) {
-    findings.push(makeFinding({
-      id: 'auth-entry-route-missing',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Authentication is declared, but no public or gateway section exposes `/` as an anonymous entry route.',
-      evidence: [
-        'Anonymous users should have a stable landing or auth entry route before protected navigation begins.',
-      ],
-      suggestedFix: 'Route `/` to a public landing page or gateway entry so the initial user journey is explicit.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'auth-entry-route-missing',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Authentication is declared, but no public or gateway section exposes `/` as an anonymous entry route.',
+        evidence: [
+          'Anonymous users should have a stable landing or auth entry route before protected navigation begins.',
+        ],
+        suggestedFix:
+          'Route `/` to a public landing page or gateway entry so the initial user journey is explicit.',
+      }),
+    );
   }
 }
 
-async function runRuntimeAudit(projectRoot: string, essence: EssenceFile | null): Promise<RuntimeAudit> {
+async function runRuntimeAudit(
+  projectRoot: string,
+  essence: EssenceFile | null,
+): Promise<RuntimeAudit> {
   return auditBuiltDist(projectRoot, {
     routeHints: extractRouteHintsFromEssence(essence),
   });
@@ -1105,459 +1349,665 @@ function appendRuntimeAuditFindings(
   const indexPath = join(distPath, 'index.html');
 
   if (!runtimeAudit.distPresent) {
-    findings.push(makeFinding({
-      id: 'runtime-dist-missing',
-      category: 'Runtime Verification',
-      severity: 'info',
-      message: 'No dist output was found, so runtime smoke verification was skipped.',
-      evidence: [distPath],
-      suggestedFix: 'Build the project before auditing if you want Decantr to verify root, asset, title, and route behavior.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-dist-missing',
+        category: 'Runtime Verification',
+        severity: 'info',
+        message: 'No dist output was found, so runtime smoke verification was skipped.',
+        evidence: [distPath],
+        suggestedFix:
+          'Build the project before auditing if you want Decantr to verify root, asset, title, and route behavior.',
+      }),
+    );
     return;
   }
 
   if (!runtimeAudit.indexPresent) {
-    findings.push(makeFinding({
-      id: 'runtime-index-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'dist exists but index.html is missing, so runtime smoke verification could not run.',
-      evidence: [indexPath],
-      suggestedFix: 'Ensure the current build emits an index.html entry document.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-index-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message:
+          'dist exists but index.html is missing, so runtime smoke verification could not run.',
+        evidence: [indexPath],
+        suggestedFix: 'Ensure the current build emits an index.html entry document.',
+      }),
+    );
     return;
   }
 
   if (runtimeAudit.rootDocumentOk === false) {
-    findings.push(makeFinding({
-      id: 'runtime-root-document-invalid',
-      category: 'Runtime Verification',
-      severity: 'error',
-      message: 'The built root document did not expose the expected application mount point.',
-      evidence: [indexPath, 'Expected to find an element with id="root" in the served document.'],
-      suggestedFix: 'Restore the framework mount element and confirm the built entry HTML matches the chosen runtime adapter.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-root-document-invalid',
+        category: 'Runtime Verification',
+        severity: 'error',
+        message: 'The built root document did not expose the expected application mount point.',
+        evidence: [indexPath, 'Expected to find an element with id="root" in the served document.'],
+        suggestedFix:
+          'Restore the framework mount element and confirm the built entry HTML matches the chosen runtime adapter.',
+      }),
+    );
   }
 
   if (runtimeAudit.titleOk === false) {
-    findings.push(makeFinding({
-      id: 'runtime-title-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'The built root document is missing a non-empty <title>.',
-      evidence: [indexPath],
-      suggestedFix: 'Emit a meaningful document title from the entry HTML or framework metadata layer.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-title-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message: 'The built root document is missing a non-empty <title>.',
+        evidence: [indexPath],
+        suggestedFix:
+          'Emit a meaningful document title from the entry HTML or framework metadata layer.',
+      }),
+    );
   }
 
   if (runtimeAudit.langOk === false) {
-    findings.push(makeFinding({
-      id: 'runtime-lang-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'The built root document is missing an explicit `lang` attribute on `<html>`.',
-      evidence: [indexPath],
-      suggestedFix: 'Set `<html lang="en">` or the appropriate locale in the framework document shell so accessibility tooling and crawlers get the right language hint.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-lang-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message: 'The built root document is missing an explicit `lang` attribute on `<html>`.',
+        evidence: [indexPath],
+        suggestedFix:
+          'Set `<html lang="en">` or the appropriate locale in the framework document shell so accessibility tooling and crawlers get the right language hint.',
+      }),
+    );
   }
 
   if (runtimeAudit.viewportOk === false) {
-    findings.push(makeFinding({
-      id: 'runtime-viewport-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'The built root document is missing a viewport meta tag.',
-      evidence: [indexPath],
-      suggestedFix: 'Emit `<meta name="viewport" content="width=device-width, initial-scale=1">` from the entry document or metadata layer.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-viewport-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message: 'The built root document is missing a viewport meta tag.',
+        evidence: [indexPath],
+        suggestedFix:
+          'Emit `<meta name="viewport" content="width=device-width, initial-scale=1">` from the entry document or metadata layer.',
+      }),
+    );
   }
 
   if (runtimeAudit.charsetOk === false) {
-    findings.push(makeFinding({
-      id: 'runtime-charset-missing',
-      category: 'Document Hardening',
-      severity: 'info',
-      message: 'The built root document is missing an explicit charset declaration.',
-      evidence: [indexPath],
-      suggestedFix: 'Emit `<meta charset="utf-8">` from the entry document so encoding expectations stay explicit across hosts.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-charset-missing',
+        category: 'Document Hardening',
+        severity: 'info',
+        message: 'The built root document is missing an explicit charset declaration.',
+        evidence: [indexPath],
+        suggestedFix:
+          'Emit `<meta charset="utf-8">` from the entry document so encoding expectations stay explicit across hosts.',
+      }),
+    );
   }
 
   if (runtimeAudit.inlineScriptCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-inline-scripts-present',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Inline `<script>` blocks were detected in the built root document.',
-      evidence: [indexPath, `Inline script tags: ${runtimeAudit.inlineScriptCount}`],
-      suggestedFix: 'Prefer bundled external assets and avoid inline scripts so CSP headers or nonces remain practical.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-inline-scripts-present',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Inline `<script>` blocks were detected in the built root document.',
+        evidence: [indexPath, `Inline script tags: ${runtimeAudit.inlineScriptCount}`],
+        suggestedFix:
+          'Prefer bundled external assets and avoid inline scripts so CSP headers or nonces remain practical.',
+      }),
+    );
   }
 
   if (runtimeAudit.inlineEventHandlerCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-inline-event-handlers-present',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Inline DOM event handler attributes were detected in the built root document.',
-      evidence: [indexPath, `Inline event handler attributes: ${runtimeAudit.inlineEventHandlerCount}`],
-      suggestedFix: 'Remove inline `onclick`/`onload`-style handlers from built HTML and route behavior through the reviewed application bundle so CSP remains practical.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-inline-event-handlers-present',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Inline DOM event handler attributes were detected in the built root document.',
+        evidence: [
+          indexPath,
+          `Inline event handler attributes: ${runtimeAudit.inlineEventHandlerCount}`,
+        ],
+        suggestedFix:
+          'Remove inline `onclick`/`onload`-style handlers from built HTML and route behavior through the reviewed application bundle so CSP remains practical.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalScriptsWithoutIntegrityCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-scripts-without-integrity',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Remote script tags were detected without Subresource Integrity metadata.',
-      evidence: [indexPath, `Remote scripts missing integrity: ${runtimeAudit.externalScriptsWithoutIntegrityCount}`],
-      suggestedFix: 'Pin remote script tags with integrity/crossorigin metadata or serve the dependency through the trusted build pipeline.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-scripts-without-integrity',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Remote script tags were detected without Subresource Integrity metadata.',
+        evidence: [
+          indexPath,
+          `Remote scripts missing integrity: ${runtimeAudit.externalScriptsWithoutIntegrityCount}`,
+        ],
+        suggestedFix:
+          'Pin remote script tags with integrity/crossorigin metadata or serve the dependency through the trusted build pipeline.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-scripts-crossorigin-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Remote script tags declare Subresource Integrity without a matching `crossorigin` attribute.',
-      evidence: [indexPath, `Remote scripts with integrity but missing crossorigin: ${runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount}`],
-      suggestedFix: 'Add a reviewed `crossorigin` attribute alongside script integrity metadata so SRI works consistently for remote script fetches.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-scripts-crossorigin-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Remote script tags declare Subresource Integrity without a matching `crossorigin` attribute.',
+        evidence: [
+          indexPath,
+          `Remote scripts with integrity but missing crossorigin: ${runtimeAudit.externalScriptsWithIntegrityMissingCrossoriginCount}`,
+        ],
+        suggestedFix:
+          'Add a reviewed `crossorigin` attribute alongside script integrity metadata so SRI works consistently for remote script fetches.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalScriptsWithInsecureTransportCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-scripts-insecure-transport',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Remote script tags were detected over plain HTTP.',
-      evidence: [indexPath, `Remote scripts over insecure transport: ${runtimeAudit.externalScriptsWithInsecureTransportCount}`],
-      suggestedFix: 'Serve remote scripts over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-scripts-insecure-transport',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Remote script tags were detected over plain HTTP.',
+        evidence: [
+          indexPath,
+          `Remote scripts over insecure transport: ${runtimeAudit.externalScriptsWithInsecureTransportCount}`,
+        ],
+        suggestedFix:
+          'Serve remote scripts over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalStylesheetsWithoutIntegrityCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-stylesheets-without-integrity',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'Remote stylesheet links were detected without Subresource Integrity metadata.',
-      evidence: [indexPath, `Remote stylesheets missing integrity: ${runtimeAudit.externalStylesheetsWithoutIntegrityCount}`],
-      suggestedFix: 'Pin remote stylesheet links with integrity/crossorigin metadata or serve the stylesheet through the trusted build pipeline.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-stylesheets-without-integrity',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message: 'Remote stylesheet links were detected without Subresource Integrity metadata.',
+        evidence: [
+          indexPath,
+          `Remote stylesheets missing integrity: ${runtimeAudit.externalStylesheetsWithoutIntegrityCount}`,
+        ],
+        suggestedFix:
+          'Pin remote stylesheet links with integrity/crossorigin metadata or serve the stylesheet through the trusted build pipeline.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-stylesheets-crossorigin-missing',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'Remote stylesheet links declare Subresource Integrity without a matching `crossorigin` attribute.',
-      evidence: [indexPath, `Remote stylesheets with integrity but missing crossorigin: ${runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount}`],
-      suggestedFix: 'Add a reviewed `crossorigin` attribute alongside stylesheet integrity metadata so SRI works consistently for remote stylesheet fetches.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-stylesheets-crossorigin-missing',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message:
+          'Remote stylesheet links declare Subresource Integrity without a matching `crossorigin` attribute.',
+        evidence: [
+          indexPath,
+          `Remote stylesheets with integrity but missing crossorigin: ${runtimeAudit.externalStylesheetsWithIntegrityMissingCrossoriginCount}`,
+        ],
+        suggestedFix:
+          'Add a reviewed `crossorigin` attribute alongside stylesheet integrity metadata so SRI works consistently for remote stylesheet fetches.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalStylesheetsWithInsecureTransportCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-stylesheets-insecure-transport',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'Remote stylesheet links were detected over plain HTTP.',
-      evidence: [indexPath, `Remote stylesheets over insecure transport: ${runtimeAudit.externalStylesheetsWithInsecureTransportCount}`],
-      suggestedFix: 'Serve remote stylesheets over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-stylesheets-insecure-transport',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message: 'Remote stylesheet links were detected over plain HTTP.',
+        evidence: [
+          indexPath,
+          `Remote stylesheets over insecure transport: ${runtimeAudit.externalStylesheetsWithInsecureTransportCount}`,
+        ],
+        suggestedFix:
+          'Serve remote stylesheets over HTTPS with integrity/crossorigin metadata, or move them into the trusted build pipeline.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalMediaSourcesWithInsecureTransportCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-media-insecure-transport',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'Remote image or media sources were detected over plain HTTP in the built root document.',
-      evidence: [indexPath, `Remote media sources over insecure transport: ${runtimeAudit.externalMediaSourcesWithInsecureTransportCount}`],
-      suggestedFix: 'Serve remote image and media sources over HTTPS or move them behind a reviewed trusted asset boundary before shipping.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-media-insecure-transport',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message:
+          'Remote image or media sources were detected over plain HTTP in the built root document.',
+        evidence: [
+          indexPath,
+          `Remote media sources over insecure transport: ${runtimeAudit.externalMediaSourcesWithInsecureTransportCount}`,
+        ],
+        suggestedFix:
+          'Serve remote image and media sources over HTTPS or move them behind a reviewed trusted asset boundary before shipping.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalBlankLinksWithoutRelCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-links-noopener-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'External links in the built root document open new tabs without `rel=\"noopener noreferrer\"` protections.',
-      evidence: [indexPath, `External target=\"_blank\" links missing rel protections: ${runtimeAudit.externalBlankLinksWithoutRelCount}`],
-      suggestedFix: 'Add `rel=\"noopener noreferrer\"` to built external links that open a new tab so opener access does not survive into production HTML.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-links-noopener-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'External links in the built root document open new tabs without `rel="noopener noreferrer"` protections.',
+        evidence: [
+          indexPath,
+          `External target="_blank" links missing rel protections: ${runtimeAudit.externalBlankLinksWithoutRelCount}`,
+        ],
+        suggestedFix:
+          'Add `rel="noopener noreferrer"` to built external links that open a new tab so opener access does not survive into production HTML.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalIframesWithoutSandboxCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-iframes-sandbox-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'External iframe embeds in the built root document are missing a `sandbox` attribute.',
-      evidence: [indexPath, `External iframes without sandbox: ${runtimeAudit.externalIframesWithoutSandboxCount}`],
-      suggestedFix: 'Add the narrowest reviewed sandbox policy to external iframes before shipping built HTML.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-iframes-sandbox-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'External iframe embeds in the built root document are missing a `sandbox` attribute.',
+        evidence: [
+          indexPath,
+          `External iframes without sandbox: ${runtimeAudit.externalIframesWithoutSandboxCount}`,
+        ],
+        suggestedFix:
+          'Add the narrowest reviewed sandbox policy to external iframes before shipping built HTML.',
+      }),
+    );
   }
 
   if (runtimeAudit.externalIframesWithInsecureTransportCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-external-iframes-insecure-transport',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'External iframe embeds in the built root document are loaded over plain HTTP.',
-      evidence: [indexPath, `External iframes over insecure transport: ${runtimeAudit.externalIframesWithInsecureTransportCount}`],
-      suggestedFix: 'Serve embedded iframes over HTTPS or move the integration behind a reviewed trusted boundary before shipping built HTML.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-external-iframes-insecure-transport',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'External iframe embeds in the built root document are loaded over plain HTTP.',
+        evidence: [
+          indexPath,
+          `External iframes over insecure transport: ${runtimeAudit.externalIframesWithInsecureTransportCount}`,
+        ],
+        suggestedFix:
+          'Serve embedded iframes over HTTPS or move the integration behind a reviewed trusted boundary before shipping built HTML.',
+      }),
+    );
   }
 
   if (runtimeAudit.jsEvalSignalCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-js-dynamic-code-signals',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Built JavaScript includes dynamic code execution markers such as `eval` or `new Function`.',
-      evidence: [distPath, `Dynamic code signals in built JS: ${runtimeAudit.jsEvalSignalCount}`],
-      suggestedFix: 'Remove runtime code evaluation from shipped bundles and replace it with explicit data transforms or static dispatch logic.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-js-dynamic-code-signals',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Built JavaScript includes dynamic code execution markers such as `eval` or `new Function`.',
+        evidence: [distPath, `Dynamic code signals in built JS: ${runtimeAudit.jsEvalSignalCount}`],
+        suggestedFix:
+          'Remove runtime code evaluation from shipped bundles and replace it with explicit data transforms or static dispatch logic.',
+      }),
+    );
   }
 
   const hasSourceCorroboration = (sourceAudit?.filesChecked ?? 0) > 0;
   const sourceSecurityCorroborates = (sourceAudit?.securityRiskPatterns.count ?? 0) > 0;
   const sourceLocalhostCorroborates = (sourceAudit?.localhostEndpointSignals.count ?? 0) > 0;
-  const htmlInjectionShouldWarn = runtimeAudit.jsHtmlInjectionSignalCount > 0
-    && (!hasSourceCorroboration || sourceSecurityCorroborates || runtimeAudit.jsHtmlInjectionSignalCount >= 25);
-  const insecureTransportShouldWarn = runtimeAudit.jsInsecureTransportSignalCount > 0
-    && (!hasSourceCorroboration || sourceSecurityCorroborates || sourceLocalhostCorroborates || runtimeAudit.jsInsecureTransportSignalCount >= 25);
+  const htmlInjectionShouldWarn =
+    runtimeAudit.jsHtmlInjectionSignalCount > 0 &&
+    (!hasSourceCorroboration ||
+      sourceSecurityCorroborates ||
+      runtimeAudit.jsHtmlInjectionSignalCount >= 25);
+  const insecureTransportShouldWarn =
+    runtimeAudit.jsInsecureTransportSignalCount > 0 &&
+    (!hasSourceCorroboration ||
+      sourceSecurityCorroborates ||
+      sourceLocalhostCorroborates ||
+      runtimeAudit.jsInsecureTransportSignalCount >= 25);
 
   if (htmlInjectionShouldWarn) {
-    findings.push(makeFinding({
-      id: 'runtime-js-html-injection-signals',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Built JavaScript includes HTML-injection markers such as `innerHTML`, `insertAdjacentHTML`, or `document.write`.',
-      evidence: [distPath, `HTML injection signals in built JS: ${runtimeAudit.jsHtmlInjectionSignalCount}`],
-      suggestedFix: 'Prefer explicit DOM node creation or framework-safe rendering paths instead of writing raw HTML into the document at runtime.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-js-html-injection-signals',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Built JavaScript includes HTML-injection markers such as `innerHTML`, `insertAdjacentHTML`, or `document.write`.',
+        evidence: [
+          distPath,
+          `HTML injection signals in built JS: ${runtimeAudit.jsHtmlInjectionSignalCount}`,
+        ],
+        suggestedFix:
+          'Prefer explicit DOM node creation or framework-safe rendering paths instead of writing raw HTML into the document at runtime.',
+      }),
+    );
   }
 
   if (insecureTransportShouldWarn) {
-    findings.push(makeFinding({
-      id: 'runtime-js-insecure-transport-signals',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Built JavaScript includes insecure transport or localhost-style development endpoint markers.',
-      evidence: [distPath, `Insecure or localhost transport signals in built JS: ${runtimeAudit.jsInsecureTransportSignalCount}`],
-      suggestedFix: 'Remove plain HTTP, ws://, and localhost-style endpoints from shipped bundles; prefer HTTPS/WSS and reviewed environment-backed URLs or route transport through a trusted server boundary.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-js-insecure-transport-signals',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Built JavaScript includes insecure transport or localhost-style development endpoint markers.',
+        evidence: [
+          distPath,
+          `Insecure or localhost transport signals in built JS: ${runtimeAudit.jsInsecureTransportSignalCount}`,
+        ],
+        suggestedFix:
+          'Remove plain HTTP, ws://, and localhost-style endpoints from shipped bundles; prefer HTTPS/WSS and reviewed environment-backed URLs or route transport through a trusted server boundary.',
+      }),
+    );
   }
 
   if (runtimeAudit.jsSecretSignalCount > 0) {
-    findings.push(makeFinding({
-      id: 'runtime-js-secret-signals',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'Built JavaScript includes secret-like markers such as service-role keys, live secret keys, or private-key material.',
-      evidence: [distPath, `Secret-like signals in built JS: ${runtimeAudit.jsSecretSignalCount}`],
-      suggestedFix: 'Remove server-only secrets from client bundles immediately, rotate any exposed credentials, and keep privileged keys behind a trusted server boundary.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-js-secret-signals',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message:
+          'Built JavaScript includes secret-like markers such as service-role keys, live secret keys, or private-key material.',
+        evidence: [
+          distPath,
+          `Secret-like signals in built JS: ${runtimeAudit.jsSecretSignalCount}`,
+        ],
+        suggestedFix:
+          'Remove server-only secrets from client bundles immediately, rotate any exposed credentials, and keep privileged keys behind a trusted server boundary.',
+      }),
+    );
   }
 
   if (runtimeAudit.cspSignalOk === false) {
-    findings.push(makeFinding({
-      id: 'runtime-csp-signal-missing',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'No document-level Content Security Policy signal was detected in the built root document.',
-      evidence: [indexPath],
-      suggestedFix: 'Prefer a CSP response header, or emit a CSP meta policy for static hosts that cannot add security headers.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-csp-signal-missing',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message:
+          'No document-level Content Security Policy signal was detected in the built root document.',
+        evidence: [indexPath],
+        suggestedFix:
+          'Prefer a CSP response header, or emit a CSP meta policy for static hosts that cannot add security headers.',
+      }),
+    );
   }
 
   if (runtimeAudit.assetCount === 0) {
-    findings.push(makeFinding({
-      id: 'runtime-assets-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'No built /assets references were detected in dist/index.html.',
-      evidence: [indexPath],
-      suggestedFix: 'Confirm the production build emitted JS/CSS assets and that index.html points at them.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-assets-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message: 'No built /assets references were detected in dist/index.html.',
+        evidence: [indexPath],
+        suggestedFix:
+          'Confirm the production build emitted JS/CSS assets and that index.html points at them.',
+      }),
+    );
   } else if (runtimeAudit.assetsPassed < runtimeAudit.assetCount) {
-    findings.push(makeFinding({
-      id: 'runtime-assets-fetch-failed',
-      category: 'Runtime Verification',
-      severity: 'error',
-      message: 'One or more built assets could not be fetched from the generated dist output.',
-      evidence: [
-        `${runtimeAudit.assetsPassed}/${runtimeAudit.assetCount} assets fetched successfully.`,
-        ...runtimeAudit.failures.filter(failure => failure.startsWith('asset-fetch-failed:')),
-      ],
-      suggestedFix: 'Rebuild the project and verify the emitted asset paths and static hosting layout are correct.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-assets-fetch-failed',
+        category: 'Runtime Verification',
+        severity: 'error',
+        message: 'One or more built assets could not be fetched from the generated dist output.',
+        evidence: [
+          `${runtimeAudit.assetsPassed}/${runtimeAudit.assetCount} assets fetched successfully.`,
+          ...runtimeAudit.failures.filter((failure) => failure.startsWith('asset-fetch-failed:')),
+        ],
+        suggestedFix:
+          'Rebuild the project and verify the emitted asset paths and static hosting layout are correct.',
+      }),
+    );
   }
 
-  if (runtimeAudit.routeHintsChecked.length > 0 && runtimeAudit.routeHintsMatched < Math.min(2, runtimeAudit.routeHintsChecked.length)) {
-    findings.push(makeFinding({
-      id: 'runtime-route-hints-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'Built JS did not clearly include the expected route hints from the compiled app contract.',
-      evidence: [
-        `Checked route hints: ${runtimeAudit.routeHintsChecked.join(', ')}`,
-        `Matched ${runtimeAudit.routeHintsMatched}/${runtimeAudit.routeHintsChecked.length} route hints in built JS assets.`,
-      ],
-      suggestedFix: 'Verify that route generation still covers the pages declared in the essence and compiled packs.',
-    }));
-  } else if (runtimeAudit.routeHintsChecked.length > 0 && runtimeAudit.routeHintsMatched < runtimeAudit.routeHintsChecked.length) {
-    findings.push(makeFinding({
-      id: 'runtime-route-hints-partial',
-      category: 'Runtime Verification',
-      severity: 'info',
-      message: 'Built JS only reflected part of the expected route contract from the compiled app context.',
-      evidence: [
-        `Checked route hints: ${runtimeAudit.routeHintsChecked.join(', ')}`,
-        `Matched ${runtimeAudit.routeHintsMatched}/${runtimeAudit.routeHintsChecked.length} route hints in built JS assets.`,
-      ],
-      suggestedFix: 'Verify route generation for the missing pages and confirm code-split bundles still preserve the expected route contract.',
-    }));
+  if (
+    runtimeAudit.routeHintsChecked.length > 0 &&
+    runtimeAudit.routeHintsMatched < Math.min(2, runtimeAudit.routeHintsChecked.length)
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'runtime-route-hints-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message:
+          'Built JS did not clearly include the expected route hints from the compiled app contract.',
+        evidence: [
+          `Checked route hints: ${runtimeAudit.routeHintsChecked.join(', ')}`,
+          `Matched ${runtimeAudit.routeHintsMatched}/${runtimeAudit.routeHintsChecked.length} route hints in built JS assets.`,
+        ],
+        suggestedFix:
+          'Verify that route generation still covers the pages declared in the essence and compiled packs.',
+      }),
+    );
+  } else if (
+    runtimeAudit.routeHintsChecked.length > 0 &&
+    runtimeAudit.routeHintsMatched < runtimeAudit.routeHintsChecked.length
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'runtime-route-hints-partial',
+        category: 'Runtime Verification',
+        severity: 'info',
+        message:
+          'Built JS only reflected part of the expected route contract from the compiled app context.',
+        evidence: [
+          `Checked route hints: ${runtimeAudit.routeHintsChecked.join(', ')}`,
+          `Matched ${runtimeAudit.routeHintsMatched}/${runtimeAudit.routeHintsChecked.length} route hints in built JS assets.`,
+        ],
+        suggestedFix:
+          'Verify route generation for the missing pages and confirm code-split bundles still preserve the expected route contract.',
+      }),
+    );
   }
 
-  if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsPassed < Math.min(2, runtimeAudit.routeDocumentsChecked)) {
-    findings.push(makeFinding({
-      id: 'runtime-route-documents-missing',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'One or more expected routes did not return a valid root document from the built output.',
-      evidence: [
-        `Passed ${runtimeAudit.routeDocumentsPassed}/${runtimeAudit.routeDocumentsChecked} route document checks.`,
-        ...runtimeAudit.failures.filter(failure => failure.startsWith('route-document-failed:')),
-      ],
-      suggestedFix: 'Verify route fallbacks and build output so every declared route resolves to a usable root document.',
-    }));
-  } else if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsPassed < runtimeAudit.routeDocumentsChecked) {
-    findings.push(makeFinding({
-      id: 'runtime-route-documents-partial',
-      category: 'Runtime Verification',
-      severity: 'warn',
-      message: 'Some expected routes resolved to a root document, but at least one still failed runtime verification.',
-      evidence: [
-        `Passed ${runtimeAudit.routeDocumentsPassed}/${runtimeAudit.routeDocumentsChecked} route document checks.`,
-        ...runtimeAudit.failures.filter(failure => failure.startsWith('route-document-failed:')),
-      ],
-      suggestedFix: 'Fix the failing route outputs so every declared destination resolves to the same usable root document contract.',
-    }));
+  if (
+    runtimeAudit.routeDocumentsChecked > 0 &&
+    runtimeAudit.routeDocumentsPassed < Math.min(2, runtimeAudit.routeDocumentsChecked)
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'runtime-route-documents-missing',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message:
+          'One or more expected routes did not return a valid root document from the built output.',
+        evidence: [
+          `Passed ${runtimeAudit.routeDocumentsPassed}/${runtimeAudit.routeDocumentsChecked} route document checks.`,
+          ...runtimeAudit.failures.filter((failure) =>
+            failure.startsWith('route-document-failed:'),
+          ),
+        ],
+        suggestedFix:
+          'Verify route fallbacks and build output so every declared route resolves to a usable root document.',
+      }),
+    );
+  } else if (
+    runtimeAudit.routeDocumentsChecked > 0 &&
+    runtimeAudit.routeDocumentsPassed < runtimeAudit.routeDocumentsChecked
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'runtime-route-documents-partial',
+        category: 'Runtime Verification',
+        severity: 'warn',
+        message:
+          'Some expected routes resolved to a root document, but at least one still failed runtime verification.',
+        evidence: [
+          `Passed ${runtimeAudit.routeDocumentsPassed}/${runtimeAudit.routeDocumentsChecked} route document checks.`,
+          ...runtimeAudit.failures.filter((failure) =>
+            failure.startsWith('route-document-failed:'),
+          ),
+        ],
+        suggestedFix:
+          'Fix the failing route outputs so every declared destination resolves to the same usable root document contract.',
+      }),
+    );
   }
 
-  if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsHardenedCount < Math.min(2, runtimeAudit.routeDocumentsChecked)) {
-    findings.push(makeFinding({
-      id: 'runtime-route-document-hardening-missing',
-      category: 'Document Hardening',
-      severity: 'warn',
-      message: 'Too few reviewed routes preserved a fully hardened document shell.',
-      evidence: [
-        `Hardened route documents: ${runtimeAudit.routeDocumentsHardenedCount}/${runtimeAudit.routeDocumentsChecked}`,
-        ...extractFailedRouteDocumentHardening(runtimeAudit),
-      ],
-      suggestedFix: 'Keep title, lang, viewport, and charset metadata intact for every reviewed route document, not just the root entry shell.',
-    }));
-  } else if (runtimeAudit.routeDocumentsChecked > 0 && runtimeAudit.routeDocumentsHardenedCount < runtimeAudit.routeDocumentsChecked) {
-    findings.push(makeFinding({
-      id: 'runtime-route-document-hardening-partial',
-      category: 'Document Hardening',
-      severity: 'info',
-      message: 'Some reviewed routes preserved a hardened document shell, but at least one still dropped critical document metadata.',
-      evidence: [
-        `Hardened route documents: ${runtimeAudit.routeDocumentsHardenedCount}/${runtimeAudit.routeDocumentsChecked}`,
-        ...extractFailedRouteDocumentHardening(runtimeAudit),
-      ],
-      suggestedFix: 'Make sure every reviewed route document keeps title, lang, viewport, and charset metadata intact across route-level rendering.',
-    }));
+  if (
+    runtimeAudit.routeDocumentsChecked > 0 &&
+    runtimeAudit.routeDocumentsHardenedCount < Math.min(2, runtimeAudit.routeDocumentsChecked)
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'runtime-route-document-hardening-missing',
+        category: 'Document Hardening',
+        severity: 'warn',
+        message: 'Too few reviewed routes preserved a fully hardened document shell.',
+        evidence: [
+          `Hardened route documents: ${runtimeAudit.routeDocumentsHardenedCount}/${runtimeAudit.routeDocumentsChecked}`,
+          ...extractFailedRouteDocumentHardening(runtimeAudit),
+        ],
+        suggestedFix:
+          'Keep title, lang, viewport, and charset metadata intact for every reviewed route document, not just the root entry shell.',
+      }),
+    );
+  } else if (
+    runtimeAudit.routeDocumentsChecked > 0 &&
+    runtimeAudit.routeDocumentsHardenedCount < runtimeAudit.routeDocumentsChecked
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'runtime-route-document-hardening-partial',
+        category: 'Document Hardening',
+        severity: 'info',
+        message:
+          'Some reviewed routes preserved a hardened document shell, but at least one still dropped critical document metadata.',
+        evidence: [
+          `Hardened route documents: ${runtimeAudit.routeDocumentsHardenedCount}/${runtimeAudit.routeDocumentsChecked}`,
+          ...extractFailedRouteDocumentHardening(runtimeAudit),
+        ],
+        suggestedFix:
+          'Make sure every reviewed route document keeps title, lang, viewport, and charset metadata intact across route-level rendering.',
+      }),
+    );
   }
 
   if (topology?.hasAuthFeature) {
     const failedRouteDocuments = new Set(extractFailedRouteDocuments(runtimeAudit));
-    const failedGatewayRoutes = topology.gatewayRoutes.filter((route) => failedRouteDocuments.has(normalizeRouteHint(route)));
-    const failedPrimaryRoutes = topology.primaryRoutes.filter((route) => failedRouteDocuments.has(normalizeRouteHint(route)));
+    const failedGatewayRoutes = topology.gatewayRoutes.filter((route) =>
+      failedRouteDocuments.has(normalizeRouteHint(route)),
+    );
+    const failedPrimaryRoutes = topology.primaryRoutes.filter((route) =>
+      failedRouteDocuments.has(normalizeRouteHint(route)),
+    );
 
     if (failedGatewayRoutes.length > 0) {
-      findings.push(makeFinding({
-        id: 'runtime-auth-gateway-routes-failed',
-        category: 'Runtime Verification',
-        severity: 'warn',
-        message: 'One or more gateway auth routes did not return a valid root document from the built output.',
-        evidence: [
-          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-          `Failed gateway routes: ${failedGatewayRoutes.join(', ')}`,
-        ],
-        suggestedFix: 'Ensure login, registration, and recovery routes resolve to the same usable root document contract as the rest of the app build.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'runtime-auth-gateway-routes-failed',
+          category: 'Runtime Verification',
+          severity: 'warn',
+          message:
+            'One or more gateway auth routes did not return a valid root document from the built output.',
+          evidence: [
+            `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+            `Failed gateway routes: ${failedGatewayRoutes.join(', ')}`,
+          ],
+          suggestedFix:
+            'Ensure login, registration, and recovery routes resolve to the same usable root document contract as the rest of the app build.',
+        }),
+      );
     }
 
     if (failedPrimaryRoutes.length > 0) {
-      findings.push(makeFinding({
-        id: 'runtime-auth-primary-routes-failed',
-        category: 'Runtime Verification',
-        severity: 'warn',
-        message: 'One or more primary authenticated routes did not return a valid root document from the built output.',
-        evidence: [
-          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-          `Failed primary routes: ${failedPrimaryRoutes.join(', ')}`,
-        ],
-        suggestedFix: 'Ensure authenticated app routes like `/dashboard` or `/app` survive the build output and resolve to a valid root document.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'runtime-auth-primary-routes-failed',
+          category: 'Runtime Verification',
+          severity: 'warn',
+          message:
+            'One or more primary authenticated routes did not return a valid root document from the built output.',
+          evidence: [
+            `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+            `Failed primary routes: ${failedPrimaryRoutes.join(', ')}`,
+          ],
+          suggestedFix:
+            'Ensure authenticated app routes like `/dashboard` or `/app` survive the build output and resolve to a valid root document.',
+        }),
+      );
     }
   }
 
-  const largestIsJs = typeof runtimeAudit.largestAssetPath === 'string' && runtimeAudit.largestAssetPath.endsWith('.js');
+  const largestIsJs =
+    typeof runtimeAudit.largestAssetPath === 'string' &&
+    runtimeAudit.largestAssetPath.endsWith('.js');
   if (
-    (largestIsJs && runtimeAudit.largestAssetBytes > PERFORMANCE_BUDGETS.largestJsAssetWarnBytes)
-    || runtimeAudit.jsAssetBytes > PERFORMANCE_BUDGETS.totalJsWarnBytes
+    (largestIsJs && runtimeAudit.largestAssetBytes > PERFORMANCE_BUDGETS.largestJsAssetWarnBytes) ||
+    runtimeAudit.jsAssetBytes > PERFORMANCE_BUDGETS.totalJsWarnBytes
   ) {
-    findings.push(makeFinding({
-      id: 'runtime-js-bundle-large',
-      category: 'Performance Budget',
-      severity: 'warn',
-      message: 'The built JavaScript output is larger than the current Decantr performance budget.',
-      evidence: [
-        `Total JS: ${formatBytes(runtimeAudit.jsAssetBytes)}`,
-        `Largest asset: ${runtimeAudit.largestAssetPath ?? 'n/a'} (${formatBytes(runtimeAudit.largestAssetBytes)})`,
-      ],
-      suggestedFix: 'Split large route bundles, remove unnecessary client-only code, and prefer lighter patterns or deferred data surfaces.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-js-bundle-large',
+        category: 'Performance Budget',
+        severity: 'warn',
+        message:
+          'The built JavaScript output is larger than the current Decantr performance budget.',
+        evidence: [
+          `Total JS: ${formatBytes(runtimeAudit.jsAssetBytes)}`,
+          `Largest asset: ${runtimeAudit.largestAssetPath ?? 'n/a'} (${formatBytes(runtimeAudit.largestAssetBytes)})`,
+        ],
+        suggestedFix:
+          'Split large route bundles, remove unnecessary client-only code, and prefer lighter patterns or deferred data surfaces.',
+      }),
+    );
   }
 
   if (runtimeAudit.cssAssetBytes > PERFORMANCE_BUDGETS.totalCssWarnBytes) {
-    findings.push(makeFinding({
-      id: 'runtime-css-bundle-large',
-      category: 'Performance Budget',
-      severity: 'warn',
-      message: 'The built CSS output is larger than the current Decantr performance budget.',
-      evidence: [
-        `Total CSS: ${formatBytes(runtimeAudit.cssAssetBytes)}`,
-        `Total assets: ${formatBytes(runtimeAudit.totalAssetBytes)}`,
-      ],
-      suggestedFix: 'Trim unused treatment layers, reduce generated CSS duplication, and prefer scoped styles over broad utility carryover.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-css-bundle-large',
+        category: 'Performance Budget',
+        severity: 'warn',
+        message: 'The built CSS output is larger than the current Decantr performance budget.',
+        evidence: [
+          `Total CSS: ${formatBytes(runtimeAudit.cssAssetBytes)}`,
+          `Total assets: ${formatBytes(runtimeAudit.totalAssetBytes)}`,
+        ],
+        suggestedFix:
+          'Trim unused treatment layers, reduce generated CSS duplication, and prefer scoped styles over broad utility carryover.',
+      }),
+    );
   }
 
   if (runtimeAudit.totalAssetBytes > PERFORMANCE_BUDGETS.totalAssetsWarnBytes) {
-    findings.push(makeFinding({
-      id: 'runtime-total-assets-large',
-      category: 'Performance Budget',
-      severity: 'warn',
-      message: 'The built asset payload is larger than the current Decantr total asset budget.',
-      evidence: [
-        `Total assets: ${formatBytes(runtimeAudit.totalAssetBytes)}`,
-        `JS: ${formatBytes(runtimeAudit.jsAssetBytes)}`,
-        `CSS: ${formatBytes(runtimeAudit.cssAssetBytes)}`,
-      ],
-      suggestedFix: 'Reduce shipped assets, split infrequently used routes, and keep the showcase/app shell focused on essential interactive surfaces.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'runtime-total-assets-large',
+        category: 'Performance Budget',
+        severity: 'warn',
+        message: 'The built asset payload is larger than the current Decantr total asset budget.',
+        evidence: [
+          `Total assets: ${formatBytes(runtimeAudit.totalAssetBytes)}`,
+          `JS: ${formatBytes(runtimeAudit.jsAssetBytes)}`,
+          `CSS: ${formatBytes(runtimeAudit.cssAssetBytes)}`,
+        ],
+        suggestedFix:
+          'Reduce shipped assets, split infrequently used routes, and keep the showcase/app shell focused on essential interactive surfaces.',
+      }),
+    );
   }
 }
 
@@ -1572,1070 +2022,1475 @@ function appendSourceAuditFindings(
   }
 
   if (sourceAudit.inlineStyles.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-inline-styles-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files still contain inline style attributes, which undermines the compiled treatment contract.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.inlineStyles, 'Inline style attributes'),
-      suggestedFix: 'Move inline styling into treatments, atoms, or design-token-backed classes so generation stays aligned with the Decantr contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-inline-styles-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files still contain inline style attributes, which undermines the compiled treatment contract.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.inlineStyles,
+          'Inline style attributes',
+        ),
+        suggestedFix:
+          'Move inline styling into treatments, atoms, or design-token-backed classes so generation stays aligned with the Decantr contract.',
+      }),
+    );
   }
 
   if (sourceAudit.componentStyleTags.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-component-style-tags-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files inject component-scoped style tags or dynamic style elements, which bypass the compiled Decantr layer contract.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.componentStyleTags, 'Component-level style tag signals'),
-      suggestedFix: 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so styling stays inside the reviewed Decantr layer stack.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-component-style-tags-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files inject component-scoped style tags or dynamic style elements, which bypass the compiled Decantr layer contract.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.componentStyleTags,
+          'Component-level style tag signals',
+        ),
+        suggestedFix:
+          'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so styling stays inside the reviewed Decantr layer stack.',
+      }),
+    );
   }
 
   if (sourceAudit.localCssRuntimeSignals.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-local-css-runtime-stub-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files include a local css() runtime or hand-written atoms stylesheet instead of the first-party `@decantr/css` runtime path.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.localCssRuntimeSignals, 'Local css() runtime signals'),
-      suggestedFix: 'Use the real `@decantr/css` runtime for atom classes and remove local `css()` stubs or hand-written `atoms.css` fallbacks unless the project is deliberately running in an explicit fallback mode.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-local-css-runtime-stub-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files include a local css() runtime or hand-written atoms stylesheet instead of the first-party `@decantr/css` runtime path.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.localCssRuntimeSignals,
+          'Local css() runtime signals',
+        ),
+        suggestedFix:
+          'Use the real `@decantr/css` runtime for atom classes and remove local `css()` stubs or hand-written `atoms.css` fallbacks unless the project is deliberately running in an explicit fallback mode.',
+      }),
+    );
   }
 
   if (sourceAudit.securityRiskPatterns.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-security-risk-patterns-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files include security-risk rendering or link patterns before the project is even built.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.securityRiskPatterns, 'Security-risk source patterns'),
-      suggestedFix: 'Remove dangerous HTML writes, client-exposed secret references, localhost/dev endpoints, wildcard postMessage targets, dynamic code execution, and unsafe external link patterns from source before shipping.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-security-risk-patterns-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files include security-risk rendering or link patterns before the project is even built.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.securityRiskPatterns,
+          'Security-risk source patterns',
+        ),
+        suggestedFix:
+          'Remove dangerous HTML writes, client-exposed secret references, localhost/dev endpoints, wildcard postMessage targets, dynamic code execution, and unsafe external link patterns from source before shipping.',
+      }),
+    );
   }
 
   if (sourceAudit.localhostEndpointSignals.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-localhost-endpoints-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files still reference localhost-style endpoints that will not survive a real production deployment.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.localhostEndpointSignals, 'Localhost endpoint signals'),
-      suggestedFix: 'Replace localhost, 127.0.0.1, or 0.0.0.0 client endpoints with reviewed environment-backed URLs or route them behind a trusted server boundary before shipping.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-localhost-endpoints-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files still reference localhost-style endpoints that will not survive a real production deployment.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.localhostEndpointSignals,
+          'Localhost endpoint signals',
+        ),
+        suggestedFix:
+          'Replace localhost, 127.0.0.1, or 0.0.0.0 client endpoints with reviewed environment-backed URLs or route them behind a trusted server boundary before shipping.',
+      }),
+    );
   }
 
   if (sourceAudit.placeholderRoutes.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-placeholder-route-targets-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files still include placeholder navigation targets instead of real app routes.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.placeholderRoutes, 'Placeholder route targets'),
-      suggestedFix: 'Replace placeholder href/to values with the actual routes declared in the compiled packs and essence.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-placeholder-route-targets-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files still include placeholder navigation targets instead of real app routes.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.placeholderRoutes,
+          'Placeholder route targets',
+        ),
+        suggestedFix:
+          'Replace placeholder href/to values with the actual routes declared in the compiled packs and essence.',
+      }),
+    );
   }
 
   const navigation = essence && isV3(essence) ? essence.meta.navigation : null;
   if (navigation?.command_palette && sourceAudit.commandPaletteSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-command-palette-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'The essence declares a command palette, but the source tree does not show an obvious command-palette implementation signal.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Command palette declared in essence navigation.',
-      ],
-      suggestedFix: 'Implement a real command palette surface with its keyboard trigger instead of merely acknowledging the feature in copy or comments.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-command-palette-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'The essence declares a command palette, but the source tree does not show an obvious command-palette implementation signal.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Command palette declared in essence navigation.',
+        ],
+        suggestedFix:
+          'Implement a real command palette surface with its keyboard trigger instead of merely acknowledging the feature in copy or comments.',
+      }),
+    );
   }
 
   if (navigation?.hotkeys?.length && sourceAudit.keyboardShortcutSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-hotkeys-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'The essence declares hotkeys, but the source tree does not show obvious keyboard-shortcut handling.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Hotkeys declared: ${navigation.hotkeys.length}`,
-      ],
-      suggestedFix: 'Implement the declared hotkeys with real keydown handlers or a reviewed shortcut helper rather than leaving them as documentation-only features.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-hotkeys-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'The essence declares hotkeys, but the source tree does not show obvious keyboard-shortcut handling.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Hotkeys declared: ${navigation.hotkeys.length}`,
+        ],
+        suggestedFix:
+          'Implement the declared hotkeys with real keydown handlers or a reviewed shortcut helper rather than leaving them as documentation-only features.',
+      }),
+    );
   }
 
   if (sourceAudit.authStorageWrites.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-storage-writes-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files write auth-like credentials into browser storage.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authStorageWrites, 'Auth storage writes'),
-      suggestedFix: 'Avoid storing auth tokens in localStorage/sessionStorage and prefer secure server-managed session boundaries.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-storage-writes-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message: 'Source files write auth-like credentials into browser storage.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authStorageWrites,
+          'Auth storage writes',
+        ),
+        suggestedFix:
+          'Avoid storing auth tokens in localStorage/sessionStorage and prefer secure server-managed session boundaries.',
+      }),
+    );
   }
 
   if (sourceAudit.authCookieWrites.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-cookie-writes-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files write auth-like credentials into client-managed cookies.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authCookieWrites, 'Auth cookie writes'),
-      suggestedFix: 'Avoid setting auth cookies from client-side JavaScript; prefer secure server-issued HttpOnly session cookies or other server-managed boundaries.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-cookie-writes-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message: 'Source files write auth-like credentials into client-managed cookies.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authCookieWrites,
+          'Auth cookie writes',
+        ),
+        suggestedFix:
+          'Avoid setting auth cookies from client-side JavaScript; prefer secure server-issued HttpOnly session cookies or other server-managed boundaries.',
+      }),
+    );
   }
 
   if (sourceAudit.authHeaderWrites.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-header-writes-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files construct auth-like authorization headers in client-side code.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authHeaderWrites, 'Auth header writes'),
-      suggestedFix: 'Avoid building bearer/session auth headers in client-rendered code; prefer server-managed session boundaries or a deliberate reviewed client-auth strategy.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-header-writes-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message: 'Source files construct auth-like authorization headers in client-side code.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authHeaderWrites,
+          'Auth header writes',
+        ),
+        suggestedFix:
+          'Avoid building bearer/session auth headers in client-rendered code; prefer server-managed session boundaries or a deliberate reviewed client-auth strategy.',
+      }),
+    );
   }
 
   const topology = summarizeTopology(essence, reviewPack);
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authStorageWrites.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && sourceAudit.authStorageClears.count === 0
+    topology.hasAuthFeature &&
+    sourceAudit.authStorageWrites.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    sourceAudit.authStorageClears.count === 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-storage-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show client-managed auth storage being cleared during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth storage write files: ${sourceAudit.authStorageWrites.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        'Auth storage clear files: none',
-      ],
-      suggestedFix: 'If auth data is ever stored in browser storage, remove those auth/session keys during sign-out before returning users to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-storage-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show client-managed auth storage being cleared during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth storage write files: ${sourceAudit.authStorageWrites.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          'Auth storage clear files: none',
+        ],
+        suggestedFix:
+          'If auth data is ever stored in browser storage, remove those auth/session keys during sign-out before returning users to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authCookieWrites.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && sourceAudit.authCookieClears.count === 0
+    topology.hasAuthFeature &&
+    sourceAudit.authCookieWrites.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    sourceAudit.authCookieClears.count === 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-cookie-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show client-managed auth cookies being cleared during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth cookie write files: ${sourceAudit.authCookieWrites.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        'Auth cookie clear files: none',
-      ],
-      suggestedFix: 'If auth cookies are issued from reviewed source surfaces, explicitly expire or delete them during sign-out before returning users to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-cookie-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show client-managed auth cookies being cleared during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth cookie write files: ${sourceAudit.authCookieWrites.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          'Auth cookie clear files: none',
+        ],
+        suggestedFix:
+          'If auth cookies are issued from reviewed source surfaces, explicitly expire or delete them during sign-out before returning users to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authHeaderWrites.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && sourceAudit.authHeaderClears.count === 0
+    topology.hasAuthFeature &&
+    sourceAudit.authHeaderWrites.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    sourceAudit.authHeaderClears.count === 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-header-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show client-managed auth headers being cleared during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth header write files: ${sourceAudit.authHeaderWrites.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        'Auth header clear files: none',
-      ],
-      suggestedFix: 'If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out before returning users to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-header-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show client-managed auth headers being cleared during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth header write files: ${sourceAudit.authHeaderWrites.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          'Auth header clear files: none',
+        ],
+        suggestedFix:
+          'If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out before returning users to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authCacheClients.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && sourceAudit.authCacheClears.count === 0
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authCacheClients, sourceAudit.protectedSurfaceSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authCacheClients, sourceAudit.authSessionSignals)
-    )
+    topology.hasAuthFeature &&
+    sourceAudit.authCacheClients.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    sourceAudit.authCacheClears.count === 0 &&
+    (sourceAuditBucketsOverlap(sourceAudit.authCacheClients, sourceAudit.protectedSurfaceSignals) ||
+      sourceAuditBucketsOverlap(sourceAudit.authCacheClients, sourceAudit.authSessionSignals))
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-cache-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show client-side data caches being cleared during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth cache client files: ${sourceAudit.authCacheClients.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        'Auth cache clear files: none',
-      ],
-      suggestedFix: 'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-cache-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show client-side data caches being cleared during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth cache client files: ${sourceAudit.authCacheClients.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          'Auth cache clear files: none',
+        ],
+        suggestedFix:
+          'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authRefreshSignals.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authRefreshSignals, sourceAudit.authRefreshClears)
+    topology.hasAuthFeature &&
+    sourceAudit.authRefreshSignals.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(sourceAudit.authRefreshSignals, sourceAudit.authRefreshClears)
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-refresh-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show background auth refresh timers or subscriptions being torn down during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth refresh files: ${sourceAudit.authRefreshSignals.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        `Auth refresh clear files: ${sourceAudit.authRefreshClears.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before returning users to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-refresh-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show background auth refresh timers or subscriptions being torn down during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth refresh files: ${sourceAudit.authRefreshSignals.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          `Auth refresh clear files: ${sourceAudit.authRefreshClears.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before returning users to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authRealtimeSignals.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.authRealtimeClears)
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.protectedSurfaceSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.authSessionSignals)
-    )
+    topology.hasAuthFeature &&
+    sourceAudit.authRealtimeSignals.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.authRealtimeClears) &&
+    (sourceAuditBucketsOverlap(
+      sourceAudit.authRealtimeSignals,
+      sourceAudit.protectedSurfaceSignals,
+    ) ||
+      sourceAuditBucketsOverlap(sourceAudit.authRealtimeSignals, sourceAudit.authSessionSignals))
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-realtime-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show realtime channels or sockets being torn down during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth realtime files: ${sourceAudit.authRealtimeSignals.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        `Auth realtime clear files: ${sourceAudit.authRealtimeClears.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before returning users to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-realtime-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show realtime channels or sockets being torn down during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth realtime files: ${sourceAudit.authRealtimeSignals.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          `Auth realtime clear files: ${sourceAudit.authRealtimeClears.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before returning users to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authCoordinationSignals.count > 0
-    && sourceAudit.authExitSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authCoordinationSignals, sourceAudit.authCoordinationClears)
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authCoordinationSignals, sourceAudit.protectedSurfaceSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authCoordinationSignals, sourceAudit.authSessionSignals)
-    )
+    topology.hasAuthFeature &&
+    sourceAudit.authCoordinationSignals.count > 0 &&
+    sourceAudit.authExitSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCoordinationSignals,
+      sourceAudit.authCoordinationClears,
+    ) &&
+    (sourceAuditBucketsOverlap(
+      sourceAudit.authCoordinationSignals,
+      sourceAudit.protectedSurfaceSignals,
+    ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authCoordinationSignals,
+        sourceAudit.authSessionSignals,
+      ))
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-coordination-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth exit flows exist, but the source tree does not show cross-tab auth coordination channels or storage listeners being torn down during sign-out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth coordination files: ${sourceAudit.authCoordinationSignals.files.join(', ') || 'none'}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        `Auth coordination clear files: ${sourceAudit.authCoordinationClears.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'If auth state is coordinated across tabs with BroadcastChannel or storage listeners, close those channels and remove those listeners during sign-out before returning users to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-coordination-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth exit flows exist, but the source tree does not show cross-tab auth coordination channels or storage listeners being torn down during sign-out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth coordination files: ${sourceAudit.authCoordinationSignals.files.join(', ') || 'none'}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          `Auth coordination clear files: ${sourceAudit.authCoordinationClears.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'If auth state is coordinated across tabs with BroadcastChannel or storage listeners, close those channels and remove those listeners during sign-out before returning users to an anonymous route.',
+      }),
+    );
   }
 
   if (topology.hasAuthFeature && sourceAudit.authGuardSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-guard-signals-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Authentication is declared, but the source tree does not show clear auth-guard or redirect behavior.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Auth guard signals: 0',
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Add explicit protected-route wrappers, middleware, session checks, or redirects to login/register before authenticated surfaces render.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-guard-signals-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Authentication is declared, but the source tree does not show clear auth-guard or redirect behavior.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Auth guard signals: 0',
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Add explicit protected-route wrappers, middleware, session checks, or redirects to login/register before authenticated surfaces render.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && topology.primaryRoutes.length > 0
-    && sourceAudit.protectedSurfaceSignals.count > 0
-    && sourceAudit.authGuardSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authGuardSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authSessionSignals)
+    topology.hasAuthFeature &&
+    topology.primaryRoutes.length > 0 &&
+    sourceAudit.protectedSurfaceSignals.count > 0 &&
+    sourceAudit.authGuardSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authGuardSignals) &&
+    !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authSessionSignals)
   ) {
-    findings.push(makeFinding({
-      id: 'source-protected-surface-auth-checks-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Files that expose protected app surfaces do not appear to co-locate session checks or guard behavior.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Protected surface files: ${sourceAudit.protectedSurfaceSignals.files.join(', ') || 'none'}`,
-        `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
-        `Auth session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Keep protected-route components, layouts, or loaders close to the session check or guard that protects them so authenticated surfaces do not look accidentally public.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-protected-surface-auth-checks-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Files that expose protected app surfaces do not appear to co-locate session checks or guard behavior.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Protected surface files: ${sourceAudit.protectedSurfaceSignals.files.join(', ') || 'none'}`,
+          `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
+          `Auth session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Keep protected-route components, layouts, or loaders close to the session check or guard that protects them so authenticated surfaces do not look accidentally public.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authProtectedRedirectSignals.count > 0
-    && sourceAuditBucketsOverlap(sourceAudit.authProtectedRedirectSignals, sourceAudit.authGuardSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.authProtectedRedirectSignals, sourceAudit.authEntrySignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authProtectedRedirectSignals.count > 0 &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authProtectedRedirectSignals,
+      sourceAudit.authGuardSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authProtectedRedirectSignals,
+      sourceAudit.authEntrySignals,
+    )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-guard-protected-redirect',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth guard logic appears to redirect users toward protected destinations instead of anonymous entry routes.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Protected redirect files: ${sourceAudit.authProtectedRedirectSignals.files.join(', ') || 'none'}`,
-        `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Send unauthenticated guard redirects to `/`, `/login`, `/register`, or another reviewed gateway route, and keep redirects to protected destinations for post-auth success flows only.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-guard-protected-redirect',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth guard logic appears to redirect users toward protected destinations instead of anonymous entry routes.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Protected redirect files: ${sourceAudit.authProtectedRedirectSignals.files.join(', ') || 'none'}`,
+          `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Send unauthenticated guard redirects to `/`, `/login`, `/register`, or another reviewed gateway route, and keep redirects to protected destinations for post-auth success flows only.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authSessionSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authSessionSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-loading-signals-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Source files reference auth/session state but do not show a clear loading or pending state while session resolution happens.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth/session signals: ${sourceAudit.authSessionSignals.count}`,
-        `Auth loading signals: ${sourceAudit.authLoadingSignals.count}`,
-        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When auth or session state resolves asynchronously, render an explicit loading, skeleton, suspense fallback, or pending state before redirecting or rendering protected content.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-loading-signals-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Source files reference auth/session state but do not show a clear loading or pending state while session resolution happens.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth/session signals: ${sourceAudit.authSessionSignals.count}`,
+          `Auth loading signals: ${sourceAudit.authLoadingSignals.count}`,
+          `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When auth or session state resolves asynchronously, render an explicit loading, skeleton, suspense fallback, or pending state before redirecting or rendering protected content.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
-    && sourceAudit.authProtectedLoadingRenderSignals.count > 0
+    topology.hasAuthFeature &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.protectedSurfaceSignals,
+    ) &&
+    sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals) &&
+    sourceAudit.authProtectedLoadingRenderSignals.count > 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-loading-protected-render',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Protected source surfaces show a loading branch, but that branch still appears to render a protected destination while session resolution is pending.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
-        `Protected loading render files: ${sourceAudit.authProtectedLoadingRenderSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-loading-protected-render',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Protected source surfaces show a loading branch, but that branch still appears to render a protected destination while session resolution is pending.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+          `Protected loading render files: ${sourceAudit.authProtectedLoadingRenderSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authSessionSignals.count > 0
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
-    && sourceAudit.authBlankLoadingRenderSignals.count > 0
+    topology.hasAuthFeature &&
+    sourceAudit.authSessionSignals.count > 0 &&
+    sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals) &&
+    sourceAudit.authBlankLoadingRenderSignals.count > 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-loading-blank-render',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Auth/session loading branches exist, but some of them return nothing instead of an explicit pending boundary.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
-        `Blank loading files: ${sourceAudit.authBlankLoadingRenderSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When auth/session state is loading, render a spinner, skeleton, suspense fallback, or another explicit pending UI instead of returning `null` or an empty fragment.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-loading-blank-render',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Auth/session loading branches exist, but some of them return nothing instead of an explicit pending boundary.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+          `Blank loading files: ${sourceAudit.authBlankLoadingRenderSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When auth/session state is loading, render a spinner, skeleton, suspense fallback, or another explicit pending UI instead of returning `null` or an empty fragment.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authSessionSignals.count > 0
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals)
-    && sourceAudit.authAnonymousLoadingRedirectSignals.count > 0
+    topology.hasAuthFeature &&
+    sourceAudit.authSessionSignals.count > 0 &&
+    sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authLoadingSignals) &&
+    sourceAudit.authAnonymousLoadingRedirectSignals.count > 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-loading-anonymous-redirect',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth/session loading branches redirect users to anonymous routes before session resolution finishes.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
-        `Anonymous loading redirect files: ${sourceAudit.authAnonymousLoadingRedirectSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Do not redirect to `/login`, `/`, or another anonymous route while session state is still loading. Render a pending boundary first, then redirect only after the session resolves as unauthenticated.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-loading-anonymous-redirect',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth/session loading branches redirect users to anonymous routes before session resolution finishes.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Loading files: ${sourceAudit.authLoadingSignals.files.join(', ') || 'none'}`,
+          `Anonymous loading redirect files: ${sourceAudit.authAnonymousLoadingRedirectSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Do not redirect to `/login`, `/`, or another anonymous route while session state is still loading. Render a pending boundary first, then redirect only after the session resolves as unauthenticated.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
-    && sourceAudit.authProtectedUnauthenticatedRenderSignals.count > 0
+    topology.hasAuthFeature &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.protectedSurfaceSignals,
+    ) &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.authUnauthenticatedBranchSignals,
+    ) &&
+    sourceAudit.authProtectedUnauthenticatedRenderSignals.count > 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-session-loss-protected-render',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Protected source surfaces branch on auth loss but still appear to render a protected destination in the unauthenticated branch.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
-        `Protected unauthenticated render files: ${sourceAudit.authProtectedUnauthenticatedRenderSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect to a reviewed anonymous route or render a neutral guard boundary instead of returning a dashboard/app shell.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-session-loss-protected-render',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Protected source surfaces branch on auth loss but still appear to render a protected destination in the unauthenticated branch.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
+          `Protected unauthenticated render files: ${sourceAudit.authProtectedUnauthenticatedRenderSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When a protected surface detects a null or unauthenticated session, redirect to a reviewed anonymous route or render a neutral guard boundary instead of returning a dashboard/app shell.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
+    topology.hasAuthFeature &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.protectedSurfaceSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.authUnauthenticatedBranchSignals,
+    )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-session-loss-handling-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Protected source surfaces read auth/session state but do not show an explicit unauthenticated branch when session resolution fails or the user signs out.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
-        `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-session-loss-handling-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Protected source surfaces read auth/session state but do not show an explicit unauthenticated branch when session resolution fails or the user signs out.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
+          `Auth guard files: ${sourceAudit.authGuardSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.protectedSurfaceSignals)
-    && sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authUnauthenticatedBranchSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.authSessionSignals, sourceAudit.authAnonymousRedirectSignals)
+    topology.hasAuthFeature &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.protectedSurfaceSignals,
+    ) &&
+    sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.authUnauthenticatedBranchSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authSessionSignals,
+      sourceAudit.authAnonymousRedirectSignals,
+    )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-session-loss-redirect-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Protected source surfaces branch on auth loss but do not show an obvious redirect back to an anonymous route.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
-        `Anonymous redirect files: ${sourceAudit.authAnonymousRedirectSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect users to `/`, `/login`, `/register`, or another reviewed anonymous route instead of returning `null` or leaving the protected shell blank.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-session-loss-redirect-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Protected source surfaces branch on auth loss but do not show an obvious redirect back to an anonymous route.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Protected session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Unauthenticated branch files: ${sourceAudit.authUnauthenticatedBranchSignals.files.join(', ') || 'none'}`,
+          `Anonymous redirect files: ${sourceAudit.authAnonymousRedirectSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When a protected surface detects a null or unauthenticated session, redirect users to `/`, `/login`, `/register`, or another reviewed anonymous route instead of returning `null` or leaving the protected shell blank.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && (sourceAudit.authSessionSignals.count > 0 || sourceAudit.authEntrySignals.count > 0)
-    && sourceAudit.authErrorSignals.count === 0
+    topology.hasAuthFeature &&
+    (sourceAudit.authSessionSignals.count > 0 || sourceAudit.authEntrySignals.count > 0) &&
+    sourceAudit.authErrorSignals.count === 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-error-signals-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Authentication surfaces do not show an obvious error or failure state for rejected sign-in, session refresh, or recovery flows.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth/session signals: ${sourceAudit.authSessionSignals.count}`,
-        `Auth entry signals: ${sourceAudit.authEntrySignals.count}`,
-        'Auth error signals: 0',
-        `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
-        `Entry files: ${sourceAudit.authEntrySignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Expose a reviewed error state for failed sign-in, session refresh, or recovery paths with inline feedback, alert messaging, or another explicit failure affordance.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-error-signals-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Authentication surfaces do not show an obvious error or failure state for rejected sign-in, session refresh, or recovery flows.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth/session signals: ${sourceAudit.authSessionSignals.count}`,
+          `Auth entry signals: ${sourceAudit.authEntrySignals.count}`,
+          'Auth error signals: 0',
+          `Session files: ${sourceAudit.authSessionSignals.files.join(', ') || 'none'}`,
+          `Entry files: ${sourceAudit.authEntrySignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Expose a reviewed error state for failed sign-in, session refresh, or recovery paths with inline feedback, alert messaging, or another explicit failure affordance.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.recoveryFlowSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.recoveryFlowSignals, sourceAudit.authSuccessSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.recoveryFlowSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(sourceAudit.recoveryFlowSignals, sourceAudit.authSuccessSignals)
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-recovery-success-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Recovery flows exist, but the source tree does not show an obvious success or confirmation state after a reset request completes.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Recovery flow signals: ${sourceAudit.recoveryFlowSignals.count}`,
-        'Auth success signals: 0',
-        `Recovery files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'After password-reset or recovery submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-recovery-success-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Recovery flows exist, but the source tree does not show an obvious success or confirmation state after a reset request completes.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Recovery flow signals: ${sourceAudit.recoveryFlowSignals.count}`,
+          'Auth success signals: 0',
+          `Recovery files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'After password-reset or recovery submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.signUpFlowSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.signUpFlowSignals, sourceAudit.authProtectedRedirectSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.signUpFlowSignals, sourceAudit.authSuccessSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.signUpFlowSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.signUpFlowSignals,
+      sourceAudit.authProtectedRedirectSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(sourceAudit.signUpFlowSignals, sourceAudit.authSuccessSignals)
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-registration-success-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Registration flows exist, but the source tree does not show either a reviewed post-auth transition or an explicit success/verification state.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Registration flow signals: ${sourceAudit.signUpFlowSignals.count}`,
-        `Protected auth redirects: ${sourceAudit.authProtectedRedirectSignals.count}`,
-        `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
-        `Registration files: ${sourceAudit.signUpFlowSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-registration-success-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Registration flows exist, but the source tree does not show either a reviewed post-auth transition or an explicit success/verification state.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Registration flow signals: ${sourceAudit.signUpFlowSignals.count}`,
+          `Protected auth redirects: ${sourceAudit.authProtectedRedirectSignals.count}`,
+          `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
+          `Registration files: ${sourceAudit.signUpFlowSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackStateSignals.count > 0)
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackTokenSignals, sourceAudit.authProtectedRedirectSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackTokenSignals, sourceAudit.authSuccessSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authProtectedRedirectSignals)
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authSuccessSignals)
+    topology.hasAuthFeature &&
+    (sourceAudit.authCallbackTokenSignals.count > 0 ||
+      sourceAudit.authCallbackStateSignals.count > 0) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackTokenSignals,
+      sourceAudit.authProtectedRedirectSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackTokenSignals,
+      sourceAudit.authSuccessSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackStateSignals,
+      sourceAudit.authProtectedRedirectSignals,
+    ) &&
+    !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authSuccessSignals)
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-success-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Auth callback handling exists, but the source tree does not show either a reviewed protected transition or an explicit success state after callback exchange completes.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth callback token files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
-        `Auth callback state files: ${sourceAudit.authCallbackStateSignals.files.join(', ') || 'none'}`,
-        `Protected auth redirects: ${sourceAudit.authProtectedRedirectSignals.count}`,
-        `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
-      ],
-      suggestedFix: 'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success/verification state before the next auth step.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-success-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Auth callback handling exists, but the source tree does not show either a reviewed protected transition or an explicit success state after callback exchange completes.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth callback token files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
+          `Auth callback state files: ${sourceAudit.authCallbackStateSignals.files.join(', ') || 'none'}`,
+          `Protected auth redirects: ${sourceAudit.authProtectedRedirectSignals.count}`,
+          `Auth success signals: ${sourceAudit.authSuccessSignals.count}`,
+        ],
+        suggestedFix:
+          'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success/verification state before the next auth step.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authCallbackExchangeSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackExchangeSignals, sourceAudit.authCallbackExchangeErrorSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authCallbackExchangeSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackExchangeSignals,
+      sourceAudit.authCallbackExchangeErrorSignals,
+    )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-exchange-error-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth callback exchange logic exists, but the source tree does not show explicit failure handling if the code/session exchange rejects.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth callback exchange files: ${sourceAudit.authCallbackExchangeSignals.files.join(', ') || 'none'}`,
-        `Callback exchange error-handling files: ${sourceAudit.authCallbackExchangeErrorSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Wrap callback code/session exchange in reviewed catch handling or explicit exchange-error state so failed callback completion does not strand users on an indefinite pending path.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-exchange-error-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth callback exchange logic exists, but the source tree does not show explicit failure handling if the code/session exchange rejects.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth callback exchange files: ${sourceAudit.authCallbackExchangeSignals.files.join(', ') || 'none'}`,
+          `Callback exchange error-handling files: ${sourceAudit.authCallbackExchangeErrorSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Wrap callback code/session exchange in reviewed catch handling or explicit exchange-error state so failed callback completion does not strand users on an indefinite pending path.',
+      }),
+    );
   }
 
   if (topology.hasAuthFeature && sourceAudit.authExitSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-exit-signals-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Authentication is declared, but the source tree does not show an obvious sign-out or session-exit path.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Auth exit signals: 0',
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Expose an explicit sign-out/logout flow so authenticated users can intentionally end their session.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-exit-signals-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Authentication is declared, but the source tree does not show an obvious sign-out or session-exit path.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Auth exit signals: 0',
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Expose an explicit sign-out/logout flow so authenticated users can intentionally end their session.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && topology.hasAnonymousEntryRoute
-    && sourceAudit.authExitSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authExitSignals, sourceAudit.authAnonymousRedirectSignals)
+    topology.hasAuthFeature &&
+    topology.hasAnonymousEntryRoute &&
+    sourceAudit.authExitSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authExitSignals,
+      sourceAudit.authAnonymousRedirectSignals,
+    )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-exit-redirect-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Authentication exit flows do not show an obvious redirect back to an anonymous entry route.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        `Anonymous redirect files: ${sourceAudit.authAnonymousRedirectSignals.files.join(', ') || 'none'}`,
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'After sign-out or session exit, redirect users back to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after logout.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-exit-redirect-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Authentication exit flows do not show an obvious redirect back to an anonymous entry route.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          `Anonymous redirect files: ${sourceAudit.authAnonymousRedirectSignals.files.join(', ') || 'none'}`,
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'After sign-out or session exit, redirect users back to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after logout.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authExitSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authExitSignals, sourceAudit.authSessionTeardownSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authExitSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(sourceAudit.authExitSignals, sourceAudit.authSessionTeardownSignals)
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-exit-teardown-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Authentication exit flows exist, but the source tree does not show an obvious session teardown or sign-out boundary.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
-        `Session teardown files: ${sourceAudit.authSessionTeardownSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Before redirecting users out of the protected shell, explicitly sign out or invalidate the reviewed session state instead of relying on navigation alone.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-exit-teardown-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Authentication exit flows exist, but the source tree does not show an obvious session teardown or sign-out boundary.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth exit files: ${sourceAudit.authExitSignals.files.join(', ') || 'none'}`,
+          `Session teardown files: ${sourceAudit.authSessionTeardownSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Before redirecting users out of the protected shell, explicitly sign out or invalidate the reviewed session state instead of relying on navigation alone.',
+      }),
+    );
   }
 
   if (sourceAudit.authOpenRedirectSignals.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-open-redirect-risk',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files appear to trust next/returnTo-style redirect parameters during auth or route-transition flows.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authOpenRedirectSignals, 'Auth/query redirect signals'),
-      suggestedFix: 'Resolve post-auth or route-transition redirects through a reviewed allowlist of internal routes instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-open-redirect-risk',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files appear to trust next/returnTo-style redirect parameters during auth or route-transition flows.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authOpenRedirectSignals,
+          'Auth/query redirect signals',
+        ),
+        suggestedFix:
+          'Resolve post-auth or route-transition redirects through a reviewed allowlist of internal routes instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authExternalRedirectSignals.count > 0
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.authEntrySignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.signInFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.signUpFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.recoveryFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authExternalRedirectSignals, sourceAudit.authExitSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authExternalRedirectSignals.count > 0 &&
+    (sourceAuditBucketsOverlap(
+      sourceAudit.authExternalRedirectSignals,
+      sourceAudit.authEntrySignals,
+    ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authExternalRedirectSignals,
+        sourceAudit.signInFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authExternalRedirectSignals,
+        sourceAudit.signUpFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authExternalRedirectSignals,
+        sourceAudit.recoveryFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authExternalRedirectSignals,
+        sourceAudit.authExitSignals,
+      ))
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-external-redirect-risk',
+        category: 'Source Audit',
+        severity: 'warn',
+        message: 'Source files appear to redirect auth-related flows directly to external URLs.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authExternalRedirectSignals,
+          'Auth external redirects',
+        ),
+        suggestedFix:
+          'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    sourceAudit.authProviderStateSignals.count > 0 &&
+    (sourceAuditBucketsOverlap(
+      sourceAudit.authProviderStateSignals,
+      sourceAudit.authEntrySignals,
+    ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderStateSignals,
+        sourceAudit.signInFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderStateSignals,
+        sourceAudit.signUpFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderStateSignals,
+        sourceAudit.recoveryFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.authExitSignals))
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-provider-state-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files hardcode provider-style auth authorize URLs without a `state` parameter.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authProviderStateSignals,
+          'Auth provider URLs missing state',
+        ),
+        suggestedFix:
+          'When auth flows hand off to an external provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    sourceAudit.authProviderPkceSignals.count > 0 &&
+    (sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.authEntrySignals) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderPkceSignals,
+        sourceAudit.signInFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderPkceSignals,
+        sourceAudit.signUpFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderPkceSignals,
+        sourceAudit.recoveryFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.authExitSignals))
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-provider-pkce-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files hardcode provider-style OAuth code-flow URLs without a `code_challenge` parameter.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authProviderPkceSignals,
+          'Auth provider code flows missing PKCE',
+        ),
+        suggestedFix:
+          'When auth flows hand off to an external provider authorize URL with `response_type=code`, include a reviewed PKCE `code_challenge` and verifier instead of hardcoding a bare code flow from client code.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    sourceAudit.authProviderNonceSignals.count > 0 &&
+    (sourceAuditBucketsOverlap(
+      sourceAudit.authProviderNonceSignals,
+      sourceAudit.authEntrySignals,
+    ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderNonceSignals,
+        sourceAudit.signInFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderNonceSignals,
+        sourceAudit.signUpFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(
+        sourceAudit.authProviderNonceSignals,
+        sourceAudit.recoveryFlowSignals,
+      ) ||
+      sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.authExitSignals))
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-provider-nonce-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files hardcode provider-style OIDC id_token URLs without a `nonce` parameter.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authProviderNonceSignals,
+          'Auth provider id_token flows missing nonce',
+        ),
+        suggestedFix:
+          'When auth flows hand off to an external provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    topology.gatewayRoutes.length === 0 &&
+    sourceAudit.authEntrySignals.count === 0
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-entry-surface-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Authentication is declared, but the source tree does not show any obvious login, registration, or credential-entry surface.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Auth entry signals: 0',
+          'Gateway routes: none',
+          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Add an explicit login, registration, recovery, or reviewed SSO entry surface before protected routes become the primary way into the app.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    topology.gatewayRoutes.length > 0 &&
+    sourceAudit.authEntrySignals.count === 0
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-entry-signals-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Authentication is declared and gateway routes exist, but the source tree does not show an obvious sign-in, registration, or credential-entry surface.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Auth entry signals: 0',
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Add a real login, registration, or recovery surface with credential inputs or explicit auth entry actions on the gateway routes.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    topology.gatewayRoutes.some((route) => isRecoveryLikeRoute(route)) &&
+    sourceAudit.signInFlowSignals.count > 0 &&
+    sourceAudit.recoveryRouteSignals.count === 0
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-recovery-route-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Sign-in surfaces exist and a recovery route is declared, but the source tree does not show an obvious path into that recovery flow.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Sign-in flow files: ${sourceAudit.signInFlowSignals.files.join(', ') || 'none'}`,
+          'Recovery route signals: 0',
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Link sign-in users to the declared recovery route, such as `/forgot-password` or `/reset-password`, somewhere in the reviewed auth entry surfaces.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    topology.gatewayRoutes.some((route) => isRegistrationLikeRoute(route)) &&
+    sourceAudit.signInFlowSignals.count > 0 &&
+    sourceAudit.registrationRouteSignals.count === 0
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-registration-route-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Sign-in surfaces exist and a registration route is declared, but the source tree does not show an obvious path into that registration flow.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Sign-in flow files: ${sourceAudit.signInFlowSignals.files.join(', ') || 'none'}`,
+          'Registration route signals: 0',
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Link sign-in users to the declared registration route, such as `/register` or `/sign-up`, somewhere in the reviewed auth entry surfaces.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    topology.gatewayRoutes.some((route) => isSignInLikeRoute(route)) &&
+    (sourceAudit.signUpFlowSignals.count > 0 || sourceAudit.recoveryFlowSignals.count > 0) &&
+    sourceAudit.signInRouteSignals.count === 0
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-signin-route-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Registration or recovery surfaces exist and a sign-in route is declared, but the source tree does not show an obvious path back into sign-in.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Sign-up flow files: ${sourceAudit.signUpFlowSignals.files.join(', ') || 'none'}`,
+          `Recovery flow files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
+          'Sign-in route signals: 0',
+          `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Link registration and recovery users back to the declared sign-in route, such as `/login` or `/sign-in`, somewhere in the reviewed gateway surfaces.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    topology.primaryRoutes.length > 0 &&
+    (sourceAudit.signInFlowSignals.count > 0 ||
+      (sourceAudit.authEntrySignals.count > 0 &&
+        sourceAudit.signUpFlowSignals.count === 0 &&
+        sourceAudit.recoveryFlowSignals.count === 0)) &&
+    sourceAudit.authProtectedRedirectSignals.count === 0
+  ) {
+    findings.push(
+      makeFinding({
+        id: 'source-auth-success-redirect-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Authentication entry surfaces exist, but the source tree does not show an obvious transition into the protected app after success.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Auth entry signals: ${sourceAudit.authEntrySignals.count}`,
+          'Protected auth redirects: 0',
+          `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'After reviewed sign-in, registration, or recovery success, route users into a primary app surface such as `/dashboard`, `/app`, or another protected destination instead of leaving the post-auth transition implicit.',
+      }),
+    );
+  }
+
+  if (
+    topology.hasAuthFeature &&
+    sourceAudit.authCallbackTokenSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackTokenSignals,
+      sourceAudit.authCallbackErrorSignals,
     )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-external-redirect-risk',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files appear to redirect auth-related flows directly to external URLs.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authExternalRedirectSignals, 'Auth external redirects'),
-      suggestedFix: 'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-error-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Auth callback code appears to read provider return data without an obvious failure state for provider-denied or callback error returns.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Callback token signal files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
+          `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When reviewed auth callback routes can receive provider error returns, branch on `error` or related callback params and show a reviewed failure state before or alongside the post-auth redirect handling.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authProviderStateSignals.count > 0
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.authEntrySignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.signInFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.signUpFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.recoveryFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderStateSignals, sourceAudit.authExitSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authCallbackStateSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackStateSignals,
+      sourceAudit.authCallbackStateValidationSignals,
     )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-provider-state-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files hardcode provider-style auth authorize URLs without a `state` parameter.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authProviderStateSignals, 'Auth provider URLs missing state'),
-      suggestedFix: 'When auth flows hand off to an external provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-state-validation-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth callback code reads provider `state` on return but does not show an obvious validation step against a reviewed expected value.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Callback state signal files: ${sourceAudit.authCallbackStateSignals.files.join(', ') || 'none'}`,
+          `Callback state-validation signal files: ${sourceAudit.authCallbackStateValidationSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When reviewed auth callback routes read a returned `state`, compare it against a stored or expected reviewed value before exchanging callback codes or continuing session setup.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authProviderPkceSignals.count > 0
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.authEntrySignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.signInFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.signUpFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.recoveryFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderPkceSignals, sourceAudit.authExitSignals)
+    topology.hasAuthFeature &&
+    sourceAudit.authCallbackStateValidationSignals.count > 0 &&
+    sourceAudit.authCallbackStateStorageSignals.count > 0 &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.authCallbackStateStorageSignals,
+      sourceAudit.authCallbackStateStorageClearSignals,
     )
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-provider-pkce-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files hardcode provider-style OAuth code-flow URLs without a `code_challenge` parameter.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authProviderPkceSignals, 'Auth provider code flows missing PKCE'),
-      suggestedFix: 'When auth flows hand off to an external provider authorize URL with `response_type=code`, include a reviewed PKCE `code_challenge` and verifier instead of hardcoding a bare code flow from client code.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-state-teardown-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Auth callback code appears to validate stored callback `state` but does not show that the stored state key is cleared afterwards.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Callback state-storage signal files: ${sourceAudit.authCallbackStateStorageSignals.files.join(', ') || 'none'}`,
+          `Callback state-clear signal files: ${sourceAudit.authCallbackStateStorageClearSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'After validating returned callback `state`, remove the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && sourceAudit.authProviderNonceSignals.count > 0
-    && (
-      sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.authEntrySignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.signInFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.signUpFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.recoveryFlowSignals)
-      || sourceAuditBucketsOverlap(sourceAudit.authProviderNonceSignals, sourceAudit.authExitSignals)
-    )
+    topology.hasAuthFeature &&
+    topology.gatewayRoutes.some((route) => isSignInLikeRoute(route)) &&
+    (((sourceAudit.authCallbackTokenSignals.count > 0 ||
+      sourceAudit.authCallbackStateSignals.count > 0) &&
+      sourceAudit.authCallbackErrorSignals.count > 0 &&
+      !sourceAuditBucketsOverlap(
+        sourceAudit.authCallbackErrorSignals,
+        sourceAudit.signInRouteSignals,
+      )) ||
+      (sourceAudit.authCallbackExchangeSignals.count > 0 &&
+        sourceAudit.authCallbackExchangeErrorSignals.count > 0 &&
+        !sourceAuditBucketsOverlap(
+          sourceAudit.authCallbackExchangeErrorSignals,
+          sourceAudit.signInRouteSignals,
+        )))
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-provider-nonce-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files hardcode provider-style OIDC id_token URLs without a `nonce` parameter.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authProviderNonceSignals, 'Auth provider id_token flows missing nonce'),
-      suggestedFix: 'When auth flows hand off to an external provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
-    }));
-  }
-
-  if (topology.hasAuthFeature && topology.gatewayRoutes.length === 0 && sourceAudit.authEntrySignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-entry-surface-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Authentication is declared, but the source tree does not show any obvious login, registration, or credential-entry surface.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Auth entry signals: 0',
-        'Gateway routes: none',
-        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Add an explicit login, registration, recovery, or reviewed SSO entry surface before protected routes become the primary way into the app.',
-    }));
-  }
-
-  if (topology.hasAuthFeature && topology.gatewayRoutes.length > 0 && sourceAudit.authEntrySignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-entry-signals-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Authentication is declared and gateway routes exist, but the source tree does not show an obvious sign-in, registration, or credential-entry surface.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Auth entry signals: 0',
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Add a real login, registration, or recovery surface with credential inputs or explicit auth entry actions on the gateway routes.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-entry-return-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message:
+          'Auth callback failure handling exists, but the source tree does not show an obvious path back to the declared sign-in route.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
+          `Callback exchange error-handling files: ${sourceAudit.authCallbackExchangeErrorSignals.files.join(', ') || 'none'}`,
+          `Sign-in route signal files: ${sourceAudit.signInRouteSignals.files.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'When reviewed callback handling or callback session exchange fails, link or redirect users back to the declared sign-in route, such as `/login` or `/sign-in`, instead of leaving the callback failure state isolated.',
+      }),
+    );
   }
 
   if (
-    topology.hasAuthFeature
-    && topology.gatewayRoutes.some(route => isRecoveryLikeRoute(route))
-    && sourceAudit.signInFlowSignals.count > 0
-    && sourceAudit.recoveryRouteSignals.count === 0
+    topology.hasAuthFeature &&
+    (sourceAudit.authCallbackTokenSignals.count > 0 ||
+      sourceAudit.authCallbackErrorSignals.count > 0) &&
+    sourceAudit.authCallbackUrlScrubSignals.count === 0
   ) {
-    findings.push(makeFinding({
-      id: 'source-auth-recovery-route-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Sign-in surfaces exist and a recovery route is declared, but the source tree does not show an obvious path into that recovery flow.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Sign-in flow files: ${sourceAudit.signInFlowSignals.files.join(', ') || 'none'}`,
-        'Recovery route signals: 0',
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Link sign-in users to the declared recovery route, such as `/forgot-password` or `/reset-password`, somewhere in the reviewed auth entry surfaces.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && topology.gatewayRoutes.some(route => isRegistrationLikeRoute(route))
-    && sourceAudit.signInFlowSignals.count > 0
-    && sourceAudit.registrationRouteSignals.count === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-registration-route-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Sign-in surfaces exist and a registration route is declared, but the source tree does not show an obvious path into that registration flow.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Sign-in flow files: ${sourceAudit.signInFlowSignals.files.join(', ') || 'none'}`,
-        'Registration route signals: 0',
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Link sign-in users to the declared registration route, such as `/register` or `/sign-up`, somewhere in the reviewed auth entry surfaces.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && topology.gatewayRoutes.some(route => isSignInLikeRoute(route))
-    && (sourceAudit.signUpFlowSignals.count > 0 || sourceAudit.recoveryFlowSignals.count > 0)
-    && sourceAudit.signInRouteSignals.count === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-signin-route-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Registration or recovery surfaces exist and a sign-in route is declared, but the source tree does not show an obvious path back into sign-in.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Sign-up flow files: ${sourceAudit.signUpFlowSignals.files.join(', ') || 'none'}`,
-        `Recovery flow files: ${sourceAudit.recoveryFlowSignals.files.join(', ') || 'none'}`,
-        'Sign-in route signals: 0',
-        `Gateway routes: ${topology.gatewayRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Link registration and recovery users back to the declared sign-in route, such as `/login` or `/sign-in`, somewhere in the reviewed gateway surfaces.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && topology.primaryRoutes.length > 0
-    && (
-      sourceAudit.signInFlowSignals.count > 0
-      || (
-        sourceAudit.authEntrySignals.count > 0
-        && sourceAudit.signUpFlowSignals.count === 0
-        && sourceAudit.recoveryFlowSignals.count === 0
-      )
-    )
-    && sourceAudit.authProtectedRedirectSignals.count === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-success-redirect-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Authentication entry surfaces exist, but the source tree does not show an obvious transition into the protected app after success.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Auth entry signals: ${sourceAudit.authEntrySignals.count}`,
-        'Protected auth redirects: 0',
-        `Primary routes: ${topology.primaryRoutes.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'After reviewed sign-in, registration, or recovery success, route users into a primary app surface such as `/dashboard`, `/app`, or another protected destination instead of leaving the post-auth transition implicit.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && sourceAudit.authCallbackTokenSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackTokenSignals, sourceAudit.authCallbackErrorSignals)
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-error-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Auth callback code appears to read provider return data without an obvious failure state for provider-denied or callback error returns.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Callback token signal files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
-        `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When reviewed auth callback routes can receive provider error returns, branch on `error` or related callback params and show a reviewed failure state before or alongside the post-auth redirect handling.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && sourceAudit.authCallbackStateSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateSignals, sourceAudit.authCallbackStateValidationSignals)
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-state-validation-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth callback code reads provider `state` on return but does not show an obvious validation step against a reviewed expected value.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Callback state signal files: ${sourceAudit.authCallbackStateSignals.files.join(', ') || 'none'}`,
-        `Callback state-validation signal files: ${sourceAudit.authCallbackStateValidationSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When reviewed auth callback routes read a returned `state`, compare it against a stored or expected reviewed value before exchanging callback codes or continuing session setup.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && sourceAudit.authCallbackStateValidationSignals.count > 0
-    && sourceAudit.authCallbackStateStorageSignals.count > 0
-    && !sourceAuditBucketsOverlap(sourceAudit.authCallbackStateStorageSignals, sourceAudit.authCallbackStateStorageClearSignals)
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-state-teardown-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Auth callback code appears to validate stored callback `state` but does not show that the stored state key is cleared afterwards.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Callback state-storage signal files: ${sourceAudit.authCallbackStateStorageSignals.files.join(', ') || 'none'}`,
-        `Callback state-clear signal files: ${sourceAudit.authCallbackStateStorageClearSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'After validating returned callback `state`, remove the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && topology.gatewayRoutes.some(route => isSignInLikeRoute(route))
-    && (
-      (
-        (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackStateSignals.count > 0)
-        && sourceAudit.authCallbackErrorSignals.count > 0
-        && !sourceAuditBucketsOverlap(sourceAudit.authCallbackErrorSignals, sourceAudit.signInRouteSignals)
-      )
-      || (
-        sourceAudit.authCallbackExchangeSignals.count > 0
-        && sourceAudit.authCallbackExchangeErrorSignals.count > 0
-        && !sourceAuditBucketsOverlap(sourceAudit.authCallbackExchangeErrorSignals, sourceAudit.signInRouteSignals)
-      )
-    )
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-entry-return-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Auth callback failure handling exists, but the source tree does not show an obvious path back to the declared sign-in route.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Callback error-handling signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
-        `Callback exchange error-handling files: ${sourceAudit.authCallbackExchangeErrorSignals.files.join(', ') || 'none'}`,
-        `Sign-in route signal files: ${sourceAudit.signInRouteSignals.files.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'When reviewed callback handling or callback session exchange fails, link or redirect users back to the declared sign-in route, such as `/login` or `/sign-in`, instead of leaving the callback failure state isolated.',
-    }));
-  }
-
-  if (
-    topology.hasAuthFeature
-    && (sourceAudit.authCallbackTokenSignals.count > 0 || sourceAudit.authCallbackErrorSignals.count > 0)
-    && sourceAudit.authCallbackUrlScrubSignals.count === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'source-auth-callback-url-scrub-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Auth callback code appears to read tokens, codes, or provider error params from the URL without scrubbing them back out of browser history.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Callback token signal files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
-        `Callback error signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
-        'Callback URL scrub signals: 0',
-      ],
-      suggestedFix: 'After consuming auth callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-callback-url-scrub-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Auth callback code appears to read tokens, codes, or provider error params from the URL without scrubbing them back out of browser history.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Callback token signal files: ${sourceAudit.authCallbackTokenSignals.files.join(', ') || 'none'}`,
+          `Callback error signal files: ${sourceAudit.authCallbackErrorSignals.files.join(', ') || 'none'}`,
+          'Callback URL scrub signals: 0',
+        ],
+        suggestedFix:
+          'After consuming auth callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
+      }),
+    );
   }
 
   if (sourceAudit.accessibilityIssues.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-accessibility-issues-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files contain unlabeled or non-semantic interactive patterns that should be fixed before runtime verification.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.accessibilityIssues, 'Accessibility labeling issues'),
-      suggestedFix: 'Add explicit labels, semantic interactive elements, and missing alt text so accessibility issues do not accumulate across generated screens.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-accessibility-issues-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files contain unlabeled or non-semantic interactive patterns that should be fixed before runtime verification.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.accessibilityIssues,
+          'Accessibility labeling issues',
+        ),
+        suggestedFix:
+          'Add explicit labels, semantic interactive elements, and missing alt text so accessibility issues do not accumulate across generated screens.',
+      }),
+    );
   }
 
   if (essenceRequiresSkipNav(essence) && sourceAudit.skipNavSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-skip-nav-signals-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'The essence contract requires skip navigation, but the source tree does not show a skip-link signal.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Skip-nav requirement: true',
-        'Skip-nav signals: 0',
-      ],
-      suggestedFix: 'Add a visible-on-focus skip link such as `Skip to content` that targets the main app landmark before shipping the accessible surface.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-skip-nav-signals-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'The essence contract requires skip navigation, but the source tree does not show a skip-link signal.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Skip-nav requirement: true',
+          'Skip-nav signals: 0',
+        ],
+        suggestedFix:
+          'Add a visible-on-focus skip link such as `Skip to content` that targets the main app landmark before shipping the accessible surface.',
+      }),
+    );
   }
 
   if (essenceRequiresSkipNav(essence) && sourceAudit.mainLandmarkSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'source-main-landmark-signals-missing',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'The essence contract requires skip navigation, but the source tree does not show a main landmark for skip-link targeting.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        'Skip-nav requirement: true',
-        'Main landmark signals: 0',
-      ],
-      suggestedFix: 'Add a `<main>` landmark or a container with `role=\"main\"` so skip navigation lands on a clear primary app region.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-main-landmark-signals-missing',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'The essence contract requires skip navigation, but the source tree does not show a main landmark for skip-link targeting.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          'Skip-nav requirement: true',
+          'Main landmark signals: 0',
+        ],
+        suggestedFix:
+          'Add a `<main>` landmark or a container with `role="main"` so skip navigation lands on a clear primary app region.',
+      }),
+    );
   }
 
   if (
-    essenceRequiresSkipNav(essence)
-    && sourceAudit.skipNavTargetIds.length > 0
-    && !sourceAudit.skipNavTargetIds.some((targetId) => sourceAudit.mainLandmarkIds.includes(targetId))
+    essenceRequiresSkipNav(essence) &&
+    sourceAudit.skipNavTargetIds.length > 0 &&
+    !sourceAudit.skipNavTargetIds.some((targetId) => sourceAudit.mainLandmarkIds.includes(targetId))
   ) {
-    findings.push(makeFinding({
-      id: 'source-skip-nav-target-mismatch',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Skip-link targets do not line up with any detected main landmark id in the source tree.',
-      evidence: [
-        `Source files checked: ${sourceAudit.filesChecked}`,
-        `Skip-nav targets: ${sourceAudit.skipNavTargetIds.join(', ')}`,
-        `Main landmark ids: ${sourceAudit.mainLandmarkIds.join(', ') || 'none'}`,
-      ],
-      suggestedFix: 'Point skip-link href values at the id of the primary `<main>` landmark, or add a matching id to the existing main region.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-skip-nav-target-mismatch',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Skip-link targets do not line up with any detected main landmark id in the source tree.',
+        evidence: [
+          `Source files checked: ${sourceAudit.filesChecked}`,
+          `Skip-nav targets: ${sourceAudit.skipNavTargetIds.join(', ')}`,
+          `Main landmark ids: ${sourceAudit.mainLandmarkIds.join(', ') || 'none'}`,
+        ],
+        suggestedFix:
+          'Point skip-link href values at the id of the primary `<main>` landmark, or add a matching id to the existing main region.',
+      }),
+    );
   }
 
   if (sourceAudit.interactionSafetyIssues.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-interaction-safety-issues-present',
-      category: 'Source Audit',
-      severity: 'warn',
-      message: 'Source files contain interaction patterns that can trigger accidental submissions or unsafe form behavior.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.interactionSafetyIssues, 'Interaction safety issues'),
-      suggestedFix: 'Give form buttons explicit types so interactive controls do exactly what the compiled task contract intends.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-interaction-safety-issues-present',
+        category: 'Source Audit',
+        severity: 'warn',
+        message:
+          'Source files contain interaction patterns that can trigger accidental submissions or unsafe form behavior.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.interactionSafetyIssues,
+          'Interaction safety issues',
+        ),
+        suggestedFix:
+          'Give form buttons explicit types so interactive controls do exactly what the compiled task contract intends.',
+      }),
+    );
   }
 
   if (sourceAudit.authInputHintIssues.count > 0) {
-    findings.push(makeFinding({
-      id: 'source-auth-input-hints-missing',
-      category: 'Source Audit',
-      severity: 'info',
-      message: 'Source auth flows are missing explicit autocomplete hints on credential inputs.',
-      evidence: buildSourceAuditEvidence(sourceAudit, sourceAudit.authInputHintIssues, 'Missing auth autocomplete hints'),
-      suggestedFix: 'Add explicit autocomplete values such as `email`, `username`, `current-password`, or `new-password` before auth flows ship.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'source-auth-input-hints-missing',
+        category: 'Source Audit',
+        severity: 'info',
+        message: 'Source auth flows are missing explicit autocomplete hints on credential inputs.',
+        evidence: buildSourceAuditEvidence(
+          sourceAudit,
+          sourceAudit.authInputHintIssues,
+          'Missing auth autocomplete hints',
+        ),
+        suggestedFix:
+          'Add explicit autocomplete values such as `email`, `username`, `current-password`, or `new-password` before auth flows ship.',
+      }),
+    );
   }
 }
 
@@ -2645,33 +3500,41 @@ function appendStyleContractFindings(
   essence: EssenceFile | null,
 ): void {
   if (essenceRequiresFocusVisible(essence) && styleAudit.focusVisibleSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'style-focus-visible-signals-missing',
-      category: 'Style Contract',
-      severity: 'warn',
-      message: 'The essence contract requires visible focus treatment, but the project styles do not show a focus-visible signal.',
-      evidence: [
-        `Style files checked: ${styleAudit.filesChecked}`,
-        'Focus-visible requirement: true',
-        'Focus-visible signals: 0',
-      ],
-      suggestedFix: 'Add a clear `:focus-visible` treatment in the project CSS so keyboard focus remains visible across interactive surfaces.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'style-focus-visible-signals-missing',
+        category: 'Style Contract',
+        severity: 'warn',
+        message:
+          'The essence contract requires visible focus treatment, but the project styles do not show a focus-visible signal.',
+        evidence: [
+          `Style files checked: ${styleAudit.filesChecked}`,
+          'Focus-visible requirement: true',
+          'Focus-visible signals: 0',
+        ],
+        suggestedFix:
+          'Add a clear `:focus-visible` treatment in the project CSS so keyboard focus remains visible across interactive surfaces.',
+      }),
+    );
   }
 
   if (essenceRequiresReducedMotion(essence) && styleAudit.reducedMotionSignals.count === 0) {
-    findings.push(makeFinding({
-      id: 'style-reduced-motion-signals-missing',
-      category: 'Style Contract',
-      severity: 'info',
-      message: 'The essence contract requires reduced-motion support, but the project styles do not show a reduced-motion signal.',
-      evidence: [
-        `Style files checked: ${styleAudit.filesChecked}`,
-        'Reduced-motion requirement: true',
-        'Reduced-motion signals: 0',
-      ],
-      suggestedFix: 'Add a `prefers-reduced-motion: reduce` style path or an equivalent reviewed reduce-motion contract so motion-heavy surfaces can soften or disable non-essential animation.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'style-reduced-motion-signals-missing',
+        category: 'Style Contract',
+        severity: 'info',
+        message:
+          'The essence contract requires reduced-motion support, but the project styles do not show a reduced-motion signal.',
+        evidence: [
+          `Style files checked: ${styleAudit.filesChecked}`,
+          'Reduced-motion requirement: true',
+          'Reduced-motion signals: 0',
+        ],
+        suggestedFix:
+          'Add a `prefers-reduced-motion: reduce` style path or an equivalent reviewed reduce-motion contract so motion-heavy surfaces can soften or disable non-essential animation.',
+      }),
+    );
   }
 }
 
@@ -2683,14 +3546,16 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   const runtimeAudit = emptyRuntimeAudit();
 
   if (!existsSync(essencePath)) {
-    findings.push(makeFinding({
-      id: 'essence-missing',
-      category: 'Project Contract',
-      severity: 'error',
-      message: 'No decantr.essence.json file was found.',
-      evidence: [essencePath],
-      suggestedFix: 'Run `decantr init` or scaffold the project again so the essence exists.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'essence-missing',
+        category: 'Project Contract',
+        severity: 'error',
+        message: 'No decantr.essence.json file was found.',
+        evidence: [essencePath],
+        suggestedFix: 'Run `decantr init` or scaffold the project again so the essence exists.',
+      }),
+    );
 
     return {
       $schema: VERIFICATION_SCHEMA_URLS.projectAudit,
@@ -2719,28 +3584,32 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   try {
     essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
   } catch (error) {
-    findings.push(makeFinding({
-      id: 'essence-parse-error',
-      category: 'Project Contract',
-      severity: 'error',
-      message: `Failed to parse decantr.essence.json: ${(error as Error).message}`,
-      evidence: [essencePath],
-      suggestedFix: 'Repair the essence JSON before auditing the project.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'essence-parse-error',
+        category: 'Project Contract',
+        severity: 'error',
+        message: `Failed to parse decantr.essence.json: ${(error as Error).message}`,
+        evidence: [essencePath],
+        suggestedFix: 'Repair the essence JSON before auditing the project.',
+      }),
+    );
   }
 
   if (essence) {
     const validation = validateEssence(essence);
     if (!validation.valid) {
       for (const issue of validation.errors) {
-        findings.push(makeFinding({
-          id: 'essence-validation',
-          category: 'Schema Validation',
-          severity: 'error',
-          message: issue,
-          evidence: [essencePath],
-          suggestedFix: 'Resolve the schema violation and rerun `decantr validate`.',
-        }));
+        findings.push(
+          makeFinding({
+            id: 'essence-validation',
+            category: 'Schema Validation',
+            severity: 'error',
+            message: issue,
+            evidence: [essencePath],
+            suggestedFix: 'Resolve the schema violation and rerun `decantr validate`.',
+          }),
+        );
       }
     }
 
@@ -2753,69 +3622,88 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   appendTopologyFindings(findings, essence, reviewPack);
 
   if (!packManifest) {
-    findings.push(makeFinding({
-      id: 'pack-manifest-missing',
-      category: 'Execution Packs',
-      severity: 'warn',
-      message: 'Compiled execution pack manifest is missing.',
-      evidence: [join(projectRoot, '.decantr', 'context', 'pack-manifest.json')],
-      suggestedFix: 'Run `decantr refresh` to regenerate scaffold, review, mutation, section, and page packs.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'pack-manifest-missing',
+        category: 'Execution Packs',
+        severity: 'warn',
+        message: 'Compiled execution pack manifest is missing.',
+        evidence: [join(projectRoot, '.decantr', 'context', 'pack-manifest.json')],
+        suggestedFix:
+          'Run `decantr refresh` to regenerate scaffold, review, mutation, section, and page packs.',
+      }),
+    );
   } else {
     if (!packManifest.scaffold) {
-      findings.push(makeFinding({
-        id: 'scaffold-pack-missing',
-        category: 'Execution Packs',
-        severity: 'warn',
-        message: 'Compiled scaffold pack is missing from the manifest.',
-        evidence: ['pack-manifest.json'],
-        suggestedFix: 'Regenerate the context bundle with `decantr refresh`.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'scaffold-pack-missing',
+          category: 'Execution Packs',
+          severity: 'warn',
+          message: 'Compiled scaffold pack is missing from the manifest.',
+          evidence: ['pack-manifest.json'],
+          suggestedFix: 'Regenerate the context bundle with `decantr refresh`.',
+        }),
+      );
     }
     if (!packManifest.review) {
-      findings.push(makeFinding({
-        id: 'review-pack-missing',
-        category: 'Execution Packs',
-        severity: 'warn',
-        message: 'Compiled review pack is missing from the manifest.',
-        evidence: ['pack-manifest.json'],
-        suggestedFix: 'Regenerate the context bundle so critique tasks have a compiled review contract.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'review-pack-missing',
+          category: 'Execution Packs',
+          severity: 'warn',
+          message: 'Compiled review pack is missing from the manifest.',
+          evidence: ['pack-manifest.json'],
+          suggestedFix:
+            'Regenerate the context bundle so critique tasks have a compiled review contract.',
+        }),
+      );
     }
     if ((packManifest.mutations ?? []).length === 0) {
-      findings.push(makeFinding({
-        id: 'mutation-packs-missing',
-        category: 'Execution Packs',
-        severity: 'info',
-        message: 'No mutation packs were found in the manifest.',
-        evidence: ['pack-manifest.json'],
-        suggestedFix: 'Run `decantr refresh` to regenerate mutation task packs.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'mutation-packs-missing',
+          category: 'Execution Packs',
+          severity: 'info',
+          message: 'No mutation packs were found in the manifest.',
+          evidence: ['pack-manifest.json'],
+          suggestedFix: 'Run `decantr refresh` to regenerate mutation task packs.',
+        }),
+      );
     }
   }
 
   if (!reviewPack) {
-    findings.push(makeFinding({
-      id: 'review-pack-file-missing',
-      category: 'Review Contract',
-      severity: 'warn',
-      message: 'The compiled review pack file is missing.',
-      evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
-      suggestedFix: 'Regenerate context with `decantr refresh`, or hydrate the hosted review contract with `decantr registry get-pack review --write-context`, so critique consumers can anchor findings to the compiled review contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'review-pack-file-missing',
+        category: 'Review Contract',
+        severity: 'warn',
+        message: 'The compiled review pack file is missing.',
+        evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
+        suggestedFix:
+          'Regenerate context with `decantr refresh`, or hydrate the hosted review contract with `decantr registry get-pack review --write-context`, so critique consumers can anchor findings to the compiled review contract.',
+      }),
+    );
   }
 
   const sourceAudit = auditProjectSourceTree(projectRoot);
   const styleAudit = auditProjectStyleContracts(projectRoot);
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
-  appendRuntimeAuditFindings(findings, checkedRuntimeAudit, projectRoot, summarizeTopology(essence, reviewPack), sourceAudit);
+  appendRuntimeAuditFindings(
+    findings,
+    checkedRuntimeAudit,
+    projectRoot,
+    summarizeTopology(essence, reviewPack),
+    sourceAudit,
+  );
   appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack);
   appendStyleContractFindings(findings, styleAudit, essence);
 
   const summary = {
-    errorCount: findings.filter(finding => finding.severity === 'error').length,
-    warnCount: findings.filter(finding => finding.severity === 'warn').length,
-    infoCount: findings.filter(finding => finding.severity === 'info').length,
+    errorCount: findings.filter((finding) => finding.severity === 'error').length,
+    warnCount: findings.filter((finding) => finding.severity === 'warn').length,
+    infoCount: findings.filter((finding) => finding.severity === 'info').length,
     essenceVersion: essence ? String(essence.version) : null,
     reviewPackPresent: Boolean(reviewPack),
     packManifestPresent: Boolean(packManifest),
@@ -2840,8 +3728,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
 function buildDecoratorInventory(treatmentsCss: string): string[] {
   const decoratorMatches = treatmentsCss.match(/\.([\w-]+)\s*\{/g) || [];
   return decoratorMatches
-    .map(match => match.slice(1).replace(/\s*\{$/, ''))
-    .filter(name => !name.startsWith('d-') && !PERSONALITY_UTILS.includes(name));
+    .map((match) => match.slice(1).replace(/\s*\{$/, ''))
+    .filter((name) => !name.startsWith('d-') && !PERSONALITY_UTILS.includes(name));
 }
 
 function resolveFocusAreas(reviewPack: ReviewExecutionPack | null): string[] {
@@ -2853,7 +3741,7 @@ function resolveSeverityFromChecks(
   fallback: VerificationSeverity,
   checkIds: string[],
 ): VerificationSeverity {
-  const match = reviewPack?.successChecks.find(check => checkIds.includes(check.id));
+  const match = reviewPack?.successChecks.find((check) => checkIds.includes(check.id));
   return match?.severity ?? fallback;
 }
 
@@ -2863,7 +3751,10 @@ function findHardcodedColors(code: string): string[] {
 }
 
 function findUtilityFrameworkSignals(code: string): string[] {
-  const matches = code.match(/\b(?:bg|text|border|shadow|rounded|px|py|mx|my|gap|grid-cols|col-span|row-span|sm|md|lg|xl|hover):[-\w/.[\]]+/g) ?? [];
+  const matches =
+    code.match(
+      /\b(?:bg|text|border|shadow|rounded|px|py|mx|my|gap|grid-cols|col-span|row-span|sm|md|lg|xl|hover):[-\w/.[\]]+/g,
+    ) ?? [];
   return [...new Set(matches)];
 }
 
@@ -2874,12 +3765,16 @@ function countComponentStyleTagSignals(code: string): number {
 }
 
 function countCommandPaletteSignals(code: string): number {
-  const matches = code.match(/\b(?:commandpalette|command palette|cmd\+k|⌘k|openCommandPalette|setCommandPaletteOpen|paletteOpen|paletteTrigger)\b/gi) ?? [];
+  const matches =
+    code.match(
+      /\b(?:commandpalette|command palette|cmd\+k|⌘k|openCommandPalette|setCommandPaletteOpen|paletteOpen|paletteTrigger)\b/gi,
+    ) ?? [];
   return matches.length;
 }
 
 function countKeyboardShortcutSignals(code: string): number {
-  const matches = code.match(/\b(?:keydown|keyup|metaKey|ctrlKey|altKey|shiftKey|hotkey|shortcut)\b/gi) ?? [];
+  const matches =
+    code.match(/\b(?:keydown|keyup|metaKey|ctrlKey|altKey|shiftKey|hotkey|shortcut)\b/gi) ?? [];
   return matches.length;
 }
 
@@ -2991,8 +3886,9 @@ function getJsxAttribute(
   attributes: ts.JsxAttributes,
   ...names: string[]
 ): ts.JsxAttribute | undefined {
-  return attributes.properties.find((property): property is ts.JsxAttribute =>
-    ts.isJsxAttribute(property) && isPropertyNamed(property.name, ...names)
+  return attributes.properties.find(
+    (property): property is ts.JsxAttribute =>
+      ts.isJsxAttribute(property) && isPropertyNamed(property.name, ...names),
   );
 }
 
@@ -3035,7 +3931,7 @@ function getJsxTextContent(node: ts.Node): string {
     return '';
   }
   if (ts.isJsxElement(node) || ts.isJsxFragment(node)) {
-    return node.children.map(child => getJsxTextContent(child)).join('');
+    return node.children.map((child) => getJsxTextContent(child)).join('');
   }
 
   let text = '';
@@ -3047,8 +3943,8 @@ function getJsxTextContent(node: ts.Node): string {
 
 function hasAccessibleLabel(attributes: ts.JsxAttributes, textContent: string): boolean {
   return Boolean(
-    getJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title')
-    || textContent.trim().length > 0,
+    getJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title') ||
+      textContent.trim().length > 0,
   );
 }
 
@@ -3063,7 +3959,9 @@ function collectLabelForIds(root: ts.Node): Set<string> {
     if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
       const tagName = getJsxTagName(node);
       if (tagName === 'label') {
-        const htmlForValue = getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'htmlFor', 'for'));
+        const htmlForValue = getJsxAttributeLiteralValue(
+          getJsxAttribute(node.attributes, 'htmlFor', 'for'),
+        );
         if (htmlForValue) {
           ids.add(htmlForValue);
         }
@@ -3104,12 +4002,16 @@ function isLabelableFormControl(tagName: string | null, attributes: ts.JsxAttrib
   if (tagName === 'select' || tagName === 'textarea') return true;
   if (tagName !== 'input') return false;
 
-  const inputType = (getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text').toLowerCase();
+  const inputType = (
+    getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text'
+  ).toLowerCase();
   return !['hidden', 'submit', 'reset', 'button'].includes(inputType);
 }
 
 function getNormalizedInputType(attributes: ts.JsxAttributes): string {
-  return (getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text').trim().toLowerCase();
+  return (getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text')
+    .trim()
+    .toLowerCase();
 }
 
 function hasFormControlLabel(
@@ -3153,7 +4055,9 @@ function valueContainsInsecureRemoteAsset(value: string | null): boolean {
 function isInsecureExternalImage(attributes: ts.JsxAttributes): boolean {
   const srcValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'src'));
   const srcSetValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'srcSet', 'srcset'));
-  return valueContainsInsecureRemoteAsset(srcValue) || valueContainsInsecureRemoteAsset(srcSetValue);
+  return (
+    valueContainsInsecureRemoteAsset(srcValue) || valueContainsInsecureRemoteAsset(srcSetValue)
+  );
 }
 
 function isInsecureExternalUrl(value: string | null): boolean {
@@ -3170,7 +4074,9 @@ function isImageSourceLikeTag(tagName: string | null): boolean {
 
 function isDialogLikeElement(attributes: ts.JsxAttributes, tagName: string | null): boolean {
   if (tagName === 'dialog') return true;
-  const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'))?.trim().toLowerCase();
+  const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'))
+    ?.trim()
+    .toLowerCase();
   return roleValue === 'dialog' || roleValue === 'alertdialog';
 }
 
@@ -3182,13 +4088,17 @@ function hasDialogModalHint(attributes: ts.JsxAttributes, tagName: string | null
   if (tagName === 'dialog' && getJsxAttribute(attributes, 'open')) {
     return true;
   }
-  const modalValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'aria-modal'))?.trim().toLowerCase();
+  const modalValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'aria-modal'))
+    ?.trim()
+    .toLowerCase();
   return modalValue === 'true';
 }
 
 function isNavigationLandmark(tagName: string | null, attributes: ts.JsxAttributes): boolean {
   if (tagName === 'nav') return true;
-  const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'))?.trim().toLowerCase();
+  const roleValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'role'))
+    ?.trim()
+    .toLowerCase();
   return roleValue === 'navigation';
 }
 
@@ -3199,10 +4109,12 @@ function hasNavigationLabel(attributes: ts.JsxAttributes): boolean {
 function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
   const actionValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'action'));
   const normalized = actionValue?.trim().toLowerCase() ?? '';
-  return /^http:\/\//i.test(normalized)
-    || /^javascript:/i.test(normalized)
-    || /^mailto:/i.test(normalized)
-    || /^data:/i.test(normalized);
+  return (
+    /^http:\/\//i.test(normalized) ||
+    /^javascript:/i.test(normalized) ||
+    /^mailto:/i.test(normalized) ||
+    /^data:/i.test(normalized)
+  );
 }
 
 function isAuthLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
@@ -3211,11 +4123,16 @@ function isAuthLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
     return true;
   }
 
-  const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
+  const autocompleteValue = getJsxAttributeLiteralValue(
+    getJsxAttribute(attributes, 'autocomplete', 'autoComplete'),
+  )
     ?.trim()
     .toLowerCase();
-  return ['email', 'username', 'current-password', 'new-password', 'one-time-code'].includes(autocompleteValue ?? '')
-    || isOtpLikeInputAttributes(attributes);
+  return (
+    ['email', 'username', 'current-password', 'new-password', 'one-time-code'].includes(
+      autocompleteValue ?? '',
+    ) || isOtpLikeInputAttributes(attributes)
+  );
 }
 
 function getInputIdentityText(attributes: ts.JsxAttributes): string {
@@ -3234,12 +4151,16 @@ function getInputIdentityText(attributes: ts.JsxAttributes): string {
 function isOtpLikeInputAttributes(attributes: ts.JsxAttributes): boolean {
   const identityText = getInputIdentityText(attributes);
   if (!identityText) return false;
-  return /(?:one[- ]time|otp|verification(?:[-_ ]?code)?|authenticator|2fa|mfa|totp|passcode)/i.test(identityText);
+  return /(?:one[- ]time|otp|verification(?:[-_ ]?code)?|authenticator|2fa|mfa|totp|passcode)/i.test(
+    identityText,
+  );
 }
 
 function hasOtpAutocompleteIssue(attributes: ts.JsxAttributes): boolean {
   if (!isOtpLikeInputAttributes(attributes)) return false;
-  const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
+  const autocompleteValue = getJsxAttributeLiteralValue(
+    getJsxAttribute(attributes, 'autocomplete', 'autoComplete'),
+  )
     ?.trim()
     .toLowerCase();
   return autocompleteValue !== 'one-time-code';
@@ -3247,22 +4168,25 @@ function hasOtpAutocompleteIssue(attributes: ts.JsxAttributes): boolean {
 
 function hasAuthInputTypeMismatch(attributes: ts.JsxAttributes): boolean {
   const inputType = getNormalizedInputType(attributes);
-  const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
+  const autocompleteValue = getJsxAttributeLiteralValue(
+    getJsxAttribute(attributes, 'autocomplete', 'autoComplete'),
+  )
     ?.trim()
     .toLowerCase();
   const nameValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'name'))
     ?.trim()
     .toLowerCase();
 
-  const looksLikePasswordField = autocompleteValue === 'current-password'
-    || autocompleteValue === 'new-password'
-    || /password|passcode|pin/.test(nameValue ?? '');
+  const looksLikePasswordField =
+    autocompleteValue === 'current-password' ||
+    autocompleteValue === 'new-password' ||
+    /password|passcode|pin/.test(nameValue ?? '');
   if (looksLikePasswordField && inputType !== 'password') {
     return true;
   }
 
-  const looksLikeEmailField = autocompleteValue === 'email'
-    || /(?:^|[-_])(email|e-mail)(?:$|[-_])/.test(nameValue ?? '');
+  const looksLikeEmailField =
+    autocompleteValue === 'email' || /(?:^|[-_])(email|e-mail)(?:$|[-_])/.test(nameValue ?? '');
   if (looksLikeEmailField && inputType !== 'email') {
     return true;
   }
@@ -3272,7 +4196,9 @@ function hasAuthInputTypeMismatch(attributes: ts.JsxAttributes): boolean {
 
 function hasAuthAutocompleteSemanticMismatch(attributes: ts.JsxAttributes): boolean {
   const inputType = getNormalizedInputType(attributes);
-  const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'autocomplete', 'autoComplete'))
+  const autocompleteValue = getJsxAttributeLiteralValue(
+    getJsxAttribute(attributes, 'autocomplete', 'autoComplete'),
+  )
     ?.trim()
     .toLowerCase();
 
@@ -3333,7 +4259,9 @@ function jsxTreeContainsAuthInput(node: ts.Node): boolean {
 
 function hasInsecureAuthFormMethod(node: ts.JsxElement): boolean {
   if (!jsxTreeContainsAuthInput(node)) return false;
-  const methodValue = getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'method'));
+  const methodValue = getJsxAttributeLiteralValue(
+    getJsxAttribute(node.openingElement.attributes, 'method'),
+  );
   if (!methodValue) return true;
   return methodValue.trim().toLowerCase() === 'get';
 }
@@ -3347,7 +4275,9 @@ function jsxTreeHasSubmitControl(node: ts.Node): boolean {
     if (ts.isJsxSelfClosingElement(current)) {
       const tagName = getJsxTagName(current);
       if (tagName === 'button') {
-        const typeValue = getJsxAttributeLiteralValue(getJsxAttribute(current.attributes, 'type'))?.trim().toLowerCase();
+        const typeValue = getJsxAttributeLiteralValue(getJsxAttribute(current.attributes, 'type'))
+          ?.trim()
+          .toLowerCase();
         if (!typeValue || typeValue === 'submit') {
           found = true;
         }
@@ -3364,7 +4294,11 @@ function jsxTreeHasSubmitControl(node: ts.Node): boolean {
     if (ts.isJsxElement(current)) {
       const tagName = getJsxTagName(current.openingElement);
       if (tagName === 'button') {
-        const typeValue = getJsxAttributeLiteralValue(getJsxAttribute(current.openingElement.attributes, 'type'))?.trim().toLowerCase();
+        const typeValue = getJsxAttributeLiteralValue(
+          getJsxAttribute(current.openingElement.attributes, 'type'),
+        )
+          ?.trim()
+          .toLowerCase();
         if (!typeValue || typeValue === 'submit') {
           found = true;
           return;
@@ -3498,7 +4432,9 @@ function getObjectLiteralBooleanPropertyValue(
   return null;
 }
 
-function collectNamedFunctionLikeDeclarations(root: ts.Node): Map<string, ts.FunctionLikeDeclarationBase> {
+function collectNamedFunctionLikeDeclarations(
+  root: ts.Node,
+): Map<string, ts.FunctionLikeDeclarationBase> {
   const declarations = new Map<string, ts.FunctionLikeDeclarationBase>();
 
   const visit = (node: ts.Node): void => {
@@ -3519,9 +4455,14 @@ function collectNamedFunctionLikeDeclarations(root: ts.Node): Map<string, ts.Fun
   return declarations;
 }
 
-const namedFunctionLikeDeclarationCache = new WeakMap<ts.SourceFile, Map<string, ts.FunctionLikeDeclarationBase>>();
+const namedFunctionLikeDeclarationCache = new WeakMap<
+  ts.SourceFile,
+  Map<string, ts.FunctionLikeDeclarationBase>
+>();
 
-function getCachedNamedFunctionLikeDeclarations(sourceFile: ts.SourceFile): Map<string, ts.FunctionLikeDeclarationBase> {
+function getCachedNamedFunctionLikeDeclarations(
+  sourceFile: ts.SourceFile,
+): Map<string, ts.FunctionLikeDeclarationBase> {
   const cached = namedFunctionLikeDeclarationCache.get(sourceFile);
   if (cached) return cached;
   const declarations = collectNamedFunctionLikeDeclarations(sourceFile);
@@ -3540,10 +4481,10 @@ function collectNamedExpressionInitializers(root: ts.Node): Map<string, ts.Expre
     if (ts.isVariableDeclaration(node) && ts.isArrayBindingPattern(node.name) && node.initializer) {
       const firstElement = node.name.elements[0];
       if (
-        firstElement
-        && !ts.isOmittedExpression(firstElement)
-        && ts.isBindingElement(firstElement)
-        && ts.isIdentifier(firstElement.name)
+        firstElement &&
+        !ts.isOmittedExpression(firstElement) &&
+        ts.isBindingElement(firstElement) &&
+        ts.isIdentifier(firstElement.name)
       ) {
         initializers.set(firstElement.name.text, node.initializer);
       }
@@ -3580,7 +4521,8 @@ function collectNamedPropertyAliases(root: ts.Node): Map<string, NamedPropertyAl
   ): void => {
     for (const element of pattern.elements) {
       if (element.dotDotDotToken) continue;
-      const propertyName = getPropertyNameText(element.propertyName) ?? getPropertyNameText(element.name);
+      const propertyName =
+        getPropertyNameText(element.propertyName) ?? getPropertyNameText(element.name);
       if (!propertyName) continue;
       const nextPath = [...propertyPath, propertyName];
       if (ts.isIdentifier(element.name)) {
@@ -3594,7 +4536,11 @@ function collectNamedPropertyAliases(root: ts.Node): Map<string, NamedPropertyAl
   };
 
   const visit = (node: ts.Node): void => {
-    if (ts.isVariableDeclaration(node) && ts.isObjectBindingPattern(node.name) && node.initializer) {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isObjectBindingPattern(node.name) &&
+      node.initializer
+    ) {
       collectFromBindingPattern(node.name, node.initializer, []);
     }
 
@@ -3636,16 +4582,14 @@ function getFunctionLikeReturnExpressions(node: ts.FunctionLikeDeclarationBase):
   const expressions: ts.Expression[] = [];
   const visit = (current: ts.Node): void => {
     if (
-      current !== body
-      && (
-        ts.isFunctionDeclaration(current)
-        || ts.isFunctionExpression(current)
-        || ts.isArrowFunction(current)
-        || ts.isMethodDeclaration(current)
-        || ts.isGetAccessorDeclaration(current)
-        || ts.isSetAccessorDeclaration(current)
-        || ts.isConstructorDeclaration(current)
-      )
+      current !== body &&
+      (ts.isFunctionDeclaration(current) ||
+        ts.isFunctionExpression(current) ||
+        ts.isArrowFunction(current) ||
+        ts.isMethodDeclaration(current) ||
+        ts.isGetAccessorDeclaration(current) ||
+        ts.isSetAccessorDeclaration(current) ||
+        ts.isConstructorDeclaration(current))
     ) {
       return;
     }
@@ -3801,8 +4745,20 @@ function resolveObjectLiteralExpression(
 ): ResolvedObjectLiteralExpression | null {
   if (!expression) return null;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return resolveObjectLiteralExpression(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return resolveObjectLiteralExpression(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
   }
 
   if (ts.isObjectLiteralExpression(expression)) {
@@ -3814,7 +4770,14 @@ function resolveObjectLiteralExpression(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = resolveObjectLiteralExpression(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+      const result = resolveObjectLiteralExpression(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
@@ -3941,7 +4904,12 @@ function resolveTrackedOpenRedirectFunctionLike(
     return { functionLike: directFunctionLike, namedExpressions };
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
     return resolveTrackedOpenRedirectFunctionLike(
       expression.expression,
       sourceFile,
@@ -4074,20 +5042,33 @@ function functionLikeReferencesOrigin(node: ts.FunctionLikeDeclarationBase): boo
 }
 
 function isAddEventListenerCall(node: CallLikeExpression): boolean {
-  return (ts.isIdentifier(node.expression) && node.expression.text === 'addEventListener')
-    || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'addEventListener'));
+  return (
+    (ts.isIdentifier(node.expression) && node.expression.text === 'addEventListener') ||
+    (ts.isPropertyAccessExpression(node.expression) &&
+      isPropertyNamed(node.expression.name, 'addEventListener'))
+  );
 }
 
 function isCookieMutationSetCall(node: CallLikeExpression): boolean {
-  if (!ts.isPropertyAccessExpression(node.expression) || !isPropertyNamed(node.expression.name, 'set')) {
+  if (
+    !ts.isPropertyAccessExpression(node.expression) ||
+    !isPropertyNamed(node.expression.name, 'set')
+  ) {
     return false;
   }
 
-  return (ts.isIdentifier(node.expression.expression) && ['Cookies', 'cookieStore', 'cookies'].includes(node.expression.expression.text))
-    || (ts.isPropertyAccessExpression(node.expression.expression) && isPropertyNamed(node.expression.expression.name, 'cookies', 'cookieStore'));
+  return (
+    (ts.isIdentifier(node.expression.expression) &&
+      ['Cookies', 'cookieStore', 'cookies'].includes(node.expression.expression.text)) ||
+    (ts.isPropertyAccessExpression(node.expression.expression) &&
+      isPropertyNamed(node.expression.expression.name, 'cookies', 'cookieStore'))
+  );
 }
 
-function expressionLooksLikeAuthCookieName(node: ts.Expression | undefined, sourceFile: ts.SourceFile): boolean {
+function expressionLooksLikeAuthCookieName(
+  node: ts.Expression | undefined,
+  sourceFile: ts.SourceFile,
+): boolean {
   if (!node) return false;
   if (isAuthStorageKeyLiteral(node)) return true;
   return hasAuthCredentialText(node, sourceFile);
@@ -4131,9 +5112,9 @@ function cookieHeaderStringLooksAuthLike(value: string): boolean {
 }
 
 function cookieHeaderStringHasHardening(value: string): boolean {
-  return /;\s*httponly\b/i.test(value)
-    && /;\s*secure\b/i.test(value)
-    && /;\s*samesite=/i.test(value);
+  return (
+    /;\s*httponly\b/i.test(value) && /;\s*secure\b/i.test(value) && /;\s*samesite=/i.test(value)
+  );
 }
 
 function collectCookieHeaderStrings(expression: ts.Expression | undefined): string[] {
@@ -4142,7 +5123,7 @@ function collectCookieHeaderStrings(expression: ts.Expression | undefined): stri
   if (literal !== null) return [literal];
   if (ts.isArrayLiteralExpression(expression)) {
     return expression.elements
-      .map((element) => ts.isExpression(element) ? getExpressionLiteralValue(element) : null)
+      .map((element) => (ts.isExpression(element) ? getExpressionLiteralValue(element) : null))
       .filter((value): value is string => value !== null);
   }
   return [];
@@ -4168,13 +5149,15 @@ type CallLikeExpression = ts.CallExpression | ts.CallChain;
 
 function isMemberAccessExpression(
   node: ts.Node | undefined,
-): node is ts.PropertyAccessExpression | ts.PropertyAccessChain | ts.ElementAccessExpression | ts.ElementAccessChain {
+): node is
+  | ts.PropertyAccessExpression
+  | ts.PropertyAccessChain
+  | ts.ElementAccessExpression
+  | ts.ElementAccessChain {
   return isPropertyLikeAccessExpression(node) || isElementLikeAccessExpression(node);
 }
 
-function isCallLikeExpression(
-  node: ts.Node | undefined,
-): node is CallLikeExpression {
+function isCallLikeExpression(node: ts.Node | undefined): node is CallLikeExpression {
   return Boolean(node && (ts.isCallExpression(node) || ts.isCallChain(node)));
 }
 
@@ -4191,37 +5174,50 @@ function isMemberAccessNamed(node: ts.Node | undefined, ...names: string[]): boo
 
 function isLocationObjectExpression(expression: ts.Expression): boolean {
   return (
-    (ts.isIdentifier(expression) && expression.text === 'location')
-    || (
-      (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
-      && ts.isIdentifier(expression.expression)
-      && ['window', 'globalThis', 'document', 'self', 'parent', 'top'].includes(expression.expression.text)
-      && isMemberAccessNamed(expression, 'location')
-    )
+    (ts.isIdentifier(expression) && expression.text === 'location') ||
+    ((ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) &&
+      ts.isIdentifier(expression.expression) &&
+      ['window', 'globalThis', 'document', 'self', 'parent', 'top'].includes(
+        expression.expression.text,
+      ) &&
+      isMemberAccessNamed(expression, 'location'))
   );
 }
 
 function isLocationAssignmentTarget(expression: ts.Expression): boolean {
   return (
-    isLocationObjectExpression(expression)
-    || (
-      (ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression))
-      && isLocationObjectExpression(expression.expression)
-      && isMemberAccessNamed(expression, 'href')
-    )
+    isLocationObjectExpression(expression) ||
+    ((ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) &&
+      isLocationObjectExpression(expression.expression) &&
+      isMemberAccessNamed(expression, 'href'))
   );
 }
 
 function isFetchLikeCall(node: CallLikeExpression): boolean {
-  return (ts.isIdentifier(node.expression) && node.expression.text === 'fetch')
-    || (ts.isPropertyAccessExpression(node.expression) && isPropertyNamed(node.expression.name, 'fetch'));
+  return (
+    (ts.isIdentifier(node.expression) && node.expression.text === 'fetch') ||
+    (ts.isPropertyAccessExpression(node.expression) &&
+      isPropertyNamed(node.expression.name, 'fetch'))
+  );
 }
 
 function isAxiosLikeCall(node: CallLikeExpression): boolean {
   if (!ts.isPropertyAccessExpression(node.expression)) return false;
-  return ts.isIdentifier(node.expression.expression)
-    && node.expression.expression.text === 'axios'
-    && isPropertyNamed(node.expression.name, 'get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'request');
+  return (
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'axios' &&
+    isPropertyNamed(
+      node.expression.name,
+      'get',
+      'post',
+      'put',
+      'patch',
+      'delete',
+      'head',
+      'options',
+      'request',
+    )
+  );
 }
 
 function isAxiosConfigCall(node: CallLikeExpression): boolean {
@@ -4229,8 +5225,10 @@ function isAxiosConfigCall(node: CallLikeExpression): boolean {
 }
 
 function isRealtimeTransportConstructor(node: ts.NewExpression): boolean {
-  return ts.isIdentifier(node.expression)
-    && (node.expression.text === 'WebSocket' || node.expression.text === 'EventSource');
+  return (
+    ts.isIdentifier(node.expression) &&
+    (node.expression.text === 'WebSocket' || node.expression.text === 'EventSource')
+  );
 }
 
 function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
@@ -4238,11 +5236,13 @@ function hasPlaceholderNavigationTarget(attributes: ts.JsxAttributes): boolean {
   if (!targetValue) return false;
 
   const normalized = targetValue.trim().toLowerCase();
-  return normalized === '#'
-    || normalized === '/#'
-    || normalized === 'javascript:'
-    || normalized === 'javascript:void(0)'
-    || normalized === 'javascript:void(0);';
+  return (
+    normalized === '#' ||
+    normalized === '/#' ||
+    normalized === 'javascript:' ||
+    normalized === 'javascript:void(0)' ||
+    normalized === 'javascript:void(0);'
+  );
 }
 
 function isExternalUrl(value: string | null): boolean {
@@ -4264,9 +5264,13 @@ function parseExternalUrl(value: string | null): URL | null {
 function isProviderAuthorizeUrl(url: URL): boolean {
   const hostAndPath = `${url.hostname}${url.pathname}`.toLowerCase();
   const hasAuthorizeLikePath = /(?:oauth|authorize|openid|sso|login\/oauth)/i.test(hostAndPath);
-  const hasProviderQuery = ['client_id', 'redirect_uri', 'response_type', 'scope'].some((param) => url.searchParams.has(param));
-  return (hasAuthorizeLikePath && hasProviderQuery)
-    || (url.searchParams.has('client_id') && url.searchParams.has('redirect_uri'));
+  const hasProviderQuery = ['client_id', 'redirect_uri', 'response_type', 'scope'].some((param) =>
+    url.searchParams.has(param),
+  );
+  return (
+    (hasAuthorizeLikePath && hasProviderQuery) ||
+    (url.searchParams.has('client_id') && url.searchParams.has('redirect_uri'))
+  );
 }
 
 function isAuthProviderUrlMissingState(value: string | null): boolean {
@@ -4334,9 +5338,11 @@ function isDocumentObject(node: ts.Expression): boolean {
 }
 
 function isCookiePropertyAccess(node: ts.Expression): boolean {
-  return ts.isPropertyAccessExpression(node)
-    && isDocumentObject(node.expression)
-    && isPropertyNamed(node.name, 'cookie');
+  return (
+    ts.isPropertyAccessExpression(node) &&
+    isDocumentObject(node.expression) &&
+    isPropertyNamed(node.name, 'cookie')
+  );
 }
 
 function hasAuthCredentialText(node: ts.Node, sourceFile: ts.SourceFile): boolean {
@@ -4360,8 +5366,8 @@ function isAuthorizationHeaderName(node: ts.Node | undefined): boolean {
 function isAuthorizationHeaderAccess(node: ts.Expression | undefined): boolean {
   if (!node) return false;
   return (
-    (ts.isPropertyAccessExpression(node) && isAuthorizationHeaderName(node.name))
-    || (ts.isElementAccessExpression(node) && isAuthorizationHeaderName(node.argumentExpression))
+    (ts.isPropertyAccessExpression(node) && isAuthorizationHeaderName(node.name)) ||
+    (ts.isElementAccessExpression(node) && isAuthorizationHeaderName(node.argumentExpression))
   );
 }
 
@@ -4371,9 +5377,11 @@ function isHeaderClearValue(node: ts.Expression | undefined): boolean {
   if (literal !== null) {
     return literal.trim().length === 0;
   }
-  return node.kind === ts.SyntaxKind.NullKeyword
-    || node.kind === ts.SyntaxKind.UndefinedKeyword
-    || (ts.isIdentifier(node) && node.text === 'undefined');
+  return (
+    node.kind === ts.SyntaxKind.NullKeyword ||
+    node.kind === ts.SyntaxKind.UndefinedKeyword ||
+    (ts.isIdentifier(node) && node.text === 'undefined')
+  );
 }
 
 function countAuthGuardSignals(code: string): number {
@@ -4780,22 +5788,34 @@ function countAuthCallbackStateValidationSignals(code: string): number {
   }
 
   if (
-    /\b(?:sessionStorage|localStorage)\.getItem\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(code)
-    && /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(code)
+    /\b(?:sessionStorage|localStorage)\.getItem\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(
+      code,
+    ) &&
+    /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(
+      code,
+    )
   ) {
     count += 1;
   }
 
   if (
-    /\b(?:cookies?|cookieStore)\.(?:get|getAll)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(code)
-    && /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(code)
+    /\b(?:cookies?|cookieStore)\.(?:get|getAll)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(
+      code,
+    ) &&
+    /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(
+      code,
+    )
   ) {
     count += 1;
   }
 
   if (
-    /\b(?:state|providerState|callbackState|returnedState)\b\s*(?:===|==|!==|!=)\s*\b(?:expectedState|storedState|sessionState|oauthState|csrfState)\b/i.test(code)
-    || /\b(?:expectedState|storedState|sessionState|oauthState|csrfState)\b\s*(?:===|==|!==|!=)\s*\b(?:state|providerState|callbackState|returnedState)\b/i.test(code)
+    /\b(?:state|providerState|callbackState|returnedState)\b\s*(?:===|==|!==|!=)\s*\b(?:expectedState|storedState|sessionState|oauthState|csrfState)\b/i.test(
+      code,
+    ) ||
+    /\b(?:expectedState|storedState|sessionState|oauthState|csrfState)\b\s*(?:===|==|!==|!=)\s*\b(?:state|providerState|callbackState|returnedState)\b/i.test(
+      code,
+    )
   ) {
     count += 1;
   }
@@ -4909,8 +5929,8 @@ function countAuthRefreshSignals(code: string): number {
   let count = 0;
 
   if (
-    /\b(?:setInterval|setTimeout)\s*\(/i.test(code)
-    && /\b(?:refreshSession|refreshToken|renewSession|getSession|startAutoRefresh)\b/i.test(code)
+    /\b(?:setInterval|setTimeout)\s*\(/i.test(code) &&
+    /\b(?:refreshSession|refreshToken|renewSession|getSession|startAutoRefresh)\b/i.test(code)
   ) {
     count += 1;
   }
@@ -4999,7 +6019,10 @@ function countSignInFlowSignals(code: string, filePath: string): number {
     /(?:^|\/)(?:login|log-?in|sign-?in)(?:\/|\.|$)/i,
   ];
 
-  return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
+  return patterns.reduce(
+    (count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0),
+    0,
+  );
 }
 
 function countRecoveryFlowSignals(code: string, filePath: string): number {
@@ -5010,7 +6033,10 @@ function countRecoveryFlowSignals(code: string, filePath: string): number {
     /(?:^|\/)(?:forgot-password|reset-password|password-reset|recover|recovery)(?:\/|\.|$)/i,
   ];
 
-  return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
+  return patterns.reduce(
+    (count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0),
+    0,
+  );
 }
 
 function countSignUpFlowSignals(code: string, filePath: string): number {
@@ -5020,7 +6046,10 @@ function countSignUpFlowSignals(code: string, filePath: string): number {
     /(?:^|\/)(?:signup|sign-up|register)(?:\/|\.|$)/i,
   ];
 
-  return patterns.reduce((count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0), 0);
+  return patterns.reduce(
+    (count, pattern) => count + (pattern.test(code) || pattern.test(filePath) ? 1 : 0),
+    0,
+  );
 }
 
 function countProtectedSurfaceSignals(code: string): number {
@@ -5057,16 +6086,25 @@ const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i')
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
 const OPEN_REDIRECT_QUERY_CARRIER_REGEX = /\b(?:searchParams|router\.query|route\.query|query)\b/i;
 const OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX = /\b(?:router|route)\b/i;
-const LOCATION_QUERY_SOURCE_REGEX = /\b(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
-const LOCATION_URL_INPUT_REGEX = /\b(?:(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\b/i;
-const LOCATION_URL_SOURCE_REGEX = /\bnew\s+URL\(\s*(?:(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
+const LOCATION_QUERY_SOURCE_REGEX =
+  /\b(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\b/i;
+const LOCATION_URL_INPUT_REGEX =
+  /\b(?:(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\b/i;
+const LOCATION_URL_SOURCE_REGEX =
+  /\bnew\s+URL\(\s*(?:(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:href|search|hash)|(?:request|req)\.url)\s*\)/i;
 const NEXT_URL_SOURCE_REGEX = /\b(?:request|req)\.nextUrl\b/i;
 const REQUEST_OBJECT_SOURCE_REGEX = /\b(?:request|req)\b/i;
 
 function countAuthOpenRedirectSignals(code: string): number {
   const patterns = [
-    new RegExp(String.raw`\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})[^)]*\)`, 'gi'),
-    new RegExp(String.raw`\b(?:window|globalThis|document|self|parent|top)\.location(?:\.href)?\s*=\s*[^;\n]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})`, 'gi'),
+    new RegExp(
+      String.raw`\b(?:redirect|navigate|push|replace)\s*\(\s*[^)]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})[^)]*\)`,
+      'gi',
+    ),
+    new RegExp(
+      String.raw`\b(?:window|globalThis|document|self|parent|top)\.location(?:\.href)?\s*=\s*[^;\n]*(?:${OPEN_REDIRECT_SOURCE_PATTERN})`,
+      'gi',
+    ),
   ];
 
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
@@ -5081,7 +6119,9 @@ function propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyPath: stri
 }
 
 function propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyPath: string[]): boolean {
-  return propertyPath.length > 0 && OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX.test(propertyPath.join('.'));
+  return (
+    propertyPath.length > 0 && OPEN_REDIRECT_QUERY_CONTAINER_BASE_REGEX.test(propertyPath.join('.'))
+  );
 }
 
 function expressionLooksLikeOpenRedirectQueryGetterFunction(
@@ -5094,7 +6134,12 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
     return expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression,
       sourceFile,
@@ -5119,49 +6164,53 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
         namedPropertyAliases,
         seenIdentifiers,
         nextSeenFunctions,
-      )
+      ),
     );
   }
 
   if (
-    ts.isBinaryExpression(expression)
-    && (
-      expression.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
-      || expression.operatorToken.kind === ts.SyntaxKind.BarBarToken
-    )
+    ts.isBinaryExpression(expression) &&
+    (expression.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken ||
+      expression.operatorToken.kind === ts.SyntaxKind.BarBarToken)
   ) {
-    return expressionLooksLikeOpenRedirectQueryGetterFunction(
-      expression.left,
-      sourceFile,
-      namedExpressions,
-      namedPropertyAliases,
-      seenIdentifiers,
-      seenFunctions,
-    ) || expressionLooksLikeOpenRedirectQueryGetterFunction(
-      expression.right,
-      sourceFile,
-      namedExpressions,
-      namedPropertyAliases,
-      seenIdentifiers,
-      seenFunctions,
+    return (
+      expressionLooksLikeOpenRedirectQueryGetterFunction(
+        expression.left,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ) ||
+      expressionLooksLikeOpenRedirectQueryGetterFunction(
+        expression.right,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      )
     );
   }
 
   if (ts.isConditionalExpression(expression)) {
-    return expressionLooksLikeOpenRedirectQueryGetterFunction(
-      expression.whenTrue,
-      sourceFile,
-      namedExpressions,
-      namedPropertyAliases,
-      seenIdentifiers,
-      seenFunctions,
-    ) || expressionLooksLikeOpenRedirectQueryGetterFunction(
-      expression.whenFalse,
-      sourceFile,
-      namedExpressions,
-      namedPropertyAliases,
-      seenIdentifiers,
-      seenFunctions,
+    return (
+      expressionLooksLikeOpenRedirectQueryGetterFunction(
+        expression.whenTrue,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ) ||
+      expressionLooksLikeOpenRedirectQueryGetterFunction(
+        expression.whenFalse,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      )
     );
   }
 
@@ -5174,7 +6223,7 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
         namedPropertyAliases,
         seenIdentifiers,
         seenFunctions,
-      )
+      ),
     );
   }
 
@@ -5190,17 +6239,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    ts.isNewExpression(expression)
-    && expression.arguments
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalBooleanHelper(
+    ts.isNewExpression(expression) &&
+    expression.arguments &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5213,17 +6262,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    ts.isNewExpression(expression)
-    && expression.arguments
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalNumberHelper(
+    ts.isNewExpression(expression) &&
+    expression.arguments &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalNumberHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5236,17 +6285,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    ts.isNewExpression(expression)
-    && expression.arguments
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalObjectHelper(
+    ts.isNewExpression(expression) &&
+    expression.arguments &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalObjectHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5259,17 +6308,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    ts.isNewExpression(expression)
-    && expression.arguments
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalStringHelper(
+    ts.isNewExpression(expression) &&
+    expression.arguments &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalStringHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5282,16 +6331,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalSymbolHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalSymbolHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5304,20 +6353,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalSymbolHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalSymbolHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5330,18 +6379,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalSymbolHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalSymbolHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5354,17 +6403,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalSymbolHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalSymbolHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5377,16 +6426,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalBigIntHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalBigIntHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5399,20 +6448,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalBigIntHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalBigIntHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5425,18 +6474,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalBigIntHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalBigIntHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5449,17 +6498,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalBigIntHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalBigIntHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5472,16 +6521,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalBooleanHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5494,20 +6543,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalBooleanHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5520,18 +6569,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalBooleanHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5544,17 +6593,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalBooleanHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5567,16 +6616,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalNumberHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalNumberHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5589,20 +6638,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalNumberHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalNumberHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5615,18 +6664,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalNumberHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalNumberHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5639,17 +6688,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalNumberHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalNumberHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5662,16 +6711,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalObjectHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalObjectHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5684,20 +6733,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalObjectHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalObjectHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5710,18 +6759,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalObjectHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalObjectHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5734,17 +6783,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalObjectHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalObjectHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5757,11 +6806,21 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && ts.isIdentifier(expression.expression)
-    && ['String', 'atob', 'btoa', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(expression.expression.text)
-    && expression.arguments.length > 0
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    [
+      'String',
+      'atob',
+      'btoa',
+      'decodeURI',
+      'decodeURIComponent',
+      'encodeURI',
+      'encodeURIComponent',
+      'escape',
+      'unescape',
+    ].includes(expression.expression.text) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5774,16 +6833,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeJsonStringifyHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeJsonStringifyHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5796,20 +6855,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeJsonStringifyHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeJsonStringifyHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5822,18 +6881,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeJsonStringifyHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeJsonStringifyHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5846,17 +6905,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeJsonStringifyHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeJsonStringifyHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5869,16 +6928,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeJsonParseHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeJsonParseHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5891,20 +6950,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeJsonParseHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeJsonParseHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5917,18 +6976,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeJsonParseHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeJsonParseHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -5941,17 +7000,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeJsonParseHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeJsonParseHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -5964,16 +7023,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeStructuredCloneHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeStructuredCloneHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -5986,20 +7045,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeStructuredCloneHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeStructuredCloneHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6012,18 +7071,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeStructuredCloneHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeStructuredCloneHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -6036,17 +7095,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeStructuredCloneHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeStructuredCloneHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6059,16 +7118,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalStringHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalStringHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6081,20 +7140,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalStringHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalStringHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6107,18 +7166,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalStringHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalStringHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -6131,17 +7190,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalStringHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalStringHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6154,16 +7213,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalBase64Helper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalBase64Helper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6176,16 +7235,16 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBrowserGlobalUriCodecHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6198,20 +7257,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalUriCodecHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6224,18 +7283,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalUriCodecHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -6248,17 +7307,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalUriCodecHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6271,20 +7330,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBrowserGlobalBase64Helper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBrowserGlobalBase64Helper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6297,18 +7356,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBrowserGlobalBase64Helper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBrowserGlobalBase64Helper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -6321,17 +7380,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBrowserGlobalBase64Helper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBrowserGlobalBase64Helper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6344,17 +7403,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && (ts.isIdentifier(expression.expression) || isMemberAccessExpression(expression.expression))
-    && expression.arguments.length > 0
-    && expressionLooksLikeBufferFromHelper(
+    isCallLikeExpression(expression) &&
+    (ts.isIdentifier(expression.expression) || isMemberAccessExpression(expression.expression)) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeBufferFromHelper(
       expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6367,17 +7426,28 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'String', 'atob', 'btoa', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape')
-    && expression.arguments.length > 0
-    && expressionLooksLikeWindowObjectSource(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(
+      expression.expression,
+      'String',
+      'atob',
+      'btoa',
+      'decodeURI',
+      'decodeURIComponent',
+      'encodeURI',
+      'encodeURIComponent',
+      'escape',
+      'unescape',
+    ) &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeWindowObjectSource(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6390,11 +7460,11 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'exec')
-    && expression.arguments.length > 0
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'exec') &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6407,20 +7477,20 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expression.arguments.length > 2
-    && expressionLooksLikeBufferFromHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expression.arguments.length > 2 &&
+    expressionLooksLikeBufferFromHelper(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6433,18 +7503,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && expressionLooksLikeBufferFromHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    expressionLooksLikeBufferFromHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[1],
       sourceFile,
       namedExpressions,
@@ -6457,17 +7527,17 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && expressionLooksLikeBufferFromHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    expressionLooksLikeBufferFromHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       sourceFile,
       namedExpressions,
@@ -6480,13 +7550,13 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'from')
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Buffer'
-    && expression.arguments.length > 0
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'from') &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Buffer' &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6499,10 +7569,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'at')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'at') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6515,10 +7585,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'shift')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'shift') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6531,10 +7601,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'pop')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'pop') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6547,10 +7617,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'find', 'findLast')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'find', 'findLast') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6563,10 +7633,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'filter')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'filter') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6579,10 +7649,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'slice')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'slice') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6595,10 +7665,23 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'reverse', 'toReversed', 'sort', 'toSorted', 'concat', 'flat', 'join', 'map', 'flatMap', 'splice', 'toSpliced')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(
+      expression.expression,
+      'reverse',
+      'toReversed',
+      'sort',
+      'toSorted',
+      'concat',
+      'flat',
+      'join',
+      'map',
+      'flatMap',
+      'splice',
+      'toSpliced',
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6611,10 +7694,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'reduce', 'reduceRight')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'reduce', 'reduceRight') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6627,10 +7710,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'trim')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'trim') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6643,10 +7726,37 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'trim', 'trimStart', 'trimLeft', 'trimEnd', 'trimRight', 'padStart', 'padEnd', 'repeat', 'replace', 'replaceAll', 'slice', 'split', 'substr', 'substring', 'toLowerCase', 'toUpperCase', 'toLocaleLowerCase', 'toLocaleUpperCase', 'toLocaleString', 'toString', 'toWellFormed', 'valueOf', 'normalize', 'match', 'matchAll')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(
+      expression.expression,
+      'trim',
+      'trimStart',
+      'trimLeft',
+      'trimEnd',
+      'trimRight',
+      'padStart',
+      'padEnd',
+      'repeat',
+      'replace',
+      'replaceAll',
+      'slice',
+      'split',
+      'substr',
+      'substring',
+      'toLowerCase',
+      'toUpperCase',
+      'toLocaleLowerCase',
+      'toLocaleUpperCase',
+      'toLocaleString',
+      'toString',
+      'toWellFormed',
+      'valueOf',
+      'normalize',
+      'match',
+      'matchAll',
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6659,10 +7769,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'values', 'next')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'values', 'next') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6675,10 +7785,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6691,10 +7801,10 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'get', 'getAll')
-    && expressionLooksLikeOpenRedirectSearchParamsCarrier(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'get', 'getAll') &&
+    expressionLooksLikeOpenRedirectSearchParamsCarrier(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6706,18 +7816,21 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isElementLikeAccessExpression(expression)
-    && ts.isNumericLiteral(expression.argumentExpression)
-    && expression.argumentExpression.text === '1'
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'value')
-    && isCallLikeExpression(expression.expression.expression)
-    && isMemberAccessExpression(expression.expression.expression.expression)
-    && isMemberAccessNamed(expression.expression.expression.expression, 'next')
-    && isCallLikeExpression(expression.expression.expression.expression.expression)
-    && isMemberAccessExpression(expression.expression.expression.expression.expression.expression)
-    && isMemberAccessNamed(expression.expression.expression.expression.expression.expression, 'entries')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isElementLikeAccessExpression(expression) &&
+    ts.isNumericLiteral(expression.argumentExpression) &&
+    expression.argumentExpression.text === '1' &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'value') &&
+    isCallLikeExpression(expression.expression.expression) &&
+    isMemberAccessExpression(expression.expression.expression.expression) &&
+    isMemberAccessNamed(expression.expression.expression.expression, 'next') &&
+    isCallLikeExpression(expression.expression.expression.expression.expression) &&
+    isMemberAccessExpression(expression.expression.expression.expression.expression.expression) &&
+    isMemberAccessNamed(
+      expression.expression.expression.expression.expression.expression,
+      'entries',
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression.expression.expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -6730,8 +7843,8 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isElementLikeAccessExpression(expression)
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isElementLikeAccessExpression(expression) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -6744,9 +7857,9 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'value')
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'value') &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -6759,13 +7872,13 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isPropertyLikeAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Array'
-    && isPropertyNamed(expression.expression.name, 'from')
-    && expression.arguments.length > 0
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isPropertyLikeAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Array' &&
+    isPropertyNamed(expression.expression.name, 'from') &&
+    expression.arguments.length > 0 &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -6778,17 +7891,18 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
   }
 
   if (
-    ts.isArrayLiteralExpression(expression)
-    && expression.elements.some((element) =>
-      ts.isSpreadElement(element)
-      && expressionLooksLikeOpenRedirectQueryGetterFunction(
-        element.expression,
-        sourceFile,
-        namedExpressions,
-        namedPropertyAliases,
-        seenIdentifiers,
-        seenFunctions,
-      )
+    ts.isArrayLiteralExpression(expression) &&
+    expression.elements.some(
+      (element) =>
+        ts.isSpreadElement(element) &&
+        expressionLooksLikeOpenRedirectQueryGetterFunction(
+          element.expression,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          seenFunctions,
+        ),
     )
   ) {
     return true;
@@ -6821,15 +7935,15 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
           namedPropertyAliases,
           seenIdentifiers,
           nextSeenFunctions,
-        )
+        ),
       );
     }
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'get', 'getAll')
-    && expressionLooksLikeOpenRedirectSearchParamsCarrier(
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'get', 'getAll') &&
+    expressionLooksLikeOpenRedirectSearchParamsCarrier(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -6860,9 +7974,9 @@ function expressionLooksLikeOpenRedirectQueryGetterFunction(
 
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['get', 'getAll'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      propertyAlias &&
+      ['get', 'getAll'].includes(propertyAlias.propertyName) &&
+      expressionLooksLikeOpenRedirectSearchParamsCarrier(
         propertyAlias.initializer,
         sourceFile,
         namedExpressions,
@@ -6890,72 +8004,186 @@ function expressionContainsOpenRedirectSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionContainsOpenRedirectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
   }
 
   if (ts.isBinaryExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.left, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
-      || expressionContainsOpenRedirectSource(expression.right, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+    return (
+      expressionContainsOpenRedirectSource(
+        expression.left,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ) ||
+      expressionContainsOpenRedirectSource(
+        expression.right,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      )
+    );
   }
 
   if (ts.isConditionalExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.condition, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
-      || expressionContainsOpenRedirectSource(expression.whenTrue, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
-      || expressionContainsOpenRedirectSource(expression.whenFalse, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+    return (
+      expressionContainsOpenRedirectSource(
+        expression.condition,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ) ||
+      expressionContainsOpenRedirectSource(
+        expression.whenTrue,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ) ||
+      expressionContainsOpenRedirectSource(
+        expression.whenFalse,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      )
+    );
   }
 
   if (ts.isTemplateExpression(expression)) {
     return expression.templateSpans.some((span) =>
-      expressionContainsOpenRedirectSource(span.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+      expressionContainsOpenRedirectSource(
+        span.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ),
     );
   }
 
   if (ts.isTaggedTemplateExpression(expression)) {
-    return expressionContainsOpenRedirectSource(expression.template, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+    return expressionContainsOpenRedirectSource(
+      expression.template,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    );
   }
 
   if (ts.isNewExpression(expression)) {
     return (expression.arguments ?? []).some((argument) =>
-      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+      expressionContainsOpenRedirectSource(
+        argument,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ),
     );
   }
 
   if (ts.isArrayLiteralExpression(expression)) {
     return expression.elements.some((element) => {
       if (ts.isSpreadElement(element)) {
-        return expressionContainsOpenRedirectSource(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+        return expressionContainsOpenRedirectSource(
+          element.expression,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          seenFunctions,
+        );
       }
-      return ts.isExpression(element)
-        && expressionContainsOpenRedirectSource(element, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+      return (
+        ts.isExpression(element) &&
+        expressionContainsOpenRedirectSource(
+          element,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          seenFunctions,
+        )
+      );
     });
   }
 
   if (ts.isObjectLiteralExpression(expression)) {
     return expression.properties.some((property) => {
       if (ts.isPropertyAssignment(property)) {
-        return expressionContainsOpenRedirectSource(property.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+        return expressionContainsOpenRedirectSource(
+          property.initializer,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          seenFunctions,
+        );
       }
       if (ts.isShorthandPropertyAssignment(property)) {
-        return expressionContainsOpenRedirectSource(property.name, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+        return expressionContainsOpenRedirectSource(
+          property.name,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          seenFunctions,
+        );
       }
       if (ts.isSpreadAssignment(property)) {
-        return expressionContainsOpenRedirectSource(property.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+        return expressionContainsOpenRedirectSource(
+          property.expression,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+          seenFunctions,
+        );
       }
       return false;
     });
   }
 
   if (
-    isPropertyLikeAccessExpression(expression)
-    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+    isPropertyLikeAccessExpression(expression) &&
+    expressionContainsOpenRedirectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
   ) {
     return true;
   }
 
-  if (
-    isCallLikeExpression(expression)
-  ) {
+  if (isCallLikeExpression(expression)) {
     const functionResolution = resolveTrackedOpenRedirectFunctionLike(
       expression.expression,
       sourceFile,
@@ -6982,7 +8210,7 @@ function expressionContainsOpenRedirectSource(
             namedPropertyAliases,
             seenIdentifiers,
             nextSeenFunctions,
-          )
+          ),
         )
       ) {
         return true;
@@ -6991,17 +8219,17 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && isOpenRedirectQueryKeyExpression(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    isOpenRedirectQueryKeyExpression(
       getAliasedApplyArgumentExpression(expression.arguments[2], 0, namedExpressions, new Set()),
       namedExpressions,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.arguments[0],
       sourceFile,
       namedExpressions,
@@ -7013,12 +8241,12 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'call')
-    && expression.arguments.length > 1
-    && isOpenRedirectQueryKeyExpression(expression.arguments[1], namedExpressions, seenIdentifiers)
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'call') &&
+    expression.arguments.length > 1 &&
+    isOpenRedirectQueryKeyExpression(expression.arguments[1], namedExpressions, seenIdentifiers) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7030,15 +8258,15 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'apply')
-    && isOpenRedirectQueryKeyExpression(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'apply') &&
+    isOpenRedirectQueryKeyExpression(
       getAliasedApplyArgumentExpression(expression.arguments[1], 0, namedExpressions, new Set()),
       namedExpressions,
       seenIdentifiers,
-    )
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    ) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7050,10 +8278,10 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && expression.arguments.length > 0
-    && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
-    && expressionLooksLikeOpenRedirectQueryGetterFunction(
+    isCallLikeExpression(expression) &&
+    expression.arguments.length > 0 &&
+    isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers) &&
+    expressionLooksLikeOpenRedirectQueryGetterFunction(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -7065,60 +8293,109 @@ function expressionContainsOpenRedirectSource(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'get')
-    && expression.arguments.length > 0
-    && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
-    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'get') &&
+    expression.arguments.length > 0 &&
+    isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers) &&
+    expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'getAll')
-    && expression.arguments.length > 0
-    && isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers)
-    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'getAll') &&
+    expression.arguments.length > 0 &&
+    isOpenRedirectQueryKeyExpression(expression.arguments[0], namedExpressions, seenIdentifiers) &&
+    expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && expressionContainsOpenRedirectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    expressionContainsOpenRedirectSource(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
   ) {
     return true;
   }
 
   if (isCallLikeExpression(expression)) {
     return expression.arguments.some((argument) =>
-      expressionContainsOpenRedirectSource(argument, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+      expressionContainsOpenRedirectSource(
+        argument,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      ),
     );
   }
 
   if (
-    isPropertyLikeAccessExpression(expression)
-    && OPEN_REDIRECT_QUERY_KEY_REGEX.test(expression.name.text)
-    && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isPropertyLikeAccessExpression(expression) &&
+    OPEN_REDIRECT_QUERY_KEY_REGEX.test(expression.name.text) &&
+    expressionLooksLikeOpenRedirectQueryCarrier(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isElementLikeAccessExpression(expression)
-    && isOpenRedirectQueryKeyExpression(expression.argumentExpression, namedExpressions, seenIdentifiers)
-    && expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isElementLikeAccessExpression(expression) &&
+    isOpenRedirectQueryKeyExpression(
+      expression.argumentExpression,
+      namedExpressions,
+      seenIdentifiers,
+    ) &&
+    expressionLooksLikeOpenRedirectQueryCarrier(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isElementLikeAccessExpression(expression)
-    && expressionContainsOpenRedirectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions)
+    isElementLikeAccessExpression(expression) &&
+    expressionContainsOpenRedirectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+      seenFunctions,
+    )
   ) {
     return true;
   }
@@ -7130,18 +8407,29 @@ function expressionContainsOpenRedirectSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionContainsOpenRedirectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers, seenFunctions);
+      const result = expressionContainsOpenRedirectSource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+        seenFunctions,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && OPEN_REDIRECT_QUERY_KEY_REGEX.test(propertyAlias.propertyName)
-      && (
-        expressionLooksLikeOpenRedirectQueryCarrier(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-        || propertyPathLooksLikeOpenRedirectQueryCarrier(propertyAlias.propertyPath.slice(0, -1))
-      )
+      propertyAlias &&
+      OPEN_REDIRECT_QUERY_KEY_REGEX.test(propertyAlias.propertyName) &&
+      (expressionLooksLikeOpenRedirectQueryCarrier(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ) ||
+        propertyPathLooksLikeOpenRedirectQueryCarrier(propertyAlias.propertyPath.slice(0, -1)))
     ) {
       return true;
     }
@@ -7162,8 +8450,17 @@ function isOpenRedirectQueryKeyExpression(
   }
 
   if (!expression) return false;
-  if (ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression) || ts.isParenthesizedExpression(expression)) {
-    return isOpenRedirectQueryKeyExpression(expression.expression, namedExpressions, seenIdentifiers);
+  if (
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression) ||
+    ts.isParenthesizedExpression(expression)
+  ) {
+    return isOpenRedirectQueryKeyExpression(
+      expression.expression,
+      namedExpressions,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7191,29 +8488,62 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectQueryCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeOpenRedirectQueryCarrier(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isPropertyLikeAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Object'
-    && isPropertyNamed(expression.expression.name, 'fromEntries')
-    && expression.arguments.length > 0
+    isCallLikeExpression(expression) &&
+    isPropertyLikeAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Object' &&
+    isPropertyNamed(expression.expression.name, 'fromEntries') &&
+    expression.arguments.length > 0
   ) {
     const entriesExpression = expression.arguments[0];
-    if (expressionLooksLikeOpenRedirectSearchParamsCarrier(entriesExpression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
+    if (
+      expressionLooksLikeOpenRedirectSearchParamsCarrier(
+        entriesExpression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      )
+    ) {
       return true;
     }
-    if (expressionLooksLikeOpenRedirectEntriesCarrier(entriesExpression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
+    if (
+      expressionLooksLikeOpenRedirectEntriesCarrier(
+        entriesExpression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      )
+    ) {
       return true;
     }
   }
 
   if (isPropertyLikeAccessExpression(expression) && isPropertyNamed(expression.name, 'query')) {
-    return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionLooksLikeOpenRedirectQueryContainerBase(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7221,23 +8551,31 @@ function expressionLooksLikeOpenRedirectQueryCarrier(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeOpenRedirectQueryCarrier(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeOpenRedirectQueryCarrier(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && (
-        propertyPathLooksLikeOpenRedirectQueryCarrier(propertyAlias.propertyPath)
-        || (
-          propertyAlias.propertyName === 'query'
-          && (
-            expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-            || propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyAlias.propertyPath.slice(0, -1))
-          )
-        )
-      )
+      propertyAlias &&
+      (propertyPathLooksLikeOpenRedirectQueryCarrier(propertyAlias.propertyPath) ||
+        (propertyAlias.propertyName === 'query' &&
+          (expressionLooksLikeOpenRedirectQueryContainerBase(
+            propertyAlias.initializer,
+            sourceFile,
+            namedExpressions,
+            namedPropertyAliases,
+            seenIdentifiers,
+          ) ||
+            propertyPathLooksLikeOpenRedirectQueryContainerBase(
+              propertyAlias.propertyPath.slice(0, -1),
+            ))))
     ) {
       return true;
     }
@@ -7256,43 +8594,81 @@ function expressionLooksLikeOpenRedirectEntriesCarrier(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectEntriesCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeOpenRedirectEntriesCarrier(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isPropertyLikeAccessExpression(expression.expression)
-    && ts.isIdentifier(expression.expression.expression)
-    && expression.expression.expression.text === 'Array'
-    && isPropertyNamed(expression.expression.name, 'from')
-    && expression.arguments.length > 0
-    && (
-      expressionLooksLikeOpenRedirectEntriesCarrier(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isCallLikeExpression(expression) &&
+    isPropertyLikeAccessExpression(expression.expression) &&
+    ts.isIdentifier(expression.expression.expression) &&
+    expression.expression.expression.text === 'Array' &&
+    isPropertyNamed(expression.expression.name, 'from') &&
+    expression.arguments.length > 0 &&
+    (expressionLooksLikeOpenRedirectEntriesCarrier(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    ) ||
+      expressionLooksLikeOpenRedirectSearchParamsCarrier(
+        expression.arguments[0],
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ))
+  ) {
+    return true;
+  }
+
+  if (
+    ts.isArrayLiteralExpression(expression) &&
+    expression.elements.some(
+      (element) =>
+        ts.isSpreadElement(element) &&
+        (expressionLooksLikeOpenRedirectEntriesCarrier(
+          element.expression,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+        ) ||
+          expressionLooksLikeOpenRedirectSearchParamsCarrier(
+            element.expression,
+            sourceFile,
+            namedExpressions,
+            namedPropertyAliases,
+            seenIdentifiers,
+          )),
     )
   ) {
     return true;
   }
 
   if (
-    ts.isArrayLiteralExpression(expression)
-    && expression.elements.some((element) =>
-      ts.isSpreadElement(element)
-      && (
-        expressionLooksLikeOpenRedirectEntriesCarrier(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-        || expressionLooksLikeOpenRedirectSearchParamsCarrier(element.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      )
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'entries') &&
+    expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
     )
-  ) {
-    return true;
-  }
-
-  if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'entries')
-    && expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
   ) {
     return true;
   }
@@ -7302,7 +8678,13 @@ function expressionLooksLikeOpenRedirectEntriesCarrier(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeOpenRedirectEntriesCarrier(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    const result = expressionLooksLikeOpenRedirectEntriesCarrier(
+      initializer,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -7322,16 +8704,26 @@ function expressionLooksLikeOpenRedirectQueryContainerBase(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeOpenRedirectQueryContainerBase(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && (
-      (ts.isIdentifier(expression.expression) && expression.expression.text === 'useRouter')
-      || (isMemberAccessExpression(expression.expression) && isMemberAccessNamed(expression.expression, 'useRouter'))
-    )
+    isCallLikeExpression(expression) &&
+    ((ts.isIdentifier(expression.expression) && expression.expression.text === 'useRouter') ||
+      (isMemberAccessExpression(expression.expression) &&
+        isMemberAccessNamed(expression.expression, 'useRouter')))
   ) {
     return true;
   }
@@ -7341,7 +8733,13 @@ function expressionLooksLikeOpenRedirectQueryContainerBase(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeOpenRedirectQueryContainerBase(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeOpenRedirectQueryContainerBase(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
@@ -7351,7 +8749,13 @@ function expressionLooksLikeOpenRedirectQueryContainerBase(
       return true;
     }
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    const result = expressionLooksLikeOpenRedirectQueryContainerBase(
+      propertyAlias.initializer,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -7371,26 +8775,53 @@ function expressionLooksLikeLocationQuerySource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationQuerySource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeLocationQuerySource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'slice', 'substring', 'replace', 'trim')
-    && expressionLooksLikeLocationQuerySource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'slice', 'substring', 'replace', 'trim') &&
+    expressionLooksLikeLocationQuerySource(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'search', 'hash')
-    && (
-      expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-    )
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'search', 'hash') &&
+    (expressionLooksLikeLocationObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    ) ||
+      expressionLooksLikeNextUrlSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ))
   ) {
     return true;
   }
@@ -7400,18 +8831,34 @@ function expressionLooksLikeLocationQuerySource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeLocationQuerySource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeLocationQuerySource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['search', 'hash'].includes(propertyAlias.propertyName)
-      && (
-        expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-        || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      )
+      propertyAlias &&
+      ['search', 'hash'].includes(propertyAlias.propertyName) &&
+      (expressionLooksLikeLocationObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ) ||
+        expressionLooksLikeNextUrlSource(
+          propertyAlias.initializer,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+        ))
     ) {
       return true;
     }
@@ -7428,12 +8875,25 @@ function expressionLooksLikeWindowObjectSource(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isIdentifier(expression) && ['window', 'globalThis', 'document', 'self', 'parent', 'top'].includes(expression.text)) {
+  if (
+    ts.isIdentifier(expression) &&
+    ['window', 'globalThis', 'document', 'self', 'parent', 'top'].includes(expression.text)
+  ) {
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7441,7 +8901,12 @@ function expressionLooksLikeWindowObjectSource(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeWindowObjectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    const result = expressionLooksLikeWindowObjectSource(
+      initializer,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -7462,24 +8927,39 @@ function expressionLooksLikeLocationObjectSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeLocationObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && (
-      (ts.isIdentifier(expression.expression) && expression.expression.text === 'useLocation')
-      || (isMemberAccessExpression(expression.expression) && isMemberAccessNamed(expression.expression, 'useLocation'))
-    )
+    isCallLikeExpression(expression) &&
+    ((ts.isIdentifier(expression.expression) && expression.expression.text === 'useLocation') ||
+      (isMemberAccessExpression(expression.expression) &&
+        isMemberAccessNamed(expression.expression, 'useLocation')))
   ) {
     return true;
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'location')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'location') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
@@ -7489,15 +8969,26 @@ function expressionLooksLikeLocationObjectSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeLocationObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeLocationObjectSource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'location'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'location' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7519,14 +9010,30 @@ function expressionLooksLikeHistoryObjectSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeHistoryObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeHistoryObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'history')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'history') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
@@ -7536,15 +9043,26 @@ function expressionLooksLikeHistoryObjectSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeHistoryObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeHistoryObjectSource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'history'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'history' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7566,14 +9084,30 @@ function expressionLooksLikeBufferObjectSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBufferObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBufferObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'Buffer')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'Buffer') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
@@ -7583,15 +9117,26 @@ function expressionLooksLikeBufferObjectSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBufferObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBufferObjectSource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'Buffer'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'Buffer' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7610,9 +9155,9 @@ function expressionLooksLikeBufferFromHelper(
   if (!expression) return false;
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'from')
-    && expressionLooksLikeBufferObjectSource(
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'from') &&
+    expressionLooksLikeBufferObjectSource(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -7624,10 +9169,10 @@ function expressionLooksLikeBufferFromHelper(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBufferFromHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBufferFromHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7638,8 +9183,19 @@ function expressionLooksLikeBufferFromHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBufferFromHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBufferFromHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7647,15 +9203,21 @@ function expressionLooksLikeBufferFromHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBufferFromHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBufferFromHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'from'
-      && expressionLooksLikeBufferObjectSource(
+      propertyAlias &&
+      propertyAlias.propertyName === 'from' &&
+      expressionLooksLikeBufferObjectSource(
         propertyAlias.initializer,
         sourceFile,
         namedExpressions,
@@ -7683,14 +9245,30 @@ function expressionLooksLikeJsonObjectSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeJsonObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeJsonObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'JSON')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'JSON') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
@@ -7700,15 +9278,26 @@ function expressionLooksLikeJsonObjectSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeJsonObjectSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeJsonObjectSource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'JSON'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'JSON' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7727,9 +9316,9 @@ function expressionLooksLikeJsonStringifyHelper(
   if (!expression) return false;
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'stringify')
-    && expressionLooksLikeJsonObjectSource(
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'stringify') &&
+    expressionLooksLikeJsonObjectSource(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -7741,10 +9330,10 @@ function expressionLooksLikeJsonStringifyHelper(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeJsonStringifyHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeJsonStringifyHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7755,8 +9344,19 @@ function expressionLooksLikeJsonStringifyHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeJsonStringifyHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeJsonStringifyHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7764,15 +9364,27 @@ function expressionLooksLikeJsonStringifyHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeJsonStringifyHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeJsonStringifyHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'stringify'
-      && expressionLooksLikeJsonObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'stringify' &&
+      expressionLooksLikeJsonObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7791,9 +9403,9 @@ function expressionLooksLikeJsonParseHelper(
   if (!expression) return false;
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'parse')
-    && expressionLooksLikeJsonObjectSource(
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'parse') &&
+    expressionLooksLikeJsonObjectSource(
       expression.expression,
       sourceFile,
       namedExpressions,
@@ -7805,10 +9417,10 @@ function expressionLooksLikeJsonParseHelper(
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeJsonParseHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeJsonParseHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7819,8 +9431,19 @@ function expressionLooksLikeJsonParseHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeJsonParseHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeJsonParseHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7828,15 +9451,27 @@ function expressionLooksLikeJsonParseHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeJsonParseHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeJsonParseHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'parse'
-      && expressionLooksLikeJsonObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'parse' &&
+      expressionLooksLikeJsonObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7859,18 +9494,23 @@ function expressionLooksLikeStructuredCloneHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'structuredClone')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'structuredClone') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeStructuredCloneHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeStructuredCloneHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7881,8 +9521,19 @@ function expressionLooksLikeStructuredCloneHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeStructuredCloneHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeStructuredCloneHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7890,15 +9541,26 @@ function expressionLooksLikeStructuredCloneHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeStructuredCloneHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeStructuredCloneHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'structuredClone'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'structuredClone' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7921,18 +9583,23 @@ function expressionLooksLikeBrowserGlobalSymbolHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'Symbol')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'Symbol') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalSymbolHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalSymbolHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -7943,8 +9610,19 @@ function expressionLooksLikeBrowserGlobalSymbolHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalSymbolHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalSymbolHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -7952,15 +9630,26 @@ function expressionLooksLikeBrowserGlobalSymbolHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalSymbolHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalSymbolHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'Symbol'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'Symbol' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -7983,18 +9672,23 @@ function expressionLooksLikeBrowserGlobalBigIntHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'BigInt')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'BigInt') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalBigIntHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalBigIntHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8005,8 +9699,19 @@ function expressionLooksLikeBrowserGlobalBigIntHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalBigIntHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalBigIntHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8014,15 +9719,26 @@ function expressionLooksLikeBrowserGlobalBigIntHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalBigIntHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalBigIntHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'BigInt'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'BigInt' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8045,18 +9761,23 @@ function expressionLooksLikeBrowserGlobalBooleanHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'Boolean')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'Boolean') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalBooleanHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalBooleanHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8067,8 +9788,19 @@ function expressionLooksLikeBrowserGlobalBooleanHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalBooleanHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalBooleanHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8076,15 +9808,26 @@ function expressionLooksLikeBrowserGlobalBooleanHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalBooleanHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalBooleanHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'Boolean'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'Boolean' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8107,18 +9850,23 @@ function expressionLooksLikeBrowserGlobalNumberHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'Number')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'Number') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalNumberHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalNumberHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8129,8 +9877,19 @@ function expressionLooksLikeBrowserGlobalNumberHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalNumberHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalNumberHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8138,15 +9897,26 @@ function expressionLooksLikeBrowserGlobalNumberHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalNumberHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalNumberHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'Number'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'Number' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8169,18 +9939,23 @@ function expressionLooksLikeBrowserGlobalObjectHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'Object')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'Object') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalObjectHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalObjectHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8191,8 +9966,19 @@ function expressionLooksLikeBrowserGlobalObjectHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalObjectHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalObjectHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8200,15 +9986,26 @@ function expressionLooksLikeBrowserGlobalObjectHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalObjectHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalObjectHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'Object'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'Object' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8231,18 +10028,23 @@ function expressionLooksLikeBrowserGlobalStringHelper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'String')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'String') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalStringHelper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalStringHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8253,8 +10055,19 @@ function expressionLooksLikeBrowserGlobalStringHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalStringHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalStringHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8262,15 +10075,26 @@ function expressionLooksLikeBrowserGlobalStringHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalStringHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalStringHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'String'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'String' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8293,18 +10117,23 @@ function expressionLooksLikeBrowserGlobalBase64Helper(
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'atob', 'btoa')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'atob', 'btoa') &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalBase64Helper(
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalBase64Helper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8315,8 +10144,19 @@ function expressionLooksLikeBrowserGlobalBase64Helper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalBase64Helper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalBase64Helper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8324,15 +10164,26 @@ function expressionLooksLikeBrowserGlobalBase64Helper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalBase64Helper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalBase64Helper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['atob', 'btoa'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      ['atob', 'btoa'].includes(propertyAlias.propertyName) &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8350,23 +10201,46 @@ function expressionLooksLikeBrowserGlobalUriCodecHelper(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isIdentifier(expression) && ['decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(expression.text)) {
-    return true;
-  }
-
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    ts.isIdentifier(expression) &&
+    [
+      'decodeURI',
+      'decodeURIComponent',
+      'encodeURI',
+      'encodeURIComponent',
+      'escape',
+      'unescape',
+    ].includes(expression.text)
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
-    && expressionLooksLikeBrowserGlobalUriCodecHelper(
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(
+      expression,
+      'decodeURI',
+      'decodeURIComponent',
+      'encodeURI',
+      'encodeURIComponent',
+      'escape',
+      'unescape',
+    ) &&
+    expressionLooksLikeWindowObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind') &&
+    expressionLooksLikeBrowserGlobalUriCodecHelper(
       expression.expression.expression,
       sourceFile,
       namedExpressions,
@@ -8377,8 +10251,19 @@ function expressionLooksLikeBrowserGlobalUriCodecHelper(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeBrowserGlobalUriCodecHelper(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeBrowserGlobalUriCodecHelper(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8386,15 +10271,33 @@ function expressionLooksLikeBrowserGlobalUriCodecHelper(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeBrowserGlobalUriCodecHelper(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeBrowserGlobalUriCodecHelper(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       if (result) return true;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape', 'unescape'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      [
+        'decodeURI',
+        'decodeURIComponent',
+        'encodeURI',
+        'encodeURIComponent',
+        'escape',
+        'unescape',
+      ].includes(propertyAlias.propertyName) &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8415,16 +10318,33 @@ function expressionLooksLikeLocationUrlSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeLocationUrlSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    ts.isNewExpression(expression)
-    && ts.isIdentifier(expression.expression)
-    && expression.expression.text === 'URL'
+    ts.isNewExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === 'URL'
   ) {
-    return expressionLooksLikeLocationUrlInput(expression.arguments?.[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionLooksLikeLocationUrlInput(
+      expression.arguments?.[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8432,7 +10352,13 @@ function expressionLooksLikeLocationUrlSource(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeLocationUrlSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    const result = expressionLooksLikeLocationUrlSource(
+      initializer,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -8452,54 +10378,108 @@ function expressionLooksLikeLocationUrlInput(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationUrlInput(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
-  }
-
-  if (expressionLooksLikeNextUrlSource(expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)) {
-    return true;
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeLocationUrlInput(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && ts.isIdentifier(expression.expression)
-    && expression.expression.text === 'String'
-    && expression.arguments.length > 0
-    && (
-      expressionLooksLikeLocationObjectSource(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionLooksLikeNextUrlSource(expression.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    expressionLooksLikeNextUrlSource(
+      expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
     )
   ) {
     return true;
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'toString', 'toJSON')
-    && (
-      expressionLooksLikeLocationObjectSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionLooksLikeNextUrlSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-    )
+    isCallLikeExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === 'String' &&
+    expression.arguments.length > 0 &&
+    (expressionLooksLikeLocationObjectSource(
+      expression.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    ) ||
+      expressionLooksLikeNextUrlSource(
+        expression.arguments[0],
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ))
   ) {
     return true;
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'href', 'search', 'hash')
-    && (
-      expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-    )
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'toString', 'toJSON') &&
+    (expressionLooksLikeLocationObjectSource(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    ) ||
+      expressionLooksLikeNextUrlSource(
+        expression.expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ))
   ) {
     return true;
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'url')
-    && expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'href', 'search', 'hash') &&
+    (expressionLooksLikeLocationObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    ) ||
+      expressionLooksLikeNextUrlSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ))
+  ) {
+    return true;
+  }
+
+  if (
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'url') &&
+    expressionLooksLikeRequestObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
@@ -8509,25 +10489,46 @@ function expressionLooksLikeLocationUrlInput(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeLocationUrlInput(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeLocationUrlInput(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['href', 'search', 'hash'].includes(propertyAlias.propertyName)
-      && (
-        expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-        || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      )
+      propertyAlias &&
+      ['href', 'search', 'hash'].includes(propertyAlias.propertyName) &&
+      (expressionLooksLikeLocationObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ) ||
+        expressionLooksLikeNextUrlSource(
+          propertyAlias.initializer,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+        ))
     ) {
       return true;
     }
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'url'
-      && expressionLooksLikeRequestObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'url' &&
+      expressionLooksLikeRequestObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8547,8 +10548,18 @@ function expressionLooksLikeRequestObjectSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeRequestObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8556,7 +10567,12 @@ function expressionLooksLikeRequestObjectSource(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return false;
     seenIdentifiers.add(expression.text);
-    const result = expressionLooksLikeRequestObjectSource(initializer, sourceFile, namedExpressions, seenIdentifiers);
+    const result = expressionLooksLikeRequestObjectSource(
+      initializer,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -8576,21 +10592,43 @@ function expressionLooksLikeNextUrlSource(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeNextUrlSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'clone')
-    && expressionLooksLikeNextUrlSource(expression.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'clone') &&
+    expressionLooksLikeNextUrlSource(
+      expression.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
 
   if (isPropertyLikeAccessExpression(expression) && isPropertyNamed(expression.name, 'nextUrl')) {
-    return expressionLooksLikeRequestObjectSource(expression.expression, sourceFile, namedExpressions, seenIdentifiers);
+    return expressionLooksLikeRequestObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8598,15 +10636,26 @@ function expressionLooksLikeNextUrlSource(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeNextUrlSource(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeNextUrlSource(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'nextUrl'
-      && expressionLooksLikeRequestObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, seenIdentifiers)
+      propertyAlias &&
+      propertyAlias.propertyName === 'nextUrl' &&
+      expressionLooksLikeRequestObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        seenIdentifiers,
+      )
     ) {
       return true;
     }
@@ -8630,31 +10679,64 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeOpenRedirectSearchParamsCarrier(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
-  }
-
   if (
-    ts.isNewExpression(expression)
-    && ts.isIdentifier(expression.expression)
-    && expression.expression.text === 'URLSearchParams'
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
   ) {
-    return expressionLooksLikeLocationQuerySource(expression.arguments?.[0], sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+    return expressionLooksLikeOpenRedirectSearchParamsCarrier(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isCallLikeExpression(expression)
-    && (
-      (ts.isIdentifier(expression.expression) && expression.expression.text === 'useSearchParams')
-      || (isMemberAccessExpression(expression.expression) && isMemberAccessNamed(expression.expression, 'useSearchParams'))
-    )
+    ts.isNewExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === 'URLSearchParams'
+  ) {
+    return expressionLooksLikeLocationQuerySource(
+      expression.arguments?.[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+  }
+
+  if (
+    isCallLikeExpression(expression) &&
+    ((ts.isIdentifier(expression.expression) && expression.expression.text === 'useSearchParams') ||
+      (isMemberAccessExpression(expression.expression) &&
+        isMemberAccessNamed(expression.expression, 'useSearchParams')))
   ) {
     return true;
   }
 
-  if (isPropertyLikeAccessExpression(expression) && isPropertyNamed(expression.name, 'searchParams')) {
-    return expressionLooksLikeLocationUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-      || expressionLooksLikeNextUrlSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    isPropertyLikeAccessExpression(expression) &&
+    isPropertyNamed(expression.name, 'searchParams')
+  ) {
+    return (
+      expressionLooksLikeLocationUrlSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ) ||
+      expressionLooksLikeNextUrlSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      )
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -8662,19 +10744,35 @@ function expressionLooksLikeOpenRedirectSearchParamsCarrier(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeOpenRedirectSearchParamsCarrier(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeOpenRedirectSearchParamsCarrier(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'searchParams'
-      && (
-        expressionLooksLikeLocationUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-        || expressionLooksLikeNextUrlSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
-        || propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyAlias.propertyPath)
-      )
+      propertyAlias &&
+      propertyAlias.propertyName === 'searchParams' &&
+      (expressionLooksLikeLocationUrlSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      ) ||
+        expressionLooksLikeNextUrlSource(
+          propertyAlias.initializer,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          seenIdentifiers,
+        ) ||
+        propertyPathLooksLikeOpenRedirectSearchParamsCarrier(propertyAlias.propertyPath))
     ) {
       return true;
     }
@@ -8696,14 +10794,31 @@ function expressionLooksLikeLocationAssignmentTarget(
     return true;
   }
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationAssignmentTarget(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeLocationAssignmentTarget(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'href')
-    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers)
+    isMemberAccessExpression(expression) &&
+    isMemberAccessNamed(expression, 'href') &&
+    expressionLooksLikeLocationObjectSource(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    )
   ) {
     return true;
   }
@@ -8720,13 +10835,11 @@ function expressionLooksLikeLocationMutationCall(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeLocationMutationCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
-  }
-
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'call', 'apply')
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
   ) {
     return expressionLooksLikeLocationMutationCall(
       expression.expression,
@@ -8737,10 +10850,20 @@ function expressionLooksLikeLocationMutationCall(
     );
   }
 
+  if (isMemberAccessExpression(expression) && isMemberAccessNamed(expression, 'call', 'apply')) {
+    return expressionLooksLikeLocationMutationCall(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+  }
+
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind')
   ) {
     return expressionLooksLikeLocationMutationCall(
       expression.expression.expression,
@@ -8756,15 +10879,27 @@ function expressionLooksLikeLocationMutationCall(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeLocationMutationCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeLocationMutationCall(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['assign', 'replace'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeLocationObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+      propertyAlias &&
+      ['assign', 'replace'].includes(propertyAlias.propertyName) &&
+      expressionLooksLikeLocationObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        new Set(),
+      )
     ) {
       return true;
     }
@@ -8772,10 +10907,16 @@ function expressionLooksLikeLocationMutationCall(
   }
 
   return Boolean(
-    expression
-    && isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'assign', 'replace')
-    && expressionLooksLikeLocationObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    expression &&
+      isMemberAccessExpression(expression) &&
+      isMemberAccessNamed(expression, 'assign', 'replace') &&
+      expressionLooksLikeLocationObjectSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        new Set(),
+      ),
   );
 }
 
@@ -8788,14 +10929,22 @@ function expressionLooksLikeWindowOpenCall(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeWindowOpenCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return expressionLooksLikeWindowOpenCall(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
   }
 
-  if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'call', 'apply')
-  ) {
+  if (isMemberAccessExpression(expression) && isMemberAccessNamed(expression, 'call', 'apply')) {
     return expressionLooksLikeWindowOpenCall(
       expression.expression,
       sourceFile,
@@ -8814,24 +10963,40 @@ function expressionLooksLikeWindowOpenCall(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeWindowOpenCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeWindowOpenCall(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && propertyAlias.propertyName === 'open'
-      && expressionLooksLikeWindowObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, new Set())
+      propertyAlias &&
+      propertyAlias.propertyName === 'open' &&
+      expressionLooksLikeWindowObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        new Set(),
+      )
     ) {
       return true;
     }
   }
 
   return Boolean(
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'open')
-    && expressionLooksLikeWindowObjectSource(expression.expression, sourceFile, namedExpressions, new Set())
+    isMemberAccessExpression(expression) &&
+      isMemberAccessNamed(expression, 'open') &&
+      expressionLooksLikeWindowObjectSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        new Set(),
+      ),
   );
 }
 
@@ -8844,13 +11009,11 @@ function expressionLooksLikeHistoryMutationCall(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeHistoryMutationCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
-  }
-
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'call', 'apply')
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
   ) {
     return expressionLooksLikeHistoryMutationCall(
       expression.expression,
@@ -8861,10 +11024,20 @@ function expressionLooksLikeHistoryMutationCall(
     );
   }
 
+  if (isMemberAccessExpression(expression) && isMemberAccessNamed(expression, 'call', 'apply')) {
+    return expressionLooksLikeHistoryMutationCall(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+  }
+
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind')
   ) {
     return expressionLooksLikeHistoryMutationCall(
       expression.expression.expression,
@@ -8880,15 +11053,27 @@ function expressionLooksLikeHistoryMutationCall(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeHistoryMutationCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeHistoryMutationCall(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
     if (
-      propertyAlias
-      && ['pushState', 'replaceState'].includes(propertyAlias.propertyName)
-      && expressionLooksLikeHistoryObjectSource(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+      propertyAlias &&
+      ['pushState', 'replaceState'].includes(propertyAlias.propertyName) &&
+      expressionLooksLikeHistoryObjectSource(
+        propertyAlias.initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        new Set(),
+      )
     ) {
       return true;
     }
@@ -8896,9 +11081,15 @@ function expressionLooksLikeHistoryMutationCall(
   }
 
   return Boolean(
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'pushState', 'replaceState')
-    && expressionLooksLikeHistoryObjectSource(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(expression) &&
+      isMemberAccessNamed(expression, 'pushState', 'replaceState') &&
+      expressionLooksLikeHistoryObjectSource(
+        expression.expression,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        new Set(),
+      ),
   );
 }
 
@@ -8911,13 +11102,11 @@ function expressionLooksLikeRouteTransitionCall(
 ): boolean {
   if (!expression) return false;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return expressionLooksLikeRouteTransitionCall(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
-  }
-
   if (
-    isMemberAccessExpression(expression)
-    && isMemberAccessNamed(expression, 'call', 'apply')
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
   ) {
     return expressionLooksLikeRouteTransitionCall(
       expression.expression,
@@ -8928,10 +11117,20 @@ function expressionLooksLikeRouteTransitionCall(
     );
   }
 
+  if (isMemberAccessExpression(expression) && isMemberAccessNamed(expression, 'call', 'apply')) {
+    return expressionLooksLikeRouteTransitionCall(
+      expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      seenIdentifiers,
+    );
+  }
+
   if (
-    isCallLikeExpression(expression)
-    && isMemberAccessExpression(expression.expression)
-    && isMemberAccessNamed(expression.expression, 'bind')
+    isCallLikeExpression(expression) &&
+    isMemberAccessExpression(expression.expression) &&
+    isMemberAccessNamed(expression.expression, 'bind')
   ) {
     return expressionLooksLikeRouteTransitionCall(
       expression.expression.expression,
@@ -8950,24 +11149,33 @@ function expressionLooksLikeRouteTransitionCall(
     const initializer = namedExpressions.get(expression.text);
     if (initializer) {
       seenIdentifiers.add(expression.text);
-      const result = expressionLooksLikeRouteTransitionCall(initializer, sourceFile, namedExpressions, namedPropertyAliases, seenIdentifiers);
+      const result = expressionLooksLikeRouteTransitionCall(
+        initializer,
+        sourceFile,
+        namedExpressions,
+        namedPropertyAliases,
+        seenIdentifiers,
+      );
       seenIdentifiers.delete(expression.text);
       return result;
     }
     const propertyAlias = namedPropertyAliases.get(expression.text);
-    if (
-      propertyAlias
-      && ['redirect', 'navigate'].includes(propertyAlias.propertyName)
-    ) {
+    if (propertyAlias && ['redirect', 'navigate'].includes(propertyAlias.propertyName)) {
       return true;
     }
     if (
-      propertyAlias
-      && ['push', 'replace'].includes(propertyAlias.propertyName)
-      && (
-        propertyPathLooksLikeOpenRedirectQueryContainerBase(propertyAlias.propertyPath.slice(0, -1))
-        || expressionLooksLikeOpenRedirectQueryContainerBase(propertyAlias.initializer, sourceFile, namedExpressions, namedPropertyAliases, new Set())
-      )
+      propertyAlias &&
+      ['push', 'replace'].includes(propertyAlias.propertyName) &&
+      (propertyPathLooksLikeOpenRedirectQueryContainerBase(
+        propertyAlias.propertyPath.slice(0, -1),
+      ) ||
+        expressionLooksLikeOpenRedirectQueryContainerBase(
+          propertyAlias.initializer,
+          sourceFile,
+          namedExpressions,
+          namedPropertyAliases,
+          new Set(),
+        ))
     ) {
       return true;
     }
@@ -8975,14 +11183,16 @@ function expressionLooksLikeRouteTransitionCall(
   }
 
   return Boolean(
-    isMemberAccessExpression(expression)
-    && (
-      isMemberAccessNamed(expression, 'redirect', 'navigate')
-      || (
-        isMemberAccessNamed(expression, 'push', 'replace')
-        && expressionLooksLikeOpenRedirectQueryContainerBase(expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
-      )
-    )
+    isMemberAccessExpression(expression) &&
+      (isMemberAccessNamed(expression, 'redirect', 'navigate') ||
+        (isMemberAccessNamed(expression, 'push', 'replace') &&
+          expressionLooksLikeOpenRedirectQueryContainerBase(
+            expression.expression,
+            sourceFile,
+            namedExpressions,
+            namedPropertyAliases,
+            new Set(),
+          ))),
   );
 }
 
@@ -8993,65 +11203,113 @@ function getRouteTransitionTargetExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
   if (
-    isMemberAccessExpression(node.expression)
-    && ts.isIdentifier(node.expression.expression)
-    && node.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeRouteTransitionCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeRouteTransitionCall(
+      node.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[2], 0, namedExpressions, new Set());
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'call')
-    && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'call') &&
+    expressionLooksLikeRouteTransitionCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return node.arguments[1];
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeRouteTransitionCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeRouteTransitionCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[1], 0, namedExpressions, new Set());
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'call')
-    && expressionLooksLikeHistoryMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'call') &&
+    expressionLooksLikeHistoryMutationCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return node.arguments[3];
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeHistoryMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeHistoryMutationCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[1], 2, namedExpressions, new Set());
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && ts.isIdentifier(node.expression.expression)
-    && node.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeHistoryMutationCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeHistoryMutationCall(
+      node.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[2], 2, namedExpressions, new Set());
   }
 
   if (
-    expressionLooksLikeRouteTransitionCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    expressionLooksLikeRouteTransitionCall(
+      node.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return node.arguments[0];
   }
 
   if (
-    expressionLooksLikeHistoryMutationCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    expressionLooksLikeHistoryMutationCall(
+      node.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return node.arguments[2];
   }
@@ -9067,8 +11325,18 @@ function getAliasedApplyArgumentExpression(
 ): ts.Expression | undefined {
   if (!expression) return undefined;
 
-  if (ts.isParenthesizedExpression(expression) || ts.isAsExpression(expression) || ts.isTypeAssertionExpression(expression) || ts.isNonNullExpression(expression)) {
-    return getAliasedApplyArgumentExpression(expression.expression, index, namedExpressions, seenIdentifiers);
+  if (
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isTypeAssertionExpression(expression) ||
+    ts.isNonNullExpression(expression)
+  ) {
+    return getAliasedApplyArgumentExpression(
+      expression.expression,
+      index,
+      namedExpressions,
+      seenIdentifiers,
+    );
   }
 
   if (ts.isIdentifier(expression)) {
@@ -9076,7 +11344,12 @@ function getAliasedApplyArgumentExpression(
     const initializer = namedExpressions.get(expression.text);
     if (!initializer) return undefined;
     seenIdentifiers.add(expression.text);
-    const result = getAliasedApplyArgumentExpression(initializer, index, namedExpressions, seenIdentifiers);
+    const result = getAliasedApplyArgumentExpression(
+      initializer,
+      index,
+      namedExpressions,
+      seenIdentifiers,
+    );
     seenIdentifiers.delete(expression.text);
     return result;
   }
@@ -9093,32 +11366,58 @@ function getLocationMutationTargetExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
   if (
-    isMemberAccessExpression(node.expression)
-    && ts.isIdentifier(node.expression.expression)
-    && node.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeLocationMutationCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeLocationMutationCall(
+      node.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[2], 0, namedExpressions, new Set());
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'call')
-    && expressionLooksLikeLocationMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'call') &&
+    expressionLooksLikeLocationMutationCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return node.arguments[1];
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeLocationMutationCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeLocationMutationCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[1], 0, namedExpressions, new Set());
   }
 
-  if (expressionLooksLikeLocationMutationCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())) {
+  if (
+    expressionLooksLikeLocationMutationCall(
+      node.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
+  ) {
     return node.arguments[0];
   }
 
@@ -9132,32 +11431,58 @@ function getWindowOpenTargetExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
 ): ts.Expression | undefined {
   if (
-    isMemberAccessExpression(node.expression)
-    && ts.isIdentifier(node.expression.expression)
-    && node.expression.expression.text === 'Reflect'
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeWindowOpenCall(node.arguments[0], sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    ts.isIdentifier(node.expression.expression) &&
+    node.expression.expression.text === 'Reflect' &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeWindowOpenCall(
+      node.arguments[0],
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[2], 0, namedExpressions, new Set());
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'call')
-    && expressionLooksLikeWindowOpenCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'call') &&
+    expressionLooksLikeWindowOpenCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return node.arguments[1];
   }
 
   if (
-    isMemberAccessExpression(node.expression)
-    && isMemberAccessNamed(node.expression, 'apply')
-    && expressionLooksLikeWindowOpenCall(node.expression.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())
+    isMemberAccessExpression(node.expression) &&
+    isMemberAccessNamed(node.expression, 'apply') &&
+    expressionLooksLikeWindowOpenCall(
+      node.expression.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
   ) {
     return getAliasedApplyArgumentExpression(node.arguments[1], 0, namedExpressions, new Set());
   }
 
-  if (expressionLooksLikeWindowOpenCall(node.expression, sourceFile, namedExpressions, namedPropertyAliases, new Set())) {
+  if (
+    expressionLooksLikeWindowOpenCall(
+      node.expression,
+      sourceFile,
+      namedExpressions,
+      namedPropertyAliases,
+      new Set(),
+    )
+  ) {
     return node.arguments[0];
   }
 
@@ -9209,10 +11534,7 @@ function countSignInRouteSignals(code: string): number {
 }
 
 function countHardcodedSecretSignals(code: string): number {
-  const patterns = [
-    /\bsk_live_[0-9A-Za-z]+\b/g,
-    /-----BEGIN [A-Z ]*PRIVATE KEY-----/g,
-  ];
+  const patterns = [/\bsk_live_[0-9A-Za-z]+\b/g, /-----BEGIN [A-Z ]*PRIVATE KEY-----/g];
 
   return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0);
 }
@@ -9223,14 +11545,22 @@ function countClientSecretEnvReferenceSignals(code: string): number {
     /\bprocess\.env\.NEXT_PUBLIC_[A-Z0-9_]*(?:SERVICE_ROLE|SECRET|PRIVATE_KEY)[A-Z0-9_]*\b/g,
   ];
   const useClientCount = /^\s*['"]use client['"]/m.test(code)
-    ? (code.match(/\bprocess\.env\.[A-Z0-9_]*(?:SERVICE_ROLE|SECRET|PRIVATE_KEY)[A-Z0-9_]*\b/g)?.length ?? 0)
+    ? (code.match(/\bprocess\.env\.[A-Z0-9_]*(?:SERVICE_ROLE|SECRET|PRIVATE_KEY)[A-Z0-9_]*\b/g)
+        ?.length ?? 0)
     : 0;
 
-  return patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0) + useClientCount;
+  return (
+    patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0) +
+    useClientCount
+  );
 }
 
 function countLocalhostEndpointSignals(code: string): number {
-  return code.match(/\b(?:(?:https?|wss?):\/\/)?(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?:\/[^\s'"`]*)?/gi)?.length ?? 0;
+  return (
+    code.match(
+      /\b(?:(?:https?|wss?):\/\/)?(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?:\/[^\s'"`]*)?/gi,
+    )?.length ?? 0
+  );
 }
 
 function countWildcardPostMessageSignals(code: string): number {
@@ -9335,68 +11665,96 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.dangerousHtmlCount += 1;
       }
       if (
-        isPropertyNamed(node.name, 'href', 'to')
-        && node.initializer
-        && ts.isJsxExpression(node.initializer)
-        && expressionContainsOpenRedirectSource(node.initializer.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        isPropertyNamed(node.name, 'href', 'to') &&
+        node.initializer &&
+        ts.isJsxExpression(node.initializer) &&
+        expressionContainsOpenRedirectSource(
+          node.initializer.expression,
+          sourceFile,
+          namedExpressionInitializers,
+          namedPropertyAliases,
+        )
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
-        isPropertyNamed(node.name, 'href', 'to')
-        && isAuthProviderUrlMissingState(getJsxAttributeLiteralValue(node))
+        isPropertyNamed(node.name, 'href', 'to') &&
+        isAuthProviderUrlMissingState(getJsxAttributeLiteralValue(node))
       ) {
         signals.authProviderStateMissingCount += 1;
       }
 
       if (
-        isPropertyNamed(node.name, 'href', 'to')
-        && isAuthProviderCodeFlowMissingPkce(getJsxAttributeLiteralValue(node))
+        isPropertyNamed(node.name, 'href', 'to') &&
+        isAuthProviderCodeFlowMissingPkce(getJsxAttributeLiteralValue(node))
       ) {
         signals.authProviderPkceMissingCount += 1;
       }
 
       if (
-        isPropertyNamed(node.name, 'href', 'to')
-        && isAuthProviderIdTokenFlowMissingNonce(getJsxAttributeLiteralValue(node))
+        isPropertyNamed(node.name, 'href', 'to') &&
+        isAuthProviderIdTokenFlowMissingNonce(getJsxAttributeLiteralValue(node))
       ) {
         signals.authProviderNonceMissingCount += 1;
       }
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && ts.isPropertyAccessExpression(node.left)
-      && isPropertyNamed(node.left.name, 'innerHTML', 'outerHTML')
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      isPropertyNamed(node.left.name, 'innerHTML', 'outerHTML')
     ) {
       signals.rawHtmlInjectionCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-      && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      expressionLooksLikeLocationAssignmentTarget(
+        node.left,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+        new Set(),
+      ) &&
+      expressionContainsOpenRedirectSource(
+        node.right,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+      )
     ) {
       signals.authOpenRedirectSignalCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-      && isInsecureTransportUrl(getExpressionLiteralValue(node.right))
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      expressionLooksLikeLocationAssignmentTarget(
+        node.left,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+        new Set(),
+      ) &&
+      isInsecureTransportUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.insecureTransportEndpointCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-      && isExternalUrl(getExpressionLiteralValue(node.right))
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      expressionLooksLikeLocationAssignmentTarget(
+        node.left,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+        new Set(),
+      ) &&
+      isExternalUrl(getExpressionLiteralValue(node.right))
     ) {
       signals.authExternalRedirectSignalCount += 1;
       if (isAuthProviderUrlMissingState(getExpressionLiteralValue(node.right))) {
@@ -9411,19 +11769,30 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && expressionLooksLikeLocationAssignmentTarget(node.left, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-      && expressionContainsOpenRedirectSource(node.right, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      expressionLooksLikeLocationAssignmentTarget(
+        node.left,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+        new Set(),
+      ) &&
+      expressionContainsOpenRedirectSource(
+        node.right,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+      )
     ) {
       signals.authOpenRedirectSignalCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && ts.isPropertyAccessExpression(node.left)
-      && isPropertyNamed(node.left.name, 'onmessage')
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      isPropertyNamed(node.left.name, 'onmessage')
     ) {
       const handler = resolveFunctionLikeHandler(node.right, namedFunctionDeclarations);
       if (handler && !functionLikeReferencesOrigin(handler)) {
@@ -9432,38 +11801,38 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && ts.isPropertyAccessExpression(node.left)
-      && isBrowserStorageObject(node.left.expression)
-      && /(?:token|auth|jwt|session)/i.test(node.left.name.text)
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      isBrowserStorageObject(node.left.expression) &&
+      /(?:token|auth|jwt|session)/i.test(node.left.name.text)
     ) {
       signals.authStorageWriteCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && ts.isElementAccessExpression(node.left)
-      && isBrowserStorageObject(node.left.expression)
-      && isAuthStorageKeyLiteral(node.left.argumentExpression)
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isElementAccessExpression(node.left) &&
+      isBrowserStorageObject(node.left.expression) &&
+      isAuthStorageKeyLiteral(node.left.argumentExpression)
     ) {
       signals.authStorageWriteCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && isCookiePropertyAccess(node.left)
-      && hasAuthCredentialText(node.right, sourceFile)
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      isCookiePropertyAccess(node.left) &&
+      hasAuthCredentialText(node.right, sourceFile)
     ) {
       signals.authCookieWriteCount += 1;
     }
 
     if (
-      ts.isBinaryExpression(node)
-      && node.operatorToken.kind === ts.SyntaxKind.EqualsToken
-      && isAuthorizationHeaderAccess(node.left)
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      isAuthorizationHeaderAccess(node.left)
     ) {
       if (isHeaderClearValue(node.right)) {
         signals.authHeaderClearCount += 1;
@@ -9472,10 +11841,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
     }
 
-    if (
-      ts.isPropertyAssignment(node)
-      && isAuthorizationHeaderName(node.name)
-    ) {
+    if (ts.isPropertyAssignment(node) && isAuthorizationHeaderName(node.name)) {
       if (isHeaderClearValue(node.initializer)) {
         signals.authHeaderClearCount += 1;
       } else {
@@ -9483,96 +11849,130 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
     }
 
-    if (
-      ts.isDeleteExpression(node)
-      && isAuthorizationHeaderAccess(node.expression)
-    ) {
+    if (ts.isDeleteExpression(node) && isAuthorizationHeaderAccess(node.expression)) {
       signals.authHeaderClearCount += 1;
     }
 
     if (isCallLikeExpression(node)) {
       const firstArgumentLiteral = getExpressionLiteralValue(node.arguments[0]);
       const secondArgumentLiteral = getExpressionLiteralValue(node.arguments[1]);
-      const routeTransitionTargetExpression = getRouteTransitionTargetExpression(node, sourceFile, namedExpressionInitializers, namedPropertyAliases);
-      const routeTransitionTargetLiteral = getExpressionLiteralValue(routeTransitionTargetExpression);
-      const locationMutationTargetExpression = getLocationMutationTargetExpression(node, sourceFile, namedExpressionInitializers, namedPropertyAliases);
-      const locationMutationTargetLiteral = getExpressionLiteralValue(locationMutationTargetExpression);
-      const windowOpenTargetExpression = getWindowOpenTargetExpression(node, sourceFile, namedExpressionInitializers, namedPropertyAliases);
+      const routeTransitionTargetExpression = getRouteTransitionTargetExpression(
+        node,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+      );
+      const routeTransitionTargetLiteral = getExpressionLiteralValue(
+        routeTransitionTargetExpression,
+      );
+      const locationMutationTargetExpression = getLocationMutationTargetExpression(
+        node,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+      );
+      const locationMutationTargetLiteral = getExpressionLiteralValue(
+        locationMutationTargetExpression,
+      );
+      const windowOpenTargetExpression = getWindowOpenTargetExpression(
+        node,
+        sourceFile,
+        namedExpressionInitializers,
+        namedPropertyAliases,
+      );
       const windowOpenTargetLiteral = getExpressionLiteralValue(windowOpenTargetExpression);
       if (ts.isIdentifier(node.expression) && node.expression.text === 'eval') {
         signals.dynamicEvalCount += 1;
       }
 
       if (
-        (
-          (ts.isIdentifier(node.expression) && ['setTimeout', 'setInterval'].includes(node.expression.text))
-          || (
-            ts.isPropertyAccessExpression(node.expression)
-            && ts.isIdentifier(node.expression.expression)
-            && node.expression.expression.text === 'window'
-            && isPropertyNamed(node.expression.name, 'setTimeout', 'setInterval')
-          )
-        )
-        && typeof firstArgumentLiteral === 'string'
+        ((ts.isIdentifier(node.expression) &&
+          ['setTimeout', 'setInterval'].includes(node.expression.text)) ||
+          (ts.isPropertyAccessExpression(node.expression) &&
+            ts.isIdentifier(node.expression.expression) &&
+            node.expression.expression.text === 'window' &&
+            isPropertyNamed(node.expression.name, 'setTimeout', 'setInterval'))) &&
+        typeof firstArgumentLiteral === 'string'
       ) {
         signals.dynamicEvalCount += 1;
       }
 
       if (
-        (isFetchLikeCall(node) || isAxiosLikeCall(node))
-        && isInsecureTransportUrl(firstArgumentLiteral)
+        (isFetchLikeCall(node) || isAxiosLikeCall(node)) &&
+        isInsecureTransportUrl(firstArgumentLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
       }
 
       if (
-        routeTransitionTargetExpression
-        && expressionContainsOpenRedirectSource(routeTransitionTargetExpression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        routeTransitionTargetExpression &&
+        expressionContainsOpenRedirectSource(
+          routeTransitionTargetExpression,
+          sourceFile,
+          namedExpressionInitializers,
+          namedPropertyAliases,
+        )
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
-        expressionLooksLikeRouteTransitionCall(node.expression, sourceFile, namedExpressionInitializers, namedPropertyAliases, new Set())
-        && isExternalUrl(routeTransitionTargetLiteral ?? firstArgumentLiteral)
+        expressionLooksLikeRouteTransitionCall(
+          node.expression,
+          sourceFile,
+          namedExpressionInitializers,
+          namedPropertyAliases,
+          new Set(),
+        ) &&
+        isExternalUrl(routeTransitionTargetLiteral ?? firstArgumentLiteral)
       ) {
         signals.authExternalRedirectSignalCount += 1;
         if (isAuthProviderUrlMissingState(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
           signals.authProviderStateMissingCount += 1;
         }
-        if (isAuthProviderCodeFlowMissingPkce(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
+        if (
+          isAuthProviderCodeFlowMissingPkce(routeTransitionTargetLiteral ?? firstArgumentLiteral)
+        ) {
           signals.authProviderPkceMissingCount += 1;
         }
-        if (isAuthProviderIdTokenFlowMissingNonce(routeTransitionTargetLiteral ?? firstArgumentLiteral)) {
+        if (
+          isAuthProviderIdTokenFlowMissingNonce(
+            routeTransitionTargetLiteral ?? firstArgumentLiteral,
+          )
+        ) {
           signals.authProviderNonceMissingCount += 1;
         }
       }
 
       if (
-        isAxiosConfigCall(node)
-        && isInsecureTransportUrl(getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'))
+        isAxiosConfigCall(node) &&
+        isInsecureTransportUrl(
+          getObjectLiteralStringPropertyValue(node.arguments[0], 'url', 'baseURL', 'baseUrl'),
+        )
       ) {
         signals.insecureTransportEndpointCount += 1;
       }
 
       if (
-        locationMutationTargetExpression
-        && expressionContainsOpenRedirectSource(locationMutationTargetExpression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        locationMutationTargetExpression &&
+        expressionContainsOpenRedirectSource(
+          locationMutationTargetExpression,
+          sourceFile,
+          namedExpressionInitializers,
+          namedPropertyAliases,
+        )
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
       if (
-        locationMutationTargetExpression
-        && isInsecureTransportUrl(locationMutationTargetLiteral)
+        locationMutationTargetExpression &&
+        isInsecureTransportUrl(locationMutationTargetLiteral)
       ) {
         signals.insecureTransportEndpointCount += 1;
       }
 
-      if (
-        locationMutationTargetExpression
-        && isExternalUrl(locationMutationTargetLiteral)
-      ) {
+      if (locationMutationTargetExpression && isExternalUrl(locationMutationTargetLiteral)) {
         signals.authExternalRedirectSignalCount += 1;
         if (isAuthProviderUrlMissingState(locationMutationTargetLiteral)) {
           signals.authProviderStateMissingCount += 1;
@@ -9586,16 +11986,18 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        windowOpenTargetExpression
-        && expressionContainsOpenRedirectSource(windowOpenTargetExpression, sourceFile, namedExpressionInitializers, namedPropertyAliases)
+        windowOpenTargetExpression &&
+        expressionContainsOpenRedirectSource(
+          windowOpenTargetExpression,
+          sourceFile,
+          namedExpressionInitializers,
+          namedPropertyAliases,
+        )
       ) {
         signals.authOpenRedirectSignalCount += 1;
       }
 
-      if (
-        windowOpenTargetExpression
-        && isExternalUrl(windowOpenTargetLiteral)
-      ) {
+      if (windowOpenTargetExpression && isExternalUrl(windowOpenTargetLiteral)) {
         signals.authExternalRedirectSignalCount += 1;
         if (isAuthProviderUrlMissingState(windowOpenTargetLiteral)) {
           signals.authProviderStateMissingCount += 1;
@@ -9609,9 +12011,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        ts.isPropertyAccessExpression(node.expression)
-        && isPropertyNamed(node.expression.name, 'postMessage')
-        && secondArgumentLiteral === '*'
+        ts.isPropertyAccessExpression(node.expression) &&
+        isPropertyNamed(node.expression.name, 'postMessage') &&
+        secondArgumentLiteral === '*'
       ) {
         signals.wildcardPostMessageCount += 1;
       }
@@ -9624,15 +12026,17 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        ts.isPropertyAccessExpression(node.expression)
-        && isPropertyNamed(node.expression.name, 'setHeader', 'append', 'set')
-        && isSetCookieHeaderName(node.arguments[0])
+        ts.isPropertyAccessExpression(node.expression) &&
+        isPropertyNamed(node.expression.name, 'setHeader', 'append', 'set') &&
+        isSetCookieHeaderName(node.arguments[0])
       ) {
         const cookieStrings = collectCookieHeaderStrings(node.arguments[1]);
         const authCookieStrings = cookieStrings.filter(cookieHeaderStringLooksAuthLike);
         if (authCookieStrings.length > 0) {
           signals.authCookieWriteCount += authCookieStrings.length;
-          signals.authCookieMissingHardeningCount += authCookieStrings.filter(value => !cookieHeaderStringHasHardening(value)).length;
+          signals.authCookieMissingHardeningCount += authCookieStrings.filter(
+            (value) => !cookieHeaderStringHasHardening(value),
+          ).length;
         } else {
           const cookieHeaderSource = node.arguments[1]?.getText(sourceFile) ?? '';
           if (cookieHeaderStringLooksAuthLike(cookieHeaderSource)) {
@@ -9645,16 +12049,12 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        (
-          (ts.isIdentifier(node.expression) && node.expression.text === 'open')
-          || (
-            ts.isPropertyAccessExpression(node.expression)
-            && ts.isIdentifier(node.expression.expression)
-            && node.expression.expression.text === 'window'
-            && isPropertyNamed(node.expression.name, 'open')
-          )
-        )
-        && secondArgumentLiteral === '_blank'
+        ((ts.isIdentifier(node.expression) && node.expression.text === 'open') ||
+          (ts.isPropertyAccessExpression(node.expression) &&
+            ts.isIdentifier(node.expression.expression) &&
+            node.expression.expression.text === 'window' &&
+            isPropertyNamed(node.expression.name, 'open'))) &&
+        secondArgumentLiteral === '_blank'
       ) {
         const featureLiteral = getExpressionLiteralValue(node.arguments[2])?.toLowerCase() ?? '';
         if (!featureLiteral.includes('noopener') || !featureLiteral.includes('noreferrer')) {
@@ -9667,15 +12067,13 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           signals.rawHtmlInjectionCount += 1;
         }
         if (
-          isBrowserStorageObject(node.expression.expression)
-          && isPropertyNamed(node.expression.name, 'setItem')
-          && isAuthStorageKeyLiteral(node.arguments[0])
+          isBrowserStorageObject(node.expression.expression) &&
+          isPropertyNamed(node.expression.name, 'setItem') &&
+          isAuthStorageKeyLiteral(node.arguments[0])
         ) {
           signals.authStorageWriteCount += 1;
         }
-        if (
-          isCookieMutationSetCall(node)
-        ) {
+        if (isCookieMutationSetCall(node)) {
           const firstArgument = node.arguments[0];
           const isObjectConfigCall = ts.isObjectLiteralExpression(firstArgument);
           const isAuthCookieWrite = isObjectConfigCall
@@ -9690,16 +12088,17 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           }
         }
         if (
-          isPropertyNamed(node.expression.name, 'delete')
-          && node.arguments.length > 0
-          && isAuthorizationHeaderName(node.arguments[0])
+          isPropertyNamed(node.expression.name, 'delete') &&
+          node.arguments.length > 0 &&
+          isAuthorizationHeaderName(node.arguments[0])
         ) {
           signals.authHeaderClearCount += 1;
         }
         if (
-          (isPropertyNamed(node.expression.name, 'set') || isPropertyNamed(node.expression.name, 'append'))
-          && node.arguments.length > 0
-          && isAuthorizationHeaderName(node.arguments[0])
+          (isPropertyNamed(node.expression.name, 'set') ||
+            isPropertyNamed(node.expression.name, 'append')) &&
+          node.arguments.length > 0 &&
+          isAuthorizationHeaderName(node.arguments[0])
         ) {
           if (isHeaderClearValue(node.arguments[1])) {
             signals.authHeaderClearCount += 1;
@@ -9708,9 +12107,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           }
         }
         if (
-          ts.isIdentifier(node.expression.expression)
-          && node.expression.expression.text === 'document'
-          && isPropertyNamed(node.expression.name, 'write')
+          ts.isIdentifier(node.expression.expression) &&
+          node.expression.expression.text === 'document' &&
+          isPropertyNamed(node.expression.name, 'write')
         ) {
           signals.rawHtmlInjectionCount += 1;
         }
@@ -9721,26 +12120,26 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
     }
 
     if (
-      ts.isNewExpression(node)
-      && isRealtimeTransportConstructor(node)
-      && isInsecureTransportUrl(getExpressionLiteralValue(node.arguments?.[0]))
+      ts.isNewExpression(node) &&
+      isRealtimeTransportConstructor(node) &&
+      isInsecureTransportUrl(getExpressionLiteralValue(node.arguments?.[0]))
     ) {
       signals.insecureTransportEndpointCount += 1;
     }
 
     if (
-      ts.isNewExpression(node)
-      && ts.isIdentifier(node.expression)
-      && node.expression.text === 'Function'
+      ts.isNewExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'Function'
     ) {
       signals.dynamicEvalCount += 1;
     }
 
     if (
-      ts.isNewExpression(node)
-      && ts.isIdentifier(node.expression)
-      && ['WebSocket', 'EventSource'].includes(node.expression.text)
-      && isInsecureTransportUrl(getExpressionLiteralValue(node.arguments?.[0]))
+      ts.isNewExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      ['WebSocket', 'EventSource'].includes(node.expression.text) &&
+      isInsecureTransportUrl(getExpressionLiteralValue(node.arguments?.[0]))
     ) {
       signals.insecureTransportEndpointCount += 1;
     }
@@ -9764,7 +12163,11 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (skipNavTargetId && !signals.skipNavTargetIds.includes(skipNavTargetId)) {
         signals.skipNavTargetIds.push(skipNavTargetId);
       }
-      if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.attributes, 'type')) {
+      if (
+        tagName === 'button' &&
+        hasAncestorJsxTag(node, 'form') &&
+        !getJsxAttribute(node.attributes, 'type')
+      ) {
         signals.buttonInFormWithoutTypeCount += 1;
       }
       if (tagName === 'button' && !hasAccessibleLabel(node.attributes, '')) {
@@ -9785,19 +12188,22 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (isDialogLikeElement(node.attributes, tagName) && !hasDialogLabel(node.attributes)) {
         signals.dialogWithoutLabelCount += 1;
       }
-      if (isDialogLikeElement(node.attributes, tagName) && !hasDialogModalHint(node.attributes, tagName)) {
+      if (
+        isDialogLikeElement(node.attributes, tagName) &&
+        !hasDialogModalHint(node.attributes, tagName)
+      ) {
         signals.dialogWithoutModalHintCount += 1;
       }
       if (
-        tagName === 'iframe'
-        && isExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'src')))
-        && !getJsxAttribute(node.attributes, 'sandbox')
+        tagName === 'iframe' &&
+        isExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'src'))) &&
+        !getJsxAttribute(node.attributes, 'sandbox')
       ) {
         signals.externalIframeWithoutSandboxCount += 1;
       }
       if (
-        tagName === 'iframe'
-        && isInsecureExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'src')))
+        tagName === 'iframe' &&
+        isInsecureExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'src')))
       ) {
         signals.insecureExternalIframeCount += 1;
       }
@@ -9805,10 +12211,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         signals.insecureFormActionCount += 1;
       }
       if (
-        isNonSemanticInteractiveTag(tagName)
-        && getJsxAttribute(node.attributes, 'onClick')
-        && !getJsxAttribute(node.attributes, 'role')
-        && !getJsxAttribute(node.attributes, 'tabIndex')
+        isNonSemanticInteractiveTag(tagName) &&
+        getJsxAttribute(node.attributes, 'onClick') &&
+        !getJsxAttribute(node.attributes, 'role') &&
+        !getJsxAttribute(node.attributes, 'tabIndex')
       ) {
         signals.clickableNonSemanticCount += 1;
       }
@@ -9820,7 +12226,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'input') {
         const inputType = getNormalizedInputType(node.attributes);
-        const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'autocomplete', 'autoComplete'))
+        const autocompleteValue = getJsxAttributeLiteralValue(
+          getJsxAttribute(node.attributes, 'autocomplete', 'autoComplete'),
+        )
           ?.trim()
           .toLowerCase();
         const hasAutocomplete = Boolean(autocompleteValue);
@@ -9842,7 +12250,11 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
         if (hasAuthInputTypeMismatch(node.attributes)) {
           signals.authInputTypeMismatchCount += 1;
         }
-        if (hasAncestorJsxTag(node, 'form') && isAuthLikeInputAttributes(node.attributes) && !getJsxAttribute(node.attributes, 'name')) {
+        if (
+          hasAncestorJsxTag(node, 'form') &&
+          isAuthLikeInputAttributes(node.attributes) &&
+          !getJsxAttribute(node.attributes, 'name')
+        ) {
           signals.authInputWithoutNameCount += 1;
         }
       }
@@ -9872,40 +12284,63 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       if (skipNavTargetId && !signals.skipNavTargetIds.includes(skipNavTargetId)) {
         signals.skipNavTargetIds.push(skipNavTargetId);
       }
-      if (tagName === 'button' && hasAncestorJsxTag(node, 'form') && !getJsxAttribute(node.openingElement.attributes, 'type')) {
+      if (
+        tagName === 'button' &&
+        hasAncestorJsxTag(node, 'form') &&
+        !getJsxAttribute(node.openingElement.attributes, 'type')
+      ) {
         signals.buttonInFormWithoutTypeCount += 1;
       }
-      if (tagName === 'button' && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
+      if (
+        tagName === 'button' &&
+        !hasAccessibleLabel(node.openingElement.attributes, textContent)
+      ) {
         signals.iconOnlyButtonWithoutLabelCount += 1;
       }
-      if (isLinkLikeTag(tagName) && !hasAccessibleLabel(node.openingElement.attributes, textContent)) {
+      if (
+        isLinkLikeTag(tagName) &&
+        !hasAccessibleLabel(node.openingElement.attributes, textContent)
+      ) {
         signals.iconOnlyLinkWithoutLabelCount += 1;
       }
       if (isImageLikeTag(tagName) && !getJsxAttribute(node.openingElement.attributes, 'alt')) {
         signals.imageWithoutAltCount += 1;
       }
-      if (isImageSourceLikeTag(tagName) && isInsecureExternalImage(node.openingElement.attributes)) {
+      if (
+        isImageSourceLikeTag(tagName) &&
+        isInsecureExternalImage(node.openingElement.attributes)
+      ) {
         signals.insecureExternalImageCount += 1;
       }
       if (tagName === 'iframe' && !getJsxAttribute(node.openingElement.attributes, 'title')) {
         signals.iframeWithoutTitleCount += 1;
       }
-      if (isDialogLikeElement(node.openingElement.attributes, tagName) && !hasDialogLabel(node.openingElement.attributes)) {
+      if (
+        isDialogLikeElement(node.openingElement.attributes, tagName) &&
+        !hasDialogLabel(node.openingElement.attributes)
+      ) {
         signals.dialogWithoutLabelCount += 1;
       }
-      if (isDialogLikeElement(node.openingElement.attributes, tagName) && !hasDialogModalHint(node.openingElement.attributes, tagName)) {
+      if (
+        isDialogLikeElement(node.openingElement.attributes, tagName) &&
+        !hasDialogModalHint(node.openingElement.attributes, tagName)
+      ) {
         signals.dialogWithoutModalHintCount += 1;
       }
       if (
-        tagName === 'iframe'
-        && isExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'src')))
-        && !getJsxAttribute(node.openingElement.attributes, 'sandbox')
+        tagName === 'iframe' &&
+        isExternalUrl(
+          getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'src')),
+        ) &&
+        !getJsxAttribute(node.openingElement.attributes, 'sandbox')
       ) {
         signals.externalIframeWithoutSandboxCount += 1;
       }
       if (
-        tagName === 'iframe'
-        && isInsecureExternalUrl(getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'src')))
+        tagName === 'iframe' &&
+        isInsecureExternalUrl(
+          getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'src')),
+        )
       ) {
         signals.insecureExternalIframeCount += 1;
       }
@@ -9926,14 +12361,17 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
 
       if (
-        isNonSemanticInteractiveTag(tagName)
-        && getJsxAttribute(node.openingElement.attributes, 'onClick')
-        && !getJsxAttribute(node.openingElement.attributes, 'role')
-        && !getJsxAttribute(node.openingElement.attributes, 'tabIndex')
+        isNonSemanticInteractiveTag(tagName) &&
+        getJsxAttribute(node.openingElement.attributes, 'onClick') &&
+        !getJsxAttribute(node.openingElement.attributes, 'role') &&
+        !getJsxAttribute(node.openingElement.attributes, 'tabIndex')
       ) {
         signals.clickableNonSemanticCount += 1;
       }
-      if (isLinkLikeTag(tagName) && isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)) {
+      if (
+        isLinkLikeTag(tagName) &&
+        isExternalLinkTargetBlankWithoutRel(node.openingElement.attributes)
+      ) {
         signals.externalBlankLinkWithoutRelCount += 1;
       }
       if (hasPlaceholderNavigationTarget(node.openingElement.attributes)) {
@@ -9941,7 +12379,9 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
       }
       if (tagName === 'input') {
         const inputType = getNormalizedInputType(node.openingElement.attributes);
-        const autocompleteValue = getJsxAttributeLiteralValue(getJsxAttribute(node.openingElement.attributes, 'autocomplete', 'autoComplete'))
+        const autocompleteValue = getJsxAttributeLiteralValue(
+          getJsxAttribute(node.openingElement.attributes, 'autocomplete', 'autoComplete'),
+        )
           ?.trim()
           .toLowerCase();
         const hasAutocomplete = Boolean(autocompleteValue);
@@ -9964,14 +12404,22 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           signals.authInputTypeMismatchCount += 1;
         }
         if (
-          hasAncestorJsxTag(node, 'form')
-          && isAuthLikeInputAttributes(node.openingElement.attributes)
-          && !getJsxAttribute(node.openingElement.attributes, 'name')
+          hasAncestorJsxTag(node, 'form') &&
+          isAuthLikeInputAttributes(node.openingElement.attributes) &&
+          !getJsxAttribute(node.openingElement.attributes, 'name')
         ) {
           signals.authInputWithoutNameCount += 1;
         }
       }
-      if (!hasFormControlLabel(node, tagName, node.openingElement.attributes, labelForIds, textContent)) {
+      if (
+        !hasFormControlLabel(
+          node,
+          tagName,
+          node.openingElement.attributes,
+          labelForIds,
+          textContent,
+        )
+      ) {
         signals.formControlWithoutLabelCount += 1;
       }
     }
@@ -9980,7 +12428,8 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   };
 
   walk(sourceFile);
-  signals.unlabeledNavigationLandmarkCount = navigationLandmarkCount > 1 ? unlabeledNavigationLandmarkCount : 0;
+  signals.unlabeledNavigationLandmarkCount =
+    navigationLandmarkCount > 1 ? unlabeledNavigationLandmarkCount : 0;
   signals.multipleMainLandmarkCount = Math.max(0, signals.mainLandmarkCount - 1);
   return signals;
 }
@@ -9997,10 +12446,12 @@ export function critiqueSource({
   const focusAreas = resolveFocusAreas(reviewPack);
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
-  const antiPatternIds = new Set(reviewPack?.antiPatterns.map(entry => entry.id) ?? []);
+  const antiPatternIds = new Set(reviewPack?.antiPatterns.map((entry) => entry.id) ?? []);
 
-  const usedTreatments = TREATMENT_CLASSES.filter(token => code.includes(token));
-  const treatmentSuggestions = TREATMENT_CLASSES.filter(token => !code.includes(token)).map(token => `Consider using \`${token}\` where appropriate.`);
+  const usedTreatments = TREATMENT_CLASSES.filter((token) => code.includes(token));
+  const treatmentSuggestions = TREATMENT_CLASSES.filter((token) => !code.includes(token)).map(
+    (token) => `Consider using \`${token}\` where appropriate.`,
+  );
   scores.push({
     category: 'Treatment Usage',
     focusArea: 'treatment-usage',
@@ -10009,42 +12460,66 @@ export function critiqueSource({
     suggestions: treatmentSuggestions,
   });
   if (focusAreas.includes('treatment-usage') && usedTreatments.length === 0) {
-    findings.push(makeFinding({
-      id: 'treatment-usage-missing',
-      category: 'Treatment Usage',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract', 'section-pattern-coverage']),
-      message: 'No Decantr treatment classes were detected in the reviewed file.',
-      evidence: [filePath, 'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.'],
-      file: filePath,
-      suggestedFix: 'Apply the compiled treatment vocabulary instead of hand-rolled utility styling.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'treatment-usage-missing',
+        category: 'Treatment Usage',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'page-pattern-contract',
+          'section-pattern-coverage',
+        ]),
+        message: 'No Decantr treatment classes were detected in the reviewed file.',
+        evidence: [
+          filePath,
+          'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.',
+        ],
+        file: filePath,
+        suggestedFix:
+          'Apply the compiled treatment vocabulary instead of hand-rolled utility styling.',
+      }),
+    );
   }
 
   const decoratorNames = buildDecoratorInventory(treatmentsCss);
-  const usedDecorators = decoratorNames.filter(name => code.includes(name));
+  const usedDecorators = decoratorNames.filter((name) => code.includes(name));
   const usesCssVars = code.includes('var(--');
   scores.push({
     category: 'Theme Consistency',
     focusArea: 'theme-consistency',
-    score: decoratorNames.length > 0
-      ? scoreRatio((usedDecorators.length > 0 ? 1 : 0) + (usesCssVars ? 1 : 0), 2)
-      : (usesCssVars ? 4 : 2),
+    score:
+      decoratorNames.length > 0
+        ? scoreRatio((usedDecorators.length > 0 ? 1 : 0) + (usesCssVars ? 1 : 0), 2)
+        : usesCssVars
+          ? 4
+          : 2,
     details: `Decorators used: ${usedDecorators.join(', ') || 'none'}; CSS vars: ${usesCssVars ? 'yes' : 'no'}`,
     suggestions: [
       ...(!usesCssVars ? ['Prefer CSS variable references over hardcoded visual values.'] : []),
-      ...((decoratorNames.length > 0 && usedDecorators.length === 0) ? ['Use theme decorators from treatments.css when they fit the component intent.'] : []),
+      ...(decoratorNames.length > 0 && usedDecorators.length === 0
+        ? ['Use theme decorators from treatments.css when they fit the component intent.']
+        : []),
     ],
   });
   if (focusAreas.includes('theme-consistency') && !usesCssVars && usedDecorators.length === 0) {
-    findings.push(makeFinding({
-      id: 'theme-consistency-weak',
-      category: 'Theme Consistency',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['theme-consistency', 'mutation-theme-contract']),
-      message: 'The file does not appear to use theme decorators or CSS variables from the compiled contract.',
-      evidence: [filePath, `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`],
-      file: filePath,
-      suggestedFix: 'Anchor styling to tokens.css and treatments.css instead of local hardcoded values.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'theme-consistency-weak',
+        category: 'Theme Consistency',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'theme-consistency',
+          'mutation-theme-contract',
+        ]),
+        message:
+          'The file does not appear to use theme decorators or CSS variables from the compiled contract.',
+        evidence: [
+          filePath,
+          `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Anchor styling to tokens.css and treatments.css instead of local hardcoded values.',
+      }),
+    );
   }
 
   const hasAria = codeLower.includes('aria-') || codeLower.includes('role=');
@@ -10069,202 +12544,314 @@ export function critiqueSource({
       1,
       Math.min(
         5,
-        1
-        + (hasAria ? 2 : 0)
-        + (hasFocus ? 1 : 0)
-        + (hasKeyboard ? 1 : 0)
-        - (iconButtonIssues > 0 ? 1 : 0)
-        - (iconLinkIssues > 0 ? 1 : 0)
-        - (clickableNonSemanticIssues > 0 ? 1 : 0)
-        - (unlabeledNavigationLandmarkIssues > 0 ? 1 : 0)
-        - (multipleMainLandmarkIssues > 0 ? 1 : 0)
-        - (imageAltIssues > 0 ? 1 : 0)
-        - (iframeTitleIssues > 0 ? 1 : 0)
-        - (dialogLabelIssues > 0 ? 1 : 0)
-        - (dialogModalHintIssues > 0 ? 1 : 0)
-        - (tableHeaderIssues > 0 ? 1 : 0)
-        - (tableCaptionIssues > 0 ? 1 : 0)
-        - (formControlLabelIssues > 0 ? 1 : 0),
+        1 +
+          (hasAria ? 2 : 0) +
+          (hasFocus ? 1 : 0) +
+          (hasKeyboard ? 1 : 0) -
+          (iconButtonIssues > 0 ? 1 : 0) -
+          (iconLinkIssues > 0 ? 1 : 0) -
+          (clickableNonSemanticIssues > 0 ? 1 : 0) -
+          (unlabeledNavigationLandmarkIssues > 0 ? 1 : 0) -
+          (multipleMainLandmarkIssues > 0 ? 1 : 0) -
+          (imageAltIssues > 0 ? 1 : 0) -
+          (iframeTitleIssues > 0 ? 1 : 0) -
+          (dialogLabelIssues > 0 ? 1 : 0) -
+          (dialogModalHintIssues > 0 ? 1 : 0) -
+          (tableHeaderIssues > 0 ? 1 : 0) -
+          (tableCaptionIssues > 0 ? 1 : 0) -
+          (formControlLabelIssues > 0 ? 1 : 0),
       ),
     ),
     details: `ARIA: ${hasAria ? 'yes' : 'no'}, Focus: ${hasFocus ? 'yes' : 'no'}, Keyboard: ${hasKeyboard ? 'yes' : 'no'}, unlabeled icon buttons: ${iconButtonIssues}, unlabeled icon links: ${iconLinkIssues}, clickable non-semantic elements: ${clickableNonSemanticIssues}, unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}, extra main landmarks: ${multipleMainLandmarkIssues}, images without alt: ${imageAltIssues}, iframes without title: ${iframeTitleIssues}, dialogs without label: ${dialogLabelIssues}, dialogs without modal hint: ${dialogModalHintIssues}, tables without headers: ${tableHeaderIssues}, tables without caption: ${tableCaptionIssues}, form controls without labels: ${formControlLabelIssues}`,
     suggestions: [
       ...(!hasAria ? ['Add ARIA roles or labels to interactive regions.'] : []),
       ...(!hasFocus ? ['Add visible focus styling for keyboard navigation.'] : []),
-      ...(!hasKeyboard ? ['Add keyboard handling where interactive behavior depends on pointer events.'] : []),
-      ...(iconButtonIssues > 0 ? ['Add accessible labels to icon-only buttons via visible text or aria-label.'] : []),
-      ...(iconLinkIssues > 0 ? ['Add accessible labels to icon-only links via visible text or aria-label.'] : []),
-      ...(clickableNonSemanticIssues > 0 ? ['Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.'] : []),
-      ...(unlabeledNavigationLandmarkIssues > 0 ? ['Give multiple navigation landmarks distinct labels so assistive technologies can differentiate primary, sidebar, and utility nav regions.'] : []),
-      ...(multipleMainLandmarkIssues > 0 ? ['Keep only one primary main landmark per rendered page or shell surface.'] : []),
-      ...(imageAltIssues > 0 ? ['Add alt text to meaningful images and use alt="" only for decorative ones.'] : []),
-      ...(iframeTitleIssues > 0 ? ['Add descriptive title attributes to embedded iframes so assistive technologies can identify their purpose.'] : []),
-      ...(dialogLabelIssues > 0 ? ['Give dialogs an explicit accessible name via aria-label, aria-labelledby, or title.'] : []),
-      ...(dialogModalHintIssues > 0 ? ['Expose modal intent on dialog surfaces with aria-modal="true" or a native open dialog contract.'] : []),
-      ...(tableHeaderIssues > 0 ? ['Give tables explicit header cells so assistive technologies can map data cells to column or row labels.'] : []),
-      ...(tableCaptionIssues > 0 ? ['Add a caption or equivalent programmatic summary so the table purpose is clear before users navigate its cells.'] : []),
-      ...(formControlLabelIssues > 0 ? ['Add programmatic labels to form controls instead of relying on placeholders alone.'] : []),
+      ...(!hasKeyboard
+        ? ['Add keyboard handling where interactive behavior depends on pointer events.']
+        : []),
+      ...(iconButtonIssues > 0
+        ? ['Add accessible labels to icon-only buttons via visible text or aria-label.']
+        : []),
+      ...(iconLinkIssues > 0
+        ? ['Add accessible labels to icon-only links via visible text or aria-label.']
+        : []),
+      ...(clickableNonSemanticIssues > 0
+        ? [
+            'Use semantic interactive elements or add role/tabIndex and keyboard handling to clickable non-semantic containers.',
+          ]
+        : []),
+      ...(unlabeledNavigationLandmarkIssues > 0
+        ? [
+            'Give multiple navigation landmarks distinct labels so assistive technologies can differentiate primary, sidebar, and utility nav regions.',
+          ]
+        : []),
+      ...(multipleMainLandmarkIssues > 0
+        ? ['Keep only one primary main landmark per rendered page or shell surface.']
+        : []),
+      ...(imageAltIssues > 0
+        ? ['Add alt text to meaningful images and use alt="" only for decorative ones.']
+        : []),
+      ...(iframeTitleIssues > 0
+        ? [
+            'Add descriptive title attributes to embedded iframes so assistive technologies can identify their purpose.',
+          ]
+        : []),
+      ...(dialogLabelIssues > 0
+        ? ['Give dialogs an explicit accessible name via aria-label, aria-labelledby, or title.']
+        : []),
+      ...(dialogModalHintIssues > 0
+        ? [
+            'Expose modal intent on dialog surfaces with aria-modal="true" or a native open dialog contract.',
+          ]
+        : []),
+      ...(tableHeaderIssues > 0
+        ? [
+            'Give tables explicit header cells so assistive technologies can map data cells to column or row labels.',
+          ]
+        : []),
+      ...(tableCaptionIssues > 0
+        ? [
+            'Add a caption or equivalent programmatic summary so the table purpose is clear before users navigate its cells.',
+          ]
+        : []),
+      ...(formControlLabelIssues > 0
+        ? ['Add programmatic labels to form controls instead of relying on placeholders alone.']
+        : []),
     ],
   });
   if (focusAreas.includes('accessibility')) {
     if (!hasAria) {
-      findings.push(makeFinding({
-        id: 'accessibility-aria-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'No ARIA roles or labels were detected in the reviewed file.',
-        evidence: [filePath],
-        file: filePath,
-        suggestedFix: 'Add ARIA metadata to interactive or landmark elements.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-aria-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'No ARIA roles or labels were detected in the reviewed file.',
+          evidence: [filePath],
+          file: filePath,
+          suggestedFix: 'Add ARIA metadata to interactive or landmark elements.',
+        }),
+      );
     }
     if (!hasKeyboard) {
-      findings.push(makeFinding({
-        id: 'accessibility-keyboard-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation']),
-        message: 'No keyboard interaction handlers were detected in the reviewed file.',
-        evidence: [filePath],
-        file: filePath,
-        suggestedFix: 'Verify interactive elements remain usable from the keyboard.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-keyboard-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation']),
+          message: 'No keyboard interaction handlers were detected in the reviewed file.',
+          evidence: [filePath],
+          file: filePath,
+          suggestedFix: 'Verify interactive elements remain usable from the keyboard.',
+        }),
+      );
     }
     if (iconButtonIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-icon-button-label-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Icon-only button elements were detected without an accessible label.',
-        evidence: [filePath, `Unlabeled icon buttons: ${iconButtonIssues}`],
-        file: filePath,
-        suggestedFix: 'Add visible text or an aria-label/aria-labelledby attribute to icon-only buttons.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-icon-button-label-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Icon-only button elements were detected without an accessible label.',
+          evidence: [filePath, `Unlabeled icon buttons: ${iconButtonIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Add visible text or an aria-label/aria-labelledby attribute to icon-only buttons.',
+        }),
+      );
     }
     if (iconLinkIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-icon-link-label-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Icon-only link elements were detected without an accessible label.',
-        evidence: [filePath, `Unlabeled icon links: ${iconLinkIssues}`],
-        file: filePath,
-        suggestedFix: 'Add visible text or an aria-label/aria-labelledby attribute to icon-only links.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-icon-link-label-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Icon-only link elements were detected without an accessible label.',
+          evidence: [filePath, `Unlabeled icon links: ${iconLinkIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Add visible text or an aria-label/aria-labelledby attribute to icon-only links.',
+        }),
+      );
     }
     if (clickableNonSemanticIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-clickable-non-semantic',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-remediation', 'review-contract-baseline']),
-        message: 'Clickable non-semantic elements were detected without the semantic/keyboard affordances accessibility tools expect.',
-        evidence: [filePath, `Clickable non-semantic elements without role/tabIndex: ${clickableNonSemanticIssues}`],
-        file: filePath,
-        suggestedFix: 'Prefer semantic controls like button/link, or add role, tabIndex, and keyboard handlers to non-semantic interactive containers.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-clickable-non-semantic',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+            'review-remediation',
+            'review-contract-baseline',
+          ]),
+          message:
+            'Clickable non-semantic elements were detected without the semantic/keyboard affordances accessibility tools expect.',
+          evidence: [
+            filePath,
+            `Clickable non-semantic elements without role/tabIndex: ${clickableNonSemanticIssues}`,
+          ],
+          file: filePath,
+          suggestedFix:
+            'Prefer semantic controls like button/link, or add role, tabIndex, and keyboard handlers to non-semantic interactive containers.',
+        }),
+      );
     }
     if (unlabeledNavigationLandmarkIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-navigation-landmark-label-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Multiple navigation landmarks were detected without distinct accessible labels.',
-        evidence: [filePath, `Unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}`],
-        file: filePath,
-        suggestedFix: 'Label multiple nav regions with aria-label or aria-labelledby so assistive technologies can distinguish primary, sidebar, and utility navigation.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-navigation-landmark-label-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message:
+            'Multiple navigation landmarks were detected without distinct accessible labels.',
+          evidence: [
+            filePath,
+            `Unlabeled navigation landmarks: ${unlabeledNavigationLandmarkIssues}`,
+          ],
+          file: filePath,
+          suggestedFix:
+            'Label multiple nav regions with aria-label or aria-labelledby so assistive technologies can distinguish primary, sidebar, and utility navigation.',
+        }),
+      );
     }
     if (multipleMainLandmarkIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-multiple-main-landmarks',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Multiple main landmarks were detected in the reviewed file.',
-        evidence: [filePath, `Extra main landmarks beyond the first: ${multipleMainLandmarkIssues}`],
-        file: filePath,
-        suggestedFix: 'Render one primary `<main>` landmark per page or shell surface and move secondary regions into section/article/div containers instead.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-multiple-main-landmarks',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Multiple main landmarks were detected in the reviewed file.',
+          evidence: [
+            filePath,
+            `Extra main landmarks beyond the first: ${multipleMainLandmarkIssues}`,
+          ],
+          file: filePath,
+          suggestedFix:
+            'Render one primary `<main>` landmark per page or shell surface and move secondary regions into section/article/div containers instead.',
+        }),
+      );
     }
     if (imageAltIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-image-alt-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Image elements were detected without an `alt` attribute.',
-        evidence: [filePath, `Images without alt: ${imageAltIssues}`],
-        file: filePath,
-        suggestedFix: 'Add meaningful alt text for informative images, or use alt="" when the image is purely decorative.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-image-alt-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Image elements were detected without an `alt` attribute.',
+          evidence: [filePath, `Images without alt: ${imageAltIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Add meaningful alt text for informative images, or use alt="" when the image is purely decorative.',
+        }),
+      );
     }
     if (iframeTitleIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-iframe-title-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Iframe elements were detected without a descriptive `title` attribute.',
-        evidence: [filePath, `Iframes without title: ${iframeTitleIssues}`],
-        file: filePath,
-        suggestedFix: 'Add a concise title attribute to each iframe so assistive technologies can describe the embedded surface.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-iframe-title-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Iframe elements were detected without a descriptive `title` attribute.',
+          evidence: [filePath, `Iframes without title: ${iframeTitleIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Add a concise title attribute to each iframe so assistive technologies can describe the embedded surface.',
+        }),
+      );
     }
     if (dialogLabelIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-dialog-label-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Dialog surfaces were detected without an explicit accessible name.',
-        evidence: [filePath, `Dialogs without aria-label/aria-labelledby/title: ${dialogLabelIssues}`],
-        file: filePath,
-        suggestedFix: 'Name dialogs with aria-label, aria-labelledby, or title so assistive technologies can announce the dialog context.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-dialog-label-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Dialog surfaces were detected without an explicit accessible name.',
+          evidence: [
+            filePath,
+            `Dialogs without aria-label/aria-labelledby/title: ${dialogLabelIssues}`,
+          ],
+          file: filePath,
+          suggestedFix:
+            'Name dialogs with aria-label, aria-labelledby, or title so assistive technologies can announce the dialog context.',
+        }),
+      );
     }
     if (dialogModalHintIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-dialog-modal-hint-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation', 'review-contract-baseline']),
-        message: 'Dialog surfaces were detected without an explicit modal hint.',
-        evidence: [filePath, `Dialogs without aria-modal/open signal: ${dialogModalHintIssues}`],
-        file: filePath,
-        suggestedFix: 'Expose modal intent with aria-modal="true" for custom dialogs, or rely on a reviewed native dialog/open contract.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-dialog-modal-hint-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'info', [
+            'review-remediation',
+            'review-contract-baseline',
+          ]),
+          message: 'Dialog surfaces were detected without an explicit modal hint.',
+          evidence: [filePath, `Dialogs without aria-modal/open signal: ${dialogModalHintIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Expose modal intent with aria-modal="true" for custom dialogs, or rely on a reviewed native dialog/open contract.',
+        }),
+      );
     }
     if (tableHeaderIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-table-headers-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
-        message: 'Table markup was detected without header cells.',
-        evidence: [filePath, `Tables without <th> headers: ${tableHeaderIssues}`],
-        file: filePath,
-        suggestedFix: 'Add <th> cells with appropriate scope or otherwise expose explicit table headers so assistive technologies can map the data grid correctly.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-table-headers-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline']),
+          message: 'Table markup was detected without header cells.',
+          evidence: [filePath, `Tables without <th> headers: ${tableHeaderIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Add <th> cells with appropriate scope or otherwise expose explicit table headers so assistive technologies can map the data grid correctly.',
+        }),
+      );
     }
     if (tableCaptionIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-table-caption-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'info', ['review-remediation', 'review-contract-baseline']),
-        message: 'Table markup was detected without a caption or programmatic summary.',
-        evidence: [filePath, `Tables without caption: ${tableCaptionIssues}`],
-        file: filePath,
-        suggestedFix: 'Add a <caption> or equivalent summary so users understand the table purpose before navigating its cells.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-table-caption-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'info', [
+            'review-remediation',
+            'review-contract-baseline',
+          ]),
+          message: 'Table markup was detected without a caption or programmatic summary.',
+          evidence: [filePath, `Tables without caption: ${tableCaptionIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Add a <caption> or equivalent summary so users understand the table purpose before navigating its cells.',
+        }),
+      );
     }
     if (formControlLabelIssues > 0) {
-      findings.push(makeFinding({
-        id: 'accessibility-form-control-label-missing',
-        category: 'Accessibility',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'review-remediation']),
-        message: 'Form controls were detected without an associated accessible label.',
-        evidence: [filePath, `Form controls without labels: ${formControlLabelIssues}`],
-        file: filePath,
-        suggestedFix: 'Associate inputs with visible labels or use aria-label/aria-labelledby when a visible label is not appropriate.',
-      }));
+      findings.push(
+        makeFinding({
+          id: 'accessibility-form-control-label-missing',
+          category: 'Accessibility',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+            'review-contract-baseline',
+            'review-remediation',
+          ]),
+          message: 'Form controls were detected without an associated accessible label.',
+          evidence: [filePath, `Form controls without labels: ${formControlLabelIssues}`],
+          file: filePath,
+          suggestedFix:
+            'Associate inputs with visible labels or use aria-label/aria-labelledby when a visible label is not appropriate.',
+        }),
+      );
     }
   }
 
-  const hasMedia = codeLower.includes('@media') || codeLower.includes('usemediaquery') || codeLower.includes('breakpoint');
-  const hasResponsive = codeLower.includes('sm:') || codeLower.includes('md:') || codeLower.includes('lg:') || codeLower.includes('_sm_') || codeLower.includes('_md_');
+  const hasMedia =
+    codeLower.includes('@media') ||
+    codeLower.includes('usemediaquery') ||
+    codeLower.includes('breakpoint');
+  const hasResponsive =
+    codeLower.includes('sm:') ||
+    codeLower.includes('md:') ||
+    codeLower.includes('lg:') ||
+    codeLower.includes('_sm_') ||
+    codeLower.includes('_md_');
   scores.push({
     category: 'Responsive Design',
     focusArea: 'responsive-design',
@@ -10273,19 +12860,28 @@ export function critiqueSource({
     suggestions: !hasMedia && !hasResponsive ? ['Add responsive breakpoint handling.'] : [],
   });
   if (focusAreas.includes('responsive-design') && !hasMedia && !hasResponsive) {
-    findings.push(makeFinding({
-      id: 'responsive-signals-missing',
-      category: 'Responsive Design',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract']),
-      message: 'No responsive breakpoint handling was detected in the reviewed file.',
-      evidence: [filePath],
-      file: filePath,
-      suggestedFix: 'Add responsive layout behavior that matches the compiled route contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'responsive-signals-missing',
+        category: 'Responsive Design',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', ['page-pattern-contract']),
+        message: 'No responsive breakpoint handling was detected in the reviewed file.',
+        evidence: [filePath],
+        file: filePath,
+        suggestedFix: 'Add responsive layout behavior that matches the compiled route contract.',
+      }),
+    );
   }
 
-  const hasTransition = codeLower.includes('transition') || codeLower.includes('animate') || codeLower.includes('keyframe') || codeLower.includes('framer');
-  const hasHover = codeLower.includes(':hover') || codeLower.includes('onmouseenter') || codeLower.includes('hover:');
+  const hasTransition =
+    codeLower.includes('transition') ||
+    codeLower.includes('animate') ||
+    codeLower.includes('keyframe') ||
+    codeLower.includes('framer');
+  const hasHover =
+    codeLower.includes(':hover') ||
+    codeLower.includes('onmouseenter') ||
+    codeLower.includes('hover:');
   const buttonInFormWithoutTypeCount = astSignals.buttonInFormWithoutTypeCount;
   const authFormWithoutSubmitCount = astSignals.authFormWithoutSubmitCount;
   const authInputWithoutNameCount = astSignals.authInputWithoutNameCount;
@@ -10318,641 +12914,825 @@ export function critiqueSource({
   const authCallbackStateStorageSignalCount = countAuthCallbackStateStorageSignals(code);
   const authCallbackStateStorageClearSignalCount = countAuthCallbackStateStorageClearSignals(code);
   const authUnauthenticatedBranchSignalCount = countAuthUnauthenticatedBranchSignals(code);
-  const hasAuthCallbackErrorGap = authCallbackTokenSignalCount > 0 && authCallbackErrorSignalCount === 0;
+  const hasAuthCallbackErrorGap =
+    authCallbackTokenSignalCount > 0 && authCallbackErrorSignalCount === 0;
   scores.push({
     category: 'Motion & Interaction',
     focusArea: 'motion-interaction',
-    score: Math.max(1, Math.min(5, (hasTransition ? 3 : 1) + (hasHover ? 2 : 0) - (buttonInFormWithoutTypeCount > 0 ? 1 : 0) - (authFormWithoutSubmitCount > 0 ? 1 : 0) - (authInputWithoutNameCount > 0 ? 1 : 0) - (authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? 1 : 0))),
+    score: Math.max(
+      1,
+      Math.min(
+        5,
+        (hasTransition ? 3 : 1) +
+          (hasHover ? 2 : 0) -
+          (buttonInFormWithoutTypeCount > 0 ? 1 : 0) -
+          (authFormWithoutSubmitCount > 0 ? 1 : 0) -
+          (authInputWithoutNameCount > 0 ? 1 : 0) -
+          (authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? 1 : 0),
+      ),
+    ),
     details: `Transitions: ${hasTransition ? 'yes' : 'no'}, Hover states: ${hasHover ? 'yes' : 'no'}, form buttons missing type: ${buttonInFormWithoutTypeCount}, auth forms without submit control: ${authFormWithoutSubmitCount}, auth inputs without name: ${authInputWithoutNameCount}, auth redirects to protected routes: ${authProtectedRedirectSignalCount}, auth exits without anonymous redirect: ${authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? 1 : 0}, auth exits without teardown: ${authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? 1 : 0}`,
     suggestions: [
-      ...(!hasTransition ? ['Add transitions for interactive state changes where appropriate.'] : []),
-      ...(buttonInFormWithoutTypeCount > 0 ? ['Add explicit button types inside forms so non-submit actions do not accidentally submit.'] : []),
-      ...(authFormWithoutSubmitCount > 0 ? ['Auth-like forms should expose a clear submit control so users can actually complete the credential flow.'] : []),
-      ...(authInputWithoutNameCount > 0 ? ['Give auth-related form inputs stable `name` attributes so browser form posts and FormData submissions include the credential values.'] : []),
-      ...(authProtectedRedirectSignalCount > 0 ? ['Keep unauthenticated guard redirects pointed at anonymous entry routes, not protected destinations like `/dashboard` or `/app`.'] : []),
-      ...(authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0 ? ['After sign-out, return users to an anonymous entry route instead of leaving the protected shell in place.'] : []),
-      ...(authExitSignalCount > 0 && authSessionTeardownSignalCount === 0 ? ['Do not treat redirect-only logout as a complete sign-out. Explicitly invalidate the reviewed session before returning users to an anonymous route.'] : []),
+      ...(!hasTransition
+        ? ['Add transitions for interactive state changes where appropriate.']
+        : []),
+      ...(buttonInFormWithoutTypeCount > 0
+        ? [
+            'Add explicit button types inside forms so non-submit actions do not accidentally submit.',
+          ]
+        : []),
+      ...(authFormWithoutSubmitCount > 0
+        ? [
+            'Auth-like forms should expose a clear submit control so users can actually complete the credential flow.',
+          ]
+        : []),
+      ...(authInputWithoutNameCount > 0
+        ? [
+            'Give auth-related form inputs stable `name` attributes so browser form posts and FormData submissions include the credential values.',
+          ]
+        : []),
+      ...(authProtectedRedirectSignalCount > 0
+        ? [
+            'Keep unauthenticated guard redirects pointed at anonymous entry routes, not protected destinations like `/dashboard` or `/app`.',
+          ]
+        : []),
+      ...(authExitSignalCount > 0 && authAnonymousRedirectSignalCount === 0
+        ? [
+            'After sign-out, return users to an anonymous entry route instead of leaving the protected shell in place.',
+          ]
+        : []),
+      ...(authExitSignalCount > 0 && authSessionTeardownSignalCount === 0
+        ? [
+            'Do not treat redirect-only logout as a complete sign-out. Explicitly invalidate the reviewed session before returning users to an anonymous route.',
+          ]
+        : []),
     ],
   });
   if (buttonInFormWithoutTypeCount > 0) {
-    findings.push(makeFinding({
-      id: 'interaction-button-type-missing',
-      category: 'Interaction Safety',
-      severity: 'warn',
-      message: 'Buttons inside forms were detected without an explicit `type` attribute.',
-      evidence: [filePath, `Buttons inside forms without type: ${buttonInFormWithoutTypeCount}`],
-      file: filePath,
-      suggestedFix: 'Set `type=\"button\"` for non-submit actions and `type=\"submit\"` for the intended submit control.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'interaction-button-type-missing',
+        category: 'Interaction Safety',
+        severity: 'warn',
+        message: 'Buttons inside forms were detected without an explicit `type` attribute.',
+        evidence: [filePath, `Buttons inside forms without type: ${buttonInFormWithoutTypeCount}`],
+        file: filePath,
+        suggestedFix:
+          'Set `type="button"` for non-submit actions and `type="submit"` for the intended submit control.',
+      }),
+    );
   }
 
   if (authFormWithoutSubmitCount > 0) {
-    findings.push(makeFinding({
-      id: 'interaction-auth-submit-missing',
-      category: 'Interaction Safety',
-      severity: 'warn',
-      message: 'Auth-like forms were detected without any submit control.',
-      evidence: [filePath, `Auth forms without submit control: ${authFormWithoutSubmitCount}`],
-      file: filePath,
-      suggestedFix: 'Add an explicit submit button or submit input so users can complete the sign-in, registration, or recovery flow.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'interaction-auth-submit-missing',
+        category: 'Interaction Safety',
+        severity: 'warn',
+        message: 'Auth-like forms were detected without any submit control.',
+        evidence: [filePath, `Auth forms without submit control: ${authFormWithoutSubmitCount}`],
+        file: filePath,
+        suggestedFix:
+          'Add an explicit submit button or submit input so users can complete the sign-in, registration, or recovery flow.',
+      }),
+    );
   }
 
   if (authInputWithoutNameCount > 0) {
-    findings.push(makeFinding({
-      id: 'interaction-auth-input-name-missing',
-      category: 'Interaction Safety',
-      severity: 'warn',
-      message: 'Auth-like form inputs were detected without a `name` attribute.',
-      evidence: [filePath, `Auth inputs without name: ${authInputWithoutNameCount}`],
-      file: filePath,
-      suggestedFix: 'Add stable name attributes such as `email`, `username`, or `password` so browser form submission and FormData handling include the credential values.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'interaction-auth-input-name-missing',
+        category: 'Interaction Safety',
+        severity: 'warn',
+        message: 'Auth-like form inputs were detected without a `name` attribute.',
+        evidence: [filePath, `Auth inputs without name: ${authInputWithoutNameCount}`],
+        file: filePath,
+        suggestedFix:
+          'Add stable name attributes such as `email`, `username`, or `password` so browser form submission and FormData handling include the credential values.',
+      }),
+    );
   }
 
   if (
-    authProtectedRedirectSignalCount > 0
-    && (astSignals.authGuardSignalCount > 0 || astSignals.authSessionSignalCount > 0)
-    && astSignals.authEntrySignalCount === 0
+    authProtectedRedirectSignalCount > 0 &&
+    (astSignals.authGuardSignalCount > 0 || astSignals.authSessionSignalCount > 0) &&
+    astSignals.authEntrySignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-guard-protected-redirect',
-      category: 'Route Topology',
-      severity: 'warn',
-      message: 'Auth/session logic in the reviewed file redirects toward protected destinations instead of anonymous entry routes.',
-      evidence: [filePath, `Protected auth redirects: ${authProtectedRedirectSignalCount}`],
-      file: filePath,
-      suggestedFix: 'Redirect unauthenticated flows to `/`, `/login`, `/register`, or another gateway route, and reserve redirects to `/dashboard` or `/app` for reviewed post-auth success flows.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'route-auth-guard-protected-redirect',
+        category: 'Route Topology',
+        severity: 'warn',
+        message:
+          'Auth/session logic in the reviewed file redirects toward protected destinations instead of anonymous entry routes.',
+        evidence: [filePath, `Protected auth redirects: ${authProtectedRedirectSignalCount}`],
+        file: filePath,
+        suggestedFix:
+          'Redirect unauthenticated flows to `/`, `/login`, `/register`, or another gateway route, and reserve redirects to `/dashboard` or `/app` for reviewed post-auth success flows.',
+      }),
+    );
   }
 
   if (
-    authExitSignalCount > 0
-    && (astSignals.authSessionSignalCount > 0 || astSignals.authGuardSignalCount > 0)
-    && authAnonymousRedirectSignalCount === 0
+    authExitSignalCount > 0 &&
+    (astSignals.authSessionSignalCount > 0 || astSignals.authGuardSignalCount > 0) &&
+    authAnonymousRedirectSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-exit-redirect-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'Auth/session exit logic does not show an obvious redirect back to an anonymous entry route.',
-      evidence: [filePath, `Auth exit signals: ${authExitSignalCount}`, `Anonymous auth redirects: ${authAnonymousRedirectSignalCount}`],
-      file: filePath,
-      suggestedFix: 'After logout or session exit, navigate users to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after sign-out.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'route-auth-exit-redirect-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'Auth/session exit logic does not show an obvious redirect back to an anonymous entry route.',
+        evidence: [
+          filePath,
+          `Auth exit signals: ${authExitSignalCount}`,
+          `Anonymous auth redirects: ${authAnonymousRedirectSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After logout or session exit, navigate users to `/`, `/login`, `/register`, or another reviewed anonymous entry route so protected shells do not linger after sign-out.',
+      }),
+    );
   }
 
   if (
-    authExitSignalCount > 0
-    && (astSignals.authSessionSignalCount > 0 || astSignals.authGuardSignalCount > 0)
-    && authSessionTeardownSignalCount === 0
+    authExitSignalCount > 0 &&
+    (astSignals.authSessionSignalCount > 0 || astSignals.authGuardSignalCount > 0) &&
+    authSessionTeardownSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-exit-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'Auth/session exit logic redirects users away but does not show an obvious session teardown or sign-out boundary.',
-      evidence: [filePath, `Auth exit signals: ${authExitSignalCount}`, `Session teardown signals: ${authSessionTeardownSignalCount}`],
-      file: filePath,
-      suggestedFix: 'Before redirecting users to `/login` or another anonymous route, explicitly sign out or invalidate the reviewed session state.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-exit-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'Auth/session exit logic redirects users away but does not show an obvious session teardown or sign-out boundary.',
+        evidence: [
+          filePath,
+          `Auth exit signals: ${authExitSignalCount}`,
+          `Session teardown signals: ${authSessionTeardownSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Before redirecting users to `/login` or another anonymous route, explicitly sign out or invalidate the reviewed session state.',
+      }),
+    );
+  }
+
+  if (authExitSignalCount > 0 && authStorageWriteCount > 0 && authStorageClearCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-storage-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow writes auth data into browser storage but does not show that storage being cleared during sign-out.',
+        evidence: [
+          filePath,
+          `Auth storage writes: ${authStorageWriteCount}`,
+          `Auth storage clears: ${authStorageClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If this flow stores auth/session data in browser storage, remove those auth keys during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
+  }
+
+  if (authExitSignalCount > 0 && authCookieWriteCount > 0 && authCookieClearCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-cookie-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow issues auth-like cookies but does not show them being cleared during sign-out.',
+        evidence: [
+          filePath,
+          `Auth cookie writes: ${authCookieWriteCount}`,
+          `Auth cookie clears: ${authCookieClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If this flow issues auth cookies from reviewed source code, explicitly expire or delete those cookies during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
+  }
+
+  if (authExitSignalCount > 0 && authHeaderWriteCount > 0 && authHeaderClearCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-header-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow constructs auth-like headers but does not show them being cleared during sign-out.',
+        evidence: [
+          filePath,
+          `Auth header writes: ${authHeaderWriteCount}`,
+          `Auth header clears: ${authHeaderClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If this flow constructs auth/session headers in reviewed source code, explicitly delete or reset those header values during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    authExitSignalCount > 0
-    && authStorageWriteCount > 0
-    && authStorageClearCount === 0
+    authExitSignalCount > 0 &&
+    authCacheClientCount > 0 &&
+    authCacheClearCount === 0 &&
+    (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-storage-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow writes auth data into browser storage but does not show that storage being cleared during sign-out.',
-      evidence: [filePath, `Auth storage writes: ${authStorageWriteCount}`, `Auth storage clears: ${authStorageClearCount}`],
-      file: filePath,
-      suggestedFix: 'If this flow stores auth/session data in browser storage, remove those auth keys during sign-out before redirecting users back to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-cache-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow uses client-side data caches but does not show them being cleared during sign-out.',
+        evidence: [
+          filePath,
+          `Auth cache clients: ${authCacheClientCount}`,
+          `Auth cache clears: ${authCacheClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
+  }
+
+  if (authExitSignalCount > 0 && authRefreshSignalCount > 0 && authRefreshClearCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-refresh-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow starts background auth refresh work but does not show it being torn down during sign-out.',
+        evidence: [
+          filePath,
+          `Auth refresh signals: ${authRefreshSignalCount}`,
+          `Auth refresh clears: ${authRefreshClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    authExitSignalCount > 0
-    && authCookieWriteCount > 0
-    && authCookieClearCount === 0
+    authExitSignalCount > 0 &&
+    authRealtimeSignalCount > 0 &&
+    authRealtimeClearCount === 0 &&
+    (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-cookie-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow issues auth-like cookies but does not show them being cleared during sign-out.',
-      evidence: [filePath, `Auth cookie writes: ${authCookieWriteCount}`, `Auth cookie clears: ${authCookieClearCount}`],
-      file: filePath,
-      suggestedFix: 'If this flow issues auth cookies from reviewed source code, explicitly expire or delete those cookies during sign-out before redirecting users back to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-realtime-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow starts realtime channels or sockets but does not show them being torn down during sign-out.',
+        evidence: [
+          filePath,
+          `Auth realtime signals: ${authRealtimeSignalCount}`,
+          `Auth realtime clears: ${authRealtimeClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
   }
 
   if (
-    authExitSignalCount > 0
-    && authHeaderWriteCount > 0
-    && authHeaderClearCount === 0
+    authExitSignalCount > 0 &&
+    authCoordinationSignalCount > 0 &&
+    authCoordinationClearCount === 0 &&
+    (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-header-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow constructs auth-like headers but does not show them being cleared during sign-out.',
-      evidence: [filePath, `Auth header writes: ${authHeaderWriteCount}`, `Auth header clears: ${authHeaderClearCount}`],
-      file: filePath,
-      suggestedFix: 'If this flow constructs auth/session headers in reviewed source code, explicitly delete or reset those header values during sign-out before redirecting users back to an anonymous route.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-coordination-teardown-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth exit flow coordinates auth state across tabs but does not show those channels or listeners being torn down during sign-out.',
+        evidence: [
+          filePath,
+          `Auth coordination signals: ${authCoordinationSignalCount}`,
+          `Auth coordination clears: ${authCoordinationClearCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'If auth state is coordinated across tabs with BroadcastChannel or storage listeners, close those channels and remove those listeners during sign-out before redirecting users back to an anonymous route.',
+      }),
+    );
   }
 
-  if (
-    authExitSignalCount > 0
-    && authCacheClientCount > 0
-    && authCacheClearCount === 0
-    && (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-cache-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow uses client-side data caches but does not show them being cleared during sign-out.',
-      evidence: [filePath, `Auth cache clients: ${authCacheClientCount}`, `Auth cache clears: ${authCacheClearCount}`],
-      file: filePath,
-      suggestedFix: 'If protected data is cached in query clients or client data stores, clear or reset those caches during sign-out before redirecting users back to an anonymous route.',
-    }));
-  }
-
-  if (
-    authExitSignalCount > 0
-    && authRefreshSignalCount > 0
-    && authRefreshClearCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-refresh-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow starts background auth refresh work but does not show it being torn down during sign-out.',
-      evidence: [filePath, `Auth refresh signals: ${authRefreshSignalCount}`, `Auth refresh clears: ${authRefreshClearCount}`],
-      file: filePath,
-      suggestedFix: 'If auth/session refresh runs on timers or subscriptions, clear those intervals, timeouts, or listeners during sign-out before redirecting users back to an anonymous route.',
-    }));
-  }
-
-  if (
-    authExitSignalCount > 0
-    && authRealtimeSignalCount > 0
-    && authRealtimeClearCount === 0
-    && (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-realtime-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow starts realtime channels or sockets but does not show them being torn down during sign-out.',
-      evidence: [filePath, `Auth realtime signals: ${authRealtimeSignalCount}`, `Auth realtime clears: ${authRealtimeClearCount}`],
-      file: filePath,
-      suggestedFix: 'If protected data arrives over websockets, SSE, or realtime channels, close or unsubscribe those connections during sign-out before redirecting users back to an anonymous route.',
-    }));
-  }
-
-  if (
-    authExitSignalCount > 0
-    && authCoordinationSignalCount > 0
-    && authCoordinationClearCount === 0
-    && (astSignals.protectedSurfaceSignalCount > 0 || astSignals.authSessionSignalCount > 0)
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-coordination-teardown-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth exit flow coordinates auth state across tabs but does not show those channels or listeners being torn down during sign-out.',
-      evidence: [filePath, `Auth coordination signals: ${authCoordinationSignalCount}`, `Auth coordination clears: ${authCoordinationClearCount}`],
-      file: filePath,
-      suggestedFix: 'If auth state is coordinated across tabs with BroadcastChannel or storage listeners, close those channels and remove those listeners during sign-out before redirecting users back to an anonymous route.',
-    }));
-  }
-
-  const hasProtectedRouteInReview = reviewPack?.data.routes.some(route => isProtectedLikeRoute(route.path)) ?? false;
-  const hasRecoveryRouteInReview = reviewPack?.data.routes.some(route => isRecoveryLikeRoute(route.path)) ?? false;
-  const hasSignInRouteInReview = reviewPack?.data.routes.some(route => isSignInLikeRoute(route.path)) ?? false;
-  const hasRegistrationRouteInReview = reviewPack?.data.routes.some(route => isRegistrationLikeRoute(route.path)) ?? false;
-  const hasAnonymousEntryRouteInReview = reviewPack?.data.routes.some(route => isAnonymousEntryLikeRoute(route.path)) ?? false;
+  const hasProtectedRouteInReview =
+    reviewPack?.data.routes.some((route) => isProtectedLikeRoute(route.path)) ?? false;
+  const hasRecoveryRouteInReview =
+    reviewPack?.data.routes.some((route) => isRecoveryLikeRoute(route.path)) ?? false;
+  const hasSignInRouteInReview =
+    reviewPack?.data.routes.some((route) => isSignInLikeRoute(route.path)) ?? false;
+  const hasRegistrationRouteInReview =
+    reviewPack?.data.routes.some((route) => isRegistrationLikeRoute(route.path)) ?? false;
+  const hasAnonymousEntryRouteInReview =
+    reviewPack?.data.routes.some((route) => isAnonymousEntryLikeRoute(route.path)) ?? false;
   const signInFlowSignals = countSignInFlowSignals(code, filePath);
   const recoveryFlowSignals = countRecoveryFlowSignals(code, filePath);
   const signUpFlowSignals = countSignUpFlowSignals(code, filePath);
-  const requiresProtectedSuccessTransition = signInFlowSignals > 0
-    || (astSignals.authEntrySignalCount > 0 && signUpFlowSignals === 0 && recoveryFlowSignals === 0);
+  const requiresProtectedSuccessTransition =
+    signInFlowSignals > 0 ||
+    (astSignals.authEntrySignalCount > 0 && signUpFlowSignals === 0 && recoveryFlowSignals === 0);
   const authRecoveryRouteSignalCount = countAuthRecoveryRouteSignals(code);
   const registrationRouteSignalCount = countRegistrationRouteSignals(code);
   const anonymousEntryRouteSignalCount = countAnonymousEntryRouteSignals(code);
   const signInRouteSignalCount = countSignInRouteSignals(code);
   if (
-    requiresProtectedSuccessTransition
-    && hasProtectedRouteInReview
-    && authProtectedRedirectSignalCount === 0
+    requiresProtectedSuccessTransition &&
+    hasProtectedRouteInReview &&
+    authProtectedRedirectSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-success-redirect-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'The reviewed auth entry flow does not show an obvious transition into the protected application surface.',
-      evidence: [
-        filePath,
-        `Auth entry signals: ${astSignals.authEntrySignalCount}`,
-        `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'After reviewed sign-in, registration, or recovery success, navigate users to a protected route like `/dashboard`, `/app`, or another primary destination declared in the compiled route contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'route-auth-success-redirect-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'The reviewed auth entry flow does not show an obvious transition into the protected application surface.',
+        evidence: [
+          filePath,
+          `Auth entry signals: ${astSignals.authEntrySignalCount}`,
+          `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After reviewed sign-in, registration, or recovery success, navigate users to a protected route like `/dashboard`, `/app`, or another primary destination declared in the compiled route contract.',
+      }),
+    );
+  }
+
+  if (signInFlowSignals > 0 && hasRecoveryRouteInReview && authRecoveryRouteSignalCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'route-auth-recovery-link-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'The reviewed sign-in flow does not show an obvious path into the declared account-recovery route.',
+        evidence: [
+          filePath,
+          `Sign-in flow signals: ${signInFlowSignals}`,
+          `Reviewed recovery routes: ${
+            reviewPack?.data.routes
+              .filter((route) => isRecoveryLikeRoute(route.path))
+              .map((route) => route.path)
+              .join(', ') || 'none'
+          }`,
+          `Recovery route signals: ${authRecoveryRouteSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Link sign-in users to the reviewed recovery route, such as `/forgot-password` or `/reset-password`, whenever the compiled route contract declares one.',
+      }),
+    );
+  }
+
+  if (signInFlowSignals > 0 && hasRegistrationRouteInReview && registrationRouteSignalCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'route-auth-registration-link-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'The reviewed sign-in flow does not show an obvious path into the declared registration route.',
+        evidence: [
+          filePath,
+          `Sign-in flow signals: ${signInFlowSignals}`,
+          `Reviewed registration routes: ${
+            reviewPack?.data.routes
+              .filter((route) => isRegistrationLikeRoute(route.path))
+              .map((route) => route.path)
+              .join(', ') || 'none'
+          }`,
+          `Registration route signals: ${registrationRouteSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Link sign-in users to the reviewed registration route, such as `/register` or `/sign-up`, whenever the compiled route contract declares one.',
+      }),
+    );
   }
 
   if (
-    signInFlowSignals > 0
-    && hasRecoveryRouteInReview
-    && authRecoveryRouteSignalCount === 0
+    recoveryFlowSignals > 0 &&
+    hasAnonymousEntryRouteInReview &&
+    anonymousEntryRouteSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-recovery-link-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'The reviewed sign-in flow does not show an obvious path into the declared account-recovery route.',
-      evidence: [
-        filePath,
-        `Sign-in flow signals: ${signInFlowSignals}`,
-        `Reviewed recovery routes: ${reviewPack?.data.routes.filter(route => isRecoveryLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
-        `Recovery route signals: ${authRecoveryRouteSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Link sign-in users to the reviewed recovery route, such as `/forgot-password` or `/reset-password`, whenever the compiled route contract declares one.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'route-auth-entry-return-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'The reviewed recovery flow does not show an obvious path back into the declared anonymous entry route.',
+        evidence: [
+          filePath,
+          `Recovery flow signals: ${recoveryFlowSignals}`,
+          `Reviewed anonymous entry routes: ${
+            reviewPack?.data.routes
+              .filter((route) => isAnonymousEntryLikeRoute(route.path))
+              .map((route) => route.path)
+              .join(', ') || 'none'
+          }`,
+          `Anonymous entry route signals: ${anonymousEntryRouteSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Link recovery users back to a reviewed anonymous entry route, such as `/login`, `/register`, or `/`, whenever the compiled route contract declares one.',
+      }),
+    );
+  }
+
+  if (signUpFlowSignals > 0 && hasSignInRouteInReview && signInRouteSignalCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'route-auth-signin-link-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'The reviewed registration flow does not show an obvious path back into the declared sign-in route.',
+        evidence: [
+          filePath,
+          `Registration flow signals: ${signUpFlowSignals}`,
+          `Reviewed sign-in routes: ${
+            reviewPack?.data.routes
+              .filter((route) => isSignInLikeRoute(route.path))
+              .map((route) => route.path)
+              .join(', ') || 'none'
+          }`,
+          `Sign-in route signals: ${signInRouteSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Link registration users back to the reviewed sign-in route, such as `/login` or `/sign-in`, whenever the compiled route contract declares one.',
+      }),
+    );
   }
 
   if (
-    signInFlowSignals > 0
-    && hasRegistrationRouteInReview
-    && registrationRouteSignalCount === 0
+    (((authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0) &&
+      authCallbackErrorSignalCount > 0) ||
+      (authCallbackExchangeSignalCount > 0 && authCallbackExchangeErrorSignalCount > 0)) &&
+    hasSignInRouteInReview &&
+    signInRouteSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-registration-link-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'The reviewed sign-in flow does not show an obvious path into the declared registration route.',
-      evidence: [
-        filePath,
-        `Sign-in flow signals: ${signInFlowSignals}`,
-        `Reviewed registration routes: ${reviewPack?.data.routes.filter(route => isRegistrationLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
-        `Registration route signals: ${registrationRouteSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Link sign-in users to the reviewed registration route, such as `/register` or `/sign-up`, whenever the compiled route contract declares one.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'route-auth-callback-entry-return-missing',
+        category: 'Route Topology',
+        severity: 'info',
+        message:
+          'The reviewed auth callback failure path does not show an obvious route back to the declared sign-in surface.',
+        evidence: [
+          filePath,
+          `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+          `Auth callback error signals: ${authCallbackErrorSignalCount}`,
+          `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
+          `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
+          `Reviewed sign-in routes: ${
+            reviewPack?.data.routes
+              .filter((route) => isSignInLikeRoute(route.path))
+              .map((route) => route.path)
+              .join(', ') || 'none'
+          }`,
+          `Sign-in route signals: ${signInRouteSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'When callback handling or callback session exchange fails, link or redirect users back to a reviewed sign-in route such as `/login` or `/sign-in` instead of leaving users on an isolated callback failure state.',
+      }),
+    );
+  }
+
+  if (astSignals.authSessionSignalCount > 0 && astSignals.authLoadingSignalCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-loading-missing',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed auth/session flow does not show an obvious loading or pending state while session resolution happens.',
+        evidence: [
+          filePath,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Render an explicit loading, pending, skeleton, or suspense fallback while auth or session state resolves so protected content does not flash or race.',
+      }),
+    );
   }
 
   if (
-    recoveryFlowSignals > 0
-    && hasAnonymousEntryRouteInReview
-    && anonymousEntryRouteSignalCount === 0
+    astSignals.protectedSurfaceSignalCount > 0 &&
+    astSignals.authSessionSignalCount > 0 &&
+    astSignals.authLoadingSignalCount > 0 &&
+    astSignals.authProtectedLoadingRenderCount > 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-entry-return-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'The reviewed recovery flow does not show an obvious path back into the declared anonymous entry route.',
-      evidence: [
-        filePath,
-        `Recovery flow signals: ${recoveryFlowSignals}`,
-        `Reviewed anonymous entry routes: ${reviewPack?.data.routes.filter(route => isAnonymousEntryLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
-        `Anonymous entry route signals: ${anonymousEntryRouteSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Link recovery users back to a reviewed anonymous entry route, such as `/login`, `/register`, or `/`, whenever the compiled route contract declares one.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-loading-protected-render',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed protected surface shows a loading branch, but that branch still appears to render a protected destination while session state is unresolved.',
+        evidence: [
+          filePath,
+          `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+          `Protected loading renders: ${astSignals.authProtectedLoadingRenderCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
+      }),
+    );
   }
 
   if (
-    signUpFlowSignals > 0
-    && hasSignInRouteInReview
-    && signInRouteSignalCount === 0
+    astSignals.authSessionSignalCount > 0 &&
+    astSignals.authLoadingSignalCount > 0 &&
+    astSignals.authBlankLoadingRenderCount > 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-signin-link-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'The reviewed registration flow does not show an obvious path back into the declared sign-in route.',
-      evidence: [
-        filePath,
-        `Registration flow signals: ${signUpFlowSignals}`,
-        `Reviewed sign-in routes: ${reviewPack?.data.routes.filter(route => isSignInLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
-        `Sign-in route signals: ${signInRouteSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Link registration users back to the reviewed sign-in route, such as `/login` or `/sign-in`, whenever the compiled route contract declares one.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-loading-blank-render',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed auth/session loading branch returns nothing instead of an explicit pending boundary.',
+        evidence: [
+          filePath,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+          `Blank loading renders: ${astSignals.authBlankLoadingRenderCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Render a spinner, skeleton, suspense fallback, or another explicit pending UI while auth/session state resolves instead of returning `null` or an empty fragment.',
+      }),
+    );
   }
 
   if (
-    (
-      (
-        (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0)
-        && authCallbackErrorSignalCount > 0
-      )
-      || (
-        authCallbackExchangeSignalCount > 0
-        && authCallbackExchangeErrorSignalCount > 0
-      )
-    )
-    && hasSignInRouteInReview
-    && signInRouteSignalCount === 0
+    astSignals.authSessionSignalCount > 0 &&
+    astSignals.authLoadingSignalCount > 0 &&
+    astSignals.authAnonymousLoadingRedirectCount > 0
   ) {
-    findings.push(makeFinding({
-      id: 'route-auth-callback-entry-return-missing',
-      category: 'Route Topology',
-      severity: 'info',
-      message: 'The reviewed auth callback failure path does not show an obvious route back to the declared sign-in surface.',
-      evidence: [
-        filePath,
-        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
-        `Auth callback error signals: ${authCallbackErrorSignalCount}`,
-        `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
-        `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
-        `Reviewed sign-in routes: ${reviewPack?.data.routes.filter(route => isSignInLikeRoute(route.path)).map(route => route.path).join(', ') || 'none'}`,
-        `Sign-in route signals: ${signInRouteSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'When callback handling or callback session exchange fails, link or redirect users back to a reviewed sign-in route such as `/login` or `/sign-in` instead of leaving users on an isolated callback failure state.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-loading-anonymous-redirect',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth/session loading branch redirects users to an anonymous route before session state is resolved.',
+        evidence: [
+          filePath,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
+          `Anonymous loading redirects: ${astSignals.authAnonymousLoadingRedirectCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'While auth/session state is still loading, render a pending boundary instead of redirecting to `/login`, `/`, or another anonymous route. Only redirect after the session resolves as unauthenticated.',
+      }),
+    );
   }
 
   if (
-    astSignals.authSessionSignalCount > 0
-    && astSignals.authLoadingSignalCount === 0
+    astSignals.protectedSurfaceSignalCount > 0 &&
+    astSignals.authSessionSignalCount > 0 &&
+    authUnauthenticatedBranchSignalCount > 0 &&
+    astSignals.authProtectedUnauthenticatedRenderCount > 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-loading-missing',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed auth/session flow does not show an obvious loading or pending state while session resolution happens.',
-      evidence: [
-        filePath,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Render an explicit loading, pending, skeleton, or suspense fallback while auth or session state resolves so protected content does not flash or race.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-session-loss-protected-render',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed protected surface branches on auth loss but still appears to render a protected destination in the unauthenticated branch.',
+        evidence: [
+          filePath,
+          `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
+          `Protected unauthenticated renders: ${astSignals.authProtectedUnauthenticatedRenderCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'When a protected surface detects a null or unauthenticated session, redirect to a reviewed anonymous route or render a neutral guard boundary instead of returning a dashboard/app shell.',
+      }),
+    );
   }
 
   if (
-    astSignals.protectedSurfaceSignalCount > 0
-    && astSignals.authSessionSignalCount > 0
-    && astSignals.authLoadingSignalCount > 0
-    && astSignals.authProtectedLoadingRenderCount > 0
+    astSignals.protectedSurfaceSignalCount > 0 &&
+    astSignals.authSessionSignalCount > 0 &&
+    authUnauthenticatedBranchSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-loading-protected-render',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed protected surface shows a loading branch, but that branch still appears to render a protected destination while session state is unresolved.',
-      evidence: [
-        filePath,
-        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
-        `Protected loading renders: ${astSignals.authProtectedLoadingRenderCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'While auth/session state is loading, render a neutral spinner, skeleton, suspense fallback, or guard boundary instead of returning a dashboard/app shell before the session is confirmed.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-session-loss-handling-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed protected surface reads auth/session state but does not show an explicit unauthenticated branch when session resolution fails or the user signs out.',
+        evidence: [
+          filePath,
+          `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
+          `Auth guard signals: ${astSignals.authGuardSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
+      }),
+    );
   }
 
   if (
-    astSignals.authSessionSignalCount > 0
-    && astSignals.authLoadingSignalCount > 0
-    && astSignals.authBlankLoadingRenderCount > 0
+    astSignals.protectedSurfaceSignalCount > 0 &&
+    astSignals.authSessionSignalCount > 0 &&
+    authUnauthenticatedBranchSignalCount > 0 &&
+    authAnonymousRedirectSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-loading-blank-render',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed auth/session loading branch returns nothing instead of an explicit pending boundary.',
-      evidence: [
-        filePath,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
-        `Blank loading renders: ${astSignals.authBlankLoadingRenderCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Render a spinner, skeleton, suspense fallback, or another explicit pending UI while auth/session state resolves instead of returning `null` or an empty fragment.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-session-loss-redirect-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed protected surface branches on auth loss but does not show an obvious redirect back to an anonymous route.',
+        evidence: [
+          filePath,
+          `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
+          `Anonymous redirect signals: ${authAnonymousRedirectSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'When a protected surface detects a null or unauthenticated session, redirect users to `/`, `/login`, `/register`, or another reviewed anonymous route instead of returning `null` or leaving the protected shell blank.',
+      }),
+    );
+  }
+
+  if (hasAuthCallbackErrorGap) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-callback-error-missing',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed auth callback flow does not show an obvious failure state for provider-denied or callback error returns.',
+        evidence: [
+          filePath,
+          `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+          `Auth callback error signals: ${authCallbackErrorSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'When callback routes can receive `error`, `error_description`, or related provider-return params, branch on those values and show a reviewed failure state before or alongside success redirects.',
+      }),
+    );
   }
 
   if (
-    astSignals.authSessionSignalCount > 0
-    && astSignals.authLoadingSignalCount > 0
-    && astSignals.authAnonymousLoadingRedirectCount > 0
+    (astSignals.authSessionSignalCount > 0 || astSignals.authEntrySignalCount > 0) &&
+    authErrorSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-loading-anonymous-redirect',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth/session loading branch redirects users to an anonymous route before session state is resolved.',
-      evidence: [
-        filePath,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Auth loading signals: ${astSignals.authLoadingSignalCount}`,
-        `Anonymous loading redirects: ${astSignals.authAnonymousLoadingRedirectCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'While auth/session state is still loading, render a pending boundary instead of redirecting to `/login`, `/`, or another anonymous route. Only redirect after the session resolves as unauthenticated.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-error-missing',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed auth flow does not show an obvious failure state for rejected sign-in, recovery, or session refresh paths.',
+        evidence: [
+          filePath,
+          `Auth/session signals: ${astSignals.authSessionSignalCount}`,
+          `Auth entry signals: ${astSignals.authEntrySignalCount}`,
+          `Auth error signals: ${authErrorSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Expose reviewed error handling with inline feedback, alert messaging, or another explicit failure affordance for sign-in, recovery, or session refresh failures.',
+      }),
+    );
+  }
+
+  if (recoveryFlowSignals > 0 && authSuccessSignalCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-recovery-success-missing',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed recovery flow does not show an obvious success or confirmation state after the reset request completes.',
+        evidence: [
+          filePath,
+          `Recovery flow signals: ${recoveryFlowSignals}`,
+          `Auth success signals: ${authSuccessSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After recovery or reset submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
+      }),
+    );
   }
 
   if (
-    astSignals.protectedSurfaceSignalCount > 0
-    && astSignals.authSessionSignalCount > 0
-    && authUnauthenticatedBranchSignalCount > 0
-    && astSignals.authProtectedUnauthenticatedRenderCount > 0
+    signUpFlowSignals > 0 &&
+    authProtectedRedirectSignalCount === 0 &&
+    authSuccessSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-session-loss-protected-render',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed protected surface branches on auth loss but still appears to render a protected destination in the unauthenticated branch.',
-      evidence: [
-        filePath,
-        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
-        `Protected unauthenticated renders: ${astSignals.authProtectedUnauthenticatedRenderCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect to a reviewed anonymous route or render a neutral guard boundary instead of returning a dashboard/app shell.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-registration-success-missing',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed registration flow does not show either a protected post-auth transition or an explicit success/verification state.',
+        evidence: [
+          filePath,
+          `Registration flow signals: ${signUpFlowSignals}`,
+          `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
+          `Auth success signals: ${authSuccessSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
+      }),
+    );
   }
 
   if (
-    astSignals.protectedSurfaceSignalCount > 0
-    && astSignals.authSessionSignalCount > 0
-    && authUnauthenticatedBranchSignalCount === 0
+    (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0) &&
+    authProtectedRedirectSignalCount === 0 &&
+    authSuccessSignalCount === 0
   ) {
-    findings.push(makeFinding({
-      id: 'state-auth-session-loss-handling-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed protected surface reads auth/session state but does not show an explicit unauthenticated branch when session resolution fails or the user signs out.',
-      evidence: [
-        filePath,
-        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
-        `Auth guard signals: ${astSignals.authGuardSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'When protected surfaces read session state directly, branch on unauthenticated/null-session cases and redirect to a reviewed anonymous route or return a guard boundary before protected content renders.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'state-auth-callback-success-missing',
+        category: 'State Handling',
+        severity: 'info',
+        message:
+          'The reviewed auth callback flow does not show either a protected post-auth transition or an explicit success/verification state.',
+        evidence: [
+          filePath,
+          `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+          `Auth callback state reads: ${authCallbackStateSignalCount}`,
+          `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
+          `Auth success signals: ${authSuccessSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state before the next auth step.',
+      }),
+    );
   }
 
-  if (
-    astSignals.protectedSurfaceSignalCount > 0
-    && astSignals.authSessionSignalCount > 0
-    && authUnauthenticatedBranchSignalCount > 0
-    && authAnonymousRedirectSignalCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-session-loss-redirect-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed protected surface branches on auth loss but does not show an obvious redirect back to an anonymous route.',
-      evidence: [
-        filePath,
-        `Protected surface signals: ${astSignals.protectedSurfaceSignalCount}`,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Unauthenticated branch signals: ${authUnauthenticatedBranchSignalCount}`,
-        `Anonymous redirect signals: ${authAnonymousRedirectSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'When a protected surface detects a null or unauthenticated session, redirect users to `/`, `/login`, `/register`, or another reviewed anonymous route instead of returning `null` or leaving the protected shell blank.',
-    }));
-  }
-
-  if (
-    hasAuthCallbackErrorGap
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-callback-error-missing',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed auth callback flow does not show an obvious failure state for provider-denied or callback error returns.',
-      evidence: [
-        filePath,
-        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
-        `Auth callback error signals: ${authCallbackErrorSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'When callback routes can receive `error`, `error_description`, or related provider-return params, branch on those values and show a reviewed failure state before or alongside success redirects.',
-    }));
-  }
-
-  if (
-    (astSignals.authSessionSignalCount > 0 || astSignals.authEntrySignalCount > 0)
-    && authErrorSignalCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-error-missing',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed auth flow does not show an obvious failure state for rejected sign-in, recovery, or session refresh paths.',
-      evidence: [
-        filePath,
-        `Auth/session signals: ${astSignals.authSessionSignalCount}`,
-        `Auth entry signals: ${astSignals.authEntrySignalCount}`,
-        `Auth error signals: ${authErrorSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Expose reviewed error handling with inline feedback, alert messaging, or another explicit failure affordance for sign-in, recovery, or session refresh failures.',
-    }));
-  }
-
-  if (
-    recoveryFlowSignals > 0
-    && authSuccessSignalCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-recovery-success-missing',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed recovery flow does not show an obvious success or confirmation state after the reset request completes.',
-      evidence: [
-        filePath,
-        `Recovery flow signals: ${recoveryFlowSignals}`,
-        `Auth success signals: ${authSuccessSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'After recovery or reset submission succeeds, show a reviewed confirmation state such as "check your email", "reset link sent", or another explicit success affordance.',
-    }));
-  }
-
-  if (
-    signUpFlowSignals > 0
-    && authProtectedRedirectSignalCount === 0
-    && authSuccessSignalCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-registration-success-missing',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed registration flow does not show either a protected post-auth transition or an explicit success/verification state.',
-      evidence: [
-        filePath,
-        `Registration flow signals: ${signUpFlowSignals}`,
-        `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
-        `Auth success signals: ${authSuccessSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'After registration succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state such as "account created" or "check your email" before the next auth step.',
-    }));
-  }
-
-  if (
-    (authCallbackTokenSignalCount > 0 || authCallbackStateSignalCount > 0)
-    && authProtectedRedirectSignalCount === 0
-    && authSuccessSignalCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-callback-success-missing',
-      category: 'State Handling',
-      severity: 'info',
-      message: 'The reviewed auth callback flow does not show either a protected post-auth transition or an explicit success/verification state.',
-      evidence: [
-        filePath,
-        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
-        `Auth callback state reads: ${authCallbackStateSignalCount}`,
-        `Protected auth redirects: ${authProtectedRedirectSignalCount}`,
-        `Auth success signals: ${authSuccessSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'After callback validation or code exchange succeeds, either navigate users into a reviewed protected route like `/dashboard` or show an explicit success state before the next auth step.',
-    }));
-  }
-
-  if (
-    authCallbackExchangeSignalCount > 0
-    && authCallbackExchangeErrorSignalCount === 0
-  ) {
-    findings.push(makeFinding({
-      id: 'state-auth-callback-exchange-error-missing',
-      category: 'State Handling',
-      severity: 'warn',
-      message: 'The reviewed auth callback exchange does not show explicit failure handling if session completion rejects.',
-      evidence: [
-        filePath,
-        `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
-        `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Wrap reviewed callback code/session exchange in catch handling or explicit exchange-error state so failures do not leave users stuck on an indefinite callback surface.',
-    }));
+  if (authCallbackExchangeSignalCount > 0 && authCallbackExchangeErrorSignalCount === 0) {
+    findings.push(
+      makeFinding({
+        id: 'state-auth-callback-exchange-error-missing',
+        category: 'State Handling',
+        severity: 'warn',
+        message:
+          'The reviewed auth callback exchange does not show explicit failure handling if session completion rejects.',
+        evidence: [
+          filePath,
+          `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
+          `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Wrap reviewed callback code/session exchange in catch handling or explicit exchange-error state so failures do not leave users stuck on an indefinite callback surface.',
+      }),
+    );
   }
 
   const knownRoutes = reviewPack?.data.routes.length ?? packManifest?.pages.length ?? 0;
@@ -10960,95 +13740,153 @@ export function critiqueSource({
   scores.push({
     category: 'Topology Context',
     focusArea: 'route-topology',
-    score: Math.max(1, (reviewPack ? 5 : packManifest ? 4 : 1) - (placeholderNavigationTargets > 0 ? 2 : 0)),
+    score: Math.max(
+      1,
+      (reviewPack ? 5 : packManifest ? 4 : 1) - (placeholderNavigationTargets > 0 ? 2 : 0),
+    ),
     details: reviewPack
       ? `Compiled review contract covers ${knownRoutes} routes. Placeholder navigation targets: ${placeholderNavigationTargets}.`
       : packManifest
         ? `Pack manifest is available for ${knownRoutes} pages, but the review pack is missing. Placeholder navigation targets: ${placeholderNavigationTargets}.`
         : `No compiled route context was available during critique. Placeholder navigation targets: ${placeholderNavigationTargets}.`,
     suggestions: [
-      ...(reviewPack ? [] : ['Run `decantr refresh` so critique starts from a compiled review contract.']),
-      ...(placeholderNavigationTargets > 0 ? ['Replace placeholder href/to targets with real route destinations from the compiled contract.'] : []),
+      ...(reviewPack
+        ? []
+        : ['Run `decantr refresh` so critique starts from a compiled review contract.']),
+      ...(placeholderNavigationTargets > 0
+        ? [
+            'Replace placeholder href/to targets with real route destinations from the compiled contract.',
+          ]
+        : []),
     ],
   });
   if (focusAreas.includes('route-topology') && !reviewPack) {
-    findings.push(makeFinding({
-      id: 'review-pack-missing-for-critique',
-      category: 'Route Topology',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'route-topology', 'page-route-contract']),
-      message: 'Critique ran without a compiled review pack.',
-      evidence: ['review-pack unavailable'],
-      file: filePath,
-      suggestedFix: 'Regenerate execution packs so critique findings can anchor to the compiled route contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'review-pack-missing-for-critique',
+        category: 'Route Topology',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'review-contract-baseline',
+          'route-topology',
+          'page-route-contract',
+        ]),
+        message: 'Critique ran without a compiled review pack.',
+        evidence: ['review-pack unavailable'],
+        file: filePath,
+        suggestedFix:
+          'Regenerate execution packs so critique findings can anchor to the compiled route contract.',
+      }),
+    );
   }
   if (focusAreas.includes('route-topology') && placeholderNavigationTargets > 0) {
-    findings.push(makeFinding({
-      id: 'route-placeholder-navigation-target',
-      category: 'Route Topology',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['route-topology', 'page-route-contract', 'review-remediation']),
-      message: 'Placeholder navigation targets were detected in the reviewed file.',
-      evidence: [filePath, `Placeholder href/to targets: ${placeholderNavigationTargets}`],
-      file: filePath,
-      suggestedFix: 'Replace placeholder route targets like `#` or `javascript:void(0)` with the actual page paths from the compiled review contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'route-placeholder-navigation-target',
+        category: 'Route Topology',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'route-topology',
+          'page-route-contract',
+          'review-remediation',
+        ]),
+        message: 'Placeholder navigation targets were detected in the reviewed file.',
+        evidence: [filePath, `Placeholder href/to targets: ${placeholderNavigationTargets}`],
+        file: filePath,
+        suggestedFix:
+          'Replace placeholder route targets like `#` or `javascript:void(0)` with the actual page paths from the compiled review contract.',
+      }),
+    );
   }
 
-  const hasInlineStyleLiterals = astSignals.inlineStyleAttributeCount > 0 || /style\s*=\s*(?:\{\{|["'])/.test(code);
+  const hasInlineStyleLiterals =
+    astSignals.inlineStyleAttributeCount > 0 || /style\s*=\s*(?:\{\{|["'])/.test(code);
   if (antiPatternIds.has('inline-styles') && hasInlineStyleLiterals) {
-    findings.push(makeFinding({
-      id: 'anti-pattern-inline-styles',
-      category: 'Anti-Patterns',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'theme-consistency']),
-      message: 'Inline style literals were detected in the reviewed file.',
-      evidence: [filePath, `Inline style attributes: ${astSignals.inlineStyleAttributeCount}`],
-      file: filePath,
-      suggestedFix: 'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'anti-pattern-inline-styles',
+        category: 'Anti-Patterns',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'review-contract-baseline',
+          'theme-consistency',
+        ]),
+        message: 'Inline style literals were detected in the reviewed file.',
+        evidence: [filePath, `Inline style attributes: ${astSignals.inlineStyleAttributeCount}`],
+        file: filePath,
+        suggestedFix:
+          'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
+      }),
+    );
   }
 
   const componentStyleTagSignals = countComponentStyleTagSignals(code);
   if (componentStyleTagSignals > 0) {
-    findings.push(makeFinding({
-      id: 'anti-pattern-component-style-tags',
-      category: 'Anti-Patterns',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['review-contract-baseline', 'theme-consistency']),
-      message: 'Component-scoped style tags or dynamic style elements were detected in the reviewed file.',
-      evidence: [filePath, `Component style tag signals: ${componentStyleTagSignals}`],
-      file: filePath,
-      suggestedFix: 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so the file stays aligned with the Decantr layer contract.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'anti-pattern-component-style-tags',
+        category: 'Anti-Patterns',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'review-contract-baseline',
+          'theme-consistency',
+        ]),
+        message:
+          'Component-scoped style tags or dynamic style elements were detected in the reviewed file.',
+        evidence: [filePath, `Component style tag signals: ${componentStyleTagSignals}`],
+        file: filePath,
+        suggestedFix:
+          'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so the file stays aligned with the Decantr layer contract.',
+      }),
+    );
   }
 
   const hardcodedColors = antiPatternIds.has('hardcoded-colors') ? findHardcodedColors(code) : [];
   if (hardcodedColors.length > 0) {
-    findings.push(makeFinding({
-      id: 'anti-pattern-hardcoded-colors',
-      category: 'Anti-Patterns',
-      severity: resolveSeverityFromChecks(reviewPack, 'warn', ['theme-consistency', 'mutation-theme-contract']),
-      message: 'Hardcoded color literals were detected in the reviewed file.',
-      evidence: [filePath, `Color literals: ${hardcodedColors.slice(0, 5).join(', ')}`],
-      file: filePath,
-      suggestedFix: 'Replace hardcoded colors with CSS variables or theme decorators from Decantr.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'anti-pattern-hardcoded-colors',
+        category: 'Anti-Patterns',
+        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+          'theme-consistency',
+          'mutation-theme-contract',
+        ]),
+        message: 'Hardcoded color literals were detected in the reviewed file.',
+        evidence: [filePath, `Color literals: ${hardcodedColors.slice(0, 5).join(', ')}`],
+        file: filePath,
+        suggestedFix:
+          'Replace hardcoded colors with CSS variables or theme decorators from Decantr.',
+      }),
+    );
   }
 
-  const utilitySignals = antiPatternIds.has('utility-framework-leakage') ? findUtilityFrameworkSignals(code) : [];
+  const utilitySignals = antiPatternIds.has('utility-framework-leakage')
+    ? findUtilityFrameworkSignals(code)
+    : [];
   if (utilitySignals.length > 0 && usedTreatments.length === 0) {
-    findings.push(makeFinding({
-      id: 'anti-pattern-utility-framework-leakage',
-      category: 'Anti-Patterns',
-      severity: 'info',
-      message: 'Utility-framework class patterns appear to be carrying the primary visual system for this file.',
-      evidence: [filePath, `Utility signals: ${utilitySignals.slice(0, 6).join(', ')}`],
-      file: filePath,
-      suggestedFix: 'Use Decantr treatments and decorators as the primary styling contract, with utilities only as supporting glue when necessary.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'anti-pattern-utility-framework-leakage',
+        category: 'Anti-Patterns',
+        severity: 'info',
+        message:
+          'Utility-framework class patterns appear to be carrying the primary visual system for this file.',
+        evidence: [filePath, `Utility signals: ${utilitySignals.slice(0, 6).join(', ')}`],
+        file: filePath,
+        suggestedFix:
+          'Use Decantr treatments and decorators as the primary styling contract, with utilities only as supporting glue when necessary.',
+      }),
+    );
   }
 
-  const dangerousHtmlCount = Math.max(astSignals.dangerousHtmlCount, /dangerouslySetInnerHTML\s*=/.test(code) ? 1 : 0);
-  const rawHtmlInjectionCount = Math.max(astSignals.rawHtmlInjectionCount, /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0);
-  const dynamicEvalCount = Math.max(astSignals.dynamicEvalCount, /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0);
+  const dangerousHtmlCount = Math.max(
+    astSignals.dangerousHtmlCount,
+    /dangerouslySetInnerHTML\s*=/.test(code) ? 1 : 0,
+  );
+  const rawHtmlInjectionCount = Math.max(
+    astSignals.rawHtmlInjectionCount,
+    /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0,
+  );
+  const dynamicEvalCount = Math.max(
+    astSignals.dynamicEvalCount,
+    /\beval\s*\(|new\s+Function\s*\(/.test(code) ? 1 : 0,
+  );
   const externalIframeWithoutSandboxCount = astSignals.externalIframeWithoutSandboxCount;
   const insecureFormActionCount = astSignals.insecureFormActionCount;
   const insecureAuthFormMethodCount = astSignals.insecureAuthFormMethodCount;
@@ -11089,15 +13927,22 @@ export function critiqueSource({
   const hasAuthProviderStateMissing = authProviderStateMissingCount > 0;
   const hasAuthProviderPkceMissing = authProviderPkceMissingCount > 0;
   const hasAuthProviderNonceMissing = authProviderNonceMissingCount > 0;
-  const hasAuthCallbackStateValidationGap = authCallbackStateSignalCount > 0 && authCallbackStateValidationSignalCount === 0;
-  const hasAuthCallbackStateTeardownGap = authCallbackStateValidationSignalCount > 0 && authCallbackStateStorageSignalCount > 0 && authCallbackStateStorageClearSignalCount === 0;
-  const hasAuthCallbackUrlScrubGap = (authCallbackTokenSignalCount > 0 || authCallbackErrorSignalCount > 0) && authCallbackUrlScrubSignalCount === 0;
-  const hasAuthAutocompleteIssues = emailAutocompleteMissingCount > 0
-    || passwordAutocompleteMissingCount > 0
-    || otpAutocompleteMissingCount > 0
-    || authAutocompleteDisabledCount > 0
-    || authAutocompleteSemanticMismatchCount > 0
-    || authInputTypeMismatchCount > 0;
+  const hasAuthCallbackStateValidationGap =
+    authCallbackStateSignalCount > 0 && authCallbackStateValidationSignalCount === 0;
+  const hasAuthCallbackStateTeardownGap =
+    authCallbackStateValidationSignalCount > 0 &&
+    authCallbackStateStorageSignalCount > 0 &&
+    authCallbackStateStorageClearSignalCount === 0;
+  const hasAuthCallbackUrlScrubGap =
+    (authCallbackTokenSignalCount > 0 || authCallbackErrorSignalCount > 0) &&
+    authCallbackUrlScrubSignalCount === 0;
+  const hasAuthAutocompleteIssues =
+    emailAutocompleteMissingCount > 0 ||
+    passwordAutocompleteMissingCount > 0 ||
+    otpAutocompleteMissingCount > 0 ||
+    authAutocompleteDisabledCount > 0 ||
+    authAutocompleteSemanticMismatchCount > 0 ||
+    authInputTypeMismatchCount > 0;
   const hasHardcodedSecretSignals = hardcodedSecretSignalCount > 0;
   const hasClientSecretEnvReferences = clientSecretEnvReferenceCount > 0;
   const hasLocalhostEndpoints = localhostEndpointCount > 0;
@@ -11106,470 +13951,732 @@ export function critiqueSource({
   const hasMessageListenerWithoutOriginCheck = messageListenerWithoutOriginCheckCount > 0;
   const hasInsecureExternalIframe = insecureExternalIframeCount > 0;
   const hasAuthStorageWrites = authStorageWriteCount > 0;
-  const hasAuthStorageClearGap = authExitSignalCount > 0 && authStorageWriteCount > 0 && authStorageClearCount === 0;
+  const hasAuthStorageClearGap =
+    authExitSignalCount > 0 && authStorageWriteCount > 0 && authStorageClearCount === 0;
   const hasAuthCookieWrites = authCookieWriteCount > 0;
-  const hasAuthCookieClearGap = authExitSignalCount > 0 && authCookieWriteCount > 0 && authCookieClearCount === 0;
+  const hasAuthCookieClearGap =
+    authExitSignalCount > 0 && authCookieWriteCount > 0 && authCookieClearCount === 0;
   const hasAuthCookieMissingHardening = authCookieMissingHardeningCount > 0;
   const hasAuthHeaderWrites = authHeaderWriteCount > 0;
-  const hasAuthHeaderClearGap = authExitSignalCount > 0 && authHeaderWriteCount > 0 && authHeaderClearCount === 0;
+  const hasAuthHeaderClearGap =
+    authExitSignalCount > 0 && authHeaderWriteCount > 0 && authHeaderClearCount === 0;
   const hasAuthCacheClients = authCacheClientCount > 0;
-  const hasAuthCacheClearGap = authExitSignalCount > 0 && authCacheClientCount > 0 && authCacheClearCount === 0;
+  const hasAuthCacheClearGap =
+    authExitSignalCount > 0 && authCacheClientCount > 0 && authCacheClearCount === 0;
   scores.push({
     category: 'Security Hygiene',
     focusArea: 'security-hygiene',
     score: Math.max(
       1,
-      5
-      - (hasDangerousHtml ? 2 : 0)
-      - (hasRawHtmlInjection ? 2 : 0)
-      - (hasDynamicEval ? 2 : 0)
-      - (hasExternalIframeWithoutSandbox ? 1 : 0)
-      - (hasInsecureFormAction ? 2 : 0)
-      - (hasInsecureAuthFormMethod ? 2 : 0)
-      - (hasInsecureTransportEndpoint ? 2 : 0)
-      - (hasInsecureExternalImage ? 1 : 0)
-      - (hasHardcodedSecretSignals ? 3 : 0)
-      - (hasClientSecretEnvReferences ? 3 : 0)
-      - (hasLocalhostEndpoints ? 2 : 0)
-      - (hasWildcardPostMessage ? 2 : 0)
-      - (hasMessageListenerWithoutOriginCheck ? 2 : 0)
-      - (hasWindowOpenWithoutNoopener ? 1 : 0)
-      - (hasInsecureExternalIframe ? 1 : 0)
-      - (hasExternalBlankLinkWithoutRel ? 1 : 0)
-      - (hasAuthOpenRedirectSignals ? 2 : 0)
-      - (hasAuthExternalRedirectSignals ? 2 : 0)
-      - (hasAuthProviderStateMissing ? 2 : 0)
-      - (hasAuthProviderPkceMissing ? 2 : 0)
-      - (hasAuthProviderNonceMissing ? 2 : 0)
-      - (hasAuthCallbackStateValidationGap ? 2 : 0)
-      - (hasAuthCallbackStateTeardownGap ? 1 : 0)
-      - (hasAuthCallbackUrlScrubGap ? 2 : 0)
-      - (hasAuthAutocompleteIssues ? 1 : 0)
-      - (hasAuthStorageWrites ? 2 : 0)
-      - (hasAuthCookieWrites ? 2 : 0)
-      - (hasAuthCookieMissingHardening ? 2 : 0)
-      - (hasAuthHeaderWrites ? 2 : 0)
-      - (hasAuthCacheClearGap ? 1 : 0),
+      5 -
+        (hasDangerousHtml ? 2 : 0) -
+        (hasRawHtmlInjection ? 2 : 0) -
+        (hasDynamicEval ? 2 : 0) -
+        (hasExternalIframeWithoutSandbox ? 1 : 0) -
+        (hasInsecureFormAction ? 2 : 0) -
+        (hasInsecureAuthFormMethod ? 2 : 0) -
+        (hasInsecureTransportEndpoint ? 2 : 0) -
+        (hasInsecureExternalImage ? 1 : 0) -
+        (hasHardcodedSecretSignals ? 3 : 0) -
+        (hasClientSecretEnvReferences ? 3 : 0) -
+        (hasLocalhostEndpoints ? 2 : 0) -
+        (hasWildcardPostMessage ? 2 : 0) -
+        (hasMessageListenerWithoutOriginCheck ? 2 : 0) -
+        (hasWindowOpenWithoutNoopener ? 1 : 0) -
+        (hasInsecureExternalIframe ? 1 : 0) -
+        (hasExternalBlankLinkWithoutRel ? 1 : 0) -
+        (hasAuthOpenRedirectSignals ? 2 : 0) -
+        (hasAuthExternalRedirectSignals ? 2 : 0) -
+        (hasAuthProviderStateMissing ? 2 : 0) -
+        (hasAuthProviderPkceMissing ? 2 : 0) -
+        (hasAuthProviderNonceMissing ? 2 : 0) -
+        (hasAuthCallbackStateValidationGap ? 2 : 0) -
+        (hasAuthCallbackStateTeardownGap ? 1 : 0) -
+        (hasAuthCallbackUrlScrubGap ? 2 : 0) -
+        (hasAuthAutocompleteIssues ? 1 : 0) -
+        (hasAuthStorageWrites ? 2 : 0) -
+        (hasAuthCookieWrites ? 2 : 0) -
+        (hasAuthCookieMissingHardening ? 2 : 0) -
+        (hasAuthHeaderWrites ? 2 : 0) -
+        (hasAuthCacheClearGap ? 1 : 0),
     ),
     details: `dangerouslySetInnerHTML: ${dangerousHtmlCount}, raw HTML injection: ${rawHtmlInjectionCount}, dynamic eval: ${dynamicEvalCount}, hardcoded secret literals: ${hardcodedSecretSignalCount}, client-exposed secret env references: ${clientSecretEnvReferenceCount}, localhost endpoints: ${localhostEndpointCount}, wildcard postMessage calls: ${wildcardPostMessageCount}, message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}, window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}, external iframes without sandbox: ${externalIframeWithoutSandboxCount}, insecure external iframes: ${insecureExternalIframeCount}, insecure form actions: ${insecureFormActionCount}, auth forms with insecure method: ${insecureAuthFormMethodCount}, insecure transport endpoints: ${insecureTransportEndpointCount}, insecure remote images: ${insecureExternalImageCount}, external _blank links without rel: ${externalBlankLinkWithoutRelCount}, auth/query redirect signals: ${authOpenRedirectSignalCount}, auth external redirects: ${authExternalRedirectSignalCount}, auth provider URLs missing state: ${authProviderStateMissingCount}, auth provider code flows missing PKCE: ${authProviderPkceMissingCount}, auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}, auth callback state reads: ${authCallbackStateSignalCount}, auth callback state validation signals: ${authCallbackStateValidationSignalCount}, auth callback state storage reads: ${authCallbackStateStorageSignalCount}, auth callback state storage clears: ${authCallbackStateStorageClearSignalCount}, auth callback token reads: ${authCallbackTokenSignalCount}, auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}, email inputs without autocomplete: ${emailAutocompleteMissingCount}, password inputs without autocomplete: ${passwordAutocompleteMissingCount}, OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}, auth inputs with autocomplete off: ${authAutocompleteDisabledCount}, auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}, auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}, auth storage writes: ${authStorageWriteCount}, auth storage clears: ${authStorageClearCount}, auth cookie writes: ${authCookieWriteCount}, auth cookie clears: ${authCookieClearCount}, auth cookies missing hardening: ${authCookieMissingHardeningCount}, auth header writes: ${authHeaderWriteCount}, auth header clears: ${authHeaderClearCount}, auth cache clients: ${authCacheClientCount}, auth cache clears: ${authCacheClearCount}`,
     suggestions: [
-      ...(hasDangerousHtml || hasRawHtmlInjection ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.'] : []),
-      ...(hasDynamicEval ? ['Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.'] : []),
-      ...(hasHardcodedSecretSignals ? ['Remove hardcoded secret literals from source immediately and rotate any exposed credentials.'] : []),
-      ...(hasClientSecretEnvReferences ? ['Do not reference service-role, secret, or private-key env vars from client-exposed code paths.'] : []),
-      ...(hasLocalhostEndpoints ? ['Replace localhost-style client endpoints with reviewed environment-backed URLs or move those calls behind a trusted server boundary before shipping.'] : []),
-      ...(hasWildcardPostMessage ? ['Avoid `postMessage(..., "*")`; target a reviewed explicit origin instead of broadcasting to any window origin.'] : []),
-      ...(hasMessageListenerWithoutOriginCheck ? ['Validate `event.origin` inside `message` event handlers before trusting or acting on cross-window data.'] : []),
-      ...(hasWindowOpenWithoutNoopener ? ['When opening a new tab imperatively, include `noopener,noreferrer` features so the new page cannot retain opener access.'] : []),
-      ...(hasExternalIframeWithoutSandbox ? ['Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.'] : []),
-      ...(hasInsecureExternalIframe ? ['Avoid embedding remote iframes over plain HTTP; use HTTPS or move the integration behind a reviewed trusted boundary.'] : []),
-      ...(hasInsecureFormAction ? ['Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.'] : []),
-      ...(hasInsecureAuthFormMethod ? ['Auth forms should submit with `method=\"post\"` or an explicit server action boundary instead of defaulting to GET semantics.'] : []),
-      ...(hasInsecureTransportEndpoint ? ['Avoid plain HTTP or ws:// client endpoints; use HTTPS/WSS transport or route the request behind a trusted server boundary.'] : []),
-      ...(hasInsecureExternalImage ? ['Avoid loading remote images over plain HTTP; use HTTPS or move the image behind a reviewed trusted asset boundary.'] : []),
-      ...(hasExternalBlankLinkWithoutRel ? ['Add rel="noopener noreferrer" to external links that open in a new tab.'] : []),
-      ...(hasAuthOpenRedirectSignals ? ['Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.'] : []),
-      ...(hasAuthExternalRedirectSignals ? ['Avoid hard-redirecting auth flows to external URLs from app code. Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration.'] : []),
-      ...(hasAuthProviderStateMissing ? ['When auth flows hand off to a provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.'] : []),
-      ...(hasAuthProviderPkceMissing ? ['When client-managed auth flows hand off to a provider code-flow authorize URL, include a reviewed PKCE `code_challenge` and verifier instead of hardcoding a bare authorization-code redirect from client code.'] : []),
-      ...(hasAuthProviderNonceMissing ? ['When auth flows hand off to a provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.'] : []),
-      ...(hasAuthCallbackStateValidationGap ? ['When callback routes read a returned provider `state`, validate it against a stored or expected reviewed value before exchanging callback codes or continuing auth setup.'] : []),
-      ...(hasAuthCallbackStateTeardownGap ? ['After validating callback `state`, clear the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger beyond the auth exchange.'] : []),
-      ...(hasAuthCallbackUrlScrubGap ? ['After consuming auth callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.'] : []),
-      ...(hasAuthAutocompleteIssues ? ['Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).'] : []),
-      ...(hasAuthStorageWrites ? ['Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.'] : []),
-      ...(hasAuthStorageClearGap ? ['If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.'] : []),
-      ...(hasAuthCookieWrites ? ['Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.'] : []),
-      ...(hasAuthCookieClearGap ? ['If reviewed source surfaces issue auth cookies, explicitly expire or delete them during sign-out instead of assuming redirects or generic sign-out helpers will clear them.'] : []),
-      ...(hasAuthCookieMissingHardening ? ['When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.'] : []),
-      ...(hasAuthHeaderWrites ? ['Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.'] : []),
-      ...(hasAuthHeaderClearGap ? ['If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out instead of assuming redirects or generic sign-out helpers will clear them.'] : []),
-      ...(hasAuthCacheClients && hasAuthCacheClearGap ? ['If protected data is cached in query clients or client stores, clear or reset those caches during sign-out so privileged data does not linger after logout.'] : []),
+      ...(hasDangerousHtml || hasRawHtmlInjection
+        ? ['Prefer escaped rendering paths and sanitize any unavoidable HTML before rendering it.']
+        : []),
+      ...(hasDynamicEval
+        ? [
+            'Remove eval/new Function usage and replace it with explicit logic or data-driven dispatch.',
+          ]
+        : []),
+      ...(hasHardcodedSecretSignals
+        ? [
+            'Remove hardcoded secret literals from source immediately and rotate any exposed credentials.',
+          ]
+        : []),
+      ...(hasClientSecretEnvReferences
+        ? [
+            'Do not reference service-role, secret, or private-key env vars from client-exposed code paths.',
+          ]
+        : []),
+      ...(hasLocalhostEndpoints
+        ? [
+            'Replace localhost-style client endpoints with reviewed environment-backed URLs or move those calls behind a trusted server boundary before shipping.',
+          ]
+        : []),
+      ...(hasWildcardPostMessage
+        ? [
+            'Avoid `postMessage(..., "*")`; target a reviewed explicit origin instead of broadcasting to any window origin.',
+          ]
+        : []),
+      ...(hasMessageListenerWithoutOriginCheck
+        ? [
+            'Validate `event.origin` inside `message` event handlers before trusting or acting on cross-window data.',
+          ]
+        : []),
+      ...(hasWindowOpenWithoutNoopener
+        ? [
+            'When opening a new tab imperatively, include `noopener,noreferrer` features so the new page cannot retain opener access.',
+          ]
+        : []),
+      ...(hasExternalIframeWithoutSandbox
+        ? [
+            'Sandbox external iframes unless a reviewed embed contract explicitly requires broader privileges.',
+          ]
+        : []),
+      ...(hasInsecureExternalIframe
+        ? [
+            'Avoid embedding remote iframes over plain HTTP; use HTTPS or move the integration behind a reviewed trusted boundary.',
+          ]
+        : []),
+      ...(hasInsecureFormAction
+        ? [
+            'Avoid posting forms to plain HTTP endpoints; use HTTPS or move the action behind a trusted server boundary.',
+          ]
+        : []),
+      ...(hasInsecureAuthFormMethod
+        ? [
+            'Auth forms should submit with `method="post"` or an explicit server action boundary instead of defaulting to GET semantics.',
+          ]
+        : []),
+      ...(hasInsecureTransportEndpoint
+        ? [
+            'Avoid plain HTTP or ws:// client endpoints; use HTTPS/WSS transport or route the request behind a trusted server boundary.',
+          ]
+        : []),
+      ...(hasInsecureExternalImage
+        ? [
+            'Avoid loading remote images over plain HTTP; use HTTPS or move the image behind a reviewed trusted asset boundary.',
+          ]
+        : []),
+      ...(hasExternalBlankLinkWithoutRel
+        ? ['Add rel="noopener noreferrer" to external links that open in a new tab.']
+        : []),
+      ...(hasAuthOpenRedirectSignals
+        ? [
+            'Resolve auth or route-transition redirects through a reviewed allowlist of internal routes instead of trusting raw `next`, `returnTo`, `callbackUrl`, or similar query params.',
+          ]
+        : []),
+      ...(hasAuthExternalRedirectSignals
+        ? [
+            'Avoid hard-redirecting auth flows to external URLs from app code. Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration.',
+          ]
+        : []),
+      ...(hasAuthProviderStateMissing
+        ? [
+            'When auth flows hand off to a provider authorize URL, include a reviewed `state` value and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
+          ]
+        : []),
+      ...(hasAuthProviderPkceMissing
+        ? [
+            'When client-managed auth flows hand off to a provider code-flow authorize URL, include a reviewed PKCE `code_challenge` and verifier instead of hardcoding a bare authorization-code redirect from client code.',
+          ]
+        : []),
+      ...(hasAuthProviderNonceMissing
+        ? [
+            'When auth flows hand off to a provider authorize URL that requests `id_token`, include a reviewed `nonce` and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
+          ]
+        : []),
+      ...(hasAuthCallbackStateValidationGap
+        ? [
+            'When callback routes read a returned provider `state`, validate it against a stored or expected reviewed value before exchanging callback codes or continuing auth setup.',
+          ]
+        : []),
+      ...(hasAuthCallbackStateTeardownGap
+        ? [
+            'After validating callback `state`, clear the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger beyond the auth exchange.',
+          ]
+        : []),
+      ...(hasAuthCallbackUrlScrubGap
+        ? [
+            'After consuming auth callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
+          ]
+        : []),
+      ...(hasAuthAutocompleteIssues
+        ? [
+            'Add explicit autocomplete hints such as `email`, `username`, `current-password`, `new-password`, or `one-time-code` on auth-related inputs, keep those hints semantically aligned with the field purpose, avoid disabling autocomplete for credential fields, and keep credential field types semantically correct (`email`/`password`).',
+          ]
+        : []),
+      ...(hasAuthStorageWrites
+        ? [
+            'Avoid persisting auth tokens in browser storage; prefer secure, server-managed session boundaries or hardened cookie-based flows.',
+          ]
+        : []),
+      ...(hasAuthStorageClearGap
+        ? [
+            'If auth data is stored in browser storage, explicitly remove those auth/session keys during sign-out instead of relying on redirects or generic sign-out helpers alone.',
+          ]
+        : []),
+      ...(hasAuthCookieWrites
+        ? [
+            'Avoid setting auth cookies from client-side JavaScript; prefer server-issued HttpOnly cookies or other server-managed session boundaries.',
+          ]
+        : []),
+      ...(hasAuthCookieClearGap
+        ? [
+            'If reviewed source surfaces issue auth cookies, explicitly expire or delete them during sign-out instead of assuming redirects or generic sign-out helpers will clear them.',
+          ]
+        : []),
+      ...(hasAuthCookieMissingHardening
+        ? [
+            'When issuing auth cookies, set explicit `httpOnly`, `secure`, and `sameSite` options instead of relying on framework defaults or partial options.',
+          ]
+        : []),
+      ...(hasAuthHeaderWrites
+        ? [
+            'Avoid constructing bearer/session authorization headers in client-rendered code unless the auth model is explicitly reviewed and intended.',
+          ]
+        : []),
+      ...(hasAuthHeaderClearGap
+        ? [
+            'If reviewed source code constructs auth-like authorization headers, explicitly delete or reset those header values during sign-out instead of assuming redirects or generic sign-out helpers will clear them.',
+          ]
+        : []),
+      ...(hasAuthCacheClients && hasAuthCacheClearGap
+        ? [
+            'If protected data is cached in query clients or client stores, clear or reset those caches during sign-out so privileged data does not linger after logout.',
+          ]
+        : []),
     ],
   });
 
   if (hasDangerousHtml) {
-    findings.push(makeFinding({
-      id: 'security-dangerously-set-html',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'The reviewed file uses `dangerouslySetInnerHTML`.',
-      evidence: [filePath, `Occurrences: ${dangerousHtmlCount}`],
-      file: filePath,
-      suggestedFix: 'Render structured data through components instead of injecting raw HTML, or sanitize the content before it reaches the view layer.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-dangerously-set-html',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message: 'The reviewed file uses `dangerouslySetInnerHTML`.',
+        evidence: [filePath, `Occurrences: ${dangerousHtmlCount}`],
+        file: filePath,
+        suggestedFix:
+          'Render structured data through components instead of injecting raw HTML, or sanitize the content before it reaches the view layer.',
+      }),
+    );
   }
 
   if (hasRawHtmlInjection) {
-    findings.push(makeFinding({
-      id: 'security-raw-html-injection',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'The reviewed file writes raw HTML into the DOM.',
-      evidence: [filePath, `Occurrences: ${rawHtmlInjectionCount}`],
-      file: filePath,
-      suggestedFix: 'Avoid `innerHTML` and `insertAdjacentHTML`; render trusted structured nodes instead.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-raw-html-injection',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message: 'The reviewed file writes raw HTML into the DOM.',
+        evidence: [filePath, `Occurrences: ${rawHtmlInjectionCount}`],
+        file: filePath,
+        suggestedFix:
+          'Avoid `innerHTML` and `insertAdjacentHTML`; render trusted structured nodes instead.',
+      }),
+    );
   }
 
   if (hasDynamicEval) {
-    findings.push(makeFinding({
-      id: 'security-dynamic-code-eval',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'The reviewed file uses dynamic code execution patterns such as `eval`, `new Function`, or string-based timers.',
-      evidence: [filePath, `Occurrences: ${dynamicEvalCount}`],
-      file: filePath,
-      suggestedFix: 'Replace dynamic code execution with explicit functions, lookup tables, or validated configuration data; avoid passing strings into timers.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-dynamic-code-eval',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message:
+          'The reviewed file uses dynamic code execution patterns such as `eval`, `new Function`, or string-based timers.',
+        evidence: [filePath, `Occurrences: ${dynamicEvalCount}`],
+        file: filePath,
+        suggestedFix:
+          'Replace dynamic code execution with explicit functions, lookup tables, or validated configuration data; avoid passing strings into timers.',
+      }),
+    );
   }
 
   if (hasHardcodedSecretSignals) {
-    findings.push(makeFinding({
-      id: 'security-hardcoded-secret-literal',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'Hardcoded secret-like literals were detected in the reviewed file.',
-      evidence: [filePath, `Hardcoded secret-like literals: ${hardcodedSecretSignalCount}`],
-      file: filePath,
-      suggestedFix: 'Remove hardcoded secrets from source immediately, rotate any exposed credentials, and load sensitive values only through reviewed server-side boundaries.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-hardcoded-secret-literal',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message: 'Hardcoded secret-like literals were detected in the reviewed file.',
+        evidence: [filePath, `Hardcoded secret-like literals: ${hardcodedSecretSignalCount}`],
+        file: filePath,
+        suggestedFix:
+          'Remove hardcoded secrets from source immediately, rotate any exposed credentials, and load sensitive values only through reviewed server-side boundaries.',
+      }),
+    );
   }
 
   if (hasClientSecretEnvReferences) {
-    findings.push(makeFinding({
-      id: 'security-client-secret-env-reference',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'Client-exposed code references env vars that look server-only or secret-bearing.',
-      evidence: [filePath, `Client-exposed secret env references: ${clientSecretEnvReferenceCount}`],
-      file: filePath,
-      suggestedFix: 'Remove secret-bearing env references from client code and move privileged access behind a reviewed server boundary or server-only module.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-client-secret-env-reference',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message: 'Client-exposed code references env vars that look server-only or secret-bearing.',
+        evidence: [
+          filePath,
+          `Client-exposed secret env references: ${clientSecretEnvReferenceCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Remove secret-bearing env references from client code and move privileged access behind a reviewed server boundary or server-only module.',
+      }),
+    );
   }
 
   if (hasLocalhostEndpoints) {
-    findings.push(makeFinding({
-      id: 'security-localhost-endpoint-present',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed file still references localhost-style endpoints.',
-      evidence: [filePath, `Localhost endpoint signals: ${localhostEndpointCount}`],
-      file: filePath,
-      suggestedFix: 'Replace localhost, 127.0.0.1, or 0.0.0.0 endpoints with reviewed environment-backed URLs or move the client call behind a trusted server boundary.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-localhost-endpoint-present',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'The reviewed file still references localhost-style endpoints.',
+        evidence: [filePath, `Localhost endpoint signals: ${localhostEndpointCount}`],
+        file: filePath,
+        suggestedFix:
+          'Replace localhost, 127.0.0.1, or 0.0.0.0 endpoints with reviewed environment-backed URLs or move the client call behind a trusted server boundary.',
+      }),
+    );
   }
 
   if (hasInsecureExternalImage) {
-    findings.push(makeFinding({
-      id: 'security-image-transport-insecure',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed file loads one or more remote images over plain HTTP.',
-      evidence: [filePath, `Insecure remote images: ${insecureExternalImageCount}`],
-      file: filePath,
-      suggestedFix: 'Serve remote images over HTTPS or move them behind a reviewed trusted asset boundary before shipping.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-image-transport-insecure',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'The reviewed file loads one or more remote images over plain HTTP.',
+        evidence: [filePath, `Insecure remote images: ${insecureExternalImageCount}`],
+        file: filePath,
+        suggestedFix:
+          'Serve remote images over HTTPS or move them behind a reviewed trusted asset boundary before shipping.',
+      }),
+    );
   }
 
   if (hasWildcardPostMessage) {
-    findings.push(makeFinding({
-      id: 'security-postmessage-wildcard-origin',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'Cross-window messaging uses `postMessage` with a wildcard target origin.',
-      evidence: [filePath, `Wildcard postMessage calls: ${wildcardPostMessageCount}`],
-      file: filePath,
-      suggestedFix: 'Replace `postMessage(..., "*")` with an explicit reviewed origin so messages only cross the intended trust boundary.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-postmessage-wildcard-origin',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message: 'Cross-window messaging uses `postMessage` with a wildcard target origin.',
+        evidence: [filePath, `Wildcard postMessage calls: ${wildcardPostMessageCount}`],
+        file: filePath,
+        suggestedFix:
+          'Replace `postMessage(..., "*")` with an explicit reviewed origin so messages only cross the intended trust boundary.',
+      }),
+    );
   }
 
   if (hasMessageListenerWithoutOriginCheck) {
-    findings.push(makeFinding({
-      id: 'security-message-listener-origin-check-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Cross-window message handlers do not appear to validate `event.origin` before trusting inbound messages.',
-      evidence: [filePath, `Message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}`],
-      file: filePath,
-      suggestedFix: 'Check `event.origin` against an explicit reviewed allowlist or expected origin before acting on `message` event payloads.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-message-listener-origin-check-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Cross-window message handlers do not appear to validate `event.origin` before trusting inbound messages.',
+        evidence: [
+          filePath,
+          `Message listeners missing origin checks: ${messageListenerWithoutOriginCheckCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Check `event.origin` against an explicit reviewed allowlist or expected origin before acting on `message` event payloads.',
+      }),
+    );
   }
 
   if (hasWindowOpenWithoutNoopener) {
-    findings.push(makeFinding({
-      id: 'security-window-open-noopener-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Imperative `window.open` usage targets a new tab without `noopener,noreferrer` protections.',
-      evidence: [filePath, `window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}`],
-      file: filePath,
-      suggestedFix: 'Use `window.open(url, "_blank", "noopener,noreferrer")` or equivalent reviewed features so the opened page cannot retain opener access.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-window-open-noopener-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Imperative `window.open` usage targets a new tab without `noopener,noreferrer` protections.',
+        evidence: [
+          filePath,
+          `window.open calls missing noopener/noreferrer: ${windowOpenWithoutNoopenerCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Use `window.open(url, "_blank", "noopener,noreferrer")` or equivalent reviewed features so the opened page cannot retain opener access.',
+      }),
+    );
   }
 
   if (hasExternalBlankLinkWithoutRel) {
-    findings.push(makeFinding({
-      id: 'security-target-blank-rel-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'External links open in a new tab without `rel=\"noopener noreferrer\"`.',
-      evidence: [filePath, `Occurrences: ${externalBlankLinkWithoutRelCount}`],
-      file: filePath,
-      suggestedFix: 'Add rel="noopener noreferrer" to external target="_blank" links to prevent tab-nabbing and preserve opener isolation.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-target-blank-rel-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'External links open in a new tab without `rel="noopener noreferrer"`.',
+        evidence: [filePath, `Occurrences: ${externalBlankLinkWithoutRelCount}`],
+        file: filePath,
+        suggestedFix:
+          'Add rel="noopener noreferrer" to external target="_blank" links to prevent tab-nabbing and preserve opener isolation.',
+      }),
+    );
   }
 
   if (hasExternalIframeWithoutSandbox) {
-    findings.push(makeFinding({
-      id: 'security-iframe-sandbox-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'External iframe embeds were detected without a `sandbox` attribute.',
-      evidence: [filePath, `External iframes without sandbox: ${externalIframeWithoutSandboxCount}`],
-      file: filePath,
-      suggestedFix: 'Add the narrowest practical sandbox policy to external iframes, and only loosen capabilities when the embed contract explicitly requires it.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-iframe-sandbox-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'External iframe embeds were detected without a `sandbox` attribute.',
+        evidence: [
+          filePath,
+          `External iframes without sandbox: ${externalIframeWithoutSandboxCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Add the narrowest practical sandbox policy to external iframes, and only loosen capabilities when the embed contract explicitly requires it.',
+      }),
+    );
   }
 
   if (hasInsecureExternalIframe) {
-    findings.push(makeFinding({
-      id: 'security-iframe-transport-insecure',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed file embeds one or more remote iframes over plain HTTP.',
-      evidence: [filePath, `Insecure external iframes: ${insecureExternalIframeCount}`],
-      file: filePath,
-      suggestedFix: 'Serve embedded iframes over HTTPS or move the integration behind a reviewed trusted boundary before shipping.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-iframe-transport-insecure',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'The reviewed file embeds one or more remote iframes over plain HTTP.',
+        evidence: [filePath, `Insecure external iframes: ${insecureExternalIframeCount}`],
+        file: filePath,
+        suggestedFix:
+          'Serve embedded iframes over HTTPS or move the integration behind a reviewed trusted boundary before shipping.',
+      }),
+    );
   }
 
   if (hasInsecureFormAction) {
-    findings.push(makeFinding({
-      id: 'security-form-action-insecure',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'Forms were detected using insecure or unsafe action targets.',
-      evidence: [filePath, `Forms with insecure or unsafe action target: ${insecureFormActionCount}`],
-      file: filePath,
-      suggestedFix: 'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary; do not use javascript:, mailto:, data:, or plain HTTP form actions for production flows.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-form-action-insecure',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message: 'Forms were detected using insecure or unsafe action targets.',
+        evidence: [
+          filePath,
+          `Forms with insecure or unsafe action target: ${insecureFormActionCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Use HTTPS form endpoints or route submissions through a trusted server action/API boundary; do not use javascript:, mailto:, data:, or plain HTTP form actions for production flows.',
+      }),
+    );
   }
 
   if (hasInsecureAuthFormMethod) {
-    findings.push(makeFinding({
-      id: 'security-auth-form-method-insecure',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Auth-like forms were detected without an explicit POST-style submission method.',
-      evidence: [filePath, `Auth forms with insecure method: ${insecureAuthFormMethodCount}`],
-      file: filePath,
-      suggestedFix: 'Add `method=\"post\"` or move the submission behind an explicit server action boundary so credential flows do not default to GET semantics.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-form-method-insecure',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Auth-like forms were detected without an explicit POST-style submission method.',
+        evidence: [filePath, `Auth forms with insecure method: ${insecureAuthFormMethodCount}`],
+        file: filePath,
+        suggestedFix:
+          'Add `method="post"` or move the submission behind an explicit server action boundary so credential flows do not default to GET semantics.',
+      }),
+    );
   }
 
   if (hasInsecureTransportEndpoint) {
-    findings.push(makeFinding({
-      id: 'security-transport-endpoint-insecure',
-      category: 'Security Hygiene',
-      severity: 'error',
-      message: 'Client code was detected calling or navigating to plain HTTP or insecure websocket endpoints.',
-      evidence: [filePath, `Insecure transport endpoints: ${insecureTransportEndpointCount}`],
-      file: filePath,
-      suggestedFix: 'Use HTTPS/WSS endpoints and reviewed secure redirects, or move the transport boundary behind a trusted server action or API layer.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-transport-endpoint-insecure',
+        category: 'Security Hygiene',
+        severity: 'error',
+        message:
+          'Client code was detected calling or navigating to plain HTTP or insecure websocket endpoints.',
+        evidence: [filePath, `Insecure transport endpoints: ${insecureTransportEndpointCount}`],
+        file: filePath,
+        suggestedFix:
+          'Use HTTPS/WSS endpoints and reviewed secure redirects, or move the transport boundary behind a trusted server action or API layer.',
+      }),
+    );
   }
 
   if (hasAuthOpenRedirectSignals) {
-    findings.push(makeFinding({
-      id: 'security-auth-open-redirect-risk',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Redirect logic appears to trust next/returnTo-style query parameters without an obvious reviewed allowlist.',
-      evidence: [filePath, `Auth/query redirect signals: ${authOpenRedirectSignalCount}`],
-      file: filePath,
-      suggestedFix: 'Resolve post-auth and route-transition redirects through a reviewed internal allowlist instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-open-redirect-risk',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Redirect logic appears to trust next/returnTo-style query parameters without an obvious reviewed allowlist.',
+        evidence: [filePath, `Auth/query redirect signals: ${authOpenRedirectSignalCount}`],
+        file: filePath,
+        suggestedFix:
+          'Resolve post-auth and route-transition redirects through a reviewed internal allowlist instead of redirecting directly from raw `next`, `returnTo`, `callbackUrl`, or similar query parameters.',
+      }),
+    );
   }
 
   if (
-    hasAuthExternalRedirectSignals
-    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+    hasAuthExternalRedirectSignals &&
+    (signInFlowSignals > 0 ||
+      signUpFlowSignals > 0 ||
+      recoveryFlowSignals > 0 ||
+      authExitSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'security-auth-external-redirect-risk',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed auth flow redirects users directly to an external URL.',
-      evidence: [filePath, `Auth external redirects: ${authExternalRedirectSignalCount}`],
-      file: filePath,
-      suggestedFix: 'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-external-redirect-risk',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'The reviewed auth flow redirects users directly to an external URL.',
+        evidence: [filePath, `Auth external redirects: ${authExternalRedirectSignalCount}`],
+        file: filePath,
+        suggestedFix:
+          'Keep auth redirects on reviewed internal routes, or route external provider/logout handoffs through explicit reviewed allowlists and provider configuration instead of hardcoding off-site destinations in app code.',
+      }),
+    );
   }
 
   if (
-    hasAuthProviderStateMissing
-    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+    hasAuthProviderStateMissing &&
+    (signInFlowSignals > 0 ||
+      signUpFlowSignals > 0 ||
+      recoveryFlowSignals > 0 ||
+      authExitSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'security-auth-provider-state-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed auth flow hardcodes a provider-style authorize URL without a `state` parameter.',
-      evidence: [filePath, `Auth provider URLs missing state: ${authProviderStateMissingCount}`],
-      file: filePath,
-      suggestedFix: 'Add a reviewed `state` value to external provider authorize URLs and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-provider-state-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'The reviewed auth flow hardcodes a provider-style authorize URL without a `state` parameter.',
+        evidence: [filePath, `Auth provider URLs missing state: ${authProviderStateMissingCount}`],
+        file: filePath,
+        suggestedFix:
+          'Add a reviewed `state` value to external provider authorize URLs and validate it on return instead of hardcoding off-site auth entry without CSRF protection.',
+      }),
+    );
   }
 
   if (
-    hasAuthProviderPkceMissing
-    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+    hasAuthProviderPkceMissing &&
+    (signInFlowSignals > 0 ||
+      signUpFlowSignals > 0 ||
+      recoveryFlowSignals > 0 ||
+      authExitSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'security-auth-provider-pkce-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed auth flow hardcodes a provider-style OAuth code-flow URL without a `code_challenge`.',
-      evidence: [filePath, `Auth provider code flows missing PKCE: ${authProviderPkceMissingCount}`],
-      file: filePath,
-      suggestedFix: 'Add a reviewed PKCE `code_challenge` and verifier to external provider code flows instead of hardcoding a bare authorization-code redirect from client code.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-provider-pkce-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'The reviewed auth flow hardcodes a provider-style OAuth code-flow URL without a `code_challenge`.',
+        evidence: [
+          filePath,
+          `Auth provider code flows missing PKCE: ${authProviderPkceMissingCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Add a reviewed PKCE `code_challenge` and verifier to external provider code flows instead of hardcoding a bare authorization-code redirect from client code.',
+      }),
+    );
   }
 
   if (
-    hasAuthProviderNonceMissing
-    && (signInFlowSignals > 0 || signUpFlowSignals > 0 || recoveryFlowSignals > 0 || authExitSignalCount > 0)
+    hasAuthProviderNonceMissing &&
+    (signInFlowSignals > 0 ||
+      signUpFlowSignals > 0 ||
+      recoveryFlowSignals > 0 ||
+      authExitSignalCount > 0)
   ) {
-    findings.push(makeFinding({
-      id: 'security-auth-provider-nonce-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed auth flow hardcodes a provider-style OIDC id_token URL without a `nonce` parameter.',
-      evidence: [filePath, `Auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}`],
-      file: filePath,
-      suggestedFix: 'Add a reviewed `nonce` value to external provider authorize URLs that request `id_token`, and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-provider-nonce-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'The reviewed auth flow hardcodes a provider-style OIDC id_token URL without a `nonce` parameter.',
+        evidence: [
+          filePath,
+          `Auth provider id_token flows missing nonce: ${authProviderNonceMissingCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Add a reviewed `nonce` value to external provider authorize URLs that request `id_token`, and validate it on return instead of hardcoding a bare OIDC implicit or hybrid flow from client code.',
+      }),
+    );
   }
 
   if (hasAuthCallbackStateValidationGap) {
-    findings.push(makeFinding({
-      id: 'security-auth-callback-state-validation-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed auth callback flow reads a returned provider `state` value but does not show an obvious validation step against a reviewed expected value.',
-      evidence: [
-        filePath,
-        `Auth callback state reads: ${authCallbackStateSignalCount}`,
-        `Auth callback state validation signals: ${authCallbackStateValidationSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'When callback routes read `state`, compare it against a stored or expected reviewed value before exchanging callback codes or continuing auth/session setup.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-callback-state-validation-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'The reviewed auth callback flow reads a returned provider `state` value but does not show an obvious validation step against a reviewed expected value.',
+        evidence: [
+          filePath,
+          `Auth callback state reads: ${authCallbackStateSignalCount}`,
+          `Auth callback state validation signals: ${authCallbackStateValidationSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'When callback routes read `state`, compare it against a stored or expected reviewed value before exchanging callback codes or continuing auth/session setup.',
+      }),
+    );
   }
 
   if (hasAuthCallbackStateTeardownGap) {
-    findings.push(makeFinding({
-      id: 'security-auth-callback-state-teardown-missing',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'The reviewed auth callback flow validates stored callback `state` but does not show that the stored state key is cleared afterwards.',
-      evidence: [
-        filePath,
-        `Auth callback state storage reads: ${authCallbackStateStorageSignalCount}`,
-        `Auth callback state storage clears: ${authCallbackStateStorageClearSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'After validating callback `state`, remove the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-callback-state-teardown-missing',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message:
+          'The reviewed auth callback flow validates stored callback `state` but does not show that the stored state key is cleared afterwards.',
+        evidence: [
+          filePath,
+          `Auth callback state storage reads: ${authCallbackStateStorageSignalCount}`,
+          `Auth callback state storage clears: ${authCallbackStateStorageClearSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After validating callback `state`, remove the reviewed `oauth_state` or CSRF state key from browser storage or cookies so stale callback state does not linger.',
+      }),
+    );
   }
 
   if (hasAuthCallbackUrlScrubGap) {
-    findings.push(makeFinding({
-      id: 'security-auth-callback-url-scrub-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'The reviewed auth callback flow appears to read codes, tokens, or provider error params from the URL without scrubbing them back out of browser history.',
-      evidence: [
-        filePath,
-        `Auth callback token reads: ${authCallbackTokenSignalCount}`,
-        `Auth callback error signals: ${authCallbackErrorSignalCount}`,
-        `Auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'After consuming callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-callback-url-scrub-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'The reviewed auth callback flow appears to read codes, tokens, or provider error params from the URL without scrubbing them back out of browser history.',
+        evidence: [
+          filePath,
+          `Auth callback token reads: ${authCallbackTokenSignalCount}`,
+          `Auth callback error signals: ${authCallbackErrorSignalCount}`,
+          `Auth callback URL scrub signals: ${authCallbackUrlScrubSignalCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'After consuming callback codes, tokens, or provider error params from the URL, replace the callback URL with a clean reviewed route using `history.replaceState`, router replacement, or an explicit internal redirect.',
+      }),
+    );
   }
 
   if (hasAuthAutocompleteIssues) {
-    findings.push(makeFinding({
-      id: 'security-auth-autocomplete-missing',
-      category: 'Security Hygiene',
-      severity: 'info',
-      message: 'Auth-related inputs were detected with missing or incorrect `autocomplete` hints.',
-      evidence: [
-        filePath,
-        `Email inputs without autocomplete: ${emailAutocompleteMissingCount}`,
-        `Password inputs without autocomplete: ${passwordAutocompleteMissingCount}`,
-        `OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}`,
-        `Auth inputs with autocomplete off: ${authAutocompleteDisabledCount}`,
-        `Auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}`,
-        `Auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}`,
-      ],
-      file: filePath,
-      suggestedFix: 'Add `autocomplete=\"email\"` or `autocomplete=\"username\"` to identity fields, `autocomplete=\"current-password\"` or `autocomplete=\"new-password\"` to password fields, `autocomplete=\"one-time-code\"` to OTP and verification-code inputs, keep those autocomplete values aligned with the field purpose, do not disable autocomplete on credential inputs, and keep credential field types semantically correct.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-autocomplete-missing',
+        category: 'Security Hygiene',
+        severity: 'info',
+        message:
+          'Auth-related inputs were detected with missing or incorrect `autocomplete` hints.',
+        evidence: [
+          filePath,
+          `Email inputs without autocomplete: ${emailAutocompleteMissingCount}`,
+          `Password inputs without autocomplete: ${passwordAutocompleteMissingCount}`,
+          `OTP inputs without one-time-code autocomplete: ${otpAutocompleteMissingCount}`,
+          `Auth inputs with autocomplete off: ${authAutocompleteDisabledCount}`,
+          `Auth inputs with autocomplete semantic mismatch: ${authAutocompleteSemanticMismatchCount}`,
+          `Auth inputs with semantic type mismatch: ${authInputTypeMismatchCount}`,
+        ],
+        file: filePath,
+        suggestedFix:
+          'Add `autocomplete="email"` or `autocomplete="username"` to identity fields, `autocomplete="current-password"` or `autocomplete="new-password"` to password fields, `autocomplete="one-time-code"` to OTP and verification-code inputs, keep those autocomplete values aligned with the field purpose, do not disable autocomplete on credential inputs, and keep credential field types semantically correct.',
+      }),
+    );
   }
 
   if (hasAuthStorageWrites) {
-    findings.push(makeFinding({
-      id: 'security-auth-storage-write',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Potential auth credentials were written into browser storage.',
-      evidence: [filePath, `Auth-like local/session storage writes: ${authStorageWriteCount}`],
-      file: filePath,
-      suggestedFix: 'Avoid writing tokens or sessions to localStorage/sessionStorage; prefer secure server-managed sessions or hardened cookie flows.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-storage-write',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Potential auth credentials were written into browser storage.',
+        evidence: [filePath, `Auth-like local/session storage writes: ${authStorageWriteCount}`],
+        file: filePath,
+        suggestedFix:
+          'Avoid writing tokens or sessions to localStorage/sessionStorage; prefer secure server-managed sessions or hardened cookie flows.',
+      }),
+    );
   }
 
   if (hasAuthCookieWrites) {
-    findings.push(makeFinding({
-      id: 'security-auth-cookie-write',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Potential auth credentials were written into client-managed cookies.',
-      evidence: [filePath, `Auth-like cookie writes: ${authCookieWriteCount}`],
-      file: filePath,
-      suggestedFix: 'Avoid setting auth cookies from client-side code; prefer server-issued HttpOnly cookies or other server-managed session mechanisms.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-cookie-write',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Potential auth credentials were written into client-managed cookies.',
+        evidence: [filePath, `Auth-like cookie writes: ${authCookieWriteCount}`],
+        file: filePath,
+        suggestedFix:
+          'Avoid setting auth cookies from client-side code; prefer server-issued HttpOnly cookies or other server-managed session mechanisms.',
+      }),
+    );
   }
 
   if (hasAuthCookieMissingHardening) {
-    findings.push(makeFinding({
-      id: 'security-auth-cookie-hardening-missing',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Auth cookies are being issued without explicit `httpOnly`, `secure`, and `sameSite` hardening.',
-      evidence: [filePath, `Auth cookies missing hardening: ${authCookieMissingHardeningCount}`],
-      file: filePath,
-      suggestedFix: 'Set auth cookies with explicit `httpOnly: true`, `secure: true`, and a reviewed `sameSite` value so session boundaries do not rely on ambient defaults.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-cookie-hardening-missing',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message:
+          'Auth cookies are being issued without explicit `httpOnly`, `secure`, and `sameSite` hardening.',
+        evidence: [filePath, `Auth cookies missing hardening: ${authCookieMissingHardeningCount}`],
+        file: filePath,
+        suggestedFix:
+          'Set auth cookies with explicit `httpOnly: true`, `secure: true`, and a reviewed `sameSite` value so session boundaries do not rely on ambient defaults.',
+      }),
+    );
   }
 
   if (hasAuthHeaderWrites) {
-    findings.push(makeFinding({
-      id: 'security-auth-header-write',
-      category: 'Security Hygiene',
-      severity: 'warn',
-      message: 'Auth-like authorization headers were constructed in client-side code.',
-      evidence: [filePath, `Auth-like header writes: ${authHeaderWriteCount}`],
-      file: filePath,
-      suggestedFix: 'Prefer server-managed sessions or a deliberately reviewed client-auth strategy instead of assembling bearer/session headers ad hoc in client-rendered code.',
-    }));
+    findings.push(
+      makeFinding({
+        id: 'security-auth-header-write',
+        category: 'Security Hygiene',
+        severity: 'warn',
+        message: 'Auth-like authorization headers were constructed in client-side code.',
+        evidence: [filePath, `Auth-like header writes: ${authHeaderWriteCount}`],
+        file: filePath,
+        suggestedFix:
+          'Prefer server-managed sessions or a deliberately reviewed client-auth strategy instead of assembling bearer/session headers ad hoc in client-rendered code.',
+      }),
+    );
   }
 
-  const overall = Math.round((scores.reduce((sum, score) => sum + score.score, 0) / scores.length) * 10) / 10;
+  const overall =
+    Math.round((scores.reduce((sum, score) => sum + score.score, 0) / scores.length) * 10) / 10;
   return {
     $schema: VERIFICATION_SCHEMA_URLS.fileCritique,
     file: filePath,
@@ -11581,7 +14688,10 @@ export function critiqueSource({
   };
 }
 
-export async function critiqueFile(filePath: string, projectRoot: string): Promise<FileCritiqueReport> {
+export async function critiqueFile(
+  filePath: string,
+  projectRoot: string,
+): Promise<FileCritiqueReport> {
   const resolvedPath = isAbsolute(filePath) ? filePath : resolve(projectRoot, filePath);
   const code = await readFile(resolvedPath, 'utf-8');
   const treatmentsCss = readTextIfExists(join(projectRoot, 'src', 'styles', 'treatments.css'));

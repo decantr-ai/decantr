@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { parseMagicPrompt } from '../src/commands/magic.js';
+import { describe, expect, it } from 'vitest';
 import type { MagicIntent } from '../src/commands/magic.js';
+import { parseMagicPrompt } from '../src/commands/magic.js';
 
 describe('parseMagicPrompt', () => {
   it('extracts dark theme hint', () => {
@@ -56,7 +56,7 @@ describe('parseMagicPrompt', () => {
 
   it('handles the full example prompt', () => {
     const result = parseMagicPrompt(
-      'AI agent marketplace dashboard — dark cyber-minimal, confident personality, mobile-first'
+      'AI agent marketplace dashboard — dark cyber-minimal, confident personality, mobile-first',
     );
     expect(result.themeHints).toContain('dark');
     expect(result.themeHints).toContain('minimal');

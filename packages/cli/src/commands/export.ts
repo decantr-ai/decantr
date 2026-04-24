@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -60,7 +60,11 @@ export function parseTokensCSS(css: string): Map<string, string> {
 // ── Generators ──
 
 export function generateShadcnCSS(tokens: Map<string, string>): string {
-  const lines: string[] = ['/* Exported by decantr export --to shadcn */', '@layer base {', '  :root {'];
+  const lines: string[] = [
+    '/* Exported by decantr export --to shadcn */',
+    '@layer base {',
+    '  :root {',
+  ];
 
   for (const [decantrVar, shadcnVar] of Object.entries(SHADCN_MAP)) {
     const value = tokens.get(decantrVar);
@@ -193,7 +197,7 @@ export function generateCSSVars(tokens: Map<string, string>): string {
 export async function cmdExport(
   target: ExportTarget,
   projectRoot: string,
-  options: ExportOptions = {}
+  options: ExportOptions = {},
 ): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
   const tokensPath = join(projectRoot, 'src', 'styles', 'tokens.css');
@@ -205,7 +209,9 @@ export async function cmdExport(
   }
 
   if (!existsSync(tokensPath)) {
-    console.error(`${RED}No src/styles/tokens.css found. Run \`decantr refresh\` to generate tokens.${RESET}`);
+    console.error(
+      `${RED}No src/styles/tokens.css found. Run \`decantr refresh\` to generate tokens.${RESET}`,
+    );
     process.exitCode = 1;
     return;
   }

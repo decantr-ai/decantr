@@ -158,7 +158,9 @@ export function injectResponsive(className: string, declaration: string, bp: str
   if (typeof document === 'undefined') return;
   const escaped = className.replace(/:/g, '\\:');
   if (!bpBuffers[bp]) bpBuffers[bp] = [];
-  bpBuffers[bp].push(`@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}{${declaration}}}}`);
+  bpBuffers[bp].push(
+    `@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}{${declaration}}}}`,
+  );
   scheduleFlush();
 }
 
@@ -193,7 +195,11 @@ export function injectPseudo(className: string, declaration: string, prefix: str
   if (typeof document === 'undefined') return;
   const escaped = escapeSelector(className);
   const PSEUDO_MAP: Record<string, string> = {
-    h: 'hover', f: 'focus', fv: 'focus-visible', a: 'active', fw: 'focus-within',
+    h: 'hover',
+    f: 'focus',
+    fv: 'focus-visible',
+    a: 'active',
+    fw: 'focus-within',
   };
   const pseudo = PSEUDO_MAP[prefix];
   atomBuffer.push(`@layer d.atoms{.${escaped}:${pseudo}{${declaration}}}`);
@@ -207,13 +213,20 @@ export function injectPseudo(className: string, declaration: string, prefix: str
  * @param bp - breakpoint key
  * @param pseudo - pseudo-class name
  */
-export function injectResponsivePseudo(className: string, declaration: string, bp: string, pseudo: string): void {
+export function injectResponsivePseudo(
+  className: string,
+  declaration: string,
+  bp: string,
+  pseudo: string,
+): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
   const escaped = escapeSelector(className);
   if (!bpBuffers[bp]) bpBuffers[bp] = [];
-  bpBuffers[bp].push(`@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}:${pseudo}{${declaration}}}}`);
+  bpBuffers[bp].push(
+    `@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}:${pseudo}{${declaration}}}}`,
+  );
   scheduleFlush();
 }
 
@@ -224,7 +237,12 @@ export function injectResponsivePseudo(className: string, declaration: string, b
  * @param bp - breakpoint key (sm|md|lg|xl)
  * @param pseudo - pseudo-class name
  */
-export function injectResponsiveMaxPseudo(className: string, declaration: string, bp: string, pseudo: string): void {
+export function injectResponsiveMaxPseudo(
+  className: string,
+  declaration: string,
+  bp: string,
+  pseudo: string,
+): void {
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
@@ -232,7 +250,9 @@ export function injectResponsiveMaxPseudo(className: string, declaration: string
   const key = `${bp}max`;
   if (!bpBuffers[key]) bpBuffers[key] = [];
   const maxPx = BREAKPOINTS[bp as keyof typeof BREAKPOINTS] - 0.02;
-  bpBuffers[key].push(`@layer d.atoms{@media(max-width:${maxPx}px){.${escaped}:${pseudo}{${declaration}}}}`);
+  bpBuffers[key].push(
+    `@layer d.atoms{@media(max-width:${maxPx}px){.${escaped}:${pseudo}{${declaration}}}}`,
+  );
   scheduleFlush();
 }
 
@@ -263,8 +283,12 @@ export function injectGroupPeer(className: string, declaration: string, prefix: 
   if (typeof document === 'undefined') return;
   const escaped = escapeSelector(className);
   const GP_STATE: Record<string, [string, string]> = {
-    gh: ['group', 'hover'], gf: ['group', 'focus-within'], ga: ['group', 'active'],
-    ph: ['peer', 'hover'], pf: ['peer', 'focus'], pa: ['peer', 'active'],
+    gh: ['group', 'hover'],
+    gf: ['group', 'focus-within'],
+    ga: ['group', 'active'],
+    ph: ['peer', 'hover'],
+    pf: ['peer', 'focus'],
+    pa: ['peer', 'active'],
   };
   const [kind, state] = GP_STATE[prefix];
   const combinator = kind === 'group' ? ' ' : ' ~ ';

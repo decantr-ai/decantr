@@ -1,9 +1,9 @@
-import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { refreshDerivedFiles } from '../scaffold.js';
+import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
+import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -89,10 +89,10 @@ export async function cmdRemoveSection(
   const { essence, essencePath } = loaded;
 
   const sections = essence.blueprint.sections!;
-  const idx = sections.findIndex(s => s.id === sectionId);
+  const idx = sections.findIndex((s) => s.id === sectionId);
   if (idx === -1) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-    console.error(`${DIM}Available sections: ${sections.map(s => s.id).join(', ')}${RESET}`);
+    console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
   }
@@ -144,18 +144,18 @@ export async function cmdRemovePage(
   const { essence, essencePath } = loaded;
 
   const sections = essence.blueprint.sections!;
-  const section = sections.find(s => s.id === sectionId);
+  const section = sections.find((s) => s.id === sectionId);
   if (!section) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-    console.error(`${DIM}Available sections: ${sections.map(s => s.id).join(', ')}${RESET}`);
+    console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
   }
 
-  const pageIdx = section.pages.findIndex(p => p.id === pageId);
+  const pageIdx = section.pages.findIndex((p) => p.id === pageId);
   if (pageIdx === -1) {
     console.error(`${RED}Page "${pageId}" not found in section "${sectionId}".${RESET}`);
-    console.error(`${DIM}Available pages: ${section.pages.map(p => p.id).join(', ')}${RESET}`);
+    console.error(`${DIM}Available pages: ${section.pages.map((p) => p.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
   }
@@ -203,10 +203,10 @@ export async function cmdRemoveFeature(
 
   if (sectionId) {
     const sections = essence.blueprint.sections!;
-    const section = sections.find(s => s.id === sectionId);
+    const section = sections.find((s) => s.id === sectionId);
     if (!section) {
       console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-      console.error(`${DIM}Available sections: ${sections.map(s => s.id).join(', ')}${RESET}`);
+      console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
       process.exitCode = 1;
       return;
     }

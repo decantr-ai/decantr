@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  API_CONTENT_TYPES,
-  RegistryAPIClient,
-  isApiContentType,
-} from '../src/client.js';
+import { API_CONTENT_TYPES, isApiContentType, RegistryAPIClient } from '../src/client.js';
 
 describe('@decantr/registry/client', () => {
   it('exports the web-safe api client surface', () => {

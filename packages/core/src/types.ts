@@ -1,20 +1,20 @@
 // ─── IR Node Types ───────────────────────────────────────────
 
 export type IRNodeType =
-  | 'app'       // Root application node
-  | 'shell'     // App shell (sidebar-main, top-nav-main, etc.)
-  | 'page'      // A route page
-  | 'pattern'   // A resolved pattern instance
-  | 'grid'      // Grid layout wrapper (equal or weighted columns)
-  | 'nav'       // Navigation item list
-  | 'store';    // Global state signals
+  | 'app' // Root application node
+  | 'shell' // App shell (sidebar-main, top-nav-main, etc.)
+  | 'page' // A route page
+  | 'pattern' // A resolved pattern instance
+  | 'grid' // Grid layout wrapper (equal or weighted columns)
+  | 'nav' // Navigation item list
+  | 'store'; // Global state signals
 
 export interface IRSpatial {
-  gap: string;            // e.g. "_gap4", "gap4", or "4" depending on resolution layer
-  padding?: string;       // e.g. "4" or "6"
+  gap: string; // e.g. "_gap4", "gap4", or "4" depending on resolution layer
+  padding?: string; // e.g. "4" or "6"
   responsive?: {
-    breakpoint: string;   // "sm" | "md" | "lg" | "xl"
-    cols: number;         // Number of columns at/above breakpoint
+    breakpoint: string; // "sm" | "md" | "lg" | "xl"
+    cols: number; // Number of columns at/above breakpoint
   };
 }
 
@@ -22,10 +22,10 @@ export interface IRSpatial {
 export type IRHookType = 'search' | 'filter' | 'selection' | 'sort';
 
 export interface IRWiringSignal {
-  name: string;           // e.g. "pageSearch"
-  setter: string;         // e.g. "setPageSearch"
-  init: string;           // e.g. "''" or "'all'"
-  hookType: IRHookType;   // e.g. "search" or "filter"
+  name: string; // e.g. "pageSearch"
+  setter: string; // e.g. "setPageSearch"
+  init: string; // e.g. "''" or "'all'"
+  hookType: IRHookType; // e.g. "search" or "filter"
 }
 
 export interface IRWiring {
@@ -38,17 +38,18 @@ export interface IRWiring {
 }
 
 export interface IRPatternMeta {
-  patternId: string;      // Base pattern ID (e.g. "filter-bar")
-  preset: string;         // Resolved preset name (e.g. "default")
-  alias: string;          // Local alias (e.g. "activity-filter")
-  layout: string;         // "row" | "column" | "grid" | "hero" | "stack"
-  contained: boolean;     // Whether to wrap in Card
-  standalone: boolean;    // Hero/row patterns skip card wrapping
-  code: {                 // Raw pattern code from registry (Decantr-native)
+  patternId: string; // Base pattern ID (e.g. "filter-bar")
+  preset: string; // Resolved preset name (e.g. "default")
+  alias: string; // Local alias (e.g. "activity-filter")
+  layout: string; // "row" | "column" | "grid" | "hero" | "stack"
+  contained: boolean; // Whether to wrap in Card
+  standalone: boolean; // Hero/row patterns skip card wrapping
+  code: {
+    // Raw pattern code from registry (Decantr-native)
     imports?: string;
     example?: string;
   } | null;
-  components: string[];   // Components used by this pattern
+  components: string[]; // Components used by this pattern
   /**
    * Per-preset prose from pattern.presets[preset].description. Threaded
    * into PagePackPattern so the page-pack renderer can emit preset-specific
@@ -58,13 +59,13 @@ export interface IRPatternMeta {
 }
 
 export interface IRVisualEffect {
-  decorators: string[];   // e.g. ["d-glass", "d-gradient-hint-primary"]
+  decorators: string[]; // e.g. ["d-glass", "d-gradient-hint-primary"]
   intensity: Record<string, string>; // CSS custom property overrides
 }
 
 export interface IRCardWrapping {
   mode: 'always' | 'minimal' | 'none';
-  headerLabel: string;    // Display name for Card.Header
+  headerLabel: string; // Display name for Card.Header
 }
 
 export interface IRNavItem {
@@ -74,29 +75,29 @@ export interface IRNavItem {
 }
 
 export interface IRShellConfig {
-  type: string;           // "sidebar-main" | "top-nav-main" | "full-bleed" | etc.
-  brand: string;          // Brand label (from archetype/terroir)
+  type: string; // "sidebar-main" | "top-nav-main" | "full-bleed" | etc.
+  brand: string; // Brand label (from archetype/terroir)
   nav: IRNavItem[];
   inset: boolean;
   decoration: IRThemeDecoration | null;
 }
 
 export interface IRThemeDecoration {
-  root: string;           // CSS class for Shell root (e.g. "d-mesh")
-  nav: string;            // CSS class for Shell.Nav (e.g. "d-glass")
-  header: string;         // CSS class for Shell.Header
-  brand: string;          // CSS class for brand label (e.g. "d-gradient-text")
-  navLabel: string;       // CSS class for nav labels
-  navStyle: string;       // Nav style variant (e.g. "filled")
+  root: string; // CSS class for Shell root (e.g. "d-mesh")
+  nav: string; // CSS class for Shell.Nav (e.g. "d-glass")
+  header: string; // CSS class for Shell.Header
+  brand: string; // CSS class for brand label (e.g. "d-gradient-text")
+  navLabel: string; // CSS class for nav labels
+  navStyle: string; // Nav style variant (e.g. "filled")
   defaultNavState: string; // "expanded" | "rail"
   dimensions: { navWidth?: string; headerHeight?: string } | null;
 }
 
 export interface IRTheme {
-  id: string;             // e.g. "auradecantism"
-  mode: string;           // "light" | "dark" | "auto"
-  shape: string | null;   // "sharp" | "rounded" | "pill"
-  isAddon: boolean;       // Needs explicit style registration
+  id: string; // e.g. "auradecantism"
+  mode: string; // "light" | "dark" | "auto"
+  shape: string | null; // "sharp" | "rounded" | "pill"
+  isAddon: boolean; // Needs explicit style registration
 }
 
 export interface IRRoute {
@@ -138,7 +139,7 @@ export interface IRShellNode extends IRNode {
 export interface IRPageNode extends IRNode {
   type: 'page';
   pageId: string;
-  surface: string;        // Surface atom string (or raw spatial intent)
+  surface: string; // Surface atom string (or raw spatial intent)
   wiring: IRWiring | null;
 }
 
@@ -152,15 +153,15 @@ export interface IRPatternNode extends IRNode {
 
 // AUTO: Breakpoint entry for multi-breakpoint responsive grids
 export interface IRBreakpointEntry {
-  at: string;   // "sm" | "md" | "lg" | "xl" | "2xl"
-  cols: number;  // column count at this breakpoint
+  at: string; // "sm" | "md" | "lg" | "xl" | "2xl"
+  cols: number; // column count at this breakpoint
 }
 
 export interface IRGridNode extends IRNode {
   type: 'grid';
   cols: number;
   spans: Record<string, number> | null; // null = equal width
-  breakpoint: string | null;            // responsive collapse point (single breakpoint)
+  breakpoint: string | null; // responsive collapse point (single breakpoint)
   // AUTO: Multi-breakpoint support — overrides breakpoint when present
   breakpoints?: IRBreakpointEntry[] | null;
   // AUTO: "container" enables container query atoms instead of viewport breakpoints

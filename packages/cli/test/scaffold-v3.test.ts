@@ -1,11 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, readFileSync, rmSync, existsSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { scaffoldProject, scaffoldMinimal, buildEssenceV3, refreshDerivedFiles } from '../src/scaffold.js';
-import type { ThemeData } from '../src/scaffold.js';
-import type { InitOptions } from '../src/prompts.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DetectedProject } from '../src/detect.js';
+import type { InitOptions } from '../src/prompts.js';
 import type { RegistryClient } from '../src/registry.js';
+import type { ThemeData } from '../src/scaffold.js';
+import {
+  buildEssenceV3,
+  refreshDerivedFiles,
+  scaffoldMinimal,
+  scaffoldProject,
+} from '../src/scaffold.js';
 
 /** Minimal mock RegistryClient that returns null for all fetches. */
 function createMockRegistry(): RegistryClient {
@@ -114,7 +119,12 @@ describe('v3 scaffold', () => {
     rmSync(testDir, { recursive: true, force: true });
     mkdirSync(join(testDir, 'src'), { recursive: true });
 
-    const fullResult = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
+    const fullResult = await scaffoldProject(
+      testDir,
+      defaultOptions,
+      detected,
+      createMockRegistry(),
+    );
     const fullEssence = JSON.parse(readFileSync(fullResult.essencePath, 'utf-8'));
 
     // Both should be v3
@@ -123,10 +133,10 @@ describe('v3 scaffold', () => {
 
     // Both should have the same top-level structure
     expect(Object.keys(minimalEssence).sort()).toEqual(
-      expect.arrayContaining(['version', 'dna', 'blueprint', 'meta'])
+      expect.arrayContaining(['version', 'dna', 'blueprint', 'meta']),
     );
     expect(Object.keys(fullEssence).sort()).toEqual(
-      expect.arrayContaining(['version', 'dna', 'blueprint', 'meta'])
+      expect.arrayContaining(['version', 'dna', 'blueprint', 'meta']),
     );
   });
 
@@ -224,32 +234,46 @@ describe('v3 scaffold', () => {
     mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
     mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
 
-    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
-      id: 'luminarum',
-      name: 'Luminarum',
-      spatial: {
-        card_wrapping: 'always',
-      },
-    }, null, 2));
-
-    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
-      id: 'hero',
-      name: 'Hero',
-      contained: false,
-      components: [],
-      presets: {
-        default: {
-          layout: {
-            layout: 'hero',
-            atoms: '',
-          },
-          code: {
-            imports: '',
-            example: '<section />',
+    writeFileSync(
+      join(cacheRoot, 'themes', 'luminarum.json'),
+      JSON.stringify(
+        {
+          id: 'luminarum',
+          name: 'Luminarum',
+          spatial: {
+            card_wrapping: 'always',
           },
         },
-      },
-    }, null, 2));
+        null,
+        2,
+      ),
+    );
+
+    writeFileSync(
+      join(cacheRoot, 'patterns', 'hero.json'),
+      JSON.stringify(
+        {
+          id: 'hero',
+          name: 'Hero',
+          contained: false,
+          components: [],
+          presets: {
+            default: {
+              layout: {
+                layout: 'hero',
+                atoms: '',
+              },
+              code: {
+                imports: '',
+                example: '<section />',
+              },
+            },
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
     await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
@@ -262,9 +286,19 @@ describe('v3 scaffold', () => {
     const reviewPackPath = join(testDir, '.decantr', 'context', 'review-pack.md');
     const reviewPackJsonPath = join(testDir, '.decantr', 'context', 'review-pack.json');
     const addMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.md');
-    const addMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-add-page-pack.json');
+    const addMutationPackJsonPath = join(
+      testDir,
+      '.decantr',
+      'context',
+      'mutation-add-page-pack.json',
+    );
     const modifyMutationPackPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.md');
-    const modifyMutationPackJsonPath = join(testDir, '.decantr', 'context', 'mutation-modify-pack.json');
+    const modifyMutationPackJsonPath = join(
+      testDir,
+      '.decantr',
+      'context',
+      'mutation-modify-pack.json',
+    );
     const manifestPath = join(testDir, '.decantr', 'context', 'pack-manifest.json');
     expect(existsSync(packPath)).toBe(true);
     expect(existsSync(packJsonPath)).toBe(true);
@@ -293,7 +327,10 @@ describe('v3 scaffold', () => {
     const modifyMutationContent = readFileSync(modifyMutationPackPath, 'utf-8');
     const modifyMutationJson = JSON.parse(readFileSync(modifyMutationPackJsonPath, 'utf-8'));
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-    const scaffoldTask = readFileSync(join(testDir, '.decantr', 'context', 'task-scaffold.md'), 'utf-8');
+    const scaffoldTask = readFileSync(
+      join(testDir, '.decantr', 'context', 'task-scaffold.md'),
+      'utf-8',
+    );
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
     expect(content).toContain('- / -> home @ sidebar-main [hero]');
@@ -405,29 +442,43 @@ describe('v3 scaffold', () => {
     mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
     mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
 
-    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
-      id: 'luminarum',
-      name: 'Luminarum',
-    }, null, 2));
+    writeFileSync(
+      join(cacheRoot, 'themes', 'luminarum.json'),
+      JSON.stringify(
+        {
+          id: 'luminarum',
+          name: 'Luminarum',
+        },
+        null,
+        2,
+      ),
+    );
 
-    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
-      id: 'hero',
-      name: 'Hero',
-      contained: false,
-      components: [],
-      presets: {
-        default: {
-          layout: {
-            layout: 'hero',
-            atoms: '',
-          },
-          code: {
-            imports: '',
-            example: '<section />',
+    writeFileSync(
+      join(cacheRoot, 'patterns', 'hero.json'),
+      JSON.stringify(
+        {
+          id: 'hero',
+          name: 'Hero',
+          contained: false,
+          components: [],
+          presets: {
+            default: {
+              layout: {
+                layout: 'hero',
+                atoms: '',
+              },
+              code: {
+                imports: '',
+                example: '<section />',
+              },
+            },
           },
         },
-      },
-    }, null, 2));
+        null,
+        2,
+      ),
+    );
 
     const result = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
     const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
@@ -453,29 +504,43 @@ describe('v3 scaffold', () => {
     mkdirSync(join(cacheRoot, 'themes'), { recursive: true });
     mkdirSync(join(cacheRoot, 'patterns'), { recursive: true });
 
-    writeFileSync(join(cacheRoot, 'themes', 'luminarum.json'), JSON.stringify({
-      id: 'luminarum',
-      name: 'Luminarum',
-    }, null, 2));
+    writeFileSync(
+      join(cacheRoot, 'themes', 'luminarum.json'),
+      JSON.stringify(
+        {
+          id: 'luminarum',
+          name: 'Luminarum',
+        },
+        null,
+        2,
+      ),
+    );
 
-    writeFileSync(join(cacheRoot, 'patterns', 'hero.json'), JSON.stringify({
-      id: 'hero',
-      name: 'Hero',
-      contained: false,
-      components: [],
-      presets: {
-        default: {
-          layout: {
-            layout: 'hero',
-            atoms: '',
-          },
-          code: {
-            imports: '',
-            example: '<section />',
+    writeFileSync(
+      join(cacheRoot, 'patterns', 'hero.json'),
+      JSON.stringify(
+        {
+          id: 'hero',
+          name: 'Hero',
+          contained: false,
+          components: [],
+          presets: {
+            default: {
+              layout: {
+                layout: 'hero',
+                atoms: '',
+              },
+              code: {
+                imports: '',
+                example: '<section />',
+              },
+            },
           },
         },
-      },
-    }, null, 2));
+        null,
+        2,
+      ),
+    );
 
     await scaffoldProject(
       testDir,
@@ -486,7 +551,9 @@ describe('v3 scaffold', () => {
 
     const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8'));
     await refreshDerivedFiles(testDir, essence, createMockRegistry());
-    const scaffoldPack = JSON.parse(readFileSync(join(testDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf-8'));
+    const scaffoldPack = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf-8'),
+    );
 
     expect(essence.meta.target).toBe('nextjs');
     expect(essence.meta.platform.routing).toBe('pathname');

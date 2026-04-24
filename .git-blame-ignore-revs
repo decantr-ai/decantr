@@ -1,0 +1,5 @@
+# Bulk-format commits ignored by `git blame` when configured with:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Apply Biome format + safe auto-fixes across packages/
+e4add4afbef483b51016e47245db8f624be0d759

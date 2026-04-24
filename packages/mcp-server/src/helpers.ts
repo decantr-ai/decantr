@@ -1,8 +1,8 @@
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
-import { RegistryAPIClient } from '@decantr/registry';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
+import { RegistryAPIClient } from '@decantr/registry';
 
 const MAX_INPUT_LENGTH = 1000;
 
@@ -128,7 +128,10 @@ export async function readDriftLog(projectRoot?: string): Promise<DriftLogEntry[
 /**
  * Write drift log entries to `.decantr/drift-log.json`.
  */
-export async function writeDriftLog(entries: DriftLogEntry[], projectRoot?: string): Promise<string> {
+export async function writeDriftLog(
+  entries: DriftLogEntry[],
+  projectRoot?: string,
+): Promise<string> {
   const root = projectRoot || process.cwd();
   const logPath = join(root, '.decantr', 'drift-log.json');
   await mkdir(dirname(logPath), { recursive: true });

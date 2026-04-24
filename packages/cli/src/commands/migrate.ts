@@ -1,7 +1,7 @@
-import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateEssence, migrateV2ToV3, isV3 } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
+import { isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -83,7 +83,11 @@ export function migrateEssenceFile(essencePath: string): MigrateResult {
   try {
     writeFileSync(essencePath, JSON.stringify(v3, null, 2) + '\n');
   } catch (e) {
-    return { success: false, backupPath, error: `Could not write migrated file: ${(e as Error).message}` };
+    return {
+      success: false,
+      backupPath,
+      error: `Could not write migrated file: ${(e as Error).message}`,
+    };
   }
 
   return { success: true, backupPath };

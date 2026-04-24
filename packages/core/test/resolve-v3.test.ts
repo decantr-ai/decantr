@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { resolveEssence } from '../src/resolve.js';
-import { createResolver } from '@decantr/registry';
-import type { EssenceV3 } from '@decantr/essence-spec';
 import { join } from 'node:path';
+import type { EssenceV3 } from '@decantr/essence-spec';
+import { createResolver } from '@decantr/registry';
+import { describe, expect, it } from 'vitest';
+import { resolveEssence } from '../src/resolve.js';
 
 const contentRoot = join(import.meta.dirname, '..', '..', 'registry', 'test', 'fixtures');
 
@@ -22,9 +22,7 @@ function makeV3Essence(overrides?: Partial<EssenceV3>): EssenceV3 {
     },
     blueprint: {
       shell: 'sidebar-main',
-      pages: [
-        { id: 'overview', layout: ['hero'] },
-      ],
+      pages: [{ id: 'overview', layout: ['hero'] }],
       features: ['auth'],
     },
     meta: {
@@ -120,9 +118,7 @@ describe('resolveEssence (v3)', () => {
     const essence = makeV3Essence({
       blueprint: {
         shell: 'sidebar-main',
-        pages: [
-          { id: 'home', shell_override: 'full-bleed', layout: ['hero'] },
-        ],
+        pages: [{ id: 'home', shell_override: 'full-bleed', layout: ['hero'] }],
         features: [],
       },
     });
@@ -161,7 +157,11 @@ describe('resolveEssence (v3)', () => {
     const resolved = await resolveEssence(essence, resolver);
 
     expect(resolved.routes[0]).toEqual({ path: '/', pageId: 'overview', shell: 'sidebar-main' });
-    expect(resolved.routes[1]).toEqual({ path: '/settings', pageId: 'settings', shell: 'sidebar-main' });
+    expect(resolved.routes[1]).toEqual({
+      path: '/settings',
+      pageId: 'settings',
+      shell: 'sidebar-main',
+    });
   });
 
   it('reads shape from dna.radius.philosophy', async () => {
@@ -207,8 +207,6 @@ describe('resolveEssence (v2 sectioned error)', () => {
       target: 'decantr',
     };
     const resolver = createResolver({ contentRoot });
-    await expect(resolveEssence(sectioned, resolver)).rejects.toThrow(
-      /not yet supported/,
-    );
+    await expect(resolveEssence(sectioned, resolver)).rejects.toThrow(/not yet supported/);
   });
 });

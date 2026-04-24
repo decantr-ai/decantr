@@ -36,7 +36,10 @@ const DECANTR_STYLE_PATHS = [
  * Extract CSS custom properties from a CSS file.
  * Looks for --property: value declarations inside :root or other selectors.
  */
-function extractCSSVariables(content: string): { colors: Record<string, string>; variables: string[] } {
+function extractCSSVariables(content: string): {
+  colors: Record<string, string>;
+  variables: string[];
+} {
   const colors: Record<string, string> = {};
   const variables: string[] = [];
 
@@ -50,12 +53,24 @@ function extractCSSVariables(content: string): { colors: Record<string, string>;
     variables.push(`--${name}`);
 
     // Detect color values (hex, rgb, hsl, named colors used as theme tokens)
-    const colorPatterns = ['primary', 'secondary', 'accent', 'bg', 'fg', 'border', 'success', 'warning', 'error', 'surface', 'muted'];
+    const colorPatterns = [
+      'primary',
+      'secondary',
+      'accent',
+      'bg',
+      'fg',
+      'border',
+      'success',
+      'warning',
+      'error',
+      'surface',
+      'muted',
+    ];
     if (
       value.startsWith('#') ||
       value.startsWith('rgb') ||
       value.startsWith('hsl') ||
-      colorPatterns.some(p => name.includes(p))
+      colorPatterns.some((p) => name.includes(p))
     ) {
       colors[name] = value;
     }
@@ -93,7 +108,11 @@ function detectDarkMode(projectRoot: string, cssContents: string[]): boolean {
     if (existsSync(fullPath)) {
       try {
         const layoutContent = readFileSync(fullPath, 'utf-8');
-        if (layoutContent.includes('className="dark"') || layoutContent.includes("className='dark'") || layoutContent.includes('class="dark"')) {
+        if (
+          layoutContent.includes('className="dark"') ||
+          layoutContent.includes("className='dark'") ||
+          layoutContent.includes('class="dark"')
+        ) {
           return true;
         }
       } catch {
@@ -161,7 +180,11 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
           approach = 'decantr-css';
           configFile = 'src/styles/tokens.css';
         }
-        if (allDeps.tailwindcss || allDeps['@tailwindcss/postcss'] || allDeps['@tailwindcss/vite']) {
+        if (
+          allDeps.tailwindcss ||
+          allDeps['@tailwindcss/postcss'] ||
+          allDeps['@tailwindcss/vite']
+        ) {
           approach = 'tailwind';
         }
       } catch {

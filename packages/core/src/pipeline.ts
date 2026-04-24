@@ -1,10 +1,10 @@
-import type { IRAppNode, IRShellNode, IRStoreNode, IRPageNode, IRLayer } from './types.js';
 import type { EssenceFile } from '@decantr/essence-spec';
-import { validateEssence, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
-import { createResolver } from '@decantr/registry';
+import { isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
 import type { ContentResolver } from '@decantr/registry';
-import { resolveEssence } from './resolve.js';
+import { createResolver } from '@decantr/registry';
 import { buildPageIR } from './ir.js';
+import { resolveEssence } from './resolve.js';
+import type { IRAppNode, IRLayer, IRPageNode, IRShellNode, IRStoreNode } from './types.js';
 import { pascalCase } from './utils.js';
 
 function extractRouting(essence: EssenceFile): 'hash' | 'history' | 'pathname' {
@@ -12,7 +12,12 @@ function extractRouting(essence: EssenceFile): 'hash' | 'history' | 'pathname' {
   if (isV3(essence)) {
     return essence.meta.platform.routing || 'history';
   }
-  return (essence as { platform?: { routing?: string } }).platform?.routing as 'hash' | 'history' | 'pathname' || 'history';
+  return (
+    ((essence as { platform?: { routing?: string } }).platform?.routing as
+      | 'hash'
+      | 'history'
+      | 'pathname') || 'history'
+  );
 }
 
 export interface PipelineOptions {
@@ -55,16 +60,18 @@ export async function runPipeline(
   const effectiveEssence = isV3(essence) ? essence : migrateV2ToV3(essence);
 
   // 3. Create resolver and resolve
-  const resolver = options.resolver ?? (() => {
-    if (!options.contentRoot) {
-      throw new Error('Pipeline options must include either a contentRoot or a resolver.');
-    }
+  const resolver =
+    options.resolver ??
+    (() => {
+      if (!options.contentRoot) {
+        throw new Error('Pipeline options must include either a contentRoot or a resolver.');
+      }
 
-    return createResolver({
-      contentRoot: options.contentRoot,
-      overridePaths: options.overridePaths,
-    });
-  })();
+      return createResolver({
+        contentRoot: options.contentRoot,
+        overridePaths: options.overridePaths,
+      });
+    })();
 
   const resolved = await resolveEssence(effectiveEssence, resolver);
 
@@ -86,7 +93,7 @@ export async function runPipeline(
   // Apply page filter
   let filteredPages = pageNodes;
   if (options.pageFilter) {
-    filteredPages = pageNodes.filter(p => p.pageId === options.pageFilter);
+    filteredPages = pageNodes.filter((p) => p.pageId === options.pageFilter);
   }
 
   // 4. Build shell node
@@ -102,7 +109,7 @@ export async function runPipeline(
     type: 'store',
     id: 'store',
     children: [],
-    pageSignals: pageNodes.map(p => ({
+    pageSignals: pageNodes.map((p) => ({
       name: p.pageId,
       pascalName: pascalCase(p.pageId),
     })),

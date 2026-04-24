@@ -1,12 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { CONTENT_TYPE_TO_API_CONTENT_TYPE, type ContentType } from '@decantr/registry';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cmdCreate } from '../src/commands/create.js';
 import { validateCustomTheme } from '../src/theme-commands.js';
 
-function readCreatedContent(projectRoot: string, type: ContentType, id: string): Record<string, unknown> {
+function readCreatedContent(
+  projectRoot: string,
+  type: ContentType,
+  id: string,
+): Record<string, unknown> {
   const plural = CONTENT_TYPE_TO_API_CONTENT_TYPE[type];
   const filePath = join(projectRoot, '.decantr', 'custom', plural, `${id}.json`);
 

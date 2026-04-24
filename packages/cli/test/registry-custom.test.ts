@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { RegistryClient } from '../src/registry.js';
 
 describe('RegistryClient custom theme resolution', () => {
@@ -23,14 +23,14 @@ describe('RegistryClient custom theme resolution', () => {
       modes: ['dark'],
       shapes: ['rounded'],
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
     writeFileSync(join(customThemesDir, 'mytheme.json'), JSON.stringify(themeData));
 
     const client = new RegistryClient({
       projectRoot: testDir,
       cacheDir: join(testDir, '.decantr', 'cache'),
-      offline: true
+      offline: true,
     });
 
     const result = await client.fetchTheme('custom:mytheme');
@@ -45,7 +45,7 @@ describe('RegistryClient custom theme resolution', () => {
     const client = new RegistryClient({
       projectRoot: testDir,
       cacheDir: join(testDir, '.decantr', 'cache'),
-      offline: true
+      offline: true,
     });
 
     const result = await client.fetchTheme('custom:nonexistent');
@@ -57,7 +57,7 @@ describe('RegistryClient custom theme resolution', () => {
     const client = new RegistryClient({
       projectRoot: testDir,
       cacheDir: join(testDir, '.decantr', 'cache'),
-      offline: true
+      offline: true,
     });
 
     // This should NOT look in custom directory

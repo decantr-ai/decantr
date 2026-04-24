@@ -1,7 +1,7 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isV3 } from '@decantr/essence-spec';
 import type { EssenceV3 } from '@decantr/essence-spec';
+import { isV3 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
@@ -19,7 +19,10 @@ interface Upgrade {
   data?: Record<string, unknown>;
 }
 
-export async function cmdUpgrade(projectRoot: string = process.cwd(), options: { apply?: boolean } = {}): Promise<void> {
+export async function cmdUpgrade(
+  projectRoot: string = process.cwd(),
+  options: { apply?: boolean } = {},
+): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -86,7 +89,9 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
 
   console.log('Available upgrades:\n');
   for (const u of upgrades) {
-    console.log(`  ${u.type}/${u.id}: ${DIM}${u.currentVersion}${RESET} -> ${GREEN}${u.latestVersion}${RESET}`);
+    console.log(
+      `  ${u.type}/${u.id}: ${DIM}${u.currentVersion}${RESET} -> ${GREEN}${u.latestVersion}${RESET}`,
+    );
   }
 
   if (!options.apply) {
@@ -145,9 +150,13 @@ export async function cmdUpgrade(projectRoot: string = process.cwd(), options: {
     console.log(`\n  Regenerating context files...`);
     try {
       const result = await refreshDerivedFiles(projectRoot, essence as EssenceV3, client);
-      console.log(`    ${GREEN}Updated ${result.contextFiles.length} context file(s) and ${result.cssFiles.length} CSS file(s).${RESET}`);
+      console.log(
+        `    ${GREEN}Updated ${result.contextFiles.length} context file(s) and ${result.cssFiles.length} CSS file(s).${RESET}`,
+      );
     } catch (e) {
-      console.log(`    ${YELLOW}Warning: Could not regenerate context files: ${(e as Error).message}${RESET}`);
+      console.log(
+        `    ${YELLOW}Warning: Could not regenerate context files: ${(e as Error).message}${RESET}`,
+      );
     }
   }
 

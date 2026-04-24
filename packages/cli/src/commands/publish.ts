@@ -1,18 +1,18 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { ApiContentType, ContentType } from '@decantr/registry';
 import {
-  RegistryAPIClient,
-  RegistryAPIError,
   API_CONTENT_TYPE_TO_CONTENT_TYPE,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  RegistryAPIClient,
+  RegistryAPIError,
 } from '@decantr/registry';
-import type { ApiContentType, ContentType } from '@decantr/registry';
 import { getApiKeyOrToken } from '../auth.js';
 
 export async function cmdPublish(
   type: string,
   name: string,
-  projectRoot: string = process.cwd()
+  projectRoot: string = process.cwd(),
 ): Promise<void> {
   const token = getApiKeyOrToken();
   if (!token) {
@@ -21,10 +21,12 @@ export async function cmdPublish(
     return;
   }
 
-  const singularType = (API_CONTENT_TYPE_TO_CONTENT_TYPE as Record<string, ContentType>)[type] || type;
-  const pluralType = (CONTENT_TYPE_TO_API_CONTENT_TYPE as Record<string, ApiContentType>)[type]
-    || CONTENT_TYPE_TO_API_CONTENT_TYPE[singularType as ContentType]
-    || `${type}s`;
+  const singularType =
+    (API_CONTENT_TYPE_TO_CONTENT_TYPE as Record<string, ContentType>)[type] || type;
+  const pluralType =
+    (CONTENT_TYPE_TO_API_CONTENT_TYPE as Record<string, ApiContentType>)[type] ||
+    CONTENT_TYPE_TO_API_CONTENT_TYPE[singularType as ContentType] ||
+    `${type}s`;
 
   const customPath = join(projectRoot, '.decantr', 'custom', pluralType, `${name}.json`);
 

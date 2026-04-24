@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { evaluateGuard } from '../src/guard.js';
 import type { Essence } from '../src/types.js';
 
@@ -52,7 +52,10 @@ describe('evaluateGuard', () => {
 
   it('flags layout deviation in strict mode', () => {
     const essence = makeEssence();
-    const violations = evaluateGuard(essence, { pageId: 'overview', layout: ['hero', 'card-grid'] });
+    const violations = evaluateGuard(essence, {
+      pageId: 'overview',
+      layout: ['hero', 'card-grid'],
+    });
     expect(violations).toEqual([
       expect.objectContaining({ rule: 'layout', message: expect.stringContaining('overview') }),
     ]);
@@ -60,16 +63,17 @@ describe('evaluateGuard', () => {
 
   it('allows layout deviation in guided mode', () => {
     const essence = makeEssence({ guard: { mode: 'guided' } });
-    const violations = evaluateGuard(essence, { pageId: 'overview', layout: ['hero', 'card-grid'] });
+    const violations = evaluateGuard(essence, {
+      pageId: 'overview',
+      layout: ['hero', 'card-grid'],
+    });
     expect(violations).toEqual([]);
   });
 
   it('flags density mismatch in strict mode', () => {
     const essence = makeEssence();
     const violations = evaluateGuard(essence, { density_gap: '8' });
-    expect(violations).toEqual([
-      expect.objectContaining({ rule: 'density' }),
-    ]);
+    expect(violations).toEqual([expect.objectContaining({ rule: 'density' })]);
   });
 });
 
@@ -79,18 +83,18 @@ describe('evaluateGuard - theme mode compatibility', () => {
       theme: { id: 'luminarum', mode: 'light' },
     });
     const context = {
-      themeRegistry: new Map([
-        ['luminarum', { modes: ['dark'] }]
-      ])
+      themeRegistry: new Map([['luminarum', { modes: ['dark'] }]]),
     };
 
     const violations = evaluateGuard(essence, context);
 
-    expect(violations).toContainEqual(expect.objectContaining({
-      rule: 'theme-mode',
-      severity: 'error',
-      message: expect.stringContaining('does not support "light" mode')
-    }));
+    expect(violations).toContainEqual(
+      expect.objectContaining({
+        rule: 'theme-mode',
+        severity: 'error',
+        message: expect.stringContaining('does not support "light" mode'),
+      }),
+    );
   });
 
   it('accepts auto mode for any theme', () => {
@@ -98,14 +102,12 @@ describe('evaluateGuard - theme mode compatibility', () => {
       theme: { id: 'luminarum', mode: 'auto' },
     });
     const context = {
-      themeRegistry: new Map([
-        ['luminarum', { modes: ['dark'] }]
-      ])
+      themeRegistry: new Map([['luminarum', { modes: ['dark'] }]]),
     };
 
     const violations = evaluateGuard(essence, context);
 
-    expect(violations.filter(v => v.rule === 'theme-mode')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'theme-mode')).toHaveLength(0);
   });
 
   it('accepts compatible theme/mode combination', () => {
@@ -113,14 +115,12 @@ describe('evaluateGuard - theme mode compatibility', () => {
       theme: { id: 'luminarum', mode: 'dark' },
     });
     const context = {
-      themeRegistry: new Map([
-        ['luminarum', { modes: ['dark'] }]
-      ])
+      themeRegistry: new Map([['luminarum', { modes: ['dark'] }]]),
     };
 
     const violations = evaluateGuard(essence, context);
 
-    expect(violations.filter(v => v.rule === 'theme-mode')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'theme-mode')).toHaveLength(0);
   });
 
   it('provides suggestion for incompatible mode', () => {
@@ -128,13 +128,11 @@ describe('evaluateGuard - theme mode compatibility', () => {
       theme: { id: 'luminarum', mode: 'light' },
     });
     const context = {
-      themeRegistry: new Map([
-        ['luminarum', { modes: ['dark'] }]
-      ])
+      themeRegistry: new Map([['luminarum', { modes: ['dark'] }]]),
     };
 
     const violations = evaluateGuard(essence, context);
-    const themeModeViolation = violations.find(v => v.rule === 'theme-mode');
+    const themeModeViolation = violations.find((v) => v.rule === 'theme-mode');
 
     expect(themeModeViolation?.suggestion).toContain('dark');
   });
@@ -146,48 +144,48 @@ describe('evaluateGuard - theme mode compatibility', () => {
 
     const violations = evaluateGuard(essence, {});
 
-    expect(violations.filter(v => v.rule === 'theme-mode')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'theme-mode')).toHaveLength(0);
   });
 });
 
 describe('evaluateGuard - pattern existence', () => {
   it('reports missing patterns', () => {
     const essence = makeEssence({
-      structure: [
-        { id: 'main', shell: 'sidebar-main', layout: ['nonexistent-pattern'] }
-      ],
+      structure: [{ id: 'main', shell: 'sidebar-main', layout: ['nonexistent-pattern'] }],
     });
     const context = {
       patternRegistry: new Map([
         ['kpi-grid', {}],
-        ['activity-feed', {}]
-      ])
+        ['activity-feed', {}],
+      ]),
     };
 
     const violations = evaluateGuard(essence, context);
 
-    expect(violations).toContainEqual(expect.objectContaining({
-      rule: 'pattern-exists',
-      severity: 'error',
-      message: expect.stringContaining('nonexistent-pattern')
-    }));
+    expect(violations).toContainEqual(
+      expect.objectContaining({
+        rule: 'pattern-exists',
+        severity: 'error',
+        message: expect.stringContaining('nonexistent-pattern'),
+      }),
+    );
   });
 
   it('reports missing patterns with suggestions for similar patterns', () => {
     const essence = makeEssence({
       structure: [
-        { id: 'main', shell: 'sidebar-main', layout: ['kpi'] }  // partial match
+        { id: 'main', shell: 'sidebar-main', layout: ['kpi'] }, // partial match
       ],
     });
     const context = {
       patternRegistry: new Map([
         ['kpi-grid', {}],
-        ['activity-feed', {}]
-      ])
+        ['activity-feed', {}],
+      ]),
     };
 
     const violations = evaluateGuard(essence, context);
-    const patternViolation = violations.find(v => v.rule === 'pattern-exists');
+    const patternViolation = violations.find((v) => v.rule === 'pattern-exists');
 
     expect(patternViolation?.message).toContain('kpi');
     expect(patternViolation?.suggestion).toContain('kpi-grid');
@@ -195,88 +193,86 @@ describe('evaluateGuard - pattern existence', () => {
 
   it('extracts patterns from nested layouts with cols', () => {
     const essence = makeEssence({
-      structure: [{
-        id: 'main',
-        shell: 'sidebar-main',
-        layout: [
-          { cols: ['missing-a', 'missing-b'], at: 'lg' }
-        ]
-      }],
+      structure: [
+        {
+          id: 'main',
+          shell: 'sidebar-main',
+          layout: [{ cols: ['missing-a', 'missing-b'], at: 'lg' }],
+        },
+      ],
     });
     const context = { patternRegistry: new Map() };
 
     const violations = evaluateGuard(essence, context);
 
-    const patternViolations = violations.filter(v => v.rule === 'pattern-exists');
+    const patternViolations = violations.filter((v) => v.rule === 'pattern-exists');
     expect(patternViolations).toHaveLength(2);
-    expect(patternViolations.map(v => v.message)).toContainEqual(expect.stringContaining('missing-a'));
-    expect(patternViolations.map(v => v.message)).toContainEqual(expect.stringContaining('missing-b'));
+    expect(patternViolations.map((v) => v.message)).toContainEqual(
+      expect.stringContaining('missing-a'),
+    );
+    expect(patternViolations.map((v) => v.message)).toContainEqual(
+      expect.stringContaining('missing-b'),
+    );
   });
 
   it('extracts patterns from PatternRef objects', () => {
     const essence = makeEssence({
-      structure: [{
-        id: 'main',
-        shell: 'sidebar-main',
-        layout: [
-          { pattern: 'unknown-pattern', preset: 'standard' }
-        ]
-      }],
+      structure: [
+        {
+          id: 'main',
+          shell: 'sidebar-main',
+          layout: [{ pattern: 'unknown-pattern', preset: 'standard' }],
+        },
+      ],
     });
     const context = { patternRegistry: new Map() };
 
     const violations = evaluateGuard(essence, context);
 
-    expect(violations).toContainEqual(expect.objectContaining({
-      rule: 'pattern-exists',
-      message: expect.stringContaining('unknown-pattern')
-    }));
+    expect(violations).toContainEqual(
+      expect.objectContaining({
+        rule: 'pattern-exists',
+        message: expect.stringContaining('unknown-pattern'),
+      }),
+    );
   });
 
   it('accepts patterns that exist in registry', () => {
     const essence = makeEssence({
-      structure: [
-        { id: 'main', shell: 'sidebar-main', layout: ['kpi-grid', 'activity-feed'] }
-      ],
+      structure: [{ id: 'main', shell: 'sidebar-main', layout: ['kpi-grid', 'activity-feed'] }],
     });
     const context = {
       patternRegistry: new Map([
         ['kpi-grid', {}],
-        ['activity-feed', {}]
-      ])
+        ['activity-feed', {}],
+      ]),
     };
 
     const violations = evaluateGuard(essence, context);
 
-    expect(violations.filter(v => v.rule === 'pattern-exists')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'pattern-exists')).toHaveLength(0);
   });
 
   it('skips check when patternRegistry not provided', () => {
     const essence = makeEssence({
-      structure: [
-        { id: 'main', shell: 'sidebar-main', layout: ['nonexistent-pattern'] }
-      ],
+      structure: [{ id: 'main', shell: 'sidebar-main', layout: ['nonexistent-pattern'] }],
     });
 
     const violations = evaluateGuard(essence, {});
 
-    expect(violations.filter(v => v.rule === 'pattern-exists')).toHaveLength(0);
+    expect(violations.filter((v) => v.rule === 'pattern-exists')).toHaveLength(0);
   });
 
   it('provides fallback suggestion when no similar patterns found', () => {
     const essence = makeEssence({
-      structure: [
-        { id: 'main', shell: 'sidebar-main', layout: ['xyz-completely-unknown'] }
-      ],
+      structure: [{ id: 'main', shell: 'sidebar-main', layout: ['xyz-completely-unknown'] }],
     });
     const context = {
-      patternRegistry: new Map([
-        ['kpi-grid', {}]
-      ])
+      patternRegistry: new Map([['kpi-grid', {}]]),
     };
 
     const violations = evaluateGuard(essence, context);
-    const patternViolation = violations.find(v => v.rule === 'pattern-exists');
+    const patternViolation = violations.find((v) => v.rule === 'pattern-exists');
 
     expect(patternViolation?.suggestion).toContain('decantr search');
   });
@@ -289,14 +285,14 @@ describe('accessibility guard', () => {
       accessibility: { wcag_level: 'none' },
     };
     const violations = evaluateGuard(essence, {});
-    const a11yViolations = violations.filter(v => v.rule === 'accessibility');
+    const a11yViolations = violations.filter((v) => v.rule === 'accessibility');
     expect(a11yViolations).toHaveLength(0);
   });
 
   it('should return no violations when accessibility is not set', () => {
     const essence: Essence = { ...makeEssence() };
     const violations = evaluateGuard(essence, {});
-    const a11yViolations = violations.filter(v => v.rule === 'accessibility');
+    const a11yViolations = violations.filter((v) => v.rule === 'accessibility');
     expect(a11yViolations).toHaveLength(0);
   });
 
@@ -308,7 +304,7 @@ describe('accessibility guard', () => {
     const violations = evaluateGuard(essence, {
       a11y_issues: ['missing-alt-text', 'skipped-heading-level'],
     });
-    const a11yViolations = violations.filter(v => v.rule === 'accessibility');
+    const a11yViolations = violations.filter((v) => v.rule === 'accessibility');
     expect(a11yViolations).toHaveLength(1);
     expect(a11yViolations[0].message).toContain('WCAG AA');
   });

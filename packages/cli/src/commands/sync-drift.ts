@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const GREEN = '\x1b[32m';
@@ -30,7 +30,9 @@ export async function cmdSyncDrift(projectRoot: string = process.cwd()): Promise
 
   if (!existsSync(driftLogPath)) {
     console.log(`${GREEN}No drift log found — no drift recorded.${RESET}`);
-    console.log(`${DIM}Drift is logged when guard violations are detected during development.${RESET}`);
+    console.log(
+      `${DIM}Drift is logged when guard violations are detected during development.${RESET}`,
+    );
     return;
   }
 
@@ -49,8 +51,8 @@ export async function cmdSyncDrift(projectRoot: string = process.cwd()): Promise
     return;
   }
 
-  const unresolved = entries.filter(e => !e.resolved);
-  const resolved = entries.filter(e => e.resolved);
+  const unresolved = entries.filter((e) => !e.resolved);
+  const resolved = entries.filter((e) => e.resolved);
 
   if (unresolved.length === 0) {
     console.log(`${GREEN}No unresolved drift entries.${RESET}`);
@@ -67,7 +69,9 @@ export async function cmdSyncDrift(projectRoot: string = process.cwd()): Promise
     const severityColor = entry.severity === 'error' ? RED : YELLOW;
     const icon = entry.severity === 'error' ? 'x' : '!';
 
-    console.log(`  ${severityColor}${icon}${RESET} ${BOLD}#${i + 1}${RESET} [${entry.rule}] ${entry.message}`);
+    console.log(
+      `  ${severityColor}${icon}${RESET} ${BOLD}#${i + 1}${RESET} [${entry.rule}] ${entry.message}`,
+    );
     if (entry.page) {
       console.log(`    ${DIM}Page: ${entry.page}${RESET}`);
     }
@@ -90,7 +94,7 @@ export async function cmdSyncDrift(projectRoot: string = process.cwd()): Promise
  */
 export function resolveDriftEntries(
   projectRoot: string,
-  options: { resolveAll?: boolean; resolveIndex?: number; clear?: boolean }
+  options: { resolveAll?: boolean; resolveIndex?: number; clear?: boolean },
 ): { success: boolean; error?: string } {
   const driftLogPath = join(projectRoot, '.decantr', 'drift-log.json');
 
@@ -115,9 +119,9 @@ export function resolveDriftEntries(
   }
 
   if (options.resolveAll) {
-    entries = entries.map(e => ({ ...e, resolved: true }));
+    entries = entries.map((e) => ({ ...e, resolved: true }));
   } else if (options.resolveIndex !== undefined) {
-    const unresolved = entries.filter(e => !e.resolved);
+    const unresolved = entries.filter((e) => !e.resolved);
     const idx = options.resolveIndex - 1; // 1-indexed from CLI
     if (idx < 0 || idx >= unresolved.length) {
       return { success: false, error: `Invalid entry number: ${options.resolveIndex}` };

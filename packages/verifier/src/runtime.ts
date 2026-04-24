@@ -1,5 +1,5 @@
-import { createServer } from 'node:http';
 import { existsSync, readFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 
 const CONTENT_TYPES = {
@@ -114,7 +114,9 @@ export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
 }
 
 function getContentType(pathname: string): string {
-  return CONTENT_TYPES[extname(pathname) as keyof typeof CONTENT_TYPES] ?? 'application/octet-stream';
+  return (
+    CONTENT_TYPES[extname(pathname) as keyof typeof CONTENT_TYPES] ?? 'application/octet-stream'
+  );
 }
 
 function extractAssetPaths(indexHtml: string): string[] {
@@ -147,8 +149,7 @@ function countExternalScriptsWithoutIntegrity(html: string): number {
         hasIntegrity: /\bintegrity\s*=/i.test(attrs),
       };
     })
-    .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasIntegrity)
-    .length;
+    .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasIntegrity).length;
 }
 
 function countExternalScriptsWithIntegrityMissingCrossorigin(html: string): number {
@@ -161,15 +162,15 @@ function countExternalScriptsWithIntegrityMissingCrossorigin(html: string): numb
         hasCrossorigin: /\bcrossorigin\s*=/i.test(attrs),
       };
     })
-    .filter((entry) => /^https?:\/\//i.test(entry.src) && entry.hasIntegrity && !entry.hasCrossorigin)
-    .length;
+    .filter(
+      (entry) => /^https?:\/\//i.test(entry.src) && entry.hasIntegrity && !entry.hasCrossorigin,
+    ).length;
 }
 
 function countExternalScriptsWithInsecureTransport(html: string): number {
   return [...html.matchAll(/<script\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
     .map((match) => match[3])
-    .filter((src) => /^http:\/\//i.test(src))
-    .length;
+    .filter((src) => /^http:\/\//i.test(src)).length;
 }
 
 function countExternalStylesheetsWithoutIntegrity(html: string): number {
@@ -184,8 +185,12 @@ function countExternalStylesheetsWithoutIntegrity(html: string): number {
         hasIntegrity: /\bintegrity\s*=/i.test(attrs),
       };
     })
-    .filter((entry) => /^https?:\/\//i.test(entry.href) && /\bstylesheet\b/i.test(entry.relValue) && !entry.hasIntegrity)
-    .length;
+    .filter(
+      (entry) =>
+        /^https?:\/\//i.test(entry.href) &&
+        /\bstylesheet\b/i.test(entry.relValue) &&
+        !entry.hasIntegrity,
+    ).length;
 }
 
 function countExternalStylesheetsWithIntegrityMissingCrossorigin(html: string): number {
@@ -201,8 +206,13 @@ function countExternalStylesheetsWithIntegrityMissingCrossorigin(html: string): 
         hasCrossorigin: /\bcrossorigin\s*=/i.test(attrs),
       };
     })
-    .filter((entry) => /^https?:\/\//i.test(entry.href) && /\bstylesheet\b/i.test(entry.relValue) && entry.hasIntegrity && !entry.hasCrossorigin)
-    .length;
+    .filter(
+      (entry) =>
+        /^https?:\/\//i.test(entry.href) &&
+        /\bstylesheet\b/i.test(entry.relValue) &&
+        entry.hasIntegrity &&
+        !entry.hasCrossorigin,
+    ).length;
 }
 
 function countExternalStylesheetsWithInsecureTransport(html: string): number {
@@ -223,7 +233,7 @@ function countExternalStylesheetsWithInsecureTransport(html: string): number {
 function extractHtmlAttributeValues(attrs: string, attributeNames: string[]): string[] {
   const values: string[] = [];
   for (const attributeName of attributeNames) {
-    const pattern = new RegExp(`\\b${attributeName}\\s*=\\s*([\"'])([^\"']+)\\1`, 'gi');
+    const pattern = new RegExp(`\\b${attributeName}\\s*=\\s*(["'])([^"']+)\\1`, 'gi');
     for (const match of attrs.matchAll(pattern)) {
       values.push(match[2]);
     }
@@ -245,13 +255,11 @@ function countExternalMediaSourcesWithInsecureTransport(html: string): number {
   for (const match of html.matchAll(/<(img|source|video|audio)\b([^>]*)>/gi)) {
     const tagName = match[1]?.toLowerCase();
     const attrs = match[2] ?? '';
-    const attributeNames = tagName === 'video'
-      ? ['src', 'poster']
-      : tagName === 'audio'
-        ? ['src']
-        : ['src', 'srcset'];
-    const hasInsecureTransport = extractHtmlAttributeValues(attrs, attributeNames)
-      .some((value) => valueContainsInsecureRemoteAsset(value));
+    const attributeNames =
+      tagName === 'video' ? ['src', 'poster'] : tagName === 'audio' ? ['src'] : ['src', 'srcset'];
+    const hasInsecureTransport = extractHtmlAttributeValues(attrs, attributeNames).some((value) =>
+      valueContainsInsecureRemoteAsset(value),
+    );
     if (hasInsecureTransport) {
       count += 1;
     }
@@ -286,15 +294,13 @@ function countExternalIframesWithoutSandbox(html: string): number {
         hasSandbox: /\bsandbox(?:\s*=|\b)/i.test(attrs),
       };
     })
-    .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasSandbox)
-    .length;
+    .filter((entry) => /^https?:\/\//i.test(entry.src) && !entry.hasSandbox).length;
 }
 
 function countExternalIframesWithInsecureTransport(html: string): number {
   return [...html.matchAll(/<iframe\b([^>]*?)\bsrc=(["'])([^"']+)\2([^>]*)>/gi)]
     .map((match) => match[3])
-    .filter((src) => /^http:\/\//i.test(src))
-    .length;
+    .filter((src) => /^http:\/\//i.test(src)).length;
 }
 
 function countDynamicCodeSignals(js: string): number {
@@ -302,11 +308,19 @@ function countDynamicCodeSignals(js: string): number {
 }
 
 function countHtmlInjectionSignals(js: string): number {
-  return js.match(/\bdangerouslySetInnerHTML\b|\b(?:innerHTML|outerHTML)\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/g)?.length ?? 0;
+  return (
+    js.match(
+      /\bdangerouslySetInnerHTML\b|\b(?:innerHTML|outerHTML)\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/g,
+    )?.length ?? 0
+  );
 }
 
 function countInsecureTransportSignals(js: string): number {
-  return js.match(/\b(?:http|ws):\/\/[^\s'"`]+|\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?:\/[^\s'"`]*)?/g)?.length ?? 0;
+  return (
+    js.match(
+      /\b(?:http|ws):\/\/[^\s'"`]+|\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?:\/[^\s'"`]*)?/g,
+    )?.length ?? 0
+  );
 }
 
 function countSecretLeakSignals(js: string): number {
@@ -328,7 +342,9 @@ function normalizeRouteHint(route: string | null | undefined): string {
   return route;
 }
 
-async function startStaticServer(rootDir: string): Promise<{ baseUrl: string; close: () => Promise<void> }> {
+async function startStaticServer(
+  rootDir: string,
+): Promise<{ baseUrl: string; close: () => Promise<void> }> {
   const server = createServer((req, res) => {
     const requestedUrl = new URL(req.url ?? '/', 'http://127.0.0.1');
     const pathname = requestedUrl.pathname === '/' ? '/index.html' : requestedUrl.pathname;
@@ -375,12 +391,17 @@ async function startStaticServer(rootDir: string): Promise<{ baseUrl: string; cl
   return {
     baseUrl: `http://127.0.0.1:${address.port}`,
     async close() {
-      await new Promise<void>((resolvePromise, reject) => server.close(error => error ? reject(error) : resolvePromise()));
+      await new Promise<void>((resolvePromise, reject) =>
+        server.close((error) => (error ? reject(error) : resolvePromise())),
+      );
     },
   };
 }
 
-export async function auditBuiltDist(projectRoot: string, options: BuiltDistAuditOptions = {}): Promise<RuntimeAudit> {
+export async function auditBuiltDist(
+  projectRoot: string,
+  options: BuiltDistAuditOptions = {},
+): Promise<RuntimeAudit> {
   const distDir = options.distDir ?? join(projectRoot, 'dist');
   if (!existsSync(distDir)) {
     return emptyRuntimeAudit(['dist-missing']);
@@ -394,9 +415,13 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     };
   }
 
-  const routeHints = Array.isArray(options.routeHints) && options.routeHints.length > 0
-    ? options.routeHints.map(route => normalizeRouteHint(route)).filter(Boolean).slice(0, 8)
-    : ['/'];
+  const routeHints =
+    Array.isArray(options.routeHints) && options.routeHints.length > 0
+      ? options.routeHints
+          .map((route) => normalizeRouteHint(route))
+          .filter(Boolean)
+          .slice(0, 8)
+      : ['/'];
   const indexHtml = readFileSync(indexPath, 'utf-8');
   const assetPaths = extractAssetPaths(indexHtml);
   const server = await startStaticServer(distDir);
@@ -414,15 +439,22 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     const inlineScriptCount = countInlineScriptTags(rootHtml);
     const inlineEventHandlerCount = countInlineEventHandlerAttributes(rootHtml);
     const externalScriptsWithoutIntegrityCount = countExternalScriptsWithoutIntegrity(rootHtml);
-    const externalScriptsWithIntegrityMissingCrossoriginCount = countExternalScriptsWithIntegrityMissingCrossorigin(rootHtml);
-    const externalStylesheetsWithoutIntegrityCount = countExternalStylesheetsWithoutIntegrity(rootHtml);
-    const externalStylesheetsWithIntegrityMissingCrossoriginCount = countExternalStylesheetsWithIntegrityMissingCrossorigin(rootHtml);
-    const externalScriptsWithInsecureTransportCount = countExternalScriptsWithInsecureTransport(rootHtml);
-    const externalStylesheetsWithInsecureTransportCount = countExternalStylesheetsWithInsecureTransport(rootHtml);
-    const externalMediaSourcesWithInsecureTransportCount = countExternalMediaSourcesWithInsecureTransport(rootHtml);
+    const externalScriptsWithIntegrityMissingCrossoriginCount =
+      countExternalScriptsWithIntegrityMissingCrossorigin(rootHtml);
+    const externalStylesheetsWithoutIntegrityCount =
+      countExternalStylesheetsWithoutIntegrity(rootHtml);
+    const externalStylesheetsWithIntegrityMissingCrossoriginCount =
+      countExternalStylesheetsWithIntegrityMissingCrossorigin(rootHtml);
+    const externalScriptsWithInsecureTransportCount =
+      countExternalScriptsWithInsecureTransport(rootHtml);
+    const externalStylesheetsWithInsecureTransportCount =
+      countExternalStylesheetsWithInsecureTransport(rootHtml);
+    const externalMediaSourcesWithInsecureTransportCount =
+      countExternalMediaSourcesWithInsecureTransport(rootHtml);
     const externalBlankLinksWithoutRelCount = countExternalBlankLinksWithoutRel(rootHtml);
     const externalIframesWithoutSandboxCount = countExternalIframesWithoutSandbox(rootHtml);
-    const externalIframesWithInsecureTransportCount = countExternalIframesWithInsecureTransport(rootHtml);
+    const externalIframesWithInsecureTransportCount =
+      countExternalIframesWithInsecureTransport(rootHtml);
 
     if (!rootDocumentOk) {
       failures.push('root-document-invalid');
@@ -475,7 +507,9 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
       }
     }
 
-    const routeHintsMatched = routeHints.filter(routeHint => combinedJs.includes(routeHint)).length;
+    const routeHintsMatched = routeHints.filter((routeHint) =>
+      combinedJs.includes(routeHint),
+    ).length;
     const routeHintsCoverageOk = routeHints.length === 0 || routeHintsMatched === routeHints.length;
     const jsEvalSignalCount = countDynamicCodeSignals(combinedJs);
     const jsHtmlInjectionSignalCount = countHtmlInjectionSignals(combinedJs);
@@ -508,22 +542,28 @@ export async function auditBuiltDist(projectRoot: string, options: BuiltDistAudi
     }
 
     const routeDocumentsChecked = routeHints.length;
-    const routeDocumentsCoverageOk = routeDocumentsChecked === 0 || routeDocumentsPassed === routeDocumentsChecked;
-    const routeDocumentsHardeningOk = routeDocumentsChecked === 0 || routeDocumentsHardenedCount === routeDocumentsChecked;
+    const routeDocumentsCoverageOk =
+      routeDocumentsChecked === 0 || routeDocumentsPassed === routeDocumentsChecked;
+    const routeDocumentsHardeningOk =
+      routeDocumentsChecked === 0 || routeDocumentsHardenedCount === routeDocumentsChecked;
     const fullRouteCoverageOk = routeHintsCoverageOk && routeDocumentsCoverageOk;
     if (routeDocumentsChecked > 0 && routeDocumentsPassed < Math.min(2, routeDocumentsChecked)) {
       failures.push('route-documents-missing');
     }
-    if (routeDocumentsChecked > 0 && routeDocumentsHardenedCount < Math.min(2, routeDocumentsChecked)) {
+    if (
+      routeDocumentsChecked > 0 &&
+      routeDocumentsHardenedCount < Math.min(2, routeDocumentsChecked)
+    ) {
       failures.push('route-documents-hardening-missing');
     }
 
-    const passed = rootDocumentOk
-      && titleOk
-      && assetPaths.length > 0
-      && assetsPassed === assetPaths.length
-      && (routeDocumentsChecked === 0 || routeDocumentsPassed >= Math.min(2, routeDocumentsChecked))
-      && (routeHints.length === 0 || routeHintsMatched >= Math.min(2, routeHints.length));
+    const passed =
+      rootDocumentOk &&
+      titleOk &&
+      assetPaths.length > 0 &&
+      assetsPassed === assetPaths.length &&
+      (routeDocumentsChecked === 0 || routeDocumentsPassed >= Math.min(2, routeDocumentsChecked)) &&
+      (routeHints.length === 0 || routeHintsMatched >= Math.min(2, routeHints.length));
 
     return {
       distPresent: true,
