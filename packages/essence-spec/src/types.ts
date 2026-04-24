@@ -260,6 +260,12 @@ export interface BlueprintPage {
   patterns?: PatternRef[];
   dna_overrides?: DNAOverrides;
   surface?: string;
+  /**
+   * Execution-level directives emitted into the page-pack contract.
+   * Short imperative rules that cold LLMs should obey when implementing
+   * this route. Belongs in the pack (not the narrative doc).
+   */
+  directives?: string[];
 }
 
 export type ArchetypeRole = 'primary' | 'gateway' | 'public' | 'auxiliary';
@@ -284,6 +290,12 @@ export interface EssenceV31Section {
   dna_overrides?: DNAOverrides;
   /** Items rendered in the shell's primary navigation for this section. */
   navigation_items?: SectionNavigationItem[];
+  /**
+   * Execution-level directives emitted into the section-pack contract.
+   * Short imperative rules every page in this section must obey.
+   * Belongs in the pack (not the narrative doc).
+   */
+  directives?: string[];
 }
 
 export interface RouteEntry {

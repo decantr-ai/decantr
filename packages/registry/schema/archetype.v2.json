@@ -74,6 +74,11 @@
             "items": {
               "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/layoutItem"
             }
+          },
+          "directives": {
+            "type": "array",
+            "description": "Per-page execution directives. Propagated to essence.blueprint.sections[].pages[].directives and rendered into the page-pack markdown.",
+            "items": { "type": "string", "minLength": 1 }
           }
         },
         "additionalProperties": true
@@ -81,6 +86,11 @@
     },
     "features": {
       "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
+    },
+    "directives": {
+      "type": "array",
+      "description": "Section-level execution directives. Propagated to essence.blueprint.sections[].directives and rendered into the section-pack markdown.",
+      "items": { "type": "string", "minLength": 1 }
     },
     "navigation_items": {
       "type": "array",

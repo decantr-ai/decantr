@@ -52,6 +52,11 @@ export interface ArchetypeData {
     shell: string;
     default_layout: LayoutItem[];
     patterns?: PatternReferenceObject[];
+    /**
+     * Per-page execution directives that propagate to
+     * essence.blueprint.sections[].pages[].directives.
+     */
+    directives?: string[];
   }>;
   features?: string[];
   seo_hints?: {
@@ -63,6 +68,12 @@ export interface ArchetypeData {
    * composed as a section. Propagated to essence.blueprint.sections[].navigation_items.
    */
   navigation_items?: ArchetypeNavigationItem[];
+  /**
+   * Execution-level directives emitted into the section-pack contract.
+   * Short imperative rules every page in this section must obey.
+   * Propagated to essence.blueprint.sections[].directives.
+   */
+  directives?: string[];
 }
 
 function getPlatformMeta(target: string) {
@@ -126,23 +137,37 @@ export function collectPatternIdsFromItems(items: unknown[]): string[] {
 }
 
 export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype): ArchetypeData {
-  // Registry type may not yet declare navigation_items; read defensively.
-  const registryNavigation = (archetype as { navigation_items?: ArchetypeNavigationItem[] }).navigation_items;
+  // Registry type may not yet declare navigation_items / directives; read defensively.
+  const registryExtras = archetype as {
+    navigation_items?: ArchetypeNavigationItem[];
+    directives?: string[];
+  };
+  const registryNavigation = registryExtras.navigation_items;
+  const registryDirectives = registryExtras.directives;
   return {
     id: archetype.id,
     name: archetype.name,
     role: archetype.role,
     description: archetype.description,
-    pages: archetype.pages?.map(page => ({
-      id: page.id,
-      shell: page.shell,
-      default_layout: page.default_layout?.length ? page.default_layout : ['hero'],
-      patterns: page.patterns?.map(toPatternReferenceObject),
-    })),
+    pages: archetype.pages?.map(page => {
+      const pageExtras = page as { directives?: string[] };
+      return {
+        id: page.id,
+        shell: page.shell,
+        default_layout: page.default_layout?.length ? page.default_layout : ['hero'],
+        patterns: page.patterns?.map(toPatternReferenceObject),
+        ...(Array.isArray(pageExtras.directives) && pageExtras.directives.length > 0
+          ? { directives: pageExtras.directives }
+          : {}),
+      };
+    }),
     features: archetype.features,
     seo_hints: archetype.seo_hints,
     ...(Array.isArray(registryNavigation) && registryNavigation.length > 0
       ? { navigation_items: registryNavigation }
+      : {}),
+    ...(Array.isArray(registryDirectives) && registryDirectives.length > 0
+      ? { directives: registryDirectives }
       : {}),
   };
 }
@@ -298,6 +323,12 @@ export function composeSections(
         id: page.id,
         layout: (page.default_layout?.length ? page.default_layout : ['hero'])
           .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
+        // Propagate per-page directives from the archetype so cold LLMs
+        // see execution-level rules in the page-pack contract instead of
+        // having to read the section narrative.
+        ...(Array.isArray(page.directives) && page.directives.length > 0
+          ? { directives: page.directives }
+          : {}),
         ...overriddenPage,
       });
     }
@@ -313,6 +344,12 @@ export function composeSections(
       // the correct primary-nav list instead of the LLM improvising one.
       ...(Array.isArray(data.navigation_items) && data.navigation_items.length > 0
         ? { navigation_items: data.navigation_items }
+        : {}),
+      // Propagate section-level directives from the archetype into the
+      // essence so the section-pack renderer can surface them in the
+      // pack contract.
+      ...(Array.isArray(data.directives) && data.directives.length > 0
+        ? { directives: data.directives }
         : {}),
     });
 
