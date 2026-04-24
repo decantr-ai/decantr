@@ -522,6 +522,129 @@ export function generateTreatmentCSS(
     ['color', 'var(--d-success)'],
   ]);
 
+  // ── 12a. Agent Node + Ports — .d-agent-node ──
+  // Card for spatial/graph canvases where nodes render as positioned
+  // cards with connection ports. Eliminates the 15-inline-style cluster
+  // the v4 harness reported in AgentSwarmCanvas. Pair with absolute
+  // positioning on the parent canvas; this treatment only handles the
+  // card's internal layout + port anchors.
+
+  emitRule('.d-agent-node', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['gap', '0.5rem'],
+    ['position', 'relative'],
+    ['min-width', '200px'],
+    ['max-width', '260px'],
+    ['padding', '0.75rem'],
+    ['background', 'var(--d-surface)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius)'],
+    ['cursor', 'pointer'],
+    ['transition', 'border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease'],
+  ]);
+
+  emitRule('.d-agent-node:hover', [
+    ['border-color', 'var(--d-primary)'],
+    ['transform', 'translateY(-1px)'],
+  ]);
+
+  emitRule('.d-agent-node[data-status="error"]', [
+    ['box-shadow', '0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent)'],
+    ['border-color', 'color-mix(in srgb, var(--d-error) 60%, transparent)'],
+  ]);
+
+  emitRule('.d-agent-node[data-status="active"]', [
+    ['border-color', 'var(--d-primary)'],
+  ]);
+
+  // Connection ports — positioned absolutely on the node edges so SVG
+  // connection paths can anchor to predictable coordinates instead of
+  // guessing center offsets. Pair with canvas that reads getBoundingClientRect
+  // on these elements.
+  emitRule('.d-port', [
+    ['position', 'absolute'],
+    ['width', '8px'],
+    ['height', '8px'],
+    ['border-radius', '50%'],
+    ['background', 'var(--d-border)'],
+    ['top', '50%'],
+    ['transform', 'translateY(-50%)'],
+    ['transition', 'background 0.15s ease'],
+  ]);
+
+  emitRule('.d-port[data-side="left"]', [
+    ['left', '-4px'],
+  ]);
+
+  emitRule('.d-port[data-side="right"]', [
+    ['right', '-4px'],
+  ]);
+
+  emitRule('.d-port[data-side="top"]', [
+    ['top', '-4px'],
+    ['left', '50%'],
+    ['transform', 'translateX(-50%)'],
+  ]);
+
+  emitRule('.d-port[data-side="bottom"]', [
+    ['bottom', '-4px'],
+    ['top', 'auto'],
+    ['left', '50%'],
+    ['transform', 'translateX(-50%)'],
+  ]);
+
+  emitRule('.d-port[data-active="true"]', [
+    ['background', 'var(--d-primary)'],
+  ]);
+
+  // ── 12b. CTA Banner — .d-cta-banner ──
+  // Prominent full-width CTA with gradient wash + dark pill action.
+  // Replaces the inline-hex cluster the v4 harness reported in CtaBanner
+  // (the pack contract was asking for `_bgdark` / `_fgwhite` atoms that
+  // don't exist — now there's a semantic treatment for it).
+
+  emitRule('.d-cta-banner', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['gap', '1rem'],
+    ['padding', '3rem 1.5rem'],
+    ['border-radius', 'var(--d-radius-lg)'],
+    ['text-align', 'center'],
+    ['position', 'relative'],
+    ['overflow', 'hidden'],
+    // Default gradient uses theme tokens — themes can override the stops
+    // via CSS variables --d-cta-gradient if desired.
+    ['background', 'var(--d-cta-gradient, linear-gradient(135deg, color-mix(in srgb, var(--d-primary) 85%, transparent), color-mix(in srgb, var(--d-accent) 80%, transparent)))'],
+    ['color', 'var(--d-cta-text, #ffffff)'],
+  ]);
+
+  emitRule('.d-cta-banner[data-size="compact"]', [
+    ['padding', '1.5rem 1rem'],
+    ['gap', '0.5rem'],
+  ]);
+
+  emitRule('.d-cta-banner[data-size="hero"]', [
+    ['padding', '5rem 2rem'],
+    ['gap', '1.5rem'],
+  ]);
+
+  // Dark pill CTA inside a banner — the v4 harness explicitly called out
+  // this shape. Using a d-interactive with data-variant="dark" parallels
+  // the existing primary/ghost/danger variants.
+  emitRule('.d-interactive[data-variant="dark"]', [
+    ['background', 'var(--d-cta-pill-bg, #18181b)'],
+    ['color', 'var(--d-cta-pill-text, #ffffff)'],
+    ['border-color', 'transparent'],
+    ['border-radius', 'var(--d-radius-full)'],
+  ]);
+
+  emitRule('.d-interactive[data-variant="dark"]:hover', [
+    ['background', 'var(--d-cta-pill-bg-hover, #27272a)'],
+  ]);
+
   // ── 12. Divider Utilities ──
   // Single-side border rules. Use these as plain class additions on
   // containers instead of hand-rolling `.divider-top` / `.divider-bottom`.

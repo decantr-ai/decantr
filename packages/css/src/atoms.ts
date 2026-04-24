@@ -577,6 +577,22 @@ export function resolveAtomDecl(atom: string): string | null {
     }
   }
 
+  // Margin auto: _mauto, _mtauto, _mxauto, _myauto, _mlauto, _mrauto.
+  // Covers the "push to end" / "center horizontally" idioms that the
+  // numeric margin atoms can't express (e.g., footer `_mtauto` to pin
+  // to the bottom of a flex column, content `_mxauto` to center).
+  const marginAutoMatch = name.match(/^m([trblxy]?)auto$/);
+  if (marginAutoMatch) {
+    const [, dir] = marginAutoMatch;
+    if (!dir || dir === '') return `margin:auto`;
+    if (dir === 't') return `margin-top:auto`;
+    if (dir === 'r') return `margin-right:auto`;
+    if (dir === 'b') return `margin-bottom:auto`;
+    if (dir === 'l') return `margin-left:auto`;
+    if (dir === 'x') return `margin-inline:auto`;
+    if (dir === 'y') return `margin-block:auto`;
+  }
+
   // Negative margin: _-mt4, _-mx2
   const negMarginMatch = name.match(/^-m([trblxy]?)(\d+(?:\.\d+)?)$/);
   if (negMarginMatch) {

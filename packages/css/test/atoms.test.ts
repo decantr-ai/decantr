@@ -76,6 +76,22 @@ describe('resolveAtomDecl', () => {
     it('resolves _-mt4 to margin-top:-1rem', () => {
       expect(resolveAtomDecl('_-mt4')).toBe('margin-top:-1rem');
     });
+
+    it('resolves _mauto to margin:auto', () => {
+      expect(resolveAtomDecl('_mauto')).toBe('margin:auto');
+    });
+
+    it('resolves _mtauto to margin-top:auto', () => {
+      expect(resolveAtomDecl('_mtauto')).toBe('margin-top:auto');
+    });
+
+    it('resolves _mxauto to margin-inline:auto', () => {
+      expect(resolveAtomDecl('_mxauto')).toBe('margin-inline:auto');
+    });
+
+    it('resolves _mlauto to margin-left:auto', () => {
+      expect(resolveAtomDecl('_mlauto')).toBe('margin-left:auto');
+    });
   });
 
   describe('color atoms', () => {
