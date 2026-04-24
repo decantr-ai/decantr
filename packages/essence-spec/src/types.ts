@@ -386,17 +386,22 @@ export interface EssenceV3 {
 export type EssenceFile = Essence | SectionedEssence | EssenceV3;
 
 export function isV3(essence: EssenceFile): essence is EssenceV3 {
-  return (essence.version === '3.0.0' || essence.version === '3.1.0') && 'dna' in essence && 'blueprint' in essence;
+  return (
+    (essence.version === '3.0.0' || essence.version === '3.1.0') &&
+    'dna' in essence &&
+    'blueprint' in essence
+  );
 }
 
 /** Flatten sections into a flat page list (for guards and backward compat). */
 export function flattenPages(blueprint: EssenceBlueprint): BlueprintPage[] {
   if (blueprint.sections && blueprint.sections.length > 0) {
-    return blueprint.sections.flatMap(s =>
-      s.pages.map(p => ({
+    return blueprint.sections.flatMap((s) =>
+      s.pages.map((p) => ({
         ...p,
-        shell_override: p.shell_override ?? (s.shell !== blueprint.shell ? (s.shell as ShellType) : undefined),
-      }))
+        shell_override:
+          p.shell_override ?? (s.shell !== blueprint.shell ? (s.shell as ShellType) : undefined),
+      })),
     );
   }
   return blueprint.pages ?? [];

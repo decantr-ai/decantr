@@ -1,10 +1,17 @@
-import type {
-  IRPageNode, IRPatternNode, IRGridNode, IRWiring,
-  IRCardWrapping, IRPatternMeta, IRVisualEffect, IRNode, IRLayer,
-} from './types.js';
-import type { StructurePage, LayoutItem, PatternRef, ColumnLayout } from '@decantr/essence-spec';
+import type { ColumnLayout, LayoutItem, PatternRef, StructurePage } from '@decantr/essence-spec';
 import type { Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
 import { resolveVisualEffects } from './resolve.js';
+import type {
+  IRCardWrapping,
+  IRGridNode,
+  IRLayer,
+  IRNode,
+  IRPageNode,
+  IRPatternMeta,
+  IRPatternNode,
+  IRVisualEffect,
+  IRWiring,
+} from './types.js';
 
 export interface ResolvedPatternEntry {
   pattern: Pattern;
@@ -56,10 +63,7 @@ function shouldWrapInCard(
   return true;
 }
 
-function buildCardWrapping(
-  pattern: Pattern,
-  theme: RegistryTheme | null,
-): IRCardWrapping {
+function buildCardWrapping(pattern: Pattern, theme: RegistryTheme | null): IRCardWrapping {
   const mode = theme?.spatial?.card_wrapping || 'always';
   return {
     mode: mode as IRCardWrapping['mode'],
@@ -99,16 +103,12 @@ function buildPatternNode(
     ...(presetDescription ? { presetDescription } : {}),
   };
 
-  const card = contained && !isStandalone && pattern
-    ? buildCardWrapping(pattern, theme)
-    : null;
+  const card = contained && !isStandalone && pattern ? buildCardWrapping(pattern, theme) : null;
 
   const wireProps = wiring?.props[alias] || wiring?.props[patternId] || null;
 
   // Resolve visual effects from theme + pattern when available
-  const visualEffects = theme && pattern
-    ? resolveVisualEffects(theme, pattern)
-    : null;
+  const visualEffects = theme && pattern ? resolveVisualEffects(theme, pattern) : null;
 
   return {
     type: 'pattern',
@@ -170,7 +170,7 @@ export function buildPageIR(
         : cols.length;
 
       // AUTO: Pass through multi-breakpoint and container query config from ColumnLayout
-      const breakpoints = item.breakpoints?.map(bp => ({ at: bp.at, cols: bp.cols })) || null;
+      const breakpoints = item.breakpoints?.map((bp) => ({ at: bp.at, cols: bp.cols })) || null;
       const responsive = item.responsive || null;
 
       const gridNode: IRGridNode = {

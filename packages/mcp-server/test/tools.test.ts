@@ -1,6 +1,6 @@
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fuzzyScore, validateStringArg } from '../src/helpers.js';
 import { handleTool, TOOLS } from '../src/tools.js';
-import { validateStringArg, fuzzyScore } from '../src/helpers.js';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -13,12 +13,14 @@ describe('MCP tool handlers', () => {
     });
 
     it('should have unique tool names', () => {
-      const names = TOOLS.map(t => t.name);
+      const names = TOOLS.map((t) => t.name);
       expect(new Set(names).size).toBe(names.length);
     });
 
     it('should have correct annotations on read-only tools', () => {
-      const readOnlyTools = TOOLS.filter(t => !['decantr_accept_drift', 'decantr_update_essence'].includes(t.name));
+      const readOnlyTools = TOOLS.filter(
+        (t) => !['decantr_accept_drift', 'decantr_update_essence'].includes(t.name),
+      );
       for (const tool of readOnlyTools) {
         expect(tool.annotations.readOnlyHint).toBe(true);
         expect(tool.annotations.destructiveHint).toBe(false);
@@ -26,7 +28,9 @@ describe('MCP tool handlers', () => {
     });
 
     it('should have write annotations on write tools', () => {
-      const writeTools = TOOLS.filter(t => ['decantr_accept_drift', 'decantr_update_essence'].includes(t.name));
+      const writeTools = TOOLS.filter((t) =>
+        ['decantr_accept_drift', 'decantr_update_essence'].includes(t.name),
+      );
       for (const tool of writeTools) {
         expect(tool.annotations.readOnlyHint).toBe(false);
         expect(tool.annotations.destructiveHint).toBe(false);
@@ -36,8 +40,11 @@ describe('MCP tool handlers', () => {
 
     it('should have openWorldHint: true on network tools', () => {
       const networkToolNames = [
-        'decantr_search_registry', 'decantr_resolve_pattern', 'decantr_resolve_archetype',
-        'decantr_resolve_blueprint', 'decantr_suggest_patterns',
+        'decantr_search_registry',
+        'decantr_resolve_pattern',
+        'decantr_resolve_archetype',
+        'decantr_resolve_blueprint',
+        'decantr_suggest_patterns',
         'decantr_create_essence',
         'decantr_get_showcase_benchmarks',
         'decantr_get_registry_intelligence_summary',
@@ -46,7 +53,7 @@ describe('MCP tool handlers', () => {
         'decantr_critique',
       ];
       for (const name of networkToolNames) {
-        const tool = TOOLS.find(t => t.name === name);
+        const tool = TOOLS.find((t) => t.name === name);
         expect(tool?.annotations.openWorldHint).toBe(true);
       }
     });
@@ -61,7 +68,7 @@ describe('MCP tool handlers', () => {
         'decantr_get_execution_pack',
       ];
       for (const name of localToolNames) {
-        const tool = TOOLS.find(t => t.name === name);
+        const tool = TOOLS.find((t) => t.name === name);
         expect(tool?.annotations.openWorldHint).toBe(false);
       }
     });
@@ -78,9 +85,9 @@ describe('MCP tool handlers', () => {
 
   describe('decantr_validate', () => {
     it('should return error for missing file', async () => {
-      const result = await handleTool('decantr_validate', {
+      const result = (await handleTool('decantr_validate', {
         path: '/nonexistent/decantr.essence.json',
-      }) as { valid: boolean; errors: string[] };
+      })) as { valid: boolean; errors: string[] };
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
     });
@@ -94,39 +101,44 @@ describe('MCP tool handlers', () => {
 
     it('returns intelligence metadata when the registry search surface provides it', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({
-          total: 1,
-          results: [{
-            type: 'blueprint',
-            slug: 'portfolio',
-            namespace: '@official',
-            name: 'Portfolio',
-            description: 'Creator portfolio',
-            intelligence: {
-              source: 'hybrid',
-              verification_status: 'smoke-green',
-              benchmark_confidence: 'high',
-              confidence_tier: 'verified',
-              golden_usage: 'shortlisted',
-              quality_score: 92,
-              confidence_score: 90,
-              recommended: true,
-              target_coverage: ['react-vite'],
-              evidence: ['live-showcase', 'smoke-verified'],
-            },
-          }],
-        }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
+        new Response(
+          JSON.stringify({
+            total: 1,
+            results: [
+              {
+                type: 'blueprint',
+                slug: 'portfolio',
+                namespace: '@official',
+                name: 'Portfolio',
+                description: 'Creator portfolio',
+                intelligence: {
+                  source: 'hybrid',
+                  verification_status: 'smoke-green',
+                  benchmark_confidence: 'high',
+                  confidence_tier: 'verified',
+                  golden_usage: 'shortlisted',
+                  quality_score: 92,
+                  confidence_score: 90,
+                  recommended: true,
+                  target_coverage: ['react-vite'],
+                  evidence: ['live-showcase', 'smoke-verified'],
+                },
+              },
+            ],
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
       );
 
-      const result = await handleTool('decantr_search_registry', {
+      const result = (await handleTool('decantr_search_registry', {
         query: 'portfolio',
         sort: 'name',
         recommended: true,
         source: 'hybrid',
-      }) as {
+      })) as {
         total: number;
         results: Array<{ intelligence?: { recommended?: boolean; quality_score?: number } | null }>;
       };
@@ -134,10 +146,7 @@ describe('MCP tool handlers', () => {
       expect(result.total).toBe(1);
       expect(result.results[0]?.intelligence?.recommended).toBe(true);
       expect(result.results[0]?.intelligence?.quality_score).toBe(92);
-      expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/sort=name/),
-        expect.anything(),
-      );
+      expect(fetchSpy).toHaveBeenCalledWith(expect.stringMatching(/sort=name/), expect.anything());
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringMatching(/recommended=true/),
         expect.anything(),
@@ -156,9 +165,9 @@ describe('MCP tool handlers', () => {
     });
 
     it('should return not-found for unknown pattern', async () => {
-      const result = await handleTool('decantr_resolve_pattern', {
+      const result = (await handleTool('decantr_resolve_pattern', {
         id: 'nonexistent-pattern-xyz',
-      }) as { found: boolean };
+      })) as { found: boolean };
       expect(result.found).toBe(false);
     });
   });
@@ -170,9 +179,9 @@ describe('MCP tool handlers', () => {
     });
 
     it('should return not-found for unknown archetype', async () => {
-      const result = await handleTool('decantr_resolve_archetype', {
+      const result = (await handleTool('decantr_resolve_archetype', {
         id: 'nonexistent-archetype-xyz',
-      }) as { found: boolean };
+      })) as { found: boolean };
       expect(result.found).toBe(false);
     });
   });
@@ -180,99 +189,102 @@ describe('MCP tool handlers', () => {
   describe('decantr_get_registry_intelligence_summary', () => {
     it('returns hosted summary data and respects namespace filtering', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        new Response(JSON.stringify({
-          $schema: 'https://decantr.ai/schemas/registry-intelligence-summary.v1.json',
-          generated_at: '2026-04-09T00:00:00.000Z',
-          namespace: '@official',
-          totals: {
-            total_public_items: 10,
-            with_intelligence: 8,
-            recommended: 4,
-            authored: 3,
-            benchmark: 2,
-            hybrid: 3,
-            missing_source: 0,
-            smoke_green: 2,
-            build_green: 5,
-            high_confidence: 2,
-            verified_confidence: 2,
-          },
-          by_type: {
-            pattern: {
-              total_public_items: 0,
-              with_intelligence: 0,
-              recommended: 0,
-              authored: 0,
-              benchmark: 0,
-              hybrid: 0,
-              missing_source: 0,
-              smoke_green: 0,
-              build_green: 0,
-              high_confidence: 0,
-              verified_confidence: 0,
-            },
-            theme: {
-              total_public_items: 0,
-              with_intelligence: 0,
-              recommended: 0,
-              authored: 0,
-              benchmark: 0,
-              hybrid: 0,
-              missing_source: 0,
-              smoke_green: 0,
-              build_green: 0,
-              high_confidence: 0,
-              verified_confidence: 0,
-            },
-            blueprint: {
-              total_public_items: 4,
-              with_intelligence: 4,
-              recommended: 2,
-              authored: 1,
-              benchmark: 1,
-              hybrid: 2,
+        new Response(
+          JSON.stringify({
+            $schema: 'https://decantr.ai/schemas/registry-intelligence-summary.v1.json',
+            generated_at: '2026-04-09T00:00:00.000Z',
+            namespace: '@official',
+            totals: {
+              total_public_items: 10,
+              with_intelligence: 8,
+              recommended: 4,
+              authored: 3,
+              benchmark: 2,
+              hybrid: 3,
               missing_source: 0,
               smoke_green: 2,
-              build_green: 4,
+              build_green: 5,
               high_confidence: 2,
               verified_confidence: 2,
             },
-            archetype: {
-              total_public_items: 3,
-              with_intelligence: 2,
-              recommended: 1,
-              authored: 1,
-              benchmark: 0,
-              hybrid: 1,
-              missing_source: 0,
-              smoke_green: 0,
-              build_green: 1,
-              high_confidence: 0,
-              verified_confidence: 0,
+            by_type: {
+              pattern: {
+                total_public_items: 0,
+                with_intelligence: 0,
+                recommended: 0,
+                authored: 0,
+                benchmark: 0,
+                hybrid: 0,
+                missing_source: 0,
+                smoke_green: 0,
+                build_green: 0,
+                high_confidence: 0,
+                verified_confidence: 0,
+              },
+              theme: {
+                total_public_items: 0,
+                with_intelligence: 0,
+                recommended: 0,
+                authored: 0,
+                benchmark: 0,
+                hybrid: 0,
+                missing_source: 0,
+                smoke_green: 0,
+                build_green: 0,
+                high_confidence: 0,
+                verified_confidence: 0,
+              },
+              blueprint: {
+                total_public_items: 4,
+                with_intelligence: 4,
+                recommended: 2,
+                authored: 1,
+                benchmark: 1,
+                hybrid: 2,
+                missing_source: 0,
+                smoke_green: 2,
+                build_green: 4,
+                high_confidence: 2,
+                verified_confidence: 2,
+              },
+              archetype: {
+                total_public_items: 3,
+                with_intelligence: 2,
+                recommended: 1,
+                authored: 1,
+                benchmark: 0,
+                hybrid: 1,
+                missing_source: 0,
+                smoke_green: 0,
+                build_green: 1,
+                high_confidence: 0,
+                verified_confidence: 0,
+              },
+              shell: {
+                total_public_items: 3,
+                with_intelligence: 2,
+                recommended: 1,
+                authored: 1,
+                benchmark: 1,
+                hybrid: 0,
+                missing_source: 0,
+                smoke_green: 0,
+                build_green: 0,
+                high_confidence: 0,
+                verified_confidence: 0,
+              },
             },
-            shell: {
-              total_public_items: 3,
-              with_intelligence: 2,
-              recommended: 1,
-              authored: 1,
-              benchmark: 1,
-              hybrid: 0,
-              missing_source: 0,
-              smoke_green: 0,
-              build_green: 0,
-              high_confidence: 0,
-              verified_confidence: 0,
-            },
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
           },
-        }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }),
+        ),
       );
 
-      const result = await handleTool('decantr_get_registry_intelligence_summary', {
+      const result = (await handleTool('decantr_get_registry_intelligence_summary', {
         namespace: '@official',
-      }) as {
+      })) as {
         namespace: string;
         totals: { recommended: number };
       };

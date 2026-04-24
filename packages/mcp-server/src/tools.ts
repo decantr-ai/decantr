@@ -1,26 +1,26 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { basename, join, dirname, isAbsolute, resolve } from 'node:path';
-import { validateEssence, evaluateGuard, isV3, migrateV2ToV3 } from '@decantr/essence-spec';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
-import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
+import { evaluateGuard, isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
 import type {
-  ContentIntelligenceSource,
-  Pattern,
   ArchetypeRole,
   ComposeEntry,
+  ContentIntelligenceSource,
+  Pattern,
 } from '@decantr/registry';
+import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
+import type { DriftLogEntry } from './helpers.js';
 import {
-  validateStringArg,
   fuzzyScore,
   getAPIClient,
   getPublicAPIClient,
-  readEssenceFile,
   mutateEssenceFile,
   readDriftLog,
+  readEssenceFile,
+  validateStringArg,
   writeDriftLog,
 } from './helpers.js';
-import type { DriftLogEntry } from './helpers.js';
 
 // ── Inline topology derivation (lightweight version of cli/scaffold.ts) ──
 
@@ -89,9 +89,7 @@ async function getRegistryIntelligenceSummaryPayload(namespace?: string) {
   return client.getRegistryIntelligenceSummary(namespace ? { namespace } : undefined);
 }
 
-async function getHostedExecutionPackBundlePayload(
-  args: Record<string, unknown>,
-) {
+async function getHostedExecutionPackBundlePayload(args: Record<string, unknown>) {
   const client = getPublicAPIClient();
   const essence = (() => {
     if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
@@ -106,9 +104,7 @@ async function getHostedExecutionPackBundlePayload(
   );
 }
 
-async function getHostedSelectedExecutionPackPayload(
-  args: Record<string, unknown>,
-) {
+async function getHostedSelectedExecutionPackPayload(args: Record<string, unknown>) {
   const client = getPublicAPIClient();
   const essence = (() => {
     if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
@@ -127,9 +123,7 @@ async function getHostedSelectedExecutionPackPayload(
   );
 }
 
-async function getHostedExecutionPackManifestPayload(
-  args: Record<string, unknown>,
-) {
+async function getHostedExecutionPackManifestPayload(args: Record<string, unknown>) {
   const client = getPublicAPIClient();
   const essence = (() => {
     if (typeof args.essence === 'object' && args.essence !== null && !Array.isArray(args.essence)) {
@@ -144,17 +138,18 @@ async function getHostedExecutionPackManifestPayload(
   );
 }
 
-async function getHostedFileCritiquePayload(
-  args: Record<string, unknown>,
-) {
+async function getHostedFileCritiquePayload(args: Record<string, unknown>) {
   const client = getPublicAPIClient();
   const filePath = args.file_path as string;
   const resolvedFilePath = isAbsolute(filePath) ? filePath : resolve(process.cwd(), filePath);
   const code = await readFile(resolvedFilePath, 'utf-8');
   const { essence } = await readEssenceFile(args.path as string | undefined);
-  const treatmentsPath = typeof args.treatments_path === 'string'
-    ? (isAbsolute(args.treatments_path) ? args.treatments_path : resolve(process.cwd(), args.treatments_path))
-    : join(process.cwd(), 'src', 'styles', 'treatments.css');
+  const treatmentsPath =
+    typeof args.treatments_path === 'string'
+      ? isAbsolute(args.treatments_path)
+        ? args.treatments_path
+        : resolve(process.cwd(), args.treatments_path)
+      : join(process.cwd(), 'src', 'styles', 'treatments.css');
   const treatmentsCss = existsSync(treatmentsPath)
     ? readFileSync(treatmentsPath, 'utf-8')
     : undefined;
@@ -185,7 +180,9 @@ function extractHostedAssetPaths(indexHtml: string): string[] {
 
 async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: string) {
   const distRoot = distPathArg
-    ? (isAbsolute(distPathArg) ? distPathArg : resolve(projectRoot, distPathArg))
+    ? isAbsolute(distPathArg)
+      ? distPathArg
+      : resolve(projectRoot, distPathArg)
     : join(projectRoot, 'dist');
   const indexPath = join(distRoot, 'index.html');
 
@@ -219,13 +216,22 @@ async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?:
     return undefined;
   }
 
-  const sourcesRoot = isAbsolute(sourcesPathArg) ? sourcesPathArg : resolve(projectRoot, sourcesPathArg);
+  const sourcesRoot = isAbsolute(sourcesPathArg)
+    ? sourcesPathArg
+    : resolve(projectRoot, sourcesPathArg);
   if (!existsSync(sourcesRoot)) {
     return undefined;
   }
 
   const files: Record<string, string> = {};
-  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const ignoredDirNames = new Set([
+    'node_modules',
+    '.git',
+    '.decantr',
+    'dist',
+    'build',
+    'coverage',
+  ]);
   const rootPrefix = basename(sourcesRoot);
 
   const walk = (absoluteDir: string, relativeDir: string) => {
@@ -247,13 +253,14 @@ async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?:
   return Object.keys(files).length > 0 ? { files } : undefined;
 }
 
-async function getHostedProjectAuditPayload(
-  args: Record<string, unknown>,
-) {
+async function getHostedProjectAuditPayload(args: Record<string, unknown>) {
   const client = getPublicAPIClient();
   const { essence } = await readEssenceFile(args.path as string | undefined);
   const dist = await captureHostedDistSnapshot(process.cwd(), args.dist_path as string | undefined);
-  const sources = await captureHostedSourceSnapshot(process.cwd(), args.sources_path as string | undefined);
+  const sources = await captureHostedSourceSnapshot(
+    process.cwd(),
+    args.sources_path as string | undefined,
+  );
 
   return client.auditProject(
     {
@@ -266,8 +273,12 @@ async function getHostedProjectAuditPayload(
 }
 
 type HostedExecutionPackBundle = Awaited<ReturnType<typeof getHostedExecutionPackBundlePayload>>;
-type HostedSelectedExecutionPack = Awaited<ReturnType<typeof getHostedSelectedExecutionPackPayload>>;
-type HostedExecutionPackManifest = Awaited<ReturnType<typeof getHostedExecutionPackManifestPayload>>;
+type HostedSelectedExecutionPack = Awaited<
+  ReturnType<typeof getHostedSelectedExecutionPackPayload>
+>;
+type HostedExecutionPackManifest = Awaited<
+  ReturnType<typeof getHostedExecutionPackManifestPayload>
+>;
 type PackSource = 'local' | 'hosted_fallback';
 
 async function loadHostedExecutionPackBundleFallback(args: Record<string, unknown>): Promise<{
@@ -376,7 +387,10 @@ async function loadHostedProjectAuditFallback(args: Record<string, unknown>): Pr
   }
 }
 
-function hasExecutionPackPayload(payload: { markdown: string | null; json: unknown | null }): boolean {
+function hasExecutionPackPayload(payload: {
+  markdown: string | null;
+  json: unknown | null;
+}): boolean {
   return payload.markdown !== null || payload.json !== null;
 }
 
@@ -388,15 +402,15 @@ function toHostedExecutionPackPayload(pack: { renderedMarkdown?: string } | null
 }
 
 function findHostedSectionPack(bundle: HostedExecutionPackBundle, sectionId: string) {
-  return bundle.sections.find(section => section.data.sectionId === sectionId) ?? null;
+  return bundle.sections.find((section) => section.data.sectionId === sectionId) ?? null;
 }
 
 function findHostedPagePack(bundle: HostedExecutionPackBundle, pageId: string) {
-  return bundle.pages.find(page => page.data.pageId === pageId) ?? null;
+  return bundle.pages.find((page) => page.data.pageId === pageId) ?? null;
 }
 
 function findHostedMutationPack(bundle: HostedExecutionPackBundle, mutationId: string) {
-  return bundle.mutations.find(mutation => mutation.data.mutationType === mutationId) ?? null;
+  return bundle.mutations.find((mutation) => mutation.data.mutationType === mutationId) ?? null;
 }
 
 function findManifestEntryForPack(
@@ -410,11 +424,13 @@ function findManifestEntryForPack(
     case 'review':
       return manifest.review ?? null;
     case 'section':
-      return id ? manifest.sections.find(section => section.id === id) ?? null : null;
+      return id ? (manifest.sections.find((section) => section.id === id) ?? null) : null;
     case 'page':
-      return id ? manifest.pages.find(page => page.id === id) ?? null : null;
+      return id ? (manifest.pages.find((page) => page.id === id) ?? null) : null;
     case 'mutation':
-      return id ? (manifest.mutations ?? []).find(mutation => mutation.id === id) ?? null : null;
+      return id
+        ? ((manifest.mutations ?? []).find((mutation) => mutation.id === id) ?? null)
+        : null;
     default:
       return null;
   }
@@ -446,9 +462,7 @@ function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
     zone.features = [...new Set(zone.features)];
   }
 
-  return ZONE_ORDER
-    .filter(role => zoneMap.has(role))
-    .map(role => zoneMap.get(role)!);
+  return ZONE_ORDER.filter((role) => zoneMap.has(role)).map((role) => zoneMap.get(role)!);
 }
 
 const GATEWAY_TRIGGER_MAP: Record<string, string> = {
@@ -475,8 +489,8 @@ function resolveGatewayTrigger(features: string[]): string {
 
 function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
   const transitions: ZoneTransition[] = [];
-  const roles = new Set(zones.map(z => z.role));
-  const gateway = zones.find(z => z.role === 'gateway');
+  const roles = new Set(zones.map((z) => z.role));
+  const gateway = zones.find((z) => z.role === 'gateway');
   const gatewayTrigger = gateway ? resolveGatewayTrigger(gateway.features) : 'authentication';
 
   const hasApp = roles.has('primary') || roles.has('auxiliary');
@@ -484,7 +498,12 @@ function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
   const hasPublic = roles.has('public');
 
   if (hasPublic && hasGateway) {
-    transitions.push({ from: 'public', to: 'gateway', type: 'conversion', trigger: gatewayTrigger });
+    transitions.push({
+      from: 'public',
+      to: 'gateway',
+      type: 'conversion',
+      trigger: gatewayTrigger,
+    });
   }
   if (hasPublic && hasApp && !hasGateway) {
     transitions.push({ from: 'public', to: 'app', type: 'conversion', trigger: 'navigation' });
@@ -528,12 +547,20 @@ export const TOOLS = [
   {
     name: 'decantr_read_essence',
     title: 'Read Essence',
-    description: 'Read and return the current decantr.essence.json file from the working directory. For v3 files, optionally filter by layer (dna, blueprint, or full).',
+    description:
+      'Read and return the current decantr.essence.json file from the working directory. For v3 files, optionally filter by layer (dna, blueprint, or full).',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        path: { type: 'string', description: 'Optional path to essence file. Defaults to ./decantr.essence.json.' },
-        layer: { type: 'string', enum: ['dna', 'blueprint', 'full'], description: 'For v3 essences: return only the specified layer. Defaults to full.' },
+        path: {
+          type: 'string',
+          description: 'Optional path to essence file. Defaults to ./decantr.essence.json.',
+        },
+        layer: {
+          type: 'string',
+          enum: ['dna', 'blueprint', 'full'],
+          description: 'For v3 essences: return only the specified layer. Defaults to full.',
+        },
       },
     },
     annotations: READ_ONLY,
@@ -542,11 +569,15 @@ export const TOOLS = [
   {
     name: 'decantr_validate',
     title: 'Validate Essence',
-    description: 'Validate a decantr.essence.json file against the schema and guard rules. For v3, reports DNA vs Blueprint violations separately.',
+    description:
+      'Validate a decantr.essence.json file against the schema and guard rules. For v3, reports DNA vs Blueprint violations separately.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        path: { type: 'string', description: 'Path to essence file. Defaults to ./decantr.essence.json.' },
+        path: {
+          type: 'string',
+          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
+        },
       },
     },
     annotations: READ_ONLY,
@@ -555,7 +586,8 @@ export const TOOLS = [
   {
     name: 'decantr_search_registry',
     title: 'Search Registry',
-    description: 'Search the Decantr community content registry for patterns, archetypes, themes, and shells.',
+    description:
+      'Search the Decantr community content registry for patterns, archetypes, themes, and shells.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -563,7 +595,10 @@ export const TOOLS = [
         type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
         sort: { type: 'string', description: 'Optional sort: recommended, recent, or name.' },
         recommended: { type: 'boolean', description: 'When true, only return recommended items.' },
-        source: { type: 'string', description: 'Optional intelligence source filter: authored, benchmark, or hybrid.' },
+        source: {
+          type: 'string',
+          description: 'Optional intelligence source filter: authored, benchmark, or hybrid.',
+        },
       },
       required: ['query'],
     },
@@ -573,7 +608,8 @@ export const TOOLS = [
   {
     name: 'decantr_resolve_pattern',
     title: 'Resolve Pattern',
-    description: 'Get full pattern details including layout spec, components, presets, and code examples.',
+    description:
+      'Get full pattern details including layout spec, components, presets, and code examples.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -589,7 +625,8 @@ export const TOOLS = [
   {
     name: 'decantr_resolve_archetype',
     title: 'Resolve Archetype',
-    description: 'Get archetype details including default pages, layouts, features, and suggested theme.',
+    description:
+      'Get archetype details including default pages, layouts, features, and suggested theme.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -604,11 +641,15 @@ export const TOOLS = [
   {
     name: 'decantr_resolve_blueprint',
     title: 'Resolve Blueprint',
-    description: 'Get a blueprint (app composition) with its archetype list, suggested theme, personality traits, and full page structure.',
+    description:
+      'Get a blueprint (app composition) with its archetype list, suggested theme, personality traits, and full page structure.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        id: { type: 'string', description: 'Blueprint ID (e.g. "saas-dashboard", "ecommerce", "portfolio")' },
+        id: {
+          type: 'string',
+          description: 'Blueprint ID (e.g. "saas-dashboard", "ecommerce", "portfolio")',
+        },
         namespace: { type: 'string', description: 'Namespace (default: "@official")' },
       },
       required: ['id'],
@@ -619,11 +660,16 @@ export const TOOLS = [
   {
     name: 'decantr_suggest_patterns',
     title: 'Suggest Patterns',
-    description: 'Given a page description, suggest appropriate patterns from the registry. Returns ranked pattern matches with layout specs and component lists.',
+    description:
+      'Given a page description, suggest appropriate patterns from the registry. Returns ranked pattern matches with layout specs and component lists.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        description: { type: 'string', description: 'Description of the page or section (e.g. "dashboard with metrics and charts", "settings form with toggles")' },
+        description: {
+          type: 'string',
+          description:
+            'Description of the page or section (e.g. "dashboard with metrics and charts", "settings form with toggles")',
+        },
       },
       required: ['description'],
     },
@@ -633,16 +679,24 @@ export const TOOLS = [
   {
     name: 'decantr_check_drift',
     title: 'Check Drift',
-    description: 'Check if code changes violate the design intent captured in the Essence spec. For v3, returns separate dna_violations and blueprint_drift with autoFixable flags.',
+    description:
+      'Check if code changes violate the design intent captured in the Essence spec. For v3, returns separate dna_violations and blueprint_drift with autoFixable flags.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        path: { type: 'string', description: 'Path to essence file. Defaults to ./decantr.essence.json.' },
-        page_id: { type: 'string', description: 'Page ID being modified (e.g. "overview", "settings")' },
+        path: {
+          type: 'string',
+          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
+        },
+        page_id: {
+          type: 'string',
+          description: 'Page ID being modified (e.g. "overview", "settings")',
+        },
         components_used: {
           type: 'array' as const,
           items: { type: 'string' },
-          description: 'List of component names used in the generated code. Checked against page layout patterns.',
+          description:
+            'List of component names used in the generated code. Checked against page layout patterns.',
         },
         theme_used: { type: 'string', description: 'Theme id used in the generated code' },
       },
@@ -653,12 +707,20 @@ export const TOOLS = [
   {
     name: 'decantr_create_essence',
     title: 'Create Essence',
-    description: 'Generate a valid v3 Essence spec skeleton from a project description. Returns a structured essence.json template based on the closest matching archetype and blueprint.',
+    description:
+      'Generate a valid v3 Essence spec skeleton from a project description. Returns a structured essence.json template based on the closest matching archetype and blueprint.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        description: { type: 'string', description: 'Natural language project description (e.g. "SaaS dashboard with analytics, user management, and billing")' },
-        framework: { type: 'string', description: 'Target framework (e.g. "react", "vue", "svelte"). Defaults to "react".' },
+        description: {
+          type: 'string',
+          description:
+            'Natural language project description (e.g. "SaaS dashboard with analytics, user management, and billing")',
+        },
+        framework: {
+          type: 'string',
+          description: 'Target framework (e.g. "react", "vue", "svelte"). Defaults to "react".',
+        },
       },
       required: ['description'],
     },
@@ -668,7 +730,8 @@ export const TOOLS = [
   {
     name: 'decantr_accept_drift',
     title: 'Accept Drift',
-    description: 'Resolve guard violations by accepting, scoping, rejecting, or deferring drift. For DNA violations, requires explicit confirmation. Updates the essence file or drift log.',
+    description:
+      'Resolve guard violations by accepting, scoping, rejecting, or deferring drift. For DNA violations, requires explicit confirmation. Updates the essence file or drift log.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -688,11 +751,18 @@ export const TOOLS = [
         resolution: {
           type: 'string',
           enum: ['accept', 'accept_scoped', 'reject', 'defer'],
-          description: 'How to resolve: accept updates the essence, accept_scoped limits to a page, reject is a no-op, defer logs for later.',
+          description:
+            'How to resolve: accept updates the essence, accept_scoped limits to a page, reject is a no-op, defer logs for later.',
         },
         scope: { type: 'string', description: 'For accept_scoped: the page or section scope.' },
-        path: { type: 'string', description: 'Path to essence file. Defaults to ./decantr.essence.json.' },
-        confirm_dna: { type: 'boolean', description: 'Required to be true when accepting DNA-layer violations.' },
+        path: {
+          type: 'string',
+          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
+        },
+        confirm_dna: {
+          type: 'boolean',
+          description: 'Required to be true when accepting DNA-layer violations.',
+        },
       },
       required: ['violations', 'resolution'],
     },
@@ -702,20 +772,32 @@ export const TOOLS = [
   {
     name: 'decantr_update_essence',
     title: 'Update Essence',
-    description: 'Mutate the essence file: add/remove/update pages, update DNA or blueprint fields, add/remove features. Operates on v3 format (auto-migrates v2).',
+    description:
+      'Mutate the essence file: add/remove/update pages, update DNA or blueprint fields, add/remove features. Operates on v3 format (auto-migrates v2).',
     inputSchema: {
       type: 'object' as const,
       properties: {
         operation: {
           type: 'string',
-          enum: ['add_page', 'remove_page', 'update_page_layout', 'update_dna', 'update_blueprint', 'add_feature', 'remove_feature'],
+          enum: [
+            'add_page',
+            'remove_page',
+            'update_page_layout',
+            'update_dna',
+            'update_blueprint',
+            'add_feature',
+            'remove_feature',
+          ],
           description: 'The mutation operation to perform.',
         },
         payload: {
           type: 'object' as const,
           description: 'Operation-specific payload. See tool docs for each operation.',
         },
-        path: { type: 'string', description: 'Path to essence file. Defaults to ./decantr.essence.json.' },
+        path: {
+          type: 'string',
+          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
+        },
       },
       required: ['operation', 'payload'],
     },
@@ -725,17 +807,20 @@ export const TOOLS = [
   {
     name: 'decantr_get_scaffold_context',
     title: 'Get Scaffold Context',
-    description: 'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, compiled review pack, and pack manifest when available. Falls back to hosted execution-pack compilation when local context artifacts are missing.',
+    description:
+      'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, compiled review pack, and pack manifest when available. Falls back to hosted execution-pack compilation when local context artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         path: {
           type: 'string',
-          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+          description:
+            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
         },
         namespace: {
           type: 'string',
-          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+          description:
+            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
         },
       },
     },
@@ -745,18 +830,25 @@ export const TOOLS = [
   {
     name: 'decantr_get_section_context',
     title: 'Get Section Context',
-    description: 'Get the self-contained context for a specific section of the project. Returns the richer section context file and, when available, the compiled section execution pack for a more compact contract-first view. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
+    description:
+      'Get the self-contained context for a specific section of the project. Returns the richer section context file and, when available, the compiled section execution pack for a more compact contract-first view. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        section_id: { type: 'string', description: 'Section ID (archetype ID, e.g., "ai-chatbot", "auth-full", "settings-full")' },
+        section_id: {
+          type: 'string',
+          description:
+            'Section ID (archetype ID, e.g., "ai-chatbot", "auth-full", "settings-full")',
+        },
         path: {
           type: 'string',
-          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+          description:
+            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
         },
         namespace: {
           type: 'string',
-          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+          description:
+            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
         },
       },
       required: ['section_id'],
@@ -767,18 +859,24 @@ export const TOOLS = [
   {
     name: 'decantr_get_page_context',
     title: 'Get Page Context',
-    description: 'Get the route-local context for a specific page. Returns the compiled page execution pack plus its parent section pack and section context when available. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
+    description:
+      'Get the route-local context for a specific page. Returns the compiled page execution pack plus its parent section pack and section context when available. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        page_id: { type: 'string', description: 'Page ID (for example "overview", "settings", or "home").' },
+        page_id: {
+          type: 'string',
+          description: 'Page ID (for example "overview", "settings", or "home").',
+        },
         path: {
           type: 'string',
-          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+          description:
+            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
         },
         namespace: {
           type: 'string',
-          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+          description:
+            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
         },
       },
       required: ['page_id'],
@@ -789,7 +887,8 @@ export const TOOLS = [
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
-    description: 'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, review, mutation, section, or page pack in markdown, JSON, or both. Falls back to the hosted selected-pack surface for targeted reads when local pack artifacts are missing.',
+    description:
+      'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, review, mutation, section, or page pack in markdown, JSON, or both. Falls back to the hosted selected-pack surface for targeted reads when local pack artifacts are missing.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -800,7 +899,8 @@ export const TOOLS = [
         },
         id: {
           type: 'string',
-          description: 'Required for section/page/mutation packs (for example "dashboard", "overview", or "modify").',
+          description:
+            'Required for section/page/mutation packs (for example "dashboard", "overview", or "modify").',
         },
         format: {
           type: 'string',
@@ -809,11 +909,13 @@ export const TOOLS = [
         },
         path: {
           type: 'string',
-          description: 'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
+          description:
+            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
         },
         namespace: {
           type: 'string',
-          description: 'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
+          description:
+            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
         },
       },
     },
@@ -823,7 +925,8 @@ export const TOOLS = [
   {
     name: 'decantr_get_showcase_benchmarks',
     title: 'Get Showcase Benchmarks',
-    description: 'Read the audited Decantr showcase corpus metadata. Returns the active manifest, shortlisted benchmark set, or the schema-backed shortlist verification report.',
+    description:
+      'Read the audited Decantr showcase corpus metadata. Returns the active manifest, shortlisted benchmark set, or the schema-backed shortlist verification report.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -840,7 +943,8 @@ export const TOOLS = [
   {
     name: 'decantr_get_registry_intelligence_summary',
     title: 'Get Registry Intelligence Summary',
-    description: 'Read the hosted schema-backed registry intelligence summary. Useful for checking overall intelligence/recommendation coverage without crawling every item.',
+    description:
+      'Read the hosted schema-backed registry intelligence summary. Useful for checking overall intelligence/recommendation coverage without crawling every item.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -856,13 +960,15 @@ export const TOOLS = [
   {
     name: 'decantr_compile_execution_packs',
     title: 'Compile Execution Packs',
-    description: 'Compile a hosted execution-pack bundle from an essence document using the public Decantr API. Reads the local essence file by default, or accepts an inline essence object.',
+    description:
+      'Compile a hosted execution-pack bundle from an essence document using the public Decantr API. Reads the local essence file by default, or accepts an inline essence object.',
     inputSchema: {
       type: 'object' as const,
       properties: {
         path: {
           type: 'string',
-          description: 'Optional path to an essence file. Defaults to ./decantr.essence.json when essence is not provided.',
+          description:
+            'Optional path to an essence file. Defaults to ./decantr.essence.json when essence is not provided.',
         },
         essence: {
           type: 'object' as const,
@@ -870,7 +976,8 @@ export const TOOLS = [
         },
         namespace: {
           type: 'string',
-          description: 'Optional preferred public namespace for content resolution. Defaults to "@official".',
+          description:
+            'Optional preferred public namespace for content resolution. Defaults to "@official".',
         },
       },
     },
@@ -880,14 +987,31 @@ export const TOOLS = [
   {
     name: 'decantr_audit_project',
     title: 'Audit Project',
-    description: 'Audit the current project against the essence contract, guard rules, and compiled execution packs. Falls back to the hosted verifier when local compiled pack artifacts are missing. Returns a schema-backed project audit report.',
+    description:
+      'Audit the current project against the essence contract, guard rules, and compiled execution packs. Falls back to the hosted verifier when local compiled pack artifacts are missing. Returns a schema-backed project audit report.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        path: { type: 'string' as const, description: 'Optional path to the essence file for hosted fallback. Defaults to ./decantr.essence.json.' },
-        namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
-        dist_path: { type: 'string' as const, description: 'Optional path to a local dist directory to snapshot for hosted runtime verification. Defaults to ./dist.' },
-        sources_path: { type: 'string' as const, description: 'Optional path to a local source directory to snapshot for hosted source-level verification. For example `src` or `app`.' },
+        path: {
+          type: 'string' as const,
+          description:
+            'Optional path to the essence file for hosted fallback. Defaults to ./decantr.essence.json.',
+        },
+        namespace: {
+          type: 'string' as const,
+          description:
+            'Optional preferred public namespace for hosted fallback. Defaults to "@official".',
+        },
+        dist_path: {
+          type: 'string' as const,
+          description:
+            'Optional path to a local dist directory to snapshot for hosted runtime verification. Defaults to ./dist.',
+        },
+        sources_path: {
+          type: 'string' as const,
+          description:
+            'Optional path to a local source directory to snapshot for hosted source-level verification. For example `src` or `app`.',
+        },
       },
     },
     annotations: READ_ONLY_NETWORK,
@@ -896,14 +1020,30 @@ export const TOOLS = [
   {
     name: 'decantr_critique',
     title: 'Design Critique',
-    description: 'Critique a file against the compiled review contract and Decantr verification heuristics. Falls back to the hosted verifier when local review packs are missing. Returns a schema-backed file critique report with scores, findings, and focus areas.',
+    description:
+      'Critique a file against the compiled review contract and Decantr verification heuristics. Falls back to the hosted verifier when local review packs are missing. Returns a schema-backed file critique report with scores, findings, and focus areas.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        file_path: { type: 'string' as const, description: 'Path to the component file to critique' },
-        path: { type: 'string' as const, description: 'Optional path to the essence file when using hosted fallback. Defaults to ./decantr.essence.json.' },
-        namespace: { type: 'string' as const, description: 'Optional preferred public namespace for hosted fallback. Defaults to "@official".' },
-        treatments_path: { type: 'string' as const, description: 'Optional path to treatments.css when using hosted fallback. Defaults to ./src/styles/treatments.css.' },
+        file_path: {
+          type: 'string' as const,
+          description: 'Path to the component file to critique',
+        },
+        path: {
+          type: 'string' as const,
+          description:
+            'Optional path to the essence file when using hosted fallback. Defaults to ./decantr.essence.json.',
+        },
+        namespace: {
+          type: 'string' as const,
+          description:
+            'Optional preferred public namespace for hosted fallback. Defaults to "@official".',
+        },
+        treatments_path: {
+          type: 'string' as const,
+          description:
+            'Optional path to treatments.css when using hosted fallback. Defaults to ./src/styles/treatments.css.',
+        },
       },
       required: ['file_path'],
     },
@@ -937,7 +1077,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       try {
         essence = JSON.parse(await readFile(essencePath, 'utf-8'));
       } catch (e) {
-        return { valid: false, errors: [`Could not read: ${(e as Error).message}`], guardViolations: [] };
+        return {
+          valid: false,
+          errors: [`Could not read: ${(e as Error).message}`],
+          guardViolations: [],
+        };
       }
       const result = validateEssence(essence);
 
@@ -945,14 +1089,21 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (result.valid && typeof essence === 'object' && essence !== null) {
         try {
           guardViolations = evaluateGuard(essence as EssenceFile, {});
-        } catch { /* guard evaluation is optional */ }
+        } catch {
+          /* guard evaluation is optional */
+        }
       }
 
       // For v3 essences, separate violations by layer
-      if (result.valid && typeof essence === 'object' && essence !== null && isV3(essence as EssenceFile)) {
-        const dnaViolations = guardViolations.filter(v => v.layer === 'dna');
-        const blueprintViolations = guardViolations.filter(v => v.layer === 'blueprint');
-        const otherViolations = guardViolations.filter(v => !v.layer);
+      if (
+        result.valid &&
+        typeof essence === 'object' &&
+        essence !== null &&
+        isV3(essence as EssenceFile)
+      ) {
+        const dnaViolations = guardViolations.filter((v) => v.layer === 'dna');
+        const blueprintViolations = guardViolations.filter((v) => v.layer === 'blueprint');
+        const otherViolations = guardViolations.filter((v) => !v.layer);
         return {
           ...result,
           format: 'v3',
@@ -968,7 +1119,10 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     case 'decantr_search_registry': {
       const err = validateStringArg(args, 'query');
       if (err) return { error: err };
-      if (args.source && (typeof args.source !== 'string' || !isContentIntelligenceSource(args.source))) {
+      if (
+        args.source &&
+        (typeof args.source !== 'string' || !isContentIntelligenceSource(args.source))
+      ) {
         return { error: 'Invalid source. Must be one of: authored, benchmark, hybrid.' };
       }
       try {
@@ -1058,9 +1212,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           if (zoneInputs.length > 0) {
             const zones = deriveZones(zoneInputs);
             const transitions = deriveTransitions(zones);
-            const primaryArchetype = zoneInputs.find(z => z.role === 'primary');
+            const primaryArchetype = zoneInputs.find((z) => z.role === 'primary');
             topology = {
-              zones: zones.map(z => ({
+              zones: zones.map((z) => ({
                 role: z.role,
                 archetypes: z.archetypes,
                 shell: z.shell,
@@ -1094,7 +1248,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         });
 
         // Phase 1: Score by name/description only (fields present in list items)
-        const prelimScores: { slug: string; score: number; name: string; description: string }[] = [];
+        const prelimScores: { slug: string; score: number; name: string; description: string }[] =
+          [];
 
         for (const p of patternsResponse.items) {
           const slug = p.slug || '';
@@ -1110,15 +1265,24 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           }
 
           // Boost for common keyword associations
-          if (desc.includes('dashboard') && ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(slug)) score += 20;
+          if (
+            desc.includes('dashboard') &&
+            ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(slug)
+          )
+            score += 20;
           if (desc.includes('metric') && slug === 'kpi-grid') score += 15;
           if (desc.includes('chart') && slug === 'chart-grid') score += 15;
           if (desc.includes('table') && slug === 'data-table') score += 15;
           if (desc.includes('form') && slug === 'form-sections') score += 15;
           if (desc.includes('setting') && slug === 'form-sections') score += 15;
-          if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(slug)) score += 20;
+          if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(slug))
+            score += 20;
           if (desc.includes('hero') && slug === 'hero') score += 20;
-          if (desc.includes('ecommerce') && ['card-grid', 'filter-bar', 'detail-header'].includes(slug)) score += 15;
+          if (
+            desc.includes('ecommerce') &&
+            ['card-grid', 'filter-bar', 'detail-header'].includes(slug)
+          )
+            score += 15;
           if (desc.includes('product') && slug === 'card-grid') score += 15;
           if (desc.includes('feed') && slug === 'activity-feed') score += 15;
           if (desc.includes('filter') && slug === 'filter-bar') score += 15;
@@ -1133,22 +1297,30 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
         // Phase 2: Fetch full data for top 10 and re-score with components/tags
         const top10 = prelimScores.slice(0, 10);
-        const suggestions: { id: string; score: number; name: string; description: string; components: string[]; layout: string }[] = [];
+        const suggestions: {
+          id: string;
+          score: number;
+          name: string;
+          description: string;
+          components: string[];
+          layout: string;
+        }[] = [];
 
         for (const candidate of top10) {
           let fullPattern: Pattern | null = null;
           try {
             const fetched = await apiClient.getPattern('@official', candidate.slug);
             fullPattern = fetched as Pattern;
-          } catch { /* pattern fetch failed, use preliminary data */ }
+          } catch {
+            /* pattern fetch failed, use preliminary data */
+          }
 
           let score = candidate.score;
           if (fullPattern) {
             // Re-score with full data (components, tags)
-            const fullSearchable = [
-              ...(fullPattern.components || []),
-              ...(fullPattern.tags || []),
-            ].join(' ').toLowerCase();
+            const fullSearchable = [...(fullPattern.components || []), ...(fullPattern.tags || [])]
+              .join(' ')
+              .toLowerCase();
 
             const words = desc.split(/\s+/);
             for (const word of words) {
@@ -1194,14 +1366,23 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return { drifted: true, reason: 'invalid_essence', errors: validation.errors };
       }
 
-      const violations: { rule: string; severity: string; message: string; layer?: string; autoFixable?: boolean; autoFix?: unknown }[] = [];
+      const violations: {
+        rule: string;
+        severity: string;
+        message: string;
+        layer?: string;
+        autoFixable?: boolean;
+        autoFix?: unknown;
+      }[] = [];
 
       if (args.theme_used && typeof args.theme_used === 'string') {
         let expectedThemeId: string | undefined;
         if (isV3(essence)) {
           expectedThemeId = essence.dna.theme.id;
         } else {
-          const expectedTheme = (essence as Record<string, unknown>).theme as Record<string, string> | undefined;
+          const expectedTheme = (essence as Record<string, unknown>).theme as
+            | Record<string, string>
+            | undefined;
           expectedThemeId = expectedTheme?.id ?? expectedTheme?.style;
         }
         if (expectedThemeId && args.theme_used !== expectedThemeId) {
@@ -1221,29 +1402,40 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         } else {
           pages = ((essence as Record<string, unknown>).structure as Array<{ id: string }>) || [];
         }
-        if (!pages.find(p => p.id === args.page_id)) {
+        if (!pages.find((p) => p.id === args.page_id)) {
           violations.push({
             rule: 'page-exists',
             severity: 'critical',
             message: `Page "${args.page_id}" not found in Essence structure. Add it to the Essence before generating code for it.`,
-            ...(isV3(essence) ? {
-              layer: 'blueprint',
-              autoFixable: true,
-              autoFix: { type: 'add_page', patch: { id: args.page_id } },
-            } : {}),
+            ...(isV3(essence)
+              ? {
+                  layer: 'blueprint',
+                  autoFixable: true,
+                  autoFix: { type: 'add_page', patch: { id: args.page_id } },
+                }
+              : {}),
           });
         }
       }
 
       // Implement components_used checking
-      if (args.components_used && Array.isArray(args.components_used) && args.page_id && typeof args.page_id === 'string') {
+      if (
+        args.components_used &&
+        Array.isArray(args.components_used) &&
+        args.page_id &&
+        typeof args.page_id === 'string'
+      ) {
         let pages: Array<{ id: string; layout: unknown[] }>;
         if (isV3(essence)) {
           pages = essence.blueprint.pages;
         } else {
-          pages = ((essence as Record<string, unknown>).structure as Array<{ id: string; layout: unknown[] }>) || [];
+          pages =
+            ((essence as Record<string, unknown>).structure as Array<{
+              id: string;
+              layout: unknown[];
+            }>) || [];
         }
-        const page = pages.find(p => p.id === args.page_id);
+        const page = pages.find((p) => p.id === args.page_id);
         if (page && page.layout) {
           // Extract expected patterns from layout
           const expectedPatterns = new Set<string>();
@@ -1264,7 +1456,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             let matched = false;
             for (const pattern of expectedPatterns) {
               const patternLower = pattern.toLowerCase();
-              if (compLower.includes(patternLower) || patternLower.includes(compLower) || fuzzyScore(compLower, patternLower) >= 60) {
+              if (
+                compLower.includes(patternLower) ||
+                patternLower.includes(compLower) ||
+                fuzzyScore(compLower, patternLower) >= 60
+              ) {
                 matched = true;
                 break;
               }
@@ -1299,13 +1495,15 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             ...(gv.autoFix ? { autoFix: gv.autoFix } : {}),
           });
         }
-      } catch { /* guard is optional */ }
+      } catch {
+        /* guard is optional */
+      }
 
       // For v3, separate by layer
       if (isV3(essence)) {
-        const dnaViolations = violations.filter(v => v.layer === 'dna');
-        const blueprintDrift = violations.filter(v => v.layer === 'blueprint');
-        const other = violations.filter(v => !v.layer);
+        const dnaViolations = violations.filter((v) => v.layer === 'dna');
+        const blueprintDrift = violations.filter((v) => v.layer === 'blueprint');
+        const other = violations.filter((v) => !v.layer);
         return {
           drifted: violations.length > 0,
           dna_violations: dnaViolations,
@@ -1330,8 +1528,13 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       const archetypeScores: { id: string; score: number }[] = [];
       const archetypeIds = [
-        'saas-dashboard', 'ecommerce', 'portfolio', 'content-site',
-        'financial-dashboard', 'cloud-platform', 'gaming-platform',
+        'saas-dashboard',
+        'ecommerce',
+        'portfolio',
+        'content-site',
+        'financial-dashboard',
+        'cloud-platform',
+        'gaming-platform',
         'ecommerce-admin',
       ];
 
@@ -1417,7 +1620,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         },
         blueprint: {
           shell: defaultShell,
-          pages: rawPages.map(p => ({
+          pages: rawPages.map((p) => ({
             id: p.id,
             ...(p.shell !== defaultShell ? { shell_override: p.shell } : {}),
             layout: p.default_layout || [],
@@ -1440,44 +1643,62 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         _generated: {
           matched_archetype: bestMatch,
           confidence: archetypeScores[0]?.score || 0,
-          alternatives: archetypeScores.slice(1, 4).map(a => a.id),
+          alternatives: archetypeScores.slice(1, 4).map((a) => a.id),
           description: args.description,
         },
       };
     }
 
     case 'decantr_accept_drift': {
-      const violations = args.violations as Array<{ rule: string; page_id?: string; details?: string }> | undefined;
+      const violations = args.violations as
+        | Array<{ rule: string; page_id?: string; details?: string }>
+        | undefined;
       const resolution = args.resolution as string;
 
       if (!violations || !Array.isArray(violations) || violations.length === 0) {
         return { error: 'Required parameter "violations" must be a non-empty array.' };
       }
       if (!resolution || !['accept', 'accept_scoped', 'reject', 'defer'].includes(resolution)) {
-        return { error: 'Required parameter "resolution" must be one of: accept, accept_scoped, reject, defer.' };
+        return {
+          error:
+            'Required parameter "resolution" must be one of: accept, accept_scoped, reject, defer.',
+        };
       }
 
       // Check if any violations are DNA-layer; if so, require confirm_dna
-      const hasDnaViolation = violations.some(v => {
+      const hasDnaViolation = violations.some((v) => {
         const rule = v.rule;
         // DNA-layer rules: theme, density, theme-mode, accessibility
-        return ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(rule);
+        return ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(
+          rule,
+        );
       });
 
-      if (hasDnaViolation && resolution !== 'reject' && resolution !== 'defer' && !args.confirm_dna) {
+      if (
+        hasDnaViolation &&
+        resolution !== 'reject' &&
+        resolution !== 'defer' &&
+        !args.confirm_dna
+      ) {
         return {
-          error: 'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, density, accessibility, etc.).',
+          error:
+            'DNA-layer violations detected. Set confirm_dna: true to accept changes to design axioms (theme, density, accessibility, etc.).',
           requires_confirmation: true,
-          dna_rules_affected: violations.filter(v =>
-            ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(v.rule)
-          ).map(v => v.rule),
+          dna_rules_affected: violations
+            .filter((v) =>
+              ['theme', 'style', 'density', 'theme-mode', 'accessibility', 'theme-match'].includes(
+                v.rule,
+              ),
+            )
+            .map((v) => v.rule),
         };
       }
 
       if (resolution === 'reject') {
         return {
           status: 'rejected',
-          message: 'Violations rejected. No changes made. Revert the code to match the essence spec.',
+          message:
+            'Violations rejected. No changes made. Revert the code to match the essence spec.',
           violations_count: violations.length,
         };
       }
@@ -1485,7 +1706,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (resolution === 'defer') {
         const projectRoot = args.path ? dirname(args.path as string) : undefined;
         const existingLog = await readDriftLog(projectRoot);
-        const newEntries: DriftLogEntry[] = violations.map(v => ({
+        const newEntries: DriftLogEntry[] = violations.map((v) => ({
           rule: v.rule,
           page_id: v.page_id,
           details: v.details,
@@ -1516,7 +1737,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           status: resolution === 'accept_scoped' ? 'accepted_scoped' : 'accepted',
           message: `${violations.length} violation(s) resolved. Essence updated.`,
           path,
-          scope: resolution === 'accept_scoped' ? (args.scope || 'unscoped') : undefined,
+          scope: resolution === 'accept_scoped' ? args.scope || 'unscoped' : undefined,
         };
       } catch (e) {
         return { error: `Failed to update essence: ${(e as Error).message}` };
@@ -1534,9 +1755,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return { error: 'Required parameter "payload" must be an object.' };
       }
 
-      const validOps = ['add_page', 'remove_page', 'update_page_layout', 'update_dna', 'update_blueprint', 'add_feature', 'remove_feature'];
+      const validOps = [
+        'add_page',
+        'remove_page',
+        'update_page_layout',
+        'update_dna',
+        'update_blueprint',
+        'add_feature',
+        'remove_feature',
+      ];
       if (!validOps.includes(operation)) {
-        return { error: `Invalid operation "${operation}". Must be one of: ${validOps.join(', ')}` };
+        return {
+          error: `Invalid operation "${operation}". Must be one of: ${validOps.join(', ')}`,
+        };
       }
 
       try {
@@ -1563,11 +1794,12 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const packMarkdownPath = join(contextDir, 'scaffold-pack.md');
       const packJsonPath = join(contextDir, 'scaffold-pack.json');
 
-      const hasAnyContext = existsSync(scaffoldContextPath)
-        || existsSync(taskContextPath)
-        || existsSync(packMarkdownPath)
-        || existsSync(packJsonPath)
-        || existsSync(manifestPath);
+      const hasAnyContext =
+        existsSync(scaffoldContextPath) ||
+        existsSync(taskContextPath) ||
+        existsSync(packMarkdownPath) ||
+        existsSync(packJsonPath) ||
+        existsSync(manifestPath);
 
       if (!hasAnyContext) {
         const [hostedScaffold, hostedReview] = await Promise.all([
@@ -1593,9 +1825,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             execution_pack: scaffoldPayload,
             review_pack: reviewPayload,
             pack_manifest: scaffoldSelected.manifest,
-            available_sections: scaffoldSelected.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
-            available_pages: scaffoldSelected.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
-            available_mutations: (scaffoldSelected.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
+            available_sections: scaffoldSelected.manifest.sections.map((section) => ({
+              id: section.id,
+              page_ids: section.pageIds,
+            })),
+            available_pages: scaffoldSelected.manifest.pages.map((page) => ({
+              id: page.id,
+              section_id: page.sectionId,
+            })),
+            available_mutations: (scaffoldSelected.manifest.mutations ?? []).map((mutation) => ({
+              id: mutation.id,
+              mutation_type: mutation.mutationType,
+            })),
             note: 'Using hosted selected execution packs because local scaffold context artifacts were not found; scaffold pack markdown is being reused as readable scaffold context.',
           };
         }
@@ -1603,7 +1844,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const hosted = await loadHostedExecutionPackBundleFallback(args);
         if (!hosted.bundle) {
           return {
-            error: 'Scaffold context not found. Run `decantr refresh` or `decantr registry compile-packs --write-context` to materialize scaffold context and execution packs.',
+            error:
+              'Scaffold context not found. Run `decantr refresh` or `decantr registry compile-packs --write-context` to materialize scaffold context and execution packs.',
             hosted_fallback_error: hosted.error ?? hostedScaffold.error ?? hostedReview.error,
           };
         }
@@ -1617,9 +1859,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           execution_pack: scaffoldPayload,
           review_pack: reviewPayload,
           pack_manifest: hosted.bundle.manifest,
-          available_sections: hosted.bundle.manifest.sections.map(section => ({ id: section.id, page_ids: section.pageIds })),
-          available_pages: hosted.bundle.manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
-          available_mutations: (hosted.bundle.manifest.mutations ?? []).map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })),
+          available_sections: hosted.bundle.manifest.sections.map((section) => ({
+            id: section.id,
+            page_ids: section.pageIds,
+          })),
+          available_pages: hosted.bundle.manifest.pages.map((page) => ({
+            id: page.id,
+            section_id: page.sectionId,
+          })),
+          available_mutations: (hosted.bundle.manifest.mutations ?? []).map((mutation) => ({
+            id: mutation.id,
+            mutation_type: mutation.mutationType,
+          })),
           note: 'Using hosted compiled execution packs because local scaffold context artifacts were not found; scaffold pack markdown is being reused as readable scaffold context.',
         };
       }
@@ -1638,19 +1889,32 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         task_context: existsSync(taskContextPath) ? readFileSync(taskContextPath, 'utf-8') : null,
         scaffold_context: existsSync(scaffoldContextPath)
           ? readFileSync(scaffoldContextPath, 'utf-8')
-          : (existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null),
+          : existsSync(packMarkdownPath)
+            ? readFileSync(packMarkdownPath, 'utf-8')
+            : null,
         execution_pack: {
           markdown: existsSync(packMarkdownPath) ? readFileSync(packMarkdownPath, 'utf-8') : null,
           json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
         },
         review_pack: {
-          markdown: existsSync(join(contextDir, 'review-pack.md')) ? readFileSync(join(contextDir, 'review-pack.md'), 'utf-8') : null,
-          json: existsSync(join(contextDir, 'review-pack.json')) ? JSON.parse(readFileSync(join(contextDir, 'review-pack.json'), 'utf-8')) : null,
+          markdown: existsSync(join(contextDir, 'review-pack.md'))
+            ? readFileSync(join(contextDir, 'review-pack.md'), 'utf-8')
+            : null,
+          json: existsSync(join(contextDir, 'review-pack.json'))
+            ? JSON.parse(readFileSync(join(contextDir, 'review-pack.json'), 'utf-8'))
+            : null,
         },
         pack_manifest: manifest,
-        available_sections: manifest?.sections.map(section => ({ id: section.id, page_ids: section.pageIds })) ?? [],
-        available_pages: manifest?.pages.map(page => ({ id: page.id, section_id: page.sectionId })) ?? [],
-        available_mutations: manifest?.mutations?.map(mutation => ({ id: mutation.id, mutation_type: mutation.mutationType })) ?? [],
+        available_sections:
+          manifest?.sections.map((section) => ({ id: section.id, page_ids: section.pageIds })) ??
+          [],
+        available_pages:
+          manifest?.pages.map((page) => ({ id: page.id, section_id: page.sectionId })) ?? [],
+        available_mutations:
+          manifest?.mutations?.map((mutation) => ({
+            id: mutation.id,
+            mutation_type: mutation.mutationType,
+          })) ?? [],
       };
     }
 
@@ -1674,11 +1938,15 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       // Find the section
       const sections = essence.blueprint.sections || [];
-      const section = sections.find(s => s.id === sectionId);
+      const section = sections.find((s) => s.id === sectionId);
       if (!section) {
         return {
           error: `Section "${sectionId}" not found.`,
-          available_sections: sections.map(s => ({ id: s.id, role: s.role, pages: s.pages.length })),
+          available_sections: sections.map((s) => ({
+            id: s.id,
+            role: s.role,
+            pages: s.pages.length,
+          })),
         };
       }
 
@@ -1690,7 +1958,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         json: existsSync(packJsonPath) ? JSON.parse(readFileSync(packJsonPath, 'utf-8')) : null,
       };
       let executionPack = localExecutionPack;
-      let executionPackSource: PackSource | null = hasExecutionPackPayload(localExecutionPack) ? 'local' : null;
+      let executionPackSource: PackSource | null = hasExecutionPackPayload(localExecutionPack)
+        ? 'local'
+        : null;
       let hostedFallbackError: string | null = null;
 
       if (!executionPackSource) {
@@ -1714,7 +1984,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           role: section.role,
           shell: section.shell,
           features: section.features,
-          pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
+          pages: section.pages.map((p) => ({ id: p.id, route: p.route, layout: p.layout })),
           context: readFileSync(contextPath, 'utf-8'),
           execution_pack_source: executionPackSource,
           execution_pack: executionPack,
@@ -1729,13 +1999,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         shell: section.shell,
         features: section.features,
         description: section.description,
-        pages: section.pages.map(p => ({ id: p.id, route: p.route, layout: p.layout })),
+        pages: section.pages.map((p) => ({ id: p.id, route: p.route, layout: p.layout })),
         context: derivedContext,
         execution_pack_source: executionPackSource,
         execution_pack: executionPack,
-        note: executionPackSource === 'hosted_fallback'
-          ? 'Section context file not found. Using hosted compiled execution pack fallback as the readable section context.'
-          : `Section context file not found. Run \`decantr refresh\` or \`decantr registry get-pack section ${sectionId} --write-context\` to generate it.`,
+        note:
+          executionPackSource === 'hosted_fallback'
+            ? 'Section context file not found. Using hosted compiled execution pack fallback as the readable section context.'
+            : `Section context file not found. Run \`decantr refresh\` or \`decantr registry get-pack section ${sectionId} --write-context\` to generate it.`,
         hosted_fallback_error: executionPackSource ? undefined : hostedFallbackError,
       };
     }
@@ -1793,7 +2064,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const hosted = await loadHostedPageSelection();
         if (!hosted) {
           return {
-            error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+            error:
+              'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
             hosted_fallback_error: hostedFallbackError,
           };
         }
@@ -1801,29 +2073,33 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         manifestSource = 'hosted_fallback';
       }
 
-      let pageEntry = manifest.pages.find(page => page.id === pageId) ?? null;
+      let pageEntry = manifest.pages.find((page) => page.id === pageId) ?? null;
       if (!pageEntry) {
         if (manifestSource === 'local') {
           const hosted = await loadHostedPageSelection();
           if (hosted) {
             manifest = hosted.manifest as PackManifest;
             manifestSource = 'hosted_fallback';
-            pageEntry = manifest.pages.find(page => page.id === pageId) ?? null;
+            pageEntry = manifest.pages.find((page) => page.id === pageId) ?? null;
           }
         }
 
         if (!pageEntry) {
           return {
             error: `Page "${pageId}" not found in execution pack manifest.`,
-            available_pages: manifest.pages.map(page => ({ id: page.id, section_id: page.sectionId })),
-            hosted_fallback_error: manifestSource === 'hosted_fallback' ? undefined : hostedFallbackError,
+            available_pages: manifest.pages.map((page) => ({
+              id: page.id,
+              section_id: page.sectionId,
+            })),
+            hosted_fallback_error:
+              manifestSource === 'hosted_fallback' ? undefined : hostedFallbackError,
           };
         }
       }
 
       let resolvedPageEntry = pageEntry;
       let sectionEntry = resolvedPageEntry.sectionId
-        ? manifest.sections.find(section => section.id === resolvedPageEntry.sectionId) ?? null
+        ? (manifest.sections.find((section) => section.id === resolvedPageEntry.sectionId) ?? null)
         : null;
       const pageMarkdownPath = join(contextDir, resolvedPageEntry.markdown);
       const pageJsonPath = join(contextDir, resolvedPageEntry.json);
@@ -1838,16 +2114,20 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         json: existsSync(pageJsonPath) ? JSON.parse(readFileSync(pageJsonPath, 'utf-8')) : null,
       };
       let executionPack = localPagePack;
-      let executionPackSource: PackSource | null = hasExecutionPackPayload(localPagePack) ? 'local' : null;
+      let executionPackSource: PackSource | null = hasExecutionPackPayload(localPagePack)
+        ? 'local'
+        : null;
 
       if (!executionPackSource) {
         const hosted = await loadHostedPageSelection();
         if (hosted) {
           manifest = hosted.manifest as PackManifest;
           manifestSource = 'hosted_fallback';
-          resolvedPageEntry = manifest.pages.find(page => page.id === pageId) ?? resolvedPageEntry;
+          resolvedPageEntry =
+            manifest.pages.find((page) => page.id === pageId) ?? resolvedPageEntry;
           sectionEntry = resolvedPageEntry.sectionId
-            ? manifest.sections.find(section => section.id === resolvedPageEntry.sectionId) ?? sectionEntry
+            ? (manifest.sections.find((section) => section.id === resolvedPageEntry.sectionId) ??
+              sectionEntry)
             : null;
           executionPack = toHostedExecutionPackPayload(hosted.pack);
           executionPackSource = 'hosted_fallback';
@@ -1856,12 +2136,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       const localSectionPack = sectionEntry
         ? {
-            markdown: sectionMarkdownPath && existsSync(sectionMarkdownPath) ? readFileSync(sectionMarkdownPath, 'utf-8') : null,
-            json: sectionJsonPath && existsSync(sectionJsonPath) ? JSON.parse(readFileSync(sectionJsonPath, 'utf-8')) : null,
+            markdown:
+              sectionMarkdownPath && existsSync(sectionMarkdownPath)
+                ? readFileSync(sectionMarkdownPath, 'utf-8')
+                : null,
+            json:
+              sectionJsonPath && existsSync(sectionJsonPath)
+                ? JSON.parse(readFileSync(sectionJsonPath, 'utf-8'))
+                : null,
           }
         : null;
       let sectionExecutionPack = localSectionPack;
-      let sectionExecutionPackSource: PackSource | null = localSectionPack && hasExecutionPackPayload(localSectionPack) ? 'local' : null;
+      let sectionExecutionPackSource: PackSource | null =
+        localSectionPack && hasExecutionPackPayload(localSectionPack) ? 'local' : null;
 
       if (sectionEntry && !sectionExecutionPackSource) {
         const hosted = await loadHostedSectionSelection(sectionEntry.id);
@@ -1881,16 +2168,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         section_execution_pack_source: sectionExecutionPackSource,
         execution_pack: executionPack,
         section_execution_pack: sectionExecutionPack,
-        section_context: sectionContextPath && existsSync(sectionContextPath)
-          ? readFileSync(sectionContextPath, 'utf-8')
-          : sectionExecutionPack?.markdown ?? null,
+        section_context:
+          sectionContextPath && existsSync(sectionContextPath)
+            ? readFileSync(sectionContextPath, 'utf-8')
+            : (sectionExecutionPack?.markdown ?? null),
         manifest: {
           page: resolvedPageEntry,
           section: sectionEntry,
         },
-        note: manifestSource === 'hosted_fallback'
-          ? 'Using hosted compiled execution-pack data because local page pack artifacts were missing or incomplete.'
-          : undefined,
+        note:
+          manifestSource === 'hosted_fallback'
+            ? 'Using hosted compiled execution-pack data because local page pack artifacts were missing or incomplete.'
+            : undefined,
         hosted_fallback_error: hostedFallbackError ?? undefined,
       };
     }
@@ -1927,7 +2216,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           hostedFallbackError = hosted.error;
           if (!hosted.bundle) {
             return {
-              error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+              error:
+                'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
               hosted_fallback_error: hosted.error,
             };
           }
@@ -1949,7 +2239,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         hostedFallbackError = hosted.error;
         if (!hosted.selected) {
           return {
-            error: 'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
+            error:
+              'Execution pack manifest not found. Run `decantr refresh` or `decantr registry get-pack manifest --write-context` to generate compiled packs.',
             hosted_fallback_error: hosted.error,
           };
         }
@@ -1966,20 +2257,20 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       } else if (packType === 'review') {
         entry = manifest.review ?? null;
       } else if (packType === 'mutation') {
-        availableIds = (manifest.mutations ?? []).map(mutation => mutation.id);
+        availableIds = (manifest.mutations ?? []).map((mutation) => mutation.id);
         const idErr = validateStringArg(args, 'id');
         if (idErr) return { error: idErr, available_ids: availableIds };
-        entry = (manifest.mutations ?? []).find(mutation => mutation.id === args.id) ?? null;
+        entry = (manifest.mutations ?? []).find((mutation) => mutation.id === args.id) ?? null;
       } else if (packType === 'section') {
-        availableIds = manifest.sections.map(section => section.id);
+        availableIds = manifest.sections.map((section) => section.id);
         const idErr = validateStringArg(args, 'id');
         if (idErr) return { error: idErr, available_ids: availableIds };
-        entry = manifest.sections.find(section => section.id === args.id) ?? null;
+        entry = manifest.sections.find((section) => section.id === args.id) ?? null;
       } else if (packType === 'page') {
-        availableIds = manifest.pages.map(page => page.id);
+        availableIds = manifest.pages.map((page) => page.id);
         const idErr = validateStringArg(args, 'id');
         if (idErr) return { error: idErr, available_ids: availableIds };
-        entry = manifest.pages.find(page => page.id === args.id) ?? null;
+        entry = manifest.pages.find((page) => page.id === args.id) ?? null;
       } else {
         return { error: `Unsupported pack type: ${packType}` };
       }
@@ -2098,7 +2389,10 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (args.namespace != null && typeof args.namespace !== 'string') {
         return { error: 'Invalid namespace. Must be a string when provided.' };
       }
-      if (args.essence != null && (typeof args.essence !== 'object' || Array.isArray(args.essence))) {
+      if (
+        args.essence != null &&
+        (typeof args.essence !== 'object' || Array.isArray(args.essence))
+      ) {
         return { error: 'Invalid essence. Must be an object when provided.' };
       }
 
@@ -2146,8 +2440,12 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
       const { auditProject } = await import('@decantr/verifier');
       const projectRoot = process.cwd();
-      const hasReviewPack = existsSync(join(projectRoot, '.decantr', 'context', 'review-pack.json'));
-      const hasPackManifest = existsSync(join(projectRoot, '.decantr', 'context', 'pack-manifest.json'));
+      const hasReviewPack = existsSync(
+        join(projectRoot, '.decantr', 'context', 'review-pack.json'),
+      );
+      const hasPackManifest = existsSync(
+        join(projectRoot, '.decantr', 'context', 'pack-manifest.json'),
+      );
 
       if (hasReviewPack && hasPackManifest) {
         return auditProject(projectRoot);
@@ -2188,7 +2486,7 @@ function applyDriftAcceptance(
     case 'structure': {
       // Accept a missing page: add it to the blueprint
       if (violation.page_id) {
-        const existing = essence.blueprint.pages.find(p => p.id === violation.page_id);
+        const existing = essence.blueprint.pages.find((p) => p.id === violation.page_id);
         if (!existing) {
           essence.blueprint.pages.push({
             id: violation.page_id,
@@ -2223,7 +2521,7 @@ function applyEssenceUpdate(
     case 'add_page': {
       const id = payload.id as string;
       if (!id) throw new Error('Payload must include "id" for add_page.');
-      const existing = essence.blueprint.pages.find(p => p.id === id);
+      const existing = essence.blueprint.pages.find((p) => p.id === id);
       if (existing) throw new Error(`Page "${id}" already exists.`);
       essence.blueprint.pages.push({
         id,
@@ -2236,7 +2534,7 @@ function applyEssenceUpdate(
     case 'remove_page': {
       const id = payload.id as string;
       if (!id) throw new Error('Payload must include "id" for remove_page.');
-      const idx = essence.blueprint.pages.findIndex(p => p.id === id);
+      const idx = essence.blueprint.pages.findIndex((p) => p.id === id);
       if (idx === -1) throw new Error(`Page "${id}" not found.`);
       essence.blueprint.pages.splice(idx, 1);
       break;
@@ -2245,8 +2543,9 @@ function applyEssenceUpdate(
       const id = payload.id as string;
       const layout = payload.layout as unknown[];
       if (!id) throw new Error('Payload must include "id" for update_page_layout.');
-      if (!layout || !Array.isArray(layout)) throw new Error('Payload must include "layout" array for update_page_layout.');
-      const page = essence.blueprint.pages.find(p => p.id === id);
+      if (!layout || !Array.isArray(layout))
+        throw new Error('Payload must include "layout" array for update_page_layout.');
+      const page = essence.blueprint.pages.find((p) => p.id === id);
       if (!page) throw new Error(`Page "${id}" not found.`);
       page.layout = layout as EssenceV3['blueprint']['pages'][0]['layout'];
       break;
@@ -2254,7 +2553,12 @@ function applyEssenceUpdate(
     case 'update_dna': {
       // Shallow merge payload into dna
       for (const [key, value] of Object.entries(payload)) {
-        if (key in essence.dna && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        if (
+          key in essence.dna &&
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
           // Deep merge one level for sub-objects like theme, spacing, etc.
           (essence.dna as Record<string, unknown>)[key] = {
             ...(essence.dna as Record<string, Record<string, unknown>>)[key],
@@ -2296,13 +2600,21 @@ function applyEssenceUpdate(
 
 function describeUpdate(operation: string, payload: Record<string, unknown>): string {
   switch (operation) {
-    case 'add_page': return `Added page "${payload.id}".`;
-    case 'remove_page': return `Removed page "${payload.id}".`;
-    case 'update_page_layout': return `Updated layout for page "${payload.id}".`;
-    case 'update_dna': return `Updated DNA: ${Object.keys(payload).join(', ')}.`;
-    case 'update_blueprint': return `Updated blueprint: ${Object.keys(payload).join(', ')}.`;
-    case 'add_feature': return `Added feature "${payload.feature}".`;
-    case 'remove_feature': return `Removed feature "${payload.feature}".`;
-    default: return `Performed ${operation}.`;
+    case 'add_page':
+      return `Added page "${payload.id}".`;
+    case 'remove_page':
+      return `Removed page "${payload.id}".`;
+    case 'update_page_layout':
+      return `Updated layout for page "${payload.id}".`;
+    case 'update_dna':
+      return `Updated DNA: ${Object.keys(payload).join(', ')}.`;
+    case 'update_blueprint':
+      return `Updated blueprint: ${Object.keys(payload).join(', ')}.`;
+    case 'add_feature':
+      return `Added feature "${payload.feature}".`;
+    case 'remove_feature':
+      return `Removed feature "${payload.feature}".`;
+    default:
+      return `Performed ${operation}.`;
   }
 }

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { generateTreatmentCSS, generatePersonalityCSS } from '../src/treatments.js';
+import { describe, expect, it } from 'vitest';
+import { generatePersonalityCSS, generateTreatmentCSS } from '../src/treatments.js';
 
 const baseSpatialTokens: Record<string, string> = {
   '--d-content-gap': '1rem',
@@ -101,7 +101,9 @@ describe('generateTreatmentCSS', () => {
     expect(css).toContain('.d-section + .d-section');
     // Gradient fade divider
     expect(css).toContain('border-top: 1px solid transparent');
-    expect(css).toContain('border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1');
+    expect(css).toContain(
+      'border-image: linear-gradient(to right, transparent, var(--d-border), transparent) 1',
+    );
     // Density-aware gap (replaces old fixed --d-gap-2)
     expect(css).toContain('calc(var(--d-section-gap) * var(--d-density-scale, 1))');
     // Density variants
@@ -127,7 +129,8 @@ describe('generateTreatmentCSS', () => {
   it('sets --d-density-scale: 1.4 for spacious density', () => {
     const css = generateTreatmentCSS(baseSpatialTokens);
     expect(css).toContain('.d-section[data-density="spacious"]');
-    const spaciousBlock = css.split('.d-section[data-density="spacious"] {')[1]?.split('}')[0] ?? '';
+    const spaciousBlock =
+      css.split('.d-section[data-density="spacious"] {')[1]?.split('}')[0] ?? '';
     expect(spaciousBlock).toContain('--d-density-scale: 1.4');
   });
 
@@ -215,7 +218,7 @@ describe('generateTreatmentCSS', () => {
   it('applies theme treatment overrides to base rules', () => {
     const overrides = {
       'd-surface': {
-        'background': 'rgba(31, 31, 35, 0.8)',
+        background: 'rgba(31, 31, 35, 0.8)',
         'backdrop-filter': 'blur(12px)',
       },
     };
@@ -284,12 +287,14 @@ describe('generateTreatmentCSS', () => {
   it('always includes a decorators layer even without theme definitions', () => {
     const css = generateTreatmentCSS(baseSpatialTokens, undefined, undefined, 'carbon');
     expect(css).toContain('@layer decorators');
-    expect(css).toContain('Canonical decorator CSS should be derived from theme decorator definitions');
+    expect(css).toContain(
+      'Canonical decorator CSS should be derived from theme decorator definitions',
+    );
   });
 
   it('overrides only affect matching base rules, not variant rules', () => {
     const overrides = {
-      'd-interactive': { 'background': 'var(--custom-bg)' },
+      'd-interactive': { background: 'var(--custom-bg)' },
     };
     const css = generateTreatmentCSS(baseSpatialTokens, overrides);
     // Base rule should have the override
@@ -297,7 +302,8 @@ describe('generateTreatmentCSS', () => {
     expect(baseBlock).toContain('background: var(--custom-bg)');
     // Primary variant should still have its own background
     expect(css).toContain('.d-interactive[data-variant="primary"]');
-    const primaryBlock = css.split('.d-interactive[data-variant="primary"] {')[1]?.split('}')[0] ?? '';
+    const primaryBlock =
+      css.split('.d-interactive[data-variant="primary"] {')[1]?.split('}')[0] ?? '';
     expect(primaryBlock).toContain('background: var(--d-primary)');
   });
 
@@ -366,25 +372,19 @@ describe('generateTreatmentCSS', () => {
   });
 
   it('emits keyframes required by decorator animation properties', () => {
-    const css = generateTreatmentCSS(
-      baseSpatialTokens,
-      undefined,
-      undefined,
-      'carbon-neon',
-      {
-        'carbon-fade-slide': {
-          suggested_properties: {
-            animation: 'carbon-fade-slide 200ms ease-out both',
-            opacity: '0',
-          },
-        },
-        'carbon-skeleton': {
-          suggested_properties: {
-            animation: 'pulse 1.5s ease-in-out infinite',
-          },
+    const css = generateTreatmentCSS(baseSpatialTokens, undefined, undefined, 'carbon-neon', {
+      'carbon-fade-slide': {
+        suggested_properties: {
+          animation: 'carbon-fade-slide 200ms ease-out both',
+          opacity: '0',
         },
       },
-    );
+      'carbon-skeleton': {
+        suggested_properties: {
+          animation: 'pulse 1.5s ease-in-out infinite',
+        },
+      },
+    });
 
     expect(css).toContain('@keyframes carbon-fade-slide');
     expect(css).toContain('from { opacity: 0; transform: translateY(12px); }');

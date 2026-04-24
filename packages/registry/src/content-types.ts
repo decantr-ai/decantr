@@ -1,13 +1,12 @@
+export type {
+  ApiContentType,
+  ContentType,
+} from './types.js';
 export {
-  CONTENT_TYPES,
+  API_CONTENT_TYPE_TO_CONTENT_TYPE,
   API_CONTENT_TYPES,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
-  API_CONTENT_TYPE_TO_CONTENT_TYPE,
-  isContentType,
+  CONTENT_TYPES,
   isApiContentType,
-} from './types.js';
-
-export type {
-  ContentType,
-  ApiContentType,
+  isContentType,
 } from './types.js';

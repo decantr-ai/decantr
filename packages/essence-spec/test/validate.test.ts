@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { validateEssence } from '../src/validate.js';
 
 const VALID_SIMPLE: Record<string, unknown> = {
@@ -7,9 +7,7 @@ const VALID_SIMPLE: Record<string, unknown> = {
   theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
   personality: ['professional', 'data-rich'],
   platform: { type: 'spa', routing: 'hash' },
-  structure: [
-    { id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] },
-  ],
+  structure: [{ id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] }],
   features: ['auth'],
   density: { level: 'comfortable', content_gap: '4' },
   guard: { enforce_style: true, mode: 'strict' },
@@ -67,7 +65,7 @@ describe('validateEssence', () => {
     const bad = { ...VALID_SIMPLE, theme: { ...(VALID_SIMPLE.theme as object), mode: 'neon' } };
     const result = validateEssence(bad);
     expect(result.valid).toBe(false);
-    expect(result.errors.some(e => e.includes('mode'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('mode'))).toBe(true);
   });
 
   it('rejects invalid density level', () => {
@@ -100,15 +98,17 @@ describe('validateEssence', () => {
   it('accepts layout items with pattern refs', () => {
     const withPatternRef = {
       ...VALID_SIMPLE,
-      structure: [{
-        id: 'overview',
-        shell: 'sidebar-main',
-        layout: [
-          'kpi-grid',
-          { pattern: 'data-table', preset: 'standard' },
-          { cols: ['a', 'b'], at: 'lg', span: { a: 3 } },
-        ],
-      }],
+      structure: [
+        {
+          id: 'overview',
+          shell: 'sidebar-main',
+          layout: [
+            'kpi-grid',
+            { pattern: 'data-table', preset: 'standard' },
+            { cols: ['a', 'b'], at: 'lg', span: { a: 3 } },
+          ],
+        },
+      ],
     };
     const result = validateEssence(withPatternRef);
     expect(result.valid).toBe(true);

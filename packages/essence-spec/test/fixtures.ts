@@ -6,9 +6,7 @@ export const VALID_V2_SIMPLE: Essence = {
   theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
   personality: ['professional', 'data-rich'],
   platform: { type: 'spa', routing: 'hash' },
-  structure: [
-    { id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] },
-  ],
+  structure: [{ id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] }],
   features: ['auth'],
   density: { level: 'comfortable', content_gap: '4' },
   guard: { enforce_style: true, mode: 'strict' },

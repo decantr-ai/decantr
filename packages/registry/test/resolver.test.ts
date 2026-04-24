@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { createResolver } from '../src/resolver.js';
-import { join, dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { createResolver } from '../src/resolver.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const fixtureRoot = join(__dirname, 'fixtures');

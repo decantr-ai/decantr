@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { css, define } from '../src/css.js';
-import { reset, extractCSS } from '../src/runtime.js';
+import { extractCSS, reset } from '../src/runtime.js';
 
 describe('css()', () => {
   beforeEach(() => {

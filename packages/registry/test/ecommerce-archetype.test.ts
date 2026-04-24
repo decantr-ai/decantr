@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
 import { createResolver } from '../src/resolver.js';
 import { detectWirings } from '../src/wiring.js';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentRoot = join(__dirname, 'fixtures');
@@ -34,7 +34,10 @@ describe('ecommerce archetype', () => {
   it('each page has a default_layout', () => {
     for (const page of archetype.pages) {
       expect(page.default_layout, `page ${page.id} missing default_layout`).toBeInstanceOf(Array);
-      expect(page.default_layout.length, `page ${page.id} has empty default_layout`).toBeGreaterThan(0);
+      expect(
+        page.default_layout.length,
+        `page ${page.id} has empty default_layout`,
+      ).toBeGreaterThan(0);
     }
   });
 

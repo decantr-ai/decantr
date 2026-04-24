@@ -1,9 +1,9 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, EssenceV31Section } from '@decantr/essence-spec';
-import { refreshDerivedFiles } from '../scaffold.js';
+import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
+import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -62,9 +62,9 @@ export async function cmdAddSection(
   const { essence, essencePath } = loaded;
 
   const sections = essence.blueprint.sections!;
-  if (sections.find(s => s.id === archetypeId)) {
+  if (sections.find((s) => s.id === archetypeId)) {
     console.error(`${RED}Section "${archetypeId}" already exists.${RESET}`);
-    console.error(`${DIM}Existing sections: ${sections.map(s => s.id).join(', ')}${RESET}`);
+    console.error(`${DIM}Existing sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
   }
@@ -90,7 +90,7 @@ export async function cmdAddSection(
     shell: archetype.pages?.[0]?.shell || essence.blueprint.shell || 'top-nav-main',
     features: archetype.features || [],
     description: archetype.description || '',
-    pages: (archetype.pages || []).map(p => ({
+    pages: (archetype.pages || []).map((p) => ({
       id: p.id,
       layout: p.default_layout?.length ? p.default_layout : ['hero'],
     })),
@@ -107,7 +107,9 @@ export async function cmdAddSection(
 
   writeEssence(essencePath, essence);
 
-  console.log(`${GREEN}Added section "${archetypeId}" with ${newSection.pages.length} page(s).${RESET}`);
+  console.log(
+    `${GREEN}Added section "${archetypeId}" with ${newSection.pages.length} page(s).${RESET}`,
+  );
 
   await refreshDerivedFiles(projectRoot, essence, registryClient);
   console.log(`${GREEN}Derived files refreshed.${RESET}`);
@@ -135,15 +137,15 @@ export async function cmdAddPage(
   const { essence, essencePath } = loaded;
 
   const sections = essence.blueprint.sections!;
-  const section = sections.find(s => s.id === sectionId);
+  const section = sections.find((s) => s.id === sectionId);
   if (!section) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-    console.error(`${DIM}Available sections: ${sections.map(s => s.id).join(', ')}${RESET}`);
+    console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
   }
 
-  if (section.pages.find(p => p.id === pageId)) {
+  if (section.pages.find((p) => p.id === pageId)) {
     console.error(`${RED}Page "${pageId}" already exists in section "${sectionId}".${RESET}`);
     process.exitCode = 1;
     return;
@@ -192,10 +194,10 @@ export async function cmdAddFeature(
 
   if (sectionId) {
     const sections = essence.blueprint.sections!;
-    const section = sections.find(s => s.id === sectionId);
+    const section = sections.find((s) => s.id === sectionId);
     if (!section) {
       console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-      console.error(`${DIM}Available sections: ${sections.map(s => s.id).join(', ')}${RESET}`);
+      console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
       process.exitCode = 1;
       return;
     }

@@ -1,4 +1,11 @@
-import type { Essence, SectionedEssence, EssenceFile, EssenceV3, StructurePage, GuardMode } from './types.js';
+import type {
+  Essence,
+  EssenceFile,
+  EssenceV3,
+  GuardMode,
+  SectionedEssence,
+  StructurePage,
+} from './types.js';
 
 export function normalizeEssence(input: Record<string, unknown>): EssenceFile {
   // v3: version-based detection only (no structural fallback to avoid false positives)
@@ -75,15 +82,20 @@ function normalizeSectioned(v1: Record<string, unknown>): SectionedEssence {
     },
     // Accept both old 'character' and new 'personality' field names
     personality: (v1.character ?? v1.personality) as string[],
-    sections: sections.map(section => ({
+    sections: sections.map((section) => ({
       id: section.id as string,
       path: section.path as string,
       archetype: (section.terroir ?? section.vignette ?? section.archetype) as string,
       theme: {
         id: (section.vintage as Record<string, string>)?.style ?? '',
-        mode: ((section.vintage as Record<string, string>)?.mode ?? 'dark') as 'light' | 'dark' | 'auto',
+        mode: ((section.vintage as Record<string, string>)?.mode ?? 'dark') as
+          | 'light'
+          | 'dark'
+          | 'auto',
       },
-      structure: ((section.structure as Array<Record<string, unknown>>) ?? []).map(normalizeStructurePage),
+      structure: ((section.structure as Array<Record<string, unknown>>) ?? []).map(
+        normalizeStructurePage,
+      ),
       ...(section.tannins ? { features: section.tannins as string[] } : {}),
     })),
     ...(v1.shared_tannins ? { shared_features: v1.shared_tannins as string[] } : {}),

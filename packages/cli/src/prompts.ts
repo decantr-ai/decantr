@@ -29,10 +29,12 @@ export interface InitOptions {
   };
 }
 
-export type InitWorkflowSeed = Partial<Pick<
-  InitOptions,
-  'theme' | 'mode' | 'target' | 'guard' | 'density' | 'shell' | 'existing' | 'workflowMode'
->>;
+export type InitWorkflowSeed = Partial<
+  Pick<
+    InitOptions,
+    'theme' | 'mode' | 'target' | 'guard' | 'density' | 'shell' | 'existing' | 'workflowMode'
+  >
+>;
 
 export interface RegistryItem {
   id: string;
@@ -61,7 +63,7 @@ async function select<T extends string>(
   question: string,
   options: Array<{ value: T; label: string; description?: string }>,
   defaultIdx = 0,
-  allowOther = false
+  allowOther = false,
 ): Promise<T | string> {
   console.log(`\n${BOLD}${question}${RESET}`);
 
@@ -94,7 +96,7 @@ async function select<T extends string>(
 async function multiSelect(
   question: string,
   options: Array<{ value: string; label: string; description?: string }>,
-  defaultSelected: number[] = []
+  defaultSelected: number[] = [],
 ): Promise<string[]> {
   console.log(`\n${BOLD}${question}${RESET}`);
   console.log(`${DIM}Enter numbers separated by commas, or press Enter for defaults${RESET}`);
@@ -105,17 +107,15 @@ async function multiSelect(
     console.log(`  ${marker} ${i + 1}. ${options[i].label}${desc}`);
   }
 
-  const defaultStr = defaultSelected.map(i => i + 1).join(',') || 'none';
+  const defaultStr = defaultSelected.map((i) => i + 1).join(',') || 'none';
   const answer = await ask(`Select (e.g., 1,3,5)`, defaultStr);
 
   if (!answer || answer === defaultStr) {
-    return defaultSelected.map(i => options[i].value);
+    return defaultSelected.map((i) => options[i].value);
   }
 
-  const indices = answer.split(',').map(s => parseInt(s.trim(), 10) - 1);
-  return indices
-    .filter(i => i >= 0 && i < options.length)
-    .map(i => options[i].value);
+  const indices = answer.split(',').map((s) => parseInt(s.trim(), 10) - 1);
+  return indices.filter((i) => i >= 0 && i < options.length).map((i) => options[i].value);
 }
 
 /**
@@ -172,7 +172,7 @@ export async function runInteractivePrompts(
   // Blueprint selection (includes "none" for blank canvas)
   const blueprintOptions = [
     { value: 'none', label: 'none', description: 'Start from scratch (blank canvas)' },
-    ...blueprints.map(b => ({
+    ...blueprints.map((b) => ({
       value: b.id,
       label: b.id,
       description: b.description,
@@ -183,13 +183,16 @@ export async function runInteractivePrompts(
   const isBlank = blueprint === 'none';
 
   // Theme selection
-  const themeOptions = themes.map(t => ({
+  const themeOptions = themes.map((t) => ({
     value: t.id,
     label: t.id,
     description: t.description,
   }));
   const desiredTheme = workflowSeed?.theme || 'luminarum';
-  const defaultThemeIdx = Math.max(0, themeOptions.findIndex(t => t.value === desiredTheme));
+  const defaultThemeIdx = Math.max(
+    0,
+    themeOptions.findIndex((t) => t.value === desiredTheme),
+  );
   const theme = await select('Choose a theme', themeOptions, Math.max(0, defaultThemeIdx), true);
 
   // Mode
@@ -200,7 +203,7 @@ export async function runInteractivePrompts(
       { value: 'light', label: 'light', description: 'Light background' },
       { value: 'auto', label: 'auto', description: 'Follow system preference' },
     ],
-    workflowSeed?.mode === 'light' ? 1 : workflowSeed?.mode === 'auto' ? 2 : 0
+    workflowSeed?.mode === 'light' ? 1 : workflowSeed?.mode === 'auto' ? 2 : 0,
   );
 
   // Shape
@@ -212,7 +215,7 @@ export async function runInteractivePrompts(
       { value: 'sharp', label: 'sharp', description: 'No border radius' },
     ],
     1,
-    true
+    true,
   );
 
   // Target framework
@@ -228,7 +231,9 @@ export async function runInteractivePrompts(
   ];
 
   // Find default based on detection
-  let defaultFrameworkIdx = frameworkOptions.findIndex(f => f.value === (workflowSeed?.target || detected.framework));
+  let defaultFrameworkIdx = frameworkOptions.findIndex(
+    (f) => f.value === (workflowSeed?.target || detected.framework),
+  );
   if (defaultFrameworkIdx < 0) defaultFrameworkIdx = 0;
 
   const target = await select('Target framework', frameworkOptions, defaultFrameworkIdx, true);
@@ -251,10 +256,15 @@ export async function runInteractivePrompts(
       { value: 'guided', label: 'guided', description: 'Style, structure, density enforced' },
       { value: 'strict', label: 'strict', description: 'All 5 rules enforced exactly' },
     ],
-    workflowSeed?.guard === 'creative' ? 0
-      : workflowSeed?.guard === 'strict' ? 2
-      : workflowSeed?.guard === 'guided' ? 1
-      : detected.existingEssence ? 1 : 2
+    workflowSeed?.guard === 'creative'
+      ? 0
+      : workflowSeed?.guard === 'strict'
+        ? 2
+        : workflowSeed?.guard === 'guided'
+          ? 1
+          : detected.existingEssence
+            ? 1
+            : 2,
   );
 
   // Density
@@ -265,28 +275,45 @@ export async function runInteractivePrompts(
       { value: 'comfortable', label: 'comfortable', description: 'Balanced spacing' },
       { value: 'spacious', label: 'spacious', description: 'Generous whitespace' },
     ],
-    workflowSeed?.density === 'compact' ? 0 : workflowSeed?.density === 'spacious' ? 2 : 1
+    workflowSeed?.density === 'compact' ? 0 : workflowSeed?.density === 'spacious' ? 2 : 1,
   );
 
   // Shell (layout)
   const shellOptions = [
-    { value: 'sidebar-main', label: 'sidebar-main', description: 'Collapsible sidebar with main content' },
-    { value: 'top-nav-main', label: 'top-nav-main', description: 'Horizontal nav with full-width content' },
+    {
+      value: 'sidebar-main',
+      label: 'sidebar-main',
+      description: 'Collapsible sidebar with main content',
+    },
+    {
+      value: 'top-nav-main',
+      label: 'top-nav-main',
+      description: 'Horizontal nav with full-width content',
+    },
     { value: 'centered', label: 'centered', description: 'Centered card (auth flows)' },
     { value: 'full-bleed', label: 'full-bleed', description: 'No persistent nav (landing pages)' },
-    { value: 'minimal-header', label: 'minimal-header', description: 'Slim header with centered content' },
+    {
+      value: 'minimal-header',
+      label: 'minimal-header',
+      description: 'Slim header with centered content',
+    },
   ];
 
   // Suggest shell based on framework
-  let defaultShellIdx = shellOptions.findIndex(s => s.value === workflowSeed?.shell);
+  let defaultShellIdx = shellOptions.findIndex((s) => s.value === workflowSeed?.shell);
   if (defaultShellIdx < 0) {
     defaultShellIdx = 0;
   }
   if (defaultShellIdx === 0 && ['nextjs', 'nuxt', 'astro'].includes(target)) {
-    defaultShellIdx = shellOptions.findIndex(s => s.value === 'top-nav-main');
+    defaultShellIdx = shellOptions.findIndex((s) => s.value === 'top-nav-main');
   }
 
-  const shell = await select('Default page shell (layout)', shellOptions, Math.max(0, defaultShellIdx), true);
+  const shell = await select(
+    'Default page shell (layout)',
+    shellOptions,
+    Math.max(0, defaultShellIdx),
+    true,
+  );
 
   return {
     blueprint: isBlank ? undefined : blueprint,
@@ -308,20 +335,28 @@ export async function runInteractivePrompts(
 /**
  * Parse CLI flags into InitOptions.
  */
-export function parseFlags(args: Record<string, unknown>, detected: DetectedProject): Partial<InitOptions> {
+export function parseFlags(
+  args: Record<string, unknown>,
+  detected: DetectedProject,
+): Partial<InitOptions> {
   const options: Partial<InitOptions> = {};
 
   if (typeof args.blueprint === 'string') options.blueprint = args.blueprint;
   if (typeof args.archetype === 'string') options.archetype = args.archetype;
   if (typeof args.theme === 'string') options.theme = args.theme;
-  if (args.mode === 'dark' || args.mode === 'light' || args.mode === 'auto') options.mode = args.mode;
+  if (args.mode === 'dark' || args.mode === 'light' || args.mode === 'auto')
+    options.mode = args.mode;
   if (typeof args.shape === 'string') options.shape = args.shape;
   if (typeof args.target === 'string') options.target = args.target;
-  if (args.guard === 'creative' || args.guard === 'guided' || args.guard === 'strict') options.guard = args.guard;
-  if (args.density === 'compact' || args.density === 'comfortable' || args.density === 'spacious') options.density = args.density;
+  if (args.guard === 'creative' || args.guard === 'guided' || args.guard === 'strict')
+    options.guard = args.guard;
+  if (args.density === 'compact' || args.density === 'comfortable' || args.density === 'spacious')
+    options.density = args.density;
   if (typeof args.shell === 'string') options.shell = args.shell;
-  if (typeof args.personality === 'string') options.personality = args.personality.split(',').map(s => s.trim());
-  if (typeof args.features === 'string') options.features = args.features.split(',').map(s => s.trim());
+  if (typeof args.personality === 'string')
+    options.personality = args.personality.split(',').map((s) => s.trim());
+  if (typeof args.features === 'string')
+    options.features = args.features.split(',').map((s) => s.trim());
   if (args.existing === true) options.existing = true;
 
   return options;
@@ -341,7 +376,10 @@ export function mergeWithDefaults(
     theme: flags.theme || workflowSeed?.theme || 'luminarum',
     mode: flags.mode || workflowSeed?.mode || 'dark',
     shape: flags.shape || 'rounded',
-    target: flags.target || workflowSeed?.target || (detected.framework !== 'unknown' ? detected.framework : 'react'),
+    target:
+      flags.target ||
+      workflowSeed?.target ||
+      (detected.framework !== 'unknown' ? detected.framework : 'react'),
     guard: flags.guard || workflowSeed?.guard || (detected.existingEssence ? 'guided' : 'strict'),
     density: flags.density || workflowSeed?.density || 'comfortable',
     shell: flags.shell || workflowSeed?.shell || 'sidebar-main',
@@ -356,12 +394,12 @@ export function mergeWithDefaults(
  * Run simplified init prompt with two choices.
  */
 export async function runSimplifiedInit(
-  blueprints: Array<{ id: string; name?: string; description?: string }>
+  blueprints: Array<{ id: string; name?: string; description?: string }>,
 ): Promise<{ choice: 'default' | 'search'; searchQuery?: string; selectedBlueprint?: string }> {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   const question = (q: string): Promise<string> =>
-    new Promise(resolve => rl.question(q, resolve));
+    new Promise((resolve) => rl.question(q, resolve));
 
   console.log('\n? What blueprint would you like to scaffold?\n');
   console.log('  1. Decantr default (recommended)');
@@ -378,11 +416,14 @@ export async function runSimplifiedInit(
   const searchQuery = await question('Search: ');
 
   // Filter blueprints by query
-  const matches = blueprints.filter(b =>
-    b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  ).slice(0, 10);
+  const matches = blueprints
+    .filter(
+      (b) =>
+        b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.description?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .slice(0, 10);
 
   if (matches.length === 0) {
     console.log('\nNo matches found. Using Decantr default.');
@@ -407,4 +448,4 @@ export async function runSimplifiedInit(
   return { choice: 'default' };
 }
 
-export { ask, select, multiSelect, confirm, warn };
+export { ask, confirm, multiSelect, select, warn };

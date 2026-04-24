@@ -1,12 +1,12 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { detectProject, formatDetection } from '../detect.js';
-import { scanRoutes } from '../analyzers/routes.js';
 import { scanComponents } from '../analyzers/components.js';
-import { scanStyling } from '../analyzers/styling.js';
-import { scanLayout } from '../analyzers/layout.js';
-import { scanFeatures } from '../analyzers/features.js';
 import { scanDependencies } from '../analyzers/dependencies.js';
+import { scanFeatures } from '../analyzers/features.js';
+import { scanLayout } from '../analyzers/layout.js';
+import { scanRoutes } from '../analyzers/routes.js';
+import { scanStyling } from '../analyzers/styling.js';
+import { detectProject, formatDetection } from '../detect.js';
 import { createBrownfieldInitSeed } from '../workflow-model.js';
 
 const BOLD = '\x1b[1m';
@@ -70,7 +70,13 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
         recommendedCommand: 'decantr init --existing --yes',
       },
       hybrid: {
-        ownerCommands: ['decantr add', 'decantr remove', 'decantr theme switch', 'decantr registry', 'decantr upgrade'],
+        ownerCommands: [
+          'decantr add',
+          'decantr remove',
+          'decantr theme switch',
+          'decantr registry',
+          'decantr upgrade',
+        ],
       },
     },
   };
@@ -89,16 +95,22 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
   console.log(`\n${GREEN}Analysis complete.${RESET}\n`);
 
   console.log(`${BOLD}Summary${RESET}`);
-  console.log(`  Framework:    ${CYAN}${project.framework}${project.version ? ` ${project.version}` : ''}${RESET}`);
+  console.log(
+    `  Framework:    ${CYAN}${project.framework}${project.version ? ` ${project.version}` : ''}${RESET}`,
+  );
   console.log(`  Router:       ${routes.strategy}`);
   console.log(`  Routes:       ${routes.routes.length}`);
   console.log(`  Pages:        ${components.pageCount}`);
   console.log(`  Components:   ${components.componentCount}`);
-  console.log(`  Styling:      ${styling.approach}${styling.configFile ? ` (${styling.configFile})` : ''}`);
+  console.log(
+    `  Styling:      ${styling.approach}${styling.configFile ? ` (${styling.configFile})` : ''}`,
+  );
   console.log(`  CSS vars:     ${styling.cssVariables.length}`);
   console.log(`  Dark mode:    ${styling.darkMode ? 'yes' : 'no'}`);
   console.log(`  Shell:        ${layout.shellPattern}`);
-  console.log(`  Features:     ${features.detected.length > 0 ? features.detected.join(', ') : 'none detected'}`);
+  console.log(
+    `  Features:     ${features.detected.length > 0 ? features.detected.join(', ') : 'none detected'}`,
+  );
 
   const depCounts = [
     dependencies.ui.length && `${dependencies.ui.length} ui`,
@@ -106,10 +118,14 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
     dependencies.db.length && `${dependencies.db.length} db`,
     dependencies.state.length && `${dependencies.state.length} state`,
     dependencies.styling.length && `${dependencies.styling.length} styling`,
-  ].filter(Boolean).join(', ');
+  ]
+    .filter(Boolean)
+    .join(', ');
   console.log(`  Dependencies: ${depCounts || 'none categorized'}`);
 
   console.log(`\n${DIM}Written to:${RESET} ${outputPath}`);
   console.log(`${DIM}Init seed:${RESET} ${initSeedPath}`);
-  console.log(`\n${YELLOW}Next step:${RESET} Run ${BOLD}decantr init --existing --yes${RESET} to attach Decantr using the generated brownfield seed.\n`);
+  console.log(
+    `\n${YELLOW}Next step:${RESET} Run ${BOLD}decantr init --existing --yes${RESET} to attach Decantr using the generated brownfield seed.\n`,
+  );
 }

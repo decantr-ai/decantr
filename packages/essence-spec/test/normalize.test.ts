@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { normalizeEssence } from '../src/normalize.js';
 
 describe('normalizeEssence', () => {
@@ -9,9 +9,7 @@ describe('normalizeEssence', () => {
       vintage: { style: 'auradecantism', mode: 'dark', shape: 'rounded' },
       character: ['professional'],
       vessel: { type: 'spa', routing: 'hash' },
-      structure: [
-        { id: 'overview', carafe: 'sidebar-main', blend: ['kpi-grid'] },
-      ],
+      structure: [{ id: 'overview', carafe: 'sidebar-main', blend: ['kpi-grid'] }],
       tannins: ['auth'],
       clarity: { density: 'comfortable', content_gap: '_gap4' },
       cork: { enforce_style: true, mode: 'maintenance' },
@@ -56,9 +54,7 @@ describe('normalizeEssence', () => {
       vintage: { style: 'auradecantism', mode: 'dark', shape: 'rounded' },
       character: ['professional'],
       vessel: { type: 'spa', routing: 'pathname' },
-      structure: [
-        { id: 'overview', carafe: 'sidebar-main', blend: ['kpi-grid'] },
-      ],
+      structure: [{ id: 'overview', carafe: 'sidebar-main', blend: ['kpi-grid'] }],
       tannins: ['auth'],
       clarity: { density: 'comfortable', content_gap: '_gap4' },
       cork: { enforce_style: true, mode: 'maintenance' },

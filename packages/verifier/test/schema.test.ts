@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { auditProject, critiqueSource } from '../src/index.js';
 import { assertMatchesVerifierSchema } from './helpers/schema-assert.js';
@@ -14,31 +14,43 @@ describe('verifier schema contracts', () => {
   it('emits project audit reports matching the published schema', async () => {
     const projectRoot = createProjectRoot();
     try {
-      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
-        dna: {
-          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
-          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
-          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
-          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
-          radius: { philosophy: 'rounded', base: 8 },
-          elevation: { system: 'layered', max_levels: 3 },
-          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
-          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
-          personality: ['professional'],
-        },
-        blueprint: {
-          shell: 'sidebar-main',
-          pages: [{ id: 'home', layout: ['hero'] }],
-          features: [],
-        },
-        meta: {
-          archetype: 'marketing',
-          target: 'react',
-          platform: { type: 'spa', routing: 'hash' },
-          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
-        },
-      }, null, 2));
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify(
+          {
+            version: '3.0.0',
+            dna: {
+              theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+              spacing: {
+                base_unit: 4,
+                scale: 'linear',
+                density: 'comfortable',
+                content_gap: '_gap4',
+              },
+              typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+              color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+              radius: { philosophy: 'rounded', base: 8 },
+              elevation: { system: 'layered', max_levels: 3 },
+              motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+              accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+              personality: ['professional'],
+            },
+            blueprint: {
+              shell: 'sidebar-main',
+              pages: [{ id: 'home', layout: ['hero'] }],
+              features: [],
+            },
+            meta: {
+              archetype: 'marketing',
+              target: 'react',
+              platform: { type: 'spa', routing: 'hash' },
+              guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+            },
+          },
+          null,
+          2,
+        ),
+      );
 
       const report = await auditProject(projectRoot);
       assertMatchesVerifierSchema('project-audit-report.v1.json', report);
@@ -92,10 +104,15 @@ describe('verifier schema contracts', () => {
 
   it('matches the published showcase shortlist schema for the checked-in report artifact', () => {
     const shortlistReport = JSON.parse(
-      readFileSync(new URL('../../../apps/showcase/reports/shortlist-verification.json', import.meta.url), 'utf-8'),
+      readFileSync(
+        new URL('../../../apps/showcase/reports/shortlist-verification.json', import.meta.url),
+        'utf-8',
+      ),
     );
 
     assertMatchesVerifierSchema('showcase-shortlist-report.v1.json', shortlistReport);
-    expect(shortlistReport.$schema).toBe('https://decantr.ai/schemas/showcase-shortlist-report.v1.json');
+    expect(shortlistReport.$schema).toBe(
+      'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
+    );
   });
 });

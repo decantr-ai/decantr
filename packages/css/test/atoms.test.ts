@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { resolveAtomDecl } from '../src/atoms.js';
 
 describe('resolveAtomDecl', () => {
@@ -120,33 +120,47 @@ describe('resolveAtomDecl', () => {
     });
 
     it('resolves _heading1', () => {
-      expect(resolveAtomDecl('_heading1')).toBe('font-size:2.25rem;line-height:2.5rem;font-weight:700');
+      expect(resolveAtomDecl('_heading1')).toBe(
+        'font-size:2.25rem;line-height:2.5rem;font-weight:700',
+      );
     });
   });
 
   describe('container atoms', () => {
     it('resolves _container to max-width:1200px containment', () => {
-      expect(resolveAtomDecl('_container')).toBe('max-width:1200px;margin-inline:auto;width:100%;padding-inline:1rem');
+      expect(resolveAtomDecl('_container')).toBe(
+        'max-width:1200px;margin-inline:auto;width:100%;padding-inline:1rem',
+      );
     });
 
     it('resolves _containersm to max-width:640px containment', () => {
-      expect(resolveAtomDecl('_containersm')).toBe('max-width:640px;margin-inline:auto;width:100%;padding-inline:1rem');
+      expect(resolveAtomDecl('_containersm')).toBe(
+        'max-width:640px;margin-inline:auto;width:100%;padding-inline:1rem',
+      );
     });
 
     it('resolves _containermd to max-width:768px containment', () => {
-      expect(resolveAtomDecl('_containermd')).toBe('max-width:768px;margin-inline:auto;width:100%;padding-inline:1rem');
+      expect(resolveAtomDecl('_containermd')).toBe(
+        'max-width:768px;margin-inline:auto;width:100%;padding-inline:1rem',
+      );
     });
 
     it('resolves _containerlg to max-width:1024px containment', () => {
-      expect(resolveAtomDecl('_containerlg')).toBe('max-width:1024px;margin-inline:auto;width:100%;padding-inline:1rem');
+      expect(resolveAtomDecl('_containerlg')).toBe(
+        'max-width:1024px;margin-inline:auto;width:100%;padding-inline:1rem',
+      );
     });
 
     it('resolves _containerxl to max-width:1400px containment', () => {
-      expect(resolveAtomDecl('_containerxl')).toBe('max-width:1400px;margin-inline:auto;width:100%;padding-inline:1rem');
+      expect(resolveAtomDecl('_containerxl')).toBe(
+        'max-width:1400px;margin-inline:auto;width:100%;padding-inline:1rem',
+      );
     });
 
     it('resolves _containerfull to max-width:100% containment', () => {
-      expect(resolveAtomDecl('_containerfull')).toBe('max-width:100%;margin-inline:auto;width:100%;padding-inline:1rem');
+      expect(resolveAtomDecl('_containerfull')).toBe(
+        'max-width:100%;margin-inline:auto;width:100%;padding-inline:1rem',
+      );
     });
 
     it('resolves _cqinline to container-type:inline-size', () => {
@@ -156,7 +170,9 @@ describe('resolveAtomDecl', () => {
 
   describe('font family atoms', () => {
     it('resolves _fontmono to font-family with mono stack', () => {
-      expect(resolveAtomDecl('_fontmono')).toBe('font-family:var(--d-font-mono,ui-monospace,monospace)');
+      expect(resolveAtomDecl('_fontmono')).toBe(
+        'font-family:var(--d-font-mono,ui-monospace,monospace)',
+      );
     });
   });
 

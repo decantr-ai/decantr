@@ -4,10 +4,7 @@ import type { LayoutAnalysis } from './analyzers/layout.js';
 import type { StylingAnalysis } from './analyzers/styling.js';
 import type { DetectedProject } from './detect.js';
 
-export type DecantrWorkflow =
-  | 'greenfield-blueprint'
-  | 'brownfield-adoption'
-  | 'hybrid-composition';
+export type DecantrWorkflow = 'greenfield-blueprint' | 'brownfield-adoption' | 'hybrid-composition';
 
 export interface WorkflowInitDefaults {
   theme?: string;
@@ -34,11 +31,13 @@ export function inferSuggestedShell(layout: LayoutAnalysis): string {
 }
 
 export function hasExistingProjectFootprint(detected: DetectedProject): boolean {
-  return detected.framework !== 'unknown'
-    || detected.packageManager !== 'unknown'
-    || detected.hasTypeScript
-    || detected.hasTailwind
-    || detected.existingRuleFiles.length > 0;
+  return (
+    detected.framework !== 'unknown' ||
+    detected.packageManager !== 'unknown' ||
+    detected.hasTypeScript ||
+    detected.hasTailwind ||
+    detected.existingRuleFiles.length > 0
+  );
 }
 
 export function createBrownfieldInitSeed(

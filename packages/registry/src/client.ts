@@ -1,51 +1,49 @@
 export type {
+  RegistryAPIClientOptions,
+  RegistryClient,
+  RegistryClientOptions,
+  SearchResult,
+} from './api-client.js';
+export { createRegistryClient, RegistryAPIClient, RegistryAPIError } from './api-client.js';
+export type { PublicContentSort } from './ranking.js';
+export { comparePublicContent, normalizePublicContentSort, sortPublicContent } from './ranking.js';
+export type {
   ApiContentType,
-  ContentListResponse,
-  PublicContentSource,
-  ContentVerificationStatus,
   ContentBenchmarkConfidence,
   ContentGoldenUsage,
-  ContentIntelligenceSource,
   ContentIntelligenceMetadata,
-  PublicContentSummary,
-  PublicContentRecord,
+  ContentIntelligenceSource,
   ContentItem,
+  ContentListResponse,
+  ContentVerificationStatus,
   OwnedContentSummary,
+  PublicContentRecord,
+  PublicContentSource,
+  PublicContentSummary,
   PublicUserProfile,
   PublishPayload,
   PublishResponse,
-  SearchParams,
-  SearchResponse,
   RegistryIntelligenceSummaryBucket,
   RegistryIntelligenceSummaryResponse,
-  UserProfile,
-  ShowcaseVerificationEntry,
-  ShowcaseShortlistSummary,
+  SearchParams,
+  SearchResponse,
   ShowcaseManifestEntry,
   ShowcaseManifestResponse,
-  ShowcaseShortlistResponse,
   ShowcaseShortlistReport,
+  ShowcaseShortlistResponse,
+  ShowcaseShortlistSummary,
+  ShowcaseVerificationEntry,
+  UserProfile,
 } from './types.js';
-
 export {
-  CONTENT_TYPES,
+  API_CONTENT_TYPE_TO_CONTENT_TYPE,
   API_CONTENT_TYPES,
   CONTENT_INTELLIGENCE_SOURCES,
-  PUBLIC_CONTENT_SOURCES,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
-  API_CONTENT_TYPE_TO_CONTENT_TYPE,
-  isContentType,
+  CONTENT_TYPES,
   isApiContentType,
   isContentIntelligenceSource,
+  isContentType,
   isPublicContentSource,
+  PUBLIC_CONTENT_SOURCES,
 } from './types.js';
-
-export { RegistryAPIClient, RegistryAPIError, createRegistryClient } from './api-client.js';
-export { comparePublicContent, normalizePublicContentSort, sortPublicContent } from './ranking.js';
-export type {
-  RegistryAPIClientOptions,
-  RegistryClientOptions,
-  SearchResult,
-  RegistryClient,
-} from './api-client.js';
-export type { PublicContentSort } from './ranking.js';

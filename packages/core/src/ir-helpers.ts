@@ -1,4 +1,4 @@
-import type { IRNode, IRPatternNode, IRGridNode } from './types.js';
+import type { IRGridNode, IRNode, IRPatternNode } from './types.js';
 
 /** Depth-first walk of IR tree, calling visitor on each node */
 export function walkIR(

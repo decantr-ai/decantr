@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
 export interface RouteInfo {
@@ -53,12 +53,16 @@ function walkAppDir(dir: string, baseDir: string, segments: string[]): RouteInfo
     return routes;
   }
 
-  const hasPage = entries.some(e => e === 'page.tsx' || e === 'page.ts' || e === 'page.jsx' || e === 'page.js');
-  const hasLayout = entries.some(e => e === 'layout.tsx' || e === 'layout.ts' || e === 'layout.jsx' || e === 'layout.js');
+  const hasPage = entries.some(
+    (e) => e === 'page.tsx' || e === 'page.ts' || e === 'page.jsx' || e === 'page.js',
+  );
+  const hasLayout = entries.some(
+    (e) => e === 'layout.tsx' || e === 'layout.ts' || e === 'layout.jsx' || e === 'layout.js',
+  );
 
   if (hasPage) {
-    const routePath = '/' + segments.filter(s => s !== '').join('/');
-    const pageFile = entries.find(e => e.startsWith('page.'))!;
+    const routePath = '/' + segments.filter((s) => s !== '').join('/');
+    const pageFile = entries.find((e) => e.startsWith('page.'))!;
     routes.push({
       path: routePath || '/',
       file: relative(baseDir, join(dir, pageFile)),
@@ -112,16 +116,14 @@ function walkPagesDir(dir: string, baseDir: string, segments: string[]): RouteIn
         if (name.startsWith('_')) continue;
 
         const routeSegment = name === 'index' ? '' : (segmentToRoute(name) ?? name);
-        const routePath = '/' + [...segments, routeSegment].filter(s => s !== '').join('/');
+        const routePath = '/' + [...segments, routeSegment].filter((s) => s !== '').join('/');
         routes.push({
           path: routePath || '/',
           file: relative(baseDir, fullPath),
           hasLayout: false,
         });
       }
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return routes;
@@ -152,17 +154,12 @@ function collectRouteCandidateFiles(dir: string, files: string[], depth = 0): vo
           files.push(fullPath);
         }
       }
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 }
 
 function scanReactRouter(projectRoot: string): RouteInfo[] {
-  const candidateDirs = [
-    join(projectRoot, 'src'),
-    projectRoot,
-  ];
+  const candidateDirs = [join(projectRoot, 'src'), projectRoot];
 
   const candidateFiles: string[] = [];
   for (const dir of candidateDirs) {
@@ -202,7 +199,10 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
       pathMatches.add(match[1]);
     }
 
-    if (pathMatches.size === 0 && (content.includes('<Routes') || content.includes('RouterProvider'))) {
+    if (
+      pathMatches.size === 0 &&
+      (content.includes('<Routes') || content.includes('RouterProvider'))
+    ) {
       pathMatches.add('/');
     }
 
@@ -226,10 +226,7 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
  */
 export function scanRoutes(projectRoot: string): RoutesAnalysis {
   // Try App Router first
-  const appDirs = [
-    join(projectRoot, 'src', 'app'),
-    join(projectRoot, 'app'),
-  ];
+  const appDirs = [join(projectRoot, 'src', 'app'), join(projectRoot, 'app')];
 
   for (const appDir of appDirs) {
     if (existsSync(appDir)) {
@@ -241,10 +238,7 @@ export function scanRoutes(projectRoot: string): RoutesAnalysis {
   }
 
   // Try Pages Router
-  const pagesDirs = [
-    join(projectRoot, 'src', 'pages'),
-    join(projectRoot, 'pages'),
-  ];
+  const pagesDirs = [join(projectRoot, 'src', 'pages'), join(projectRoot, 'pages')];
 
   for (const pagesDir of pagesDirs) {
     if (existsSync(pagesDir)) {

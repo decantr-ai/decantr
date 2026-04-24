@@ -1,8 +1,8 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateEssence, evaluateGuard } from '@decantr/essence-spec';
+import { evaluateGuard, validateEssence } from '@decantr/essence-spec';
 import { buildGuardRegistryContext } from '../guard-context.js';
-import { isOptedIn, optIn, collectMetrics, sendGuardMetrics } from '../telemetry.js';
+import { collectMetrics, isOptedIn, optIn, sendGuardMetrics } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -22,7 +22,10 @@ export interface CheckOptions {
   telemetry?: boolean;
 }
 
-export async function cmdHeal(projectRoot: string = process.cwd(), options: CheckOptions = {}): Promise<void> {
+export async function cmdHeal(
+  projectRoot: string = process.cwd(),
+  options: CheckOptions = {},
+): Promise<void> {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -44,7 +47,7 @@ export async function cmdHeal(projectRoot: string = process.cwd(), options: Chec
       issues.push({
         type: 'error',
         rule: 'schema',
-        message: err
+        message: err,
       });
     }
   }
@@ -57,10 +60,12 @@ export async function cmdHeal(projectRoot: string = process.cwd(), options: Chec
         type: v.severity === 'error' ? 'error' : 'warning',
         rule: v.rule,
         message: v.message,
-        suggestion: v.suggestion
+        suggestion: v.suggestion,
       });
     }
-  } catch { /* guard evaluation optional */ }
+  } catch {
+    /* guard evaluation optional */
+  }
 
   if (issues.length === 0) {
     console.log(`${GREEN}No issues found. Project is healthy.${RESET}`);
@@ -91,7 +96,9 @@ async function maybeSendTelemetry(
 ): Promise<void> {
   if (options.telemetry && !isOptedIn(projectRoot)) {
     optIn(projectRoot);
-    console.log(`\n${CYAN}Telemetry enabled.${RESET} Anonymous guard metrics will be sent on future checks.`);
+    console.log(
+      `\n${CYAN}Telemetry enabled.${RESET} Anonymous guard metrics will be sent on future checks.`,
+    );
     console.log(`${DIM}Set "telemetry": false in .decantr/project.json to opt out.${RESET}`);
   }
 

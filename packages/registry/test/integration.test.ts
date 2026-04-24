@@ -1,17 +1,21 @@
-import { describe, it, expect } from 'vitest';
-import { createResolver } from '../src/resolver.js';
-import { resolvePatternPreset } from '../src/pattern.js';
-import { detectWirings } from '../src/wiring.js';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { resolvePatternPreset } from '../src/pattern.js';
+import { createResolver } from '../src/resolver.js';
+import { detectWirings } from '../src/wiring.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentRoot = join(__dirname, '..', '..', '..', 'content');
 
 // Skip if content hasn't been migrated
 const hasContent = (() => {
-  try { return readdirSync(join(contentRoot, 'core')).length > 0; } catch { return false; }
+  try {
+    return readdirSync(join(contentRoot, 'core')).length > 0;
+  } catch {
+    return false;
+  }
 })();
 
 describe.skipIf(!hasContent)('Integration: resolver with real content', () => {

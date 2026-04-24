@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
 import {
   buildMutationPack,
   buildPagePack,
@@ -62,7 +62,9 @@ describe('buildScaffoldPack', () => {
     expect(pack.scope.patternIds).toContain('filter-bar');
     expect(pack.allowedVocabulary).toContain('sidebar-main');
     expect(pack.renderedMarkdown).toContain('## Route Plan');
-    expect(pack.renderedMarkdown).toContain('- / -> overview @ sidebar-main [kpi-grid, filter-bar, data-table]');
+    expect(pack.renderedMarkdown).toContain(
+      '- / -> overview @ sidebar-main [kpi-grid, filter-bar, data-table]',
+    );
   });
 
   it('includes navigation obligations when provided', async () => {
@@ -72,9 +74,7 @@ describe('buildScaffoldPack', () => {
     const pack = buildScaffoldPack(result.ir, {
       navigation: {
         commandPalette: true,
-        hotkeys: [
-          { key: 'g o', route: '/', label: 'Go to overview' },
-        ],
+        hotkeys: [{ key: 'g o', route: '/', label: 'Go to overview' }],
       },
     });
 
@@ -104,20 +104,24 @@ describe('buildScaffoldPack', () => {
     const essence = loadFixture('essence-saas');
     const result = await runPipeline(essence, { contentRoot });
 
-    const pack = buildSectionPack(result.ir, {
-      id: 'dashboard',
-      role: 'primary',
-      shell: 'sidebar-main',
-      description: 'Primary app section',
-      features: ['auth'],
-      pageIds: ['overview'],
-    }, {
-      target: {
-        framework: 'react',
-        runtime: 'vite',
-        adapter: 'react-vite',
+    const pack = buildSectionPack(
+      result.ir,
+      {
+        id: 'dashboard',
+        role: 'primary',
+        shell: 'sidebar-main',
+        description: 'Primary app section',
+        features: ['auth'],
+        pageIds: ['overview'],
       },
-    });
+      {
+        target: {
+          framework: 'react',
+          runtime: 'vite',
+          adapter: 'react-vite',
+        },
+      },
+    );
 
     expect(pack.packType).toBe('section');
     expect(pack.$schema).toBe('https://decantr.ai/schemas/section-pack.v1.json');
@@ -133,26 +137,32 @@ describe('buildScaffoldPack', () => {
     expect(pack.allowedVocabulary).toContain('dashboard');
     expect(pack.allowedVocabulary).toContain('sidebar-main');
     expect(pack.renderedMarkdown).toContain('## Section Contract');
-    expect(pack.renderedMarkdown).toContain('- / -> overview @ sidebar-main [kpi-grid, filter-bar, data-table]');
+    expect(pack.renderedMarkdown).toContain(
+      '- / -> overview @ sidebar-main [kpi-grid, filter-bar, data-table]',
+    );
   });
 
   it('builds a page pack with route-local patterns and wiring signals', async () => {
     const essence = loadFixture('essence-saas');
     const result = await runPipeline(essence, { contentRoot });
 
-    const pack = buildPagePack(result.ir, {
-      pageId: 'overview',
-      shell: 'sidebar-main',
-      sectionId: 'dashboard',
-      sectionRole: 'primary',
-      features: ['auth'],
-    }, {
-      target: {
-        framework: 'react',
-        runtime: 'vite',
-        adapter: 'react-vite',
+    const pack = buildPagePack(
+      result.ir,
+      {
+        pageId: 'overview',
+        shell: 'sidebar-main',
+        sectionId: 'dashboard',
+        sectionRole: 'primary',
+        features: ['auth'],
       },
-    });
+      {
+        target: {
+          framework: 'react',
+          runtime: 'vite',
+          adapter: 'react-vite',
+        },
+      },
+    );
 
     expect(pack.packType).toBe('page');
     expect(pack.$schema).toBe('https://decantr.ai/schemas/page-pack.v1.json');
@@ -172,7 +182,8 @@ describe('buildScaffoldPack', () => {
         alias: 'kpi-grid',
         preset: 'dashboard',
         layout: 'grid',
-        presetDescription: '4-column grid of stat cards with icon, label, value, and change percentage',
+        presetDescription:
+          '4-column grid of stat cards with icon, label, value, and change percentage',
       },
       {
         id: 'filter-bar',
@@ -186,7 +197,8 @@ describe('buildScaffoldPack', () => {
         alias: 'data-table',
         preset: 'standard',
         layout: 'column',
-        presetDescription: 'Full-featured table with column headers, sortable columns, row selection checkboxes, pagination footer',
+        presetDescription:
+          'Full-featured table with column headers, sortable columns, row selection checkboxes, pagination footer',
       },
     ]);
     expect(pack.data.wiringSignals).toContain('pageSearch');
@@ -248,8 +260,8 @@ describe('buildScaffoldPack', () => {
     expect(pack.data.reviewType).toBe('app');
     expect(pack.data.routes).toHaveLength(2);
     expect(pack.data.focusAreas).toContain('route-topology');
-    expect(pack.antiPatterns.map(entry => entry.id)).toContain('inline-styles');
-    expect(pack.antiPatterns.map(entry => entry.id)).toContain('hardcoded-colors');
+    expect(pack.antiPatterns.map((entry) => entry.id)).toContain('inline-styles');
+    expect(pack.antiPatterns.map((entry) => entry.id)).toContain('hardcoded-colors');
     expect(pack.renderedMarkdown).toContain('## Review Contract');
     expect(pack.renderedMarkdown).toContain('## Focus Areas');
     expect(pack.renderedMarkdown).toContain('## Review Workflow');
@@ -293,9 +305,7 @@ describe('buildScaffoldPack', () => {
             shell: 'top-nav-footer',
             description: 'Marketing surface',
             features: [],
-            pages: [
-              { id: 'home', route: '/', layout: ['hero'] },
-            ],
+            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
           },
           {
             id: 'agent-orchestrator',
@@ -324,7 +334,10 @@ describe('buildScaffoldPack', () => {
     };
 
     const bundle = await compileExecutionPackBundle(essence, { contentRoot });
-    const scaffoldRoutes = bundle.scaffold.data.routes.map((route) => ({ pageId: route.pageId, path: route.path }));
+    const scaffoldRoutes = bundle.scaffold.data.routes.map((route) => ({
+      pageId: route.pageId,
+      path: route.path,
+    }));
     const marketingPack = bundle.sections.find((pack) => pack.data.sectionId === 'marketing');
     const agentPack = bundle.sections.find((pack) => pack.data.sectionId === 'agent-orchestrator');
     const homePack = bundle.pages.find((pack) => pack.data.pageId === 'home');
@@ -339,15 +352,24 @@ describe('buildScaffoldPack', () => {
       { pageId: 'home', path: '/', shell: 'top-nav-footer', patternIds: ['hero'] },
     ]);
     expect(agentPack?.data.routes).toEqual([
-      { pageId: 'agent-overview', path: '/agents', shell: 'sidebar-main', patternIds: ['form-sections'] },
+      {
+        pageId: 'agent-overview',
+        path: '/agents',
+        shell: 'sidebar-main',
+        patternIds: ['form-sections'],
+      },
     ]);
     expect(agentPack?.scope.pageIds).toEqual(['agent-overview']);
     expect(homePack?.data.path).toBe('/');
     expect(agentOverviewPack?.data.path).toBe('/agents');
     expect(latentPagePack).toBeUndefined();
-    expect(bundle.scaffold.renderedMarkdown).toContain('- Shells: top-nav-footer (primary), sidebar-main');
+    expect(bundle.scaffold.renderedMarkdown).toContain(
+      '- Shells: top-nav-footer (primary), sidebar-main',
+    );
     expect(bundle.scaffold.renderedMarkdown).toContain('- / -> home @ top-nav-footer [hero]');
-    expect(bundle.scaffold.renderedMarkdown).toContain('- /agents -> agent-overview @ sidebar-main [form-sections]');
+    expect(bundle.scaffold.renderedMarkdown).toContain(
+      '- /agents -> agent-overview @ sidebar-main [form-sections]',
+    );
     expect(bundle.scaffold.renderedMarkdown).not.toContain('agent-governance');
   });
 });

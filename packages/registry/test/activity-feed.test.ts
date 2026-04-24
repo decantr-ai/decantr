@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { detectWirings } from '../src/wiring.js';
+import { describe, expect, it } from 'vitest';
 import { resolvePatternPreset } from '../src/pattern.js';
 import type { Pattern } from '../src/types.js';
+import { detectWirings } from '../src/wiring.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentRoot = join(__dirname, 'fixtures');

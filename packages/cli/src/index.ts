@@ -1,68 +1,31 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
-import { basename, join, dirname, isAbsolute, resolve } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateEssence, evaluateGuard, isV3 } from '@decantr/essence-spec';
-import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import type { ExecutionPackBundle } from '@decantr/core';
-import {
-  RegistryAPIClient,
-  CONTENT_TYPES as GET_CONTENT_TYPES,
-  API_CONTENT_TYPES as LIST_CONTENT_TYPES,
-  CONTENT_TYPE_TO_API_CONTENT_TYPE,
-  isContentType as isGetContentType,
-  isApiContentType,
-  isContentIntelligenceSource,
-} from '@decantr/registry';
-import { buildGuardRegistryContext } from './guard-context.js';
+import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
+import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import type {
   ApiContentType,
-  Blueprint as RegistryBlueprint,
   ComposeEntry,
-  ContentIntelligenceSource,
   ContentIntelligenceMetadata,
+  ContentIntelligenceSource,
+  ExecutionPackBundleResponse,
+  Blueprint as RegistryBlueprint,
   RegistryIntelligenceSummaryResponse,
+  SelectedExecutionPackResponse,
   ShowcaseManifestResponse,
   ShowcaseShortlistReport,
   ShowcaseShortlistResponse,
-  ExecutionPackBundleResponse,
-  SelectedExecutionPackResponse,
 } from '@decantr/registry';
-import { detectProject, formatDetection } from './detect.js';
-import { runInteractivePrompts, runSimplifiedInit, parseFlags, mergeWithDefaults, confirm } from './prompts.js';
 import {
-  scaffoldProject,
-  scaffoldMinimal,
-  refreshDerivedFiles,
-  composeArchetypes,
-  composeSections,
-  generateSectionContext,
-  generateScaffoldContext,
-  deriveZones,
-  deriveTransitions,
-  generateTopologySection,
-  mapRegistryArchetypeToArchetypeData,
-  mapRegistryThemeToThemeData,
-  mapRegistryPatternToPatternSpecSummary,
-  collectPatternIdsFromItems,
-  writeExecutionPackBundleArtifacts,
-  type ThemeData,
-  type LayoutItem,
-  type ZoneInput,
-  type TopologyData,
-  type ComposeSectionsResult,
-  type PatternSpecSummary,
-  type BlueprintOverrides,
-  type RefreshResult,
-} from './scaffold.js';
-import { RegistryClient, syncRegistry } from './registry.js';
-import {
-  createTheme,
-  listCustomThemes,
-  deleteTheme,
-  importTheme,
-  validateCustomTheme
-} from './theme-commands.js';
-import { saveCredentials, clearCredentials, getCredentials } from './auth.js';
+  CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  CONTENT_TYPES as GET_CONTENT_TYPES,
+  isApiContentType,
+  isContentIntelligenceSource,
+  isContentType as isGetContentType,
+  API_CONTENT_TYPES as LIST_CONTENT_TYPES,
+  RegistryAPIClient,
+} from '@decantr/registry';
 import {
   auditProject,
   critiqueFile as critiqueProjectFile,
@@ -70,21 +33,64 @@ import {
   type ProjectAuditReport,
   type VerificationFinding,
 } from '@decantr/verifier';
-import { cmdPublish } from './commands/publish.js';
-import { cmdCreate } from './commands/create.js';
-import { cmdMigrate } from './commands/migrate.js';
-import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
-import { cmdRefresh } from './commands/refresh.js';
-import { cmdAddSection, cmdAddPage, cmdAddFeature } from './commands/add.js';
-import { cmdRemoveSection, cmdRemovePage, cmdRemoveFeature } from './commands/remove.js';
-import { cmdThemeSwitch } from './commands/theme-switch.js';
+import { clearCredentials, getCredentials, saveCredentials } from './auth.js';
+import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
-import { cmdMagic } from './commands/magic.js';
-import { cmdExport } from './commands/export.js';
+import { cmdCreate } from './commands/create.js';
 import type { ExportTarget } from './commands/export.js';
-import { cmdRegistryMirror } from './commands/registry-mirror.js';
+import { cmdExport } from './commands/export.js';
+import { cmdMagic } from './commands/magic.js';
+import { cmdMigrate } from './commands/migrate.js';
 import { cmdNewProject } from './commands/new-project.js';
+import { cmdPublish } from './commands/publish.js';
+import { cmdRefresh } from './commands/refresh.js';
+import { cmdRegistryMirror } from './commands/registry-mirror.js';
+import { cmdRemoveFeature, cmdRemovePage, cmdRemoveSection } from './commands/remove.js';
+import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
+import { cmdThemeSwitch } from './commands/theme-switch.js';
+import { detectProject, formatDetection } from './detect.js';
+import { buildGuardRegistryContext } from './guard-context.js';
 import { seedOfflineRegistry } from './offline-content.js';
+import {
+  confirm,
+  mergeWithDefaults,
+  parseFlags,
+  runInteractivePrompts,
+  runSimplifiedInit,
+} from './prompts.js';
+import { RegistryClient, syncRegistry } from './registry.js';
+import {
+  type BlueprintOverrides,
+  type ComposeSectionsResult,
+  collectPatternIdsFromItems,
+  composeArchetypes,
+  composeSections,
+  deriveTransitions,
+  deriveZones,
+  generateScaffoldContext,
+  generateSectionContext,
+  generateTopologySection,
+  type LayoutItem,
+  mapRegistryArchetypeToArchetypeData,
+  mapRegistryPatternToPatternSpecSummary,
+  mapRegistryThemeToThemeData,
+  type PatternSpecSummary,
+  type RefreshResult,
+  refreshDerivedFiles,
+  scaffoldMinimal,
+  scaffoldProject,
+  type ThemeData,
+  type TopologyData,
+  writeExecutionPackBundleArtifacts,
+  type ZoneInput,
+} from './scaffold.js';
+import {
+  createTheme,
+  deleteTheme,
+  importTheme,
+  listCustomThemes,
+  validateCustomTheme,
+} from './theme-commands.js';
 import { hasExistingProjectFootprint, readBrownfieldInitSeed } from './workflow-model.js';
 
 // ── Helpers ──
@@ -97,11 +103,21 @@ const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 
-function heading(text: string): string { return `\n${BOLD}${text}${RESET}\n`; }
-function success(text: string): string { return `${GREEN}${text}${RESET}`; }
-function error(text: string): string { return `${RED}${text}${RESET}`; }
-function dim(text: string): string { return `${DIM}${text}${RESET}`; }
-function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
+function heading(text: string): string {
+  return `\n${BOLD}${text}${RESET}\n`;
+}
+function success(text: string): string {
+  return `${GREEN}${text}${RESET}`;
+}
+function error(text: string): string {
+  return `${RED}${text}${RESET}`;
+}
+function dim(text: string): string {
+  return `${DIM}${text}${RESET}`;
+}
+function cyan(text: string): string {
+  return `${CYAN}${text}${RESET}`;
+}
 
 function formatIntelligenceSummary(
   intelligence?: ContentIntelligenceMetadata | null,
@@ -203,38 +219,80 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
 
   lines.push('Build this greenfield application using the Decantr design system.');
   lines.push('');
-  lines.push('This workspace is a new Decantr scaffold. Use the contract to create or extend the runtime deliberately, not to reverse-engineer a hidden starter.');
+  lines.push(
+    'This workspace is a new Decantr scaffold. Use the contract to create or extend the runtime deliberately, not to reverse-engineer a hidden starter.',
+  );
   lines.push('');
   lines.push('Treat the compiled execution-pack files as the primary source of truth.');
-  lines.push('Use narrative docs only as secondary explanation when the compiled packs are not enough.');
-  lines.push('Use only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.');
+  lines.push(
+    'Use narrative docs only as secondary explanation when the compiled packs are not enough.',
+  );
+  lines.push(
+    'Use only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.',
+  );
   lines.push('');
   lines.push('Read in this order:');
   lines.push('1. DECANTR.md for the design spec, CSS approach, and guard rules.');
-  lines.push('2. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.');
-  lines.push('3. .decantr/context/scaffold.md for the broader app overview, topology, route map, and voice guidance.');
-  lines.push('4. Before working on any section, read its matching .decantr/context/section-*-pack.md and then .decantr/context/section-*.md files.');
-  lines.push('5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file.');
+  lines.push(
+    '2. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
+  );
+  lines.push(
+    '3. .decantr/context/scaffold.md for the broader app overview, topology, route map, and voice guidance.',
+  );
+  lines.push(
+    '4. Before working on any section, read its matching .decantr/context/section-*-pack.md and then .decantr/context/section-*.md files.',
+  );
+  lines.push(
+    '5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file.',
+  );
   lines.push('');
   lines.push('Implementation rules:');
-  lines.push('- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.');
-  lines.push('- Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.');
-  lines.push('- Start with the shell layouts and route structure first, then build section pages route by route.');
-  lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
-  lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.');
-  lines.push('- If package.json, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists in the workspace.');
-  lines.push('- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.');
-  lines.push('- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.');
-  lines.push('- If command_palette or hotkeys are declared in the generated context, implement them as real features. Do not merely acknowledge them in copy or comments.');
-  lines.push('- Treat declared hotkeys as interaction bindings by default, not visible navigation label text, unless the shell or route contract explicitly calls for shown shortcut hints.');
-  lines.push('- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.');
-  lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
+  lines.push(
+    '- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.',
+  );
+  lines.push(
+    '- Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.',
+  );
+  lines.push(
+    '- Start with the shell layouts and route structure first, then build section pages route by route.',
+  );
+  lines.push(
+    '- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.',
+  );
+  lines.push(
+    '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.',
+  );
+  lines.push(
+    '- If package.json, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists in the workspace.',
+  );
+  lines.push(
+    '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.',
+  );
+  lines.push(
+    '- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.',
+  );
+  lines.push(
+    '- If command_palette or hotkeys are declared in the generated context, implement them as real features. Do not merely acknowledge them in copy or comments.',
+  );
+  lines.push(
+    '- Treat declared hotkeys as interaction bindings by default, not visible navigation label text, unless the shell or route contract explicitly calls for shown shortcut hints.',
+  );
+  lines.push(
+    '- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.',
+  );
+  lines.push(
+    '- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.',
+  );
   lines.push('');
   lines.push('Execution flow:');
   lines.push('- Build the shell and shared layout first.');
-  lines.push('- Then implement each section\'s pages using the matching section and page packs.');
-  lines.push('- After implementation, run decantr check and decantr audit and fix any contract or drift issues.');
-  lines.push('- If a required context file is missing or inconsistent, stop and report exactly which file is missing before continuing.');
+  lines.push("- Then implement each section's pages using the matching section and page packs.");
+  lines.push(
+    '- After implementation, run decantr check and decantr audit and fix any contract or drift issues.',
+  );
+  lines.push(
+    '- If a required context file is missing or inconsistent, stop and report exactly which file is missing before continuing.',
+  );
 
   return lines.join('\n');
 }
@@ -244,41 +302,87 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
 
   lines.push('Attach Decantr to this existing application without rebuilding it from scratch.');
   lines.push('');
-  lines.push('Preserve the current framework, package manager, router, build tooling, and working runtime structure unless the generated Decantr contract gives you a reviewed reason to change them.');
+  lines.push(
+    'Preserve the current framework, package manager, router, build tooling, and working runtime structure unless the generated Decantr contract gives you a reviewed reason to change them.',
+  );
   lines.push('');
   lines.push('Treat .decantr/analysis.json as the factual inventory of the current app.');
   lines.push('Treat .decantr/init-seed.json as the recommended Decantr attach defaults.');
-  lines.push('Treat the compiled execution-pack files as the Decantr contract you are layering onto the app.');
-  lines.push('Use only files present in this workspace as the source of truth. If the runtime and contract disagree, call out the drift explicitly instead of improvising a rewrite.');
+  lines.push(
+    'Treat the compiled execution-pack files as the Decantr contract you are layering onto the app.',
+  );
+  lines.push(
+    'Use only files present in this workspace as the source of truth. If the runtime and contract disagree, call out the drift explicitly instead of improvising a rewrite.',
+  );
   lines.push('');
   lines.push('Read in this order:');
-  lines.push('1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.');
+  lines.push(
+    '1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.',
+  );
   lines.push('2. .decantr/init-seed.json for the intended attach defaults and workflow lane.');
   lines.push('3. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
-  lines.push('4. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.');
-  lines.push('5. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.');
-  lines.push('6. The matching section and page pack files only when you are working on those specific surfaces.');
+  lines.push(
+    '4. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
+  );
+  lines.push(
+    '5. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.',
+  );
+  lines.push(
+    '6. The matching section and page pack files only when you are working on those specific surfaces.',
+  );
   lines.push('');
   lines.push('Implementation rules:');
-  lines.push('- Preserve existing files and working flows whenever possible. Prefer incremental attachment over whole-app rewrites.');
-  lines.push('- Map existing routes and components onto the declared Decantr sections/pages before creating new files.');
-  lines.push('- If package.json, router files, or style files already exist, extend them deliberately instead of replacing them with a different starter shape.');
-  lines.push('- If Decantr style files are absent, add src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css in a way that fits the current app structure.');
-  lines.push('- Use the existing Decantr tokens, treatments, and decorators instead of inventing a parallel visual system.');
-  lines.push('- Registry content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.');
-  lines.push('- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.');
-  lines.push('- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.');
-  lines.push('- Let shells own spacing, centering, and scroll containers. Preserve app structure, but remove duplicated shell responsibilities when the contract makes them explicit.');
-  lines.push('- If command_palette or hotkeys are declared in the generated context, implement them as real features.');
-  lines.push('- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.');
-  lines.push('- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.');
+  lines.push(
+    '- Preserve existing files and working flows whenever possible. Prefer incremental attachment over whole-app rewrites.',
+  );
+  lines.push(
+    '- Map existing routes and components onto the declared Decantr sections/pages before creating new files.',
+  );
+  lines.push(
+    '- If package.json, router files, or style files already exist, extend them deliberately instead of replacing them with a different starter shape.',
+  );
+  lines.push(
+    '- If Decantr style files are absent, add src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css in a way that fits the current app structure.',
+  );
+  lines.push(
+    '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a parallel visual system.',
+  );
+  lines.push(
+    '- Registry content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.',
+  );
+  lines.push(
+    '- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.',
+  );
+  lines.push(
+    '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.',
+  );
+  lines.push(
+    '- Let shells own spacing, centering, and scroll containers. Preserve app structure, but remove duplicated shell responsibilities when the contract makes them explicit.',
+  );
+  lines.push(
+    '- If command_palette or hotkeys are declared in the generated context, implement them as real features.',
+  );
+  lines.push(
+    '- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.',
+  );
+  lines.push(
+    '- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.',
+  );
   lines.push('');
   lines.push('Execution flow:');
-  lines.push('- Start by inventorying the current runtime and identifying the safest route/component anchors for attachment.');
-  lines.push('- Align the shared shell and route structure incrementally instead of replacing the app shell wholesale.');
+  lines.push(
+    '- Start by inventorying the current runtime and identifying the safest route/component anchors for attachment.',
+  );
+  lines.push(
+    '- Align the shared shell and route structure incrementally instead of replacing the app shell wholesale.',
+  );
   lines.push('- Then attach or refine section pages using the matching section and page packs.');
-  lines.push('- After implementation, run decantr check and decantr audit and fix contract or drift issues.');
-  lines.push('- If a required context file or runtime anchor is missing, stop and report exactly what is missing before continuing.');
+  lines.push(
+    '- After implementation, run decantr check and decantr audit and fix contract or drift issues.',
+  );
+  lines.push(
+    '- If a required context file or runtime anchor is missing, stop and report exactly what is missing before continuing.',
+  );
 
   return lines.join('\n');
 }
@@ -319,7 +423,9 @@ function extractHostedAssetPaths(indexHtml: string): string[] {
   return [...assetPaths];
 }
 
-function readHostedDistSnapshot(distPath?: string): { indexHtml: string; assets?: Record<string, string> } | undefined {
+function readHostedDistSnapshot(
+  distPath?: string,
+): { indexHtml: string; assets?: Record<string, string> } | undefined {
   const resolvedDistPath = distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist');
   const indexPath = join(resolvedDistPath, 'index.html');
   if (!existsSync(indexPath)) {
@@ -348,7 +454,9 @@ function isHostedSourceSnapshotFile(path: string): boolean {
   return /\.(?:[cm]?[jt]sx?)$/i.test(path);
 }
 
-function readHostedSourceSnapshot(sourcePath?: string): { files: Record<string, string> } | undefined {
+function readHostedSourceSnapshot(
+  sourcePath?: string,
+): { files: Record<string, string> } | undefined {
   if (!sourcePath) return undefined;
 
   const resolvedSourcePath = resolveUserPath(sourcePath);
@@ -357,7 +465,14 @@ function readHostedSourceSnapshot(sourcePath?: string): { files: Record<string, 
   }
 
   const files: Record<string, string> = {};
-  const ignoredDirNames = new Set(['node_modules', '.git', '.decantr', 'dist', 'build', 'coverage']);
+  const ignoredDirNames = new Set([
+    'node_modules',
+    '.git',
+    '.decantr',
+    'dist',
+    'build',
+    'coverage',
+  ]);
   const rootPrefix = basename(resolvedSourcePath);
 
   const walk = (absoluteDir: string, relativeDir: string) => {
@@ -399,9 +514,8 @@ async function printShowcaseBenchmarks(
   view: 'manifest' | 'shortlist' | 'verification',
   jsonOutput: boolean,
 ) {
-  const fmtBytes = (bytes: number) => bytes >= 1_000_000
-    ? `${(bytes / 1_000_000).toFixed(2)} MB`
-    : `${Math.round(bytes / 1_000)} KB`;
+  const fmtBytes = (bytes: number) =>
+    bytes >= 1_000_000 ? `${(bytes / 1_000_000).toFixed(2)} MB` : `${Math.round(bytes / 1_000)} KB`;
   const data = await getShowcaseBenchmarkView(view);
 
   if (jsonOutput) {
@@ -436,23 +550,51 @@ async function printShowcaseBenchmarks(
       console.log(`  Avg build: ${report.summary.averageDurationMs} ms`);
       console.log(`  Passed smokes: ${report.summary.passedSmokes}/${report.summary.appCount}`);
       console.log(`  Avg smoke: ${report.summary.averageSmokeDurationMs} ms`);
-      console.log(`  Title checks: ${report.summary.appsWithTitleOkCount}/${report.summary.appCount}`);
-      console.log(`  Lang checks: ${report.summary.appsWithLangOkCount}/${report.summary.appCount}`);
-      console.log(`  Viewport checks: ${report.summary.appsWithViewportOkCount}/${report.summary.appCount}`);
-      console.log(`  Charset checks: ${report.summary.appsWithCharsetOkCount}/${report.summary.appCount}`);
-      console.log(`  No inline scripts: ${report.summary.appsWithoutInlineScriptsCount}/${report.summary.appCount}`);
-      console.log(`  CSP signals: ${report.summary.appsWithCspSignalCount}/${report.summary.appCount}`);
-      console.log(`  External script integrity ok: ${report.summary.appsWithExternalScriptIntegrityCount}/${report.summary.appCount}`);
-      console.log(`  External stylesheet integrity ok: ${report.summary.appsWithExternalStylesheetIntegrityCount}/${report.summary.appCount}`);
-      console.log(`  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`);
-      console.log(`  Full route coverage: ${report.summary.appsWithFullRouteCoverageCount}/${report.summary.appCount}`);
-      console.log(`  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`);
-      console.log(`  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`);
-      console.log(`  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`);
+      console.log(
+        `  Title checks: ${report.summary.appsWithTitleOkCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  Lang checks: ${report.summary.appsWithLangOkCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  Viewport checks: ${report.summary.appsWithViewportOkCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  Charset checks: ${report.summary.appsWithCharsetOkCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  No inline scripts: ${report.summary.appsWithoutInlineScriptsCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  CSP signals: ${report.summary.appsWithCspSignalCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  External script integrity ok: ${report.summary.appsWithExternalScriptIntegrityCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  External stylesheet integrity ok: ${report.summary.appsWithExternalStylesheetIntegrityCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  Route coverage: ${report.summary.appsWithRouteCoverageCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  Full route coverage: ${report.summary.appsWithFullRouteCoverageCount}/${report.summary.appCount}`,
+      );
+      console.log(
+        `  Avg assets: total ${fmtBytes(report.summary.averageTotalAssetBytes)} | js ${fmtBytes(report.summary.averageJsAssetBytes)} | css ${fmtBytes(report.summary.averageCssAssetBytes)}`,
+      );
+      console.log(
+        `  Drift: lower ${report.summary.lowerDriftCount}, moderate ${report.summary.moderateDriftCount}, elevated ${report.summary.elevatedDriftCount}`,
+      );
+      console.log(
+        `  Pack manifests: ${report.summary.withPackManifestCount}/${report.summary.appCount}`,
+      );
       console.log('');
     }
     for (const entry of report.results) {
-      console.log(`  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked}${entry.smoke.fullRouteCoverageOk ? ' full' : ' partial'} | js ${fmtBytes(entry.smoke.jsAssetBytes)} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`);
+      console.log(
+        `  ${cyan(entry.slug)}  ${entry.verificationStatus} | smoke ${entry.smoke.passed ? 'green' : entry.build.passed ? 'red' : 'pending'} | routes ${entry.smoke.routeDocumentsPassed}/${entry.smoke.routeDocumentsChecked}${entry.smoke.fullRouteCoverageOk ? ' full' : ' partial'} | js ${fmtBytes(entry.smoke.jsAssetBytes)} | drift ${entry.drift.signal} | build ${entry.build.durationMs} ms | smoke ${entry.smoke.durationMs} ms`,
+      );
     }
     return;
   }
@@ -466,9 +608,15 @@ async function printShowcaseBenchmarks(
   if (shortlist.summary) {
     console.log(`  Passed builds: ${shortlist.summary.passedBuilds}/${shortlist.summary.appCount}`);
     console.log(`  Passed smokes: ${shortlist.summary.passedSmokes}/${shortlist.summary.appCount}`);
-    console.log(`  Route coverage: ${shortlist.summary.appsWithRouteCoverageCount}/${shortlist.summary.appCount}`);
-    console.log(`  Full route coverage: ${shortlist.summary.appsWithFullRouteCoverageCount}/${shortlist.summary.appCount}`);
-    console.log(`  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`);
+    console.log(
+      `  Route coverage: ${shortlist.summary.appsWithRouteCoverageCount}/${shortlist.summary.appCount}`,
+    );
+    console.log(
+      `  Full route coverage: ${shortlist.summary.appsWithFullRouteCoverageCount}/${shortlist.summary.appCount}`,
+    );
+    console.log(
+      `  Drift mix: lower ${shortlist.summary.lowerDriftCount}, moderate ${shortlist.summary.moderateDriftCount}, elevated ${shortlist.summary.elevatedDriftCount}`,
+    );
     console.log('');
   }
   for (const entry of shortlist.apps) {
@@ -480,10 +628,7 @@ async function printShowcaseBenchmarks(
   }
 }
 
-async function printRegistryIntelligenceSummary(
-  namespace?: string,
-  jsonOutput: boolean = false,
-) {
+async function printRegistryIntelligenceSummary(namespace?: string, jsonOutput: boolean = false) {
   const client = getPublicAPIClient();
   const summary = await client.getRegistryIntelligenceSummary(
     namespace ? { namespace } : undefined,
@@ -523,17 +668,16 @@ async function printHostedExecutionPackBundle(
   writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
-  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+  const resolvedPath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
 
   if (!existsSync(resolvedPath)) {
     throw new Error(`Essence file not found at ${resolvedPath}`);
   }
 
   const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
-  const bundle = await client.compileExecutionPacks(
-    essence,
-    namespace ? { namespace } : undefined,
-  );
+  const bundle = await client.compileExecutionPacks(essence, namespace ? { namespace } : undefined);
 
   let writtenContextPaths: string[] = [];
   if (writeContext) {
@@ -558,7 +702,9 @@ async function printHostedExecutionPackBundle(
   console.log(`  Generated: ${typedBundle.generatedAt}`);
   console.log(`  Adapter: ${typedBundle.scaffold.target.adapter}`);
   console.log(`  Shell: ${typedBundle.scaffold.data.shell}`);
-  console.log(`  Theme: ${typedBundle.scaffold.data.theme.id} (${typedBundle.scaffold.data.theme.mode})`);
+  console.log(
+    `  Theme: ${typedBundle.scaffold.data.theme.id} (${typedBundle.scaffold.data.theme.mode})`,
+  );
   console.log(`  Pages: ${typedBundle.pages.length}`);
   console.log(`  Sections: ${typedBundle.sections.length}`);
   console.log(`  Mutations: ${typedBundle.mutations.length}`);
@@ -583,7 +729,9 @@ async function printHostedSelectedExecutionPack(
   writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
-  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+  const resolvedPath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
 
   if (!existsSync(resolvedPath)) {
     throw new Error(`Essence file not found at ${resolvedPath}`);
@@ -607,20 +755,28 @@ async function printHostedSelectedExecutionPack(
   if (writeContext) {
     const contextDir = join(process.cwd(), '.decantr', 'context');
     mkdirSync(contextDir, { recursive: true });
-    writeFileSync(join(contextDir, 'pack-manifest.json'), JSON.stringify(selected.manifest, null, 2) + '\n');
+    writeFileSync(
+      join(contextDir, 'pack-manifest.json'),
+      JSON.stringify(selected.manifest, null, 2) + '\n',
+    );
 
-    const manifestEntry = selected.selector.packType === 'scaffold'
-      ? selected.manifest.scaffold
-      : selected.selector.packType === 'review'
-        ? selected.manifest.review
-        : selected.selector.packType === 'section'
-          ? selected.manifest.sections.find((entry) => entry.id === selected.selector.id)
-          : selected.selector.packType === 'page'
-            ? selected.manifest.pages.find((entry) => entry.id === selected.selector.id)
-            : selected.manifest.mutations.find((entry) => entry.id === selected.selector.id);
+    const manifestEntry =
+      selected.selector.packType === 'scaffold'
+        ? selected.manifest.scaffold
+        : selected.selector.packType === 'review'
+          ? selected.manifest.review
+          : selected.selector.packType === 'section'
+            ? selected.manifest.sections.find((entry) => entry.id === selected.selector.id)
+            : selected.selector.packType === 'page'
+              ? selected.manifest.pages.find((entry) => entry.id === selected.selector.id)
+              : selected.manifest.mutations.find((entry) => entry.id === selected.selector.id);
 
-    const markdownFile = manifestEntry?.markdown ?? `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.md`;
-    const jsonFile = manifestEntry?.json ?? `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.json`;
+    const markdownFile =
+      manifestEntry?.markdown ??
+      `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.md`;
+    const jsonFile =
+      manifestEntry?.json ??
+      `${selected.selector.packType}${selected.selector.id ? `-${selected.selector.id}` : ''}-pack.json`;
     writeFileSync(join(contextDir, markdownFile), selected.pack.renderedMarkdown);
     writeFileSync(join(contextDir, jsonFile), JSON.stringify(selected.pack, null, 2) + '\n');
     writtenContextDir = contextDir;
@@ -655,7 +811,9 @@ async function printHostedExecutionPackManifest(
   writeContext: boolean = false,
 ) {
   const client = getPublicAPIClient();
-  const resolvedPath = essencePath ? resolveUserPath(essencePath) : join(process.cwd(), 'decantr.essence.json');
+  const resolvedPath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
 
   if (!existsSync(resolvedPath)) {
     throw new Error(`Essence file not found at ${resolvedPath}`);
@@ -727,10 +885,7 @@ async function hydrateHostedExecutionPacksIfMissing(
     const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
     const bundle = await client.compileExecutionPacks(essence, { namespace });
     mkdirSync(contextDir, { recursive: true });
-    writeExecutionPackBundleArtifacts(
-      contextDir,
-      bundle as unknown as ExecutionPackBundle,
-    );
+    writeExecutionPackBundleArtifacts(contextDir, bundle as unknown as ExecutionPackBundle);
     return { attempted: true, hydrated: true, scope: 'bundle' };
   } catch {
     return { attempted: true, hydrated: false };
@@ -757,17 +912,20 @@ async function hydrateHostedReviewPackIfMissing(
   try {
     const client = getPublicAPIClient();
     const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
-    const selected = await client.selectExecutionPack(
+    const selected = (await client.selectExecutionPack(
       {
         essence,
         pack_type: 'review',
       },
       { namespace },
-    ) as SelectedExecutionPackResponse;
+    )) as SelectedExecutionPackResponse;
 
     mkdirSync(contextDir, { recursive: true });
     writeFileSync(join(contextDir, 'review-pack.md'), selected.pack.renderedMarkdown);
-    writeFileSync(join(contextDir, 'review-pack.json'), JSON.stringify(selected.pack, null, 2) + '\n');
+    writeFileSync(
+      join(contextDir, 'review-pack.json'),
+      JSON.stringify(selected.pack, null, 2) + '\n',
+    );
     if (!existsSync(manifestPath)) {
       writeFileSync(manifestPath, JSON.stringify(selected.manifest, null, 2) + '\n');
     }
@@ -866,8 +1024,12 @@ async function printHostedProjectAudit(
 
   console.log(heading('Hosted Project Audit'));
   console.log(`  Essence: ${resolvedEssencePath}`);
-  console.log(`  Dist snapshot: ${dist ? (distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist')) : 'none'}`);
-  console.log(`  Source snapshot: ${sources && sourcesPath ? resolveUserPath(sourcesPath) : 'none'}`);
+  console.log(
+    `  Dist snapshot: ${dist ? (distPath ? resolveUserPath(distPath) : join(process.cwd(), 'dist')) : 'none'}`,
+  );
+  console.log(
+    `  Source snapshot: ${sources && sourcesPath ? resolveUserPath(sourcesPath) : 'none'}`,
+  );
   printProjectAuditReport(report as unknown as ProjectAuditReport);
 }
 
@@ -931,8 +1093,8 @@ async function cmdSuggest(query: string, type?: string) {
 
     // Group by relevance: exact matches vs related
     const queryLower = query.toLowerCase();
-    const exact = results.filter(r => r.slug.toLowerCase().includes(queryLower));
-    const related = results.filter(r => !r.slug.toLowerCase().includes(queryLower));
+    const exact = results.filter((r) => r.slug.toLowerCase().includes(queryLower));
+    const related = results.filter((r) => !r.slug.toLowerCase().includes(queryLower));
 
     if (exact.length > 0) {
       console.log(`${BOLD}Direct matches:${RESET}`);
@@ -977,11 +1139,11 @@ async function cmdGet(type: string, id: string) {
   // Fallback to bundled content — check multiple resolution paths
   const currentDir = dirname(fileURLToPath(import.meta.url));
   const bundledCandidates = [
-    join(currentDir, 'bundled', apiType, `${id}.json`),         // Running from src/
+    join(currentDir, 'bundled', apiType, `${id}.json`), // Running from src/
     join(currentDir, '..', 'src', 'bundled', apiType, `${id}.json`), // Running from dist/
-    join(currentDir, '..', 'bundled', apiType, `${id}.json`),   // Alternative dist layout
+    join(currentDir, '..', 'bundled', apiType, `${id}.json`), // Alternative dist layout
   ];
-  const bundledPath = bundledCandidates.find(p => existsSync(p)) || null;
+  const bundledPath = bundledCandidates.find((p) => existsSync(p)) || null;
   if (bundledPath) {
     const data = JSON.parse(readFileSync(bundledPath, 'utf-8'));
     console.log(JSON.stringify(data, null, 2));
@@ -1051,7 +1213,9 @@ async function cmdValidate(path?: string) {
     } else if (result.valid) {
       console.log(success('No guard violations.'));
     }
-  } catch { /* guard is optional */ }
+  } catch {
+    /* guard is optional */
+  }
 }
 
 async function cmdList(
@@ -1061,7 +1225,9 @@ async function cmdList(
   intelligenceSource?: ContentIntelligenceSource,
 ) {
   if (!isApiContentType(type)) {
-    console.error(error(`Invalid type "${type}". Must be one of: ${LIST_CONTENT_TYPES.join(', ')}`));
+    console.error(
+      error(`Invalid type "${type}". Must be one of: ${LIST_CONTENT_TYPES.join(', ')}`),
+    );
     process.exitCode = 1;
     return;
   }
@@ -1087,8 +1253,8 @@ async function cmdList(
   // For themes, show custom items separately
   if (type === 'themes') {
     const customItems = registryClient.listCustomContent('themes');
-    const customIds = new Set(customItems.map(c => c.id));
-    const registryItems = items.filter(i => !customIds.has(i.id));
+    const customIds = new Set(customItems.map((c) => c.id));
+    const registryItems = items.filter((i) => !customIds.has(i.id));
 
     console.log(heading(`Registry themes (${registryItems.length}):`));
     for (const item of registryItems) {
@@ -1167,14 +1333,23 @@ async function cmdInit(args: InitArgs) {
   const requestedArchetype = Boolean(args.archetype);
   const requestedTheme = Boolean(args.theme);
 
-  let offlineSeed = { seeded: false, strategy: null as 'workspace-cache' | 'configured-content-root' | 'sibling-content-root' | null };
+  let offlineSeed = {
+    seeded: false,
+    strategy: null as 'workspace-cache' | 'configured-content-root' | 'sibling-content-root' | null,
+  };
   if (args.offline) {
     offlineSeed = seedOfflineRegistry(projectRoot, projectRoot);
     if (offlineSeed.seeded) {
       console.log(dim(`  Seeded offline registry content from ${offlineSeed.strategy}.`));
     } else if (requestedBlueprint || requestedArchetype) {
-      console.log(error('\nOffline blueprint/archetype scaffolding requires a local Decantr content source.'));
-      console.log(dim('Set DECANTR_CONTENT_DIR, seed .decantr/cache or .decantr/custom, or run without --offline.'));
+      console.log(
+        error('\nOffline blueprint/archetype scaffolding requires a local Decantr content source.'),
+      );
+      console.log(
+        dim(
+          'Set DECANTR_CONTENT_DIR, seed .decantr/cache or .decantr/custom, or run without --offline.',
+        ),
+      );
       process.exitCode = 1;
       return;
     }
@@ -1212,7 +1387,9 @@ async function cmdInit(args: InitArgs) {
     // Offline mode with no blueprint specified: use minimal scaffold
     if (!args.blueprint) {
       console.log(`\n${YELLOW}You're offline. Scaffolding minimal Decantr project.${RESET}`);
-      console.log(dim('Run `decantr sync` or `decantr upgrade` when online to pull full registry content.\n'));
+      console.log(
+        dim('Run `decantr sync` or `decantr upgrade` when online to pull full registry content.\n'),
+      );
 
       const result = scaffoldMinimal(projectRoot);
 
@@ -1227,15 +1404,29 @@ async function cmdInit(args: InitArgs) {
       console.log('');
       console.log('  Next steps:');
       console.log(`    1. Run ${cyan('decantr sync')} when online`);
-      console.log(`    2. Run ${cyan('decantr refresh')} after syncing to generate scaffold, section, and page packs`);
-      console.log(`    3. Read ${cyan('DECANTR.md')} and the generated ${cyan('.decantr/context/*')} files before implementation`);
-      console.log(`    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`);
+      console.log(
+        `    2. Run ${cyan('decantr refresh')} after syncing to generate scaffold, section, and page packs`,
+      );
+      console.log(
+        `    3. Read ${cyan('DECANTR.md')} and the generated ${cyan('.decantr/context/*')} files before implementation`,
+      );
+      console.log(
+        `    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`,
+      );
       return;
     }
 
     if (requestedBlueprint || requestedArchetype) {
-      console.log(error('\nThe requested blueprint/archetype could not be resolved from the hosted registry or local cache.'));
-      console.log(dim('Run `decantr sync`, set DECANTR_CONTENT_DIR, or retry when the registry is reachable.'));
+      console.log(
+        error(
+          '\nThe requested blueprint/archetype could not be resolved from the hosted registry or local cache.',
+        ),
+      );
+      console.log(
+        dim(
+          'Run `decantr sync`, set DECANTR_CONTENT_DIR, or retry when the registry is reachable.',
+        ),
+      );
       process.exitCode = 1;
       return;
     }
@@ -1249,9 +1440,7 @@ async function cmdInit(args: InitArgs) {
     const blueprintsResult = await registryClient.fetchBlueprints();
     registrySource = blueprintsResult.source.type === 'api' ? 'api' : 'cache';
 
-    const { selectedBlueprint: selected } = await runSimplifiedInit(
-      blueprintsResult.data.items
-    );
+    const { selectedBlueprint: selected } = await runSimplifiedInit(blueprintsResult.data.items);
 
     selectedBlueprint = selected || 'default';
   }
@@ -1286,7 +1475,13 @@ async function cmdInit(args: InitArgs) {
     options = mergeWithDefaults(flags, detected, workflowSeed ?? undefined);
   } else {
     // Full interactive mode (default blueprint selected)
-    options = await runInteractivePrompts(detected, archetypes, blueprints, themes, workflowSeed ?? undefined);
+    options = await runInteractivePrompts(
+      detected,
+      archetypes,
+      blueprints,
+      themes,
+      workflowSeed ?? undefined,
+    );
     // In interactive mode, all choices are explicit
     userExplicit.theme = true;
     userExplicit.mode = true;
@@ -1299,11 +1494,18 @@ async function cmdInit(args: InitArgs) {
   let topologyMarkdown = '';
 
   // Fetch blueprint/archetype data
-  let archetypeData: {
-    id: string;
-    pages?: Array<{ id: string; shell: string; default_layout: LayoutItem[]; patterns?: Array<{ pattern: string; preset?: string; as?: string }> }>;
-    features?: string[];
-  } | undefined;
+  let archetypeData:
+    | {
+        id: string;
+        pages?: Array<{
+          id: string;
+          shell: string;
+          default_layout: LayoutItem[];
+          patterns?: Array<{ pattern: string; preset?: string; as?: string }>;
+        }>;
+        features?: string[];
+      }
+    | undefined;
 
   // V3.1 composition data (populated when blueprint has compose entries)
   let composedSections: ComposeSectionsResult | undefined;
@@ -1333,16 +1535,19 @@ async function cmdInit(args: InitArgs) {
       // Apply blueprint personality (unless user explicitly provided --personality)
       // Personality can be a string (narrative) or string[] (traits) — normalize to string[]
       if (!userExplicit.personality && blueprint.personality) {
-        options.personality = typeof blueprint.personality === 'string'
-          ? [blueprint.personality]
-          : blueprint.personality;
+        options.personality =
+          typeof blueprint.personality === 'string'
+            ? [blueprint.personality]
+            : blueprint.personality;
       }
 
       if (blueprint.compose && blueprint.compose.length > 0) {
         // Fetch all archetypes in parallel
         const entries = blueprint.compose;
         // Fetch archetypes sequentially to avoid overwhelming the API
-        const results: Array<readonly [string, ReturnType<typeof mapRegistryArchetypeToArchetypeData> | null]> = [];
+        const results: Array<
+          readonly [string, ReturnType<typeof mapRegistryArchetypeToArchetypeData> | null]
+        > = [];
         for (const entry of entries) {
           const id = typeof entry === 'string' ? entry : entry.archetype;
           const r = await registryClient.fetchArchetype(id);
@@ -1355,7 +1560,7 @@ async function cmdInit(args: InitArgs) {
         const primaryId = typeof entries[0] === 'string' ? entries[0] : entries[0].archetype;
         archetypeData = {
           id: primaryId,
-          pages: composed.pages.map(p => ({
+          pages: composed.pages.map((p) => ({
             id: p.id,
             shell: p.shell_override || composed.defaultShell,
             default_layout: p.layout,
@@ -1380,8 +1585,8 @@ async function cmdInit(args: InitArgs) {
             if (archId && pageId) {
               routeMap[path] = { section: archId, page: pageId };
               // Set route on the page in the composed section
-              const section = composedSections.sections.find(s => s.id === archId);
-              const page = section?.pages.find(p => p.id === pageId);
+              const section = composedSections.sections.find((s) => s.id === archId);
+              const page = section?.pages.find((p) => p.id === pageId);
               if (page) page.route = path;
             }
           }
@@ -1394,7 +1599,8 @@ async function cmdInit(args: InitArgs) {
             if (page.patterns) {
               for (const ref of page.patterns) allPatternIds.add(ref.pattern);
             }
-            for (const patternId of collectPatternIdsFromItems(page.layout)) allPatternIds.add(patternId);
+            for (const patternId of collectPatternIdsFromItems(page.layout))
+              allPatternIds.add(patternId);
           }
         }
 
@@ -1405,9 +1611,15 @@ async function cmdInit(args: InitArgs) {
             try {
               const result = await registryClient.fetchPattern(pid);
               if (result) {
-                patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(result.data, undefined, false);
+                patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(
+                  result.data,
+                  undefined,
+                  false,
+                );
               }
-            } catch { /* pattern not found — skip */ }
+            } catch {
+              /* pattern not found — skip */
+            }
           }
         }
 
@@ -1431,23 +1643,24 @@ async function cmdInit(args: InitArgs) {
         // Derive topology
         const zones = deriveZones(zoneInputs);
         const transitions = deriveTransitions(zones);
-        const primaryZonePages = archetypeData?.pages?.filter(p =>
-          !p.shell || p.shell === composed.defaultShell
-        ) || [];
-        topologyMarkdown = zones.length > 0
-          ? generateTopologySection(
-              {
-                intent: archetypeMap.get(primaryId)?.description || options.blueprint || 'Application',
-                zones,
-                transitions,
-                entryPoints: {
-                  anonymous: '/',
-                  authenticated: `/${primaryZonePages[0]?.id || archetypeData?.pages?.[0]?.id || 'home'}`,
+        const primaryZonePages =
+          archetypeData?.pages?.filter((p) => !p.shell || p.shell === composed.defaultShell) || [];
+        topologyMarkdown =
+          zones.length > 0
+            ? generateTopologySection(
+                {
+                  intent:
+                    archetypeMap.get(primaryId)?.description || options.blueprint || 'Application',
+                  zones,
+                  transitions,
+                  entryPoints: {
+                    anonymous: '/',
+                    authenticated: `/${primaryZonePages[0]?.id || archetypeData?.pages?.[0]?.id || 'home'}`,
+                  },
                 },
-              },
-              options.personality || [],
-            )
-          : '';
+                options.personality || [],
+              )
+            : '';
       }
     } else {
       if (requestedBlueprint) {
@@ -1456,7 +1669,9 @@ async function cmdInit(args: InitArgs) {
         process.exitCode = 1;
         return;
       }
-      console.log(`${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`);
+      console.log(
+        `${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`,
+      );
     }
   } else if (options.archetype) {
     // Direct archetype selection
@@ -1470,7 +1685,9 @@ async function cmdInit(args: InitArgs) {
         process.exitCode = 1;
         return;
       }
-      console.log(`${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`);
+      console.log(
+        `${YELLOW}  Warning: Could not fetch archetype "${options.archetype}". Using defaults.${RESET}`,
+      );
     }
   }
 
@@ -1488,7 +1705,9 @@ async function cmdInit(args: InitArgs) {
         process.exitCode = 1;
         return;
       }
-      console.log(`${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`);
+      console.log(
+        `${YELLOW}  Warning: Could not fetch theme "${options.theme}". Using defaults.${RESET}`,
+      );
     }
   }
 
@@ -1524,14 +1743,22 @@ async function cmdInit(args: InitArgs) {
 
   if (!existsSync(join(projectRoot, 'package.json'))) {
     console.log('');
-    console.log(dim(`  Note: ${cyan('decantr init')} created Decantr contract/context files only.`));
-    console.log(dim(`  For a runnable starter in a new directory, prefer ${cyan('decantr new <name> --blueprint=...')}.`));
+    console.log(
+      dim(`  Note: ${cyan('decantr init')} created Decantr contract/context files only.`),
+    );
+    console.log(
+      dim(
+        `  For a runnable starter in a new directory, prefer ${cyan('decantr new <name> --blueprint=...')}.`,
+      ),
+    );
   }
 
   console.log('');
   console.log('  Next steps:');
   console.log('    1. Read DECANTR.md for methodology, CSS approach, and guard rules');
-  console.log('    2. Read .decantr/context/scaffold-pack.md first, then .decantr/context/scaffold.md');
+  console.log(
+    '    2. Read .decantr/context/scaffold-pack.md first, then .decantr/context/scaffold.md',
+  );
   console.log('    3. Read the matching section and page packs before implementing each route');
   console.log('    4. Build the shell and route structure first, then implement the pages');
   console.log('    5. Run decantr check and decantr audit after implementation');
@@ -1562,19 +1789,26 @@ async function cmdInit(args: InitArgs) {
   let promptPages: PromptContext['pages'];
   if (isV3(essence)) {
     const allPages = essence.blueprint.sections
-      ? essence.blueprint.sections.flatMap((s: any) => s.pages.map((p: any) => ({ ...p, _shell: s.shell })))
+      ? essence.blueprint.sections.flatMap((s: any) =>
+          s.pages.map((p: any) => ({ ...p, _shell: s.shell })),
+        )
       : essence.blueprint.pages || [];
-    promptPages = allPages.map((p: { id: string; shell_override?: string | null; layout: unknown[]; _shell?: string }) => ({
-      id: p.id,
-      shell: p.shell_override ?? p._shell ?? essence.blueprint.shell,
-      layout: (p.layout || []).map((item: unknown) => typeof item === 'string' ? item : extractPatternName(item)),
-    }));
+    promptPages = allPages.map(
+      (p: { id: string; shell_override?: string | null; layout: unknown[]; _shell?: string }) => ({
+        id: p.id,
+        shell: p.shell_override ?? p._shell ?? essence.blueprint.shell,
+        layout: (p.layout || []).map((item: unknown) =>
+          typeof item === 'string' ? item : extractPatternName(item),
+        ),
+      }),
+    );
   } else {
     promptPages = essence.structure || [{ id: 'home', shell: options.shell, layout: ['hero'] }];
   }
 
   const promptCtx: PromptContext = {
-    workflow: options.workflowMode === 'brownfield-attach' ? 'brownfield-attach' : 'greenfield-scaffold',
+    workflow:
+      options.workflowMode === 'brownfield-attach' ? 'brownfield-attach' : 'greenfield-scaffold',
     archetype: options.archetype || 'custom',
     blueprint: options.blueprint,
     theme: options.theme,
@@ -1633,21 +1867,27 @@ async function cmdStatus() {
     if (isV3(essence)) {
       const v3 = essence as EssenceV3;
       const sections = v3.blueprint.sections ?? [];
-      const flatPages = sections.length > 0
-        ? sections.flatMap((section: any) => section.pages ?? [])
-        : v3.blueprint.pages ?? [];
-      const resolvedShell = sections.find((section: any) => section.role === 'primary')?.shell
-        || sections[0]?.shell
-        || (v3.blueprint as any).shell
-        || 'unknown';
+      const flatPages =
+        sections.length > 0
+          ? sections.flatMap((section: any) => section.pages ?? [])
+          : (v3.blueprint.pages ?? []);
+      const resolvedShell =
+        sections.find((section: any) => section.role === 'primary')?.shell ||
+        sections[0]?.shell ||
+        (v3.blueprint as any).shell ||
+        'unknown';
       const resolvedFeatures = v3.blueprint.features ?? [];
       // DNA axioms
       console.log(`  ${BOLD}DNA:${RESET}`);
       console.log(`    Theme: ${v3.dna.theme.id} (${v3.dna.theme.mode})`);
-      console.log(`    Spacing: ${v3.dna.spacing.density} density, ${v3.dna.spacing.content_gap} gap`);
+      console.log(
+        `    Spacing: ${v3.dna.spacing.density} density, ${v3.dna.spacing.content_gap} gap`,
+      );
       console.log(`    Typography: ${v3.dna.typography.scale} scale`);
       console.log(`    Radius: ${v3.dna.radius.philosophy} (base ${v3.dna.radius.base}px)`);
-      console.log(`    Motion: ${v3.dna.motion.preference} (reduce: ${v3.dna.motion.reduce_motion})`);
+      console.log(
+        `    Motion: ${v3.dna.motion.preference} (reduce: ${v3.dna.motion.reduce_motion})`,
+      );
       console.log(`    Accessibility: WCAG ${v3.dna.accessibility.wcag_level}`);
       console.log(`    Personality: ${v3.dna.personality.join(', ')}`);
       // Blueprint
@@ -1657,12 +1897,16 @@ async function cmdStatus() {
       if (sections.length > 0) {
         console.log(`    Sections: ${sections.length}`);
       }
-      console.log(`    Features: ${resolvedFeatures.length > 0 ? resolvedFeatures.join(', ') : 'none'}`);
+      console.log(
+        `    Features: ${resolvedFeatures.length > 0 ? resolvedFeatures.join(', ') : 'none'}`,
+      );
       // Meta
       console.log(`  ${BOLD}Meta:${RESET}`);
       console.log(`    Archetype: ${v3.meta.archetype}`);
       console.log(`    Target: ${v3.meta.target}`);
-      console.log(`    Guard: ${v3.meta.guard.mode} (DNA: ${v3.meta.guard.dna_enforcement}, Blueprint: ${v3.meta.guard.blueprint_enforcement})`);
+      console.log(
+        `    Guard: ${v3.meta.guard.mode} (DNA: ${v3.meta.guard.dna_enforcement}, Blueprint: ${v3.meta.guard.blueprint_enforcement})`,
+      );
     } else {
       // v2 display
       const e = essence as Record<string, unknown>;
@@ -1735,12 +1979,10 @@ function printVerificationFindings(findings: VerificationFinding[]) {
   }
 
   for (const finding of findings) {
-    const color = finding.severity === 'error'
-      ? RED
-      : finding.severity === 'warn'
-        ? YELLOW
-        : CYAN;
-    console.log(`  ${color}[${finding.severity.toUpperCase()}]${RESET} ${finding.category}: ${finding.message}`);
+    const color = finding.severity === 'error' ? RED : finding.severity === 'warn' ? YELLOW : CYAN;
+    console.log(
+      `  ${color}[${finding.severity.toUpperCase()}]${RESET} ${finding.category}: ${finding.message}`,
+    );
     for (const evidence of finding.evidence) {
       console.log(`    ${DIM}${evidence}${RESET}`);
     }
@@ -1764,13 +2006,18 @@ function printProjectAuditReport(report: ProjectAuditReport) {
   console.log(`  Pack manifest: ${report.summary.packManifestPresent ? 'present' : 'missing'}`);
   console.log(`  Review pack: ${report.summary.reviewPackPresent ? 'present' : 'missing'}`);
   const runtimeStatus = report.summary.runtimeAuditChecked
-    ? (report.summary.runtimePassed ? 'passed' : 'failed')
-    : (report.runtimeAudit.distPresent ? 'incomplete' : 'pending (no dist/)');
+    ? report.summary.runtimePassed
+      ? 'passed'
+      : 'failed'
+    : report.runtimeAudit.distPresent
+      ? 'incomplete'
+      : 'pending (no dist/)';
   console.log(`  Runtime audit: ${runtimeStatus}`);
   if (report.summary.runtimeAuditChecked && report.runtimeAudit.assetCount > 0) {
-    const fmt = (bytes: number) => bytes >= 1_000_000
-      ? `${(bytes / 1_000_000).toFixed(2)} MB`
-      : `${Math.round(bytes / 1_000)} KB`;
+    const fmt = (bytes: number) =>
+      bytes >= 1_000_000
+        ? `${(bytes / 1_000_000).toFixed(2)} MB`
+        : `${Math.round(bytes / 1_000)} KB`;
     console.log(
       `  Built assets: total ${fmt(report.runtimeAudit.totalAssetBytes)} | js ${fmt(report.runtimeAudit.jsAssetBytes)} | css ${fmt(report.runtimeAudit.cssAssetBytes)}`,
     );
@@ -1787,7 +2034,9 @@ function printProjectAuditReport(report: ProjectAuditReport) {
       `  JS risk signals: dynamic code ${report.runtimeAudit.jsEvalSignalCount} | html injection ${report.runtimeAudit.jsHtmlInjectionSignalCount} | insecure/dev transport ${report.runtimeAudit.jsInsecureTransportSignalCount} | secret markers ${report.runtimeAudit.jsSecretSignalCount}`,
     );
   }
-  console.log(`  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`);
+  console.log(
+    `  Findings: ${report.summary.errorCount} error(s), ${report.summary.warnCount} warn(s), ${report.summary.infoCount} info`,
+  );
 
   console.log('');
   console.log(`${BOLD}Findings:${RESET}`);
@@ -1826,7 +2075,7 @@ async function cmdAudit(filePath?: string) {
       }
       const report = await critiqueProjectFile(filePath, projectRoot);
       printFileCritiqueReport(report);
-      if (report.findings.some(finding => finding.severity === 'error')) {
+      if (report.findings.some((finding) => finding.severity === 'error')) {
         process.exitCode = 1;
       }
       return;
@@ -1835,11 +2084,13 @@ async function cmdAudit(filePath?: string) {
     const hydration = await hydrateHostedExecutionPacksIfMissing(projectRoot);
     console.log(heading('Auditing project...'));
     if (hydration.hydrated) {
-      console.log(dim(
-        hydration.scope === 'bundle'
-          ? 'Hydrated missing execution packs from hosted registry.'
-          : 'Hydrated missing review pack and manifest from hosted registry.',
-      ));
+      console.log(
+        dim(
+          hydration.scope === 'bundle'
+            ? 'Hydrated missing execution packs from hosted registry.'
+            : 'Hydrated missing review pack and manifest from hosted registry.',
+        ),
+      );
       console.log('');
     }
     const report = await auditProject(projectRoot);
@@ -2139,7 +2390,9 @@ async function main() {
     case 'new': {
       const newName = args[1];
       if (!newName) {
-        console.error(error('Usage: decantr new <project-name> [--blueprint=X] [--archetype=X] [--theme=X]'));
+        console.error(
+          error('Usage: decantr new <project-name> [--blueprint=X] [--archetype=X] [--theme=X]'),
+        );
         process.exitCode = 1;
         break;
       }
@@ -2219,7 +2472,9 @@ async function main() {
     case 'heal': {
       // `heal` is deprecated, aliased to `check`
       if (command === 'heal') {
-        console.log(`${YELLOW}Note: \`decantr heal\` is deprecated. Use \`decantr check\` instead.${RESET}`);
+        console.log(
+          `${YELLOW}Note: \`decantr heal\` is deprecated. Use \`decantr check\` instead.${RESET}`,
+        );
       }
       const { cmdHeal } = await import('./commands/heal.js');
       const telemetryFlag = args.includes('--telemetry');
@@ -2265,7 +2520,11 @@ async function main() {
     case 'search': {
       const query = args[1];
       if (!query) {
-        console.error(error('Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]'));
+        console.error(
+          error(
+            'Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]',
+          ),
+        );
         process.exitCode = 1;
         return;
       }
@@ -2276,7 +2535,11 @@ async function main() {
       const sourceIdx = args.indexOf('--source');
       const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
       if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
-        console.error(error(`Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`));
+        console.error(
+          error(
+            `Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`,
+          ),
+        );
         process.exitCode = 1;
         return;
       }
@@ -2313,7 +2576,11 @@ async function main() {
     case 'list': {
       const type = args[1];
       if (!type) {
-        console.error(error('Usage: decantr list <type> [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]'));
+        console.error(
+          error(
+            'Usage: decantr list <type> [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]',
+          ),
+        );
         process.exitCode = 1;
         return;
       }
@@ -2322,7 +2589,11 @@ async function main() {
       const sourceIdx = args.indexOf('--source');
       const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
       if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
-        console.error(error(`Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`));
+        console.error(
+          error(
+            `Invalid source "${intelligenceSource}". Must be one of: authored, benchmark, hybrid.`,
+          ),
+        );
         process.exitCode = 1;
         return;
       }
@@ -2333,9 +2604,12 @@ async function main() {
 
     case 'showcase': {
       const requestedView = args[1];
-      const view = (requestedView === 'manifest' || requestedView === 'shortlist' || requestedView === 'verification')
-        ? requestedView
-        : 'shortlist';
+      const view =
+        requestedView === 'manifest' ||
+        requestedView === 'shortlist' ||
+        requestedView === 'verification'
+          ? requestedView
+          : 'shortlist';
       const jsonOutput = args.includes('--json');
 
       if (requestedView && requestedView.startsWith('--')) {
@@ -2455,8 +2729,13 @@ async function main() {
         const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
         const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         const id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
-        if (!packType || !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)) {
-          console.error(`${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`);
+        if (
+          !packType ||
+          !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)
+        ) {
+          console.error(
+            `${RED}Usage: decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]${RESET}`,
+          );
           process.exitCode = 1;
           break;
         }
@@ -2482,11 +2761,19 @@ async function main() {
         const treatmentsPath = treatmentsIdx !== -1 ? args[treatmentsIdx + 1] : undefined;
         const sourcePath = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
         if (!sourcePath) {
-          console.error(`${RED}Usage: decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]${RESET}`);
+          console.error(
+            `${RED}Usage: decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]${RESET}`,
+          );
           process.exitCode = 1;
           break;
         }
-        await printHostedFileCritique(sourcePath, namespace, jsonOutput, essencePath, treatmentsPath);
+        await printHostedFileCritique(
+          sourcePath,
+          namespace,
+          jsonOutput,
+          essencePath,
+          treatmentsPath,
+        );
       } else if (subcommand === 'audit-project') {
         const namespaceIdx = args.indexOf('--namespace');
         const namespace = namespaceIdx !== -1 ? args[namespaceIdx + 1] : undefined;
@@ -2499,7 +2786,9 @@ async function main() {
         const sourcesPath = sourcesIdx !== -1 ? args[sourcesIdx + 1] : undefined;
         await printHostedProjectAudit(namespace, jsonOutput, essencePath, distPath, sourcesPath);
       } else {
-        console.error(`${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`);
+        console.error(
+          `${RED}Usage: decantr registry mirror [--type <type>] | decantr registry summary [--namespace <namespace>] [--json] | decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context] | decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context] | decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>] | decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]${RESET}`,
+        );
         process.exitCode = 1;
       }
       break;
@@ -2544,7 +2833,9 @@ async function main() {
           break;
         }
         default:
-          console.error(error(`Unknown add subcommand: ${subcommand}. Use section, page, or feature.`));
+          console.error(
+            error(`Unknown add subcommand: ${subcommand}. Use section, page, or feature.`),
+          );
           process.exitCode = 1;
       }
       break;
@@ -2589,7 +2880,9 @@ async function main() {
           break;
         }
         default:
-          console.error(error(`Unknown remove subcommand: ${subcommand}. Use section, page, or feature.`));
+          console.error(
+            error(`Unknown remove subcommand: ${subcommand}. Use section, page, or feature.`),
+          );
           process.exitCode = 1;
       }
       break;
@@ -2626,7 +2919,9 @@ async function main() {
         console.error(error('Usage: decantr magic <prompt> [--dry-run] [--offline]'));
         console.error('');
         console.error('  Example:');
-        console.error(`    ${CYAN}decantr magic "AI agent dashboard — dark, neon, confident"${RESET}`);
+        console.error(
+          `    ${CYAN}decantr magic "AI agent dashboard — dark, neon, confident"${RESET}`,
+        );
         process.exitCode = 1;
         break;
       }

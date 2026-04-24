@@ -1,8 +1,17 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import {
+  chmodSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 function resolveContentRoot() {
   const candidates = [
@@ -38,8 +47,12 @@ describe('new command (e2e)', () => {
     mkdirSync(join(testDir, '.decantr', 'cache', '@official'), { recursive: true });
     mkdirSync(join(testDir, '.decantr', 'custom'), { recursive: true });
     for (const type of ['archetypes', 'blueprints', 'patterns', 'themes', 'shells']) {
-      cpSync(join(contentRoot, type), join(testDir, '.decantr', 'cache', '@official', type), { recursive: true });
-      cpSync(join(contentRoot, type), join(testDir, '.decantr', 'custom', type), { recursive: true });
+      cpSync(join(contentRoot, type), join(testDir, '.decantr', 'cache', '@official', type), {
+        recursive: true,
+      });
+      cpSync(join(contentRoot, type), join(testDir, '.decantr', 'custom', type), {
+        recursive: true,
+      });
     }
 
     execSync(`node ${cliPath} new agent-smoke --blueprint=agent-marketplace --offline`, {
@@ -65,7 +78,7 @@ describe('new command (e2e)', () => {
     expect(mainTsx).toContain('BrowserRouter');
     expect(appTsx).toContain('Skip to content');
     expect(appTsx).toContain('id="main-content"');
-    expect(appTsx).toContain("Runtime: @decantr/css");
+    expect(appTsx).toContain('Runtime: @decantr/css');
     expect(existsSync(join(projectDir, '.decantr', 'context', 'pack-manifest.json'))).toBe(true);
     expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
   });
@@ -73,15 +86,18 @@ describe('new command (e2e)', () => {
   it('keeps unsupported greenfield targets honest by falling back to contract-only mode', () => {
     writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
 
-    const output = execSync(`node ${cliPath} new next-smoke --blueprint=agent-marketplace --target=nextjs --offline`, {
-      cwd: testDir,
-      env: {
-        ...process.env,
-        DECANTR_CONTENT_DIR: contentRoot,
+    const output = execSync(
+      `node ${cliPath} new next-smoke --blueprint=agent-marketplace --target=nextjs --offline`,
+      {
+        cwd: testDir,
+        env: {
+          ...process.env,
+          DECANTR_CONTENT_DIR: contentRoot,
+        },
+        stdio: 'pipe',
+        timeout: 30000,
       },
-      stdio: 'pipe',
-      timeout: 30000,
-    }).toString();
+    ).toString();
 
     const projectDir = join(testDir, 'next-smoke');
     const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf-8')) as {
@@ -92,7 +108,9 @@ describe('new command (e2e)', () => {
     expect(existsSync(join(projectDir, 'package.json'))).toBe(false);
     expect(existsSync(join(projectDir, 'src', 'main.tsx'))).toBe(false);
     expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
-    expect(output).toContain('No greenfield bootstrap adapter is available yet for target "nextjs"');
+    expect(output).toContain(
+      'No greenfield bootstrap adapter is available yet for target "nextjs"',
+    );
     expect(output).toContain('Contract-only mode for target nextjs');
   });
 
@@ -136,8 +154,12 @@ describe('new command (e2e)', () => {
       blueprint?: { sections?: Array<{ id: string }> };
     };
 
-    expect(essence.blueprint?.sections?.map((section) => section.id)).toContain('portfolio-showcase');
+    expect(essence.blueprint?.sections?.map((section) => section.id)).toContain(
+      'portfolio-showcase',
+    );
     expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
-    expect(existsSync(join(projectDir, '.decantr', 'context', 'section-portfolio-showcase-pack.md'))).toBe(true);
+    expect(
+      existsSync(join(projectDir, '.decantr', 'context', 'section-portfolio-showcase-pack.md')),
+    ).toBe(true);
   });
 });

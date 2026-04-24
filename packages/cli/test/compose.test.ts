@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { composeArchetypes, composeSections } from '../src/scaffold.js';
+import { describe, expect, it } from 'vitest';
 import type { ArchetypeData, BlueprintOverrides } from '../src/scaffold.js';
+import { composeArchetypes, composeSections } from '../src/scaffold.js';
 
-function makeArchetype(overrides: Partial<ArchetypeData> & { pages: ArchetypeData['pages'] }): ArchetypeData {
+function makeArchetype(
+  overrides: Partial<ArchetypeData> & { pages: ArchetypeData['pages'] },
+): ArchetypeData {
   return {
     id: overrides.id || 'test',
     ...overrides,
@@ -28,10 +30,7 @@ describe('composeArchetypes', () => {
       features: ['auth', 'notifications'],
     });
 
-    const result = composeArchetypes(
-      ['dashboard'],
-      new Map([['dashboard', data]]),
-    );
+    const result = composeArchetypes(['dashboard'], new Map([['dashboard', data]]));
 
     expect(result.pages).toHaveLength(2);
     expect(result.pages[0].id).toBe('overview');
@@ -43,9 +42,7 @@ describe('composeArchetypes', () => {
   it('two archetypes: primary has no prefix, secondary pages get archetype ID prefix', () => {
     const dashboard = makeArchetype({
       id: 'dashboard',
-      pages: [
-        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
-      ],
+      pages: [{ id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] }],
       features: ['auth'],
     });
     const chatbot = makeArchetype({
@@ -86,16 +83,16 @@ describe('composeArchetypes', () => {
     });
 
     const result = composeArchetypes(
-      [
-        'marketing-landing',
-        { archetype: 'settings-panel', prefix: 'settings' },
-      ],
+      ['marketing-landing', { archetype: 'settings-panel', prefix: 'settings' }],
       new Map([
-        ['marketing-landing', makeArchetype({
-          id: 'marketing-landing',
-          pages: [{ id: 'home', shell: 'top-nav-main', default_layout: ['hero'] }],
-          features: ['analytics'],
-        })],
+        [
+          'marketing-landing',
+          makeArchetype({
+            id: 'marketing-landing',
+            pages: [{ id: 'home', shell: 'top-nav-main', default_layout: ['hero'] }],
+            features: ['analytics'],
+          }),
+        ],
         ['settings-panel', settings],
       ]),
     );
@@ -121,7 +118,10 @@ describe('composeArchetypes', () => {
 
     const result = composeArchetypes(
       ['a', 'b'],
-      new Map([['a', a], ['b', b]]),
+      new Map([
+        ['a', a],
+        ['b', b],
+      ]),
     );
 
     expect(result.features).toEqual(['auth', 'notifications', 'search', 'payments']);
@@ -130,16 +130,12 @@ describe('composeArchetypes', () => {
   it('secondary archetype with different shell gets shell_override', () => {
     const primary = makeArchetype({
       id: 'dashboard',
-      pages: [
-        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
-      ],
+      pages: [{ id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] }],
       features: [],
     });
     const secondary = makeArchetype({
       id: 'landing',
-      pages: [
-        { id: 'splash', shell: 'top-nav-main', default_layout: ['hero'] },
-      ],
+      pages: [{ id: 'splash', shell: 'top-nav-main', default_layout: ['hero'] }],
       features: [],
     });
 
@@ -162,9 +158,7 @@ describe('composeArchetypes', () => {
   it('handles missing archetype data gracefully', () => {
     const primary = makeArchetype({
       id: 'dashboard',
-      pages: [
-        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
-      ],
+      pages: [{ id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] }],
       features: ['auth'],
     });
 
@@ -199,16 +193,11 @@ describe('composeArchetypes', () => {
   it('pages with empty default_layout get fallback hero layout', () => {
     const data = makeArchetype({
       id: 'minimal',
-      pages: [
-        { id: 'home', shell: 'sidebar-main', default_layout: [] },
-      ],
+      pages: [{ id: 'home', shell: 'sidebar-main', default_layout: [] }],
       features: [],
     });
 
-    const result = composeArchetypes(
-      ['minimal'],
-      new Map([['minimal', data]]),
-    );
+    const result = composeArchetypes(['minimal'], new Map([['minimal', data]]));
 
     expect(result.pages[0].layout).toEqual(['hero']);
   });
@@ -230,15 +219,16 @@ describe('composeSections', () => {
       id: 'landing',
       role: 'public',
       description: 'Public landing page',
-      pages: [
-        { id: 'home', shell: 'top-nav-main', default_layout: ['hero'] },
-      ],
+      pages: [{ id: 'home', shell: 'top-nav-main', default_layout: ['hero'] }],
       features: ['analytics'],
     });
 
     const result = composeSections(
       ['dashboard', 'landing'],
-      new Map([['dashboard', dashboard], ['landing', landing]]),
+      new Map([
+        ['dashboard', dashboard],
+        ['landing', landing],
+      ]),
     );
 
     expect(result.sections).toHaveLength(2);
@@ -263,9 +253,7 @@ describe('composeSections', () => {
       id: 'dashboard',
       role: 'primary',
       description: 'Dashboard',
-      pages: [
-        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
-      ],
+      pages: [{ id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] }],
       features: ['auth', 'notifications'],
     });
 
@@ -274,11 +262,7 @@ describe('composeSections', () => {
       features_remove: ['notifications'],
     };
 
-    const result = composeSections(
-      ['dashboard'],
-      new Map([['dashboard', data]]),
-      overrides,
-    );
+    const result = composeSections(['dashboard'], new Map([['dashboard', data]]), overrides);
 
     expect(result.features).toContain('auth');
     expect(result.features).toContain('payments');
@@ -303,14 +287,10 @@ describe('composeSections', () => {
       pages_remove: ['analytics'],
     };
 
-    const result = composeSections(
-      ['dashboard'],
-      new Map([['dashboard', data]]),
-      overrides,
-    );
+    const result = composeSections(['dashboard'], new Map([['dashboard', data]]), overrides);
 
     expect(result.sections[0].pages).toHaveLength(2);
-    expect(result.sections[0].pages.map(p => p.id)).toEqual(['overview', 'settings']);
+    expect(result.sections[0].pages.map((p) => p.id)).toEqual(['overview', 'settings']);
   });
 
   it('returns default section for empty compose', () => {
@@ -331,24 +311,23 @@ describe('composeSections', () => {
       id: 'landing',
       role: 'public',
       description: 'Landing',
-      pages: [
-        { id: 'home', shell: 'top-nav-main', default_layout: ['hero'] },
-      ],
+      pages: [{ id: 'home', shell: 'top-nav-main', default_layout: ['hero'] }],
       features: [],
     });
     const secondary = makeArchetype({
       id: 'dashboard',
       role: 'primary',
       description: 'Dashboard',
-      pages: [
-        { id: 'overview', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
-      ],
+      pages: [{ id: 'overview', shell: 'sidebar-main', default_layout: ['kpi-grid'] }],
       features: [],
     });
 
     const result = composeSections(
       ['landing', 'dashboard'],
-      new Map([['landing', primary], ['dashboard', secondary]]),
+      new Map([
+        ['landing', primary],
+        ['dashboard', secondary],
+      ]),
     );
 
     expect(result.defaultShell).toBe('top-nav-main');
@@ -359,9 +338,7 @@ describe('composeSections', () => {
       id: 'dashboard',
       role: 'primary',
       description: 'Dashboard',
-      pages: [
-        { id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] },
-      ],
+      pages: [{ id: 'home', shell: 'sidebar-main', default_layout: ['kpi-grid'] }],
       features: [],
     });
     const chatbot = makeArchetype({
@@ -377,7 +354,10 @@ describe('composeSections', () => {
 
     const result = composeSections(
       ['dashboard', 'ai-chatbot'],
-      new Map([['dashboard', dashboard], ['ai-chatbot', chatbot]]),
+      new Map([
+        ['dashboard', dashboard],
+        ['ai-chatbot', chatbot],
+      ]),
     );
 
     // Secondary archetype pages keep original IDs (no prefixing)
@@ -408,10 +388,7 @@ describe('composeSections', () => {
       features: ['keyboard-shortcuts'],
     });
 
-    const result = composeSections(
-      ['terminal-home'],
-      new Map([['terminal-home', terminal]]),
-    );
+    const result = composeSections(['terminal-home'], new Map([['terminal-home', terminal]]));
 
     expect(result.sections[0].pages[0].layout).toEqual([
       { pattern: 'status-bar', preset: 'top' },

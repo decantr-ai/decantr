@@ -1,6 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Pattern, Archetype, Theme, Blueprint, Shell, ContentType, ResolvedContent } from './types.js';
+import type {
+  Archetype,
+  Blueprint,
+  ContentType,
+  Pattern,
+  ResolvedContent,
+  Shell,
+  Theme,
+} from './types.js';
 
 type ContentMap = {
   pattern: Pattern;
@@ -16,7 +24,10 @@ export interface ResolverOptions {
 }
 
 export interface ContentResolver {
-  resolve<T extends ContentType>(type: T, id: string): Promise<ResolvedContent<ContentMap[T]> | null>;
+  resolve<T extends ContentType>(
+    type: T,
+    id: string,
+  ): Promise<ResolvedContent<ContentMap[T]> | null>;
 }
 
 const TYPE_DIRS: Record<ContentType, string> = {
@@ -39,7 +50,10 @@ async function tryLoadJson<T>(filePath: string): Promise<T | null> {
 export function createResolver(options: ResolverOptions): ContentResolver {
   const { contentRoot, overridePaths = [] } = options;
   return {
-    async resolve<T extends ContentType>(type: T, id: string): Promise<ResolvedContent<ContentMap[T]> | null> {
+    async resolve<T extends ContentType>(
+      type: T,
+      id: string,
+    ): Promise<ResolvedContent<ContentMap[T]> | null> {
       const dir = TYPE_DIRS[type];
       const fileName = `${id}.json`;
       for (const overridePath of overridePaths) {

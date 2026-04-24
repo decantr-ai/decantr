@@ -4,7 +4,11 @@ import type { PatternIO } from './types.js';
 // AUTO: hookType classifies each signal for custom hook generation
 export type HookType = 'search' | 'filter' | 'selection' | 'sort';
 
-export interface WiringSignal { name: string; init: string; hookType: HookType }
+export interface WiringSignal {
+  name: string;
+  init: string;
+  hookType: HookType;
+}
 
 export interface WiringRule {
   pair: [string, string];
@@ -71,9 +75,7 @@ export const WIRING_RULES: WiringRule[] = [
   },
   {
     pair: ['filter-bar', 'card-grid'],
-    signals: [
-      { name: 'pageSearch', init: "''", hookType: 'search' },
-    ],
+    signals: [{ name: 'pageSearch', init: "''", hookType: 'search' }],
     props: {
       'filter-bar': { onSearch: 'setPageSearch' },
       'card-grid': { search: 'pageSearch' },
@@ -113,9 +115,7 @@ export function deriveIOWirings(
       const consumerIO = patternIOMap.get(consumerId);
       if (!consumerIO?.consumes?.length) continue;
 
-      const shared = producerIO.produces.filter(
-        (signal) => consumerIO.consumes!.includes(signal),
-      );
+      const shared = producerIO.produces.filter((signal) => consumerIO.consumes!.includes(signal));
       if (shared.length > 0) {
         edges.push({ producer: producerId, consumer: consumerId, signals: shared });
       }

@@ -1,6 +1,6 @@
-import { readFileSync, existsSync } from 'node:fs';
-import { normalizeEssence } from '@decantr/essence-spec';
+import { existsSync, readFileSync } from 'node:fs';
 import type { EssenceFile } from '@decantr/essence-spec';
+import { normalizeEssence } from '@decantr/essence-spec';
 
 export function loadEssence(filePath: string): EssenceFile | null {
   if (!existsSync(filePath)) return null;
@@ -13,27 +13,18 @@ export function loadEssence(filePath: string): EssenceFile | null {
   }
 }
 
-const TRIGGER_EXTENSIONS = new Set([
-  '.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.astro',
-]);
+const TRIGGER_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.astro']);
 
-const IGNORE_PATTERNS = [
-  'node_modules',
-  '.decantr',
-  'decantr.essence.json',
-];
+const IGNORE_PATTERNS = ['node_modules', '.decantr', 'decantr.essence.json'];
 
 export function shouldTriggerGuard(filePath: string): boolean {
-  if (IGNORE_PATTERNS.some(p => filePath.includes(p))) return false;
+  if (IGNORE_PATTERNS.some((p) => filePath.includes(p))) return false;
 
   const ext = filePath.slice(filePath.lastIndexOf('.'));
   return TRIGGER_EXTENSIONS.has(ext);
 }
 
-export function createDebouncedGuard(
-  callback: () => void,
-  delayMs: number,
-): () => void {
+export function createDebouncedGuard(callback: () => void, delayMs: number): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   return () => {

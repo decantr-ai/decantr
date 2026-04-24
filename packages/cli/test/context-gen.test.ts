@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { generateSectionContext, generateScaffoldContext } from '../src/scaffold.js';
-import type { SectionContextInput, ScaffoldContextInput, PatternSpecSummary } from '../src/scaffold.js';
 import type { EssenceV31Section } from '@decantr/essence-spec';
+import { describe, expect, it } from 'vitest';
+import type {
+  PatternSpecSummary,
+  ScaffoldContextInput,
+  SectionContextInput,
+} from '../src/scaffold.js';
+import { generateScaffoldContext, generateSectionContext } from '../src/scaffold.js';
 
 function makeSection(overrides?: Partial<EssenceV31Section>): EssenceV31Section {
   return {
@@ -49,7 +53,9 @@ describe('generateSectionContext', () => {
   it('includes compact guard line', () => {
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('**Guard:** guided mode | DNA violations = error | Blueprint violations = warn');
+    expect(result).toContain(
+      '**Guard:** guided mode | DNA violations = error | Blueprint violations = warn',
+    );
     // Should NOT contain the full guard rules table
     expect(result).not.toContain('## Guard Rules');
     expect(result).not.toContain('| Style guard |');
@@ -162,9 +168,7 @@ describe('generateScaffoldContext', () => {
         shell: 'topbar-main',
         features: ['seo'],
         description: 'Public landing pages',
-        pages: [
-          { id: 'home', route: '/', layout: ['hero', 'features-grid'] },
-        ],
+        pages: [{ id: 'home', route: '/', layout: ['hero', 'features-grid'] }],
       },
       {
         id: 'dashboard',
@@ -210,7 +214,9 @@ describe('generateScaffoldContext', () => {
     // Sections table
     expect(result).toContain('## Sections Overview');
     expect(result).toContain('| landing | public | topbar-main | home | seo |');
-    expect(result).toContain('| dashboard | primary | sidebar-main | overview, analytics | auth, notifications |');
+    expect(result).toContain(
+      '| dashboard | primary | sidebar-main | overview, analytics | auth, notifications |',
+    );
 
     // Route map
     expect(result).toContain('## Route Map');

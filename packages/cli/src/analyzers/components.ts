@@ -43,9 +43,7 @@ function countFilesRecursive(dir: string, extensions: Set<string>): number {
           count++;
         }
       }
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return count;
@@ -76,9 +74,7 @@ function countPageFiles(dir: string): number {
           count++;
         }
       }
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   return count;
@@ -92,10 +88,7 @@ export function scanComponents(projectRoot: string): ComponentsAnalysis {
   const componentDirs: string[] = [];
 
   // Count pages from app directories
-  const appDirs = [
-    join(projectRoot, 'src', 'app'),
-    join(projectRoot, 'app'),
-  ];
+  const appDirs = [join(projectRoot, 'src', 'app'), join(projectRoot, 'app')];
   for (const dir of appDirs) {
     if (existsSync(dir)) {
       pageCount += countPageFiles(dir);
@@ -103,10 +96,7 @@ export function scanComponents(projectRoot: string): ComponentsAnalysis {
   }
 
   // Count pages from pages directories (Pages Router)
-  const pagesDirs = [
-    join(projectRoot, 'src', 'pages'),
-    join(projectRoot, 'pages'),
-  ];
+  const pagesDirs = [join(projectRoot, 'src', 'pages'), join(projectRoot, 'pages')];
   for (const dir of pagesDirs) {
     if (existsSync(dir)) {
       pageCount += countFilesRecursive(dir, PAGE_EXTENSIONS);
@@ -128,9 +118,7 @@ export function scanComponents(projectRoot: string): ComponentsAnalysis {
       if (count > 0) {
         componentCount += count;
         // Store relative path
-        const rel = dir.startsWith(projectRoot)
-          ? dir.slice(projectRoot.length + 1)
-          : dir;
+        const rel = dir.startsWith(projectRoot) ? dir.slice(projectRoot.length + 1) : dir;
         componentDirs.push(rel);
       }
     }

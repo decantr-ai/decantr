@@ -2,7 +2,16 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface DetectedProject {
-  framework: 'react' | 'vue' | 'svelte' | 'angular' | 'nextjs' | 'nuxt' | 'astro' | 'html' | 'unknown';
+  framework:
+    | 'react'
+    | 'vue'
+    | 'svelte'
+    | 'angular'
+    | 'nextjs'
+    | 'nuxt'
+    | 'astro'
+    | 'html'
+    | 'unknown';
   version?: string;
   packageManager: 'npm' | 'pnpm' | 'yarn' | 'bun' | 'unknown';
   hasTypeScript: boolean;
@@ -66,36 +75,45 @@ export function detectProject(projectRoot: string = process.cwd()): DetectedProj
   result.hasTypeScript = existsSync(join(projectRoot, 'tsconfig.json'));
 
   // Check for Tailwind
-  result.hasTailwind = existsSync(join(projectRoot, 'tailwind.config.js')) ||
+  result.hasTailwind =
+    existsSync(join(projectRoot, 'tailwind.config.js')) ||
     existsSync(join(projectRoot, 'tailwind.config.ts')) ||
     existsSync(join(projectRoot, 'tailwind.config.mjs')) ||
     existsSync(join(projectRoot, 'tailwind.config.cjs'));
 
   // Detect framework from config files first (more specific)
-  if (existsSync(join(projectRoot, 'next.config.js')) ||
-      existsSync(join(projectRoot, 'next.config.ts')) ||
-      existsSync(join(projectRoot, 'next.config.mjs'))) {
+  if (
+    existsSync(join(projectRoot, 'next.config.js')) ||
+    existsSync(join(projectRoot, 'next.config.ts')) ||
+    existsSync(join(projectRoot, 'next.config.mjs'))
+  ) {
     result.framework = 'nextjs';
     result.version = getPackageVersion(projectRoot, 'next');
     return result;
   }
 
-  if (existsSync(join(projectRoot, 'nuxt.config.js')) ||
-      existsSync(join(projectRoot, 'nuxt.config.ts'))) {
+  if (
+    existsSync(join(projectRoot, 'nuxt.config.js')) ||
+    existsSync(join(projectRoot, 'nuxt.config.ts'))
+  ) {
     result.framework = 'nuxt';
     result.version = getPackageVersion(projectRoot, 'nuxt');
     return result;
   }
 
-  if (existsSync(join(projectRoot, 'astro.config.mjs')) ||
-      existsSync(join(projectRoot, 'astro.config.ts'))) {
+  if (
+    existsSync(join(projectRoot, 'astro.config.mjs')) ||
+    existsSync(join(projectRoot, 'astro.config.ts'))
+  ) {
     result.framework = 'astro';
     result.version = getPackageVersion(projectRoot, 'astro');
     return result;
   }
 
-  if (existsSync(join(projectRoot, 'svelte.config.js')) ||
-      existsSync(join(projectRoot, 'svelte.config.ts'))) {
+  if (
+    existsSync(join(projectRoot, 'svelte.config.js')) ||
+    existsSync(join(projectRoot, 'svelte.config.ts'))
+  ) {
     result.framework = 'svelte';
     result.version = getPackageVersion(projectRoot, 'svelte');
     return result;
@@ -183,7 +201,11 @@ export function getRecommendations(detected: DetectedProject): {
   }
 
   // SSR frameworks suggest different shells
-  if (detected.framework === 'nextjs' || detected.framework === 'nuxt' || detected.framework === 'astro') {
+  if (
+    detected.framework === 'nextjs' ||
+    detected.framework === 'nuxt' ||
+    detected.framework === 'astro'
+  ) {
     suggestedShell = 'top-nav-main';
   }
 

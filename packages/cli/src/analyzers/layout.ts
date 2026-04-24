@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface LayoutAnalysis {
@@ -17,13 +17,17 @@ const FOOTER_PATTERNS = ['footer', 'bottom-bar', 'bottombar'];
  */
 function containsPattern(text: string, patterns: string[]): boolean {
   const lower = text.toLowerCase();
-  return patterns.some(p => lower.includes(p));
+  return patterns.some((p) => lower.includes(p));
 }
 
 /**
  * Check component directories for files matching layout patterns.
  */
-function checkComponentDirs(projectRoot: string): { sidebar: boolean; nav: boolean; footer: boolean } {
+function checkComponentDirs(projectRoot: string): {
+  sidebar: boolean;
+  nav: boolean;
+  footer: boolean;
+} {
   const result = { sidebar: false, nav: false, footer: false };
 
   const componentDirs = [
@@ -44,9 +48,9 @@ function checkComponentDirs(projectRoot: string): { sidebar: boolean; nav: boole
 
     for (const entry of entries) {
       const lower = entry.toLowerCase();
-      if (SIDEBAR_PATTERNS.some(p => lower.includes(p))) result.sidebar = true;
-      if (NAV_PATTERNS.some(p => lower.includes(p))) result.nav = true;
-      if (FOOTER_PATTERNS.some(p => lower.includes(p))) result.footer = true;
+      if (SIDEBAR_PATTERNS.some((p) => lower.includes(p))) result.sidebar = true;
+      if (NAV_PATTERNS.some((p) => lower.includes(p))) result.nav = true;
+      if (FOOTER_PATTERNS.some((p) => lower.includes(p))) result.footer = true;
     }
   }
 
@@ -56,7 +60,11 @@ function checkComponentDirs(projectRoot: string): { sidebar: boolean; nav: boole
 /**
  * Read root layout files and check for sidebar/nav/footer references.
  */
-function checkLayoutFiles(projectRoot: string): { sidebar: boolean; nav: boolean; footer: boolean } {
+function checkLayoutFiles(projectRoot: string): {
+  sidebar: boolean;
+  nav: boolean;
+  footer: boolean;
+} {
   const result = { sidebar: false, nav: false, footer: false };
 
   const layoutPaths = [
@@ -136,9 +144,10 @@ function inferShellPatternFromDecantrContract(projectRoot: string): string | nul
       };
     };
 
-    const sectionShells = essence.blueprint?.sections
-      ?.map((section) => section.shell)
-      .filter((shell): shell is string => typeof shell === 'string' && shell.length > 0) ?? [];
+    const sectionShells =
+      essence.blueprint?.sections
+        ?.map((section) => section.shell)
+        .filter((shell): shell is string => typeof shell === 'string' && shell.length > 0) ?? [];
 
     if (sectionShells.length === 0 && essence.blueprint?.shell) {
       return `${essence.blueprint.shell} (contract)`;
@@ -148,7 +157,9 @@ function inferShellPatternFromDecantrContract(projectRoot: string): string | nul
     if (uniqueShells.length === 0) return null;
     if (uniqueShells.length === 1) return `${uniqueShells[0]} (contract)`;
 
-    const primarySection = essence.blueprint?.sections?.find((section) => section.role === 'primary' && section.shell);
+    const primarySection = essence.blueprint?.sections?.find(
+      (section) => section.role === 'primary' && section.shell,
+    );
     if (primarySection?.shell) {
       return `${primarySection.shell} (primary contract)`;
     }
@@ -177,8 +188,9 @@ export function scanLayout(projectRoot: string): LayoutAnalysis {
     hasSidebar,
     hasTopNav,
     hasFooter,
-    shellPattern: runtimeShellPattern === 'main-only' && contractShellPattern
-      ? contractShellPattern
-      : runtimeShellPattern,
+    shellPattern:
+      runtimeShellPattern === 'main-only' && contractShellPattern
+        ? contractShellPattern
+        : runtimeShellPattern,
   };
 }

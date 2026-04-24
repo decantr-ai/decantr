@@ -247,13 +247,7 @@ export interface Shell {
 }
 
 // --- Content Resolution ---
-export const CONTENT_TYPES = [
-  'pattern',
-  'theme',
-  'blueprint',
-  'archetype',
-  'shell',
-] as const;
+export const CONTENT_TYPES = ['pattern', 'theme', 'blueprint', 'archetype', 'shell'] as const;
 
 export type ContentType = (typeof CONTENT_TYPES)[number];
 
@@ -326,18 +320,31 @@ export interface Theme {
   spatial?: ThemeSpatial;
   shell?: ThemeShell;
   effects?: ThemeEffects;
-  motion?: { preference?: string; reduce_motion?: boolean; entrance?: string; timing?: string; durations?: Record<string, string> };
+  motion?: {
+    preference?: string;
+    reduce_motion?: boolean;
+    entrance?: string;
+    timing?: string;
+    durations?: Record<string, string>;
+  };
   typography?: { scale?: string; heading_weight?: number; body_weight?: number; mono?: string };
   radius?: { philosophy?: string; base?: number };
   compositions?: Record<string, { shell: string; description: string; effects?: string[] }>;
-  pattern_preferences?: { prefer: string[]; avoid: string[]; default_presets?: Record<string, string> };
-  decorator_definitions?: Record<string, {
-    description: string;
-    intent: string;
-    suggested_properties?: Record<string, string>;
-    pairs_with?: string[];
-    usage?: string[];
-  }>;
+  pattern_preferences?: {
+    prefer: string[];
+    avoid: string[];
+    default_presets?: Record<string, string>;
+  };
+  decorator_definitions?: Record<
+    string,
+    {
+      description: string;
+      intent: string;
+      suggested_properties?: Record<string, string>;
+      pairs_with?: string[];
+      usage?: string[];
+    }
+  >;
 }
 
 // --- API Client Types ---
@@ -361,11 +368,7 @@ export type ContentBenchmarkConfidence = 'none' | 'low' | 'medium' | 'high';
 export type ContentConfidenceTier = 'low' | 'medium' | 'high' | 'verified';
 
 export type ContentGoldenUsage = 'none' | 'showcase' | 'shortlisted';
-export const PUBLIC_CONTENT_SOURCES = [
-  'official',
-  'community',
-  'organization',
-] as const;
+export const PUBLIC_CONTENT_SOURCES = ['official', 'community', 'organization'] as const;
 
 export type PublicContentSource = (typeof PUBLIC_CONTENT_SOURCES)[number];
 
@@ -373,11 +376,7 @@ export function isPublicContentSource(value: string): value is PublicContentSour
   return PUBLIC_CONTENT_SOURCES.includes(value as PublicContentSource);
 }
 
-export const CONTENT_INTELLIGENCE_SOURCES = [
-  'authored',
-  'benchmark',
-  'hybrid',
-] as const;
+export const CONTENT_INTELLIGENCE_SOURCES = ['authored', 'benchmark', 'hybrid'] as const;
 
 export type ContentIntelligenceSource = 'authored' | 'benchmark' | 'hybrid';
 
@@ -761,110 +760,115 @@ export interface ExecutionPackManifest {
   mutations: PackManifestMutationEntry[];
 }
 
-export interface ScaffoldExecutionPack extends ExecutionPackBase<{
-  shell: string;
-  theme: {
-    id: string;
-    mode: string;
-    shape: string | null;
-  };
-  routing: 'hash' | 'history' | 'pathname';
-  features: string[];
-  routes: Array<{
-    pageId: string;
-    path: string;
-    shell?: string;
-    patternIds: string[];
-  }>;
-}> {
+export interface ScaffoldExecutionPack
+  extends ExecutionPackBase<{
+    shell: string;
+    theme: {
+      id: string;
+      mode: string;
+      shape: string | null;
+    };
+    routing: 'hash' | 'history' | 'pathname';
+    features: string[];
+    routes: Array<{
+      pageId: string;
+      path: string;
+      shell?: string;
+      patternIds: string[];
+    }>;
+  }> {
   packType: 'scaffold';
 }
 
-export interface ReviewExecutionPack extends ExecutionPackBase<{
-  reviewType: 'app';
-  shell: string;
-  theme: {
-    id: string;
-    mode: string;
-    shape: string | null;
-  };
-  routing: 'hash' | 'history' | 'pathname';
-  features: string[];
-  routes: Array<{
-    pageId: string;
-    path: string;
-    shell?: string;
-    patternIds: string[];
-  }>;
-  focusAreas: string[];
-  workflow: string[];
-}> {
+export interface ReviewExecutionPack
+  extends ExecutionPackBase<{
+    reviewType: 'app';
+    shell: string;
+    theme: {
+      id: string;
+      mode: string;
+      shape: string | null;
+    };
+    routing: 'hash' | 'history' | 'pathname';
+    features: string[];
+    routes: Array<{
+      pageId: string;
+      path: string;
+      shell?: string;
+      patternIds: string[];
+    }>;
+    focusAreas: string[];
+    workflow: string[];
+  }> {
   packType: 'review';
 }
 
-export interface SectionExecutionPack extends ExecutionPackBase<{
-  sectionId: string;
-  role: string;
-  shell: string;
-  description: string;
-  features: string[];
-  theme: {
-    id: string;
-    mode: string;
-    shape: string | null;
-  };
-  routes: Array<{
-    pageId: string;
-    path: string;
-    shell?: string;
-    patternIds: string[];
-  }>;
-}> {
+export interface SectionExecutionPack
+  extends ExecutionPackBase<{
+    sectionId: string;
+    role: string;
+    shell: string;
+    description: string;
+    features: string[];
+    theme: {
+      id: string;
+      mode: string;
+      shape: string | null;
+    };
+    routes: Array<{
+      pageId: string;
+      path: string;
+      shell?: string;
+      patternIds: string[];
+    }>;
+  }> {
   packType: 'section';
 }
 
-export interface PageExecutionPack extends ExecutionPackBase<{
-  pageId: string;
-  path: string;
-  shell: string;
-  sectionId: string | null;
-  sectionRole: string | null;
-  features: string[];
-  surface: string;
-  theme: {
-    id: string;
-    mode: string;
-    shape: string | null;
-  };
-  wiringSignals: string[];
-  patterns: Array<{
-    id: string;
-    alias: string;
-    preset: string;
-    layout: string;
-  }>;
-}> {
+export interface PageExecutionPack
+  extends ExecutionPackBase<{
+    pageId: string;
+    path: string;
+    shell: string;
+    sectionId: string | null;
+    sectionRole: string | null;
+    features: string[];
+    surface: string;
+    theme: {
+      id: string;
+      mode: string;
+      shape: string | null;
+    };
+    wiringSignals: string[];
+    patterns: Array<{
+      id: string;
+      alias: string;
+      preset: string;
+      layout: string;
+    }>;
+  }> {
   packType: 'page';
 }
 
-export interface MutationExecutionPack extends ExecutionPackBase<{
-  mutationType: 'add-page' | 'modify';
-  shell: string;
-  theme: {
-    id: string;
-    mode: string;
-    shape: string | null;
-  };
-  routing: 'hash' | 'history' | 'pathname';
-  features: string[];
-  routes: Array<{
-    pageId: string;
-    path: string;
-    shell?: string;
-    patternIds: string[];
-  }>;
-  workflow: string[];
-}> {
+export interface MutationExecutionPack
+  extends ExecutionPackBase<{
+    mutationType: 'add-page' | 'modify';
+    shell: string;
+    theme: {
+      id: string;
+      mode: string;
+      shape: string | null;
+    };
+    routing: 'hash' | 'history' | 'pathname';
+    features: string[];
+    routes: Array<{
+      pageId: string;
+      path: string;
+      shell?: string;
+      patternIds: string[];
+    }>;
+    workflow: string[];
+  }> {
   packType: 'mutation';
 }
 

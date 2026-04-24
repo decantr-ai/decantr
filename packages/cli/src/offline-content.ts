@@ -50,13 +50,21 @@ export function seedOfflineRegistry(
   const projectDecantrRoot = join(projectDir, '.decantr');
   mkdirSync(projectDecantrRoot, { recursive: true });
 
-  const configuredContentRoot = process.env.DECANTR_CONTENT_DIR ? resolve(process.env.DECANTR_CONTENT_DIR) : null;
+  const configuredContentRoot = process.env.DECANTR_CONTENT_DIR
+    ? resolve(process.env.DECANTR_CONTENT_DIR)
+    : null;
   if (configuredContentRoot && hydrateContentRoot(projectDir, configuredContentRoot)) {
     return { seeded: true, strategy: 'configured-content-root' };
   }
 
-  const copiedCache = copyIfExists(join(workspaceRoot, '.decantr', 'cache'), join(projectDecantrRoot, 'cache'));
-  const copiedCustom = copyIfExists(join(workspaceRoot, '.decantr', 'custom'), join(projectDecantrRoot, 'custom'));
+  const copiedCache = copyIfExists(
+    join(workspaceRoot, '.decantr', 'cache'),
+    join(projectDecantrRoot, 'cache'),
+  );
+  const copiedCustom = copyIfExists(
+    join(workspaceRoot, '.decantr', 'custom'),
+    join(projectDecantrRoot, 'custom'),
+  );
   if (copiedCache || copiedCustom) {
     return { seeded: true, strategy: 'workspace-cache' };
   }

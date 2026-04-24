@@ -73,9 +73,7 @@ function getRecommendedPriority(item: PublicContentSummary): number {
   return score;
 }
 
-export function normalizePublicContentSort(
-  value: string | null | undefined,
-): PublicContentSort {
+export function normalizePublicContentSort(value: string | null | undefined): PublicContentSort {
   switch (value) {
     case 'popular':
     case 'recommended':
@@ -102,8 +100,7 @@ export function comparePublicContent(
 
   if (sort === 'recent') {
     const publishedDelta =
-      new Date(b.published_at ?? 0).getTime() -
-      new Date(a.published_at ?? 0).getTime();
+      new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime();
     if (publishedDelta !== 0) {
       return publishedDelta;
     }
@@ -121,8 +118,7 @@ export function comparePublicContent(
   }
 
   const publishedDelta =
-    new Date(b.published_at ?? 0).getTime() -
-    new Date(a.published_at ?? 0).getTime();
+    new Date(b.published_at ?? 0).getTime() - new Date(a.published_at ?? 0).getTime();
   if (publishedDelta !== 0) {
     return publishedDelta;
   }

@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
 import { createResolver } from '../src/resolver.js';
 import { detectWirings } from '../src/wiring.js';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentRoot = join(__dirname, 'fixtures');
@@ -33,7 +33,10 @@ describe('content-site archetype', () => {
   it('each page has a default_layout', () => {
     for (const page of archetype.pages) {
       expect(page.default_layout, `page ${page.id} missing default_layout`).toBeInstanceOf(Array);
-      expect(page.default_layout.length, `page ${page.id} has empty default_layout`).toBeGreaterThan(0);
+      expect(
+        page.default_layout.length,
+        `page ${page.id} has empty default_layout`,
+      ).toBeGreaterThan(0);
     }
   });
 
@@ -41,7 +44,10 @@ describe('content-site archetype', () => {
     const articlePage = archetype.pages.find((p: { id: string }) => p.id === 'article');
     expect(articlePage).toBeDefined();
     const detailHeader = articlePage.default_layout.find(
-      (item: unknown) => typeof item === 'object' && item !== null && (item as { pattern: string }).pattern === 'detail-header'
+      (item: unknown) =>
+        typeof item === 'object' &&
+        item !== null &&
+        (item as { pattern: string }).pattern === 'detail-header',
     );
     expect(detailHeader).toBeDefined();
     expect(detailHeader.preset).toBe('standard');
@@ -52,7 +58,8 @@ describe('content-site archetype', () => {
     expect(categoriesPage).toBeDefined();
     const patternIds = categoriesPage.default_layout.map((item: unknown) => {
       if (typeof item === 'string') return item;
-      if (typeof item === 'object' && item !== null && 'pattern' in item) return (item as { pattern: string }).pattern;
+      if (typeof item === 'object' && item !== null && 'pattern' in item)
+        return (item as { pattern: string }).pattern;
       return null;
     });
     expect(patternIds).toContain('filter-bar');
@@ -62,7 +69,7 @@ describe('content-site archetype', () => {
   it('pattern references use correct preset names', () => {
     // AUTO: Valid presets per pattern, derived from content/patterns/*.json
     const validPresets: Record<string, string[]> = {
-      'hero': ['landing', 'split', 'centered', 'video'],
+      hero: ['landing', 'split', 'centered', 'video'],
       'card-grid': ['product', 'content', 'collection', 'icon'],
       'detail-header': ['standard', 'profile'],
       'filter-bar': ['standard', 'compact', 'advanced'],

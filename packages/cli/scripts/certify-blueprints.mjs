@@ -75,7 +75,10 @@ function resolveCliPath() {
 }
 
 function projectSlug(blueprint) {
-  return blueprint.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase();
+  return blueprint
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
 }
 
 function expectedRouterForRouting(routing) {
@@ -168,12 +171,16 @@ function main() {
   }
 
   if (!contentRoot) {
-    console.error(`${RED}Could not resolve decantr-content. Set DECANTR_CONTENT_DIR or pass --content-root.${RESET}`);
+    console.error(
+      `${RED}Could not resolve decantr-content. Set DECANTR_CONTENT_DIR or pass --content-root.${RESET}`,
+    );
     process.exit(1);
   }
 
   if (options.blueprints.length === 0) {
-    console.error(`${RED}No blueprints specified. Pass --blueprints=portfolio,producer-studio,agent-marketplace.${RESET}`);
+    console.error(
+      `${RED}No blueprints specified. Pass --blueprints=portfolio,producer-studio,agent-marketplace.${RESET}`,
+    );
     process.exit(1);
   }
 
@@ -184,14 +191,18 @@ function main() {
   try {
     for (const blueprint of options.blueprints) {
       if (!options.json) {
-        console.log(`${CYAN}Certifying${RESET} ${blueprint} ${DIM}(greenfield new + build)${RESET}`);
+        console.log(
+          `${CYAN}Certifying${RESET} ${blueprint} ${DIM}(greenfield new + build)${RESET}`,
+        );
       }
 
       try {
         const result = certifyBlueprint(tmpRoot, blueprint, cliPath, contentRoot);
         results.push({ ...result, status: 'passed' });
         if (!options.json) {
-          console.log(`${GREEN}  passed${RESET} ${blueprint} -> ${result.router} (${result.routing})`);
+          console.log(
+            `${GREEN}  passed${RESET} ${blueprint} -> ${result.router} (${result.routing})`,
+          );
         }
       } catch (error) {
         failed = true;
@@ -208,16 +219,24 @@ function main() {
     }
 
     if (options.json) {
-      console.log(JSON.stringify({
-        contentRoot,
-        tmpRoot,
-        results,
-      }, null, 2));
+      console.log(
+        JSON.stringify(
+          {
+            contentRoot,
+            tmpRoot,
+            results,
+          },
+          null,
+          2,
+        ),
+      );
     } else {
       console.log('');
       console.log(`${DIM}Content root:${RESET} ${contentRoot}`);
       console.log(`${DIM}Temp root:${RESET} ${tmpRoot}`);
-      console.log(`${DIM}Summary:${RESET} ${results.filter((entry) => entry.status === 'passed').length}/${results.length} passed`);
+      console.log(
+        `${DIM}Summary:${RESET} ${results.filter((entry) => entry.status === 'passed').length}/${results.length} passed`,
+      );
       if (!options.keepTmp) {
         console.log(`${DIM}Temporary projects will be removed after the run.${RESET}`);
       }

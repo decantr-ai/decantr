@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { loadEssence, shouldTriggerGuard, createDebouncedGuard } from '../src/watcher.js';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createDebouncedGuard, loadEssence, shouldTriggerGuard } from '../src/watcher.js';
 
 const TMP = join(__dirname, '.tmp-watcher');
 
@@ -13,31 +13,34 @@ beforeEach(() => {
 describe('loadEssence', () => {
   it('loads and returns a valid v3 essence file', () => {
     const essencePath = join(TMP, 'decantr.essence.json');
-    writeFileSync(essencePath, JSON.stringify({
-      version: '3.1.0',
-      dna: {
-        theme: { id: 'clean', mode: 'dark', shape: 'rounded' },
-        spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
-        typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
-        color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
-        radius: { philosophy: 'rounded', base: 8 },
-        elevation: { system: 'layered', max_levels: 3 },
-        motion: { preference: 'subtle', duration_scale: 1.0, reduce_motion: true },
-        accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
-        personality: ['minimal'],
-      },
-      blueprint: {
-        shell: 'top-nav-main',
-        pages: [{ id: 'home', layout: ['hero'] }],
-        features: [],
-      },
-      meta: {
-        archetype: 'portfolio',
-        target: 'react',
-        platform: { type: 'spa', routing: 'hash' },
-        guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'off' },
-      },
-    }));
+    writeFileSync(
+      essencePath,
+      JSON.stringify({
+        version: '3.1.0',
+        dna: {
+          theme: { id: 'clean', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1.0, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['minimal'],
+        },
+        blueprint: {
+          shell: 'top-nav-main',
+          pages: [{ id: 'home', layout: ['hero'] }],
+          features: [],
+        },
+        meta: {
+          archetype: 'portfolio',
+          target: 'react',
+          platform: { type: 'spa', routing: 'hash' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'off' },
+        },
+      }),
+    );
 
     const result = loadEssence(essencePath);
     expect(result).not.toBeNull();
@@ -89,7 +92,7 @@ describe('createDebouncedGuard', () => {
     debounced();
     expect(fn).not.toHaveBeenCalled();
 
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise((r) => setTimeout(r, 80));
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
@@ -101,7 +104,7 @@ describe('createDebouncedGuard', () => {
     debounced();
     debounced();
 
-    await new Promise(r => setTimeout(r, 80));
+    await new Promise((r) => setTimeout(r, 80));
     expect(fn).toHaveBeenCalledTimes(1);
   });
 });

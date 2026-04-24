@@ -1,14 +1,17 @@
-import { describe, it, expect } from 'vitest';
-import { buildPageIR } from '../src/ir.js';
 import type { StructurePage } from '@decantr/essence-spec';
 import type { Pattern, Theme as RegistryTheme, ResolvedPreset } from '@decantr/registry';
-import type { IRWiring, IRPatternNode, IRGridNode } from '../src/types.js';
+import { describe, expect, it } from 'vitest';
+import { buildPageIR } from '../src/ir.js';
+import type { IRGridNode, IRPatternNode, IRWiring } from '../src/types.js';
 
 function makePattern(id: string, overrides?: Partial<Pattern>): Pattern {
   return {
     id,
     version: '1.0.0',
-    name: id.split('-').map(s => s[0].toUpperCase() + s.slice(1)).join(' '),
+    name: id
+      .split('-')
+      .map((s) => s[0].toUpperCase() + s.slice(1))
+      .join(' '),
     description: `${id} pattern`,
     tags: [],
     components: ['Card', 'Button'],
@@ -74,7 +77,10 @@ describe('buildPageIR', () => {
         },
       },
     });
-    const preset = makeResolvedPreset({ preset: 'product', layout: { layout: 'grid', atoms: '_grid _gc4 _gap4' } });
+    const preset = makeResolvedPreset({
+      preset: 'product',
+      layout: { layout: 'grid', atoms: '_grid _gc4 _gap4' },
+    });
     const patterns = new Map([['product-grid', { pattern, preset }]]);
 
     const ir = buildPageIR(page, patterns, null, null, defaultDensity);
@@ -178,7 +184,12 @@ describe('buildPageIR', () => {
         surface_override: null,
       },
       shell: { preferred: [], nav_style: 'minimal' },
-      effects: { enabled: false, intensity: 'subtle' as const, type_mapping: {}, component_fallback: {} },
+      effects: {
+        enabled: false,
+        intensity: 'subtle' as const,
+        type_mapping: {},
+        component_fallback: {},
+      },
       pattern_preferences: { prefer: [], avoid: [] },
     };
 
@@ -221,7 +232,10 @@ describe('buildPageIR', () => {
     const grid = ir.children[0] as IRGridNode;
     const filterNode = grid.children[0] as IRPatternNode;
     const tableNode = grid.children[1] as IRPatternNode;
-    expect(filterNode.wireProps).toEqual({ onSearch: 'setPageSearch', onCategory: 'setPageStatus' });
+    expect(filterNode.wireProps).toEqual({
+      onSearch: 'setPageSearch',
+      onCategory: 'setPageStatus',
+    });
     expect(tableNode.wireProps).toEqual({ search: 'pageSearch', status: 'pageStatus' });
   });
 

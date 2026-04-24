@@ -1,4 +1,4 @@
-import type { Density, DensityLevel, SpatialTokens, SpatialTokenHints } from './types.js';
+import type { Density, DensityLevel, SpatialTokenHints, SpatialTokens } from './types.js';
 
 interface SpatialHints {
   density_bias?: number;
@@ -26,17 +26,14 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-export function computeDensity(
-  personality: string[],
-  spatialHints?: SpatialHints,
-): Density {
-  const lower = personality.map(c => c.toLowerCase());
+export function computeDensity(personality: string[], spatialHints?: SpatialHints): Density {
+  const lower = personality.map((c) => c.toLowerCase());
 
   let level: DensityLevel = 'comfortable';
   let gap = 4;
 
   for (const rule of RULES) {
-    if (rule.traits.some(t => lower.includes(t))) {
+    if (rule.traits.some((t) => lower.includes(t))) {
       level = rule.level;
       gap = rule.gap;
       break;

@@ -33,7 +33,8 @@ for (const path of schemaPaths) {
 const schemaMap = {
   'project-audit-report.v1.json': 'https://decantr.ai/schemas/project-audit-report.v1.json',
   'file-critique-report.v1.json': 'https://decantr.ai/schemas/file-critique-report.v1.json',
-  'showcase-shortlist-report.v1.json': 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
+  'showcase-shortlist-report.v1.json':
+    'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
 } as const;
 
 export function assertMatchesVerifierSchema(name: keyof typeof schemaMap, data: unknown): void {
@@ -45,7 +46,7 @@ export function assertMatchesVerifierSchema(name: keyof typeof schemaMap, data: 
 
   if (!valid) {
     const details = (validate.errors ?? [])
-      .map(error => `${error.instancePath || '/'} ${error.message}`.trim())
+      .map((error) => `${error.instancePath || '/'} ${error.message}`.trim())
       .join('; ');
     throw new Error(`Schema validation failed for ${name}: ${details}`);
   }

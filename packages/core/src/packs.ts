@@ -1,5 +1,5 @@
-import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
+import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import type { ContentResolver } from '@decantr/registry';
 import { walkIR } from './ir-helpers.js';
 import { runPipeline } from './pipeline.js';
@@ -16,8 +16,10 @@ export const EXECUTION_PACK_SCHEMA_URLS = {
 } as const;
 
 export const PACK_MANIFEST_SCHEMA_URL = 'https://decantr.ai/schemas/pack-manifest.v1.json';
-export const EXECUTION_PACK_BUNDLE_SCHEMA_URL = 'https://decantr.ai/schemas/execution-pack-bundle.v1.json';
-export const SELECTED_EXECUTION_PACK_SCHEMA_URL = 'https://decantr.ai/schemas/selected-execution-pack.v1.json';
+export const EXECUTION_PACK_BUNDLE_SCHEMA_URL =
+  'https://decantr.ai/schemas/execution-pack-bundle.v1.json';
+export const SELECTED_EXECUTION_PACK_SCHEMA_URL =
+  'https://decantr.ai/schemas/selected-execution-pack.v1.json';
 
 export interface ExecutionPackTarget {
   platform: 'web';
@@ -441,7 +443,8 @@ const DEFAULT_PAGE_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
   },
   {
     id: 'page-pattern-contract',
-    label: 'The page preserves its primary compiled patterns instead of drifting into unrelated layouts.',
+    label:
+      'The page preserves its primary compiled patterns instead of drifting into unrelated layouts.',
     severity: 'error',
   },
   {
@@ -460,7 +463,8 @@ const DEFAULT_MUTATION_SUCCESS_CHECKS: Record<MutationPackKind, ExecutionPackSuc
     },
     {
       id: 'mutation-shell-contract',
-      label: 'New routes inherit an existing shell and section contract unless the essence changes first.',
+      label:
+        'New routes inherit an existing shell and section contract unless the essence changes first.',
       severity: 'error',
     },
     {
@@ -472,7 +476,8 @@ const DEFAULT_MUTATION_SUCCESS_CHECKS: Record<MutationPackKind, ExecutionPackSuc
   modify: [
     {
       id: 'mutation-existing-topology',
-      label: 'Modified routes remain coherent with the compiled topology unless the essence changes first.',
+      label:
+        'Modified routes remain coherent with the compiled topology unless the essence changes first.',
       severity: 'error',
     },
     {
@@ -482,7 +487,8 @@ const DEFAULT_MUTATION_SUCCESS_CHECKS: Record<MutationPackKind, ExecutionPackSuc
     },
     {
       id: 'mutation-page-pack-first',
-      label: 'Route-local edits should start from the compiled page pack rather than improvised structure.',
+      label:
+        'Route-local edits should start from the compiled page pack rather than improvised structure.',
       severity: 'warn',
     },
   ],
@@ -491,7 +497,8 @@ const DEFAULT_MUTATION_SUCCESS_CHECKS: Record<MutationPackKind, ExecutionPackSuc
 const DEFAULT_REVIEW_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
   {
     id: 'review-contract-baseline',
-    label: 'Review findings should use the compiled route, shell, and theme contract as the baseline.',
+    label:
+      'Review findings should use the compiled route, shell, and theme contract as the baseline.',
     severity: 'error',
   },
   {
@@ -501,7 +508,8 @@ const DEFAULT_REVIEW_SUCCESS_CHECKS: ExecutionPackSuccessCheck[] = [
   },
   {
     id: 'review-remediation',
-    label: 'Suggested fixes should point back to code changes or essence updates when contract drift exists.',
+    label:
+      'Suggested fixes should point back to code changes or essence updates when contract drift exists.',
     severity: 'warn',
   },
 ];
@@ -510,7 +518,8 @@ const DEFAULT_REVIEW_ANTI_PATTERNS: ExecutionPackAntiPattern[] = [
   {
     id: 'inline-styles',
     summary: 'Avoid inline style literals as the primary styling path.',
-    guidance: 'Move visual styling into tokens.css and treatments.css instead of component-local style objects.',
+    guidance:
+      'Move visual styling into tokens.css and treatments.css instead of component-local style objects.',
   },
   {
     id: 'hardcoded-colors',
@@ -520,7 +529,8 @@ const DEFAULT_REVIEW_ANTI_PATTERNS: ExecutionPackAntiPattern[] = [
   {
     id: 'utility-framework-leakage',
     summary: 'Avoid utility-framework leakage as the primary design language.',
-    guidance: 'Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks.',
+    guidance:
+      'Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks.',
   },
 ];
 
@@ -538,26 +548,28 @@ function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
   return appNode.routes.flatMap((route) => {
     const pageNode = findPageNode(appNode, route.pageId);
     if (!pageNode) return [];
-    return [{
-      pageId: pageNode.pageId,
-      path: route.path,
-      patternIds: collectPatternIds(pageNode),
-      shell: route.shell,
-    }];
+    return [
+      {
+        pageId: pageNode.pageId,
+        path: route.path,
+        patternIds: collectPatternIds(pageNode),
+        shell: route.shell,
+      },
+    ];
   });
 }
 
 function summarizeSectionRoutes(appNode: IRAppNode, input: SectionPackInput): SectionPackRoute[] {
-  return summarizeRoutes(appNode).filter(route => input.pageIds.includes(route.pageId));
+  return summarizeRoutes(appNode).filter((route) => input.pageIds.includes(route.pageId));
 }
 
 function summarizePageRoute(appNode: IRAppNode, pageId: string): ScaffoldPackRoute | null {
-  return summarizeRoutes(appNode).find(route => route.pageId === pageId) ?? null;
+  return summarizeRoutes(appNode).find((route) => route.pageId === pageId) ?? null;
 }
 
 function findPageNode(appNode: IRAppNode, pageId: string): IRPageNode | null {
-  const page = appNode.children.find(node => (node as IRPageNode).pageId === pageId);
-  return page ? page as IRPageNode : null;
+  const page = appNode.children.find((node) => (node as IRPageNode).pageId === pageId);
+  return page ? (page as IRPageNode) : null;
 }
 
 function collectPagePatterns(page: IRPageNode): PagePackPattern[] {
@@ -588,7 +600,7 @@ function mergeTokenBudget(overrides?: Partial<ExecutionPackTokenBudget>): Execut
 
 function renderList(title: string, entries: string[]): string[] {
   if (entries.length === 0) return [];
-  return [title, ...entries.map(entry => `- ${entry}`), ''];
+  return [title, ...entries.map((entry) => `- ${entry}`), ''];
 }
 
 // Compact description of hotkey semantics for pack markdown. Returns empty
@@ -629,32 +641,46 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
   lines.push(`# ${pack.packType.charAt(0).toUpperCase()}${pack.packType.slice(1)} Pack`);
   lines.push('');
   lines.push(`**Objective:** ${pack.objective}`);
-  lines.push(`**Target:** ${pack.target.adapter}${pack.target.framework ? ` (${pack.target.framework})` : ''}`);
-  lines.push(`**Scope:** pages=${pack.scope.pageIds.join(', ') || 'none'} | patterns=${pack.scope.patternIds.join(', ') || 'none'}`);
+  lines.push(
+    `**Target:** ${pack.target.adapter}${pack.target.framework ? ` (${pack.target.framework})` : ''}`,
+  );
+  lines.push(
+    `**Scope:** pages=${pack.scope.pageIds.join(', ') || 'none'} | patterns=${pack.scope.patternIds.join(', ') || 'none'}`,
+  );
   lines.push('');
 
   if (pack.packType === 'scaffold') {
     const scaffoldPack = pack as ScaffoldExecutionPack;
-    const scaffoldShells = [...new Set(scaffoldPack.data.routes.map((route) => route.shell).filter(Boolean))];
+    const scaffoldShells = [
+      ...new Set(scaffoldPack.data.routes.map((route) => route.shell).filter(Boolean)),
+    ];
     lines.push('## Scaffold Contract');
     lines.push(`- Shell: ${scaffoldPack.data.shell}`);
     if (scaffoldShells.length > 1) {
       const secondaryShells = scaffoldShells.filter((shell) => shell !== scaffoldPack.data.shell);
-      lines.push(`- Shells: ${[`${scaffoldPack.data.shell} (primary)`, ...secondaryShells].join(', ')}`);
+      lines.push(
+        `- Shells: ${[`${scaffoldPack.data.shell} (primary)`, ...secondaryShells].join(', ')}`,
+      );
     }
     lines.push(`- Theme: ${scaffoldPack.data.theme.id} (${scaffoldPack.data.theme.mode})`);
-    lines.push(`- Routing: ${scaffoldPack.data.routing} → ${routingImplementationHint(scaffoldPack.data.routing)}`);
+    lines.push(
+      `- Routing: ${scaffoldPack.data.routing} → ${routingImplementationHint(scaffoldPack.data.routing)}`,
+    );
     if (scaffoldPack.data.features.length > 0) {
       lines.push(`- Features: ${scaffoldPack.data.features.join(', ')}`);
     }
-    if (scaffoldPack.data.navigation?.commandPalette || scaffoldPack.data.navigation?.hotkeys.length) {
+    if (
+      scaffoldPack.data.navigation?.commandPalette ||
+      scaffoldPack.data.navigation?.hotkeys.length
+    ) {
       lines.push('- Navigation:');
       const cp = scaffoldPack.data.navigation.commandPalette;
       if (cp) {
         if (typeof cp === 'object') {
           lines.push('  - Command palette:');
           if (cp.trigger) lines.push(`    - Trigger: ${cp.trigger}`);
-          if (cp.styling) lines.push(`    - Styling: ${cp.styling}${cp.width ? ` (width ${cp.width})` : ''}`);
+          if (cp.styling)
+            lines.push(`    - Styling: ${cp.styling}${cp.width ? ` (width ${cp.width})` : ''}`);
           else if (cp.width) lines.push(`    - Width: ${cp.width}`);
           if (cp.placeholder) lines.push(`    - Placeholder: "${cp.placeholder}"`);
           if (cp.commands && cp.commands.length > 0) {
@@ -689,7 +715,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Route Plan');
     for (const route of scaffoldPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
+      lines.push(
+        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+      );
     }
     lines.push('');
   }
@@ -712,14 +740,18 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Section Routes');
     for (const route of sectionPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
+      lines.push(
+        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+      );
     }
     lines.push('');
 
     if (sectionPack.data.navigationItems && sectionPack.data.navigationItems.length > 0) {
       lines.push('## Section Navigation');
       lines.push('');
-      lines.push('Render these items in the shell\'s primary navigation. Exact match on label, route, and icon.');
+      lines.push(
+        "Render these items in the shell's primary navigation. Exact match on label, route, and icon.",
+      );
       lines.push('');
       for (const item of sectionPack.data.navigationItems) {
         const parts: string[] = [`${item.label} → ${item.route}`];
@@ -735,7 +767,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     if (sectionPack.data.directives && sectionPack.data.directives.length > 0) {
       lines.push('## Section Directives');
       lines.push('');
-      lines.push('Execution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.');
+      lines.push(
+        'Execution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.',
+      );
       lines.push('');
       for (const directive of sectionPack.data.directives) {
         lines.push(`- ${directive}`);
@@ -765,7 +799,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
 
     lines.push('## Page Patterns');
     for (const pattern of pagePack.data.patterns) {
-      lines.push(`- ${pattern.alias} -> ${pattern.id} [${pattern.layout}${pattern.preset ? ` | ${pattern.preset}` : ''}]`);
+      lines.push(
+        `- ${pattern.alias} -> ${pattern.id} [${pattern.layout}${pattern.preset ? ` | ${pattern.preset}` : ''}]`,
+      );
       // Emit preset-specific description on the next line (indented) when
       // the pattern's preset carries its own prose. This stops cold LLMs
       // from falling back to the blueprint-generic root description.
@@ -801,7 +837,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push(`- Operation: ${mutationPack.data.mutationType}`);
     lines.push(`- Shell: ${mutationPack.data.shell}`);
     lines.push(`- Theme: ${mutationPack.data.theme.id} (${mutationPack.data.theme.mode})`);
-    lines.push(`- Routing: ${mutationPack.data.routing} → ${routingImplementationHint(mutationPack.data.routing)}`);
+    lines.push(
+      `- Routing: ${mutationPack.data.routing} → ${routingImplementationHint(mutationPack.data.routing)}`,
+    );
     if (mutationPack.data.features.length > 0) {
       lines.push(`- Features: ${mutationPack.data.features.join(', ')}`);
     }
@@ -810,7 +848,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Route Topology');
     for (const route of mutationPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
+      lines.push(
+        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+      );
     }
     lines.push('');
 
@@ -838,7 +878,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     lines.push('## Review Topology');
     for (const route of reviewPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-      lines.push(`- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`);
+      lines.push(
+        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+      );
     }
     lines.push('');
 
@@ -868,7 +910,9 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
   // is a singleton per scaffold so there's no duplication problem.
   if (pack.packType === 'page') {
     lines.push('## Shared Contract');
-    lines.push('Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.');
+    lines.push(
+      'Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.',
+    );
     lines.push('');
     return lines.join('\n').trimEnd() + '\n';
   }
@@ -877,7 +921,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
   if (pack.requiredSetup.length === 0) {
     lines.push('- None declared.');
   } else {
-    lines.push(...pack.requiredSetup.map(entry => `- ${entry}`));
+    lines.push(...pack.requiredSetup.map((entry) => `- ${entry}`));
   }
   lines.push('');
 
@@ -885,18 +929,33 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
   if (pack.allowedVocabulary.length === 0) {
     lines.push('- None declared.');
   } else {
-    lines.push(...pack.allowedVocabulary.map(entry => `- ${entry}`));
+    lines.push(...pack.allowedVocabulary.map((entry) => `- ${entry}`));
   }
   lines.push('');
 
-  lines.push(...renderList('## Success Checks', pack.successChecks.map(entry => `${entry.label} [${entry.severity}]`)));
-  lines.push(...renderList('## Anti-Patterns', pack.antiPatterns.map(entry => `${entry.summary}: ${entry.guidance}`)));
-  lines.push(...renderList('## Examples', pack.examples.map(entry => `${entry.label} (${entry.language})`)));
+  lines.push(
+    ...renderList(
+      '## Success Checks',
+      pack.successChecks.map((entry) => `${entry.label} [${entry.severity}]`),
+    ),
+  );
+  lines.push(
+    ...renderList(
+      '## Anti-Patterns',
+      pack.antiPatterns.map((entry) => `${entry.summary}: ${entry.guidance}`),
+    ),
+  );
+  lines.push(
+    ...renderList(
+      '## Examples',
+      pack.examples.map((entry) => `${entry.label} (${entry.language})`),
+    ),
+  );
 
   lines.push('## Token Budget');
   lines.push(`- Target: ${pack.tokenBudget.target}`);
   lines.push(`- Max: ${pack.tokenBudget.max}`);
-  lines.push(...pack.tokenBudget.strategy.map(entry => `- ${entry}`));
+  lines.push(...pack.tokenBudget.strategy.map((entry) => `- ${entry}`));
   lines.push('');
 
   return lines.join('\n').trimEnd() + '\n';
@@ -918,64 +977,81 @@ export function listPackSections(essence: EssenceV3): SectionPackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
     const routedSectionPages = new Set(
-      Object.values(essence.blueprint.routes ?? {}).map((entry) => `${entry.section}:${entry.page}`),
+      Object.values(essence.blueprint.routes ?? {}).map(
+        (entry) => `${entry.section}:${entry.page}`,
+      ),
     );
-    return declaredSections.map((section) => {
-      const pageIds = section.pages
-        .filter((page) => routedSectionPages.size === 0 || routedSectionPages.has(`${section.id}:${page.id}`))
-        .map(page => page.id);
+    return declaredSections
+      .map((section) => {
+        const pageIds = section.pages
+          .filter(
+            (page) =>
+              routedSectionPages.size === 0 || routedSectionPages.has(`${section.id}:${page.id}`),
+          )
+          .map((page) => page.id);
 
-      return {
-        id: section.id,
-        role: section.role,
-        shell: section.shell as string,
-        description: section.description,
-        features: section.features,
-        pageIds,
-        ...(Array.isArray(section.navigation_items) && section.navigation_items.length > 0
-          ? { navigationItems: section.navigation_items as SectionNavigationItemPack[] }
-          : {}),
-        ...(Array.isArray(section.directives) && section.directives.length > 0
-          ? { directives: section.directives }
-          : {}),
-      };
-    }).filter((section) => section.pageIds.length > 0);
+        return {
+          id: section.id,
+          role: section.role,
+          shell: section.shell as string,
+          description: section.description,
+          features: section.features,
+          pageIds,
+          ...(Array.isArray(section.navigation_items) && section.navigation_items.length > 0
+            ? { navigationItems: section.navigation_items as SectionNavigationItemPack[] }
+            : {}),
+          ...(Array.isArray(section.directives) && section.directives.length > 0
+            ? { directives: section.directives }
+            : {}),
+        };
+      })
+      .filter((section) => section.pageIds.length > 0);
   }
 
   const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
-  return [{
-    id: essence.meta.archetype || 'default',
-    role: 'primary',
-    shell: (essence.blueprint.shell ?? 'sidebar-main') as string,
-    description: `${essence.meta.archetype || 'Application'} section`,
-    features: essence.blueprint.features || [],
-    pageIds: pages.map(page => page.id),
-  }];
+  return [
+    {
+      id: essence.meta.archetype || 'default',
+      role: 'primary',
+      shell: (essence.blueprint.shell ?? 'sidebar-main') as string,
+      description: `${essence.meta.archetype || 'Application'} section`,
+      features: essence.blueprint.features || [],
+      pageIds: pages.map((page) => page.id),
+    },
+  ];
 }
 
 export function listPackPages(essence: EssenceV3): PagePackInput[] {
   const declaredSections = essence.blueprint.sections;
   if (declaredSections && declaredSections.length > 0) {
     const routedSectionPages = new Set(
-      Object.values(essence.blueprint.routes ?? {}).map((entry) => `${entry.section}:${entry.page}`),
+      Object.values(essence.blueprint.routes ?? {}).map(
+        (entry) => `${entry.section}:${entry.page}`,
+      ),
     );
-    return declaredSections.flatMap(section =>
-      section.pages.map(page => ({
-        pageId: page.id,
-        shell: (page.shell_override ?? section.shell) as string,
-        sectionId: section.id,
-        sectionRole: section.role,
-        features: section.features,
-        ...(Array.isArray(page.directives) && page.directives.length > 0
-          ? { directives: page.directives }
-          : {}),
-      })).filter((page) => routedSectionPages.size === 0 || routedSectionPages.has(`${page.sectionId}:${page.pageId}`)),
+    return declaredSections.flatMap((section) =>
+      section.pages
+        .map((page) => ({
+          pageId: page.id,
+          shell: (page.shell_override ?? section.shell) as string,
+          sectionId: section.id,
+          sectionRole: section.role,
+          features: section.features,
+          ...(Array.isArray(page.directives) && page.directives.length > 0
+            ? { directives: page.directives }
+            : {}),
+        }))
+        .filter(
+          (page) =>
+            routedSectionPages.size === 0 ||
+            routedSectionPages.has(`${page.sectionId}:${page.pageId}`),
+        ),
     );
   }
 
   const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
   const defaultShell = (essence.blueprint.shell ?? 'sidebar-main') as string;
-  return pages.map(page => ({
+  return pages.map((page) => ({
     pageId: page.id,
     shell: (page.shell_override ?? defaultShell) as string,
     sectionId: essence.meta.archetype || 'default',
@@ -989,13 +1065,14 @@ export function buildScaffoldPack(
   options: ScaffoldPackBuilderOptions = {},
 ): ScaffoldExecutionPack {
   const routes = summarizeRoutes(appNode);
-  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
+  const scopePatternIds = [...new Set(routes.flatMap((route) => route.patternIds))];
 
   const pack: ScaffoldExecutionPack = {
     $schema: EXECUTION_PACK_SCHEMA_URLS.scaffold,
     packVersion: '1.0.0',
     packType: 'scaffold',
-    objective: options.objective ?? `Scaffold the ${appNode.theme.id} app shell and declared routes.`,
+    objective:
+      options.objective ?? `Scaffold the ${appNode.theme.id} app shell and declared routes.`,
     target: {
       ...DEFAULT_TARGET,
       ...options.target,
@@ -1003,20 +1080,22 @@ export function buildScaffoldPack(
     preset: options.preset ?? null,
     scope: {
       appId: appNode.id,
-      pageIds: routes.map(route => route.pageId),
+      pageIds: routes.map((route) => route.pageId),
       patternIds: scopePatternIds,
     },
     requiredSetup: options.requiredSetup ?? [
       'Treat the declared routes as the topology source of truth.',
       'Preserve the resolved theme and shell contract unless the task explicitly mutates them.',
     ],
-    allowedVocabulary: [...new Set([
-      appNode.shell.config.type,
-      appNode.theme.id,
-      appNode.theme.mode,
-      ...appNode.features,
-      ...scopePatternIds,
-    ])],
+    allowedVocabulary: [
+      ...new Set([
+        appNode.shell.config.type,
+        appNode.theme.id,
+        appNode.theme.mode,
+        ...appNode.features,
+        ...scopePatternIds,
+      ]),
+    ],
     examples: options.examples ?? [],
     antiPatterns: options.antiPatterns ?? [],
     successChecks: options.successChecks ?? DEFAULT_SUCCESS_CHECKS,
@@ -1046,13 +1125,15 @@ export function buildSectionPack(
   options: SectionPackBuilderOptions = {},
 ): SectionExecutionPack {
   const routes = summarizeSectionRoutes(appNode, input);
-  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
+  const scopePatternIds = [...new Set(routes.flatMap((route) => route.patternIds))];
 
   const pack: SectionExecutionPack = {
     $schema: EXECUTION_PACK_SCHEMA_URLS.section,
     packVersion: '1.0.0',
     packType: 'section',
-    objective: options.objective ?? `Implement the ${input.id} section using the compiled ${input.shell} shell contract.`,
+    objective:
+      options.objective ??
+      `Implement the ${input.id} section using the compiled ${input.shell} shell contract.`,
     target: {
       ...DEFAULT_TARGET,
       ...options.target,
@@ -1060,22 +1141,24 @@ export function buildSectionPack(
     preset: options.preset ?? null,
     scope: {
       appId: appNode.id,
-      pageIds: routes.map(route => route.pageId),
+      pageIds: routes.map((route) => route.pageId),
       patternIds: scopePatternIds,
     },
     requiredSetup: options.requiredSetup ?? [
       'Use the declared section routes as the source of truth for this slice of the app.',
       'Keep the section shell consistent unless the task explicitly changes the shell contract.',
     ],
-    allowedVocabulary: [...new Set([
-      input.id,
-      input.role,
-      input.shell,
-      appNode.theme.id,
-      appNode.theme.mode,
-      ...input.features,
-      ...scopePatternIds,
-    ])],
+    allowedVocabulary: [
+      ...new Set([
+        input.id,
+        input.role,
+        input.shell,
+        appNode.theme.id,
+        appNode.theme.mode,
+        ...input.features,
+        ...scopePatternIds,
+      ]),
+    ],
     examples: options.examples ?? [],
     antiPatterns: options.antiPatterns ?? [],
     successChecks: options.successChecks ?? DEFAULT_SECTION_SUCCESS_CHECKS,
@@ -1095,9 +1178,7 @@ export function buildSectionPack(
       ...(input.navigationItems && input.navigationItems.length > 0
         ? { navigationItems: input.navigationItems }
         : {}),
-      ...(input.directives && input.directives.length > 0
-        ? { directives: input.directives }
-        : {}),
+      ...(input.directives && input.directives.length > 0 ? { directives: input.directives } : {}),
     },
     renderedMarkdown: '',
   };
@@ -1124,7 +1205,8 @@ export function buildPagePack(
     $schema: EXECUTION_PACK_SCHEMA_URLS.page,
     packVersion: '1.0.0',
     packType: 'page',
-    objective: options.objective ?? `Implement the ${input.pageId} route using the compiled page contract.`,
+    objective:
+      options.objective ?? `Implement the ${input.pageId} route using the compiled page contract.`,
     target: {
       ...DEFAULT_TARGET,
       ...options.target,
@@ -1133,22 +1215,26 @@ export function buildPagePack(
     scope: {
       appId: appNode.id,
       pageIds: [route.pageId],
-      patternIds: [...new Set(patterns.map(pattern => pattern.id))],
+      patternIds: [...new Set(patterns.map((pattern) => pattern.id))],
     },
     requiredSetup: options.requiredSetup ?? [
       'Keep the compiled route and shell contract stable for this page.',
       'Treat the listed page patterns as the primary structure for this route.',
     ],
-    allowedVocabulary: [...new Set([
-      input.pageId,
-      input.shell,
-      input.sectionId ?? '',
-      input.sectionRole ?? '',
-      appNode.theme.id,
-      appNode.theme.mode,
-      ...input.features,
-      ...patterns.flatMap(pattern => [pattern.id, pattern.alias, pattern.layout]),
-    ].filter(Boolean))],
+    allowedVocabulary: [
+      ...new Set(
+        [
+          input.pageId,
+          input.shell,
+          input.sectionId ?? '',
+          input.sectionRole ?? '',
+          appNode.theme.id,
+          appNode.theme.mode,
+          ...input.features,
+          ...patterns.flatMap((pattern) => [pattern.id, pattern.alias, pattern.layout]),
+        ].filter(Boolean),
+      ),
+    ],
     examples: options.examples ?? [],
     antiPatterns: options.antiPatterns ?? [],
     successChecks: options.successChecks ?? DEFAULT_PAGE_SUCCESS_CHECKS,
@@ -1166,11 +1252,9 @@ export function buildPagePack(
         mode: appNode.theme.mode,
         shape: appNode.theme.shape,
       },
-      wiringSignals: pageNode.wiring?.signals.map(signal => signal.name) ?? [],
+      wiringSignals: pageNode.wiring?.signals.map((signal) => signal.name) ?? [],
       patterns,
-      ...(input.directives && input.directives.length > 0
-        ? { directives: input.directives }
-        : {}),
+      ...(input.directives && input.directives.length > 0 ? { directives: input.directives } : {}),
     },
     renderedMarkdown: '',
   };
@@ -1184,24 +1268,27 @@ export function buildMutationPack(
   options: MutationPackBuilderOptions,
 ): MutationExecutionPack {
   const routes = summarizeRoutes(appNode);
-  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
-  const defaultWorkflow = options.mutationType === 'add-page'
-    ? [
-        'Declare the new page in the essence before generating code.',
-        'Refresh Decantr context so section and page packs include the new route.',
-        'Read the relevant section pack and new page pack before implementation.',
-      ]
-    : [
-        'Read the page pack for the route you are modifying first.',
-        'Stop and update the essence before changing route, shell, or pattern contracts.',
-        'Validate and check drift after code changes complete.',
-      ];
+  const scopePatternIds = [...new Set(routes.flatMap((route) => route.patternIds))];
+  const defaultWorkflow =
+    options.mutationType === 'add-page'
+      ? [
+          'Declare the new page in the essence before generating code.',
+          'Refresh Decantr context so section and page packs include the new route.',
+          'Read the relevant section pack and new page pack before implementation.',
+        ]
+      : [
+          'Read the page pack for the route you are modifying first.',
+          'Stop and update the essence before changing route, shell, or pattern contracts.',
+          'Validate and check drift after code changes complete.',
+        ];
 
   const pack: MutationExecutionPack = {
     $schema: EXECUTION_PACK_SCHEMA_URLS.mutation,
     packVersion: '1.0.0',
     packType: 'mutation',
-    objective: options.objective ?? `Execute the ${options.mutationType} workflow against the compiled app contract.`,
+    objective:
+      options.objective ??
+      `Execute the ${options.mutationType} workflow against the compiled app contract.`,
     target: {
       ...DEFAULT_TARGET,
       ...options.target,
@@ -1209,21 +1296,23 @@ export function buildMutationPack(
     preset: options.preset ?? null,
     scope: {
       appId: appNode.id,
-      pageIds: routes.map(route => route.pageId),
+      pageIds: routes.map((route) => route.pageId),
       patternIds: scopePatternIds,
     },
     requiredSetup: options.requiredSetup ?? [
       'Treat the compiled topology as the source of truth until the essence changes.',
       'Refresh Decantr context after structural mutations so downstream tasks read current packs.',
     ],
-    allowedVocabulary: [...new Set([
-      options.mutationType,
-      appNode.shell.config.type,
-      appNode.theme.id,
-      appNode.theme.mode,
-      ...appNode.features,
-      ...scopePatternIds,
-    ])],
+    allowedVocabulary: [
+      ...new Set([
+        options.mutationType,
+        appNode.shell.config.type,
+        appNode.theme.id,
+        appNode.theme.mode,
+        ...appNode.features,
+        ...scopePatternIds,
+      ]),
+    ],
     examples: options.examples ?? [],
     antiPatterns: options.antiPatterns ?? [],
     successChecks: options.successChecks ?? DEFAULT_MUTATION_SUCCESS_CHECKS[options.mutationType],
@@ -1253,7 +1342,7 @@ export function buildReviewPack(
   options: ReviewPackBuilderOptions = {},
 ): ReviewExecutionPack {
   const routes = summarizeRoutes(appNode);
-  const scopePatternIds = [...new Set(routes.flatMap(route => route.patternIds))];
+  const scopePatternIds = [...new Set(routes.flatMap((route) => route.patternIds))];
   const reviewType = options.reviewType ?? 'app';
   const focusAreas = options.focusAreas ?? [
     'route-topology',
@@ -1272,7 +1361,8 @@ export function buildReviewPack(
     $schema: EXECUTION_PACK_SCHEMA_URLS.review,
     packVersion: '1.0.0',
     packType: 'review',
-    objective: options.objective ?? 'Review generated output against the compiled Decantr contract.',
+    objective:
+      options.objective ?? 'Review generated output against the compiled Decantr contract.',
     target: {
       ...DEFAULT_TARGET,
       ...options.target,
@@ -1280,22 +1370,24 @@ export function buildReviewPack(
     preset: options.preset ?? null,
     scope: {
       appId: appNode.id,
-      pageIds: routes.map(route => route.pageId),
+      pageIds: routes.map((route) => route.pageId),
       patternIds: scopePatternIds,
     },
     requiredSetup: options.requiredSetup ?? [
       'Read the compiled scaffold and route packs before reviewing code.',
       'Use concrete evidence from the workspace instead of purely stylistic intuition.',
     ],
-    allowedVocabulary: [...new Set([
-      reviewType,
-      appNode.shell.config.type,
-      appNode.theme.id,
-      appNode.theme.mode,
-      ...appNode.features,
-      ...scopePatternIds,
-      ...focusAreas,
-    ])],
+    allowedVocabulary: [
+      ...new Set([
+        reviewType,
+        appNode.shell.config.type,
+        appNode.theme.id,
+        appNode.theme.mode,
+        ...appNode.features,
+        ...scopePatternIds,
+        ...focusAreas,
+      ]),
+    ],
     examples: options.examples ?? [],
     antiPatterns: options.antiPatterns ?? DEFAULT_REVIEW_ANTI_PATTERNS,
     successChecks: options.successChecks ?? DEFAULT_REVIEW_SUCCESS_CHECKS,
@@ -1353,17 +1445,20 @@ export async function compileExecutionPackBundle(
       commandPalette: commandPaletteValue,
       hotkeys: Array.isArray(navMeta?.hotkeys)
         ? navMeta.hotkeys
-            .filter((hotkey): hotkey is {
-              key: string;
-              route?: string;
-              action?: string;
-              label: string;
-              semantics?: HotkeySemantics;
-            } => Boolean(
-              hotkey
-              && typeof hotkey.key === 'string'
-              && typeof hotkey.label === 'string',
-            ))
+            .filter(
+              (
+                hotkey,
+              ): hotkey is {
+                key: string;
+                route?: string;
+                action?: string;
+                label: string;
+                semantics?: HotkeySemantics;
+              } =>
+                Boolean(
+                  hotkey && typeof hotkey.key === 'string' && typeof hotkey.label === 'string',
+                ),
+            )
             .map((hotkey) => ({
               key: hotkey.key,
               route: hotkey.route,
@@ -1371,22 +1466,30 @@ export async function compileExecutionPackBundle(
               ...(hotkey.semantics ? { semantics: hotkey.semantics as HotkeySemantics } : {}),
             }))
         : [],
-      ...(navMeta?.hotkey_semantics ? { hotkeySemantics: navMeta.hotkey_semantics as HotkeySemantics } : {}),
+      ...(navMeta?.hotkey_semantics
+        ? { hotkeySemantics: navMeta.hotkey_semantics as HotkeySemantics }
+        : {}),
     },
   });
   const review = buildReviewPack(pipeline.ir, {
     target: sharedTarget,
   });
-  const sections = listPackSections(effectiveEssence).map(section => buildSectionPack(pipeline.ir, section, {
-    target: sharedTarget,
-  }));
-  const pages = listPackPages(effectiveEssence).map(page => buildPagePack(pipeline.ir, page, {
-    target: sharedTarget,
-  }));
-  const mutations = (['add-page', 'modify'] as const).map(mutationType => buildMutationPack(pipeline.ir, {
-    mutationType,
-    target: sharedTarget,
-  }));
+  const sections = listPackSections(effectiveEssence).map((section) =>
+    buildSectionPack(pipeline.ir, section, {
+      target: sharedTarget,
+    }),
+  );
+  const pages = listPackPages(effectiveEssence).map((page) =>
+    buildPagePack(pipeline.ir, page, {
+      target: sharedTarget,
+    }),
+  );
+  const mutations = (['add-page', 'modify'] as const).map((mutationType) =>
+    buildMutationPack(pipeline.ir, {
+      mutationType,
+      target: sharedTarget,
+    }),
+  );
 
   const manifest: ExecutionPackManifest = {
     $schema: PACK_MANIFEST_SCHEMA_URL,
@@ -1402,20 +1505,20 @@ export async function compileExecutionPackBundle(
       markdown: 'review-pack.md',
       json: 'review-pack.json',
     },
-    sections: listPackSections(effectiveEssence).map(section => ({
+    sections: listPackSections(effectiveEssence).map((section) => ({
       id: section.id,
       markdown: `section-${section.id}-pack.md`,
       json: `section-${section.id}-pack.json`,
       pageIds: section.pageIds,
     })),
-    pages: listPackPages(effectiveEssence).map(page => ({
+    pages: listPackPages(effectiveEssence).map((page) => ({
       id: page.pageId,
       markdown: `page-${page.pageId}-pack.md`,
       json: `page-${page.pageId}-pack.json`,
       sectionId: page.sectionId,
       sectionRole: page.sectionRole,
     })),
-    mutations: (['add-page', 'modify'] as const).map(mutationType => ({
+    mutations: (['add-page', 'modify'] as const).map((mutationType) => ({
       id: mutationType,
       markdown: `mutation-${mutationType}-pack.md`,
       json: `mutation-${mutationType}-pack.json`,
@@ -1451,13 +1554,13 @@ export function selectExecutionPackFromBundle(
       pack = bundle.review;
       break;
     case 'section':
-      pack = id ? bundle.sections.find((entry) => entry.data.sectionId === id) ?? null : null;
+      pack = id ? (bundle.sections.find((entry) => entry.data.sectionId === id) ?? null) : null;
       break;
     case 'page':
-      pack = id ? bundle.pages.find((entry) => entry.data.pageId === id) ?? null : null;
+      pack = id ? (bundle.pages.find((entry) => entry.data.pageId === id) ?? null) : null;
       break;
     case 'mutation':
-      pack = id ? bundle.mutations.find((entry) => entry.data.mutationType === id) ?? null : null;
+      pack = id ? (bundle.mutations.find((entry) => entry.data.mutationType === id) ?? null) : null;
       break;
     default:
       pack = null;

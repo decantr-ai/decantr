@@ -1,29 +1,29 @@
-import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import * as fs from 'node:fs/promises';
-import { RegistryClient } from '../registry.js';
+import { join } from 'node:path';
+import type { ComposeEntry, Blueprint as RegistryBlueprint } from '@decantr/registry';
 import { detectProject } from '../detect.js';
 import type { InitOptions } from '../prompts.js';
-import { cmdAnalyze } from './analyze.js';
+import { RegistryClient } from '../registry.js';
 import {
-  scaffoldProject,
-  composeSections,
-  deriveZones,
-  deriveTransitions,
-  generateTopologySection,
-  mapRegistryArchetypeToArchetypeData,
-  mapRegistryThemeToThemeData,
-  mapRegistryPatternToPatternSpecSummary,
-  collectPatternIdsFromItems,
   type ArchetypeData,
-  type ThemeData,
   type ComposeSectionsResult,
-  type PatternSpecSummary,
-  type ZoneInput,
+  collectPatternIdsFromItems,
+  composeSections,
+  deriveTransitions,
+  deriveZones,
+  generateTopologySection,
   type LayoutItem,
+  mapRegistryArchetypeToArchetypeData,
+  mapRegistryPatternToPatternSpecSummary,
+  mapRegistryThemeToThemeData,
+  type PatternSpecSummary,
+  scaffoldProject,
+  type ThemeData,
+  type ZoneInput,
 } from '../scaffold.js';
-import type { Blueprint as RegistryBlueprint, ComposeEntry } from '@decantr/registry';
 import { hasExistingProjectFootprint } from '../workflow-model.js';
+import { cmdAnalyze } from './analyze.js';
 
 // ── ANSI helpers ──
 
@@ -36,11 +36,21 @@ const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 const MAGENTA = '\x1b[35m';
 
-function success(text: string): string { return `${GREEN}${text}${RESET}`; }
-function error(text: string): string { return `${RED}${text}${RESET}`; }
-function dim(text: string): string { return `${DIM}${text}${RESET}`; }
-function cyan(text: string): string { return `${CYAN}${text}${RESET}`; }
-function magenta(text: string): string { return `${MAGENTA}${text}${RESET}`; }
+function success(text: string): string {
+  return `${GREEN}${text}${RESET}`;
+}
+function error(text: string): string {
+  return `${RED}${text}${RESET}`;
+}
+function dim(text: string): string {
+  return `${DIM}${text}${RESET}`;
+}
+function cyan(text: string): string {
+  return `${CYAN}${text}${RESET}`;
+}
+function magenta(text: string): string {
+  return `${MAGENTA}${text}${RESET}`;
+}
 
 // ── Prompt Parsing ──
 
@@ -82,13 +92,21 @@ const ARCHETYPE_KEYWORDS: Record<string, string[]> = {
 };
 
 const CONSTRAINT_KEYWORDS = [
-  'mobile-first', 'mobile first',
-  'accessible', 'accessibility', 'a11y', 'wcag',
-  'offline', 'offline-first',
-  'real-time', 'realtime', 'real time',
+  'mobile-first',
+  'mobile first',
+  'accessible',
+  'accessibility',
+  'a11y',
+  'wcag',
+  'offline',
+  'offline-first',
+  'real-time',
+  'realtime',
+  'real time',
   'responsive',
   'high-contrast',
-  'performance', 'fast',
+  'performance',
+  'fast',
   'seo',
 ];
 
@@ -99,12 +117,12 @@ const CONSTRAINT_KEYWORDS = [
 export function parseMagicPrompt(prompt: string): MagicIntent {
   const lower = prompt.toLowerCase();
   // Tokenize for word-boundary matching
-  const tokens = lower.split(/[\s,;—–\-]+/).filter(Boolean);
+  const tokens = lower.split(/[\s,;—–-]+/).filter(Boolean);
 
   // Extract theme hints
   const themeHints: string[] = [];
   for (const [hint, keywords] of Object.entries(THEME_KEYWORDS)) {
-    if (keywords.some(kw => tokens.includes(kw) || lower.includes(kw))) {
+    if (keywords.some((kw) => tokens.includes(kw) || lower.includes(kw))) {
       themeHints.push(hint);
     }
   }
@@ -113,7 +131,7 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
   let archetype: string | undefined;
   let bestArchetypeScore = 0;
   for (const [archetypeId, keywords] of Object.entries(ARCHETYPE_KEYWORDS)) {
-    const score = keywords.filter(kw => tokens.includes(kw) || lower.includes(kw)).length;
+    const score = keywords.filter((kw) => tokens.includes(kw) || lower.includes(kw)).length;
     if (score > bestArchetypeScore) {
       bestArchetypeScore = score;
       archetype = archetypeId;
@@ -132,31 +150,57 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
   // Extract personality hints — everything that isn't a recognized keyword
   // Personality is visual direction: "confident", "bold", "sleek", "futuristic"
   const personalityWords = [
-    'confident', 'bold', 'sleek', 'futuristic', 'modern', 'classic',
-    'edgy', 'sharp', 'soft', 'rounded', 'angular', 'geometric',
-    'organic', 'fluid', 'rigid', 'dense', 'airy', 'spacious',
-    'technical', 'creative', 'artistic', 'industrial', 'natural',
-    'techy', 'hacker', 'startup', 'enterprise',
-    'friendly', 'serious', 'formal', 'casual', 'approachable',
-    'luxurious', 'premium', 'polished', 'rough', 'gritty',
+    'confident',
+    'bold',
+    'sleek',
+    'futuristic',
+    'modern',
+    'classic',
+    'edgy',
+    'sharp',
+    'soft',
+    'rounded',
+    'angular',
+    'geometric',
+    'organic',
+    'fluid',
+    'rigid',
+    'dense',
+    'airy',
+    'spacious',
+    'technical',
+    'creative',
+    'artistic',
+    'industrial',
+    'natural',
+    'techy',
+    'hacker',
+    'startup',
+    'enterprise',
+    'friendly',
+    'serious',
+    'formal',
+    'casual',
+    'approachable',
+    'luxurious',
+    'premium',
+    'polished',
+    'rough',
+    'gritty',
   ];
-  const personalityHints = personalityWords.filter(w => tokens.includes(w));
+  const personalityHints = personalityWords.filter((w) => tokens.includes(w));
 
   // Build description by stripping recognized keywords
   const allRecognized = new Set([
     ...Object.values(THEME_KEYWORDS).flat(),
     ...Object.values(ARCHETYPE_KEYWORDS).flat(),
-    ...CONSTRAINT_KEYWORDS.flatMap(c => c.split(/\s+/)),
+    ...CONSTRAINT_KEYWORDS.flatMap((c) => c.split(/\s+/)),
     ...personalityWords,
   ]);
 
   // The description is the cleaned-up prompt minus noise words
-  const descTokens = tokens.filter(t =>
-    !allRecognized.has(t) && t.length > 2
-  );
-  const description = descTokens.length > 0
-    ? descTokens.join(' ')
-    : prompt.trim();
+  const descTokens = tokens.filter((t) => !allRecognized.has(t) && t.length > 2);
+  const description = descTokens.length > 0 ? descTokens.join(' ') : prompt.trim();
 
   return {
     description,
@@ -183,27 +227,35 @@ async function resolveTheme(
     try {
       const themes = await registryClient.fetchThemes();
       if (themes && themes.length > 0) {
-        const scored = themes.map((t: any) => {
-          let score = 0;
-          const personality = (t.personality || '').toLowerCase();
-          const tags = (t.tags || []).map((tag: string) => tag.toLowerCase());
-          for (const hint of intent.themeHints) {
-            if (personality.includes(hint)) score += 3;
-            if (tags.some((tag: string) => tag.includes(hint))) score += 2;
-          }
-          if (intent.themeHints.includes('dark') && t.modes?.includes('dark')) score += 1;
-          if (intent.themeHints.includes('light') && t.modes?.includes('light')) score += 1;
-          return { id: t.id || t.slug, score, modes: t.modes };
-        }).sort((a: any, b: any) => b.score - a.score);
+        const scored = themes
+          .map((t: any) => {
+            let score = 0;
+            const personality = (t.personality || '').toLowerCase();
+            const tags = (t.tags || []).map((tag: string) => tag.toLowerCase());
+            for (const hint of intent.themeHints) {
+              if (personality.includes(hint)) score += 3;
+              if (tags.some((tag: string) => tag.includes(hint))) score += 2;
+            }
+            if (intent.themeHints.includes('dark') && t.modes?.includes('dark')) score += 1;
+            if (intent.themeHints.includes('light') && t.modes?.includes('light')) score += 1;
+            return { id: t.id || t.slug, score, modes: t.modes };
+          })
+          .sort((a: any, b: any) => b.score - a.score);
 
         if (scored[0] && scored[0].score > 0) {
-          const mode: 'dark' | 'light' | 'auto' = intent.themeHints.includes('light') ? 'light'
-            : intent.themeHints.includes('dark') ? 'dark'
-            : scored[0].modes?.includes('dark') ? 'dark' : 'light';
+          const mode: 'dark' | 'light' | 'auto' = intent.themeHints.includes('light')
+            ? 'light'
+            : intent.themeHints.includes('dark')
+              ? 'dark'
+              : scored[0].modes?.includes('dark')
+                ? 'dark'
+                : 'light';
           return { id: scored[0].id, mode };
         }
       }
-    } catch { /* fall through to hardcoded map */ }
+    } catch {
+      /* fall through to hardcoded map */
+    }
   }
 
   // Hardcoded map as offline fallback
@@ -249,12 +301,20 @@ function buildRichPersonality(
   const parts: string[] = [];
   if (blueprintData?.personality && typeof blueprintData.personality === 'string')
     parts.push(blueprintData.personality);
-  if (intent.personalityHints.length > 0 && !parts.some(p => intent.personalityHints.every(h => p.toLowerCase().includes(h))))
+  if (
+    intent.personalityHints.length > 0 &&
+    !parts.some((p) => intent.personalityHints.every((h) => p.toLowerCase().includes(h)))
+  )
     parts.push(`Visual character: ${intent.personalityHints.join(', ')}.`);
-  if (themeData?.personality && !parts.some(p => p.toLowerCase().includes(themeData.personality.toLowerCase())))
+  if (
+    themeData?.personality &&
+    !parts.some((p) => p.toLowerCase().includes(themeData.personality.toLowerCase()))
+  )
     parts.push(`Theme influence: ${themeData.personality}.`);
   if (parts.length === 0)
-    parts.push(`Modern, production-ready ${intent.description}. Clean typography, intentional spacing, polished interactions.`);
+    parts.push(
+      `Modern, production-ready ${intent.description}. Clean typography, intentional spacing, polished interactions.`,
+    );
   return parts.join(' ');
 }
 
@@ -268,7 +328,11 @@ export interface MagicOptions {
 
 // ── Main Command ──
 
-export async function cmdMagic(prompt: string, projectRoot: string, options: MagicOptions): Promise<void> {
+export async function cmdMagic(
+  prompt: string,
+  projectRoot: string,
+  options: MagicOptions,
+): Promise<void> {
   console.log('');
   console.log(`${MAGENTA}${BOLD} Decantr Magic${RESET}`);
   console.log('');
@@ -304,8 +368,14 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   const detected = detectProject(projectRoot);
   if (hasExistingProjectFootprint(detected)) {
     console.log(`${YELLOW} Existing project detected.${RESET}`);
-    console.log(dim(' decantr magic stays greenfield-first and will not silently bootstrap over an existing app.'));
-    console.log(dim(' Running brownfield analysis instead so you can attach Decantr deliberately.\n'));
+    console.log(
+      dim(
+        ' decantr magic stays greenfield-first and will not silently bootstrap over an existing app.',
+      ),
+    );
+    console.log(
+      dim(' Running brownfield analysis instead so you can attach Decantr deliberately.\n'),
+    );
     cmdAnalyze(projectRoot);
     console.log(`${BOLD}Recommended next step:${RESET} ${cyan('decantr init --existing --yes')}`);
     console.log('');
@@ -331,7 +401,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     const blueprints = blueprintsResult.data.items;
 
     // Score blueprints against the prompt
-    const scored = blueprints.map(bp => {
+    const scored = blueprints.map((bp) => {
       const bpLower = `${bp.id} ${bp.name || ''} ${bp.description || ''}`.toLowerCase();
       let score = 0;
 
@@ -386,7 +456,11 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
   const initOptions: InitOptions = {
     blueprint: matchedBlueprint,
-    archetype: intent.archetype || blueprintData?.compose?.[0]?.archetype || blueprintData?.compose?.[0] || 'dashboard-analytics',
+    archetype:
+      intent.archetype ||
+      blueprintData?.compose?.[0]?.archetype ||
+      blueprintData?.compose?.[0] ||
+      'dashboard-analytics',
     theme: themeResolved.id,
     mode: themeResolved.mode,
     shape: 'rounded',
@@ -405,9 +479,10 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     if (blueprintData.theme?.mode) initOptions.mode = blueprintData.theme.mode;
     if (blueprintData.theme?.shape) initOptions.shape = blueprintData.theme.shape;
     if (blueprintData.personality) {
-      initOptions.personality = typeof blueprintData.personality === 'string'
-        ? [blueprintData.personality]
-        : blueprintData.personality;
+      initOptions.personality =
+        typeof blueprintData.personality === 'string'
+          ? [blueprintData.personality]
+          : blueprintData.personality;
     }
     // Merge prompt personality into blueprint personality
     if (intent.personalityHints.length > 0) {
@@ -434,10 +509,16 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     console.log(`${BOLD}decantr magic preview${RESET}`);
     console.log('\u2500'.repeat(60));
     console.log(`  Blueprint:    ${matchedBlueprint || 'none (archetype-direct)'}`);
-    console.log(`  Theme:        ${initOptions.theme} (${initOptions.mode}${initOptions.shape ? ', ' + initOptions.shape : ''})`);
+    console.log(
+      `  Theme:        ${initOptions.theme} (${initOptions.mode}${initOptions.shape ? ', ' + initOptions.shape : ''})`,
+    );
     console.log(`  Archetype:    ${initOptions.archetype || 'auto-detected'}`);
-    console.log(`  Personality:  ${personalityStr.slice(0, 80)}${personalityStr.length > 80 ? '...' : ''}`);
-    console.log(`  WCAG:         ${initOptions.accessibility?.wcag_level || 'AA'} | Density: ${initOptions.density} | Guard: ${initOptions.guard}`);
+    console.log(
+      `  Personality:  ${personalityStr.slice(0, 80)}${personalityStr.length > 80 ? '...' : ''}`,
+    );
+    console.log(
+      `  WCAG:         ${initOptions.accessibility?.wcag_level || 'AA'} | Density: ${initOptions.density} | Guard: ${initOptions.guard}`,
+    );
     if (intent.constraints.length > 0)
       console.log(`  Constraints:  ${intent.constraints.join(', ')}`);
     console.log('\u2500'.repeat(60));
@@ -453,7 +534,7 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   let patternSpecs: Record<string, PatternSpecSummary> | undefined;
   let topologyMarkdown = '';
   let themeData: ThemeData | undefined;
-  let registrySource: 'api' | 'cache' = apiAvailable ? 'api' : 'cache';
+  const registrySource: 'api' | 'cache' = apiAvailable ? 'api' : 'cache';
 
   // If we have a blueprint with compose entries, do full composition
   if (blueprintData?.compose && blueprintData.compose.length > 0) {
@@ -482,12 +563,12 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
     }
 
     // Build archetypeData for scaffoldProject (flattened view)
-    const allPages = composedSections.sections.flatMap(s =>
-      s.pages.map(p => ({
+    const allPages = composedSections.sections.flatMap((s) =>
+      s.pages.map((p) => ({
         id: p.id,
         shell: p.shell_override || s.shell,
         default_layout: p.layout as LayoutItem[],
-      }))
+      })),
     );
     archetypeData = {
       id: primaryId,
@@ -501,8 +582,8 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
       for (const [path, entry] of Object.entries(blueprintData.routes)) {
         if (entry.archetype && entry.page) {
           routeMap[path] = { section: entry.archetype, page: entry.page };
-          const section = composedSections.sections.find(s => s.id === entry.archetype);
-          const page = section?.pages.find(p => p.id === entry.page);
+          const section = composedSections.sections.find((s) => s.id === entry.archetype);
+          const page = section?.pages.find((p) => p.id === entry.page);
           if (page) page.route = path;
         }
       }
@@ -515,7 +596,8 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
         if (page.patterns) {
           for (const ref of page.patterns) allPatternIds.add(ref.pattern);
         }
-        for (const patternId of collectPatternIdsFromItems(page.layout)) allPatternIds.add(patternId);
+        for (const patternId of collectPatternIdsFromItems(page.layout))
+          allPatternIds.add(patternId);
       }
     }
 
@@ -526,7 +608,9 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
         if (result) {
           patternSpecs[pid] = mapRegistryPatternToPatternSpecSummary(result.data, undefined, false);
         }
-      } catch { /* skip */ }
+      } catch {
+        /* skip */
+      }
     }
 
     // Derive topology
@@ -564,7 +648,9 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
 
     // Print composition summary
     console.log(`${BOLD} Composition:${RESET}`);
-    console.log(`   Sections:  ${composedSections.sections.length} (${composedSections.sections.map(s => s.id).join(', ')})`);
+    console.log(
+      `   Sections:  ${composedSections.sections.length} (${composedSections.sections.map((s) => s.id).join(', ')})`,
+    );
     const totalRoutes = Object.keys(routeMap).length;
     if (totalRoutes > 0) console.log(`   Routes:    ${totalRoutes}`);
     if (composedSections.features.length > 0) {
@@ -623,8 +709,8 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   }
 
   if (result.contextFiles && result.contextFiles.length > 0) {
-    const sectionContexts = result.contextFiles.filter(f => f.includes('section-'));
-    const otherContexts = result.contextFiles.filter(f => !f.includes('section-'));
+    const sectionContexts = result.contextFiles.filter((f) => f.includes('section-'));
+    const otherContexts = result.contextFiles.filter((f) => !f.includes('section-'));
     if (sectionContexts.length > 0) {
       console.log(`   ${success('Created')} ${sectionContexts.length} section context(s)`);
     }
@@ -656,17 +742,29 @@ export async function cmdMagic(prompt: string, projectRoot: string, options: Mag
   } catch {}
 
   console.log(`\n${GREEN}${BOLD}Quality summary:${RESET}`);
-  console.log(`  Context files:   ${sectionCount} sections + page packs + section packs + scaffold-pack.md + scaffold.md + DECANTR.md`);
+  console.log(
+    `  Context files:   ${sectionCount} sections + page packs + section packs + scaffold-pack.md + scaffold.md + DECANTR.md`,
+  );
   console.log(`  CSS:             tokens.css + treatments.css + global.css`);
-  console.log(`  @layer cascade:  ${hasLayers ? GREEN + 'yes' + RESET : YELLOW + 'missing' + RESET}`);
+  console.log(
+    `  @layer cascade:  ${hasLayers ? GREEN + 'yes' + RESET : YELLOW + 'missing' + RESET}`,
+  );
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
   console.log(`   1. Read ${cyan('DECANTR.md')} for guard rules, CSS approach, and workflow`);
-  console.log(`   2. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`);
-  console.log(`   3. Read ${cyan('.decantr/context/scaffold.md')} second for broader topology and voice guidance`);
-  console.log(`   4. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/section-*.md')} files before section work`);
-  console.log(`   5. Read the matching ${cyan('.decantr/context/page-*-pack.md')} file before route work`);
+  console.log(
+    `   2. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`,
+  );
+  console.log(
+    `   3. Read ${cyan('.decantr/context/scaffold.md')} second for broader topology and voice guidance`,
+  );
+  console.log(
+    `   4. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/section-*.md')} files before section work`,
+  );
+  console.log(
+    `   5. Read the matching ${cyan('.decantr/context/page-*-pack.md')} file before route work`,
+  );
   console.log(`   6. Build the shell and route structure first, then implement each page`);
   console.log(`   7. Run ${cyan('decantr check')} and ${cyan('decantr audit')} before you ship`);
   console.log('');

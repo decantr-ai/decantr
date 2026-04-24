@@ -1,27 +1,42 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isV3, computeSpatialTokens } from '@decantr/essence-spec';
-import type { EssenceV3, EssenceDNA, EssenceBlueprint, EssenceMeta, BlueprintPage, EssenceV31Section, RouteEntry, DNAOverrides, SpatialTokenHints } from '@decantr/essence-spec';
-import { compileExecutionPackBundle } from '@decantr/core';
-import type { ExecutionPackBase, ExecutionPackBundle, ExecutionPackManifest, ScaffoldExecutionPack } from '@decantr/core';
-import { generateTreatmentCSS, generatePersonalityCSS } from './treatments.js';
 import type {
-  ComposeEntry,
+  ExecutionPackBase,
+  ExecutionPackBundle,
+  ExecutionPackManifest,
+  ScaffoldExecutionPack,
+} from '@decantr/core';
+import { compileExecutionPackBundle } from '@decantr/core';
+import type {
+  BlueprintPage,
+  DNAOverrides,
+  EssenceBlueprint,
+  EssenceDNA,
+  EssenceMeta,
+  EssenceV3,
+  EssenceV31Section,
+  RouteEntry,
+  SpatialTokenHints,
+} from '@decantr/essence-spec';
+import { computeSpatialTokens, isV3 } from '@decantr/essence-spec';
+import type {
   ArchetypeRole,
-  Archetype as RegistryArchetype,
-  Blueprint as RegistryBlueprint,
-  Theme as RegistryTheme,
-  Pattern as RegistryPattern,
-  Shell as RegistryShell,
+  ComposeEntry,
   PatternReference,
   PatternReferenceObject,
+  Archetype as RegistryArchetype,
+  Blueprint as RegistryBlueprint,
   LayoutItem as RegistryLayoutItem,
+  Pattern as RegistryPattern,
+  Shell as RegistryShell,
+  Theme as RegistryTheme,
 } from '@decantr/registry';
+import { API_CONTENT_TYPES } from '@decantr/registry';
 import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
-import { API_CONTENT_TYPES } from '@decantr/registry';
+import { generatePersonalityCSS, generateTreatmentCSS } from './treatments.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -149,7 +164,7 @@ export function mapRegistryArchetypeToArchetypeData(archetype: RegistryArchetype
     name: archetype.name,
     role: archetype.role,
     description: archetype.description,
-    pages: archetype.pages?.map(page => {
+    pages: archetype.pages?.map((page) => {
       const pageExtras = page as { directives?: string[] };
       return {
         id: page.id,
@@ -213,8 +228,9 @@ export function composeArchetypes(
       for (const page of data.pages) {
         allPages.push({
           id: page.id,
-          layout: (page.default_layout?.length ? page.default_layout : ['hero'])
-            .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
+          layout: (page.default_layout?.length ? page.default_layout : ['hero']).map((item) =>
+            resolvePatternAlias(item, page.patterns),
+          ) as LayoutItem[],
           ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
         });
       }
@@ -223,8 +239,9 @@ export function composeArchetypes(
       for (const page of data.pages) {
         allPages.push({
           id: `${prefix}-${page.id}`,
-          layout: (page.default_layout?.length ? page.default_layout : ['hero'])
-            .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
+          layout: (page.default_layout?.length ? page.default_layout : ['hero']).map((item) =>
+            resolvePatternAlias(item, page.patterns),
+          ) as LayoutItem[],
           ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
         });
       }
@@ -285,14 +302,16 @@ export function composeSections(
 ): ComposeSectionsResult {
   if (composeEntries.length === 0) {
     return {
-      sections: [{
-        id: 'default',
-        role: 'primary',
-        shell: 'sidebar-main',
-        features: [],
-        description: 'Default section',
-        pages: [{ id: 'home', layout: ['hero'] }],
-      }],
+      sections: [
+        {
+          id: 'default',
+          role: 'primary',
+          shell: 'sidebar-main',
+          features: [],
+          description: 'Default section',
+          pages: [{ id: 'home', layout: ['hero'] }],
+        },
+      ],
       features: [],
       defaultShell: 'sidebar-main',
     };
@@ -321,8 +340,9 @@ export function composeSections(
       const overriddenPage = overrides?.pages?.[page.id];
       pages.push({
         id: page.id,
-        layout: (page.default_layout?.length ? page.default_layout : ['hero'])
-          .map((item) => resolvePatternAlias(item, page.patterns)) as LayoutItem[],
+        layout: (page.default_layout?.length ? page.default_layout : ['hero']).map((item) =>
+          resolvePatternAlias(item, page.patterns),
+        ) as LayoutItem[],
         // Propagate per-page directives from the archetype so cold LLMs
         // see execution-level rules in the page-pack contract instead of
         // having to read the section narrative.
@@ -381,7 +401,7 @@ export function composeSections(
   }
 
   // After all sections are built, resolve "inherit" shell
-  const primaryShell = sections.find(s => s.role === 'primary')?.shell || defaultShell;
+  const primaryShell = sections.find((s) => s.role === 'primary')?.shell || defaultShell;
   for (const section of sections) {
     if (section.shell === 'inherit') {
       section.shell = primaryShell;
@@ -397,7 +417,7 @@ export function composeSections(
   }
   if (overrides?.features_remove) {
     const removeSet = new Set(overrides.features_remove);
-    features = features.filter(f => !removeSet.has(f));
+    features = features.filter((f) => !removeSet.has(f));
   }
 
   return { sections, features, defaultShell };
@@ -454,9 +474,7 @@ export function deriveZones(inputs: ZoneInput[]): ComposedZone[] {
     zone.features = [...new Set(zone.features)];
   }
 
-  return ZONE_ORDER
-    .filter(role => zoneMap.has(role))
-    .map(role => zoneMap.get(role)!);
+  return ZONE_ORDER.filter((role) => zoneMap.has(role)).map((role) => zoneMap.get(role)!);
 }
 
 const GATEWAY_TRIGGER_MAP: Record<string, string> = {
@@ -483,8 +501,8 @@ function resolveGatewayTrigger(features: string[]): string {
 
 export function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
   const transitions: ZoneTransition[] = [];
-  const roles = new Set(zones.map(z => z.role));
-  const gateway = zones.find(z => z.role === 'gateway');
+  const roles = new Set(zones.map((z) => z.role));
+  const gateway = zones.find((z) => z.role === 'gateway');
   const gatewayTrigger = gateway ? resolveGatewayTrigger(gateway.features) : 'authentication';
 
   const hasApp = roles.has('primary') || roles.has('auxiliary');
@@ -492,7 +510,12 @@ export function deriveTransitions(zones: ComposedZone[]): ZoneTransition[] {
   const hasPublic = roles.has('public');
 
   if (hasPublic && hasGateway) {
-    transitions.push({ from: 'public', to: 'gateway', type: 'conversion', trigger: gatewayTrigger });
+    transitions.push({
+      from: 'public',
+      to: 'gateway',
+      type: 'conversion',
+      trigger: gatewayTrigger,
+    });
   }
   if (hasPublic && hasApp && !hasGateway) {
     transitions.push({ from: 'public', to: 'app', type: 'conversion', trigger: 'navigation' });
@@ -595,24 +618,39 @@ export interface ThemeData {
   // Typography
   typography?: { scale?: string; heading_weight?: number; body_weight?: number; mono?: string };
   // Motion
-  motion?: { preference?: string; reduce_motion?: boolean; entrance?: string; timing?: string; durations?: Record<string, string> };
+  motion?: {
+    preference?: string;
+    reduce_motion?: boolean;
+    entrance?: string;
+    timing?: string;
+    durations?: Record<string, string>;
+  };
   // Visual treatment (formerly RecipeData)
   decorators?: Record<string, string>;
-  decorator_definitions?: Record<string, {
-    description?: string;
-    intent?: string;
-    suggested_properties?: Record<string, string>;
-    // State-variant CSS. Emitter generates `.{name}:hover` / `:focus-visible` /
-    // `:active` rules when these fields are present. Optional and additive —
-    // themes without them keep current behavior.
-    hover_properties?: Record<string, string>;
-    focus_properties?: Record<string, string>;
-    active_properties?: Record<string, string>;
-    pairs_with?: string[];
-    usage?: string[];
-  }>;
+  decorator_definitions?: Record<
+    string,
+    {
+      description?: string;
+      intent?: string;
+      suggested_properties?: Record<string, string>;
+      // State-variant CSS. Emitter generates `.{name}:hover` / `:focus-visible` /
+      // `:active` rules when these fields are present. Optional and additive —
+      // themes without them keep current behavior.
+      hover_properties?: Record<string, string>;
+      focus_properties?: Record<string, string>;
+      active_properties?: Record<string, string>;
+      pairs_with?: string[];
+      usage?: string[];
+    }
+  >;
   treatments?: Record<string, Record<string, string>>;
-  spatial?: { density_bias?: number; content_gap_shift?: number; section_padding?: string | null; card_wrapping?: string; surface_override?: string };
+  spatial?: {
+    density_bias?: number;
+    content_gap_shift?: number;
+    section_padding?: string | null;
+    card_wrapping?: string;
+    surface_override?: string;
+  };
   radius?: { philosophy?: string; base?: number };
   // Layout hints
   shell?: { preferred?: string[]; nav_style?: string; root?: string; nav?: string };
@@ -644,10 +682,17 @@ export function mapRegistryThemeToThemeData(theme: RegistryTheme): ThemeData {
 /**
  * Generate tokens.css from theme data.
  */
-export function generateTokensCSS(themeData: ThemeData | undefined, mode: string, spatialTokens?: Record<string, string>): string {
+export function generateTokensCSS(
+  themeData: ThemeData | undefined,
+  mode: string,
+  spatialTokens?: Record<string, string>,
+): string {
   if (!themeData) {
     const spatialLines = spatialTokens
-      ? '\n' + Object.entries(spatialTokens).map(([k, v]) => `  ${k}: ${v};`).join('\n')
+      ? '\n' +
+        Object.entries(spatialTokens)
+          .map(([k, v]) => `  ${k}: ${v};`)
+          .join('\n')
       : '';
     return `/* No theme data available */
 @layer tokens {
@@ -729,18 +774,14 @@ export function generateTokensCSS(themeData: ThemeData | undefined, mode: string
       '--d-radius-full': '9999px',
 
       // Shadows — dark mode needs higher opacity to be visible on dark backgrounds
-      '--d-shadow-sm': tokenMode === 'light'
-        ? '0 1px 2px rgba(0,0,0,0.05)'
-        : '0 1px 2px rgba(0,0,0,0.2)',
-      '--d-shadow': tokenMode === 'light'
-        ? '0 1px 3px rgba(0,0,0,0.1)'
-        : '0 1px 3px rgba(0,0,0,0.25)',
-      '--d-shadow-md': tokenMode === 'light'
-        ? '0 4px 6px rgba(0,0,0,0.1)'
-        : '0 4px 6px rgba(0,0,0,0.3)',
-      '--d-shadow-lg': tokenMode === 'light'
-        ? '0 10px 15px rgba(0,0,0,0.1)'
-        : '0 10px 15px rgba(0,0,0,0.4)',
+      '--d-shadow-sm':
+        tokenMode === 'light' ? '0 1px 2px rgba(0,0,0,0.05)' : '0 1px 2px rgba(0,0,0,0.2)',
+      '--d-shadow':
+        tokenMode === 'light' ? '0 1px 3px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.25)',
+      '--d-shadow-md':
+        tokenMode === 'light' ? '0 4px 6px rgba(0,0,0,0.1)' : '0 4px 6px rgba(0,0,0,0.3)',
+      '--d-shadow-lg':
+        tokenMode === 'light' ? '0 10px 15px rgba(0,0,0,0.1)' : '0 10px 15px rgba(0,0,0,0.4)',
 
       // Status colors
       '--d-success': themeData.tokens?.base?.success || '#22c55e',
@@ -774,7 +815,10 @@ export function generateTokensCSS(themeData: ThemeData | undefined, mode: string
     .join('\n');
 
   const spatialLines = spatialTokens
-    ? '\n' + Object.entries(spatialTokens).map(([k, v]) => `  ${k}: ${v};`).join('\n')
+    ? '\n' +
+      Object.entries(spatialTokens)
+        .map(([k, v]) => `  ${k}: ${v};`)
+        .join('\n')
     : '';
 
   let css = `/* Generated by @decantr/cli */
@@ -789,9 +833,17 @@ ${lines}${spatialLines}
     const lightTokens = buildTokens('light');
     // Only emit palette tokens that differ between modes
     const paletteKeys = [
-      '--d-bg', '--d-surface', '--d-surface-raised', '--d-border',
-      '--d-text', '--d-text-muted', '--d-primary-hover',
-      '--d-shadow-sm', '--d-shadow', '--d-shadow-md', '--d-shadow-lg',
+      '--d-bg',
+      '--d-surface',
+      '--d-surface-raised',
+      '--d-border',
+      '--d-text',
+      '--d-text-muted',
+      '--d-primary-hover',
+      '--d-shadow-sm',
+      '--d-shadow',
+      '--d-shadow-md',
+      '--d-shadow-lg',
     ];
     const lightLines = Object.entries(lightTokens)
       .filter(([key]) => paletteKeys.includes(key))
@@ -1025,14 +1077,14 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
  */
 function resolvePatternAlias(
   item: LayoutItem,
-  patterns?: Array<{ pattern: string; preset?: string; as?: string }>
+  patterns?: Array<{ pattern: string; preset?: string; as?: string }>,
 ): LayoutItem {
   if (!patterns) return item;
 
   // Handle string items (simple pattern names or aliases)
   if (typeof item === 'string') {
     // Check if this is an alias that needs resolving
-    const patternDef = patterns.find(p => p.as === item);
+    const patternDef = patterns.find((p) => p.as === item);
     if (patternDef) {
       // Return the actual pattern ID, optionally with preset
       if (patternDef.preset) {
@@ -1051,7 +1103,7 @@ function resolvePatternAlias(
     if (Array.isArray(obj.cols)) {
       return {
         ...obj,
-        cols: obj.cols.map(col => resolvePatternAlias(col, patterns)),
+        cols: obj.cols.map((col) => resolvePatternAlias(col, patterns)),
       };
     }
   }
@@ -1068,17 +1120,16 @@ export function buildEssenceV3(
   themeHints?: ThemeData,
 ): EssenceV3 {
   // Resolve structure from archetype or defaults
-  let pages: EssenceBlueprint['pages'] = [
-    { id: 'home', layout: ['hero'] }
-  ];
+  let pages: EssenceBlueprint['pages'] = [{ id: 'home', layout: ['hero'] }];
   let features: string[] = options.features;
   let defaultShell = options.shell || 'sidebar-main';
 
   if (archetypeData?.pages) {
     defaultShell = archetypeData.pages[0]?.shell || defaultShell;
-    pages = archetypeData.pages.map(p => {
-      const resolvedLayout = (p.default_layout?.length ? p.default_layout : ['hero'])
-        .map(item => resolvePatternAlias(item, p.patterns));
+    pages = archetypeData.pages.map((p) => {
+      const resolvedLayout = (p.default_layout?.length ? p.default_layout : ['hero']).map((item) =>
+        resolvePatternAlias(item, p.patterns),
+      );
       return {
         id: p.id,
         ...(p.shell !== defaultShell ? { shell_override: p.shell } : {}),
@@ -1104,9 +1155,21 @@ export function buildEssenceV3(
   };
 
   const guardModeMap: Record<string, EssenceMeta['guard']> = {
-    strict: { mode: 'strict' as const, dna_enforcement: 'error' as const, blueprint_enforcement: 'warn' as const },
-    guided: { mode: 'guided' as const, dna_enforcement: 'error' as const, blueprint_enforcement: 'off' as const },
-    creative: { mode: 'creative' as const, dna_enforcement: 'off' as const, blueprint_enforcement: 'off' as const },
+    strict: {
+      mode: 'strict' as const,
+      dna_enforcement: 'error' as const,
+      blueprint_enforcement: 'warn' as const,
+    },
+    guided: {
+      mode: 'guided' as const,
+      dna_enforcement: 'error' as const,
+      blueprint_enforcement: 'off' as const,
+    },
+    creative: {
+      mode: 'creative' as const,
+      dna_enforcement: 'off' as const,
+      blueprint_enforcement: 'off' as const,
+    },
   };
 
   const dna: EssenceDNA = {
@@ -1692,16 +1755,21 @@ function generateDecantrMdV31(params: {
   sections?: Array<{ id: string; role: string }>;
   features?: string[];
   decorators?: Array<{ name: string; description: string }>;
-  decoratorDefinitions?: Record<string, { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }>;
+  decoratorDefinitions?: Record<
+    string,
+    { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }
+  >;
 }): string {
   const template = loadTemplate('DECANTR.md.template');
   const body = renderTemplate(template, {
     GUARD_MODE: params.guardMode,
     CSS_APPROACH: params.cssApproach,
-    WORKFLOW_MODE: params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold',
-    WORKFLOW_GUIDANCE: params.workflowMode === 'brownfield-attach'
-      ? `This project is using Decantr in **brownfield attach** mode.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/init-seed.json\` for the recommended attach defaults.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Map existing routes and components onto the declared Decantr sections/pages before creating new files. Registry content is optional in this workflow unless the task explicitly asks for it.`
-      : `This project is using Decantr in **greenfield scaffold** mode.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
+    WORKFLOW_MODE:
+      params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold',
+    WORKFLOW_GUIDANCE:
+      params.workflowMode === 'brownfield-attach'
+        ? `This project is using Decantr in **brownfield attach** mode.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/init-seed.json\` for the recommended attach defaults.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Map existing routes and components onto the declared Decantr sections/pages before creating new files. Registry content is optional in this workflow unless the task explicitly asks for it.`
+        : `This project is using Decantr in **greenfield scaffold** mode.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
   });
 
   // Build project brief
@@ -1711,12 +1779,14 @@ function generateDecantrMdV31(params: {
   briefLines.push(`- **Blueprint:** ${params.blueprintId || 'custom'}`);
   const themeDesc = `${params.themeName || 'default'} (${params.themeMode || 'dark'} mode${params.themeShape ? `, ${params.themeShape} shape` : ''})`;
   briefLines.push(`- **Theme:** ${themeDesc}`);
-  briefLines.push(`- **Workflow:** ${params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold'}`);
+  briefLines.push(
+    `- **Workflow:** ${params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold'}`,
+  );
   if (params.personality && params.personality.length > 0) {
     briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
   }
   if (params.sections && params.sections.length > 0) {
-    const sectionList = params.sections.map(s => `${s.id} [${s.role}]`).join(', ');
+    const sectionList = params.sections.map((s) => `${s.id} [${s.role}]`).join(', ');
     briefLines.push(`- **Sections:** ${params.sections.length} (${sectionList})`);
   }
   if (params.features && params.features.length > 0) {
@@ -1731,7 +1801,11 @@ function generateDecantrMdV31(params: {
     briefLines.push('|-------|--------|---------|');
     for (const [name, def] of Object.entries(params.decoratorDefinitions)) {
       const intent = def.intent || '';
-      const cssProps = def.css ? Object.entries(def.css).map(([p, v]) => `${p}: ${v}`).join('; ') : '';
+      const cssProps = def.css
+        ? Object.entries(def.css)
+            .map(([p, v]) => `${p}: ${v}`)
+            .join('; ')
+        : '';
       briefLines.push(`| \`.${name}\` | ${intent} | ${cssProps} |`);
     }
     briefLines.push('');
@@ -1748,7 +1822,9 @@ function generateDecantrMdV31(params: {
   // Development Workflow section
   briefLines.push('## Development Workflow');
   briefLines.push('');
-  briefLines.push('The essence file (`decantr.essence.json`) is the source of truth for your project\'s structure. Context files in `.decantr/context/` are derived from it. When you need to add, remove, or modify pages, sections, or features:');
+  briefLines.push(
+    "The essence file (`decantr.essence.json`) is the source of truth for your project's structure. Context files in `.decantr/context/` are derived from it. When you need to add, remove, or modify pages, sections, or features:",
+  );
   briefLines.push('');
   briefLines.push('**1. Update the essence** (use CLI commands for consistency):');
   briefLines.push('- `decantr add page {section}/{page} --route /{path}`');
@@ -1764,7 +1840,7 @@ function generateDecantrMdV31(params: {
   briefLines.push('**3. Read the updated context files**, then build.');
   briefLines.push('');
   briefLines.push('**Rules:**');
-  briefLines.push('- Never create page components for routes that don\'t exist in the essence');
+  briefLines.push("- Never create page components for routes that don't exist in the essence");
   briefLines.push('- Never delete pages without removing them from the essence');
   briefLines.push('- Always refresh after mutations — stale context files lead to drift');
   briefLines.push('- If you edit the essence directly, run `decantr refresh` before building');
@@ -1781,7 +1857,7 @@ function generateDecantrMdV31(params: {
 function generateProjectJson(
   detected: DetectedProject,
   options: InitOptions,
-  registrySource: 'api' | 'cache'
+  registrySource: 'api' | 'cache',
 ): string {
   const now = new Date().toISOString();
 
@@ -1840,15 +1916,13 @@ function buildFlagsString(options: InitOptions): string {
 function generateTaskContextV3(templateName: string, essence: EssenceV3): string {
   const template = loadTemplate(templateName);
 
-  const sections = essence.blueprint.sections && essence.blueprint.sections.length > 0
-    ? essence.blueprint.sections
-    : [];
-  const pages = sections.length > 0
-    ? sections.flatMap(s => s.pages)
-    : essence.blueprint.pages || [];
-  const defaultShell = sections[0]?.shell
-    || essence.blueprint.shell
-    || 'sidebar-main';
+  const sections =
+    essence.blueprint.sections && essence.blueprint.sections.length > 0
+      ? essence.blueprint.sections
+      : [];
+  const pages =
+    sections.length > 0 ? sections.flatMap((s) => s.pages) : essence.blueprint.pages || [];
+  const defaultShell = sections[0]?.shell || essence.blueprint.shell || 'sidebar-main';
   const layout = pages[0]?.layout?.map(serializeLayoutItem).join(', ') || 'none';
 
   // Build a page-to-shell map from sections so each page shows its section's shell
@@ -1859,13 +1933,16 @@ function generateTaskContextV3(templateName: string, essence: EssenceV3): string
     }
   }
 
-  const scaffoldStructure = pages.map(p => {
-    const shell = pageShellMap.get(p.id) || defaultShell;
-    const patterns = p.layout.length > 0
-      ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
-      : '';
-    return `- **${p.id}** (${shell})${patterns}`;
-  }).join('\n');
+  const scaffoldStructure = pages
+    .map((p) => {
+      const shell = pageShellMap.get(p.id) || defaultShell;
+      const patterns =
+        p.layout.length > 0
+          ? `\n  - Patterns: ${p.layout.map(serializeLayoutItem).join(', ')}`
+          : '';
+      return `- **${p.id}** (${shell})${patterns}`;
+    })
+    .join('\n');
 
   const densityLevel = essence.dna.spacing?.density || 'comfortable';
   const contentGap = essence.dna.spacing?.content_gap || '_gap4';
@@ -1896,7 +1973,7 @@ function renderPackReferenceList(
   }
 
   if (entries.length <= 6) {
-    return `### ${title}\n\n${entries.map(entry => `- ${entry}`).join('\n')}`;
+    return `### ${title}\n\n${entries.map((entry) => `- ${entry}`).join('\n')}`;
   }
 
   return `### ${title}\n\n- ${entries.length} compiled references available. Use \`${summaryPath}\` to resolve the exact files for this scope.`;
@@ -1912,23 +1989,29 @@ function generateScaffoldTaskContext(
   }
 
   const themeShape = scaffoldPack.data.theme.shape || 'default';
-  const features = scaffoldPack.data.features.length > 0
-    ? scaffoldPack.data.features.join(', ')
-    : 'none';
-  const routePlan = scaffoldPack.data.routes.length > 0
-    ? scaffoldPack.data.routes.map(route => {
-        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
-      }).join('\n')
-    : '- No routes declared';
-  const successChecks = scaffoldPack.successChecks.map(check => `- [${check.severity}] ${check.label}`).join('\n');
-  const tokenStrategy = scaffoldPack.tokenBudget.strategy.map(item => `- ${item}`).join('\n');
-  const sectionRefs = manifest?.sections.map(section =>
-    `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``
-  ) ?? [];
-  const pageRefs = manifest?.pages.map(page =>
-    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
-  ) ?? [];
+  const features =
+    scaffoldPack.data.features.length > 0 ? scaffoldPack.data.features.join(', ') : 'none';
+  const routePlan =
+    scaffoldPack.data.routes.length > 0
+      ? scaffoldPack.data.routes
+          .map((route) => {
+            const patternSummary =
+              route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+            return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+          })
+          .join('\n')
+      : '- No routes declared';
+  const successChecks = scaffoldPack.successChecks
+    .map((check) => `- [${check.severity}] ${check.label}`)
+    .join('\n');
+  const tokenStrategy = scaffoldPack.tokenBudget.strategy.map((item) => `- ${item}`).join('\n');
+  const sectionRefs =
+    manifest?.sections.map(
+      (section) => `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``,
+    ) ?? [];
+  const pageRefs =
+    manifest?.pages.map((page) => `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``) ??
+    [];
 
   return `# Task Context: Scaffolding
 
@@ -1982,18 +2065,23 @@ function generateAddPageTaskContext(
     return generateTaskContextV3('task-add-page.md.template', essence);
   }
 
-  const routePlan = scaffoldPack.data.routes.length > 0
-    ? scaffoldPack.data.routes.map(route => {
-        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
-      }).join('\n')
-    : '- No routes declared';
-  const sectionRefs = manifest?.sections.map(section =>
-    `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``
-  ) ?? [];
-  const pageRefs = manifest?.pages.map(page =>
-    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
-  ) ?? [];
+  const routePlan =
+    scaffoldPack.data.routes.length > 0
+      ? scaffoldPack.data.routes
+          .map((route) => {
+            const patternSummary =
+              route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+            return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+          })
+          .join('\n')
+      : '- No routes declared';
+  const sectionRefs =
+    manifest?.sections.map(
+      (section) => `Section \`${section.id}\` -> \`.decantr/context/${section.markdown}\``,
+    ) ?? [];
+  const pageRefs =
+    manifest?.pages.map((page) => `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``) ??
+    [];
 
   return `# Task Context: Adding Pages
 
@@ -2049,16 +2137,22 @@ function generateModifyTaskContext(
     return generateTaskContextV3('task-modify.md.template', essence);
   }
 
-  const routePlan = scaffoldPack.data.routes.length > 0
-    ? scaffoldPack.data.routes.map(route => {
-        const patternSummary = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-        return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
-      }).join('\n')
-    : '- No routes declared';
-  const pageRefs = manifest?.pages.map(page =>
-    `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``
-  ) ?? [];
-  const successChecks = scaffoldPack.successChecks.map(check => `- [${check.severity}] ${check.label}`).join('\n');
+  const routePlan =
+    scaffoldPack.data.routes.length > 0
+      ? scaffoldPack.data.routes
+          .map((route) => {
+            const patternSummary =
+              route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
+            return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+          })
+          .join('\n')
+      : '- No routes declared';
+  const pageRefs =
+    manifest?.pages.map((page) => `Page \`${page.id}\` -> \`.decantr/context/${page.markdown}\``) ??
+    [];
+  const successChecks = scaffoldPack.successChecks
+    .map((check) => `- [${check.severity}] ${check.label}`)
+    .join('\n');
 
   return `# Task Context: Modifying Code
 
@@ -2110,21 +2204,25 @@ function generateEssenceSummaryV3(essence: EssenceV3): string {
   // Build pages table
   let pagesTable: string;
   if (sections.length > 0) {
-    const rows = sections.flatMap(s =>
-      s.pages.map(p => `| ${p.id} | ${s.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`)
+    const rows = sections.flatMap((s) =>
+      s.pages.map(
+        (p) =>
+          `| ${p.id} | ${s.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`,
+      ),
     );
     pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
   } else {
     const shell = (blueprint.shell ?? 'sidebar-main') as string;
-    const rows = flatPages.map(p => `| ${p.id} | ${shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`);
+    const rows = flatPages.map(
+      (p) => `| ${p.id} | ${shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`,
+    );
     pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
   }
 
   // Build features list
   const features = blueprint.features || [];
-  const featuresList = features.length > 0
-    ? features.map(f => `- ${f}`).join('\n')
-    : '- No features specified';
+  const featuresList =
+    features.length > 0 ? features.map((f) => `- ${f}`).join('\n') : '- No features specified';
 
   const vars: Record<string, string> = {
     ARCHETYPE: essence.meta.archetype || 'custom',
@@ -2228,9 +2326,10 @@ export async function scaffoldProject(
       routes: routeMap || {},
     };
     if (blueprintData?.personality?.length) {
-      essenceV3.dna.personality = typeof blueprintData.personality === 'string'
-        ? [blueprintData.personality]
-        : blueprintData.personality;
+      essenceV3.dna.personality =
+        typeof blueprintData.personality === 'string'
+          ? [blueprintData.personality]
+          : blueprintData.personality;
     }
     if (blueprintData?.design_constraints) {
       essenceV3.dna.constraints = blueprintData.design_constraints;
@@ -2248,7 +2347,10 @@ export async function scaffoldProject(
 
   // Delegate derived file generation to refreshDerivedFiles
   // Pass patternSpecs through to avoid double-fetching from registry (Spec 1.8)
-  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, { isInitialScaffold: true, patternSpecs });
+  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, {
+    isInitialScaffold: true,
+    patternSpecs,
+  });
 
   // Merge context files from refresh into our list
   contextFiles.push(...refreshResult.contextFiles);
@@ -2327,9 +2429,7 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
     },
     blueprint: {
       shell: 'sidebar-main',
-      pages: [
-        { id: 'home', layout: ['hero'] },
-      ],
+      pages: [{ id: 'home', layout: ['hero'] }],
       features: [],
     },
     meta: {
@@ -2503,10 +2603,16 @@ export function writeExecutionPackBundleArtifacts(
   mkdirSync(contextDir, { recursive: true });
 
   const outputPaths: string[] = [];
-  const scaffoldPackPath = writeExecutionPackArtifacts(join(contextDir, 'scaffold-pack'), bundle.scaffold);
+  const scaffoldPackPath = writeExecutionPackArtifacts(
+    join(contextDir, 'scaffold-pack'),
+    bundle.scaffold,
+  );
   outputPaths.push(scaffoldPackPath);
 
-  const reviewPackPath = writeExecutionPackArtifacts(join(contextDir, 'review-pack'), bundle.review);
+  const reviewPackPath = writeExecutionPackArtifacts(
+    join(contextDir, 'review-pack'),
+    bundle.review,
+  );
   outputPaths.push(reviewPackPath);
 
   for (const sectionPack of bundle.sections) {
@@ -2600,7 +2706,10 @@ async function resolvePatternSpec(
   includeExtendedFields = true,
 ): Promise<PatternSpecSummary | null> {
   // If prefetched spec has extended fields, use it directly
-  if (prefetched && (prefetched.layout_hints || prefetched.visual_brief || !includeExtendedFields)) {
+  if (
+    prefetched &&
+    (prefetched.layout_hints || prefetched.visual_brief || !includeExtendedFields)
+  ) {
     // Ensure synthetic enrichment for empty components
     if (!prefetched.components || prefetched.components.length === 0) {
       const syntheticComps = generateSyntheticComponents(name, prefetched.description);
@@ -2618,9 +2727,15 @@ async function resolvePatternSpec(
   try {
     const patResult = await registry.fetchPattern(name);
     if (patResult?.data) {
-      return mapRegistryPatternToPatternSpecSummary(patResult.data, prefetched, includeExtendedFields);
+      return mapRegistryPatternToPatternSpecSummary(
+        patResult.data,
+        prefetched,
+        includeExtendedFields,
+      );
     }
-  } catch { /* fetch failed */ }
+  } catch {
+    /* fetch failed */
+  }
 
   // Use prefetched even if incomplete (better than nothing)
   if (prefetched) {
@@ -2686,8 +2801,11 @@ export async function refreshDerivedFiles(
       projectJsonData = JSON.parse(readFileSync(projectJsonFilePath, 'utf-8')) as StoredProjectJson;
       if (projectJsonData.blueprintId) storedBlueprintId = projectJsonData.blueprintId;
       if (projectJsonData.voice) storedVoice = projectJsonData.voice;
-      if (projectJsonData.initialized?.workflowMode) storedWorkflowMode = projectJsonData.initialized.workflowMode;
-    } catch { /* ignore parse errors */ }
+      if (projectJsonData.initialized?.workflowMode)
+        storedWorkflowMode = projectJsonData.initialized.workflowMode;
+    } catch {
+      /* ignore parse errors */
+    }
   }
 
   // If voice is missing but blueprintId is available, fetch from blueprint
@@ -2702,7 +2820,9 @@ export async function refreshDerivedFiles(
           writeFileSync(projectJsonFilePath, JSON.stringify(projectJsonData, null, 2));
         }
       }
-    } catch { /* blueprint fetch failed — continue without voice */ }
+    } catch {
+      /* blueprint fetch failed — continue without voice */
+    }
   }
 
   // ── Extract info from essence ──
@@ -2720,12 +2840,15 @@ export async function refreshDerivedFiles(
   // The theme now contains ALL data: seed, palette, decorators, spatial, treatments, etc.
   let themeData: ThemeData | undefined = prefetchedThemeData;
 
-  if (!themeData) try {
-    const themeResult = await registry.fetchTheme(themeName);
-    if (themeResult?.data) {
-      themeData = mapRegistryThemeToThemeData(themeResult.data);
+  if (!themeData)
+    try {
+      const themeResult = await registry.fetchTheme(themeName);
+      if (themeResult?.data) {
+        themeData = mapRegistryThemeToThemeData(themeResult.data);
+      }
+    } catch {
+      /* continue without theme data */
     }
-  } catch { /* continue without theme data */ }
 
   // Fallback: direct API fetch if registry client returned incomplete data
   if (!themeData?.seed?.primary) {
@@ -2733,7 +2856,7 @@ export async function refreshDerivedFiles(
       const apiUrl = registry.getApiUrl();
       const resp = await fetch(`${apiUrl}/themes/@official/${themeName}`);
       if (resp.ok) {
-        const apiData = await resp.json() as Record<string, unknown>;
+        const apiData = (await resp.json()) as Record<string, unknown>;
         const inner = (apiData.data ?? apiData) as Record<string, unknown>;
         if (inner.seed) {
           themeData = {
@@ -2754,7 +2877,9 @@ export async function refreshDerivedFiles(
           };
         }
       }
-    } catch { /* API unavailable */ }
+    } catch {
+      /* API unavailable */
+    }
   }
 
   // ── Generate CSS files ──
@@ -2762,12 +2887,23 @@ export async function refreshDerivedFiles(
   mkdirSync(stylesDir, { recursive: true });
 
   // Compute spatial tokens from density + theme spatial hints
-  const densityLevel = (essence.dna?.spacing?.density || 'comfortable') as 'compact' | 'comfortable' | 'spacious';
-  const spatialTokens = computeSpatialTokens(densityLevel, themeData?.spatial ? {
-    section_padding: themeData.spatial.section_padding ?? undefined,
-    density_bias: typeof themeData.spatial.density_bias === 'number' ? themeData.spatial.density_bias : undefined,
-    content_gap_shift: themeData.spatial.content_gap_shift,
-  } : undefined);
+  const densityLevel = (essence.dna?.spacing?.density || 'comfortable') as
+    | 'compact'
+    | 'comfortable'
+    | 'spacious';
+  const spatialTokens = computeSpatialTokens(
+    densityLevel,
+    themeData?.spatial
+      ? {
+          section_padding: themeData.spatial.section_padding ?? undefined,
+          density_bias:
+            typeof themeData.spatial.density_bias === 'number'
+              ? themeData.spatial.density_bias
+              : undefined,
+          content_gap_shift: themeData.spatial.content_gap_shift,
+        }
+      : undefined,
+  );
 
   const tokensPath = join(stylesDir, 'tokens.css');
   // Only overwrite tokens.css if we have meaningful theme data (seed colors present);
@@ -2779,19 +2915,37 @@ export async function refreshDerivedFiles(
     // the "wrong" visual mode vs. their personality directive. The token
     // emitter falls back to mode-aware defaults, but the user should know.
     if (themeData?.palette && mode && mode !== 'auto') {
-      const paletteEntries = Object.values(themeData.palette) as Array<Record<string, string> | undefined>;
-      const modeDefined = paletteEntries.some((entry) => entry && typeof entry === 'object' && entry[mode]);
+      const paletteEntries = Object.values(themeData.palette) as Array<
+        Record<string, string> | undefined
+      >;
+      const modeDefined = paletteEntries.some(
+        (entry) => entry && typeof entry === 'object' && entry[mode],
+      );
       if (!modeDefined) {
-        const supportedModes = Array.from(new Set(
-          paletteEntries.flatMap((entry) => (entry && typeof entry === 'object') ? Object.keys(entry) : []),
-        )).sort();
+        const supportedModes = Array.from(
+          new Set(
+            paletteEntries.flatMap((entry) =>
+              entry && typeof entry === 'object' ? Object.keys(entry) : [],
+            ),
+          ),
+        ).sort();
         const YELLOW = '\x1b[33m';
         const RESET = '\x1b[0m';
-        console.warn(`${YELLOW}⚠  Theme "${themeName}" does not define a "${mode}" palette variant.${RESET}`);
-        console.warn(`${YELLOW}   Supported modes in palette: ${supportedModes.join(', ') || 'none'}.${RESET}`);
-        console.warn(`${YELLOW}   Tokens will use mode-aware defaults so the scaffold still renders a legible "${mode}" UI,`);
-        console.warn(`${YELLOW}   but the theme's personality may not land. Consider picking a different theme or adding`);
-        console.warn(`${YELLOW}   "${mode}" keys to the theme's palette in decantr-content.${RESET}`);
+        console.warn(
+          `${YELLOW}⚠  Theme "${themeName}" does not define a "${mode}" palette variant.${RESET}`,
+        );
+        console.warn(
+          `${YELLOW}   Supported modes in palette: ${supportedModes.join(', ') || 'none'}.${RESET}`,
+        );
+        console.warn(
+          `${YELLOW}   Tokens will use mode-aware defaults so the scaffold still renders a legible "${mode}" UI,`,
+        );
+        console.warn(
+          `${YELLOW}   but the theme's personality may not land. Consider picking a different theme or adding`,
+        );
+        console.warn(
+          `${YELLOW}   "${mode}" keys to the theme's palette in decantr-content.${RESET}`,
+        );
       }
     }
     writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens));
@@ -2847,20 +3001,28 @@ export async function refreshDerivedFiles(
 
   // ── Generate DECANTR.md ──
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
-  writeFileSync(decantrMdPath, generateDecantrMdV31({
-    guardMode,
-    cssApproach: CSS_APPROACH_CONTENT,
-    workflowMode: storedWorkflowMode,
-    blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
-    themeName,
-    themeMode: mode,
-    themeShape: essence.dna.theme.shape || undefined,
-    personality,
-    sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
-    features: allFeatures.length > 0 ? allFeatures : undefined,
-    decorators: earlyDecoratorList.length > 0 ? earlyDecoratorList : undefined,
-    decoratorDefinitions: themeData?.decorator_definitions as Record<string, { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }> | undefined,
-  }));
+  writeFileSync(
+    decantrMdPath,
+    generateDecantrMdV31({
+      guardMode,
+      cssApproach: CSS_APPROACH_CONTENT,
+      workflowMode: storedWorkflowMode,
+      blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
+      themeName,
+      themeMode: mode,
+      themeShape: essence.dna.theme.shape || undefined,
+      personality,
+      sections: sectionSummaries.length > 0 ? sectionSummaries : undefined,
+      features: allFeatures.length > 0 ? allFeatures : undefined,
+      decorators: earlyDecoratorList.length > 0 ? earlyDecoratorList : undefined,
+      decoratorDefinitions: themeData?.decorator_definitions as
+        | Record<
+            string,
+            { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }
+          >
+        | undefined,
+    }),
+  );
 
   // ── Generate essence-summary.md only for V3.0 flat projects ──
   // For V3.1 (sectioned), scaffold.md covers the same overview — skip to save tokens.
@@ -2902,13 +3064,12 @@ export async function refreshDerivedFiles(
   const blueprint = essence.blueprint;
 
   // V3.1: has sections array
-  const sections: EssenceV31Section[] = blueprint.sections && blueprint.sections.length > 0
-    ? blueprint.sections
-    : [];
+  const sections: EssenceV31Section[] =
+    blueprint.sections && blueprint.sections.length > 0 ? blueprint.sections : [];
 
   if (sections.length > 0) {
     // ── Resolve "inherit" shell to actual primary shell ──
-    const primarySectionShell = sections.find(s => s.role === 'primary')?.shell || 'sidebar-main';
+    const primarySectionShell = sections.find((s) => s.role === 'primary')?.shell || 'sidebar-main';
     for (const section of sections) {
       if (section.shell === 'inherit') {
         section.shell = primarySectionShell;
@@ -2938,7 +3099,7 @@ export async function refreshDerivedFiles(
     }
 
     // ── Derive topology ──
-    const zoneInputs: ZoneInput[] = sections.map(s => ({
+    const zoneInputs: ZoneInput[] = sections.map((s) => ({
       archetypeId: s.id,
       role: s.role,
       shell: s.shell as string,
@@ -2949,11 +3110,11 @@ export async function refreshDerivedFiles(
     const zones = deriveZones(zoneInputs);
     const transitions = deriveTransitions(zones);
 
-    const hasPublic = zones.some(z => z.role === 'public');
-    const hasPrimary = zones.some(z => z.role === 'primary');
+    const hasPublic = zones.some((z) => z.role === 'public');
+    const hasPrimary = zones.some((z) => z.role === 'primary');
 
     const topologyData: TopologyData = {
-      intent: sections.map(s => s.id).join(' + '),
+      intent: sections.map((s) => s.id).join(' + '),
       zones,
       transitions,
       entryPoints: {
@@ -2988,14 +3149,20 @@ export async function refreshDerivedFiles(
           if (shellResult?.data) {
             shellInfoCache[shellId] = mapRegistryShellToShellInfo(shellResult.data);
           }
-        } catch { /* continue without shell info */ }
+        } catch {
+          /* continue without shell info */
+        }
       }
     }
 
     // ── Generate section context files ──
     for (const section of sections) {
-      const zoneLabel = section.role === 'primary' || section.role === 'auxiliary'
-        ? 'App' : section.role === 'gateway' ? 'Gateway' : 'Public';
+      const zoneLabel =
+        section.role === 'primary' || section.role === 'auxiliary'
+          ? 'App'
+          : section.role === 'gateway'
+            ? 'Gateway'
+            : 'Public';
       let zoneContext = `**Zone:** ${zoneLabel} (${section.role}) — ${section.shell} shell`;
       if (section.role === 'gateway') {
         zoneContext += '\nAuth success → enters App zone. Sign out returns here.';
@@ -3020,12 +3187,17 @@ export async function refreshDerivedFiles(
         }
       }
 
-      const sectionSpatialHints = themeData?.spatial ? {
-        section_padding: themeData.spatial.section_padding ?? undefined,
-        density_bias: typeof themeData.spatial.density_bias === 'number' ? themeData.spatial.density_bias : undefined,
-        content_gap_shift: themeData.spatial.content_gap_shift,
-        label_content_gap: themeData.spatial.label_content_gap ?? undefined,
-      } : undefined;
+      const sectionSpatialHints = themeData?.spatial
+        ? {
+            section_padding: themeData.spatial.section_padding ?? undefined,
+            density_bias:
+              typeof themeData.spatial.density_bias === 'number'
+                ? themeData.spatial.density_bias
+                : undefined,
+            content_gap_shift: themeData.spatial.content_gap_shift,
+            label_content_gap: themeData.spatial.label_content_gap ?? undefined,
+          }
+        : undefined;
 
       const contextContent = generateSectionContext({
         section,
@@ -3036,17 +3208,19 @@ export async function refreshDerivedFiles(
         themeName,
         zoneContext,
         patternSpecs: sectionPatterns,
-        themeHints: themeData ? {
-          preferred: themeData.pattern_preferences?.prefer,
-          compositions: themeData.compositions
-            ? Object.entries(themeData.compositions)
-                .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
-                .join('\n')
-            : undefined,
-          spatialHints: themeData.spatial
-            ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
-            : undefined,
-        } : undefined,
+        themeHints: themeData
+          ? {
+              preferred: themeData.pattern_preferences?.prefer,
+              compositions: themeData.compositions
+                ? Object.entries(themeData.compositions)
+                    .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
+                    .join('\n')
+                : undefined,
+              spatialHints: themeData.spatial
+                ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
+                : undefined,
+            }
+          : undefined,
         constraints: essence.dna.constraints as Record<string, unknown> | undefined,
         shellInfo: shellInfoCache[section.shell as string],
         themeData,
@@ -3072,14 +3246,15 @@ export async function refreshDerivedFiles(
       routes,
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
-      navigation: essence.meta.navigation as { hotkeys?: unknown[]; command_palette?: boolean } | undefined,
+      navigation: essence.meta.navigation as
+        | { hotkeys?: unknown[]; command_palette?: boolean }
+        | undefined,
       voice: storedVoice,
     });
 
     const scaffoldMdPath = join(contextDir, 'scaffold.md');
     writeFileSync(scaffoldMdPath, scaffoldContent);
     contextFiles.push(scaffoldMdPath);
-
   } else {
     // ── V3.0 flat pages: generate a single section context ──
     const pages = blueprint.pages || [{ id: 'home', layout: ['hero'] }];
@@ -3128,14 +3303,21 @@ export async function refreshDerivedFiles(
       if (shellResult?.data) {
         v30ShellInfo = mapRegistryShellToShellInfo(shellResult.data);
       }
-    } catch { /* continue without shell info */ }
+    } catch {
+      /* continue without shell info */
+    }
 
-    const v30SpatialHints = themeData?.spatial ? {
-      section_padding: themeData.spatial.section_padding ?? undefined,
-      density_bias: typeof themeData.spatial.density_bias === 'number' ? themeData.spatial.density_bias : undefined,
-      content_gap_shift: themeData.spatial.content_gap_shift,
-      label_content_gap: themeData.spatial.label_content_gap ?? undefined,
-    } : undefined;
+    const v30SpatialHints = themeData?.spatial
+      ? {
+          section_padding: themeData.spatial.section_padding ?? undefined,
+          density_bias:
+            typeof themeData.spatial.density_bias === 'number'
+              ? themeData.spatial.density_bias
+              : undefined,
+          content_gap_shift: themeData.spatial.content_gap_shift,
+          label_content_gap: themeData.spatial.label_content_gap ?? undefined,
+        }
+      : undefined;
 
     const contextContent = generateSectionContext({
       section: syntheticSection,
@@ -3146,17 +3328,19 @@ export async function refreshDerivedFiles(
       themeName,
       zoneContext: `This is the primary section (${shell} shell).`,
       patternSpecs,
-      themeHints: themeData ? {
-        preferred: themeData.pattern_preferences?.prefer,
-        compositions: themeData.compositions
-          ? Object.entries(themeData.compositions)
-              .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
-              .join('\n')
-          : undefined,
-        spatialHints: themeData.spatial
-          ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
-          : undefined,
-      } : undefined,
+      themeHints: themeData
+        ? {
+            preferred: themeData.pattern_preferences?.prefer,
+            compositions: themeData.compositions
+              ? Object.entries(themeData.compositions)
+                  .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
+                  .join('\n')
+              : undefined,
+            spatialHints: themeData.spatial
+              ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
+              : undefined,
+          }
+        : undefined,
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
       shellInfo: v30ShellInfo,
       themeData,
@@ -3202,12 +3386,21 @@ function generateSyntheticSlots(patternId: string, description: string): Record<
   if (patternId.includes('testimonial') || desc.includes('testimonial')) {
     syntheticSlots['quotes'] = 'Testimonial cards (quote text, author name, role, avatar)';
   }
-  if (patternId.includes('cta') || desc.includes('call-to-action') || desc.includes('call to action')) {
+  if (
+    patternId.includes('cta') ||
+    desc.includes('call-to-action') ||
+    desc.includes('call to action')
+  ) {
     syntheticSlots['headline'] = 'CTA headline text';
     syntheticSlots['description'] = 'Supporting description text';
     syntheticSlots['actions'] = 'CTA button(s)';
   }
-  if (patternId.includes('how-it-works') || desc.includes('how it works') || desc.includes('timeline') || desc.includes('steps')) {
+  if (
+    patternId.includes('how-it-works') ||
+    desc.includes('how it works') ||
+    desc.includes('timeline') ||
+    desc.includes('steps')
+  ) {
     syntheticSlots['steps'] = 'Numbered steps (step number, title, description)';
   }
   if (patternId.includes('team') || desc.includes('team')) {
@@ -3223,7 +3416,12 @@ function generateSyntheticSlots(patternId: string, description: string): Record<
     syntheticSlots['fields'] = 'Form fields (name, email, message, etc.)';
     syntheticSlots['submit'] = 'Submit button';
   }
-  if (patternId.includes('content') || desc.includes('legal') || desc.includes('privacy') || desc.includes('policy')) {
+  if (
+    patternId.includes('content') ||
+    desc.includes('legal') ||
+    desc.includes('privacy') ||
+    desc.includes('policy')
+  ) {
     syntheticSlots['body'] = 'Long-form text content with headings and paragraphs';
     syntheticSlots['toc'] = 'Table of contents sidebar (optional)';
   }
@@ -3269,17 +3467,26 @@ function generateSyntheticComponents(patternId: string, description: string): st
   if (patternId.includes('pricing')) syntheticComponents.push('Card', 'Button', 'Badge');
   if (patternId.includes('testimonial')) syntheticComponents.push('Card', 'Avatar', 'Text');
   if (patternId.includes('cta')) syntheticComponents.push('Button', 'Text');
-  if (patternId.includes('form') || patternId.includes('contact')) syntheticComponents.push('Input', 'Textarea', 'Button', 'Label');
+  if (patternId.includes('form') || patternId.includes('contact'))
+    syntheticComponents.push('Input', 'Textarea', 'Button', 'Label');
   if (patternId.includes('team')) syntheticComponents.push('Card', 'Avatar', 'Text');
-  if (patternId.includes('settings') || patternId.includes('security')) syntheticComponents.push('Card', 'Toggle', 'Input', 'Button');
-  if (patternId.includes('message') || patternId.includes('chat')) syntheticComponents.push('Avatar', 'Text', 'CodeBlock');
-  if (patternId.includes('input') && desc.includes('chat')) syntheticComponents.push('Textarea', 'Button', 'Icon');
-  if (patternId.includes('header') && desc.includes('chat')) syntheticComponents.push('Button', 'Icon', 'Text');
-  if (patternId.includes('content') || patternId.includes('legal')) syntheticComponents.push('Heading', 'Text', 'List');
-  if (patternId.includes('how-it-works') || patternId.includes('steps')) syntheticComponents.push('Card', 'Icon', 'Text', 'Badge');
+  if (patternId.includes('settings') || patternId.includes('security'))
+    syntheticComponents.push('Card', 'Toggle', 'Input', 'Button');
+  if (patternId.includes('message') || patternId.includes('chat'))
+    syntheticComponents.push('Avatar', 'Text', 'CodeBlock');
+  if (patternId.includes('input') && desc.includes('chat'))
+    syntheticComponents.push('Textarea', 'Button', 'Icon');
+  if (patternId.includes('header') && desc.includes('chat'))
+    syntheticComponents.push('Button', 'Icon', 'Text');
+  if (patternId.includes('content') || patternId.includes('legal'))
+    syntheticComponents.push('Heading', 'Text', 'List');
+  if (patternId.includes('how-it-works') || patternId.includes('steps'))
+    syntheticComponents.push('Card', 'Icon', 'Text', 'Badge');
   if (patternId.includes('values')) syntheticComponents.push('Card', 'Icon', 'Text');
-  if (patternId.includes('story') || patternId.includes('about')) syntheticComponents.push('Text', 'Image');
-  if (patternId.includes('empty') || patternId.includes('new')) syntheticComponents.push('Icon', 'Text', 'Button');
+  if (patternId.includes('story') || patternId.includes('about'))
+    syntheticComponents.push('Text', 'Image');
+  if (patternId.includes('empty') || patternId.includes('new'))
+    syntheticComponents.push('Icon', 'Text', 'Button');
 
   return [...new Set(syntheticComponents)];
 }
@@ -3294,9 +3501,18 @@ export interface PatternSpecSummary {
   // code field removed — patterns are framework-agnostic
   visual_brief?: string;
   composition?: Record<string, string>;
-  motion?: { micro?: Record<string, string>; transitions?: Record<string, string>; ambient?: Record<string, string> };
+  motion?: {
+    micro?: Record<string, string>;
+    transitions?: Record<string, string>;
+    ambient?: Record<string, string>;
+  };
   responsive?: { mobile?: string; tablet?: string; desktop?: string };
-  accessibility?: { role?: string; keyboard?: string[]; announcements?: string[]; focus_management?: string };
+  accessibility?: {
+    role?: string;
+    keyboard?: string[];
+    announcements?: string[];
+    focus_management?: string;
+  };
 }
 
 export function mapRegistryPatternToPatternSpecSummary(
@@ -3309,7 +3525,10 @@ export function mapRegistryPatternToPatternSpecSummary(
   let slots = preset?.layout?.slots || pattern.default_layout?.slots || prefetched?.slots || {};
 
   if (Object.keys(slots).length === 0) {
-    const synthetic = generateSyntheticSlots(pattern.id, pattern.description || prefetched?.description || '');
+    const synthetic = generateSyntheticSlots(
+      pattern.id,
+      pattern.description || prefetched?.description || '',
+    );
     if (Object.keys(synthetic).length > 0) slots = synthetic;
   }
 
@@ -3318,18 +3537,22 @@ export function mapRegistryPatternToPatternSpecSummary(
     components: pattern.components || prefetched?.components || [],
     slots,
     layout_hints: pattern.layout_hints,
-    ...(includeExtendedFields ? {
-      visual_brief: pattern.visual_brief,
-      composition: pattern.composition,
-      motion: pattern.motion,
-      responsive: pattern.responsive,
-      accessibility: pattern.accessibility ? {
-        role: pattern.accessibility.role,
-        keyboard: pattern.accessibility.keyboard,
-        announcements: pattern.accessibility.announcements,
-        focus_management: pattern.accessibility.focus_management,
-      } : undefined,
-    } : {}),
+    ...(includeExtendedFields
+      ? {
+          visual_brief: pattern.visual_brief,
+          composition: pattern.composition,
+          motion: pattern.motion,
+          responsive: pattern.responsive,
+          accessibility: pattern.accessibility
+            ? {
+                role: pattern.accessibility.role,
+                keyboard: pattern.accessibility.keyboard,
+                announcements: pattern.accessibility.announcements,
+                focus_management: pattern.accessibility.focus_management,
+              }
+            : undefined,
+        }
+      : {}),
   };
 
   if (!spec.components || spec.components.length === 0) {
@@ -3348,7 +3571,13 @@ export interface ShellInfo {
   atoms?: string;
   config?: {
     grid?: { areas?: string[][] };
-    nav?: { position?: string; width?: string; collapseTo?: string; collapseBelow?: string; defaultState?: string };
+    nav?: {
+      position?: string;
+      width?: string;
+      collapseTo?: string;
+      collapseBelow?: string;
+      defaultState?: string;
+    };
     header?: { height?: string; sticky?: boolean };
     body?: { scroll?: boolean; inputAnchored?: boolean };
     footer?: { height?: string; sticky?: boolean };
@@ -3440,9 +3669,15 @@ function generateShellImplementation(shellId: string, shellInfo: ShellInfo): str
     // Anti-patterns
     lines.push('### Anti-patterns');
     lines.push('');
-    lines.push('- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.');
-    lines.push('- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.');
-    lines.push('- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.');
+    lines.push(
+      '- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.',
+    );
+    lines.push(
+      '- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.',
+    );
+    lines.push(
+      '- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.',
+    );
     lines.push('');
   } else {
     // Fallback: basic info from layout/atoms/config
@@ -3511,7 +3746,7 @@ function generateQuickStart(input: SectionContextInput): string[] {
   lines.push(`**Shell:** ${shellDesc}${dims.length > 0 ? ` (${dims.join(', ')})` : ''}`);
 
   // Page count + names
-  const pageNames = section.pages.map(p => p.id);
+  const pageNames = section.pages.map((p) => p.id);
   lines.push(`**Pages:** ${section.pages.length} (${pageNames.join(', ')})`);
 
   // Key patterns (complex=8+ components, moderate=4-7)
@@ -3529,13 +3764,13 @@ function generateQuickStart(input: SectionContextInput): string[] {
 
   // CSS classes (top 3 decorators + personality utilities)
   const cssClasses: string[] = [];
-  const topDecorators = decorators.slice(0, 3).map(d => d.name);
+  const topDecorators = decorators.slice(0, 3).map((d) => d.name);
   cssClasses.push(...topDecorators);
   const pLower = personality.join(' ').toLowerCase();
   if (pLower.includes('neon') || pLower.includes('glow')) cssClasses.push('neon-glow');
   if (pLower.includes('mono') || pLower.includes('monospace')) cssClasses.push('mono-data');
   if (cssClasses.length > 0) {
-    lines.push(`**CSS classes:** ${cssClasses.map(c => `\`.${c}\``).join(', ')}`);
+    lines.push(`**CSS classes:** ${cssClasses.map((c) => `\`.${c}\``).join(', ')}`);
   }
 
   // Density level
@@ -3559,24 +3794,49 @@ function generateQuickStart(input: SectionContextInput): string[] {
  */
 function generateSpacingGuide(density: string, spatialHints?: SpatialTokenHints): string[] {
   const lines: string[] = [];
-  const level = (density === 'compact' || density === 'spacious') ? density : 'comfortable';
-  const tokens = computeSpatialTokens(level as 'compact' | 'comfortable' | 'spacious', spatialHints);
+  const level = density === 'compact' || density === 'spacious' ? density : 'comfortable';
+  const tokens = computeSpatialTokens(
+    level as 'compact' | 'comfortable' | 'spacious',
+    spatialHints,
+  );
 
   lines.push('## Spacing Guide');
   lines.push('');
   lines.push('| Context | Token | Value | Usage |');
   lines.push('|---------|-------|-------|-------|');
-  lines.push(`| Content gap | \`--d-content-gap\` | \`${tokens['--d-content-gap']}\` | Gap between sibling elements |`);
-  lines.push(`| Section padding | \`--d-section-py\` | \`${tokens['--d-section-py']}\` | Vertical padding on d-section |`);
-  lines.push(`| Surface padding | \`--d-surface-p\` | \`${tokens['--d-surface-p']}\` | Inner padding for d-surface |`);
-  lines.push(`| Interactive V | \`--d-interactive-py\` | \`${tokens['--d-interactive-py']}\` | Vertical padding on buttons |`);
-  lines.push(`| Interactive H | \`--d-interactive-px\` | \`${tokens['--d-interactive-px']}\` | Horizontal padding on buttons |`);
-  lines.push(`| Control | \`--d-control-py\` | \`${tokens['--d-control-py']}\` | Vertical padding on inputs |`);
-  lines.push(`| Data row | \`--d-data-py\` | \`${tokens['--d-data-py']}\` | Vertical padding on table rows |`);
-  lines.push(`| Label gap | \`--d-label-mb\` | \`${tokens['--d-label-mb']}\` | Gap below d-label section headers |`);
-  lines.push(`| Label indent | \`--d-label-px\` | \`${tokens['--d-label-px']}\` | Anchor indent for d-label[data-anchor] |`);
-  lines.push(`| Section gap | \`--d-section-gap\` | \`${tokens['--d-section-gap']}\` | Gap between adjacent d-sections |`);
-  lines.push(`| Annotation gap | \`--d-annotation-mt\` | \`${tokens['--d-annotation-mt']}\` | Top margin on d-annotation |`);
+  lines.push(
+    `| Content gap | \`--d-content-gap\` | \`${tokens['--d-content-gap']}\` | Gap between sibling elements |`,
+  );
+  lines.push(
+    `| Section padding | \`--d-section-py\` | \`${tokens['--d-section-py']}\` | Vertical padding on d-section |`,
+  );
+  lines.push(
+    `| Surface padding | \`--d-surface-p\` | \`${tokens['--d-surface-p']}\` | Inner padding for d-surface |`,
+  );
+  lines.push(
+    `| Interactive V | \`--d-interactive-py\` | \`${tokens['--d-interactive-py']}\` | Vertical padding on buttons |`,
+  );
+  lines.push(
+    `| Interactive H | \`--d-interactive-px\` | \`${tokens['--d-interactive-px']}\` | Horizontal padding on buttons |`,
+  );
+  lines.push(
+    `| Control | \`--d-control-py\` | \`${tokens['--d-control-py']}\` | Vertical padding on inputs |`,
+  );
+  lines.push(
+    `| Data row | \`--d-data-py\` | \`${tokens['--d-data-py']}\` | Vertical padding on table rows |`,
+  );
+  lines.push(
+    `| Label gap | \`--d-label-mb\` | \`${tokens['--d-label-mb']}\` | Gap below d-label section headers |`,
+  );
+  lines.push(
+    `| Label indent | \`--d-label-px\` | \`${tokens['--d-label-px']}\` | Anchor indent for d-label[data-anchor] |`,
+  );
+  lines.push(
+    `| Section gap | \`--d-section-gap\` | \`${tokens['--d-section-gap']}\` | Gap between adjacent d-sections |`,
+  );
+  lines.push(
+    `| Annotation gap | \`--d-annotation-mt\` | \`${tokens['--d-annotation-mt']}\` | Top margin on d-annotation |`,
+  );
   lines.push('');
 
   return lines;
@@ -3589,13 +3849,27 @@ function generateSpacingGuide(density: string, spatialHints?: SpatialTokenHints)
  * from scaffold.md and src/styles/tokens.css respectively.
  */
 export function generateSectionContext(input: SectionContextInput): string {
-  const { section, decorators, guardConfig, personality, themeName, zoneContext, patternSpecs, themeHints, constraints, shellInfo, spatialHints } = input;
+  const {
+    section,
+    decorators,
+    guardConfig,
+    personality,
+    themeName,
+    zoneContext,
+    patternSpecs,
+    themeHints,
+    constraints,
+    shellInfo,
+    spatialHints,
+  } = input;
   const lines: string[] = [];
 
   // Header
   lines.push(`# Section: ${section.id}`);
   lines.push('');
-  lines.push(`**Role:** ${section.role} | **Shell:** ${section.shell} | **Archetype:** ${section.id}`);
+  lines.push(
+    `**Role:** ${section.role} | **Shell:** ${section.shell} | **Archetype:** ${section.id}`,
+  );
   lines.push(`**Description:** ${section.description}`);
   if (section.dna_overrides) {
     const parts: string[] = [];
@@ -3631,9 +3905,15 @@ export function generateSectionContext(input: SectionContextInput): string {
       }
       lines.push('- Density-responsive bottom gap via `--d-label-mb` x `--d-density-scale`');
       if (sectionDensity) {
-        const scaleMap: Record<string, string> = { compact: '0.65', comfortable: '1', spacious: '1.4' };
+        const scaleMap: Record<string, string> = {
+          compact: '0.65',
+          comfortable: '1',
+          spacious: '1.4',
+        };
         lines.push('');
-        lines.push(`Section density: ${sectionDensity} (--d-density-scale: ${scaleMap[sectionDensity] || '1'})`);
+        lines.push(
+          `Section density: ${sectionDensity} (--d-density-scale: ${scaleMap[sectionDensity] || '1'})`,
+        );
       }
       lines.push('');
     }
@@ -3644,7 +3924,7 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('');
     for (const [key, value] of Object.entries(shellInfo.guidance)) {
       if (structuredKeys.has(key)) continue;
-      const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      const label = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
       lines.push(`- **${label}:** ${value}`);
     }
     lines.push('');
@@ -3659,9 +3939,13 @@ export function generateSectionContext(input: SectionContextInput): string {
 
   lines.push('## Theme Reference');
   lines.push('');
-  lines.push(`**Theme:** ${themeName} (${input.themeMode || 'dark'}) · **Density:** ${effectiveDensity}${sectionDensityOverride ? ' _(DNA override)_' : ''}`);
+  lines.push(
+    `**Theme:** ${themeName} (${input.themeMode || 'dark'}) · **Density:** ${effectiveDensity}${sectionDensityOverride ? ' _(DNA override)_' : ''}`,
+  );
   lines.push('');
-  lines.push('Full palette tokens, spacing-guide table, and decorator reference live in `DECANTR.md` (project root). These values are identical across sections in this scaffold unless a DNA override above changes density.');
+  lines.push(
+    'Full palette tokens, spacing-guide table, and decorator reference live in `DECANTR.md` (project root). These values are identical across sections in this scaffold unless a DNA override above changes density.',
+  );
   if (sectionDensityOverride) {
     // If the section overrides density, emit JUST the spacing guide to make
     // the override actionable without re-reading DECANTR.md.
@@ -3675,15 +3959,24 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push('');
 
   // Guard Rules (compact — full rules in scaffold.md)
-  lines.push(`**Guard:** ${guardConfig.mode} mode | DNA violations = ${guardConfig.dna_enforcement} | Blueprint violations = ${guardConfig.blueprint_enforcement}`);
+  lines.push(
+    `**Guard:** ${guardConfig.mode} mode | DNA violations = ${guardConfig.dna_enforcement} | Blueprint violations = ${guardConfig.blueprint_enforcement}`,
+  );
   lines.push('');
 
   // Decorator usage guide — filtered to section-relevant decorators only.
   // The exhaustive table stays in DECANTR.md; here we just surface the ones
   // the LLM actually needs for this section's patterns.
-  const decoratorDefs = input.themeData?.decorator_definitions as Record<string, { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }> | undefined;
+  const decoratorDefs = input.themeData?.decorator_definitions as
+    | Record<
+        string,
+        { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }
+      >
+    | undefined;
   if (decoratorDefs && Object.keys(decoratorDefs).length > 0) {
-    const usageEntries = Object.entries(decoratorDefs).filter(([, def]) => def.usage && def.usage.length > 0);
+    const usageEntries = Object.entries(decoratorDefs).filter(
+      ([, def]) => def.usage && def.usage.length > 0,
+    );
     if (usageEntries.length > 0) {
       lines.push('**Section decorators (usage hints):**');
       for (const [name, def] of usageEntries) {
@@ -3701,8 +3994,10 @@ export function generateSectionContext(input: SectionContextInput): string {
   if (themeHints) {
     if (themeHints.preferred && themeHints.preferred.length > 0) {
       // Filter to patterns relevant to this section
-      const sectionPatterns = new Set(section.pages.flatMap(p => p.layout.flatMap(extractPatternNames)));
-      const relevant = themeHints.preferred.filter(p => sectionPatterns.has(p));
+      const sectionPatterns = new Set(
+        section.pages.flatMap((p) => p.layout.flatMap(extractPatternNames)),
+      );
+      const relevant = themeHints.preferred.filter((p) => sectionPatterns.has(p));
       if (relevant.length > 0) {
         lines.push(`**Preferred:** ${relevant.join(', ')}`);
       }
@@ -3717,7 +4012,9 @@ export function generateSectionContext(input: SectionContextInput): string {
   }
   const themePrefix = themeName.split('-')[0] || themeName;
   lines.push('');
-  lines.push(`Usage: \`className={css('_flex _col _gap4') + ' d-surface ${themePrefix}-glass'}\` — atoms via css(), treatments and theme decorators as plain class strings.`);
+  lines.push(
+    `Usage: \`className={css('_flex _col _gap4') + ' d-surface ${themePrefix}-glass'}\` — atoms via css(), treatments and theme decorators as plain class strings.`,
+  );
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -3749,11 +4046,15 @@ export function generateSectionContext(input: SectionContextInput): string {
     const pLower = personalityText.toLowerCase();
     const utils: string[] = [];
     if (pLower.includes('neon') || pLower.includes('glow'))
-      utils.push('`neon-glow`, `neon-glow-hover`, `neon-text-glow`, `neon-border-glow` — Apply to elements needing accent emphasis');
+      utils.push(
+        '`neon-glow`, `neon-glow-hover`, `neon-text-glow`, `neon-border-glow` — Apply to elements needing accent emphasis',
+      );
     if (pLower.includes('mono') || pLower.includes('monospace'))
       utils.push('`mono-data` — Monospace + tabular-nums for metrics, IDs, timestamps');
     if (pLower.includes('pulse') || pLower.includes('ring') || pLower.includes('status'))
-      utils.push('`status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation');
+      utils.push(
+        '`status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation',
+      );
     if (utils.length > 0) {
       lines.push('**Personality utilities available in treatments.css:**');
       for (const u of utils) lines.push(`- ${u}`);
@@ -3766,7 +4067,9 @@ export function generateSectionContext(input: SectionContextInput): string {
     lines.push('## Constraints');
     lines.push('');
     for (const [key, value] of Object.entries(constraints)) {
-      lines.push(`- **${key}:** ${typeof value === 'object' && value !== null ? JSON.stringify(value) : value}`);
+      lines.push(
+        `- **${key}:** ${typeof value === 'object' && value !== null ? JSON.stringify(value) : value}`,
+      );
     }
     lines.push('');
     lines.push('---');
@@ -3788,8 +4091,12 @@ export function generateSectionContext(input: SectionContextInput): string {
   if (uniquePatterns.size > 0) {
     lines.push('## Pattern Reference');
     lines.push('');
-    lines.push('Scaffold-tier rule: implement the core visual structure, states, and required slots first.');
-    lines.push('Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simulated live streaming as optional unless the slot guidance or section contract makes them explicitly required.');
+    lines.push(
+      'Scaffold-tier rule: implement the core visual structure, states, and required slots first.',
+    );
+    lines.push(
+      'Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simulated live streaming as optional unless the slot guidance or section contract makes them explicitly required.',
+    );
     lines.push('');
     for (const [patternName, spec] of uniquePatterns) {
       lines.push(`### ${patternName}`);
@@ -3823,13 +4130,19 @@ export function generateSectionContext(input: SectionContextInput): string {
       }
       if (spec.motion) {
         const entries: Array<[string, string]> = [];
-        const isObj = (v: unknown): v is Record<string, string> => typeof v === 'object' && v !== null && !Array.isArray(v);
-        if (isObj(spec.motion.micro)) for (const [k, v] of Object.entries(spec.motion.micro)) entries.push([k, v]);
+        const isObj = (v: unknown): v is Record<string, string> =>
+          typeof v === 'object' && v !== null && !Array.isArray(v);
+        if (isObj(spec.motion.micro))
+          for (const [k, v] of Object.entries(spec.motion.micro)) entries.push([k, v]);
         else if (typeof spec.motion.micro === 'string') entries.push(['micro', spec.motion.micro]);
-        if (isObj(spec.motion.transitions)) for (const [k, v] of Object.entries(spec.motion.transitions)) entries.push([k, v]);
-        else if (typeof spec.motion.transitions === 'string') entries.push(['transitions', spec.motion.transitions]);
-        if (isObj(spec.motion.ambient)) for (const [k, v] of Object.entries(spec.motion.ambient)) entries.push([k, v]);
-        else if (typeof spec.motion.ambient === 'string') entries.push(['ambient', spec.motion.ambient]);
+        if (isObj(spec.motion.transitions))
+          for (const [k, v] of Object.entries(spec.motion.transitions)) entries.push([k, v]);
+        else if (typeof spec.motion.transitions === 'string')
+          entries.push(['transitions', spec.motion.transitions]);
+        if (isObj(spec.motion.ambient))
+          for (const [k, v] of Object.entries(spec.motion.ambient)) entries.push([k, v]);
+        else if (typeof spec.motion.ambient === 'string')
+          entries.push(['ambient', spec.motion.ambient]);
         if (entries.length > 0) {
           lines.push('**Motion:**');
           lines.push('| Interaction | Animation |');
@@ -3841,16 +4154,24 @@ export function generateSectionContext(input: SectionContextInput): string {
       if (spec.responsive) {
         lines.push('**Responsive:**');
         if (spec.responsive.mobile) lines.push(`- **Mobile (<640px):** ${spec.responsive.mobile}`);
-        if (spec.responsive.tablet) lines.push(`- **Tablet (640-1024px):** ${spec.responsive.tablet}`);
-        if (spec.responsive.desktop) lines.push(`- **Desktop (>1024px):** ${spec.responsive.desktop}`);
+        if (spec.responsive.tablet)
+          lines.push(`- **Tablet (640-1024px):** ${spec.responsive.tablet}`);
+        if (spec.responsive.desktop)
+          lines.push(`- **Desktop (>1024px):** ${spec.responsive.desktop}`);
         lines.push('');
       }
       if (spec.accessibility) {
         lines.push('**Accessibility:**');
         if (spec.accessibility.role) lines.push(`- Role: \`${spec.accessibility.role}\``);
-        if (Array.isArray(spec.accessibility.keyboard) && spec.accessibility.keyboard.length) lines.push(`- Keyboard: ${spec.accessibility.keyboard.join('; ')}`);
-        if (Array.isArray(spec.accessibility.announcements) && spec.accessibility.announcements.length) lines.push(`- Announcements: ${spec.accessibility.announcements.join('; ')}`);
-        if (spec.accessibility.focus_management) lines.push(`- Focus: ${spec.accessibility.focus_management}`);
+        if (Array.isArray(spec.accessibility.keyboard) && spec.accessibility.keyboard.length)
+          lines.push(`- Keyboard: ${spec.accessibility.keyboard.join('; ')}`);
+        if (
+          Array.isArray(spec.accessibility.announcements) &&
+          spec.accessibility.announcements.length
+        )
+          lines.push(`- Announcements: ${spec.accessibility.announcements.join('; ')}`);
+        if (spec.accessibility.focus_management)
+          lines.push(`- Focus: ${spec.accessibility.focus_management}`);
         lines.push('');
       }
       lines.push('');
@@ -3893,7 +4214,18 @@ export function generateSectionContext(input: SectionContextInput): string {
  * for the initial scaffolding task.
  */
 export function generateScaffoldContext(input: ScaffoldContextInput): string {
-  const { appName, blueprintId, themeName, personality, topologyMarkdown, sections, routes, constraints, seo, navigation } = input;
+  const {
+    appName,
+    blueprintId,
+    themeName,
+    personality,
+    topologyMarkdown,
+    sections,
+    routes,
+    constraints,
+    seo,
+    navigation,
+  } = input;
   const lines: string[] = [];
 
   // Header
@@ -3910,7 +4242,8 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     lines.push('## Voice & Copy');
     lines.push('');
     if (input.voice.tone) lines.push(`**Tone:** ${input.voice.tone}`);
-    if (input.voice.cta_verbs?.length) lines.push(`**CTA verbs:** ${input.voice.cta_verbs.join(', ')}`);
+    if (input.voice.cta_verbs?.length)
+      lines.push(`**CTA verbs:** ${input.voice.cta_verbs.join(', ')}`);
     if (input.voice.avoid?.length) lines.push(`**Avoid:** ${input.voice.avoid.join(', ')}`);
     if (input.voice.empty_states) lines.push(`**Empty states:** ${input.voice.empty_states}`);
     if (input.voice.errors) lines.push(`**Errors:** ${input.voice.errors}`);
@@ -3924,10 +4257,18 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
   lines.push('');
   lines.push('For local development and showcases, wire all zone transitions with mock data:');
   lines.push('');
-  lines.push('- **Auth bypass:** Auth pages should accept any input and redirect to the primary section\'s default route');
-  lines.push('- **Route guards:** Check a simple localStorage flag (e.g., `decantr_authenticated`). Login sets it → redirect to app zone entry. Logout clears it → redirect to public/gateway zone.');
-  lines.push('- **Mock data on every page:** All pages should render with simulated data on first load — never show empty states during development');
-  lines.push('- **Zone transitions:** CTA links on marketing pages should route to the gateway (login/register). Successful auth should route to the primary section default page.');
+  lines.push(
+    "- **Auth bypass:** Auth pages should accept any input and redirect to the primary section's default route",
+  );
+  lines.push(
+    '- **Route guards:** Check a simple localStorage flag (e.g., `decantr_authenticated`). Login sets it → redirect to app zone entry. Logout clears it → redirect to public/gateway zone.',
+  );
+  lines.push(
+    '- **Mock data on every page:** All pages should render with simulated data on first load — never show empty states during development',
+  );
+  lines.push(
+    '- **Zone transitions:** CTA links on marketing pages should route to the gateway (login/register). Successful auth should route to the primary section default page.',
+  );
   lines.push('');
 
   // Topology
@@ -3940,7 +4281,7 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
   lines.push('| Section | Role | Shell | Pages | Features |');
   lines.push('|---------|------|-------|-------|----------|');
   for (const section of sections) {
-    const pageIds = section.pages.map(p => p.id).join(', ');
+    const pageIds = section.pages.map((p) => p.id).join(', ');
     const feats = section.features.join(', ') || 'none';
     lines.push(`| ${section.id} | ${section.role} | ${section.shell} | ${pageIds} | ${feats} |`);
   }
@@ -3996,7 +4337,9 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     lines.push('## Design Constraints');
     lines.push('');
     for (const [key, value] of Object.entries(constraints)) {
-      lines.push(`- **${key}:** ${typeof value === 'object' && value !== null ? JSON.stringify(value) : value}`);
+      lines.push(
+        `- **${key}:** ${typeof value === 'object' && value !== null ? JSON.stringify(value) : value}`,
+      );
     }
     lines.push('');
   }
@@ -4020,7 +4363,9 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
     lines.push('');
     if (navigation.command_palette) {
       lines.push('- Command palette: enabled');
-      lines.push('- Requirement: implement a real keyboard-triggered command palette, not just placeholder UI text.');
+      lines.push(
+        '- Requirement: implement a real keyboard-triggered command palette, not just placeholder UI text.',
+      );
     }
     if (navigation.hotkeys && navigation.hotkeys.length > 0) {
       lines.push(`- Hotkeys: ${navigation.hotkeys.length} configured`);
@@ -4030,8 +4375,12 @@ export function generateScaffoldContext(input: ScaffoldContextInput): string {
           lines.push(`  - \`${hotkey.key}\`${target ? `: ${target}` : ''}`);
         }
       }
-      lines.push('- Requirement: implement these bindings as real keyboard shortcuts, not as decorative text.');
-      lines.push('- Presentation rule: do not append hotkey text to persistent nav labels, breadcrumbs, or page titles unless the shell or route contract explicitly requests visible shortcut hints.');
+      lines.push(
+        '- Requirement: implement these bindings as real keyboard shortcuts, not as decorative text.',
+      );
+      lines.push(
+        '- Presentation rule: do not append hotkey text to persistent nav labels, breadcrumbs, or page titles unless the shell or route contract explicitly requests visible shortcut hints.',
+      );
     }
     lines.push('');
   }

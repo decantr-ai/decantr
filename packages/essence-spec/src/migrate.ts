@@ -1,17 +1,17 @@
 import type {
-  Essence,
-  SectionedEssence,
-  EssenceV3,
-  EssenceFile,
-  EssenceDNA,
-  EssenceBlueprint,
-  EssenceMeta,
-  EssenceV31Section,
-  ThemeShape,
   DensityLevel,
+  Essence,
+  EssenceBlueprint,
+  EssenceDNA,
+  EssenceFile,
+  EssenceMeta,
+  EssenceV3,
+  EssenceV31Section,
   GuardMode,
+  SectionedEssence,
+  ThemeShape,
 } from './types.js';
-import { isSimple, isSectioned, isV3 } from './types.js';
+import { isSectioned, isSimple, isV3 } from './types.js';
 
 /**
  * Migrate a v2 EssenceFile to v3 format (DNA/Blueprint/Meta split).
@@ -60,18 +60,18 @@ function migrateSectionedToV3(essence: SectionedEssence): EssenceV3 {
   dna.personality = essence.personality;
 
   // Flatten all sections' pages into the blueprint
-  const pages = essence.sections.flatMap(section =>
-    section.structure.map(page => ({
+  const pages = essence.sections.flatMap((section) =>
+    section.structure.map((page) => ({
       id: page.id,
       shell_override: page.shell as string | null,
       layout: page.layout,
       ...(page.surface ? { surface: page.surface } : {}),
-    }))
+    })),
   );
 
   const allFeatures = [
     ...(essence.shared_features ?? []),
-    ...essence.sections.flatMap(s => s.features ?? []),
+    ...essence.sections.flatMap((s) => s.features ?? []),
   ];
 
   const blueprint: EssenceBlueprint = {
@@ -149,7 +149,7 @@ function buildBlueprintFromSimple(essence: Essence): EssenceBlueprint {
 
   return {
     shell: defaultShell,
-    pages: essence.structure.map(page => ({
+    pages: essence.structure.map((page) => ({
       id: page.id,
       ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
       layout: page.layout,
@@ -182,10 +182,14 @@ function migrateGuard(mode: GuardMode): EssenceMeta['guard'] {
 
 function inferRadiusBase(shape: ThemeShape | string): number {
   switch (shape) {
-    case 'pill': return 12;
-    case 'rounded': return 8;
-    case 'sharp': return 2;
-    default: return 8;
+    case 'pill':
+      return 12;
+    case 'rounded':
+      return 8;
+    case 'sharp':
+      return 2;
+    default:
+      return 8;
   }
 }
 

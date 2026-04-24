@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  CONTENT_TYPES,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  CONTENT_TYPES,
   type ContentType,
 } from '@decantr/registry';
 import { getThemeSkeleton } from '../theme-templates.js';
@@ -17,7 +17,7 @@ const SCHEMA_URLS: Record<ContentType, string> = {
 };
 
 function humanizeId(id: string): string {
-  return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return id.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function getSkeleton(type: ContentType, id: string, name: string): Record<string, unknown> {
@@ -38,7 +38,8 @@ function getSkeleton(type: ContentType, id: string, name: string): Record<string
         default_preset: 'standard',
         presets: {
           standard: {
-            description: 'Default starter preset. Replace the layout atoms and slots with the real structure for this pattern.',
+            description:
+              'Default starter preset. Replace the layout atoms and slots with the real structure for this pattern.',
             layout: {
               layout: 'stack',
               atoms: '_flex _col _gap4',
@@ -59,7 +60,8 @@ function getSkeleton(type: ContentType, id: string, name: string): Record<string
           mode: 'dark',
           shape: 'rounded',
         },
-        personality: 'Calm, production-ready starter blueprint. Tailor the voice, routes, and composed archetypes to your product.',
+        personality:
+          'Calm, production-ready starter blueprint. Tailor the voice, routes, and composed archetypes to your product.',
         routes: {
           '/': {
             page: 'home',
@@ -113,11 +115,7 @@ function getSkeleton(type: ContentType, id: string, name: string): Record<string
   }
 }
 
-export function cmdCreate(
-  type: string,
-  name: string,
-  projectRoot: string = process.cwd()
-): void {
+export function cmdCreate(type: string, name: string, projectRoot: string = process.cwd()): void {
   if (!CONTENT_TYPES.includes(type as ContentType)) {
     console.error(`Invalid type "${type}". Must be one of: ${CONTENT_TYPES.join(', ')}`);
     process.exitCode = 1;

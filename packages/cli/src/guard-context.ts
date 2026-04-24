@@ -18,7 +18,9 @@ function loadJsonEntries(dir: string): Record<string, unknown>[] {
   }
 }
 
-export function buildGuardRegistryContext(projectRoot: string = process.cwd()): GuardRegistryContext {
+export function buildGuardRegistryContext(
+  projectRoot: string = process.cwd(),
+): GuardRegistryContext {
   const themeRegistry = new Map<string, { modes: string[] }>();
   const patternRegistry = new Map<string, unknown>();
   const cacheDir = join(projectRoot, '.decantr', 'cache');
@@ -27,7 +29,9 @@ export function buildGuardRegistryContext(projectRoot: string = process.cwd()): 
   for (const data of loadJsonEntries(join(cacheDir, '@official', 'themes'))) {
     if (typeof data.id === 'string' && !themeRegistry.has(data.id)) {
       themeRegistry.set(data.id, {
-        modes: Array.isArray(data.modes) ? data.modes.filter((mode): mode is string => typeof mode === 'string') : ['light', 'dark'],
+        modes: Array.isArray(data.modes)
+          ? data.modes.filter((mode): mode is string => typeof mode === 'string')
+          : ['light', 'dark'],
       });
     }
   }
@@ -35,7 +39,9 @@ export function buildGuardRegistryContext(projectRoot: string = process.cwd()): 
   for (const data of loadJsonEntries(join(customDir, 'themes'))) {
     if (typeof data.id === 'string') {
       themeRegistry.set(`custom:${data.id}`, {
-        modes: Array.isArray(data.modes) ? data.modes.filter((mode): mode is string => typeof mode === 'string') : ['light', 'dark'],
+        modes: Array.isArray(data.modes)
+          ? data.modes.filter((mode): mode is string => typeof mode === 'string')
+          : ['light', 'dark'],
       });
     }
   }

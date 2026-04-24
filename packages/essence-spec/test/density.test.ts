@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { computeDensity } from '../src/density.js';
-import { computeSpatialTokens } from '../src/density.js';
+import { describe, expect, it } from 'vitest';
+import { computeDensity, computeSpatialTokens } from '../src/density.js';
 
 describe('computeDensity', () => {
   it('returns compact for tactical personality', () => {

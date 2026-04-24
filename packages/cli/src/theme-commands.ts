@@ -1,13 +1,23 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getThemeSkeleton, getHowToThemeDoc } from './theme-templates.js';
+import { getHowToThemeDoc, getThemeSkeleton } from './theme-templates.js';
 
 export interface ThemeValidationResult {
   valid: boolean;
   errors: string[];
 }
 
-const REQUIRED_FIELDS = ['$schema', 'id', 'name', 'description', 'seed', 'modes', 'shapes', 'decantr_compat', 'source'];
+const REQUIRED_FIELDS = [
+  '$schema',
+  'id',
+  'name',
+  'description',
+  'seed',
+  'modes',
+  'shapes',
+  'decantr_compat',
+  'source',
+];
 const REQUIRED_SEED = ['primary', 'secondary', 'accent', 'background'];
 const VALID_MODES = ['light', 'dark'];
 const VALID_SHAPES = ['sharp', 'rounded', 'pill'];
@@ -64,7 +74,7 @@ export function validateCustomTheme(theme: Record<string, unknown>): ThemeValida
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -74,11 +84,7 @@ export interface CreateThemeResult {
   error?: string;
 }
 
-export function createTheme(
-  projectRoot: string,
-  id: string,
-  name: string
-): CreateThemeResult {
+export function createTheme(projectRoot: string, id: string, name: string): CreateThemeResult {
   const customThemesDir = join(projectRoot, '.decantr', 'custom', 'themes');
   const themePath = join(customThemesDir, `${id}.json`);
   const howToPath = join(customThemesDir, 'how-to-theme.md');
@@ -90,7 +96,7 @@ export function createTheme(
   if (existsSync(themePath)) {
     return {
       success: false,
-      error: `Theme "${id}" already exists at ${themePath}`
+      error: `Theme "${id}" already exists at ${themePath}`,
     };
   }
 
@@ -105,7 +111,7 @@ export function createTheme(
 
   return {
     success: true,
-    path: themePath
+    path: themePath,
   };
 }
 
@@ -126,7 +132,7 @@ export function listCustomThemes(projectRoot: string): CustomThemeInfo[] {
   const themes: CustomThemeInfo[] = [];
 
   try {
-    const files = readdirSync(customThemesDir).filter(f => f.endsWith('.json'));
+    const files = readdirSync(customThemesDir).filter((f) => f.endsWith('.json'));
     for (const file of files) {
       const filePath = join(customThemesDir, file);
       try {
@@ -135,7 +141,7 @@ export function listCustomThemes(projectRoot: string): CustomThemeInfo[] {
           id: data.id || file.replace('.json', ''),
           name: data.name || data.id,
           description: data.description,
-          path: filePath
+          path: filePath,
         });
       } catch {
         // Skip invalid JSON files
@@ -159,7 +165,7 @@ export function deleteTheme(projectRoot: string, id: string): DeleteThemeResult 
   if (!existsSync(themePath)) {
     return {
       success: false,
-      error: `Theme "${id}" not found at ${themePath}`
+      error: `Theme "${id}" not found at ${themePath}`,
     };
   }
 
@@ -169,7 +175,7 @@ export function deleteTheme(projectRoot: string, id: string): DeleteThemeResult 
   } catch (e) {
     return {
       success: false,
-      error: `Failed to delete: ${(e as Error).message}`
+      error: `Failed to delete: ${(e as Error).message}`,
     };
   }
 }
@@ -184,7 +190,7 @@ export function importTheme(projectRoot: string, sourcePath: string): ImportThem
   if (!existsSync(sourcePath)) {
     return {
       success: false,
-      errors: [`Source file not found: ${sourcePath}`]
+      errors: [`Source file not found: ${sourcePath}`],
     };
   }
 
@@ -194,7 +200,7 @@ export function importTheme(projectRoot: string, sourcePath: string): ImportThem
   } catch (e) {
     return {
       success: false,
-      errors: [`Invalid JSON: ${(e as Error).message}`]
+      errors: [`Invalid JSON: ${(e as Error).message}`],
     };
   }
 
@@ -203,7 +209,7 @@ export function importTheme(projectRoot: string, sourcePath: string): ImportThem
   if (!validation.valid) {
     return {
       success: false,
-      errors: validation.errors
+      errors: validation.errors,
     };
   }
 
@@ -226,6 +232,6 @@ export function importTheme(projectRoot: string, sourcePath: string): ImportThem
 
   return {
     success: true,
-    path: destPath
+    path: destPath,
   };
 }

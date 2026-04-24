@@ -1,7 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { validateCustomTheme, createTheme, listCustomThemes, deleteTheme, importTheme } from '../src/theme-commands.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  createTheme,
+  deleteTheme,
+  importTheme,
+  listCustomThemes,
+  validateCustomTheme,
+} from '../src/theme-commands.js';
 
 const THEME_SCHEMA_URL = 'https://decantr.ai/schemas/theme.v1.json';
 
@@ -16,7 +22,7 @@ describe('validateCustomTheme', () => {
       modes: ['dark'],
       shapes: ['rounded'],
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
 
     const result = validateCustomTheme(theme);
@@ -28,7 +34,7 @@ describe('validateCustomTheme', () => {
   it('returns errors for missing required fields', () => {
     const theme = {
       id: 'test',
-      name: 'Test'
+      name: 'Test',
       // missing description, seed, modes, shapes, decantr_compat, source
     };
 
@@ -50,7 +56,7 @@ describe('validateCustomTheme', () => {
       modes: ['dark'],
       shapes: ['rounded'],
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
 
     const result = validateCustomTheme(theme);
@@ -70,7 +76,7 @@ describe('validateCustomTheme', () => {
       modes: ['auto'], // invalid
       shapes: ['rounded'],
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
 
     const result = validateCustomTheme(theme);
@@ -88,7 +94,7 @@ describe('validateCustomTheme', () => {
       modes: ['dark'],
       shapes: ['oval'], // invalid
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
 
     const result = validateCustomTheme(theme);
@@ -107,7 +113,7 @@ describe('validateCustomTheme', () => {
       modes: ['dark'],
       shapes: ['rounded'],
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
 
     const result = validateCustomTheme(theme);
@@ -183,8 +189,8 @@ describe('listCustomThemes', () => {
     const themes = listCustomThemes(testDir);
 
     expect(themes).toHaveLength(2);
-    expect(themes.map(t => t.id)).toContain('theme1');
-    expect(themes.map(t => t.id)).toContain('theme2');
+    expect(themes.map((t) => t.id)).toContain('theme1');
+    expect(themes.map((t) => t.id)).toContain('theme2');
   });
 });
 
@@ -243,7 +249,7 @@ describe('importTheme', () => {
       modes: ['dark'],
       shapes: ['rounded'],
       decantr_compat: '>=1.0.0',
-      source: 'custom'
+      source: 'custom',
     };
     const sourcePath = join(importDir, 'external-theme.json');
     writeFileSync(sourcePath, JSON.stringify(theme));

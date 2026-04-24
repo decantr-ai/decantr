@@ -1,9 +1,9 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
 import type { EssenceFile, EssenceV3, ThemeMode, ThemeShape } from '@decantr/essence-spec';
-import { refreshDerivedFiles } from '../scaffold.js';
+import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
+import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -23,7 +23,9 @@ export async function cmdThemeSwitch(
   projectRoot: string = process.cwd(),
 ): Promise<void> {
   if (!themeName) {
-    console.error(`${RED}Usage: decantr theme switch <themeName> [--shape <s>] [--mode <m>]${RESET}`);
+    console.error(
+      `${RED}Usage: decantr theme switch <themeName> [--shape <s>] [--mode <m>]${RESET}`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -71,13 +73,17 @@ export async function cmdThemeSwitch(
   }
 
   if (shape && !VALID_THEME_SHAPES.includes(shape as ThemeShape)) {
-    console.error(`${RED}Invalid shape "${shape}". Must be one of: ${VALID_THEME_SHAPES.join(', ')}.${RESET}`);
+    console.error(
+      `${RED}Invalid shape "${shape}". Must be one of: ${VALID_THEME_SHAPES.join(', ')}.${RESET}`,
+    );
     process.exitCode = 1;
     return;
   }
 
   if (mode && !VALID_THEME_MODES.includes(mode as ThemeMode)) {
-    console.error(`${RED}Invalid mode "${mode}". Must be one of: ${VALID_THEME_MODES.join(', ')}.${RESET}`);
+    console.error(
+      `${RED}Invalid mode "${mode}". Must be one of: ${VALID_THEME_MODES.join(', ')}.${RESET}`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -121,6 +127,8 @@ export async function cmdThemeSwitch(
   if (mode) console.log(`  ${DIM}Mode: ${mode}${RESET}`);
 
   await refreshDerivedFiles(projectRoot, essence, registryClient);
-  console.log(`${GREEN}Derived files refreshed (tokens.css, treatments.css, all contexts).${RESET}`);
+  console.log(
+    `${GREEN}Derived files refreshed (tokens.css, treatments.css, all contexts).${RESET}`,
+  );
   console.log(`${YELLOW}Guard will flag code using old tokens. Run \`decantr check\`.${RESET}`);
 }

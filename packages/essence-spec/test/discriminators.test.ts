@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { isV3, isSimple, isSectioned } from '../src/types.js';
-import { VALID_V2_SIMPLE, VALID_V2_SECTIONED, VALID_V3 } from './fixtures.js';
+import { describe, expect, it } from 'vitest';
+import { isSectioned, isSimple, isV3 } from '../src/types.js';
+import { VALID_V2_SECTIONED, VALID_V2_SIMPLE, VALID_V3 } from './fixtures.js';
 
 describe('isV3', () => {
   it('returns true for v3 documents', () => {

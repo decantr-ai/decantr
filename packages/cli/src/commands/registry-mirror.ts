@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { RegistryAPIClient, API_CONTENT_TYPES } from '@decantr/registry';
 import type { ApiContentType } from '@decantr/registry';
+import { API_CONTENT_TYPES, RegistryAPIClient } from '@decantr/registry';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -19,7 +19,7 @@ interface MirrorManifest {
 
 export async function cmdRegistryMirror(
   projectRoot: string,
-  options: { type?: string } = {}
+  options: { type?: string } = {},
 ): Promise<void> {
   const apiUrl = process.env.DECANTR_API_URL || 'https://api.decantr.ai/v1';
   const apiClient = new RegistryAPIClient({
@@ -35,9 +35,7 @@ export async function cmdRegistryMirror(
     return;
   }
 
-  const types = options.type
-    ? [options.type as ApiContentType]
-    : ALL_CONTENT_TYPES;
+  const types = options.type ? [options.type as ApiContentType] : ALL_CONTENT_TYPES;
 
   // Validate type filter
   if (options.type && !ALL_CONTENT_TYPES.includes(options.type as ApiContentType)) {
@@ -104,7 +102,11 @@ export async function cmdRegistryMirror(
   if (failed.length > 0) {
     console.log(`${YELLOW}Mirrored ${totalItems} items (${failed.length} type(s) failed)${RESET}`);
   } else {
-    console.log(`${GREEN}Mirrored ${totalItems} items across ${Object.keys(counts).length} types${RESET}`);
+    console.log(
+      `${GREEN}Mirrored ${totalItems} items across ${Object.keys(counts).length} types${RESET}`,
+    );
   }
-  console.log(`${DIM}Use \`decantr init --offline\` or \`decantr refresh --offline\` to work without API.${RESET}\n`);
+  console.log(
+    `${DIM}Use \`decantr init --offline\` or \`decantr refresh --offline\` to work without API.${RESET}\n`,
+  );
 }

@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { normalizeEssence } from '../src/normalize.js';
-import { isV3, isSimple, isSectioned } from '../src/types.js';
-import { VALID_V3, VALID_V2_SIMPLE } from './fixtures.js';
+import { isSectioned, isSimple, isV3 } from '../src/types.js';
+import { VALID_V2_SIMPLE, VALID_V3 } from './fixtures.js';
 
 describe('normalizeEssence - v3 handling', () => {
   it('passes through v3 documents unchanged', () => {
