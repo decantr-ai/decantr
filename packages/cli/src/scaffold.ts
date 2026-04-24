@@ -1249,6 +1249,53 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 | **CTA Banner** | \`d-cta-banner\` | \`data-size="compact\\|hero"\` (default is between). Gradient wash from primary to accent. Theme can override via \`--d-cta-gradient\` / \`--d-cta-text\` CSS vars. |
 | **Dark-Pill Button** | \`d-interactive\` + \`data-variant="dark"\` | Pill-shaped dark-on-accent CTA for use inside \`d-cta-banner\`. Theme can override via \`--d-cta-pill-bg\` / \`--d-cta-pill-text\`. |
 
+**Shell layouts (do NOT hand-roll these):**
+
+| Treatment | Class | Purpose / States |
+|-----------|-------|------------------|
+| **Shell root** | \`d-shell\` | Full-viewport root container. \`data-layout="sidebar-main\\|centered"\` switches the layout model (default is top-nav-footer-style: vertical flex with sticky header). |
+| **Sidebar** | \`d-shell-sidebar\` | Left 240px nav column. \`data-collapsed="true"\` switches to a 64px rail. Below \`_mdmax:\` auto-becomes an off-canvas drawer — toggle via \`data-mobile-open="true"\`. |
+| **Main** | \`d-shell-main\` | Remaining-width column to the right of the sidebar (or the full content area in top-nav shells). Handles scroll internally. |
+| **Header** | \`d-shell-header\` | 52px sticky top bar with horizontal flex layout. Use inside \`d-shell-main\` (sidebar-main shells) or at the top of \`d-shell\` (top-nav shells). |
+| **Body** | \`d-shell-body\` | Scrollable main region. \`data-padding="compact\\|spacious\\|none"\` overrides the default 1rem padding. |
+| **Footer** | \`d-shell-footer\` | Narrow band below the body with top border. |
+| **Centered card** | \`d-shell-centered-card\` | The content parent inside \`d-shell[data-layout="centered"]\`. Caps width at 28rem. |
+
+**Auth / confirmation layouts use \`d-shell[data-layout="centered"] + d-shell-centered-card\`. Dashboard-style layouts use \`d-shell[data-layout="sidebar-main"] + d-shell-sidebar + d-shell-main (> d-shell-header + d-shell-body)\`. Marketing / public pages use \`d-shell\` (default) with \`d-shell-header\` at the top and \`d-shell-body\` + \`d-shell-footer\`.**
+
+Do NOT hand-roll \`.shell-sidebar\`, \`.shell-centered\`, \`.shell-tnf\`, \`.sidebar-main-layout\`, or similar class names. They exist as treatments.
+
+**Modal / palette chrome:**
+
+| Treatment | Class | Purpose / States |
+|-----------|-------|------------------|
+| **Modal root** | \`d-modal\` | Fixed-position overlay covering the viewport. \`data-align="top"\` shifts content to top 15vh (common for command palettes). |
+| **Modal backdrop** | \`d-modal-backdrop\` | Scrim with backdrop-blur. Place as a sibling inside \`d-modal\` with \`onClick\` to close. |
+| **Modal panel** | \`d-modal-panel\` | The actual dialog content. \`data-size="sm\\|lg"\` adjusts max-width (default 32rem). |
+| **Command palette** | \`d-palette\` | Specialized modal-panel variant for command palettes — 40rem wide, 60vh max-height. |
+| **Palette input** | \`d-palette-input\` | Search input at top of palette. |
+| **Palette list** | \`d-palette-list\` | Scrollable command list. |
+| **Palette row** | \`d-palette-row\` | Individual command row. \`data-active="true"\` for keyboard-highlighted row. |
+| **Palette section** | \`d-palette-section\` | Uppercase section label inside palette (e.g., "Navigation"). |
+| **Keyboard chip** | \`d-kbd\` | Mono-font key hint. Use inside \`<kbd>\` for accessibility. |
+
+Composition pattern for a command palette:
+\`\`\`tsx
+<div className="d-modal" data-align="top">
+  <div className="d-modal-backdrop" onClick={close} />
+  <div className="d-palette">
+    <input className="d-palette-input" placeholder="Type a command..." />
+    <ul className="d-palette-list">
+      <li className="d-palette-section">Navigation</li>
+      <li className="d-palette-row" data-active={i === selectedIndex}>
+        <Bot /> Go to Agents
+        <kbd className="d-kbd">g a</kbd>
+      </li>
+    </ul>
+  </div>
+</div>
+\`\`\`
+
 **Guidance for cold scaffolds:**
 - If your component is an icon-only action trigger, it's a \`d-icon-btn\`, not a stripped-down \`d-interactive\`.
 - Breadcrumb / footer / inline body-copy links use \`d-link\`.
