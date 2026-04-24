@@ -674,6 +674,266 @@ export function generateTreatmentCSS(
     ['height', '0'],
   ]);
 
+  // ── 13. Shell Structural Treatments — .d-shell-* ──
+  // The v5 harness reported that cold scaffolds hand-rolled 310 lines /
+  // 56 CSS classes of shell structural layout because Decantr didn't
+  // ship shell treatments. These treatments cover the three shells
+  // declared across most blueprints: sidebar-main, centered,
+  // top-nav-footer. Compose with atoms for per-region overrides.
+
+  // Root shell container — full viewport height + overflow containment.
+  emitRule('.d-shell', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['min-height', '100vh'],
+    ['background', 'var(--d-bg)'],
+    ['color', 'var(--d-text)'],
+  ]);
+
+  // Sidebar-main variant — sidebar + main body side by side.
+  emitRule('.d-shell[data-layout="sidebar-main"]', [
+    ['flex-direction', 'row'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // Centered variant — single card centered in the viewport.
+  emitRule('.d-shell[data-layout="centered"]', [
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['padding', '1rem'],
+  ]);
+
+  // Sidebar region — 240px persistent nav column.
+  emitRule('.d-shell-sidebar', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['width', '240px'],
+    ['flex-shrink', '0'],
+    ['border-right', '1px solid var(--d-border)'],
+    ['background', 'var(--d-surface)'],
+    ['overflow-y', 'auto'],
+    ['transition', 'width 0.2s ease, transform 0.2s ease'],
+  ]);
+
+  // Collapsed rail variant — 64px icon-only.
+  emitRule('.d-shell-sidebar[data-collapsed="true"]', [
+    ['width', '64px'],
+  ]);
+
+  // Below md: sidebar becomes an off-canvas drawer controlled by
+  // `data-mobile-open="true|false"`. Hidden by default (translate off-screen).
+  lines.push('@media (max-width: 767.98px) {');
+  lines.push('  .d-shell-sidebar {');
+  lines.push('    position: fixed;');
+  lines.push('    top: 0;');
+  lines.push('    left: 0;');
+  lines.push('    bottom: 0;');
+  lines.push('    z-index: 50;');
+  lines.push('    transform: translateX(-100%);');
+  lines.push('  }');
+  lines.push('  .d-shell-sidebar[data-mobile-open="true"] {');
+  lines.push('    transform: translateX(0);');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
+  // Main content area (to the right of sidebar, or spanning full width
+  // in top-nav-* shells). Takes remaining space, scroll container itself.
+  emitRule('.d-shell-main', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['flex', '1'],
+    ['min-width', '0'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // Header — 52px sticky top bar. Used inside d-shell-main (sidebar-main)
+  // or at the top of d-shell (top-nav-*). Horizontal layout, flex aligned.
+  emitRule('.d-shell-header', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'space-between'],
+    ['gap', '1rem'],
+    ['height', '52px'],
+    ['flex-shrink', '0'],
+    ['padding', '0 clamp(1rem, 2vw, 1.5rem)'],
+    ['border-bottom', '1px solid var(--d-border)'],
+    ['background', 'var(--d-bg)'],
+    ['position', 'sticky'],
+    ['top', '0'],
+    ['z-index', '10'],
+  ]);
+
+  // Body — scrollable main region inside d-shell-main.
+  emitRule('.d-shell-body', [
+    ['flex', '1'],
+    ['overflow-y', 'auto'],
+    ['padding', '1rem'],
+  ]);
+
+  // Body size variants.
+  emitRule('.d-shell-body[data-padding="compact"]', [
+    ['padding', '0.75rem'],
+  ]);
+
+  emitRule('.d-shell-body[data-padding="spacious"]', [
+    ['padding', '1.5rem'],
+  ]);
+
+  emitRule('.d-shell-body[data-padding="none"]', [
+    ['padding', '0'],
+  ]);
+
+  // Footer — narrow band below body.
+  emitRule('.d-shell-footer', [
+    ['padding', '1rem clamp(1rem, 2vw, 1.5rem)'],
+    ['border-top', '1px solid var(--d-border)'],
+    ['background', 'var(--d-surface)'],
+    ['flex-shrink', '0'],
+  ]);
+
+  // Centered card — the content parent inside d-shell[data-layout="centered"].
+  emitRule('.d-shell-centered-card', [
+    ['width', '100%'],
+    ['max-width', '28rem'],
+  ]);
+
+  // ── 14. Modal + Palette Chrome — .d-modal, .d-palette, .d-kbd ──
+  // The v5 harness reported that command_palette is a mandatory feature
+  // in every scaffold-pack but Decantr shipped no modal/palette treatments.
+  // Cold scaffolds hand-rolled the same overlay chrome repeatedly. These
+  // treatments cover the universal modal + palette shape.
+
+  // Modal root — fixed overlay covering viewport.
+  emitRule('.d-modal', [
+    ['position', 'fixed'],
+    ['inset', '0'],
+    ['z-index', '100'],
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['padding', '1rem'],
+  ]);
+
+  emitRule('.d-modal[data-align="top"]', [
+    ['align-items', 'flex-start'],
+    ['padding-top', '15vh'],
+  ]);
+
+  // Backdrop — absolute scrim that covers everything.
+  emitRule('.d-modal-backdrop', [
+    ['position', 'absolute'],
+    ['inset', '0'],
+    ['background', 'color-mix(in srgb, var(--d-bg) 70%, transparent)'],
+    ['backdrop-filter', 'blur(8px)'],
+    ['-webkit-backdrop-filter', 'blur(8px)'],
+  ]);
+
+  // Panel — the actual dialog content.
+  emitRule('.d-modal-panel', [
+    ['position', 'relative'],
+    ['z-index', '1'],
+    ['width', '100%'],
+    ['max-width', '32rem'],
+    ['background', 'var(--d-surface-raised)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius-lg)'],
+    ['box-shadow', 'var(--d-shadow-lg)'],
+    ['max-height', '85vh'],
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['overflow', 'hidden'],
+  ]);
+
+  emitRule('.d-modal-panel[data-size="sm"]', [
+    ['max-width', '24rem'],
+  ]);
+
+  emitRule('.d-modal-panel[data-size="lg"]', [
+    ['max-width', '48rem'],
+  ]);
+
+  // Command palette — specialized modal variant with fixed 640px width
+  // and specific search + list internal rhythm.
+  emitRule('.d-palette', [
+    ['width', '100%'],
+    ['max-width', '40rem'],
+    ['background', 'var(--d-surface-raised)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius-lg)'],
+    ['box-shadow', 'var(--d-shadow-lg)'],
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['overflow', 'hidden'],
+    ['max-height', '60vh'],
+  ]);
+
+  // Search input at the top of the palette.
+  emitRule('.d-palette-input', [
+    ['padding', '1rem 1.25rem'],
+    ['border', '0'],
+    ['border-bottom', '1px solid var(--d-border)'],
+    ['background', 'transparent'],
+    ['color', 'var(--d-text)'],
+    ['font-size', '1rem'],
+    ['outline', '0'],
+    ['width', '100%'],
+  ]);
+
+  // Scrollable list of commands.
+  emitRule('.d-palette-list', [
+    ['flex', '1'],
+    ['overflow-y', 'auto'],
+    ['padding', '0.5rem'],
+  ]);
+
+  // Individual command row.
+  emitRule('.d-palette-row', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['gap', '0.75rem'],
+    ['padding', '0.5rem 0.75rem'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['cursor', 'pointer'],
+    ['color', 'var(--d-text)'],
+    ['font-size', '0.875rem'],
+    ['transition', 'background 0.1s ease'],
+  ]);
+
+  emitRule('.d-palette-row:hover, .d-palette-row[data-active="true"]', [
+    ['background', 'color-mix(in srgb, var(--d-primary) 10%, transparent)'],
+  ]);
+
+  // Section label inside a palette (e.g., "Navigation", "Settings").
+  emitRule('.d-palette-section', [
+    ['padding', '0.5rem 0.75rem 0.25rem'],
+    ['font-size', '0.7rem'],
+    ['font-weight', '600'],
+    ['text-transform', 'uppercase'],
+    ['letter-spacing', '0.08em'],
+    ['color', 'var(--d-text-muted)'],
+  ]);
+
+  // Keyboard chip — mono-font key hint. Used in palette rows,
+  // shortcut-help modals, and inline next to action buttons.
+  emitRule('.d-kbd', [
+    ['display', 'inline-flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['min-width', '1.5rem'],
+    ['padding', '0 0.375rem'],
+    ['height', '1.375rem'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['background', 'var(--d-surface)'],
+    ['color', 'var(--d-text-muted)'],
+    ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
+    ['font-size', '0.75rem'],
+    ['font-weight', '500'],
+    ['line-height', '1'],
+  ]);
+
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──
   if (themeOverrideRules.length > 0) {
     lines.push('/* ── Theme-scoped Treatment Overrides ── */');
