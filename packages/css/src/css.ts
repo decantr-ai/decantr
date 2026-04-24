@@ -57,6 +57,8 @@ const ARB_PROPS: Record<string, string> = {
   h: 'height',
   mw: 'max-width',
   mh: 'max-height',
+  maxw: 'max-width',
+  maxh: 'max-height',
   minw: 'min-width',
   minh: 'min-height',
   p: 'padding',
@@ -81,7 +83,10 @@ const ARB_PROPS: Record<string, string> = {
   lh: 'line-height',
   fw: 'font-weight',
   ls: 'letter-spacing',
+  leading: 'line-height',
+  tracking: 'letter-spacing',
   r: 'border-radius',
+  rounded: 'border-radius',
   bg: 'background',
   fg: 'color',
   bc: 'border-color',
@@ -90,6 +95,7 @@ const ARB_PROPS: Record<string, string> = {
   bb: 'border-bottom',
   br: 'border-right',
   bl: 'border-left',
+  border: 'border',
   z: 'z-index',
   op: 'opacity',
   top: 'top',
@@ -104,6 +110,27 @@ const ARB_PROPS: Record<string, string> = {
   object: 'object-fit',
   gc: 'grid-template-columns',
   gr: 'grid-template-rows',
+  // Additional content-observed bracket atoms (P0-3 expansion). The v1
+  // harness report flagged the page-pack Surface emitting atoms the
+  // runtime didn't resolve; same class of silent-failure applies when
+  // pattern JSONs use prefixes not in this map. These additions cover
+  // every bracket prefix observed across the 209 archetype + 80+ pattern
+  // JSONs in decantr-content.
+  overflow: 'overflow',
+  pointer: 'pointer-events',
+  text: 'text-align',
+  whitespace: 'white-space',
+  items: 'align-items',
+  justify: 'justify-content',
+  aspect: 'aspect-ratio',
+  snap: 'scroll-snap-type',
+  // Note: 'scale' intentionally omitted — use the numeric `_scale95` /
+  // `_scale100` / `_scale105` atoms. Bracket form would need value wrapping
+  // (`scale(1.05)` vs `1.05`) which the generic emitter can't do.
+  display: 'display',
+  position: 'position',
+  pos: 'position',
+  cursor: 'cursor',
 };
 
 /**

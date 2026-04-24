@@ -686,6 +686,7 @@ export function generateTokensCSS(
   themeData: ThemeData | undefined,
   mode: string,
   spatialTokens?: Record<string, string>,
+  options?: { hasThemeToggle?: boolean },
 ): string {
   if (!themeData) {
     const spatialLines = spatialTokens
@@ -828,23 +829,26 @@ ${lines}${spatialLines}
 }
 `;
 
-  // When mode is 'auto', add a light-mode media query block
+  // Palette keys that differ between light and dark (everything non-palette
+  // stays stable across modes).
+  const paletteKeys = [
+    '--d-bg',
+    '--d-surface',
+    '--d-surface-raised',
+    '--d-border',
+    '--d-text',
+    '--d-text-muted',
+    '--d-primary-hover',
+    '--d-shadow-sm',
+    '--d-shadow',
+    '--d-shadow-md',
+    '--d-shadow-lg',
+  ];
+
+  // When mode is 'auto', add a light-mode media query block (OS-preference
+  // driven).
   if (mode === 'auto') {
     const lightTokens = buildTokens('light');
-    // Only emit palette tokens that differ between modes
-    const paletteKeys = [
-      '--d-bg',
-      '--d-surface',
-      '--d-surface-raised',
-      '--d-border',
-      '--d-text',
-      '--d-text-muted',
-      '--d-primary-hover',
-      '--d-shadow-sm',
-      '--d-shadow',
-      '--d-shadow-md',
-      '--d-shadow-lg',
-    ];
     const lightLines = Object.entries(lightTokens)
       .filter(([key]) => paletteKeys.includes(key))
       .map(([key, value]) => `    ${key}: ${value};`)
@@ -855,6 +859,33 @@ ${lines}${spatialLines}
   :root {
 ${lightLines}
   }
+}
+`;
+  }
+
+  // H5 fix: when the blueprint declares a `theme-toggle` feature, the user
+  // actively flips modes (typically by setting `data-mode` on <html>) —
+  // not via OS preference. Emit a `[data-mode="<opposite>"]` selector so
+  // the JS toggle actually changes the active tokens. Without this, the
+  // toggle flips an attribute that has nothing to respond to it and the
+  // visual is a no-op.
+  if (options?.hasThemeToggle) {
+    const opposite = resolvedMode === 'light' ? 'dark' : 'light';
+    const oppositeTokens = buildTokens(opposite);
+    const oppositeLines = Object.entries(oppositeTokens)
+      .filter(([key]) => paletteKeys.includes(key))
+      .map(([key, value]) => `    ${key}: ${value};`)
+      .join('\n');
+
+    css += `
+/*
+ * Theme-toggle variant. Blueprint declared the \`theme-toggle\` feature,
+ * so the user-facing toggle sets \`data-mode\` on <html>. Apply the
+ * opposite mode's palette when that attribute is set.
+ */
+:root[data-mode="${opposite}"],
+[data-mode="${opposite}"] {
+${oppositeLines}
 }
 `;
   }
@@ -1316,17 +1347,40 @@ Decantr ships semantic treatment classes that cover the recurring UI idioms. Com
 
 | Treatment | Class | Purpose / States |
 |-----------|-------|------------------|
-| **Shell root** | \`d-shell\` | Full-viewport root container. \`data-layout="sidebar-main\\|centered"\` switches the layout model (default is top-nav-footer-style: vertical flex with sticky header). |
+| **Shell root** | \`d-shell\` | Full-viewport root container. \`data-layout="sidebar-main\\|centered\\|top-nav-footer\\|sidebar-aside"\` switches the layout model (default equivalent to top-nav-footer: vertical flex with sticky header). |
 | **Sidebar** | \`d-shell-sidebar\` | Left 240px nav column. \`data-collapsed="true"\` switches to a 64px rail. Below \`_mdmax:\` auto-becomes an off-canvas drawer — toggle via \`data-mobile-open="true"\`. |
 | **Main** | \`d-shell-main\` | Remaining-width column to the right of the sidebar (or the full content area in top-nav shells). Handles scroll internally. |
+| **Aside** | \`d-shell-aside\` | Right 320px auxiliary panel for inspector / timeline / minimap in \`sidebar-aside\` layouts. Below \`_mdmax:\` hides by default; toggle with \`data-mobile-open="true"\`. |
 | **Header** | \`d-shell-header\` | 52px sticky top bar with horizontal flex layout. Use inside \`d-shell-main\` (sidebar-main shells) or at the top of \`d-shell\` (top-nav shells). |
 | **Body** | \`d-shell-body\` | Scrollable main region. \`data-padding="compact\\|spacious\\|none"\` overrides the default 1rem padding. |
 | **Footer** | \`d-shell-footer\` | Narrow band below the body with top border. |
 | **Centered card** | \`d-shell-centered-card\` | The content parent inside \`d-shell[data-layout="centered"]\`. Caps width at 28rem. |
 
-**Auth / confirmation layouts use \`d-shell[data-layout="centered"] + d-shell-centered-card\`. Dashboard-style layouts use \`d-shell[data-layout="sidebar-main"] + d-shell-sidebar + d-shell-main (> d-shell-header + d-shell-body)\`. Marketing / public pages use \`d-shell\` (default) with \`d-shell-header\` at the top and \`d-shell-body\` + \`d-shell-footer\`.**
+**Shell layout recipes:**
+- **Auth / confirmation:** \`d-shell[data-layout="centered"] + d-shell-centered-card\`.
+- **Dashboard with sidebar:** \`d-shell[data-layout="sidebar-main"] + d-shell-sidebar + d-shell-main (> d-shell-header + d-shell-body)\`.
+- **Dashboard with inspector / timeline / minimap:** \`d-shell[data-layout="sidebar-aside"] + d-shell-sidebar + d-shell-main + d-shell-aside\` (3-column grid; aside collapses off-canvas below md).
+- **Marketing / public pages:** \`d-shell[data-layout="top-nav-footer"]\` (or bare \`d-shell\`) with \`d-shell-header\` at the top and \`d-shell-body\` + \`d-shell-footer\`.
 
-Do NOT hand-roll \`.shell-sidebar\`, \`.shell-centered\`, \`.shell-tnf\`, \`.sidebar-main-layout\`, or similar class names. They exist as treatments.
+Do NOT hand-roll \`.shell-sidebar\`, \`.shell-centered\`, \`.shell-tnf\`, \`.shell-aside\`, \`.sidebar-main-layout\`, or similar class names. They exist as treatments.
+
+### Theme toggle
+
+If the blueprint declares the \`theme-toggle\` feature, \`tokens.css\` includes a \`[data-mode="<opposite>"]\` selector block. Flip the visible mode by setting \`data-mode\` on \`<html>\` (or any ancestor):
+
+\`\`\`tsx
+// Toggle between the blueprint's primary mode and its opposite.
+function ThemeToggle() {
+  const toggle = () => {
+    const html = document.documentElement;
+    const current = html.getAttribute('data-mode');
+    html.setAttribute('data-mode', current === 'dark' ? 'light' : 'dark');
+  };
+  return <button className="d-icon-btn" onClick={toggle}><SunMoon /></button>;
+}
+\`\`\`
+
+Do NOT branch component code on the current mode via JS to re-style elements — the token switch handles it CSS-side.
 
 **Modal / palette chrome:**
 
@@ -1757,7 +1811,16 @@ function generateDecantrMdV31(params: {
   decorators?: Array<{ name: string; description: string }>;
   decoratorDefinitions?: Record<
     string,
-    { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }
+    {
+      intent?: string;
+      css?: Record<string, string>;
+      suggested_properties?: Record<string, string>;
+      hover_properties?: Record<string, string>;
+      focus_properties?: Record<string, string>;
+      active_properties?: Record<string, string>;
+      pairs_with?: string[] | string;
+      usage?: string[];
+    }
   >;
 }): string {
   const template = loadTemplate('DECANTR.md.template');
@@ -1801,12 +1864,25 @@ function generateDecantrMdV31(params: {
     briefLines.push('|-------|--------|---------|');
     for (const [name, def] of Object.entries(params.decoratorDefinitions)) {
       const intent = def.intent || '';
-      const cssProps = def.css
-        ? Object.entries(def.css)
-            .map(([p, v]) => `${p}: ${v}`)
-            .join('; ')
-        : '';
-      briefLines.push(`| \`.${name}\` | ${intent} | ${cssProps} |`);
+      // P0-5 fix: theme JSONs use `suggested_properties` (plus hover/focus/
+      // active variants), not a `css` key. Prior logic read `def.css` which
+      // was always undefined, leaving the column empty for every decorator.
+      // Compose a concise summary preferring suggested_properties, falling
+      // back to `css` for legacy content, and summarizing state-variants.
+      const props = def.suggested_properties ?? def.css ?? {};
+      const base = Object.entries(props)
+        .map(([p, v]) => `${p}: ${v}`)
+        .join('; ');
+      const hasHover = def.hover_properties && Object.keys(def.hover_properties).length > 0;
+      const hasFocus = def.focus_properties && Object.keys(def.focus_properties).length > 0;
+      const hasActive = def.active_properties && Object.keys(def.active_properties).length > 0;
+      const stateMarkers = [
+        hasHover && ':hover',
+        hasFocus && ':focus-visible',
+        hasActive && ':active',
+      ].filter((m): m is string => Boolean(m));
+      const stateSuffix = stateMarkers.length > 0 ? ` _(+ ${stateMarkers.join(', ')})_` : '';
+      briefLines.push(`| \`.${name}\` | ${intent} | ${base}${stateSuffix} |`);
     }
     briefLines.push('');
   } else if (params.decorators && params.decorators.length > 0) {
@@ -2687,7 +2763,30 @@ async function generatePackContexts(
       scaffoldPack: bundle.scaffold,
       manifest: bundle.manifest,
     };
-  } catch {
+  } catch (err) {
+    // P0-A1 fix: log the compilation failure instead of silently falling
+    // through to narrative-only output. The cloud-platform harness run
+    // (2026-04-24) found a 200-inline-style drift directly caused by
+    // pack files being silently absent. The user now sees the actual
+    // reason (essence validation failed, pattern resolution failed, etc.)
+    // and can fix it instead of guessing why packs are missing.
+    const YELLOW = '\x1b[33m';
+    const DIM = '\x1b[2m';
+    const RESET = '\x1b[0m';
+    const message = err instanceof Error ? err.message : String(err);
+    // Trim AJV-style long validation messages to something an LLM / user
+    // can scan. Keep the first sentence, drop the repeated " , ..." joins.
+    const short = message.length > 240 ? message.slice(0, 220) + '… (truncated)' : message;
+    console.warn(
+      `${YELLOW}⚠  Execution pack compilation failed — scaffold will ship narrative-only context.${RESET}`,
+    );
+    console.warn(`${DIM}   Reason: ${short}${RESET}`);
+    console.warn(
+      `${DIM}   Cold-scaffolding LLMs won't get scaffold-pack.md / section-*-pack.md / page-*-pack.md.${RESET}`,
+    );
+    console.warn(
+      `${DIM}   This is a known drift source — fix the underlying issue and re-run \`decantr refresh\`.${RESET}`,
+    );
     return emptyResult;
   }
 }
@@ -2948,7 +3047,16 @@ export async function refreshDerivedFiles(
         );
       }
     }
-    writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens));
+    // H5 fix: if the blueprint declares the `theme-toggle` feature, emit
+    // a [data-mode="<opposite>"] selector block so the user's toggle
+    // actually changes the active palette. Without this the toggle flips
+    // data-mode on <html> and nothing responds.
+    const features = essence.blueprint?.features ?? [];
+    const hasThemeToggle = features.includes('theme-toggle') || features.includes('theme_toggle');
+    writeFileSync(
+      tokensPath,
+      generateTokensCSS(themeData, mode, spatialTokens, { hasThemeToggle }),
+    );
   }
 
   // Write treatments.css (replaces decorators.css)
