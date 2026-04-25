@@ -22,14 +22,15 @@ describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
     const contextDir = join(projectRoot, '.decantr', 'context');
     mkdirSync(contextDir, { recursive: true });
 
-    // Write each page-pack as JSON
+    // Write each page-pack as JSON. Manifest stores filename-only
+    // relative to the manifest's directory (matches harness output).
     const pageEntries = opts.manifestPages.map((p) => {
-      const jsonPath = `.decantr/context/page-${p.id}.json`;
+      const fileName = `page-${p.id}.json`;
       writeFileSync(
-        join(projectRoot, jsonPath),
+        join(contextDir, fileName),
         JSON.stringify({ data: { patterns: p.pack } }, null, 2),
       );
-      return { id: p.id, json: jsonPath };
+      return { id: p.id, json: fileName };
     });
 
     // Manifest references those pack files
@@ -136,7 +137,7 @@ describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
     writeFileSync(
       join(projectRoot, '.decantr', 'context', 'pack-manifest.json'),
       JSON.stringify({
-        pages: [{ id: 'home', json: '.decantr/context/missing.json' }],
+        pages: [{ id: 'home', json: 'missing.json' }],
       }),
     );
 
@@ -151,7 +152,7 @@ describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
     );
     writeFileSync(
       join(projectRoot, '.decantr', 'context', 'pack-manifest.json'),
-      JSON.stringify({ pages: [{ id: 'broken', json: '.decantr/context/page-broken.json' }] }),
+      JSON.stringify({ pages: [{ id: 'broken', json: 'page-broken.json' }] }),
     );
 
     expect(scanProjectInteractions(projectRoot)).toEqual([]);
