@@ -2165,12 +2165,20 @@ function generateDecantrMdV31(params: {
   briefLines.push(`- **Guard mode:** ${params.guardMode}`);
   briefLines.push('');
 
+  // Pipe-escape helper for markdown table cells (defined locally to avoid
+  // colliding with the section-context renderer's helper).
+  const escDecCell = (s: string): string => s.replace(/\|/g, '\\|');
   if (params.decoratorDefinitions && Object.keys(params.decoratorDefinitions).length > 0) {
     briefLines.push('### Decorator Quick Reference');
-    briefLines.push('| Class | Intent | Key CSS |');
-    briefLines.push('|-------|--------|---------|');
+    briefLines.push(
+      'Apply these classes — they carry the theme\'s visual identity. Without them the scaffold reads as "themed colors only."',
+    );
+    briefLines.push('');
+    briefLines.push('| Class | Intent | Apply to | Key CSS |');
+    briefLines.push('|-------|--------|----------|---------|');
     for (const [name, def] of Object.entries(params.decoratorDefinitions)) {
-      const intent = def.intent || '';
+      const intent = escDecCell(def.intent || '');
+      const applyTo = escDecCell((def.usage || []).join(', '));
       // P0-5 fix: theme JSONs use `suggested_properties` (plus hover/focus/
       // active variants), not a `css` key. Prior logic read `def.css` which
       // was always undefined, leaving the column empty for every decorator.
@@ -2189,7 +2197,9 @@ function generateDecantrMdV31(params: {
         hasActive && ':active',
       ].filter((m): m is string => Boolean(m));
       const stateSuffix = stateMarkers.length > 0 ? ` _(+ ${stateMarkers.join(', ')})_` : '';
-      briefLines.push(`| \`.${name}\` | ${intent} | ${base}${stateSuffix} |`);
+      briefLines.push(
+        `| \`.${name}\` | ${intent} | ${applyTo} | ${escDecCell(base)}${stateSuffix} |`,
+      );
     }
     briefLines.push('');
   } else if (params.decorators && params.decorators.length > 0) {
@@ -2197,7 +2207,7 @@ function generateDecantrMdV31(params: {
     briefLines.push('| Class | Purpose |');
     briefLines.push('|-------|---------|');
     for (const d of params.decorators) {
-      briefLines.push(`| \`.${d.name}\` | ${d.description} |`);
+      briefLines.push(`| \`.${d.name}\` | ${escDecCell(d.description)} |`);
     }
     briefLines.push('');
   }
@@ -4177,15 +4187,26 @@ function generateQuickStart(input: SectionContextInput): string[] {
     lines.push(`**Key patterns:** ${patternLabels.join(', ')}`);
   }
 
-  // CSS classes (top 3 decorators + personality utilities)
-  const cssClasses: string[] = [];
-  const topDecorators = decorators.slice(0, 3).map((d) => d.name);
-  cssClasses.push(...topDecorators);
+  // Theme decorators pointer — full table with intent + slot hint is rendered
+  // below in "Required Theme Decorators". Quick Start just signals their
+  // existence so the AI doesn't miss the strong contract that follows.
+  if (decorators.length > 0) {
+    const count = decorators.length;
+    lines.push(
+      `**Theme decorators:** ${count} class${count === 1 ? '' : 'es'} — see "Required Theme Decorators" below for class + intent + apply-to`,
+    );
+  }
+  // Personality utilities — theme-agnostic CSS classes triggered by personality
+  // keywords (neon-glow, mono-data, etc.). These live in treatments.css and
+  // are independent of the theme's decorator_definitions.
   const pLower = personality.join(' ').toLowerCase();
-  if (pLower.includes('neon') || pLower.includes('glow')) cssClasses.push('neon-glow');
-  if (pLower.includes('mono') || pLower.includes('monospace')) cssClasses.push('mono-data');
-  if (cssClasses.length > 0) {
-    lines.push(`**CSS classes:** ${cssClasses.map((c) => `\`.${c}\``).join(', ')}`);
+  const personalityUtils: string[] = [];
+  if (pLower.includes('neon') || pLower.includes('glow')) personalityUtils.push('neon-glow');
+  if (pLower.includes('mono') || pLower.includes('monospace')) personalityUtils.push('mono-data');
+  if (personalityUtils.length > 0) {
+    lines.push(
+      `**Personality utilities:** ${personalityUtils.map((c) => `\`.${c}\``).join(', ')}`,
+    );
   }
 
   // Density level
@@ -4379,30 +4400,57 @@ export function generateSectionContext(input: SectionContextInput): string {
   );
   lines.push('');
 
-  // Decorator usage guide — filtered to section-relevant decorators only.
-  // The exhaustive table stays in DECANTR.md; here we just surface the ones
-  // the LLM actually needs for this section's patterns.
+  // Required Theme Decorators — strong contract, not a soft list.
+  // The active theme's decorator_definitions carry the visual identity.
+  // Tokens (colors/spacing) give the bones; decorators give the personality.
+  // Without this rendering as a hard table with intent + slot hint, AI
+  // assistants weight the decorator list as "available" not "required" and
+  // ship pages that read as "themed colors only" with no theme character.
   const decoratorDefs = input.themeData?.decorator_definitions as
     | Record<
         string,
-        { intent?: string; css?: Record<string, string>; pairs_with?: string; usage?: string[] }
+        {
+          intent?: string;
+          description?: string;
+          css?: Record<string, string>;
+          pairs_with?: string;
+          usage?: string[];
+        }
       >
     | undefined;
+  // Escape pipe chars so they don't break markdown table cells.
+  const escCell = (s: string): string => s.replace(/\|/g, '\\|');
   if (decoratorDefs && Object.keys(decoratorDefs).length > 0) {
-    const usageEntries = Object.entries(decoratorDefs).filter(
-      ([, def]) => def.usage && def.usage.length > 0,
+    const renderableEntries = Object.entries(decoratorDefs).filter(
+      ([, def]) => def.intent || def.description || (def.usage && def.usage.length > 0),
     );
-    if (usageEntries.length > 0) {
-      lines.push('**Section decorators (usage hints):**');
-      for (const [name, def] of usageEntries) {
-        lines.push(`- \`.${name}\`: ${(def.usage || []).join(', ')}`);
+    if (renderableEntries.length > 0) {
+      lines.push(`## Required Theme Decorators (${themeName})`);
+      lines.push('');
+      lines.push(
+        'These classes carry the active theme\'s visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these — without them, the page reads as "themed colors only" with no theme character.',
+      );
+      lines.push('');
+      lines.push('| Class | Intent | Apply to |');
+      lines.push('|-------|--------|----------|');
+      for (const [name, def] of renderableEntries) {
+        const intent = escCell(def.intent || def.description || '');
+        const applyTo = escCell((def.usage || []).join(', '));
+        lines.push(`| \`.${name}\` | ${intent} | ${applyTo} |`);
       }
       lines.push('');
     }
   } else if (decorators.length > 0) {
-    lines.push('**Section decorators:**');
+    lines.push(`## Required Theme Decorators (${themeName})`);
+    lines.push('');
+    lines.push(
+      "These classes carry the active theme's visual identity. Apply them across this section's patterns or the scaffold reads as generic.",
+    );
+    lines.push('');
+    lines.push('| Class | Description |');
+    lines.push('|-------|-------------|');
     for (const d of decorators) {
-      lines.push(`- \`.${d.name}\` — ${d.description}`);
+      lines.push(`| \`.${d.name}\` | ${escCell(d.description)} |`);
     }
     lines.push('');
   }

@@ -82,18 +82,23 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('```css');
   });
 
-  it('renders section decorators as a compact usage list', () => {
-    // P1-2: section files no longer repeat the full decorator table from
-    // DECANTR.md. Each section gets a short "section decorators" bullet
-    // list with the name + description — enough for local decision-making
-    // without repeating the full intent/CSS/pairs table.
+  it('renders section decorators as a strong "Required Theme Decorators" table', () => {
+    // The previous "compact usage list" rendered decorators as a soft bullet
+    // list — `**Section decorators:**\n- \`.x\` — desc`. Cold-LLM evidence
+    // (ai-chatbot scaffold on luminarum) showed AI assistants weight that
+    // format as "available not required" and skip applying decorators,
+    // shipping pages with theme tokens but no theme personality. The fix is
+    // a hard markdown table with class + description framed as "Required" so
+    // the AI reads it as contract, not suggestion.
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('**Section decorators:**');
-    expect(result).toContain('`.surface-card` — Surface background with border');
-    expect(result).toContain('`.glass-panel` — Backdrop blur glass effect');
-    // Should NOT re-emit the full decorator table.
-    expect(result).not.toContain('| Class | Usage |');
+    expect(result).toContain('## Required Theme Decorators (midnight)');
+    expect(result).toContain("active theme's visual identity");
+    expect(result).toContain('| Class | Description |');
+    expect(result).toContain('| `.surface-card` | Surface background with border |');
+    expect(result).toContain('| `.glass-panel` | Backdrop blur glass effect |');
+    // The old bullet-list rendering should NOT appear.
+    expect(result).not.toContain('**Section decorators:**');
   });
 
   it('includes zone context inline without heading', () => {
