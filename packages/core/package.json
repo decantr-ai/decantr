@@ -1,6 +1,6 @@
 {
   "name": "@decantr/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Decantr core — execution-pack compiler primitives and shared Decantr utilities",
   "author": "Decantr AI",
   "license": "MIT",
@@ -31,7 +31,10 @@
     "./schema/execution-pack-bundle.v1.json": "./schema/execution-pack-bundle.v1.json",
     "./schema/selected-execution-pack.v1.json": "./schema/selected-execution-pack.v1.json"
   },
-  "files": ["dist", "schema"],
+  "files": [
+    "dist",
+    "schema"
+  ],
   "publishConfig": {
     "access": "public"
   },
