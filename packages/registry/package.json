@@ -1,6 +1,6 @@
 {
   "name": "@decantr/registry",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
   "author": "Decantr AI",
   "license": "MIT",
@@ -45,7 +45,10 @@
     "./schema/showcase-shortlist.v1.json": "./schema/showcase-shortlist.v1.json",
     "./schema/registry-intelligence-summary.v1.json": "./schema/registry-intelligence-summary.v1.json"
   },
-  "files": ["dist", "schema"],
+  "files": [
+    "dist",
+    "schema"
+  ],
   "publishConfig": {
     "access": "public"
   },
