@@ -977,6 +977,280 @@ export function generateTreatmentCSS(
     ['line-height', '1'],
   ]);
 
+  // ── 15. Motion Treatments — enforce declared interactions[] ──
+  // v2.1 Tier B1. These classes provide the canonical implementations for
+  // interactions declared on patterns (e.g., `animate-on-mount`,
+  // `status-pulse`, `glow-hover`). Before shipping these, cold LLMs
+  // hand-rolled @keyframes on every scaffold — inconsistent, rarely tuned.
+  // Each treatment respects `prefers-reduced-motion: reduce` at the bottom
+  // of this section. Duration and easing read from --d-motion-* tokens so
+  // themes can customize rhythm globally.
+
+  emitRule('.d-enter-fade', [
+    [
+      'animation',
+      'd-fade-in var(--d-motion-base, 250ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)) both',
+    ],
+  ]);
+
+  emitRule('.d-enter-slide-up', [
+    [
+      'animation',
+      'd-slide-up var(--d-motion-base, 250ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)) both',
+    ],
+  ]);
+
+  emitRule('.d-enter-scale', [
+    [
+      'animation',
+      'd-scale-in var(--d-motion-base, 250ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)) both',
+    ],
+  ]);
+
+  emitRule('.d-stagger-children > *', [
+    [
+      'animation',
+      'd-fade-in var(--d-motion-base, 250ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)) both',
+    ],
+    ['animation-delay', 'calc(var(--d-stagger-index, 0) * var(--d-motion-stagger, 60ms))'],
+  ]);
+
+  emitRule('.d-pulse', [
+    ['animation', 'd-pulse 2s var(--d-motion-ease, cubic-bezier(0.4,0,0.2,1)) infinite'],
+  ]);
+
+  emitRule('.d-pulse-ring', [
+    ['position', 'relative'],
+    ['animation', 'd-pulse-ring 1.5s var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)) infinite'],
+  ]);
+
+  emitRule('.d-shimmer', [
+    [
+      'background',
+      'linear-gradient(90deg, transparent, var(--d-surface-raised) 50%, transparent)',
+    ],
+    ['background-size', '200% 100%'],
+    ['animation', 'd-shimmer 1.5s linear infinite'],
+  ]);
+
+  emitRule('.d-float', [
+    ['animation', 'd-float 3s var(--d-motion-ease, cubic-bezier(0.4,0,0.2,1)) infinite'],
+  ]);
+
+  emitRule('.d-glow-hover', [
+    [
+      'transition',
+      'box-shadow var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-glow-hover:hover', [
+    [
+      'box-shadow',
+      '0 0 24px var(--d-accent-glow, color-mix(in srgb, var(--d-accent) 40%, transparent))',
+    ],
+  ]);
+
+  emitRule('.d-scale-hover', [
+    [
+      'transition',
+      'transform var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-scale-hover:hover', [['transform', 'scale(1.02)']]);
+
+  emitRule('.d-lift-hover', [
+    [
+      'transition',
+      'transform var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)), box-shadow var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-lift-hover:hover', [
+    ['transform', 'translateY(-2px)'],
+    ['box-shadow', 'var(--d-elevation-3, 0 4px 12px rgba(0,0,0,0.10))'],
+  ]);
+
+  emitRule('.d-ripple', [
+    ['position', 'relative'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-ripple::after', [
+    ['content', "''"],
+    ['position', 'absolute'],
+    ['inset', '0'],
+    ['background', 'radial-gradient(circle, currentColor 10%, transparent 10.01%)'],
+    ['opacity', '0'],
+    ['transform', 'scale(0)'],
+    [
+      'transition',
+      'transform var(--d-motion-slow, 400ms), opacity var(--d-motion-slow, 400ms)',
+    ],
+    ['pointer-events', 'none'],
+  ]);
+  emitRule('.d-ripple:active::after', [
+    ['transform', 'scale(1)'],
+    ['opacity', '0.15'],
+    ['transition', '0s'],
+  ]);
+
+  // ── 16. Typography Treatments ──
+  // v2.1 Tier B2. Canonical type hierarchy. Before these, scaffolds
+  // hand-rolled font-size/font-weight/letter-spacing on every heading.
+  // Themes can override the --d-text-*, --d-weight-*, --d-tracking-*,
+  // --d-leading-* tokens to tune the hierarchy globally.
+  // Names intentionally distinct from existing `.d-label` (anchored
+  // section-header treatment) and `.d-data` (tabular data surface).
+
+  emitRule('.d-display', [
+    ['font-family', 'var(--d-font-display, var(--d-font-body, system-ui, sans-serif))'],
+    ['font-weight', 'var(--d-weight-bold, 700)'],
+    ['font-size', 'var(--d-text-5xl, 3rem)'],
+    ['line-height', 'var(--d-leading-tight, 1.1)'],
+    ['letter-spacing', 'var(--d-tracking-tight, -0.02em)'],
+    ['margin', '0'],
+  ]);
+
+  emitRule('.d-headline', [
+    ['font-family', 'var(--d-font-display, var(--d-font-body, system-ui, sans-serif))'],
+    ['font-weight', 'var(--d-weight-semibold, 600)'],
+    ['font-size', 'var(--d-text-3xl, 1.875rem)'],
+    ['line-height', 'var(--d-leading-snug, 1.25)'],
+    ['letter-spacing', 'var(--d-tracking-tight, -0.01em)'],
+    ['margin', '0'],
+  ]);
+
+  emitRule('.d-title', [
+    ['font-family', 'var(--d-font-display, var(--d-font-body, system-ui, sans-serif))'],
+    ['font-weight', 'var(--d-weight-semibold, 600)'],
+    ['font-size', 'var(--d-text-xl, 1.25rem)'],
+    ['line-height', 'var(--d-leading-snug, 1.25)'],
+    ['margin', '0'],
+  ]);
+
+  emitRule('.d-subtitle', [
+    ['font-family', 'var(--d-font-body, system-ui, sans-serif)'],
+    ['font-weight', 'var(--d-weight-regular, 400)'],
+    ['font-size', 'var(--d-text-lg, 1.125rem)'],
+    ['line-height', 'var(--d-leading-snug, 1.375)'],
+    ['color', 'var(--d-text-muted)'],
+    ['margin', '0'],
+  ]);
+
+  emitRule('.d-prose', [
+    ['font-family', 'var(--d-font-body, system-ui, sans-serif)'],
+    ['font-size', 'var(--d-text-base, 1rem)'],
+    ['line-height', 'var(--d-leading-relaxed, 1.625)'],
+  ]);
+
+  emitRule('.d-body', [
+    ['font-family', 'var(--d-font-body, system-ui, sans-serif)'],
+    ['font-size', 'var(--d-text-base, 1rem)'],
+    ['line-height', 'var(--d-leading-normal, 1.5)'],
+  ]);
+
+  emitRule('.d-caption', [
+    ['font-family', 'var(--d-font-body, system-ui, sans-serif)'],
+    ['font-size', 'var(--d-text-sm, 0.875rem)'],
+    ['line-height', 'var(--d-leading-normal, 1.5)'],
+    ['color', 'var(--d-text-muted)'],
+  ]);
+
+  emitRule('.d-eyebrow', [
+    ['font-family', 'var(--d-font-body, system-ui, sans-serif)'],
+    ['font-size', 'var(--d-text-xs, 0.75rem)'],
+    ['line-height', '1.2'],
+    ['font-weight', 'var(--d-weight-semibold, 600)'],
+    ['letter-spacing', 'var(--d-tracking-wider, 0.08em)'],
+    ['text-transform', 'uppercase'],
+    ['color', 'var(--d-accent)'],
+  ]);
+
+  emitRule('.d-numeric', [['font-variant-numeric', 'tabular-nums']]);
+
+  emitRule('.d-mono-text', [
+    ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
+    ['font-variant-numeric', 'tabular-nums'],
+  ]);
+
+  // ── 17a. Composite Card — .d-card family (v2.1 Tier D1) ──
+  // Structural companion to the decorator layer. Replaces hand-composed
+  // flex/gap/padding on `carbon-card` etc. Pairs with a theme decorator
+  // for visual polish (hover glow, gradient border).
+
+  emitRule('.d-card', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['gap', '0.75rem'],
+    ['padding', '1rem'],
+    ['background', 'var(--d-surface)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius)'],
+    ['box-shadow', 'var(--d-elevation-1, var(--d-shadow-sm))'],
+  ]);
+
+  emitRule('.d-card-header', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'space-between'],
+    ['gap', '0.5rem'],
+    ['padding-bottom', '0.5rem'],
+    ['border-bottom', '1px solid var(--d-border)'],
+  ]);
+
+  emitRule('.d-card-body', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['gap', '0.5rem'],
+    ['flex', '1 1 auto'],
+    ['min-width', '0'],
+  ]);
+
+  emitRule('.d-card-footer', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'flex-end'],
+    ['gap', '0.5rem'],
+    ['padding-top', '0.5rem'],
+    ['border-top', '1px solid var(--d-border)'],
+  ]);
+
+  emitRule('.d-card[data-padding="compact"]', [['padding', '0.625rem']]);
+  emitRule('.d-card[data-padding="spacious"]', [['padding', '1.5rem']]);
+  emitRule('.d-card[data-padding="none"]', [['padding', '0']]);
+
+  emitRule('.d-card[data-interactive]', [
+    ['cursor', 'pointer'],
+    [
+      'transition',
+      'box-shadow var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)), border-color var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-card[data-interactive]:hover', [
+    ['box-shadow', 'var(--d-elevation-2, var(--d-shadow))'],
+    ['border-color', 'var(--d-primary)'],
+  ]);
+
+  // ── 17. Elevation Utility — .d-elevate[data-level] ──
+  // v2.1 Tier B3. Formal depth scale, cross-theme. Shadow values read
+  // from --d-elevation-* tokens. Dark themes emit stronger alpha values
+  // via mode-aware token defaults.
+
+  emitRule('.d-elevate[data-level="0"]', [['box-shadow', 'var(--d-elevation-0, none)']]);
+  emitRule('.d-elevate[data-level="1"]', [
+    ['box-shadow', 'var(--d-elevation-1, 0 1px 2px rgba(0,0,0,0.06))'],
+  ]);
+  emitRule('.d-elevate[data-level="2"]', [
+    ['box-shadow', 'var(--d-elevation-2, 0 2px 4px rgba(0,0,0,0.08))'],
+  ]);
+  emitRule('.d-elevate[data-level="3"]', [
+    ['box-shadow', 'var(--d-elevation-3, 0 4px 12px rgba(0,0,0,0.10))'],
+  ]);
+  emitRule('.d-elevate[data-level="4"]', [
+    ['box-shadow', 'var(--d-elevation-4, 0 8px 24px rgba(0,0,0,0.14))'],
+  ]);
+  emitRule('.d-elevate[data-level="5"]', [
+    ['box-shadow', 'var(--d-elevation-5, 0 16px 48px rgba(0,0,0,0.18))'],
+  ]);
+
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──
   if (themeOverrideRules.length > 0) {
     lines.push('/* ── Theme-scoped Treatment Overrides ── */');
@@ -994,6 +1268,59 @@ export function generateTreatmentCSS(
   lines.push('@keyframes decantr-pulse {');
   lines.push('  0%, 100% { opacity: 1; }');
   lines.push('  50% { opacity: 0.5; }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-fade-in {');
+  lines.push('  from { opacity: 0; }');
+  lines.push('  to { opacity: 1; }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-slide-up {');
+  lines.push('  from { opacity: 0; transform: translateY(12px); }');
+  lines.push('  to { opacity: 1; transform: translateY(0); }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-scale-in {');
+  lines.push('  from { opacity: 0; transform: scale(0.96); }');
+  lines.push('  to { opacity: 1; transform: scale(1); }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-pulse {');
+  lines.push('  0%, 100% { opacity: 1; }');
+  lines.push('  50% { opacity: 0.5; }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-pulse-ring {');
+  lines.push(
+    '  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--d-primary) 40%, transparent); }',
+  );
+  lines.push('  100% { box-shadow: 0 0 0 12px transparent; }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-shimmer {');
+  lines.push('  0% { background-position: -200% 0; }');
+  lines.push('  100% { background-position: 200% 0; }');
+  lines.push('}');
+  lines.push('');
+  lines.push('@keyframes d-float {');
+  lines.push('  0%, 100% { transform: translateY(0); }');
+  lines.push('  50% { transform: translateY(-4px); }');
+  lines.push('}');
+  lines.push('');
+  lines.push('/* Respect user motion preferences — disable all declarative motion */');
+  lines.push('@media (prefers-reduced-motion: reduce) {');
+  lines.push(
+    '  .d-enter-fade, .d-enter-slide-up, .d-enter-scale, .d-stagger-children > *,',
+  );
+  lines.push('  .d-pulse, .d-pulse-ring, .d-shimmer, .d-float {');
+  lines.push('    animation: none !important;');
+  lines.push('  }');
+  lines.push('  .d-glow-hover, .d-scale-hover, .d-lift-hover, .d-ripple::after {');
+  lines.push('    transition: none !important;');
+  lines.push('  }');
+  lines.push('  .d-scale-hover:hover, .d-lift-hover:hover {');
+  lines.push('    transform: none !important;');
+  lines.push('  }');
   lines.push('}');
   lines.push('');
   lines.push('} /* end @layer treatments */');
@@ -1088,11 +1415,17 @@ export function generatePersonalityCSS(
     );
   }
 
-  // Status ring utilities
+  // Status ring utilities (v2.1 D2: size variants)
   if (text.includes('pulse') || text.includes('ring') || text.includes('status')) {
     rules.push(
       `.status-ring { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--d-border); display: flex; align-items: center; justify-content: center; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease; }`,
     );
+    // Size variants — sm (32px), md (48px default), lg (64px). Before this,
+    // authors set `style={{ width: 32px }}` on every usage that needed a
+    // smaller ring.
+    rules.push(`.status-ring[data-size="sm"] { width: 32px; height: 32px; border-width: 1.5px; }`);
+    rules.push(`.status-ring[data-size="md"] { width: 48px; height: 48px; border-width: 2px; }`);
+    rules.push(`.status-ring[data-size="lg"] { width: 64px; height: 64px; border-width: 2.5px; }`);
     rules.push(`.status-ring[data-status="active"] { border-color: var(--d-success); }`);
     rules.push(
       `.status-ring[data-status="error"] { border-color: var(--d-error); box-shadow: 0 0 12px color-mix(in srgb, var(--d-error) 25%, transparent); }`,
