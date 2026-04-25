@@ -1,6 +1,6 @@
 {
   "name": "@decantr/essence-spec",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Essence schemas, validation, migration, and TypeScript types for Decantr",
   "author": "Decantr AI",
   "license": "MIT",
