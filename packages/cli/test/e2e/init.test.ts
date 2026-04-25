@@ -98,8 +98,14 @@ describe('init command', () => {
       );
       expect(output).toContain('Use only files present in this workspace as the source of truth.');
       expect(output).toContain(
-        'After implementation, run decantr check and decantr audit and fix any contract or drift issues.',
+        // v2.1 prompt update: `decantr check` is the unified entry point;
+        // the deprecated `decantr audit` line was replaced with the
+        // 8-rule guard description that surfaces the C5 interactions guard.
+        'After implementation, run `decantr check`',
       );
+      expect(output).toContain('INTERACTIONS ARE CONTRACT, NOT GUIDANCE');
+      expect(output).toContain('TREATMENT SURFACE — USE WHAT EXISTS');
+      expect(output).toContain('HARD RULES (NON-NEGOTIABLE)');
 
       expect(content).toContain('This project is using Decantr in **greenfield scaffold** mode.');
       expect(content).toContain(
