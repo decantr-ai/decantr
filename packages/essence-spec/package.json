@@ -37,7 +37,9 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build",
+    "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
     "ajv": "^8.17.0"
