@@ -2010,7 +2010,18 @@ Dark themes emit stronger alpha values automatically.
 | \`click-connect\` | Two-click state machine: select a port, click another port to create a connection |
 | \`inline-edit\` | Replace static text with controlled \`<input>\` on click; commit on blur or Enter |
 | \`hover-tooltip\` | \`data-tooltip\` attribute + hover handler positioning a popover (mount with \`d-enter-scale\`) |
-| \`live-simulation\` | \`setInterval\` updating mock state every 2-4 seconds; animate changes with \`d-pulse\` |`;
+| \`live-simulation\` | \`setInterval\` updating mock state every 2-4 seconds; animate changes with \`d-pulse\` |
+| \`drag-reorder\` | \`pointerdown\` → \`pointermove\` with 4px threshold + \`cursor: grab/grabbing\`. Reorder list state on drop. (Same handler shape as \`drag-nodes\`; different state model — list reorder vs free placement.) |
+| \`scroll-reveal\` | \`IntersectionObserver\` with \`once: true\` triggering \`d-enter-fade\`/\`d-enter-slide-up\` on entry |
+| \`real-time-updates\` | \`setInterval\` (2-8s) updating mock state OR \`WebSocket\`/\`EventSource\` for live data; animate changes with \`d-pulse\` on the changed element |
+| \`float-idle\` | \`d-float\` on decorative elements (illustrations, empty-state graphics) |
+| \`hover-reveal\` | \`onMouseEnter\`/\`onMouseLeave\` toggling visibility, OR group-hover via the \`:hover\` pseudo on a parent revealing a child (e.g., row actions appear on row hover) |
+| \`click-select\` | Controlled selection state via \`onClick\`; reflect via \`aria-selected\` / \`aria-pressed\` / \`data-active="true"\` and toggle visual via the matching treatment data-attribute |
+| \`keyboard-navigation\` | \`onKeyDown\` arrow-key handlers (ArrowUp/Down/Left/Right + Enter/Space). For lists/grids: roving tabindex pattern. Always pair with \`tabIndex={0}\` on focusable items. |
+| \`focus-trap\` | Tab-key interception inside modal/dialog cycles focus to first/last focusable element; restore focus on close |
+| \`shimmer-skeleton\` | \`d-shimmer\` on skeleton placeholders during loading |
+| \`zoom-pinch\` | Touch handlers (\`touchstart\`/\`touchmove\`) tracking pinch distance, OR \`gestureend\` on Safari; same scale transform as \`zoom-scroll\` |
+| \`ripple-click\` | \`d-ripple\` on the interactive surface |`;
 
 /**
  * Generate DECANTR.md for v3.1 essences.

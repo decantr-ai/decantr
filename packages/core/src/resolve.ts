@@ -105,8 +105,14 @@ function extractLayoutRefs(
     } else if (isPatternRef(item)) {
       refs.push({ id: item.pattern, explicitPreset: item.preset, alias: item.as });
     } else if (isColumnLayout(item)) {
+      // cols can mix string ids and PatternRef objects per the schema.
+      // Normalize each entry so downstream resolvers always see a string id.
       for (const col of item.cols) {
-        refs.push({ id: col });
+        if (typeof col === 'string') {
+          refs.push({ id: col });
+        } else {
+          refs.push({ id: col.pattern, explicitPreset: col.preset, alias: col.as });
+        }
       }
     }
   }

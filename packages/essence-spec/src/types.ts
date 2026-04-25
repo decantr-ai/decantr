@@ -60,13 +60,38 @@ export interface PatternRef {
 }
 
 export interface ColumnLayout {
-  cols: string[];
+  /**
+   * Column entries. Each entry is either a pattern id string OR a
+   * PatternRef object with `pattern`, optional `preset`, and optional
+   * `as` alias. Mixing the two forms is permitted by the schema.
+   * Consumers MUST normalize via `getColumnId` / `getColumnAlias` before
+   * using as a Map key, joining into strings, or rendering — otherwise
+   * objects produce `[object Object]` in serialized output.
+   */
+  cols: (string | PatternRef)[];
   at?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   span?: Record<string, number>;
   // AUTO: Multi-breakpoint grid — array of { at, cols } entries for cascading breakpoints
   breakpoints?: { at: string; cols: number }[];
   // AUTO: "container" uses container queries instead of viewport breakpoints
   responsive?: 'viewport' | 'container';
+}
+
+/** Extract the pattern id string from a column entry. */
+export function getColumnId(col: string | PatternRef): string {
+  return typeof col === 'string' ? col : col.pattern;
+}
+
+/** Extract the alias for a column entry (defaults to pattern id when no `as`). */
+export function getColumnAlias(col: string | PatternRef): string {
+  if (typeof col === 'string') return col;
+  return col.as ?? col.pattern;
+}
+
+/** Extract the optional preset for a column entry, or undefined. */
+export function getColumnPreset(col: string | PatternRef): string | undefined {
+  if (typeof col === 'string') return undefined;
+  return col.preset;
 }
 
 export interface StructurePage {
