@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { evaluateGuard, validateEssence } from '@decantr/essence-spec';
 import { buildGuardRegistryContext } from '../guard-context.js';
+// v2.1 C5 wiring — scan source for missing interaction implementations.
+import { scanProjectInteractions } from '../lib/scan-interactions.js';
 import { collectMetrics, isOptedIn, optIn, sendGuardMetrics } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
@@ -52,9 +54,24 @@ export async function cmdHeal(
     }
   }
 
+  // v2.1 C5: scan project source for missing interaction implementations
+  // BEFORE running the guard, so the 'interactions' rule can fire on
+  // pre-computed issues. Source-scan is non-fatal — if it errors, guard
+  // still runs without interaction_issues.
+  let interactionIssues: string[] = [];
+  try {
+    interactionIssues = scanProjectInteractions(projectRoot);
+  } catch {
+    /* source scan is non-fatal */
+  }
+
   // Run guard rules
   try {
-    const violations = evaluateGuard(essence, buildGuardRegistryContext(projectRoot));
+    const guardContext = buildGuardRegistryContext(projectRoot);
+    const violations = evaluateGuard(essence, {
+      ...guardContext,
+      interaction_issues: interactionIssues,
+    });
     for (const v of violations) {
       issues.push({
         type: v.severity === 'error' ? 'error' : 'warning',
@@ -84,6 +101,14 @@ export async function cmdHeal(
   }
 
   console.log(`\n${YELLOW}Manual fixes required. Review the issues above.${RESET}`);
+
+  // v2.1 C5: when any issue is severity='error', exit non-zero so CI gates
+  // and `npm run check` script wrappers see the failure. Warnings keep
+  // exit code 0 (informational).
+  const hasError = issues.some((i) => i.type === 'error');
+  if (hasError) {
+    process.exitCode = 1;
+  }
 
   await maybeSendTelemetry(projectRoot, essence, issues, options);
 }

@@ -34,9 +34,13 @@ interface PagePackJSON {
 /**
  * File extensions to scan for interaction implementations. Covers JSX/TSX
  * for React, plain JS/TS for vanilla, HTML for marketing scaffolds, MDX
- * for content sites, and CSS for keyframes/class refs.
+ * for content sites. CSS is intentionally EXCLUDED — generated treatment
+ * stylesheets define class names like `d-pulse` even when no usage
+ * exists, which would produce false positives. Adoption signals come
+ * from APPLYING a treatment class in JSX/TSX/HTML, not from declaring
+ * one in CSS.
  */
-const SCAN_EXTENSIONS = new Set(['.tsx', '.jsx', '.ts', '.js', '.html', '.mdx', '.css']);
+const SCAN_EXTENSIONS = new Set(['.tsx', '.jsx', '.ts', '.js', '.html', '.mdx']);
 
 /** Directories to skip when walking the source tree. */
 const SKIP_DIRECTORIES = new Set([
@@ -115,10 +119,12 @@ function collectDeclaredInteractions(projectRoot: string): string[] {
   const all: string[] = [];
   const pages = manifest.pages ?? [];
 
+  // Manifest entries store JSON paths relative to the .decantr/context/
+  // directory where the manifest lives — NOT relative to projectRoot.
+  // Always resolve via the manifest's directory.
+  const contextDir = join(projectRoot, '.decantr', 'context');
   for (const page of pages) {
-    // page.json is a path relative to the project root (e.g.
-    // ".decantr/context/page-home.json").
-    const packPath = join(projectRoot, page.json);
+    const packPath = join(contextDir, page.json);
     if (!existsSync(packPath)) continue;
     let pack: PagePackJSON;
     try {
