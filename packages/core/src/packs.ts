@@ -213,6 +213,23 @@ export interface SectionPackData {
   navigationItems?: SectionNavigationItemPack[];
   /** Execution-level directives emitted into the section-pack rendering. */
   directives?: string[];
+  /**
+   * Required theme decorator contract surfaced into the compact pack.
+   * Mirrors the long-form section-context "Required Theme Decorators" table.
+   * Cold prompts instruct AI assistants to read packs first, so the strong
+   * decorator contract has to live HERE, not just in the long-form file.
+   */
+  themeDecorators?: ThemeDecoratorEntry[];
+}
+
+/** Compact, render-ready decorator entry for pack contracts. */
+export interface ThemeDecoratorEntry {
+  /** Decorator class name without leading dot, e.g. "lum-glass". */
+  class: string;
+  /** Authored intent describing what the decorator does. */
+  intent: string;
+  /** Authored slot hints listing where to apply it (joined from usage[]). */
+  applyTo: string;
 }
 
 export interface SectionExecutionPack extends ExecutionPackBase<SectionPackData> {
@@ -371,7 +388,15 @@ export interface ScaffoldPackBuilderOptions {
   };
 }
 
-export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {}
+export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {
+  /**
+   * Required theme decorator contract for the section pack contract.
+   * When present, the renderer emits a "Required Theme Decorators" table
+   * with class + intent + apply-to slots — same shape as the long-form
+   * section-context renderer in CLI scaffold.ts.
+   */
+  themeDecorators?: ThemeDecoratorEntry[];
+}
 export interface PagePackBuilderOptions extends ScaffoldPackBuilderOptions {}
 export interface MutationPackBuilderOptions extends ScaffoldPackBuilderOptions {
   mutationType: MutationPackKind;
@@ -783,6 +808,28 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push('');
       for (const directive of sectionPack.data.directives) {
         lines.push(`- ${directive}`);
+      }
+      lines.push('');
+    }
+
+    // Required Theme Decorators — strong contract surfaced in the compact pack.
+    // Cold prompts instruct AI to read packs first, so the decorator contract
+    // has to be present here, not just in the long-form section-{id}.md file.
+    // Mirrors the renderer in CLI scaffold.ts:generateSectionContext.
+    if (sectionPack.data.themeDecorators && sectionPack.data.themeDecorators.length > 0) {
+      const escCell = (s: string): string => s.replace(/\|/g, '\\|');
+      lines.push(`## Required Theme Decorators (${sectionPack.data.theme.id})`);
+      lines.push('');
+      lines.push(
+        'These classes carry the active theme\'s visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these — without them, the page reads as "themed colors only" with no theme character.',
+      );
+      lines.push('');
+      lines.push('| Class | Intent | Apply to |');
+      lines.push('|-------|--------|----------|');
+      for (const entry of sectionPack.data.themeDecorators) {
+        lines.push(
+          `| \`.${entry.class}\` | ${escCell(entry.intent)} | ${escCell(entry.applyTo)} |`,
+        );
       }
       lines.push('');
     }
@@ -1198,6 +1245,9 @@ export function buildSectionPack(
         ? { navigationItems: input.navigationItems }
         : {}),
       ...(input.directives && input.directives.length > 0 ? { directives: input.directives } : {}),
+      ...(options.themeDecorators && options.themeDecorators.length > 0
+        ? { themeDecorators: options.themeDecorators }
+        : {}),
     },
     renderedMarkdown: '',
   };
@@ -1493,9 +1543,28 @@ export async function compileExecutionPackBundle(
   const review = buildReviewPack(pipeline.ir, {
     target: sharedTarget,
   });
+  // Compose theme decorator contract from registry data once and reuse for
+  // every section pack. Filter to entries that have the minimum data needed
+  // to render a useful row (intent OR description, plus at least one usage
+  // hint). Themes without decorator_definitions resolve to undefined here
+  // and the renderer skips the table entirely.
+  const themeDecorators: ThemeDecoratorEntry[] | undefined = (() => {
+    const defs = pipeline.registryTheme?.decorator_definitions;
+    if (!defs) return undefined;
+    const entries: ThemeDecoratorEntry[] = [];
+    for (const [name, def] of Object.entries(defs)) {
+      const intent = def.intent || def.description || '';
+      const applyTo = (def.usage || []).join(', ');
+      if (!intent && !applyTo) continue;
+      entries.push({ class: name, intent, applyTo });
+    }
+    return entries.length > 0 ? entries : undefined;
+  })();
+
   const sections = listPackSections(effectiveEssence).map((section) =>
     buildSectionPack(pipeline.ir, section, {
       target: sharedTarget,
+      ...(themeDecorators ? { themeDecorators } : {}),
     }),
   );
   const pages = listPackPages(effectiveEssence).map((page) =>

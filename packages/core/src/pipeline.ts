@@ -1,6 +1,6 @@
 import type { EssenceFile } from '@decantr/essence-spec';
 import { isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
-import type { ContentResolver } from '@decantr/registry';
+import type { ContentResolver, Theme as RegistryTheme } from '@decantr/registry';
 import { createResolver } from '@decantr/registry';
 import { buildPageIR } from './ir.js';
 import { resolveEssence } from './resolve.js';
@@ -37,6 +37,13 @@ export interface PipelineOptions {
 export interface PipelineResult {
   /** The framework-agnostic intermediate representation */
   ir: IRAppNode;
+  /**
+   * The fully-resolved registry theme record, including `decorator_definitions`
+   * and other rich theme data not carried in the lite IR `theme` node.
+   * Consumers (e.g. pack builders) need this to render decorator contracts
+   * into compiled artifacts.
+   */
+  registryTheme: RegistryTheme | null;
 }
 
 /**
@@ -128,5 +135,5 @@ export async function runPipeline(
     features: resolved.features,
   };
 
-  return { ir: appNode };
+  return { ir: appNode, registryTheme: resolved.registryTheme };
 }
