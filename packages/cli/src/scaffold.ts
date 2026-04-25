@@ -1566,22 +1566,41 @@ Do NOT branch component code on the current mode via JS to re-style elements —
 | **Keyboard chip** | \`d-kbd\` | Mono-font key hint. Use inside \`<kbd>\` for accessibility. |
 | **Hotkey indicator** | \`d-hotkey-indicator\` | Corner badge shown while a chord hotkey prefix is armed. Apply \`data-visible={isArmed}\` and \`data-prefix="g"\` when the prefix is pressed; clear on timeout/resolve. Required when \`hotkey_semantics.show_chord_indicator !== false\`. |
 
-Composition pattern for a command palette:
+Composition pattern for a command palette (REQUIRED — palette MUST be wrapped in \`d-modal\` + \`d-modal-backdrop\`, otherwise it renders as a top-level full-width strip):
 \`\`\`tsx
-<div className="d-modal" data-align="top">
-  <div className="d-modal-backdrop" onClick={close} />
-  <div className="d-palette">
-    <input className="d-palette-input" placeholder="Type a command..." />
-    <ul className="d-palette-list">
-      <li className="d-palette-section">Navigation</li>
-      <li className="d-palette-row" data-active={i === selectedIndex}>
-        <Bot /> Go to Agents
-        <kbd className="d-kbd">g a</kbd>
-      </li>
-    </ul>
+{open && (
+  <div className="d-modal" data-align="top">
+    <div className="d-modal-backdrop" onClick={close} />
+    <div className="d-palette">
+      <input className="d-palette-input" placeholder="Type a command..." />
+      <ul className="d-palette-list">
+        <li className="d-palette-section">Navigation</li>
+        <li className="d-palette-row" data-active={i === selectedIndex}>
+          <Bot /> Go to Agents
+          <kbd className="d-kbd">g a</kbd>
+        </li>
+      </ul>
+    </div>
+  </div>
+)}
+\`\`\`
+
+**Hard rules for the palette:**
+- The palette MUST be inside \`d-modal\` (positions/centers it as overlay) AND have a \`d-modal-backdrop\` sibling (provides scrim + click-to-close).
+- Group commands by section using \`d-palette-section\` (Uppercase eyebrow label) — never render a flat list. The blueprint's \`navigation.command_palette.commands\` already has \`section\` fields; honor them.
+- Each row should have an icon on the LEFT (Lucide), label in the center, and a \`d-kbd\` shortcut hint on the RIGHT — even when the command has no hotkey, leave the right slot empty for visual rhythm.
+
+Composition pattern for an auth page (REQUIRED — must use \`d-shell[data-layout="centered"]\` + \`d-shell-centered-card\`, not a hand-rolled centering wrapper):
+\`\`\`tsx
+<div className="d-shell" data-layout="centered">
+  <div className="d-shell-centered-card">
+    {/* Logo + form go here. Card caps at 28rem and self-centers. */}
   </div>
 </div>
 \`\`\`
+
+**Hard rule for centered/auth pages:**
+The \`d-shell-centered-card\` element provides the 28rem-max-width box. Do NOT render auth forms directly as children of \`d-shell\` — they will span full viewport width. Always wrap the form in \`d-shell-centered-card\`.
 
 **Guidance for cold scaffolds:**
 - If your component is an icon-only action trigger, it's a \`d-icon-btn\`, not a stripped-down \`d-interactive\`.

@@ -819,9 +819,16 @@ export function generateTreatmentCSS(
   ]);
 
   // Body — scrollable main region inside d-shell-main.
+  // F1 review fix: `min-width: 0` + `overflow-x: clip` together prevent the
+  // dashboard right-edge clipping observed on observability-platform's
+  // /metrics, /traces, /alerts. Wide grid children (KPI cards, chart
+  // columns) were overflowing past the viewport because they had no
+  // upper bound and the parent flex column wasn't allowed to shrink.
   emitRule('.d-shell-body', [
     ['flex', '1'],
+    ['min-width', '0'],
     ['overflow-y', 'auto'],
+    ['overflow-x', 'clip'],
     ['padding', '1rem'],
   ]);
 
@@ -841,9 +848,17 @@ export function generateTreatmentCSS(
   ]);
 
   // Centered card — the content parent inside d-shell[data-layout="centered"].
+  // F1 review fix: add `margin-inline: auto` for defensive self-centering.
+  // The auth pages observed in the cold-LLM run wrapped content in
+  // `d-shell-centered-card` but were rendering full-viewport-width because
+  // the parent shell didn't always apply flex centering. Belt-and-braces
+  // ensures the card is always horizontally centered and capped at 28rem
+  // regardless of parent layout. Vertical centering still relies on the
+  // parent shell's `data-layout="centered"` (`align-items: center`).
   emitRule('.d-shell-centered-card', [
     ['width', '100%'],
     ['max-width', '28rem'],
+    ['margin-inline', 'auto'],
   ]);
 
   // ── 14. Modal + Palette Chrome — .d-modal, .d-palette, .d-kbd ──
@@ -899,9 +914,15 @@ export function generateTreatmentCSS(
 
   // Command palette — specialized modal variant with fixed 640px width
   // and specific search + list internal rhythm.
+  // F1 review fix: add `margin-inline: auto` so the palette self-centers
+  // even when the implementation forgets to wrap in `d-modal`. The
+  // observability-platform cold-LLM run rendered d-palette as a top-level
+  // 100%-width strip because the implementation skipped the modal wrap.
+  // Self-centering keeps the visual contract intact.
   emitRule('.d-palette', [
     ['width', '100%'],
     ['max-width', '40rem'],
+    ['margin-inline', 'auto'],
     ['background', 'var(--d-surface-raised)'],
     ['border', '1px solid var(--d-border)'],
     ['border-radius', 'var(--d-radius-lg)'],
