@@ -80,6 +80,42 @@
           "items": {
             "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
           }
+        },
+        "navigationItems": {
+          "type": "array",
+          "description": "Items rendered in the shell's primary navigation for this section.",
+          "items": {
+            "type": "object",
+            "required": ["label", "route"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string", "minLength": 1 },
+              "route": { "type": "string", "minLength": 1 },
+              "icon": { "type": "string", "minLength": 1 },
+              "hotkey": { "type": "string", "minLength": 1 },
+              "active_match": { "type": "string", "minLength": 1 },
+              "badge": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives emitted into section-pack rendering.",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "themeDecorators": {
+          "type": "array",
+          "description": "Required theme decorator contract — class + intent + slot hint, surfaced as a hard table in the rendered pack so cold-LLM scaffolds apply them rather than treating the decorator list as advisory.",
+          "items": {
+            "type": "object",
+            "required": ["class", "intent", "applyTo"],
+            "additionalProperties": false,
+            "properties": {
+              "class": { "type": "string", "minLength": 1 },
+              "intent": { "type": "string" },
+              "applyTo": { "type": "string" }
+            }
+          }
         }
       },
       "additionalProperties": false
