@@ -2493,6 +2493,36 @@ async function main() {
     return;
   }
 
+  if (command === '--version' || command === '-v' || command === 'version') {
+    // Print the @decantr/cli package version. Resolve from the CLI's own
+    // package.json (read via fileURLToPath relative to this module) so we
+    // never drift from what `npm view @decantr/cli version` reports.
+    try {
+      const here = dirname(fileURLToPath(import.meta.url));
+      // Walk up from dist/* to packages/cli — package.json lives at the package root.
+      // In a published install the dist/ sits alongside package.json (one level up).
+      const candidates = [
+        join(here, '..', 'package.json'),
+        join(here, '..', '..', 'package.json'),
+      ];
+      for (const candidate of candidates) {
+        if (existsSync(candidate)) {
+          const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: string };
+          if (pkg.version) {
+            console.log(pkg.version);
+            return;
+          }
+        }
+      }
+      console.error(error('Could not resolve @decantr/cli version from package.json.'));
+      process.exitCode = 1;
+    } catch (e) {
+      console.error(error(`Failed to read CLI version: ${(e as Error).message}`));
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   switch (command) {
     case 'new': {
       const newName = args[1];
