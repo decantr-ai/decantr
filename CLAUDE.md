@@ -102,13 +102,22 @@ Patterns, blueprints, themes, and archetypes carry enriched fields for visual in
 | `visual_brief` | Pattern | 2-5 sentence visual description of the pattern |
 | `composition` | Pattern | Component composition algebra expressions |
 | `motion` | Pattern | Micro-interactions, transitions, ambient animations |
+| `interactions` | Pattern | **v2.1 C1.** Declared runtime interactions (24-value enum: `animate-on-mount`, `drag-nodes`, `status-pulse`, `glow-hover`, `pan-background`, `zoom-scroll`, `click-connect`, `inline-edit`, `hover-tooltip`, `live-simulation`, `keyboard-navigation`, `focus-trap`, etc.). Surfaced in page-pack as a checkbox checklist; enforced by 8th guard rule. |
 | `responsive` | Pattern | Mobile/tablet/desktop adaptation strategies |
 | `accessibility` | Pattern | ARIA, keyboard, focus, screen reader patterns |
 | `layout_hints` | Pattern | Freeform rendering guidance key-value pairs |
 | `voice` | Blueprint | Copy/tone intelligence (CTA verbs, empty states, errors) |
 | `personality` | Blueprint | Visual personality narrative (min 100 chars) |
 | `responsive_strategy` | Blueprint | Global responsive breakpoint strategy |
-| `decorator_definitions` | Theme | Structured decorator data (intent, properties, usage) |
+| `directives` | Blueprint section/page, archetype | Execution-level rules. Short imperative strings. Belongs in pack contract, not narrative doc. |
+| `navigation_items` | Blueprint section, archetype | Per-section primary nav items (label, route, icon, hotkey, active_match) |
+| `command_palette` | Blueprint navigation | Structured contract — `boolean` (legacy) OR `{ trigger, placeholder, width, styling, commands[] }` |
+| `hotkey_semantics` | Blueprint navigation | Behavioral directives: `chord_window_ms`, `input_guard`, `modifier_suppression`, `match_case`, `show_chord_indicator` |
+| `decorator_definitions` | Theme | Structured decorator data (intent, properties, usage, optional `hover_properties` / `focus_properties` / `active_properties`) |
+| `motion.durations.{instant,fast,base,slow,slower,stagger}` | Theme | **v2.1 B4.** Per-theme tuned motion durations (overrides CLI default tokens) |
+| `motion.easings.{ease,easeOut,easeIn,spring}` | Theme | **v2.1 B4.** Per-theme tuned easing curves |
+| `typography.{display,body}` | Theme | **v2.1 B4.** Display + body font stacks |
+| `elevation[1..5]` | Theme | **v2.1 B4.** Per-theme elevation scale; mode-split via `{ light, dark }` |
 | `internal_layout` | Shell | Semantic spatial specs per region (width, height, padding, gap, scroll) |
 | `page_briefs` | Archetype | Per-page visual descriptions |
 | `role` | Archetype | Section role: primary, gateway, public, auxiliary |
@@ -155,7 +164,7 @@ Section contexts (`.decantr/context/section-*.md`) include additional blocks gen
 
 ## Guard Rules
 
-The guard system (`packages/essence-spec/src/guard.ts`) enforces seven rules, ordered DNA-first.
+The guard system (`packages/essence-spec/src/guard.ts`) enforces eight rules, ordered DNA-first.
 
 **DNA guards (errors):**
 
@@ -170,9 +179,13 @@ The guard system (`packages/essence-spec/src/guard.ts`) enforces seven rules, or
 6. **Layout** -- Pattern order in a page must match the Essence layout spec. Strict mode only.
 7. **Pattern existence** -- All patterns referenced in layouts must exist in the registry. Includes fuzzy "did you mean?" suggestions.
 
-Modes: `creative` (no enforcement), `guided` (1, 3, 4, 5, 7), `strict` (all).
+**Experiential guard (8th rule, v2.1 C5):**
 
-**v3 enforcement fields:** DNA violations are controlled by `dna_enforcement` (`'error'` | `'warn'` | `'off'`); Blueprint violations by `blueprint_enforcement` (`'warn'` | `'off'`). In v3, Blueprint violations are warnings and are auto-fixable.
+8. **Interactions** -- Patterns that declare `interactions: [...]` must implement each one in source. Source is scanned by `@decantr/verifier`'s `verifyInteractionsInSource()` (regex/substring signal map for 24 canonical interactions like `drag-nodes`, `status-pulse`, `glow-hover`). Severity governed by `meta.guard.interactions_enforcement` (`'error' | 'warn' | 'off'`) with mode-derived defaults: creative=off, guided=warn, strict=error. Fed into `evaluateGuard` via `GuardContext.interaction_issues` (CLI `decantr check` runs `scanProjectInteractions(cwd)` to compute).
+
+Modes: `creative` (no enforcement), `guided` (1, 3, 4, 5, 7, 8-warn), `strict` (all).
+
+**v3 enforcement fields:** DNA violations are controlled by `dna_enforcement` (`'error'` | `'warn'` | `'off'`); Blueprint violations by `blueprint_enforcement` (`'warn'` | `'off'`); Interactions violations by `interactions_enforcement` (`'error'` | `'warn'` | `'off'`). In v3, Blueprint violations are warnings and are auto-fixable. Interactions violations are NOT auto-fixable (require code generation).
 
 ## Build and Test
 
@@ -196,10 +209,26 @@ All generated CSS uses `@layer` declarations:
 
 - `reset` -- normalize/reset styles (global.css)
 - `tokens` -- CSS custom properties from theme (tokens.css)
-- `treatments` -- base treatment classes: d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label
-- `decorators` -- theme-specific decorator classes (e.g., carbon-card, carbon-glass)
-- `utilities` -- personality-derived utility classes (e.g., neon-glow, mono-data, status-ring)
+- `treatments` -- base treatment classes (40+):
+  - **Core surfaces**: `d-interactive` (with size + variant), `d-surface`, `d-data` (+ row/header/cell), `d-control`, `d-section`, `d-annotation`, `d-label`
+  - **Common UI**: `d-link`, `d-icon-btn`, `d-nav-link`, `d-step-chip`, `d-divider-{top,bottom,left,right,base}`
+  - **Spatial / graph**: `d-agent-node`, `d-port` (with `data-side`)
+  - **Banners / CTAs**: `d-cta-banner`, `d-interactive[data-variant="dark"]`
+  - **Shell layouts**: `d-shell` (with `data-layout="sidebar-main|centered|top-nav-footer|sidebar-aside"`), `d-shell-sidebar`, `d-shell-aside`, `d-shell-main`, `d-shell-header`, `d-shell-body`, `d-shell-footer`, `d-shell-centered-card`
+  - **Modal / palette / kbd**: `d-modal`, `d-modal-backdrop`, `d-modal-panel`, `d-palette`, `d-palette-input/list/row/section`, `d-kbd`, `d-hotkey-indicator`
+  - **Composite card**: `d-card`, `d-card-header`, `d-card-body`, `d-card-footer`
+  - **Motion (v2.1 B1)**: `d-enter-fade`, `d-enter-slide-up`, `d-enter-scale`, `d-stagger-children`, `d-pulse`, `d-pulse-ring`, `d-shimmer`, `d-float`, `d-glow-hover`, `d-scale-hover`, `d-lift-hover`, `d-ripple` — all respect `prefers-reduced-motion: reduce`
+  - **Typography (v2.1 B2)**: `d-display`, `d-headline`, `d-title`, `d-subtitle`, `d-prose`, `d-body`, `d-caption`, `d-eyebrow`, `d-numeric`, `d-mono-text`
+  - **Elevation (v2.1 B3)**: `d-elevate[data-level="0..5"]`
+  - **Data-viz (v2.1 D3)**: `d-timeline-rail`, `d-timeline-dot`, `d-sparkline` (+ path/area), `d-intent-radar` (+ ring/axis), `d-waveform`, `d-qr-placeholder`, `d-conic-ring`, `d-heatmap-cell`
+- `decorators` -- theme-specific decorator classes (e.g., carbon-card, carbon-glass) with optional state variants (`hover_properties`, `focus_properties`, `active_properties`)
+- `utilities` -- personality-derived utility classes (e.g., neon-glow, mono-data, status-ring with size variants)
 - `app` -- application-specific overrides
+
+**Token scales (v2.1):**
+- **Motion**: `--d-motion-{instant,fast,base,slow,slower,stagger}`, `--d-motion-{ease,ease-out,ease-in,ease-spring}` (themes override via `theme.motion.durations` / `theme.motion.easings`)
+- **Typography**: `--d-text-{xs..6xl}`, `--d-weight-{regular,medium,semibold,bold}`, `--d-tracking-{tight,normal,wide,wider}`, `--d-leading-{tight,snug,normal,relaxed}`, `--d-font-{display,body,mono}`
+- **Elevation**: `--d-elevation-{1..5}` mode-aware (themes override via `theme.elevation` with optional `{light, dark}` mode-split values)
 
 ## MCP Server Tools
 
