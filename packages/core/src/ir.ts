@@ -152,28 +152,44 @@ export function buildPageIR(
       children.push(buildPatternNode(item.pattern, alias, resolved, wiring, theme, density, layer));
     } else if (isColumnLayout(item)) {
       // ColumnLayout → grid with pattern children
-      const cols = item.cols;
+      // cols can mix `string` ids and `PatternRef` objects per the schema.
+      // Normalize FIRST so all downstream operations (Map keys, Record
+      // keys, joined ids) see strings — otherwise PatternRef objects
+      // serialize as `[object Object]` (cold-LLM harness flagged this
+      // exact bug in cloud-platform's scaffold-pack).
+      const colEntries = item.cols.map((col) => ({
+        id: typeof col === 'string' ? col : col.pattern,
+        alias:
+          typeof col === 'string'
+            ? col
+            : (col.as ?? col.pattern),
+      }));
       const breakpoint = item.at || null;
       const spans = item.span || null;
 
-      // Normalize spans: fill in missing columns with weight 1
+      // Normalize spans: fill in missing columns with weight 1.
+      // Span keys reference column ids (the schema's span object uses
+      // the column's effective id as the key).
       let normalizedSpans: Record<string, number> | null = null;
       if (spans) {
         normalizedSpans = {};
-        for (const col of cols) {
-          normalizedSpans[col] = spans[col] || 1;
+        for (const entry of colEntries) {
+          normalizedSpans[entry.id] = spans[entry.id] || spans[entry.alias] || 1;
         }
       }
 
       const gridChildren: IRNode[] = [];
-      for (const col of cols) {
-        const resolved = resolvedPatterns.get(col);
-        gridChildren.push(buildPatternNode(col, col, resolved, wiring, theme, density, layer));
+      for (const entry of colEntries) {
+        const resolved =
+          resolvedPatterns.get(entry.alias) || resolvedPatterns.get(entry.id);
+        gridChildren.push(
+          buildPatternNode(entry.id, entry.alias, resolved, wiring, theme, density, layer),
+        );
       }
 
       const totalCols = normalizedSpans
         ? Object.values(normalizedSpans).reduce((a, b) => a + b, 0)
-        : cols.length;
+        : colEntries.length;
 
       // AUTO: Pass through multi-breakpoint and container query config from ColumnLayout
       const breakpoints = item.breakpoints?.map((bp) => ({ at: bp.at, cols: bp.cols })) || null;
@@ -181,7 +197,7 @@ export function buildPageIR(
 
       const gridNode: IRGridNode = {
         type: 'grid',
-        id: `grid-${cols.join('-')}`,
+        id: `grid-${colEntries.map((e) => e.id).join('-')}`,
         children: gridChildren,
         cols: totalCols,
         spans: normalizedSpans,

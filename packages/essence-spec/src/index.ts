@@ -43,6 +43,14 @@ export type {
   ThemeStyle,
   WcagLevel,
 } from './types.js';
-export { flattenPages, isSectioned, isSimple, isV3 } from './types.js';
+export {
+  flattenPages,
+  getColumnAlias,
+  getColumnId,
+  getColumnPreset,
+  isSectioned,
+  isSimple,
+  isV3,
+} from './types.js';
 export type { ValidationResult } from './validate.js';
 export { validateEssence } from './validate.js';

@@ -109,6 +109,10 @@ function checkThemeModeCompatibility(
 
 /**
  * Collect all pattern IDs from a layout item, recursively handling nested structures.
+ * Handles cols entries that are either string ids OR PatternRef objects
+ * (the schema permits mixing). Without the object branch, PatternRef cols
+ * silently dropped from the registry-existence check, masking missing
+ * patterns.
  */
 function collectPatternIds(item: LayoutItem, ids: Set<string>): void {
   if (typeof item === 'string') {
@@ -121,9 +125,15 @@ function collectPatternIds(item: LayoutItem, ids: Set<string>): void {
     }
     if ('cols' in item && Array.isArray(item.cols)) {
       for (const col of item.cols) {
-        // cols contains strings (pattern IDs)
         if (typeof col === 'string') {
           ids.add(col);
+        } else if (
+          col &&
+          typeof col === 'object' &&
+          'pattern' in col &&
+          typeof (col as { pattern: unknown }).pattern === 'string'
+        ) {
+          ids.add((col as { pattern: string }).pattern);
         }
       }
     }
