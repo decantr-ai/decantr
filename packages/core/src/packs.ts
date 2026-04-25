@@ -241,6 +241,13 @@ export interface PagePackPattern {
    * pattern's root description.
    */
   presetDescription?: string;
+  /**
+   * v2.1 Tier C1. Declared interactions from the pattern JSON. Rendered
+   * as a checkbox checklist so cold LLMs in generation mode see a
+   * hard-edged list they can't categorize as "philosophy". Enforced by
+   * decantr check --strict (C5 guard rule).
+   */
+  interactions?: string[];
 }
 
 export interface PagePackData {
@@ -585,6 +592,9 @@ function collectPagePatterns(page: IRPageNode): PagePackPattern[] {
       ...(patternNode.pattern.presetDescription
         ? { presetDescription: patternNode.pattern.presetDescription }
         : {}),
+      ...(patternNode.pattern.interactions && patternNode.pattern.interactions.length > 0
+        ? { interactions: patternNode.pattern.interactions }
+        : {}),
     });
   });
   return patterns;
@@ -807,6 +817,15 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       // from falling back to the blueprint-generic root description.
       if (pattern.presetDescription) {
         lines.push(`  > ${pattern.presetDescription}`);
+      }
+      // v2.1 C1: surface declared interactions[] as a checkbox checklist.
+      // Hard-edged format — LLMs in generation mode cannot categorize a
+      // checkbox as philosophy. Enforced by decantr check --strict (C5).
+      if (pattern.interactions && pattern.interactions.length > 0) {
+        lines.push(`  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**`);
+        for (const interaction of pattern.interactions) {
+          lines.push(`  - [ ] ${interaction}`);
+        }
       }
     }
     lines.push('');

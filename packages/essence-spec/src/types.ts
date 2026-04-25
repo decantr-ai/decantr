@@ -317,6 +317,16 @@ export interface EssenceV3Guard {
   mode: GuardMode;
   dna_enforcement: 'error' | 'warn' | 'off';
   blueprint_enforcement: 'warn' | 'off';
+  /**
+   * v2.1 C5. Severity for the experiential interactions guard rule (8th
+   * rule). When patterns declare `interactions: [...]` but the source
+   * tree is missing the canonical implementations, this controls whether
+   * the violation is an error, warning, or ignored.
+   *
+   * Defaults: `creative` mode → 'off'; `guided` → 'warn'; `strict` → 'error'.
+   * Authors can override per-essence.
+   */
+  interactions_enforcement?: 'error' | 'warn' | 'off';
 }
 
 export interface EssenceMeta {
@@ -370,6 +380,12 @@ export interface HotkeySemantics {
   modifier_suppression?: boolean;
   /** If true: hotkey matching is case-sensitive. Default false — uppercase implies Shift. */
   match_case?: boolean;
+  /**
+   * v2.1 C3. If true (default): render the .d-hotkey-indicator corner badge
+   * when a chord hotkey prefix is armed. If false: silent chord tracking
+   * (no visual feedback). Recommended true for discoverability.
+   */
+  show_chord_indicator?: boolean;
 }
 
 export interface EssenceV3 {

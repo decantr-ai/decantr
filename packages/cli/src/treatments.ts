@@ -1251,6 +1251,56 @@ export function generateTreatmentCSS(
     ['box-shadow', 'var(--d-elevation-5, 0 16px 48px rgba(0,0,0,0.18))'],
   ]);
 
+  // ── Hotkey chord indicator (v2.1 C3) ──
+  // When a user presses the prefix key of a chord hotkey (e.g., `g` in
+  // `g m` → /metrics), they currently get no visual feedback — they have
+  // to trust a 500-900ms chord window is open. This treatment is the
+  // corner badge shown while the chord is armed. Apply
+  // data-visible="true" when chord begins, remove when it times out or
+  // resolves. data-prefix shows the pressed key.
+  //
+  // Usage:
+  //   <div className="d-hotkey-indicator" data-visible={isArmed} data-prefix="g" />
+  //
+  // Enable via hotkey_semantics.show_chord_indicator (default true in
+  // essence.v3 schema — see C3 schema addition).
+
+  emitRule('.d-hotkey-indicator', [
+    ['position', 'fixed'],
+    ['bottom', '1.5rem'],
+    ['right', '1.5rem'],
+    ['padding', '0.5rem 0.75rem'],
+    ['background', 'var(--d-surface-raised)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius)'],
+    ['box-shadow', 'var(--d-elevation-3, 0 4px 12px rgba(0,0,0,0.10))'],
+    ['font-family', 'var(--d-font-mono, ui-monospace, monospace)'],
+    ['font-size', '0.875rem'],
+    ['color', 'var(--d-text)'],
+    ['opacity', '0'],
+    ['transform', 'translateY(8px)'],
+    ['pointer-events', 'none'],
+    ['z-index', '60'],
+    [
+      'transition',
+      'opacity var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)), transform var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-hotkey-indicator[data-visible="true"]', [
+    ['opacity', '1'],
+    ['transform', 'translateY(0)'],
+  ]);
+  emitRule('.d-hotkey-indicator::before', [
+    ['content', "'Chord: '"],
+    ['color', 'var(--d-text-muted)'],
+    ['margin-right', '0.25rem'],
+  ]);
+  emitRule('.d-hotkey-indicator::after', [
+    ['content', "attr(data-prefix) '…'"],
+    ['color', 'var(--d-accent)'],
+    ['font-weight', '600'],
+  ]);
+
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──
   if (themeOverrideRules.length > 0) {
     lines.push('/* ── Theme-scoped Treatment Overrides ── */');

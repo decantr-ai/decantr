@@ -1539,6 +1539,7 @@ Do NOT branch component code on the current mode via JS to re-style elements —
 | **Palette row** | \`d-palette-row\` | Individual command row. \`data-active="true"\` for keyboard-highlighted row. |
 | **Palette section** | \`d-palette-section\` | Uppercase section label inside palette (e.g., "Navigation"). |
 | **Keyboard chip** | \`d-kbd\` | Mono-font key hint. Use inside \`<kbd>\` for accessibility. |
+| **Hotkey indicator** | \`d-hotkey-indicator\` | Corner badge shown while a chord hotkey prefix is armed. Apply \`data-visible={isArmed}\` and \`data-prefix="g"\` when the prefix is pressed; clear on timeout/resolve. Required when \`hotkey_semantics.show_chord_indicator !== false\`. |
 
 Composition pattern for a command palette:
 \`\`\`tsx

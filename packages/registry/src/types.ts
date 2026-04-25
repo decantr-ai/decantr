@@ -45,6 +45,16 @@ export interface Pattern {
     transitions?: Record<string, string>;
     ambient?: Record<string, string>;
   };
+  /**
+   * v2.1 Tier C1. Declared runtime interactions this pattern MUST implement.
+   * Surfaced as a checkbox checklist in the per-page execution pack; enforced
+   * by `decantr check --strict` (C5 guard rule). Each value maps to a
+   * canonical implementation (treatment class + handler pattern) — see the
+   * Interaction Requirements table in scaffolded DECANTR.md. Before this
+   * field, motion/interactivity lived only as prose philosophy that cold
+   * LLMs routinely categorized as "nice to have" and skipped.
+   */
+  interactions?: string[];
   responsive?: {
     mobile?: string;
     tablet?: string;
