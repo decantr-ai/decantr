@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Shared verification, critique, and report-schema engine for Decantr",
   "author": "Decantr AI",
   "license": "MIT",
@@ -36,7 +36,9 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build",
+    "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
     "@decantr/core": "workspace:*",

@@ -31,7 +31,9 @@
     "build": "tsup src/index.ts --format esm --dts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "pnpm build",
+    "preversion": "pnpm build && pnpm test"
   },
   "keywords": [
     "decantr",
