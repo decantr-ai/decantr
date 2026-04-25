@@ -118,21 +118,42 @@ Reaching `inline-style count: 5` does not mean the scaffold is "stunning." The u
 | decantr | #30 — Tier B (motion + typography + elevation + composite card + status-ring sizes) | MERGED |
 | decantr | #31 — Tier C (full experiential enforcement loop) | MERGED |
 | decantr | #32 — Tier D3 (data-viz primitives) | MERGED |
+| decantr | #33 — docs (CLAUDE.md refresh + this synthesis doc) | MERGED |
+| decantr | #34 — fix(cli): wire interactions guard into cmdHeal (critical post-merge fix; closes the C5 loop in production) | MERGED |
+| decantr | #35 — chore: sync local package.json versions to published npm releases | MERGED |
 | decantr-content | #6 — interactions[] on 19 patterns (batches 1+2) | MERGED |
 | decantr-content | #7 — theme motion/typography/elevation on 18 themes | MERGED |
 | decantr-content | #8 — interactions[] on 49 more patterns (batch 3) | MERGED |
+| decantr-content | #9 — interactions[] on 132 more patterns (batch 4, heuristic) | MERGED |
+| decantr-content | #10 — B4 batch 2: 13 more themes tuned | MERGED |
+| decantr-content | #11 — D4 behavior directives | MERGED |
+| decantr-content | #12 — fix: restore B4 batch 2 themes | MERGED |
+
+**Published to npm 2026-04-25:**
+
+| Package | Version |
+|---------|---------|
+| @decantr/essence-spec | 1.0.3 |
+| @decantr/registry | 1.0.2 |
+| @decantr/core | 1.0.1 |
+| @decantr/verifier | 1.0.2 |
+| @decantr/cli | 1.7.9 |
+| @decantr/css | 1.0.3 |
+| @decantr/mcp-server | 1.0.4 *(pending publish; bumped locally)* |
 
 ## What's next (priority order)
 
-1. **`@decantr/css` 1.0.3 npm publish** — user action; biggest unblocker for measurable harness deltas
-2. **Cross-blueprint harness reruns** post-publish — validate predictions
-3. **B4 expansion** — populate motion/typography/elevation on the remaining ~14 themes
-4. **C1 content rollout** continues — 60+ patterns still need interactions[]
-5. **D4 content directives** — auth-guard composition, breadcrumb derivation, theme persistence, drag-vs-click threshold
-6. **E1 + E2** — `seed_content` + `signature_moment` schemas + content
+**Update 2026-04-25:** Items 1, 3, 4, 5 below are now ✅ complete. All six core packages published (essence-spec 1.0.3, registry 1.0.2, core 1.0.1, verifier 1.0.2, cli 1.7.9, css 1.0.3). mcp-server 1.0.4 prepared. Cross-blueprint reruns are now the gating measurement.
+
+1. ~~**`@decantr/css` npm publish + sibling packages**~~ ✅ DONE — all 5 patch-bumped packages published 2026-04-25 (PR #35 synced local versions)
+2. **Cross-blueprint harness reruns** post-publish — validate predictions (highest-leverage remaining item)
+3. ~~**B4 expansion** — populate motion/typography/elevation on remaining themes~~ ✅ DONE — 31/32 themes tuned (recipefork excluded as separate workstream)
+4. ~~**C1 content rollout** — 60+ patterns still need interactions[]~~ ✅ DONE — 201/221 patterns (~91%) populated
+5. ~~**D4 content directives**~~ ✅ DONE — auth-guard composition, breadcrumb derivation, theme persistence, drag-vs-click threshold all landed
+6. **E1 + E2** — `seed_content` + `signature_moment` schemas + content (blueprint-level "feels real" layer; needs design)
 7. **CI harness gate** — automated cross-blueprint regression measurement per PR
 8. **Visual benchmark suite** — screenshot diff vs reference catalog of top shadcn / Linear / Raycast demos
-9. **Per-package release cadence + changelog**
+9. **Per-package release cadence + changelog** — formalize the rhythm now that all packages have shipped together once
 
 ## Reusable playbook for future cycles
 
