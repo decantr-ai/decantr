@@ -234,7 +234,9 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   );
   lines.push('');
   lines.push('Read in this order:');
-  lines.push('1. DECANTR.md for the design spec, CSS approach, and guard rules.');
+  lines.push(
+    '1. DECANTR.md for the design spec, treatment catalog, motion/typography/elevation tables, and the Interaction Requirements canonical-implementation table.',
+  );
   lines.push(
     '2. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
   );
@@ -248,7 +250,90 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     '5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file.',
   );
   lines.push('');
-  lines.push('Implementation rules:');
+  lines.push('═══ INTERACTIONS ARE CONTRACT, NOT GUIDANCE ═══');
+  lines.push('');
+  lines.push(
+    'Each page pack lists an "Interactions (MUST implement each)" checkbox list per pattern. Treat each checkbox as a contract item, NOT a suggestion. The DECANTR.md "Interaction Requirements" table maps each canonical interaction to its required implementation:',
+  );
+  lines.push(
+    '- drag-nodes → onPointerDown/Move handlers with 4px threshold + cursor: grab/grabbing',
+  );
+  lines.push('- status-pulse → d-pulse class on the indicator element');
+  lines.push(
+    '- animate-on-mount → d-enter-fade / d-enter-slide-up / d-enter-scale on the pattern root',
+  );
+  lines.push(
+    '- stagger-children → d-stagger-children parent + style={{ "--d-stagger-index": i }} on each child',
+  );
+  lines.push(
+    '- pan-background → pointer handlers on canvas BACKGROUND only (not nodes); translate viewport transform',
+  );
+  lines.push('- zoom-scroll → onWheel adjusting a scale transform, clamped [0.25, 4]');
+  lines.push('- keyboard-navigation → onKeyDown arrow handlers + tabIndex={0}');
+  lines.push('- focus-trap → Tab cycle inside dialog; restore focus on close');
+  lines.push('- hover-tooltip → data-tooltip + onMouseEnter handler showing popover');
+  lines.push(
+    '- real-time-updates → setInterval (2-8s) updating mock state with d-pulse on changed elements',
+  );
+  lines.push('- scroll-reveal → IntersectionObserver (once: true) triggering d-enter-fade');
+  lines.push('- inline-edit → controlled <input> on click; commit on blur or Enter');
+  lines.push(
+    '- lift-hover / scale-hover / glow-hover → matching d-*-hover treatment classes',
+  );
+  lines.push('');
+  lines.push(
+    '`decantr check --strict` FAILS the build when a declared interaction has no matching implementation. The full canonical-implementation table is in DECANTR.md.',
+  );
+  lines.push('');
+  lines.push('═══ TREATMENT SURFACE — USE WHAT EXISTS ═══');
+  lines.push('');
+  lines.push(
+    '40+ treatment classes ship in src/styles/treatments.css. Reach for these BEFORE inventing equivalent CSS. Eight families to know:',
+  );
+  lines.push(
+    '- Core surfaces: d-interactive (data-variant + data-size), d-surface, d-data + d-data-row/cell/header, d-control, d-section, d-annotation, d-label',
+  );
+  lines.push(
+    '- Common UI: d-link, d-icon-btn (data-size + data-variant), d-nav-link, d-step-chip, d-divider-{top,bottom,left,right}',
+  );
+  lines.push(
+    '- Spatial / graph: d-agent-node, d-port (data-side, data-active); d-cta-banner; d-interactive[data-variant="dark"]',
+  );
+  lines.push(
+    '- Shells: d-shell + data-layout="sidebar-main|centered|top-nav-footer|sidebar-aside", d-shell-sidebar, d-shell-main, d-shell-aside, d-shell-header, d-shell-body, d-shell-footer, d-shell-centered-card',
+  );
+  lines.push(
+    '- Modal / palette: d-modal (data-align="top"), d-modal-backdrop, d-modal-panel (data-size="sm|lg"), d-palette + d-palette-input/list/row/section, d-kbd, d-hotkey-indicator',
+  );
+  lines.push('- Composite card: d-card, d-card-header, d-card-body, d-card-footer');
+  lines.push(
+    '- Motion: d-enter-fade, d-enter-slide-up, d-enter-scale, d-stagger-children, d-pulse, d-pulse-ring, d-shimmer, d-float, d-glow-hover, d-scale-hover, d-lift-hover, d-ripple',
+  );
+  lines.push(
+    '- Typography: d-display, d-headline, d-title, d-subtitle, d-prose, d-body, d-caption, d-eyebrow, d-numeric, d-mono-text',
+  );
+  lines.push('- Elevation: d-elevate[data-level="0..5"]');
+  lines.push(
+    '- Data-viz: d-timeline-rail + d-timeline-dot[data-state], d-sparkline + d-sparkline-path/area, d-intent-radar + d-intent-radar-ring/axis, d-waveform, d-qr-placeholder, d-conic-ring (--d-conic-value 0..1), d-heatmap-cell',
+  );
+  lines.push('');
+  lines.push(
+    'Token scales are tunable via CSS vars: --d-motion-{instant,fast,base,slow,slower}, --d-text-{xs..6xl}, --d-elevation-{1..5}, --d-tracking-*, --d-leading-*, --d-weight-*. Themes override per-blueprint.',
+  );
+  lines.push('');
+  lines.push('═══ HARD RULES (NON-NEGOTIABLE) ═══');
+  lines.push('');
+  lines.push(
+    '- Auth pages MUST wrap content in `<div className="d-shell" data-layout="centered"><div className="d-shell-centered-card">{form}</div></div>`. Skipping d-shell-centered-card produces a full-viewport-width card.',
+  );
+  lines.push(
+    '- Command palette MUST wrap `<div className="d-palette">` inside `<div className="d-modal" data-align="top"><div className="d-modal-backdrop" onClick={close} />{palette}</div>`. Without the modal+backdrop wrap, the palette renders as a full-width strip pinned to viewport top. Group commands via d-palette-section eyebrow rows (honor blueprint\'s commands[].section). Each row anatomy: [Lucide icon | label | d-kbd hotkey].',
+  );
+  lines.push(
+    '- Use lucide-react for ALL iconography (already in package.json). Pick semantic icons (Bot, Activity, Database, Search) over generic ones. Do NOT inline SVGs for icons that have Lucide equivalents.',
+  );
+  lines.push('');
+  lines.push('═══ IMPLEMENTATION RULES ═══');
   lines.push(
     '- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.',
   );
@@ -268,7 +353,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     '- If package.json, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists in the workspace.',
   );
   lines.push(
-    '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry that cannot be expressed through the contract.',
+    '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry (computed positions, CSS custom properties like --d-stagger-index, dynamic gradient hues) that cannot be expressed through the contract.',
   );
   lines.push(
     '- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.',
@@ -286,12 +371,13 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     '- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.',
   );
   lines.push('');
-  lines.push('Execution flow:');
+  lines.push('═══ EXECUTION FLOW ═══');
   lines.push('- Build the shell and shared layout first.');
   lines.push("- Then implement each section's pages using the matching section and page packs.");
   lines.push(
-    '- After implementation, run decantr check and decantr audit and fix any contract or drift issues.',
+    '- After implementation, run `decantr check`. It runs 8 guard rules including the experiential interactions guard (8th rule, v2.1 C5). It fails strict-mode builds when declared interactions[] are not implemented; the suggestions point at the canonical implementation. `decantr audit` is deprecated — `decantr check` is the unified entry point.',
   );
+  lines.push('- Fix all violations until `decantr check` exits 0.');
   lines.push(
     '- If a required context file is missing or inconsistent, stop and report exactly which file is missing before continuing.',
   );
