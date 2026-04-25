@@ -799,9 +799,71 @@ export function generateTreatmentCSS(
   lines.push('    bottom: 0;');
   lines.push('    z-index: 50;');
   lines.push('    transform: translateX(-100%);');
+  lines.push('    box-shadow: var(--d-elevation-4, 0 8px 24px rgba(0,0,0,0.25));');
   lines.push('  }');
   lines.push('  .d-shell-sidebar[data-mobile-open="true"] {');
   lines.push('    transform: translateX(0);');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
+  // Mobile menu trigger — hamburger button that opens the sidebar drawer
+  // below _mdmax: and is hidden above. Place inside d-shell-header.
+  // The cold UX review surfaced that scaffolds collapse the sidebar on
+  // mobile but then provide no way to re-open it — users got stuck.
+  // This treatment ships the trigger button so the contract closes the
+  // loop. Implementation: button toggles `data-mobile-open` on the
+  // sibling `.d-shell-sidebar` element.
+  emitRule('.d-shell-mobile-trigger', [
+    ['display', 'none'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['width', '36px'],
+    ['height', '36px'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['background', 'transparent'],
+    ['color', 'var(--d-text)'],
+    ['cursor', 'pointer'],
+    ['flex-shrink', '0'],
+    [
+      'transition',
+      'background var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)), border-color var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-shell-mobile-trigger:hover', [
+    ['background', 'var(--d-surface)'],
+    ['border-color', 'var(--d-primary)'],
+  ]);
+  emitRule('.d-shell-mobile-trigger:focus-visible', [
+    ['outline', '2px solid var(--d-primary)'],
+    ['outline-offset', '2px'],
+  ]);
+
+  // Mobile backdrop — dim scrim shown behind the open sidebar drawer so
+  // tapping outside closes it. Hidden above _mdmax:.
+  emitRule('.d-shell-mobile-backdrop', [
+    ['display', 'none'],
+    ['position', 'fixed'],
+    ['inset', '0'],
+    ['z-index', '49'],
+    ['background', 'color-mix(in srgb, var(--d-bg) 60%, transparent)'],
+    ['backdrop-filter', 'blur(2px)'],
+    ['-webkit-backdrop-filter', 'blur(2px)'],
+    [
+      'transition',
+      'opacity var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+
+  // Show trigger + backdrop only on mobile (below _md:). Above md, both
+  // are display:none — sidebar is always visible inline.
+  lines.push('@media (max-width: 767.98px) {');
+  lines.push('  .d-shell-mobile-trigger {');
+  lines.push('    display: inline-flex;');
+  lines.push('  }');
+  lines.push('  .d-shell-mobile-backdrop[data-visible="true"] {');
+  lines.push('    display: block;');
   lines.push('  }');
   lines.push('}');
   lines.push('');
