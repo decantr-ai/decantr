@@ -1349,9 +1349,22 @@ export function buildEssenceV3(
       content_gap: densityLevelMap[options.density] || '_gap4',
     },
     typography: {
-      scale: themeHints?.typography?.scale || 'modular',
-      heading_weight: themeHints?.typography?.heading_weight || 600,
-      body_weight: themeHints?.typography?.body_weight || 400,
+      // Coerce: 5 historical themes stored typography.scale as a numeric
+      // ratio (e.g., 1.15) instead of a string enum, which fails the v3
+      // essence schema (`/dna/typography/scale: must be string`). Treat
+      // any non-string as missing and fall back to the canonical 'modular'.
+      scale:
+        typeof themeHints?.typography?.scale === 'string'
+          ? themeHints.typography.scale
+          : 'modular',
+      heading_weight:
+        typeof themeHints?.typography?.heading_weight === 'number'
+          ? themeHints.typography.heading_weight
+          : 600,
+      body_weight:
+        typeof themeHints?.typography?.body_weight === 'number'
+          ? themeHints.typography.body_weight
+          : 400,
     },
     color: {
       palette: 'semantic',
