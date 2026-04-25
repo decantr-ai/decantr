@@ -1300,6 +1300,189 @@ export function generateTreatmentCSS(
     ['color', 'var(--d-accent)'],
     ['font-weight', '600'],
   ]);
+  // ── Data-viz Primitives (v2.1 D3) ──
+  // Last hand-rolled territory before this PR. Each primitive replaces
+  // a category of inline SVG / CSS that scaffolds previously composed
+  // ad-hoc. All read from token vars so themes can tune appearance.
+
+  // Timeline rail — vertical timeline with dotted markers
+  emitRule('.d-timeline-rail', [
+    ['position', 'relative'],
+    ['padding-left', '2rem'],
+  ]);
+  emitRule('.d-timeline-rail::before', [
+    ['content', "''"],
+    ['position', 'absolute'],
+    ['left', '0.5rem'],
+    ['top', '0.5rem'],
+    ['bottom', '0.5rem'],
+    ['width', '2px'],
+    ['background', 'var(--d-border)'],
+  ]);
+  emitRule('.d-timeline-dot', [
+    ['position', 'relative'],
+    ['margin-bottom', '1rem'],
+  ]);
+  emitRule('.d-timeline-dot::before', [
+    ['content', "''"],
+    ['position', 'absolute'],
+    ['left', '-1.5rem'],
+    ['top', '0.5rem'],
+    ['width', '0.625rem'],
+    ['height', '0.625rem'],
+    ['border-radius', '50%'],
+    ['background', 'var(--d-border)'],
+    ['border', '2px solid var(--d-bg)'],
+    ['box-sizing', 'border-box'],
+  ]);
+  emitRule('.d-timeline-dot[data-state="active"]::before', [['background', 'var(--d-primary)']]);
+  emitRule('.d-timeline-dot[data-state="done"]::before', [['background', 'var(--d-success)']]);
+  emitRule('.d-timeline-dot[data-state="error"]::before', [['background', 'var(--d-error)']]);
+  emitRule('.d-timeline-dot[data-state="warning"]::before', [['background', 'var(--d-warning)']]);
+
+  // Sparkline — small inline trend SVG. Author renders the SVG; treatments
+  // style stroke + area + trend variants.
+  emitRule('.d-sparkline', [
+    ['display', 'inline-block'],
+    ['vertical-align', 'middle'],
+    ['height', 'var(--d-sparkline-height, 1.5rem)'],
+    ['width', 'var(--d-sparkline-width, 5rem)'],
+  ]);
+  emitRule('.d-sparkline-path', [
+    ['fill', 'none'],
+    ['stroke', 'var(--d-primary)'],
+    ['stroke-width', '1.5'],
+    ['stroke-linecap', 'round'],
+    ['stroke-linejoin', 'round'],
+  ]);
+  emitRule('.d-sparkline-area', [
+    ['fill', 'color-mix(in srgb, var(--d-primary) 15%, transparent)'],
+    ['stroke', 'none'],
+  ]);
+  emitRule('.d-sparkline[data-trend="up"] .d-sparkline-path', [['stroke', 'var(--d-success)']]);
+  emitRule('.d-sparkline[data-trend="up"] .d-sparkline-area', [
+    ['fill', 'color-mix(in srgb, var(--d-success) 15%, transparent)'],
+  ]);
+  emitRule('.d-sparkline[data-trend="down"] .d-sparkline-path', [['stroke', 'var(--d-error)']]);
+  emitRule('.d-sparkline[data-trend="down"] .d-sparkline-area', [
+    ['fill', 'color-mix(in srgb, var(--d-error) 15%, transparent)'],
+  ]);
+
+  // Intent radar — concentric ring backdrop for confidence/score wheels
+  emitRule('.d-intent-radar', [
+    ['position', 'relative'],
+    ['width', 'var(--d-radar-size, 200px)'],
+    ['height', 'var(--d-radar-size, 200px)'],
+  ]);
+  emitRule('.d-intent-radar-ring', [
+    ['position', 'absolute'],
+    ['border-radius', '50%'],
+    ['border', '1px solid var(--d-border)'],
+    ['inset', '0'],
+  ]);
+  emitRule('.d-intent-radar-ring[data-level="2"]', [['inset', '12.5%']]);
+  emitRule('.d-intent-radar-ring[data-level="3"]', [['inset', '25%']]);
+  emitRule('.d-intent-radar-ring[data-level="4"]', [['inset', '37.5%']]);
+  emitRule('.d-intent-radar-ring[data-level="5"]', [['inset', '50%']]);
+  emitRule('.d-intent-radar-axis', [
+    ['position', 'absolute'],
+    ['top', '50%'],
+    ['left', '50%'],
+    ['width', '50%'],
+    ['height', '1px'],
+    ['background', 'var(--d-border)'],
+    ['transform-origin', '0 0'],
+    ['transform', 'rotate(var(--d-radar-axis-angle, 0deg))'],
+  ]);
+
+  // Waveform — audio/signal waveform path container
+  emitRule('.d-waveform', [
+    ['display', 'block'],
+    ['width', '100%'],
+    ['height', 'var(--d-waveform-height, 3rem)'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-waveform-path', [
+    ['fill', 'color-mix(in srgb, var(--d-primary) 30%, transparent)'],
+    ['stroke', 'var(--d-primary)'],
+    ['stroke-width', '1'],
+  ]);
+  emitRule('.d-waveform[data-state="active"] .d-waveform-path', [
+    ['fill', 'color-mix(in srgb, var(--d-success) 30%, transparent)'],
+    ['stroke', 'var(--d-success)'],
+  ]);
+
+  // QR placeholder — pure CSS placeholder pattern for QR codes
+  emitRule('.d-qr-placeholder', [
+    ['display', 'block'],
+    ['width', 'var(--d-qr-size, 8rem)'],
+    ['height', 'var(--d-qr-size, 8rem)'],
+    [
+      'background',
+      'repeating-linear-gradient(0deg, var(--d-text) 0 4px, transparent 4px 8px), repeating-linear-gradient(90deg, var(--d-text) 0 4px, transparent 4px 8px)',
+    ],
+    ['background-color', 'var(--d-surface)'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['border', '8px solid var(--d-surface)'],
+    ['outline', '1px solid var(--d-border)'],
+  ]);
+
+  // Conic ring — gauge / confidence ring built with conic-gradient
+  emitRule('.d-conic-ring', [
+    ['--d-conic-value', '0.5'],
+    ['width', 'var(--d-conic-size, 4rem)'],
+    ['height', 'var(--d-conic-size, 4rem)'],
+    ['border-radius', '50%'],
+    [
+      'background',
+      'conic-gradient(var(--d-conic-color, var(--d-primary)) 0deg, var(--d-conic-color, var(--d-primary)) calc(var(--d-conic-value) * 360deg), var(--d-border) calc(var(--d-conic-value) * 360deg), var(--d-border) 360deg)',
+    ],
+    ['position', 'relative'],
+    ['display', 'inline-flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+  ]);
+  emitRule('.d-conic-ring::before', [
+    ['content', "''"],
+    ['position', 'absolute'],
+    ['inset', 'var(--d-conic-thickness, 0.5rem)'],
+    ['border-radius', '50%'],
+    ['background', 'var(--d-bg)'],
+  ]);
+  emitRule('.d-conic-ring > *', [
+    ['position', 'relative'],
+    ['z-index', '1'],
+  ]);
+  emitRule('.d-conic-ring[data-state="success"]', [['--d-conic-color', 'var(--d-success)']]);
+  emitRule('.d-conic-ring[data-state="warning"]', [['--d-conic-color', 'var(--d-warning)']]);
+  emitRule('.d-conic-ring[data-state="error"]', [['--d-conic-color', 'var(--d-error)']]);
+
+  // Heatmap cell — single intensity cell. Author sets --d-heatmap-intensity (0..1).
+  emitRule('.d-heatmap-cell', [
+    ['--d-heatmap-intensity', '0'],
+    ['display', 'inline-block'],
+    ['width', 'var(--d-heatmap-cell-size, 0.875rem)'],
+    ['height', 'var(--d-heatmap-cell-size, 0.875rem)'],
+    ['border-radius', '2px'],
+    [
+      'background',
+      'color-mix(in srgb, var(--d-primary) calc(var(--d-heatmap-intensity) * 100%), var(--d-surface))',
+    ],
+    ['border', '1px solid var(--d-border)'],
+    ['vertical-align', 'middle'],
+  ]);
+  emitRule('.d-heatmap-cell[data-status="error"]', [
+    [
+      'background',
+      'color-mix(in srgb, var(--d-error) calc(var(--d-heatmap-intensity) * 100%), var(--d-surface))',
+    ],
+  ]);
+  emitRule('.d-heatmap-cell[data-status="success"]', [
+    [
+      'background',
+      'color-mix(in srgb, var(--d-success) calc(var(--d-heatmap-intensity) * 100%), var(--d-surface))',
+    ],
+  ]);
 
   // ── Theme-scoped overrides (e.g. backdrop-filter) ──
   if (themeOverrideRules.length > 0) {
