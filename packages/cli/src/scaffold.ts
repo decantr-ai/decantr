@@ -1524,6 +1524,8 @@ Pair \`d-card\` with a theme card decorator (e.g., \`carbon-card\`) for hover gl
 | **Body** | \`d-shell-body\` | Scrollable main region. \`data-padding="compact\\|spacious\\|none"\` overrides the default 1rem padding. |
 | **Footer** | \`d-shell-footer\` | Narrow band below the body with top border. |
 | **Centered card** | \`d-shell-centered-card\` | The content parent inside \`d-shell[data-layout="centered"]\`. Caps width at 28rem. |
+| **Mobile menu trigger** | \`d-shell-mobile-trigger\` | Hamburger button hidden above \`_md:\`, visible below. Toggles \`data-mobile-open\` on the sibling \`d-shell-sidebar\`. REQUIRED inside \`d-shell-header\` for any \`sidebar-main\` or \`sidebar-aside\` shell — without it, mobile users can't re-open the collapsed nav. |
+| **Mobile backdrop** | \`d-shell-mobile-backdrop\` | Dim scrim shown behind the open sidebar drawer below \`_md:\`. Apply \`data-visible="true"\` when sidebar is open; click to close. Hidden above \`_md:\`. |
 
 **Shell layout recipes:**
 - **Auth / confirmation:** \`d-shell[data-layout="centered"] + d-shell-centered-card\`.
@@ -1532,6 +1534,47 @@ Pair \`d-card\` with a theme card decorator (e.g., \`carbon-card\`) for hover gl
 - **Marketing / public pages:** \`d-shell[data-layout="top-nav-footer"]\` (or bare \`d-shell\`) with \`d-shell-header\` at the top and \`d-shell-body\` + \`d-shell-footer\`.
 
 Do NOT hand-roll \`.shell-sidebar\`, \`.shell-centered\`, \`.shell-tnf\`, \`.shell-aside\`, \`.sidebar-main-layout\`, or similar class names. They exist as treatments.
+
+**Mobile sidebar wiring (REQUIRED for sidebar-main / sidebar-aside shells):**
+
+The sidebar collapses to off-canvas below \`_mdmax:\`. Without an explicit toggle, mobile users get stuck — collapsed sidebar, no way to re-open it. Wire it up like this:
+
+\`\`\`tsx
+function AppShell() {
+  const [navOpen, setNavOpen] = useState(false);
+  return (
+    <div className="d-shell" data-layout="sidebar-main">
+      <aside
+        className="d-shell-sidebar"
+        data-mobile-open={navOpen ? 'true' : undefined}
+      >
+        {/* nav items */}
+      </aside>
+      <div
+        className="d-shell-mobile-backdrop"
+        data-visible={navOpen ? 'true' : undefined}
+        onClick={() => setNavOpen(false)}
+      />
+      <main className="d-shell-main">
+        <header className="d-shell-header">
+          <button
+            className="d-shell-mobile-trigger"
+            aria-label={navOpen ? 'Close navigation' : 'Open navigation'}
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen((v) => !v)}
+          >
+            <Menu size={18} aria-hidden />
+          </button>
+          {/* rest of header */}
+        </header>
+        <div className="d-shell-body">{/* page content */}</div>
+      </main>
+    </div>
+  );
+}
+\`\`\`
+
+The trigger auto-hides above \`_md:\` (where the sidebar is always visible inline) and the backdrop only shows when \`data-visible="true"\` AND viewport is below \`_md:\`. Close-on-route-change is recommended for SPA blueprints — wire \`useEffect\` on \`location.pathname\` to reset \`navOpen\` to false.
 
 ### Theme toggle
 
