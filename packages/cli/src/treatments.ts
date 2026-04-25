@@ -362,18 +362,13 @@ export function generateTreatmentCSS(
     ['border-left', '2px solid var(--d-accent)'],
   ]);
 
-  // Inter-section breathing room. When a d-label[data-anchor] eyebrow
-  // follows ANY sibling element, give it generous top margin so
-  // adjacent sections don't visually collide. The cold-LLM observability
-  // dashboard review surfaced this — "PLATFORM HEALTH" then KPI cards
-  // then "CHARTS" eyebrow rendered with zero gap, the eyebrow bumping
-  // directly against the cards above. The :not(:first-child) variant
-  // keeps the FIRST eyebrow on a page tight against its container top
-  // (where the page padding handles spacing) and only adds the gap
-  // between sections.
-  emitRule('* + .d-label[data-anchor]', [
-    ['margin-top', 'var(--d-section-gap, 2rem)'],
-  ]);
+  // NOTE: inter-section spacing is owned by the parent `d-shell-body`
+  // container's flex `gap`, not by the eyebrow itself. A previous
+  // `* + .d-label[data-anchor]` rule turned out to be fragile because
+  // the adjacent-sibling combinator silently breaks the moment a
+  // SectionHeading wrapper is introduced (which is exactly the kind of
+  // composition the rest of the spec encourages). Putting the gap on
+  // the flow container handles all wrapping shapes uniformly.
 
   // ── 8. Text Link — .d-link ──
   // Chromeless inline anchor. Covers breadcrumbs, footer links, inline
@@ -901,12 +896,28 @@ export function generateTreatmentCSS(
   // /metrics, /traces, /alerts. Wide grid children (KPI cards, chart
   // columns) were overflowing past the viewport because they had no
   // upper bound and the parent flex column wasn't allowed to shrink.
+  // F1 follow-up: d-shell-body is a flex-column with a section-level
+  // gap between its direct children. This is the architectural answer
+  // to the "section eyebrow has no breathing room above it" problem
+  // surfaced by the live observability-platform UX review. Putting
+  // the gap on the FLOW CONTAINER means every direct child block
+  // (eyebrow, headline section, card grid, chart row, table) is spaced
+  // uniformly regardless of internal composition — works whether
+  // section headings are flat or wrapped in a SectionHeading
+  // component, because the container's gap doesn't care about
+  // descendant structure.
+  //
+  // Pages that need to opt out can set `data-flow="tight"` (no gap)
+  // or wrap a region in their own flex container with a different gap.
   emitRule('.d-shell-body', [
     ['flex', '1'],
     ['min-width', '0'],
     ['overflow-y', 'auto'],
     ['overflow-x', 'clip'],
     ['padding', '1rem'],
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['gap', 'var(--d-section-gap, 2rem)'],
   ]);
 
   // Body size variants.
@@ -915,6 +926,15 @@ export function generateTreatmentCSS(
   emitRule('.d-shell-body[data-padding="spacious"]', [['padding', '1.5rem']]);
 
   emitRule('.d-shell-body[data-padding="none"]', [['padding', '0']]);
+
+  // Flow variants — let pages opt out of the default section gap when
+  // they need tighter (or zero) inter-block spacing.
+  emitRule('.d-shell-body[data-flow="tight"]', [['gap', '0.75rem']]);
+
+  emitRule('.d-shell-body[data-flow="none"]', [
+    ['display', 'block'],
+    ['gap', '0'],
+  ]);
 
   // Footer — narrow band below body.
   emitRule('.d-shell-footer', [
