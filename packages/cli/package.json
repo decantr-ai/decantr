@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "1.7.13",
+  "version": "1.7.14",
   "description": "Decantr CLI — scaffold, audit, and maintain Decantr projects from the terminal",
   "author": "Decantr AI",
   "license": "MIT",
@@ -31,7 +31,9 @@
     "certify:blueprints": "pnpm build && node scripts/certify-blueprints.mjs",
     "certify:workflows": "pnpm build && node scripts/certify-workflows.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build",
+    "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
     "@decantr/core": "workspace:*",
