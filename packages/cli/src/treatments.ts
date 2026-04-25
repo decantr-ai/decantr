@@ -354,10 +354,25 @@ export function generateTreatmentCSS(
     ['margin-bottom', 'calc(var(--d-label-mb) * var(--d-density-scale, 1))'],
   ]);
 
-  // Anchored section header variant — accent border
+  // Anchored section header variant — accent border. Used as the
+  // section eyebrow (e.g., "PLATFORM HEALTH", "CHARTS") that marks
+  // the start of a new content section.
   emitRule('.d-label[data-anchor]', [
     ['padding-left', 'var(--d-label-px)'],
     ['border-left', '2px solid var(--d-accent)'],
+  ]);
+
+  // Inter-section breathing room. When a d-label[data-anchor] eyebrow
+  // follows ANY sibling element, give it generous top margin so
+  // adjacent sections don't visually collide. The cold-LLM observability
+  // dashboard review surfaced this — "PLATFORM HEALTH" then KPI cards
+  // then "CHARTS" eyebrow rendered with zero gap, the eyebrow bumping
+  // directly against the cards above. The :not(:first-child) variant
+  // keeps the FIRST eyebrow on a page tight against its container top
+  // (where the page padding handles spacing) and only adds the gap
+  // between sections.
+  emitRule('* + .d-label[data-anchor]', [
+    ['margin-top', 'var(--d-section-gap, 2rem)'],
   ]);
 
   // ── 8. Text Link — .d-link ──
