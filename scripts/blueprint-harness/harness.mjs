@@ -97,7 +97,18 @@ function parseArgs(argv) {
 }
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  // LOCAL date, not UTC. The harness writes paths like
+  // /tmp/harness-YYYY-MM-DD-{slug}/ for prep, prompt, smoke, synthesize.
+  // If `today()` returned UTC, evening-PT sessions would prep into
+  // /tmp/harness-2026-04-26-... while a same-session dispatch would still
+  // resolve /tmp/harness-2026-04-25-... → empty workspace, void run.
+  // Local-date keeps every phase aligned for the duration of the operator's
+  // working session.
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function defaultWorkspace(blueprint) {
