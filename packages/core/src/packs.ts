@@ -140,6 +140,16 @@ export interface ScaffoldPackData {
     hotkeySemantics?: HotkeySemantics;
   };
   routes: ScaffoldPackRoute[];
+  /**
+   * Required theme decorator contract — surfaced ONCE at the project level
+   * here, then referenced (not duplicated) in each section pack. Cold-LLM
+   * runs reported the table was duplicated 7-10× across context files
+   * (~270-540 redundant lines per scaffold) when each section pack carried
+   * its own copy. Centralizing in scaffold-pack — which the cold prompt
+   * tells AI to read first — keeps the contract authoritative without the
+   * per-section repetition.
+   */
+  themeDecorators?: ThemeDecoratorEntry[];
 }
 
 export interface CommandPaletteContract {
@@ -386,16 +396,18 @@ export interface ScaffoldPackBuilderOptions {
     }>;
     hotkeySemantics?: HotkeySemantics;
   };
+  /**
+   * Required theme decorator contract surfaced into the scaffold pack.
+   * The scaffold pack is read first per cold-prompt rules, so the canonical
+   * decorator contract belongs here. Section packs reference this without
+   * duplicating to avoid the 7-10× repetition cold-LLM runs reported.
+   */
+  themeDecorators?: ThemeDecoratorEntry[];
 }
 
 export interface SectionPackBuilderOptions extends ScaffoldPackBuilderOptions {
-  /**
-   * Required theme decorator contract for the section pack contract.
-   * When present, the renderer emits a "Required Theme Decorators" table
-   * with class + intent + apply-to slots — same shape as the long-form
-   * section-context renderer in CLI scaffold.ts.
-   */
-  themeDecorators?: ThemeDecoratorEntry[];
+  // themeDecorators inherited from base — section packs render a pointer
+  // to scaffold-pack rather than re-emitting the full table (1.7.22 dedup).
 }
 export interface PagePackBuilderOptions extends ScaffoldPackBuilderOptions {}
 export interface MutationPackBuilderOptions extends ScaffoldPackBuilderOptions {
@@ -755,6 +767,28 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       );
     }
     lines.push('');
+
+    // Required Theme Decorators — canonical project-level decorator contract
+    // (1.7.22). Lives ONCE here in scaffold-pack rather than duplicated across
+    // section packs. Cold prompts read scaffold-pack first, so this is the
+    // earliest authoritative read of the theme's visual identity contract.
+    if (scaffoldPack.data.themeDecorators && scaffoldPack.data.themeDecorators.length > 0) {
+      const escScaffoldCell = (s: string): string => s.replace(/\|/g, '\\|');
+      lines.push(`## Required Theme Decorators (${scaffoldPack.data.theme.id})`);
+      lines.push('');
+      lines.push(
+        'These classes carry the active theme\'s visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these across all sections — without them, every page reads as "themed colors only" with no theme character. Section packs reference this table; the contract is project-wide.',
+      );
+      lines.push('');
+      lines.push('| Class | Intent | Apply to |');
+      lines.push('|-------|--------|----------|');
+      for (const entry of scaffoldPack.data.themeDecorators) {
+        lines.push(
+          `| \`.${entry.class}\` | ${escScaffoldCell(entry.intent)} | ${escScaffoldCell(entry.applyTo)} |`,
+        );
+      }
+      lines.push('');
+    }
   }
 
   if (pack.packType === 'section') {
@@ -812,11 +846,16 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push('');
     }
 
-    // Required Theme Decorators — strong contract surfaced in the compact pack.
-    // Cold prompts instruct AI to read packs first, so the decorator contract
-    // has to be present here, not just in the long-form section-{id}.md file.
-    // Mirrors the renderer in CLI scaffold.ts:generateSectionContext.
+    // Theme decorators pointer — full table lives in scaffold-pack.md (1.7.22
+    // dedup). F2 Phase 1 cold-LLM runs flagged 7-10× duplication of the same
+    // table across section packs (~270-540 redundant lines per scaffold). The
+    // canonical contract now lives ONCE in scaffold-pack; section packs cite
+    // the theme id and point readers there. Section-pack data still carries
+    // themeDecorators if explicitly set (legacy support), but the renderer
+    // prefers the pointer form unless a section-specific override is needed.
     if (sectionPack.data.themeDecorators && sectionPack.data.themeDecorators.length > 0) {
+      // Legacy/override path — render the full table. Kept for back-compat
+      // with consumers that still pass themeDecorators directly.
       const escCell = (s: string): string => s.replace(/\|/g, '\\|');
       lines.push(`## Required Theme Decorators (${sectionPack.data.theme.id})`);
       lines.push('');
@@ -831,6 +870,14 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
           `| \`.${entry.class}\` | ${escCell(entry.intent)} | ${escCell(entry.applyTo)} |`,
         );
       }
+      lines.push('');
+    } else {
+      // Default path (1.7.22+) — pointer to scaffold-pack's canonical table.
+      lines.push('## Theme Decorators');
+      lines.push('');
+      lines.push(
+        `Theme \`${sectionPack.data.theme.id}\` decorators are documented ONCE in \`scaffold-pack.md\` under "Required Theme Decorators". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md "Decorator Quick Reference" for the same table.`,
+      );
       lines.push('');
     }
   }
@@ -1177,6 +1224,9 @@ export function buildScaffoldPack(
       features: appNode.features,
       navigation: options.navigation,
       routes,
+      ...(options.themeDecorators && options.themeDecorators.length > 0
+        ? { themeDecorators: options.themeDecorators }
+        : {}),
     },
     renderedMarkdown: '',
   };
@@ -1508,6 +1558,22 @@ export async function compileExecutionPackBundle(
       ? (navMeta.command_palette as CommandPaletteContract)
       : Boolean(navMeta?.command_palette);
 
+  // Compose theme decorator contract from registry data once and reuse for
+  // both scaffold pack (canonical) and section packs (reference). Filter to
+  // entries with the minimum data needed to render a useful row.
+  const themeDecorators: ThemeDecoratorEntry[] | undefined = (() => {
+    const defs = pipeline.registryTheme?.decorator_definitions;
+    if (!defs) return undefined;
+    const entries: ThemeDecoratorEntry[] = [];
+    for (const [name, def] of Object.entries(defs)) {
+      const intent = def.intent || def.description || '';
+      const applyTo = (def.usage || []).join(', ');
+      if (!intent && !applyTo) continue;
+      entries.push({ class: name, intent, applyTo });
+    }
+    return entries.length > 0 ? entries : undefined;
+  })();
+
   const scaffold = buildScaffoldPack(pipeline.ir, {
     target: sharedTarget,
     navigation: {
@@ -1539,32 +1605,20 @@ export async function compileExecutionPackBundle(
         ? { hotkeySemantics: navMeta.hotkey_semantics as HotkeySemantics }
         : {}),
     },
+    ...(themeDecorators ? { themeDecorators } : {}),
   });
   const review = buildReviewPack(pipeline.ir, {
     target: sharedTarget,
   });
-  // Compose theme decorator contract from registry data once and reuse for
-  // every section pack. Filter to entries that have the minimum data needed
-  // to render a useful row (intent OR description, plus at least one usage
-  // hint). Themes without decorator_definitions resolve to undefined here
-  // and the renderer skips the table entirely.
-  const themeDecorators: ThemeDecoratorEntry[] | undefined = (() => {
-    const defs = pipeline.registryTheme?.decorator_definitions;
-    if (!defs) return undefined;
-    const entries: ThemeDecoratorEntry[] = [];
-    for (const [name, def] of Object.entries(defs)) {
-      const intent = def.intent || def.description || '';
-      const applyTo = (def.usage || []).join(', ');
-      if (!intent && !applyTo) continue;
-      entries.push({ class: name, intent, applyTo });
-    }
-    return entries.length > 0 ? entries : undefined;
-  })();
-
   const sections = listPackSections(effectiveEssence).map((section) =>
     buildSectionPack(pipeline.ir, section, {
       target: sharedTarget,
-      ...(themeDecorators ? { themeDecorators } : {}),
+      // themeDecorators intentionally NOT passed to section packs as of 1.7.22.
+      // Section packs render a one-line pointer to scaffold-pack instead of
+      // duplicating the full decorator table — F2 Phase 1 reports flagged
+      // 7-10× duplication across context files. The decorators are still
+      // available on each section pack as section-pack.theme.id allows the
+      // renderer to compose the pointer with the correct theme name.
     }),
   );
   const pages = listPackPages(effectiveEssence).map((page) =>

@@ -1437,6 +1437,26 @@ import './styles/treatments.css';            // Treatments + theme decorators
 import './styles/global.css';                // Resets
 \`\`\`
 
+### Atoms in 5 minutes — DO NOT inline-style layout, spacing, or typography
+
+\`@decantr/css\` is your default tool for layout, spacing, sizing, flex/grid, position, typography. Anywhere you'd reach for \`style={{ ... }}\` to set those properties, use \`css('...')\` instead.
+
+| ❌ Inline (DO NOT) | ✅ Atom (DO) |
+|--------------------|------------|
+| \`style={{ display: 'flex', gap: '1rem' }}\` | \`className={css('_flex _gap4')}\` |
+| \`style={{ flexDirection: 'column', alignItems: 'center' }}\` | \`className={css('_col _items-center')}\` |
+| \`style={{ padding: '1rem 1.5rem' }}\` | \`className={css('_py4 _px6')}\` |
+| \`style={{ width: '100%', maxWidth: '40rem' }}\` | \`className={css('_w-full _maxw[40rem]')}\` |
+| \`style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}\` | \`className={css('_grid _gc3')}\` |
+| \`style={{ position: 'sticky', top: 0 }}\` | \`className={css('_sticky _t0')}\` |
+| \`style={{ marginInline: 'auto' }}\` | \`className={css('_mxauto')}\` |
+
+**Inline \`style={{ ... }}\` is ONLY acceptable for these cases:**
+1. **CSS custom property writes** — \`style={{ '--d-stagger-index': i }}\` (the contract REQUIRES inline writes for dynamic CSS-var values that loop variables / animation indices feed into).
+2. **Truly dynamic geometry** — computed positions for draggable nodes, real-time pan/zoom \`transform\` values, dynamic gradient hue interpolation, layout coordinates calculated from data.
+
+If you're writing >5 inline styles in a component for layout/spacing/sizing, **stop** and migrate them to atoms. Inline styles for static visual values (colors, gradients, shadows, radii, font-size, padding, margin, gap, flex/grid layout) are a contract violation — \`decantr audit\` will surface them.
+
 ### Runtime Rules
 
 - Use the real \`@decantr/css\` runtime for atoms. If \`package.json\` does not already depend on \`@decantr/css\`, add it before building.
