@@ -75,6 +75,20 @@
           "items": {
             "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
           }
+        },
+        "themeDecorators": {
+          "type": "array",
+          "description": "Canonical theme decorator contract — class + intent + slot hint. Lives ONCE in scaffold-pack and is referenced (not duplicated) by section packs as of 1.7.22.",
+          "items": {
+            "type": "object",
+            "required": ["class", "intent", "applyTo"],
+            "additionalProperties": false,
+            "properties": {
+              "class": { "type": "string", "minLength": 1 },
+              "intent": { "type": "string" },
+              "applyTo": { "type": "string" }
+            }
+          }
         }
       },
       "additionalProperties": false
