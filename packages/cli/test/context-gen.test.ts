@@ -82,22 +82,25 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('```css');
   });
 
-  it('renders section decorators as a strong "Required Theme Decorators" table', () => {
-    // The previous "compact usage list" rendered decorators as a soft bullet
-    // list — `**Section decorators:**\n- \`.x\` — desc`. Cold-LLM evidence
-    // (ai-chatbot scaffold on luminarum) showed AI assistants weight that
-    // format as "available not required" and skip applying decorators,
-    // shipping pages with theme tokens but no theme personality. The fix is
-    // a hard markdown table with class + description framed as "Required" so
-    // the AI reads it as contract, not suggestion.
+  it('renders a compact decorator pointer that points to the section pack', () => {
+    // F2 Phase 1 cold-LLM runs surfaced that the full Required-Theme-Decorators
+    // table was being duplicated across the section pack (1.7.20), the section
+    // long-form context, and DECANTR.md — three copies of the same data,
+    // ~30-60% of section file mass, no added information. 1.7.21 keeps the
+    // hard table in the section pack (which the cold prompt reads first) and
+    // collapses the long-form rendering to a single pointer line so cold AIs
+    // know decorators exist without re-reading the table 10×.
     const result = generateSectionContext(makeSectionInput());
 
-    expect(result).toContain('## Required Theme Decorators (midnight)');
-    expect(result).toContain("active theme's visual identity");
-    expect(result).toContain('| Class | Description |');
-    expect(result).toContain('| `.surface-card` | Surface background with border |');
-    expect(result).toContain('| `.glass-panel` | Backdrop blur glass effect |');
-    // The old bullet-list rendering should NOT appear.
+    expect(result).toContain('**Theme decorators:**');
+    expect(result).toContain('`midnight-*` classes');
+    expect(result).toContain('section-dashboard-pack.md');
+    expect(result).toContain('MUST apply');
+    // The full table should NOT appear in the long-form file anymore.
+    expect(result).not.toContain('## Required Theme Decorators');
+    expect(result).not.toContain('| Class | Description |');
+    expect(result).not.toContain('| Class | Intent | Apply to |');
+    // The old bullet-list rendering should ALSO not appear.
     expect(result).not.toContain('**Section decorators:**');
   });
 

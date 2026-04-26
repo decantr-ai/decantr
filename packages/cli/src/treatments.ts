@@ -958,6 +958,529 @@ export function generateTreatmentCSS(
     ['margin-inline', 'auto'],
   ]);
 
+  // ── 13.5 Additional Shell Layouts — F2 Phase 1 finding ──
+  // Audit of decantr-content registry vs treatments.css revealed 10 of 15
+  // declared shells had no matching `[data-layout="..."]` rule. Cold AI
+  // scaffolds were forced to hand-roll layouts (creating exactly the
+  // inline-style violations `decantr audit` then warned about). Each
+  // shell treatment below maps to a real shell.json spec in decantr-content.
+
+  // ── Vertical column variants (header + body, no footer) ──
+  // top-nav-main: 52px sticky header + scrollable body. Default for
+  // utility/content surfaces that don't need a footer rail.
+  emitRule('.d-shell[data-layout="top-nav-main"]', [
+    ['flex-direction', 'column'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // minimal-header: slim 44px sticky header for focused/checkout flows.
+  // Functionally same flex-column shape; downstream pages set the slim
+  // header height via inline atoms or by overriding the d-shell-header
+  // padding directly.
+  emitRule('.d-shell[data-layout="minimal-header"]', [
+    ['flex-direction', 'column'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // full-bleed: edge-to-edge content, no shared insets. Used for canvas
+  // surfaces, immersive editor experiences. Hides nav by default per spec.
+  emitRule('.d-shell[data-layout="full-bleed"]', [
+    ['flex-direction', 'column'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-shell[data-layout="full-bleed"] .d-shell-body', [['padding', '0']]);
+
+  // recipefork-top-nav: recipefork-specific 64px top-nav variant. Same
+  // column shape as top-nav-main but taller header for branded marketing.
+  emitRule('.d-shell[data-layout="recipefork-top-nav"]', [
+    ['flex-direction', 'column'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+
+  // ── Grid-based shells ──
+
+  // canvas-overlay: full-bleed canvas with optional overlay panels (toolbox,
+  // properties inspector). Header sits above canvas; body fills remainder
+  // and acts as the canvas paint area (no internal scroll). Use d-shell-overlay
+  // for floating tool/property panels positioned absolutely over the canvas.
+  emitRule('.d-shell[data-layout="canvas-overlay"]', [
+    ['display', 'grid'],
+    ['grid-template-rows', '52px 1fr'],
+    ['grid-template-columns', '1fr'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+    ['position', 'relative'],
+  ]);
+  emitRule('.d-shell[data-layout="canvas-overlay"] .d-shell-body', [
+    ['padding', '0'],
+    ['overflow', 'hidden'],
+    ['position', 'relative'],
+  ]);
+
+  // chat-portal: 280px conversation sidebar + chat thread + anchored input.
+  // Used by ai-chatbot archetype. The body acts as a column with scrollable
+  // message list above an anchored input bar.
+  emitRule('.d-shell[data-layout="chat-portal"]', [
+    ['display', 'grid'],
+    ['grid-template-columns', '280px 1fr'],
+    ['grid-template-rows', '52px 1fr'],
+    ['grid-template-areas', '"nav header" "nav body"'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-shell[data-layout="chat-portal"] .d-shell-sidebar', [['grid-area', 'nav']]);
+  emitRule('.d-shell[data-layout="chat-portal"] .d-shell-header', [['grid-area', 'header']]);
+  emitRule('.d-shell[data-layout="chat-portal"] .d-shell-body', [['grid-area', 'body']]);
+  lines.push('@media (max-width: 767.98px) {');
+  lines.push('  .d-shell[data-layout="chat-portal"] {');
+  lines.push('    grid-template-columns: 1fr;');
+  lines.push('    grid-template-areas: "header" "body";');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="chat-portal"] .d-shell-sidebar {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
+  // copilot-overlay: main app + right-side AI copilot drawer. The most-cited
+  // missing shell in F2/ai-copilot-shell harness. Header spans both columns;
+  // body and copilot share the second row. Copilot collapses to 0 width
+  // when toggled off; pair with d-shell-copilot child region.
+  emitRule('.d-shell[data-layout="copilot-overlay"]', [
+    ['display', 'grid'],
+    ['grid-template-columns', '1fr 360px'],
+    ['grid-template-rows', '56px 1fr'],
+    ['grid-template-areas', '"header header" "body copilot"'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+    ['transition', 'grid-template-columns 0.2s ease'],
+  ]);
+  emitRule('.d-shell[data-layout="copilot-overlay"] .d-shell-header', [['grid-area', 'header']]);
+  emitRule('.d-shell[data-layout="copilot-overlay"] .d-shell-body', [['grid-area', 'body']]);
+  emitRule('.d-shell[data-layout="copilot-overlay"] .d-shell-copilot', [['grid-area', 'copilot']]);
+  // Collapsed state — copilot pane closes via data-collapsed on the shell.
+  emitRule('.d-shell[data-layout="copilot-overlay"][data-copilot-collapsed="true"]', [
+    ['grid-template-columns', '1fr 0px'],
+  ]);
+  lines.push('@media (max-width: 767.98px) {');
+  lines.push('  .d-shell[data-layout="copilot-overlay"] {');
+  lines.push('    grid-template-columns: 1fr;');
+  lines.push('    grid-template-areas: "header" "body";');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="copilot-overlay"] .d-shell-copilot {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="copilot-overlay"] .d-shell-copilot[data-mobile-open="true"] {');
+  lines.push('    display: flex;');
+  lines.push('    position: fixed;');
+  lines.push('    inset: 0 0 0 auto;');
+  lines.push('    width: min(360px, 100vw);');
+  lines.push('    z-index: 50;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
+  // terminal-split: top status-bar + body (split panes) + bottom hotkey-bar.
+  // Used by terminal/IDE-like blueprints. The body region is a split-pane
+  // container; consumers compose actual panes inside.
+  emitRule('.d-shell[data-layout="terminal-split"]', [
+    ['display', 'grid'],
+    ['grid-template-rows', '24px 1fr 28px'],
+    ['grid-template-columns', '1fr'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-shell[data-layout="terminal-split"] .d-shell-body', [['overflow', 'hidden']]);
+
+  // three-column-browser: classic mail/file-browser shape — nav + list + detail.
+  // Header spans all three columns; nav 220px, list 320px, detail flex.
+  emitRule('.d-shell[data-layout="three-column-browser"]', [
+    ['display', 'grid'],
+    ['grid-template-columns', '220px 320px 1fr'],
+    ['grid-template-rows', '52px 1fr'],
+    ['grid-template-areas', '"header header header" "nav list detail"'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-shell[data-layout="three-column-browser"] .d-shell-header', [
+    ['grid-area', 'header'],
+  ]);
+  emitRule('.d-shell[data-layout="three-column-browser"] .d-shell-sidebar', [['grid-area', 'nav']]);
+  emitRule('.d-shell[data-layout="three-column-browser"] .d-shell-list', [['grid-area', 'list']]);
+  emitRule('.d-shell[data-layout="three-column-browser"] .d-shell-main', [['grid-area', 'detail']]);
+  lines.push('@media (max-width: 1023.98px) {');
+  lines.push('  .d-shell[data-layout="three-column-browser"] {');
+  lines.push('    grid-template-columns: 320px 1fr;');
+  lines.push('    grid-template-areas: "header header" "list detail";');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="three-column-browser"] .d-shell-sidebar {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('@media (max-width: 767.98px) {');
+  lines.push('  .d-shell[data-layout="three-column-browser"] {');
+  lines.push('    grid-template-columns: 1fr;');
+  lines.push('    grid-template-areas: "header" "detail";');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="three-column-browser"] .d-shell-list {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
+  // workspace-aside: 3-column collaborative editor — page tree + body + comments
+  // aside. Most-cited missing shell in F2/realtime-collaboration-workspace
+  // harness. Nav (left) spans both rows; header spans body + aside columns.
+  emitRule('.d-shell[data-layout="workspace-aside"]', [
+    ['display', 'grid'],
+    ['grid-template-columns', '240px 1fr 280px'],
+    ['grid-template-rows', '52px 1fr'],
+    ['grid-template-areas', '"nav header header" "nav body aside"'],
+    ['height', '100vh'],
+    ['overflow', 'hidden'],
+  ]);
+  emitRule('.d-shell[data-layout="workspace-aside"] .d-shell-sidebar', [['grid-area', 'nav']]);
+  emitRule('.d-shell[data-layout="workspace-aside"] .d-shell-header', [['grid-area', 'header']]);
+  emitRule('.d-shell[data-layout="workspace-aside"] .d-shell-body', [['grid-area', 'body']]);
+  emitRule('.d-shell[data-layout="workspace-aside"] .d-shell-aside', [['grid-area', 'aside']]);
+  lines.push('@media (max-width: 1279.98px) {');
+  lines.push('  .d-shell[data-layout="workspace-aside"] {');
+  lines.push('    grid-template-columns: 240px 1fr;');
+  lines.push('    grid-template-areas: "nav header" "nav body";');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="workspace-aside"] .d-shell-aside {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('@media (max-width: 1023.98px) {');
+  lines.push('  .d-shell[data-layout="workspace-aside"] {');
+  lines.push('    grid-template-columns: 1fr;');
+  lines.push('    grid-template-areas: "header" "body";');
+  lines.push('  }');
+  lines.push('  .d-shell[data-layout="workspace-aside"] .d-shell-sidebar {');
+  lines.push('    display: none;');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
+  // ── New child region treatments to support the shells above ──
+
+  // d-shell-list: middle column for three-column browsers (220-320px).
+  // Mail-app inbox list, file browser items list, etc.
+  emitRule('.d-shell-list', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['border-right', '1px solid var(--d-border)'],
+    ['background', 'var(--d-surface)'],
+    ['overflow-y', 'auto'],
+    ['min-width', '0'],
+  ]);
+
+  // d-shell-copilot: right-side AI copilot drawer for copilot-overlay shell.
+  // Frosted glass surface, full-height column with anchored input at bottom.
+  emitRule('.d-shell-copilot', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['border-left', '1px solid var(--d-border)'],
+    ['background', 'var(--d-surface)'],
+    ['overflow', 'hidden'],
+    ['min-width', '0'],
+    ['transition', 'transform 0.2s ease'],
+  ]);
+
+  // d-shell-status-bar: thin top-of-viewport status row for terminal-split.
+  // Use for connection state, project name, current branch, etc.
+  emitRule('.d-shell-status-bar', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['gap', '1rem'],
+    ['padding', '0 0.75rem'],
+    ['font-size', 'var(--d-text-xs)'],
+    ['color', 'var(--d-text-muted)'],
+    ['background', 'var(--d-surface)'],
+    ['border-bottom', '1px solid var(--d-border)'],
+    ['flex-shrink', '0'],
+  ]);
+
+  // d-shell-hotkey-bar: thin bottom-of-viewport hotkey hints row for
+  // terminal-split. Use to display the active key bindings (^P, ^B, ^X, etc.).
+  emitRule('.d-shell-hotkey-bar', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['gap', '0.75rem'],
+    ['padding', '0 0.75rem'],
+    ['font-size', 'var(--d-text-xs)'],
+    ['color', 'var(--d-text-muted)'],
+    ['background', 'var(--d-surface)'],
+    ['border-top', '1px solid var(--d-border)'],
+    ['flex-shrink', '0'],
+  ]);
+
+  // d-shell-overlay: floating tool/property panel positioned absolutely
+  // over the canvas in canvas-overlay shells. Use [data-corner] attribute
+  // to position (top-left, top-right, bottom-left, bottom-right).
+  emitRule('.d-shell-overlay', [
+    ['position', 'absolute'],
+    ['z-index', '10'],
+    ['background', 'var(--d-surface)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius)'],
+    ['box-shadow', 'var(--d-elevation-3, 0 6px 16px rgba(0,0,0,0.18))'],
+    ['padding', '0.75rem'],
+    ['min-width', '200px'],
+    ['max-width', '320px'],
+  ]);
+  emitRule('.d-shell-overlay[data-corner="top-left"]', [
+    ['top', '1rem'],
+    ['left', '1rem'],
+  ]);
+  emitRule('.d-shell-overlay[data-corner="top-right"]', [
+    ['top', '1rem'],
+    ['right', '1rem'],
+  ]);
+  emitRule('.d-shell-overlay[data-corner="bottom-left"]', [
+    ['bottom', '1rem'],
+    ['left', '1rem'],
+  ]);
+  emitRule('.d-shell-overlay[data-corner="bottom-right"]', [
+    ['bottom', '1rem'],
+    ['right', '1rem'],
+  ]);
+
+  // ── 13.7 Universal Utility Treatments — F2 Phase 1 finding ──
+  // Cold AI runs across 4 paradigm clusters all named the same missing
+  // primitives. Cold agents either hand-rolled inline styles or (worse)
+  // composed approximations from atoms that miss the semantic intent.
+  // Shipping these eliminates ~80 inline-style instances per scaffold.
+
+  // d-tooltip: small popover anchored near a hover/focus target. Pair with
+  // a [data-position] attribute (top|right|bottom|left) and parent
+  // position:relative. Render via React state; Decantr ships only the
+  // visual treatment, not the positioning logic.
+  emitRule('.d-tooltip', [
+    ['position', 'absolute'],
+    ['z-index', '20'],
+    ['padding', '0.375rem 0.625rem'],
+    ['font-size', 'var(--d-text-xs)'],
+    ['line-height', 'var(--d-leading-snug)'],
+    ['color', 'var(--d-bg)'],
+    ['background', 'var(--d-text)'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    ['white-space', 'nowrap'],
+    ['pointer-events', 'none'],
+    ['box-shadow', 'var(--d-elevation-2, 0 4px 12px rgba(0,0,0,0.15))'],
+  ]);
+  emitRule('.d-tooltip[data-position="top"]', [
+    ['bottom', '100%'],
+    ['left', '50%'],
+    ['transform', 'translate(-50%, -0.375rem)'],
+  ]);
+  emitRule('.d-tooltip[data-position="bottom"]', [
+    ['top', '100%'],
+    ['left', '50%'],
+    ['transform', 'translate(-50%, 0.375rem)'],
+  ]);
+  emitRule('.d-tooltip[data-position="left"]', [
+    ['right', '100%'],
+    ['top', '50%'],
+    ['transform', 'translate(-0.375rem, -50%)'],
+  ]);
+  emitRule('.d-tooltip[data-position="right"]', [
+    ['left', '100%'],
+    ['top', '50%'],
+    ['transform', 'translate(0.375rem, -50%)'],
+  ]);
+
+  // d-empty-state: centered container for empty UI states. Composes with
+  // d-icon-well + d-title + d-caption + d-interactive for the standard
+  // "no items yet" pattern.
+  emitRule('.d-empty-state', [
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['gap', '0.75rem'],
+    ['padding', '3rem 1.5rem'],
+    ['text-align', 'center'],
+    ['color', 'var(--d-text-muted)'],
+  ]);
+
+  // d-breadcrumb / d-breadcrumb-item / d-breadcrumb-separator: page hierarchy
+  // navigation. Use a parent with d-breadcrumb (a flex row) and children
+  // with d-breadcrumb-item (link styling) interleaved with d-breadcrumb-separator
+  // (chevron or slash). Active item gets [data-current="true"].
+  emitRule('.d-breadcrumb', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['gap', '0.375rem'],
+    ['flex-wrap', 'wrap'],
+    ['font-size', 'var(--d-text-sm)'],
+    ['color', 'var(--d-text-muted)'],
+  ]);
+  emitRule('.d-breadcrumb-item', [
+    ['color', 'var(--d-text-muted)'],
+    ['text-decoration', 'none'],
+    [
+      'transition',
+      'color var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-breadcrumb-item:hover', [['color', 'var(--d-text)']]);
+  emitRule('.d-breadcrumb-item[data-current="true"]', [
+    ['color', 'var(--d-text)'],
+    ['font-weight', 'var(--d-weight-medium)'],
+    ['pointer-events', 'none'],
+  ]);
+  emitRule('.d-breadcrumb-separator', [
+    ['color', 'var(--d-text-muted)'],
+    ['opacity', '0.5'],
+    ['user-select', 'none'],
+  ]);
+
+  // d-avatar: circular avatar with size variants. Pair with [data-size] for
+  // sm (24px), md (32px), lg (48px). Default md.
+  emitRule('.d-avatar', [
+    ['display', 'inline-flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['width', '32px'],
+    ['height', '32px'],
+    ['border-radius', '50%'],
+    ['background', 'var(--d-surface)'],
+    ['color', 'var(--d-text)'],
+    ['font-size', 'var(--d-text-xs)'],
+    ['font-weight', 'var(--d-weight-medium)'],
+    ['overflow', 'hidden'],
+    ['flex-shrink', '0'],
+    ['border', '1px solid var(--d-border)'],
+  ]);
+  emitRule('.d-avatar[data-size="sm"]', [
+    ['width', '24px'],
+    ['height', '24px'],
+  ]);
+  emitRule('.d-avatar[data-size="lg"]', [
+    ['width', '48px'],
+    ['height', '48px'],
+    ['font-size', 'var(--d-text-sm)'],
+  ]);
+
+  // d-icon-well: tinted square icon container — the "feature card" icon
+  // tile, the "empty-state" iconography, the "bullet" decoration. Pair
+  // with a Lucide icon child.
+  emitRule('.d-icon-well', [
+    ['display', 'inline-flex'],
+    ['align-items', 'center'],
+    ['justify-content', 'center'],
+    ['width', '48px'],
+    ['height', '48px'],
+    ['border-radius', 'var(--d-radius)'],
+    ['background', 'color-mix(in srgb, var(--d-primary) 12%, transparent)'],
+    ['color', 'var(--d-primary)'],
+    ['flex-shrink', '0'],
+  ]);
+  emitRule('.d-icon-well[data-size="sm"]', [
+    ['width', '32px'],
+    ['height', '32px'],
+  ]);
+  emitRule('.d-icon-well[data-size="lg"]', [
+    ['width', '64px'],
+    ['height', '64px'],
+  ]);
+
+  // d-toggle: toggle switch (binary on/off). Visually a pill with sliding
+  // thumb. Use as `<button class="d-toggle" data-on="true|false">`.
+  // Consumer wires the click handler; treatment ships visual state.
+  emitRule('.d-toggle', [
+    ['position', 'relative'],
+    ['display', 'inline-block'],
+    ['width', '36px'],
+    ['height', '20px'],
+    ['border-radius', '9999px'],
+    ['background', 'var(--d-border)'],
+    ['border', 'none'],
+    ['cursor', 'pointer'],
+    ['flex-shrink', '0'],
+    [
+      'transition',
+      'background var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-toggle[data-on="true"]', [['background', 'var(--d-primary)']]);
+  emitRule('.d-toggle::after', [
+    ['content', '""'],
+    ['position', 'absolute'],
+    ['top', '2px'],
+    ['left', '2px'],
+    ['width', '16px'],
+    ['height', '16px'],
+    ['border-radius', '50%'],
+    ['background', 'var(--d-bg)'],
+    [
+      'transition',
+      'transform var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-toggle[data-on="true"]::after', [['transform', 'translateX(16px)']]);
+  emitRule('.d-toggle:focus-visible', [
+    ['outline', '2px solid var(--d-primary)'],
+    ['outline-offset', '2px'],
+  ]);
+
+  // d-toc: sticky table-of-contents nav. Used in legal/long-form prose
+  // pages. Renders as a flex column anchored to the right. Pair with
+  // d-toc-item for individual links (active state via [data-current="true"]).
+  emitRule('.d-toc', [
+    ['position', 'sticky'],
+    ['top', '1rem'],
+    ['display', 'flex'],
+    ['flex-direction', 'column'],
+    ['gap', '0.25rem'],
+    ['padding', '1rem'],
+    ['font-size', 'var(--d-text-sm)'],
+    ['border-left', '2px solid var(--d-border)'],
+    ['max-height', 'calc(100vh - 2rem)'],
+    ['overflow-y', 'auto'],
+  ]);
+  emitRule('.d-toc-item', [
+    ['color', 'var(--d-text-muted)'],
+    ['text-decoration', 'none'],
+    ['padding', '0.25rem 0.5rem'],
+    ['border-radius', 'var(--d-radius-sm)'],
+    [
+      'transition',
+      'color var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1)), background var(--d-motion-fast, 150ms) var(--d-motion-ease-out, cubic-bezier(0,0,0.2,1))',
+    ],
+  ]);
+  emitRule('.d-toc-item:hover', [
+    ['color', 'var(--d-text)'],
+    ['background', 'var(--d-surface)'],
+  ]);
+  emitRule('.d-toc-item[data-current="true"]', [
+    ['color', 'var(--d-primary)'],
+    ['font-weight', 'var(--d-weight-medium)'],
+  ]);
+
+  // d-popover: generic positioned popover for menus, dropdowns, slash menus.
+  // Use as a menu/listbox parent. Anchor positioning is consumer-driven
+  // (e.g. set top/left inline based on trigger rect or use a positioning
+  // library); treatment ships only the visual chrome.
+  emitRule('.d-popover', [
+    ['position', 'absolute'],
+    ['z-index', '30'],
+    ['background', 'var(--d-surface)'],
+    ['border', '1px solid var(--d-border)'],
+    ['border-radius', 'var(--d-radius)'],
+    ['box-shadow', 'var(--d-elevation-3, 0 6px 16px rgba(0,0,0,0.18))'],
+    ['min-width', '200px'],
+    ['max-width', '320px'],
+    ['padding', '0.25rem'],
+    ['overflow', 'hidden'],
+  ]);
+
   // ── 14. Modal + Palette Chrome — .d-modal, .d-palette, .d-kbd ──
   // The v5 harness reported that command_palette is a mandatory feature
   // in every scaffold-pack but Decantr shipped no modal/palette treatments.
