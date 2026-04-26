@@ -235,19 +235,19 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('Read in this order:');
   lines.push(
-    '1. DECANTR.md for the design spec, treatment catalog, motion/typography/elevation tables, and the Interaction Requirements canonical-implementation table.',
+    '1. DECANTR.md for the design spec, "Atoms in 5 minutes" walkthrough, treatment catalog, motion/typography/elevation tables, and the Interaction Requirements canonical-implementation table.',
   );
   lines.push(
-    '2. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
+    '2. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains the route plan, shell layouts, navigation, AND the project-wide "Required Theme Decorators" table (class | intent | apply-to). This table is the authoritative decorator contract; section packs reference it.',
   );
   lines.push(
     '3. .decantr/context/scaffold.md for the broader app overview, topology, route map, and voice guidance.',
   );
   lines.push(
-    '4. Before working on any section, read its matching .decantr/context/section-*-pack.md and then .decantr/context/section-*.md files.',
+    '4. Before working on any section, read its matching .decantr/context/section-*-pack.md (compact contract — pay close attention to the "Section Directives" block; those are non-negotiable execution rules) and then .decantr/context/section-*.md (long-form context with shell internal_layout + slot guidance).',
   );
   lines.push(
-    '5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file.',
+    '5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file. The "Interactions (MUST implement each)" checklist per pattern is contract — see the next section.',
   );
   lines.push('');
   lines.push('═══ INTERACTIONS ARE CONTRACT, NOT GUIDANCE ═══');
@@ -285,22 +285,67 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     '`decantr check --strict` FAILS the build when a declared interaction has no matching implementation. The full canonical-implementation table is in DECANTR.md.',
   );
   lines.push('');
+  lines.push('═══ ATOMS-FIRST FOR LAYOUT — DO NOT INLINE-STYLE ═══');
+  lines.push('');
+  lines.push(
+    'Decantr ships @decantr/css as a runtime atom system (already in package.json). Use atoms via `css(...)` for ALL layout, spacing, sizing, flex/grid, position, and typography sizing — wherever you would otherwise reach for `style={{ display: "flex", gap: "1rem", padding: "1rem", ... }}`.',
+  );
+  lines.push('');
+  lines.push('Mandatory translation (NOT optional):');
+  lines.push(
+    '  ❌ style={{ display: "flex", gap: "1rem" }}        →  ✅ className={css("_flex _gap4")}',
+  );
+  lines.push(
+    '  ❌ style={{ flexDirection: "column" }}              →  ✅ className={css("_col")}',
+  );
+  lines.push(
+    '  ❌ style={{ padding: "1rem 1.5rem" }}               →  ✅ className={css("_py4 _px6")}',
+  );
+  lines.push(
+    '  ❌ style={{ gridTemplateColumns: "repeat(3, 1fr)" }} →  ✅ className={css("_grid _gc3")}',
+  );
+  lines.push(
+    '  ❌ style={{ position: "sticky", top: 0 }}            →  ✅ className={css("_sticky _t0")}',
+  );
+  lines.push(
+    '  ❌ style={{ width: "100%", maxWidth: "40rem" }}      →  ✅ className={css("_w-full _maxw[40rem]")}',
+  );
+  lines.push('');
+  lines.push(
+    'Combine atoms with treatment / decorator strings: `className={css("_flex _col _gap4") + " d-card clean-card"}`.',
+  );
+  lines.push('');
+  lines.push('Inline `style={{...}}` is ONLY acceptable for:');
+  lines.push(
+    '  1. CSS custom-property writes the contract REQUIRES (`style={{ "--d-stagger-index": i }}`, `style={{ "--lum-card-color": accent }}`, etc.)',
+  );
+  lines.push(
+    '  2. Truly dynamic geometry no atom can express (computed pan/zoom transforms, draggable-node positions calculated from data, real-time gradient hue interpolation).',
+  );
+  lines.push('');
+  lines.push(
+    'If you find yourself writing >5 inline styles in a component for static visual values, STOP and migrate to atoms. The full atom reference is in DECANTR.md ("Atoms in 5 minutes" + "Atom Reference"). `decantr check` flags inline-style attributes as a contract violation.',
+  );
+  lines.push('');
   lines.push('═══ TREATMENT SURFACE — USE WHAT EXISTS ═══');
   lines.push('');
   lines.push(
-    '40+ treatment classes ship in src/styles/treatments.css. Reach for these BEFORE inventing equivalent CSS. Eight families to know:',
+    '60+ treatment classes ship in src/styles/treatments.css. Reach for these BEFORE inventing equivalent CSS. Families:',
   );
   lines.push(
     '- Core surfaces: d-interactive (data-variant + data-size), d-surface, d-data + d-data-row/cell/header, d-control, d-section, d-annotation, d-label',
   );
   lines.push(
-    '- Common UI: d-link, d-icon-btn (data-size + data-variant), d-nav-link, d-step-chip, d-divider-{top,bottom,left,right}',
+    '- Common UI: d-link, d-icon-btn (data-size + data-variant), d-nav-link, d-step-chip (data-step-state="pending|active|done"), d-divider-{top,bottom,left,right}',
+  );
+  lines.push(
+    '- Utility primitives (1.7.21): d-tooltip (data-position), d-empty-state, d-breadcrumb + d-breadcrumb-item (data-current) + d-breadcrumb-separator, d-avatar (data-size), d-icon-well (data-size), d-toggle (data-on), d-toc + d-toc-item (data-current), d-popover',
   );
   lines.push(
     '- Spatial / graph: d-agent-node, d-port (data-side, data-active); d-cta-banner; d-interactive[data-variant="dark"]',
   );
   lines.push(
-    '- Shells: d-shell + data-layout="sidebar-main|centered|top-nav-footer|sidebar-aside", d-shell-sidebar, d-shell-main, d-shell-aside, d-shell-header, d-shell-body, d-shell-footer, d-shell-centered-card',
+    '- Shells (14 layouts shipped): d-shell + data-layout="sidebar-main | centered | top-nav-footer | sidebar-aside | top-nav-main | minimal-header | full-bleed | recipefork-top-nav | canvas-overlay | chat-portal | copilot-overlay | terminal-split | three-column-browser | workspace-aside". Child regions: d-shell-sidebar, d-shell-main, d-shell-aside, d-shell-header, d-shell-body, d-shell-footer, d-shell-centered-card, d-shell-list (three-column-browser), d-shell-copilot (copilot-overlay), d-shell-status-bar + d-shell-hotkey-bar (terminal-split), d-shell-overlay (canvas-overlay, with data-corner). d-shell-mobile-trigger + d-shell-mobile-backdrop close the mobile drawer loop.',
   );
   lines.push(
     '- Modal / palette: d-modal (data-align="top"), d-modal-backdrop, d-modal-panel (data-size="sm|lg"), d-palette + d-palette-input/list/row/section, d-kbd, d-hotkey-indicator',
@@ -321,6 +366,15 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     'Token scales are tunable via CSS vars: --d-motion-{instant,fast,base,slow,slower}, --d-text-{xs..6xl}, --d-elevation-{1..5}, --d-tracking-*, --d-leading-*, --d-weight-*. Themes override per-blueprint.',
   );
   lines.push('');
+  lines.push('═══ THEME DECORATOR CONTRACT — APPLY OR THE THEME DOES NOT LAND ═══');
+  lines.push('');
+  lines.push(
+    'Each theme ships 5-15 namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). The full Class | Intent | Apply-to contract for the active theme is in scaffold-pack.md under "Required Theme Decorators". Apply them as additive classes alongside d-* treatments — that is what makes the theme look like the theme rather than "themed colors only."',
+  );
+  lines.push(
+    'Section packs ship a one-line pointer to the scaffold-pack table; the canonical contract is in scaffold-pack.md (also mirrored in DECANTR.md "Decorator Quick Reference" with intent + apply-to + key CSS).',
+  );
+  lines.push('');
   lines.push('═══ HARD RULES (NON-NEGOTIABLE) ═══');
   lines.push('');
   lines.push(
@@ -331,6 +385,12 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   );
   lines.push(
     '- Use lucide-react for ALL iconography (already in package.json). Pick semantic icons (Bot, Activity, Database, Search) over generic ones. Do NOT inline SVGs for icons that have Lucide equivalents.',
+  );
+  lines.push(
+    '- Section Directives (when present in section-*-pack.md) are non-negotiable execution rules. They define layout proportions, treatment stacks (e.g., card-grid uses d-card + d-elevate[1] + d-lift-hover + theme card decorator + d-stagger-children), copy conventions, and pattern-fitness rules per section. Honor them exactly — they encode product-quality decisions the registry author made for this archetype.',
+  );
+  lines.push(
+    '- Filter chip rows / tab strips MUST use d-step-chip with data-step-state, NOT bare d-interactive. d-step-chip ships proper active-fill, hover-tint, and chip-row sizing. Bare buttons make filter rows look like generic SaaS form controls.',
   );
   lines.push('');
   lines.push('═══ IMPLEMENTATION RULES ═══');
@@ -375,7 +435,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('- Build the shell and shared layout first.');
   lines.push("- Then implement each section's pages using the matching section and page packs.");
   lines.push(
-    '- After implementation, run `decantr check`. It runs 8 guard rules including the experiential interactions guard (8th rule, v2.1 C5). It fails strict-mode builds when declared interactions[] are not implemented; the suggestions point at the canonical implementation. `decantr audit` is deprecated — `decantr check` is the unified entry point.',
+    '- After implementation, run `decantr check` (primary gate — 8 guard rules including the experiential interactions guard). It fails strict-mode builds when declared interactions[] are not implemented; the suggestions point at the canonical implementation. Run `decantr audit` (supplementary — surfaces inline-style counts, security hygiene findings, accessibility / auth-flow advisories) for deeper diagnostics.',
   );
   lines.push('- Fix all violations until `decantr check` exits 0.');
   lines.push(
