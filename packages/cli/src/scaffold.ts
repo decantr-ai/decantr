@@ -4187,13 +4187,15 @@ function generateQuickStart(input: SectionContextInput): string[] {
     lines.push(`**Key patterns:** ${patternLabels.join(', ')}`);
   }
 
-  // Theme decorators pointer — full table with intent + slot hint is rendered
-  // below in "Required Theme Decorators". Quick Start just signals their
-  // existence so the AI doesn't miss the strong contract that follows.
+  // Theme decorators pointer — full table now lives in the section PACK
+  // (section-{id}-pack.md, since 1.7.20) and DECANTR.md "Decorator Quick
+  // Reference". F2/Phase 1 found the table was being duplicated 10× across
+  // context files, so 1.7.21 keeps the pointer here and lets the pack carry
+  // the strong contract.
   if (decorators.length > 0) {
     const count = decorators.length;
     lines.push(
-      `**Theme decorators:** ${count} class${count === 1 ? '' : 'es'} — see "Required Theme Decorators" below for class + intent + apply-to`,
+      `**Theme decorators:** ${count} class${count === 1 ? '' : 'es'} — see \`section-${section.id}-pack.md\` for the Class | Intent | Apply-to contract`,
     );
   }
   // Personality utilities — theme-agnostic CSS classes triggered by personality
@@ -4400,58 +4402,22 @@ export function generateSectionContext(input: SectionContextInput): string {
   );
   lines.push('');
 
-  // Required Theme Decorators — strong contract, not a soft list.
-  // The active theme's decorator_definitions carry the visual identity.
-  // Tokens (colors/spacing) give the bones; decorators give the personality.
-  // Without this rendering as a hard table with intent + slot hint, AI
-  // assistants weight the decorator list as "available" not "required" and
-  // ship pages that read as "themed colors only" with no theme character.
+  // Required Theme Decorators — pointer only. The full hard table now lives
+  // in section-{id}-pack.md (added in 1.7.20) and DECANTR.md "Decorator Quick
+  // Reference". F2/Phase 1 cold-LLM runs reported the table was duplicated
+  // ~10× across context files (~30-60% of section file mass) with no added
+  // information. The pack is read first per cold-prompt rules; the long-form
+  // file just points readers there to keep them aligned without bloating the
+  // token budget.
   const decoratorDefs = input.themeData?.decorator_definitions as
-    | Record<
-        string,
-        {
-          intent?: string;
-          description?: string;
-          css?: Record<string, string>;
-          pairs_with?: string;
-          usage?: string[];
-        }
-      >
+    | Record<string, { intent?: string; description?: string; usage?: string[] }>
     | undefined;
-  // Escape pipe chars so they don't break markdown table cells.
-  const escCell = (s: string): string => s.replace(/\|/g, '\\|');
-  if (decoratorDefs && Object.keys(decoratorDefs).length > 0) {
-    const renderableEntries = Object.entries(decoratorDefs).filter(
-      ([, def]) => def.intent || def.description || (def.usage && def.usage.length > 0),
-    );
-    if (renderableEntries.length > 0) {
-      lines.push(`## Required Theme Decorators (${themeName})`);
-      lines.push('');
-      lines.push(
-        'These classes carry the active theme\'s visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these — without them, the page reads as "themed colors only" with no theme character.',
-      );
-      lines.push('');
-      lines.push('| Class | Intent | Apply to |');
-      lines.push('|-------|--------|----------|');
-      for (const [name, def] of renderableEntries) {
-        const intent = escCell(def.intent || def.description || '');
-        const applyTo = escCell((def.usage || []).join(', '));
-        lines.push(`| \`.${name}\` | ${intent} | ${applyTo} |`);
-      }
-      lines.push('');
-    }
-  } else if (decorators.length > 0) {
-    lines.push(`## Required Theme Decorators (${themeName})`);
-    lines.push('');
+  const totalDecoratorCount =
+    (decoratorDefs && Object.keys(decoratorDefs).length) || decorators.length;
+  if (totalDecoratorCount > 0) {
     lines.push(
-      "These classes carry the active theme's visual identity. Apply them across this section's patterns or the scaffold reads as generic.",
+      `**Theme decorators:** ${totalDecoratorCount} \`${themeName}-*\` classes — full Class/Intent/Apply-to table in \`section-${section.id}-pack.md\` (preferred) and DECANTR.md "Decorator Quick Reference". MUST apply.`,
     );
-    lines.push('');
-    lines.push('| Class | Description |');
-    lines.push('|-------|-------------|');
-    for (const d of decorators) {
-      lines.push(`| \`.${d.name}\` | ${escCell(d.description)} |`);
-    }
     lines.push('');
   }
   if (themeHints) {
