@@ -291,24 +291,37 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     'Decantr ships @decantr/css as a runtime atom system (already in package.json). Use atoms via `css(...)` for ALL layout, spacing, sizing, flex/grid, position, and typography sizing — wherever you would otherwise reach for `style={{ display: "flex", gap: "1rem", padding: "1rem", ... }}`.',
   );
   lines.push('');
-  lines.push('Mandatory translation (NOT optional):');
+  lines.push('Mandatory translation (NOT optional). USE THESE EXACT ATOM NAMES:');
   lines.push(
-    '  ❌ style={{ display: "flex", gap: "1rem" }}        →  ✅ className={css("_flex _gap4")}',
+    '  ❌ style={{ display: "flex", gap: "1rem" }}                   →  ✅ className={css("_flex _gap4")}',
   );
   lines.push(
-    '  ❌ style={{ flexDirection: "column" }}              →  ✅ className={css("_col")}',
+    '  ❌ style={{ flexDirection: "column", alignItems: "center" }}  →  ✅ className={css("_col _aic")}',
   );
   lines.push(
-    '  ❌ style={{ padding: "1rem 1.5rem" }}               →  ✅ className={css("_py4 _px6")}',
+    '  ❌ style={{ justifyContent: "space-between" }}                →  ✅ className={css("_jcsb")}',
   );
   lines.push(
-    '  ❌ style={{ gridTemplateColumns: "repeat(3, 1fr)" }} →  ✅ className={css("_grid _gc3")}',
+    '  ❌ style={{ padding: "1rem 1.5rem" }}                         →  ✅ className={css("_py4 _px6")}',
   );
   lines.push(
-    '  ❌ style={{ position: "sticky", top: 0 }}            →  ✅ className={css("_sticky _t0")}',
+    '  ❌ style={{ gridTemplateColumns: "repeat(3, 1fr)" }}           →  ✅ className={css("_grid _gc3")}',
   );
   lines.push(
-    '  ❌ style={{ width: "100%", maxWidth: "40rem" }}      →  ✅ className={css("_w-full _maxw[40rem]")}',
+    '  ❌ style={{ position: "sticky", top: 0 }}                     →  ✅ className={css("_sticky _top0")}',
+  );
+  lines.push(
+    '  ❌ style={{ width: "100%", maxWidth: "40rem" }}               →  ✅ className={css("_wfull _maxw[40rem]")}',
+  );
+  lines.push(
+    '  ❌ style={{ marginInline: "auto" }}                            →  ✅ className={css("_mxauto")}',
+  );
+  lines.push(
+    '  ❌ style={{ fontSize: "1.5rem" }}                              →  ✅ className={css("_text2xl")}',
+  );
+  lines.push('');
+  lines.push(
+    'Atom naming convention: compact prefix-spelling — `_aic` (align-items:center) not `_items-center`, `_jcsb` (justify-content:space-between) not `_justify-between`, `_wfull` not `_w-full`, `_top0` not `_t0`. The runtime accepts hyphenated Tailwind-style aliases as fallback BUT compact prefix is canonical, shorter, and what every existing scaffold uses. Do not invent your own atom shapes — if you need an arbitrary value (e.g. `maxWidth: "72rem"`), use the brackets form `_maxw[72rem]`.',
   );
   lines.push('');
   lines.push(

@@ -75,6 +75,11 @@ const DIRECT: Record<string, string> = {
   // Sizing
   wfull: 'width:100%',
   hfull: 'height:100%',
+  // Hyphenated aliases — DECANTR.md examples used `_w-full` / `_h-full`
+  // historically; cold-LLM scaffolds fall back to the doc-spelling. Accept
+  // both so the doc and runtime can never silently disagree.
+  'w-full': 'width:100%',
+  'h-full': 'height:100%',
   w100: 'width:100%',
   h100: 'height:100%',
   wscreen: 'width:100vw',
@@ -93,6 +98,20 @@ const DIRECT: Record<string, string> = {
   maxhfull: 'max-height:100%',
   mw640: 'max-width:40rem',
   mw480: 'max-width:30rem',
+  // Item alignment aliases — DECANTR.md examples used `_items-center` /
+  // `_items-start` etc. (Tailwind-style); accept both alongside the
+  // canonical `_aic` / `_aifs` etc. so doc-driven AI scaffolds resolve.
+  'items-center': 'align-items:center',
+  'items-start': 'align-items:flex-start',
+  'items-end': 'align-items:flex-end',
+  'items-stretch': 'align-items:stretch',
+  'items-baseline': 'align-items:baseline',
+  'justify-center': 'justify-content:center',
+  'justify-start': 'justify-content:flex-start',
+  'justify-end': 'justify-content:flex-end',
+  'justify-between': 'justify-content:space-between',
+  'justify-around': 'justify-content:space-around',
+  'justify-evenly': 'justify-content:space-evenly',
 
   // Overflow
   overhidden: 'overflow:hidden',

@@ -1444,12 +1444,15 @@ import './styles/global.css';                // Resets
 | ❌ Inline (DO NOT) | ✅ Atom (DO) |
 |--------------------|------------|
 | \`style={{ display: 'flex', gap: '1rem' }}\` | \`className={css('_flex _gap4')}\` |
-| \`style={{ flexDirection: 'column', alignItems: 'center' }}\` | \`className={css('_col _items-center')}\` |
+| \`style={{ flexDirection: 'column', alignItems: 'center' }}\` | \`className={css('_col _aic')}\` |
 | \`style={{ padding: '1rem 1.5rem' }}\` | \`className={css('_py4 _px6')}\` |
-| \`style={{ width: '100%', maxWidth: '40rem' }}\` | \`className={css('_w-full _maxw[40rem]')}\` |
+| \`style={{ width: '100%', maxWidth: '40rem' }}\` | \`className={css('_wfull _maxw[40rem]')}\` |
 | \`style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}\` | \`className={css('_grid _gc3')}\` |
-| \`style={{ position: 'sticky', top: 0 }}\` | \`className={css('_sticky _t0')}\` |
+| \`style={{ position: 'sticky', top: 0 }}\` | \`className={css('_sticky _top0')}\` |
 | \`style={{ marginInline: 'auto' }}\` | \`className={css('_mxauto')}\` |
+| \`style={{ fontSize: '1.5rem' }}\` | \`className={css('_text2xl')}\` |
+
+> **Naming convention:** atoms use compact prefix-spelling (\`_aic\`, \`_jcsb\`, \`_wfull\`, \`_top0\`) — not Tailwind-style hyphenation. The runtime accepts both (\`_aic\` and \`_items-center\` both resolve to \`align-items:center\`) but compact prefix is canonical and shorter.
 
 **Inline \`style={{ ... }}\` is ONLY acceptable for these cases:**
 1. **CSS custom property writes** — \`style={{ '--d-stagger-index': i }}\` (the contract REQUIRES inline writes for dynamic CSS-var values that loop variables / animation indices feed into).
