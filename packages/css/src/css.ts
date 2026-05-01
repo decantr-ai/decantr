@@ -195,11 +195,17 @@ function resolveAtom(atomPart: string): { className: string; decl: string } | nu
  * Escape special characters in a CSS class name.
  */
 function escapeClass(cls: string): string {
+  // Dot escape is critical — arbitrary atom values like `_maxw[1.5rem]`,
+  // `_p[0.75rem]`, `_lg:gc[1.05fr_1fr]` contain decimals. Without escaping
+  // the `.`, the browser parses the selector as multiple chained classes
+  // (`._maxw\[1` + `.5rem\]`) and silently drops the rule — which presents
+  // as broken layout with no console error.
   return cls
     .replace(/:/g, '\\:')
     .replace(/\//g, '\\/')
     .replace(/\[/g, '\\[')
     .replace(/\]/g, '\\]')
+    .replace(/\./g, '\\.')
     .replace(/#/g, '\\#')
     .replace(/%/g, '\\%')
     .replace(/\(/g, '\\(')
