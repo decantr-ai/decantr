@@ -147,6 +147,36 @@ describe('css()', () => {
       expect(extractCSS()).toContain('border-radius:100px');
     });
   });
+
+  describe('selector escape — decimal values in arbitrary atoms', () => {
+    // Regression: arbitrary-value atoms with a decimal point (e.g.
+    // `_maxw[1.5rem]`, `_p[0.75rem]`, `_lg:gc[1.05fr_1fr]`) used to emit
+    // selectors with an unescaped `.`, which the browser parsed as a
+    // class boundary and silently dropped the rule.
+    it('escapes "." in static arbitrary-value selectors', () => {
+      css('_maxw[1.5rem]');
+      const cssText = extractCSS();
+      // The selector must contain the escaped `\.` form, not a raw dot.
+      expect(cssText).toMatch(/\._maxw\\\[1\\\.5rem\\\]/);
+      expect(cssText).toContain('max-width:1.5rem');
+    });
+
+    it('escapes "." in responsive-prefixed arbitrary-value selectors', () => {
+      css('_lg:gc[1.05fr_1fr]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('@media(min-width:1024px)');
+      expect(cssText).toMatch(/\._lg\\:gc\\\[1\\\.05fr_1fr\\\]/);
+      expect(cssText).toContain('grid-template-columns:1.05fr 1fr');
+    });
+
+    it('escapes "." in max-width responsive arbitrary-value selectors', () => {
+      css('_mdmax:maxw[20.5rem]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('@media(max-width:767.98px)');
+      expect(cssText).toMatch(/\._mdmax\\:maxw\\\[20\\\.5rem\\\]/);
+      expect(cssText).toContain('max-width:20.5rem');
+    });
+  });
 });
 
 describe('define()', () => {

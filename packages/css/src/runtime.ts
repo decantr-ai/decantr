@@ -156,7 +156,13 @@ export function injectResponsive(className: string, declaration: string, bp: str
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  // Bug fix: previously only escaped `:`, which left `[`, `]`, `/`, `.`, etc.
+  // unescaped — causing BP-prefixed arbitrary-value atoms like
+  // `_lg:gc[1.05fr_1fr]` or `_md:maxw[40rem]` to generate invalid CSS
+  // selectors. The browser parsed the brackets as attribute-selector syntax
+  // and silently dropped the rule. Use the same full-escape function the
+  // pseudo helpers already use.
+  const escaped = escapeSelector(className);
   if (!bpBuffers[bp]) bpBuffers[bp] = [];
   bpBuffers[bp].push(
     `@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}{${declaration}}}}`,
@@ -175,7 +181,9 @@ export function injectResponsiveMax(className: string, declaration: string, bp: 
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  // Bug fix: full escape (see injectResponsive) — same class of bug for
+  // `_mdmax:maxw[40rem]`, `_lgmax:gc[X_Y]`, etc.
+  const escaped = escapeSelector(className);
   const key = `${bp}max`;
   if (!bpBuffers[key]) bpBuffers[key] = [];
   const maxPx = BREAKPOINTS[bp as keyof typeof BREAKPOINTS] - 0.02;
@@ -266,7 +274,8 @@ export function injectContainer(className: string, declaration: string, width: n
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  // Bug fix: full escape — same class of bug for `_cq640:maxw[40rem]` etc.
+  const escaped = escapeSelector(className);
   cqBuffer.push(`@layer d.atoms{@container(min-width:${width}px){.${escaped}{${declaration}}}}`);
   scheduleFlush();
 }
@@ -306,18 +315,26 @@ export function injectMediaQuery(className: string, declaration: string, query: 
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  // Bug fix: full escape (see injectResponsive) — same class of bug for
+  // `_motionSafe:maxw[40rem]`, `_motionReduce:gc[X_Y]`, etc.
+  const escaped = escapeSelector(className);
   atomBuffer.push(`@layer d.atoms{@media${query}{.${escaped}{${declaration}}}}`);
   scheduleFlush();
 }
 
-/** Escape special characters in a CSS selector */
+/** Escape special characters in a CSS selector.
+ * Dot escape is critical — arbitrary atom values like `_maxw[1.5rem]`,
+ * `_p[0.75rem]`, `_lg:gc[1.05fr_1fr]` contain decimals. Without escaping
+ * the `.`, the browser parses the selector as multiple chained classes
+ * (`._maxw\[1` + `.5rem\]`) and silently drops the rule — broken layout
+ * with no console error. */
 function escapeSelector(className: string): string {
   return className
     .replace(/:/g, '\\:')
     .replace(/\//g, '\\/')
     .replace(/\[/g, '\\[')
     .replace(/\]/g, '\\]')
+    .replace(/\./g, '\\.')
     .replace(/#/g, '\\#')
     .replace(/%/g, '\\%')
     .replace(/\(/g, '\\(')
