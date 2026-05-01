@@ -46,10 +46,10 @@
   "dependencies": {
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
-    "typescript": "^5.7.0"
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "ajv": "^8.18.0",
+    "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1"
   }
 }
