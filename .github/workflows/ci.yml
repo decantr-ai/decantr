@@ -41,7 +41,7 @@ jobs:
         if: matrix.node-version == 20
       - run: SHOWCASE_GOLDEN_ONLY=1 node scripts/copy-showcase-dist.mjs --dry-run
         if: matrix.node-version == 20
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: matrix.node-version == 20
         with:
           name: showcase-shortlist-verification
