@@ -20,8 +20,6 @@ jobs:
           repository: decantr-ai/decantr-content
           path: decantr-content
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
-        with:
-          version: 10
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ matrix.node-version }}
