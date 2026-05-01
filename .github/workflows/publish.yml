@@ -45,15 +45,15 @@ jobs:
     env:
       DECANTR_CONTENT_DIR: ${{ github.workspace }}/decantr-content
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           repository: decantr-ai/decantr-content
           path: decantr-content
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
         with:
           version: 10
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
@@ -67,6 +67,8 @@ jobs:
       - run: pnpm test
       - run: pnpm audit:package-surface
       - run: pnpm audit:release-readiness
+      - run: pnpm audit:public-api -- --core-only --fail-on-error
+      - run: pnpm audit:registry-portal -- --fail-on-error
       - name: Generate release plan summary
         env:
           RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
@@ -81,6 +83,30 @@ jobs:
           fi
           node scripts/release-plan.mjs $ARGS --summary-markdown=/tmp/package-release-plan.md
           cat /tmp/package-release-plan.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Generate enterprise release evidence
+        env:
+          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
+          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
+          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
+        run: |
+          ARGS=""
+          if [ "$RELEASE_WAVE" != "all" ]; then
+            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          fi
+          if [ -n "$ONLY_PACKAGES" ]; then
+            ARGS="$ARGS --only=$ONLY_PACKAGES"
+          fi
+          if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
+            ARGS="$ARGS --include-experimental"
+          fi
+          pnpm release:evidence --out=package-release-evidence $ARGS
+          cat package-release-evidence/release-evidence-manifest.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload enterprise release evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: package-release-evidence
+          path: package-release-evidence/**
+          if-no-files-found: error
       - name: Publish packages with OIDC provenance
         env:
           RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}

@@ -297,6 +297,7 @@ describe('v3-aware tool tests', () => {
       expect(result.findings.some((finding) => finding.id === 'review-pack-file-missing')).toBe(
         true,
       );
+      expect(globalThis.fetch).not.toHaveBeenCalled();
     });
 
     it('falls back to the hosted verifier for project audit when local packs are missing', async () => {
@@ -373,7 +374,10 @@ describe('v3-aware tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_audit_project', { sources_path: 'src' })) as {
+      const result = (await handleTool('decantr_audit_project', {
+        sources_path: 'src',
+        allow_hosted_upload: true,
+      })) as {
         $schema: string;
         summary: { runtimeAuditChecked: boolean; reviewPackPresent: boolean };
       };
@@ -475,7 +479,10 @@ describe('v3-aware tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_critique', { file_path: filePath })) as {
+      const result = (await handleTool('decantr_critique', {
+        file_path: filePath,
+        allow_hosted_upload: true,
+      })) as {
         $schema: string;
         findings: Array<{ id: string }>;
       };
@@ -488,6 +495,25 @@ describe('v3-aware tool tests', () => {
         expect.stringContaining('/v1/critique/file'),
         expect.objectContaining({ method: 'POST' }),
       );
+    });
+
+    it('keeps file critique local unless hosted upload is explicitly allowed', async () => {
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      const filePath = join(testDir, 'Overview.tsx');
+      await writeFile(filePath, '<button style={{ color: "#ff00ff" }}>Click me</button>\n');
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('hosted upload should not run'));
+
+      process.chdir(testDir);
+      const result = (await handleTool('decantr_critique', { file_path: filePath })) as {
+        $schema: string;
+        findings: Array<{ id: string }>;
+      };
+
+      expect(result.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+      expect(result.findings.some((finding) => finding.id === 'treatment-usage-missing')).toBe(
+        true,
+      );
+      expect(globalThis.fetch).not.toHaveBeenCalled();
     });
 
     it('returns showcase shortlist verification data', async () => {

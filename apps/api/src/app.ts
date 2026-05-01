@@ -107,7 +107,7 @@ export function createApp(): Hono<Env> {
     if (isPublicReadOnlyRoute(method, path)) {
       return next();
     }
-    await rateLimiter()(c, next);
+    return rateLimiter()(c, next);
   });
 
   // Durable usage metering for authenticated hosted product traffic.

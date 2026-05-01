@@ -14,15 +14,15 @@ jobs:
       matrix:
         node-version: [20, 22]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: decantr-ai/decantr-content
           path: decantr-content
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
         with:
           version: 10
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
@@ -41,7 +41,7 @@ jobs:
         if: matrix.node-version == 20
       - run: SHOWCASE_GOLDEN_ONLY=1 node scripts/copy-showcase-dist.mjs --dry-run
         if: matrix.node-version == 20
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: matrix.node-version == 20
         with:
           name: showcase-shortlist-verification

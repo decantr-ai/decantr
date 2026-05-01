@@ -70,45 +70,42 @@
         "features": {
           "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/stringArray"
         },
-        "routes": {
-          "type": "array",
-          "items": {
-            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
-          }
-        },
         "navigation": {
           "type": "object",
-          "additionalProperties": false,
-          "description": "App-level navigation contract emitted into scaffold-pack.md.",
+          "description": "Project-level navigation and command-palette obligations.",
+          "required": ["commandPalette", "hotkeys"],
           "properties": {
             "commandPalette": {
               "oneOf": [
                 { "type": "boolean" },
                 {
                   "type": "object",
-                  "additionalProperties": false,
                   "properties": {
-                    "trigger": { "type": "string", "minLength": 1 },
+                    "trigger": { "type": "string" },
                     "placeholder": { "type": "string" },
                     "width": { "type": "string" },
-                    "styling": { "type": "string", "enum": ["modal", "sheet", "inline", "fullscreen"] },
+                    "styling": {
+                      "type": "string",
+                      "enum": ["modal", "sheet", "inline", "fullscreen"]
+                    },
                     "commands": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "required": ["id", "label"],
-                        "additionalProperties": false,
                         "properties": {
                           "id": { "type": "string", "minLength": 1 },
                           "label": { "type": "string", "minLength": 1 },
-                          "section": { "type": "string", "minLength": 1 },
-                          "hotkey": { "type": "string", "minLength": 1 },
-                          "action": { "type": "string", "minLength": 1 },
-                          "route": { "type": "string", "minLength": 1 }
-                        }
+                          "section": { "type": "string" },
+                          "hotkey": { "type": "string" },
+                          "action": { "type": "string" },
+                          "route": { "type": "string" }
+                        },
+                        "additionalProperties": false
                       }
                     }
-                  }
+                  },
+                  "additionalProperties": false
                 }
               ]
             },
@@ -117,16 +114,41 @@
               "items": {
                 "type": "object",
                 "required": ["key"],
-                "additionalProperties": false,
                 "properties": {
                   "key": { "type": "string", "minLength": 1 },
-                  "route": { "type": "string", "minLength": 1 },
-                  "label": { "type": "string", "minLength": 1 },
-                  "semantics": { "$ref": "#/$defs/HotkeySemantics" }
-                }
+                  "route": { "type": "string" },
+                  "label": { "type": "string" },
+                  "semantics": {
+                    "type": "object",
+                    "properties": {
+                      "chord_window_ms": { "type": "number" },
+                      "input_guard": { "type": "boolean" },
+                      "modifier_suppression": { "type": "boolean" },
+                      "match_case": { "type": "boolean" }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
               }
             },
-            "hotkeySemantics": { "$ref": "#/$defs/HotkeySemantics" }
+            "hotkeySemantics": {
+              "type": "object",
+              "properties": {
+                "chord_window_ms": { "type": "number" },
+                "input_guard": { "type": "boolean" },
+                "modifier_suppression": { "type": "boolean" },
+                "match_case": { "type": "boolean" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/routeSummary"
           }
         },
         "themeDecorators": {
@@ -150,18 +172,5 @@
       "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/nonEmptyString"
     }
   },
-  "additionalProperties": false,
-  "$defs": {
-    "HotkeySemantics": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Behavioral directives for hotkey handlers.",
-      "properties": {
-        "chord_window_ms": { "type": "integer", "minimum": 100, "maximum": 5000 },
-        "input_guard": { "type": "boolean" },
-        "modifier_suppression": { "type": "boolean" },
-        "match_case": { "type": "boolean" }
-      }
-    }
-  }
+  "additionalProperties": false
 }

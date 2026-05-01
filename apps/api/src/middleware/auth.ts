@@ -17,8 +17,26 @@ export interface AuthContext {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  apiKeyId?: string | null;
   apiKeyOrgId?: string | null;
+  apiKeyScopes?: string[];
   authSource?: 'jwt' | 'api_key' | null;
+}
+
+export const API_KEY_SCOPES = [
+  'read',
+  'content:write',
+  'org:read',
+  'org:write',
+  'billing:manage',
+  'api_keys:manage',
+  'admin:*',
+] as const;
+
+export type ApiKeyScope = typeof API_KEY_SCOPES[number];
+
+export function isApiKeyScope(scope: unknown): scope is ApiKeyScope {
+  return typeof scope === 'string' && (API_KEY_SCOPES as readonly string[]).includes(scope);
 }
 
 function hashApiKey(key: string): string {
@@ -64,7 +82,9 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
           },
           isAuthenticated: true,
           isAdmin: false,
+          apiKeyId: null,
           apiKeyOrgId: null,
+          apiKeyScopes: [],
           authSource: 'jwt',
         };
       }
@@ -91,29 +111,36 @@ export async function getAuthContext(c: Context): Promise<AuthContext> {
         .eq('id', apiKey.id);
 
       const profile = apiKey.users as unknown as AuthUser;
-        return {
-          user: {
-            id: profile.id,
+      const scopes = Array.isArray(apiKey.scopes)
+        ? apiKey.scopes.filter(isApiKeyScope)
+        : [];
+      return {
+        user: {
+          id: profile.id,
           email: profile.email,
           username: profile.username,
           display_name: profile.display_name,
           tier: profile.tier,
           trusted: profile.trusted,
           reputation_score: profile.reputation_score,
-          },
-          isAuthenticated: true,
-          isAdmin: false,
-          apiKeyOrgId: apiKey.org_id ?? null,
-          authSource: 'api_key',
-        };
-      }
+        },
+        isAuthenticated: true,
+        isAdmin: false,
+        apiKeyId: apiKey.id ?? null,
+        apiKeyOrgId: apiKey.org_id ?? null,
+        apiKeyScopes: scopes,
+        authSource: 'api_key',
+      };
+    }
   }
 
   return {
     user: null,
     isAuthenticated: false,
     isAdmin: false,
+    apiKeyId: null,
     apiKeyOrgId: null,
+    apiKeyScopes: [],
     authSource: null,
   };
 }
@@ -138,8 +165,44 @@ export function optionalAuth() {
       c.set('auth', auth);
     } catch {
       // Auth failed (Supabase unavailable, etc.) — continue as unauthenticated
-      c.set('auth', { user: null, isAuthenticated: false, isAdmin: false });
+      c.set('auth', {
+        user: null,
+        isAuthenticated: false,
+        isAdmin: false,
+        apiKeyId: null,
+        apiKeyOrgId: null,
+        apiKeyScopes: [],
+        authSource: null,
+      });
     }
+    await next();
+  };
+}
+
+export function authHasScope(auth: AuthContext, scope: string): boolean {
+  if (auth.authSource !== 'api_key') {
+    return true;
+  }
+
+  const scopes = auth.apiKeyScopes ?? [];
+  return scopes.includes(scope) || scopes.includes('admin:*');
+}
+
+export function requireApiKeyScope(...allowedScopes: string[]) {
+  return async (c: Context, next: Next) => {
+    const auth = c.get('auth') as AuthContext | undefined;
+
+    if (!auth?.isAuthenticated || !auth.user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    if (
+      auth.authSource === 'api_key' &&
+      !allowedScopes.some((scope) => authHasScope(auth, scope))
+    ) {
+      return c.json({ error: 'Insufficient API key scope' }, 403);
+    }
+
     await next();
   };
 }

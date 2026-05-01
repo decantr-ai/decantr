@@ -1,5 +1,6 @@
+import { realpathSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
 import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
 import { RegistryAPIClient } from '@decantr/registry';
@@ -57,6 +58,37 @@ export function resetAPIClient(): void {
   _publicApiClient = null;
 }
 
+export function resolveWorkspacePath(
+  inputPath: string,
+  workspaceRoot = process.cwd(),
+): string {
+  const rawRoot = resolve(workspaceRoot);
+  const resolvedPath = isAbsolute(inputPath) ? resolve(inputPath) : resolve(rawRoot, inputPath);
+  const root = canonicalizeForContainment(rawRoot);
+  const candidate = canonicalizeForContainment(resolvedPath);
+  const relativePath = relative(root, candidate);
+
+  if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
+    throw new Error(`Path escapes the active workspace root: ${inputPath}`);
+  }
+
+  return candidate;
+}
+
+function canonicalizeForContainment(path: string): string {
+  const resolvedPath = resolve(path);
+  try {
+    return realpathSync.native(resolvedPath);
+  } catch {
+    const parent = dirname(resolvedPath);
+    try {
+      return join(realpathSync.native(parent), basename(resolvedPath));
+    } catch {
+      return resolvedPath;
+    }
+  }
+}
+
 // --- Essence file helpers ---
 
 export interface EssenceReadResult {
@@ -69,7 +101,9 @@ export interface EssenceReadResult {
  * Read and parse an essence file. Returns the parsed essence and raw content.
  */
 export async function readEssenceFile(essencePath?: string): Promise<EssenceReadResult> {
-  const resolvedPath = essencePath || join(process.cwd(), 'decantr.essence.json');
+  const resolvedPath = essencePath
+    ? resolveWorkspacePath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
   const raw = await readFile(resolvedPath, 'utf-8');
   const essence = JSON.parse(raw) as EssenceFile;
   return { essence, raw, path: resolvedPath };
@@ -115,7 +149,7 @@ export interface DriftLogEntry {
  * Returns an empty array if it doesn't exist.
  */
 export async function readDriftLog(projectRoot?: string): Promise<DriftLogEntry[]> {
-  const root = projectRoot || process.cwd();
+  const root = projectRoot ? resolveWorkspacePath(projectRoot) : process.cwd();
   const logPath = join(root, '.decantr', 'drift-log.json');
   try {
     const raw = await readFile(logPath, 'utf-8');
@@ -132,7 +166,7 @@ export async function writeDriftLog(
   entries: DriftLogEntry[],
   projectRoot?: string,
 ): Promise<string> {
-  const root = projectRoot || process.cwd();
+  const root = projectRoot ? resolveWorkspacePath(projectRoot) : process.cwd();
   const logPath = join(root, '.decantr', 'drift-log.json');
   await mkdir(dirname(logPath), { recursive: true });
   await writeFile(logPath, JSON.stringify(entries, null, 2) + '\n', 'utf-8');

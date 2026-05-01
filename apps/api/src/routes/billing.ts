@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import type { AuthContext } from '../middleware/auth.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -31,10 +31,52 @@ function billingComingSoonResponse(c: any) {
   }, 403);
 }
 
+function getAllowedBillingOrigins(): Set<string> {
+  const configured = process.env.DECANTR_BILLING_ALLOWED_ORIGINS || process.env.ALLOWED_ORIGINS || '';
+  return new Set(
+    configured
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+      .map((origin) => {
+        try {
+          return new URL(origin).origin;
+        } catch {
+          return '';
+        }
+      })
+      .filter(Boolean),
+  );
+}
+
+function validateBillingCallbackUrl(value: string, label: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return `${label} must be an absolute URL.`;
+  }
+
+  if (!['https:', 'http:'].includes(url.protocol)) {
+    return `${label} must use http or https.`;
+  }
+
+  const allowedOrigins = getAllowedBillingOrigins();
+  if (allowedOrigins.size === 0) {
+    return 'Billing callback origins are not configured.';
+  }
+
+  if (!allowedOrigins.has(url.origin)) {
+    return `${label} origin is not allowed.`;
+  }
+
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // POST /billing/checkout -- Create a Stripe Checkout session for Pro or Team
 // ---------------------------------------------------------------------------
-billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
+billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billing:manage'), async (c) => {
   if (!isBillingLaunchEnabled()) {
     return billingComingSoonResponse(c);
   }
@@ -55,6 +97,14 @@ billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
 
   if (!body.success_url || !body.cancel_url) {
     return c.json({ error: 'success_url and cancel_url are required.' }, 400);
+  }
+  const successUrlError = validateBillingCallbackUrl(body.success_url, 'success_url');
+  if (successUrlError) {
+    return c.json({ error: successUrlError }, 400);
+  }
+  const cancelUrlError = validateBillingCallbackUrl(body.cancel_url, 'cancel_url');
+  if (cancelUrlError) {
+    return c.json({ error: cancelUrlError }, 400);
   }
 
   if (body.plan === 'team' && user.tier === 'team') {
@@ -131,7 +181,7 @@ billingRoutes.post('/billing/checkout', requireAuth(), async (c) => {
 // ---------------------------------------------------------------------------
 // POST /billing/portal -- Create a Stripe Billing Portal session
 // ---------------------------------------------------------------------------
-billingRoutes.post('/billing/portal', requireAuth(), async (c) => {
+billingRoutes.post('/billing/portal', requireAuth(), requireApiKeyScope('billing:manage'), async (c) => {
   if (!isBillingLaunchEnabled()) {
     return billingComingSoonResponse(c);
   }
@@ -143,6 +193,10 @@ billingRoutes.post('/billing/portal', requireAuth(), async (c) => {
 
   if (!body.return_url) {
     return c.json({ error: 'return_url is required.' }, 400);
+  }
+  const returnUrlError = validateBillingCallbackUrl(body.return_url, 'return_url');
+  if (returnUrlError) {
+    return c.json({ error: returnUrlError }, 400);
   }
 
   const stripe = getStripe();
@@ -179,7 +233,7 @@ billingRoutes.post('/billing/portal', requireAuth(), async (c) => {
 // ---------------------------------------------------------------------------
 // GET /billing/status -- Get current subscription status
 // ---------------------------------------------------------------------------
-billingRoutes.get('/billing/status', requireAuth(), async (c) => {
+billingRoutes.get('/billing/status', requireAuth(), requireApiKeyScope('read', 'billing:manage'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const user = auth.user!;
 

@@ -1,4 +1,4 @@
-FROM node:24-slim AS base
+FROM node:24-slim@sha256:03eae3ef7e88a9de535496fb488d67e02b9d96a063a8967bae657744ecd513f2 AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -31,7 +31,7 @@ COPY packages/verifier/ ./packages/verifier/
 RUN pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/verifier --filter ./apps/api build
 RUN pnpm --filter ./apps/api --prod deploy --legacy /prod/api
 
-FROM node:24-slim
+FROM node:24-slim@sha256:03eae3ef7e88a9de535496fb488d67e02b9d96a063a8967bae657744ecd513f2
 WORKDIR /app
 
 ENV NODE_ENV=production

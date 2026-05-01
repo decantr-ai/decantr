@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -43,6 +43,110 @@ export interface NewProjectOptions {
   assistantBridge?: string;
 }
 
+interface ArgvCommand {
+  command: string;
+  args: string[];
+}
+
+const PASSTHROUGH_FLAG_NAMES = [
+  'blueprint',
+  'archetype',
+  'theme',
+  'mode',
+  'shape',
+  'target',
+  'registry',
+  'assistant-bridge',
+] as const;
+
+type PassThroughFlagName = (typeof PASSTHROUGH_FLAG_NAMES)[number];
+
+function validatePassThroughFlagValue(flag: PassThroughFlagName, value: string): string {
+  if (value.length === 0) {
+    throw new Error(`--${flag} cannot be empty.`);
+  }
+  if (value.length > 512) {
+    throw new Error(`--${flag} is too long.`);
+  }
+  if (/[\u0000-\u001f\u007f]/.test(value)) {
+    throw new Error(`--${flag} contains unsupported control characters.`);
+  }
+  return value;
+}
+
+function pushPassThroughFlag(
+  flags: string[],
+  flag: PassThroughFlagName,
+  value: string | undefined,
+): void {
+  if (value == null) return;
+  flags.push(`--${flag}=${validatePassThroughFlagValue(flag, value)}`);
+}
+
+export function buildNewProjectInitArgs(
+  options: NewProjectOptions,
+  inferredAdoption: string,
+): string[] {
+  const initFlags: string[] = [
+    '--yes',
+    '--workflow=greenfield',
+    `--adoption=${validatePassThroughFlagValue('mode', inferredAdoption)}`,
+  ];
+  pushPassThroughFlag(initFlags, 'blueprint', options.blueprint);
+  pushPassThroughFlag(initFlags, 'archetype', options.archetype);
+  pushPassThroughFlag(initFlags, 'theme', options.theme);
+  pushPassThroughFlag(initFlags, 'mode', options.mode);
+  pushPassThroughFlag(initFlags, 'shape', options.shape);
+  pushPassThroughFlag(initFlags, 'target', options.target);
+  if (options.offline) initFlags.push('--offline');
+  pushPassThroughFlag(initFlags, 'registry', options.registry);
+  pushPassThroughFlag(initFlags, 'assistant-bridge', options.assistantBridge);
+  return initFlags;
+}
+
+function commandForPlatform(command: string): string {
+  if (process.platform !== 'win32') {
+    return command;
+  }
+  return /^(?:npm|pnpm|yarn|bun|npx)$/.test(command) ? `${command}.cmd` : command;
+}
+
+function runArgvCommand(command: string, args: string[], cwd: string): void {
+  const result = spawnSync(commandForPlatform(command), args, {
+    cwd,
+    stdio: 'inherit',
+    shell: false,
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(' ')}`);
+  }
+}
+
+function resolveInitCommand(initFlags: string[]): ArgvCommand {
+  const bundledCliEntrypoint = fileURLToPath(new URL('./bin.js', import.meta.url));
+  const cliEntrypoint = existsSync(bundledCliEntrypoint)
+    ? bundledCliEntrypoint
+    : process.argv[1] && existsSync(process.argv[1])
+      ? process.argv[1]
+      : null;
+
+  if (cliEntrypoint) {
+    return {
+      command: process.execPath,
+      args: [cliEntrypoint, 'init', ...initFlags],
+    };
+  }
+
+  return {
+    command: 'npx',
+    args: ['decantr', 'init', ...initFlags],
+  };
+}
+
 export async function cmdNewProject(
   projectName: string,
   options: NewProjectOptions,
@@ -68,6 +172,15 @@ export async function cmdNewProject(
   // Check directory doesn't already exist
   if (existsSync(projectDir)) {
     console.error(error(`Directory "${projectName}" already exists.`));
+    process.exitCode = 1;
+    return;
+  }
+
+  let initFlags: string[];
+  try {
+    initFlags = buildNewProjectInitArgs(options, inferredAdoption);
+  } catch (err) {
+    console.error(error((err as Error).message));
     process.exitCode = 1;
     return;
   }
@@ -103,7 +216,7 @@ export async function cmdNewProject(
   if (shouldBootstrapRuntime) {
     console.log(heading('Installing dependencies...'));
     try {
-      execSync(`${packageManager} install`, { cwd: projectDir, stdio: 'inherit' });
+      runArgvCommand(packageManager, ['install'], projectDir);
     } catch {
       console.log(
         `\n${YELLOW}Dependency install failed. Run \`${packageManager} install\` manually.${RESET}`,
@@ -143,28 +256,9 @@ export async function cmdNewProject(
   // 2. Run decantr init inside the new project
   console.log(heading('Initializing Decantr...'));
 
-  // Build the init args to pass through
-  const initFlags: string[] = ['--yes', '--workflow=greenfield', `--adoption=${inferredAdoption}`];
-  if (options.blueprint) initFlags.push(`--blueprint=${options.blueprint}`);
-  if (options.archetype) initFlags.push(`--archetype=${options.archetype}`);
-  if (options.theme) initFlags.push(`--theme=${options.theme}`);
-  if (options.mode) initFlags.push(`--mode=${options.mode}`);
-  if (options.shape) initFlags.push(`--shape=${options.shape}`);
-  if (options.target) initFlags.push(`--target=${options.target}`);
-  if (options.offline) initFlags.push('--offline');
-  if (options.registry) initFlags.push(`--registry=${options.registry}`);
-  if (options.assistantBridge) initFlags.push(`--assistant-bridge=${options.assistantBridge}`);
-
   try {
-    // Reuse the currently-running CLI entrypoint when available.
-    const bundledCliEntrypoint = fileURLToPath(new URL('./bin.js', import.meta.url));
-    const cliEntrypoint = existsSync(bundledCliEntrypoint)
-      ? bundledCliEntrypoint
-      : process.argv[1] && existsSync(process.argv[1])
-        ? process.argv[1]
-        : null;
-    const cliPath = cliEntrypoint ? `"${process.execPath}" "${cliEntrypoint}"` : 'npx decantr';
-    execSync(`${cliPath} init ${initFlags.join(' ')}`, { cwd: projectDir, stdio: 'inherit' });
+    const initCommand = resolveInitCommand(initFlags);
+    runArgvCommand(initCommand.command, initCommand.args, projectDir);
     if (shouldBootstrapRuntime && bootstrapAdapter) {
       bootstrapAdapter.writeProjectFiles(projectDir, title, detectRoutingMode(projectDir));
     }

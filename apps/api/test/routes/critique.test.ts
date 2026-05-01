@@ -3,15 +3,19 @@ import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
 import { createApp } from '../../src/app.js';
 import { critiqueRoutes } from '../../src/routes/critique.js';
+import { _rateLimitStore } from '../../src/middleware/rate-limit.js';
 import { assertMatchesSchema } from '../helpers/schema-assert.js';
 
 const { mockCreateAdminClient } = vi.hoisted(() => ({
   mockCreateAdminClient: vi.fn(),
 }));
+const { mockCreateUserClient } = vi.hoisted(() => ({
+  mockCreateUserClient: vi.fn(),
+}));
 
 vi.mock('../../src/db/client.js', () => ({
   createAdminClient: mockCreateAdminClient,
-  createUserClient: vi.fn(),
+  createUserClient: mockCreateUserClient,
 }));
 
 function createTestApp() {
@@ -42,6 +46,45 @@ function createResolverClient(rowsByKey: Record<string, Array<Record<string, unk
     }),
   };
 }
+
+function createAuthenticatedUserClient(tier: 'free' | 'pro' = 'pro') {
+  const profile = {
+    id: 'user-1',
+    email: 'dev@example.com',
+    username: 'dev',
+    display_name: 'Dev User',
+    tier,
+    trusted: true,
+    reputation_score: 100,
+  };
+
+  return {
+    auth: {
+      getUser: vi.fn(async () => ({
+        data: {
+          user: {
+            id: profile.id,
+            email: profile.email,
+            user_metadata: {},
+          },
+        },
+        error: null,
+      })),
+    },
+    from: vi.fn(() => {
+      const chain = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn(async () => ({ data: profile, error: null })),
+      };
+      return chain;
+    }),
+  };
+}
+
+const AUTH_HEADERS = {
+  Authorization: 'Bearer test-token',
+};
 
 const validEssence = {
   version: '2.0.0',
@@ -78,7 +121,10 @@ describe('POST /v1/critique/file', () => {
 
   beforeEach(() => {
     app = createTestApp();
+    _rateLimitStore.clear();
     mockCreateAdminClient.mockReset();
+    mockCreateUserClient.mockReset();
+    mockCreateUserClient.mockReturnValue(createAuthenticatedUserClient());
     mockCreateAdminClient.mockReturnValue(createResolverClient({
       'theme:clean': [
         {
@@ -121,7 +167,7 @@ describe('POST /v1/critique/file', () => {
   it('returns a schema-backed hosted critique report for inline source', async () => {
     const res = await app.request('/v1/critique/file?namespace=%40official', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
         filePath: 'src/pages/Home.tsx',
@@ -142,7 +188,7 @@ describe('POST /v1/critique/file', () => {
   it('rejects invalid request payloads', async () => {
     const res = await app.request('/v1/critique/file', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
         code: '',
@@ -154,11 +200,40 @@ describe('POST /v1/critique/file', () => {
     expect(json.error).toBe('Code must be a non-empty string on `code`.');
   });
 
+  it('requires authentication for hosted critique uploads', async () => {
+    const res = await app.request('/v1/critique/file', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        code: '<button>Click me</button>',
+      }),
+    });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects hosted critique paths that escape the workspace', async () => {
+    const res = await app.request('/v1/critique/file', {
+      method: 'POST',
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        filePath: '../secret.tsx',
+        code: '<button>Click me</button>',
+      }),
+    });
+
+    expect(res.status).toBe(422);
+    const json = await res.json();
+    expect(json.error).toContain('escapes the project root');
+  });
+
   it('remains callable through the full app middleware stack', async () => {
     const fullApp = createApp();
     const res = await fullApp.request('/v1/critique/file?namespace=%40official', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
         filePath: 'src/pages/Home.tsx',
@@ -170,6 +245,27 @@ describe('POST /v1/critique/file', () => {
     const json = await res.json();
     assertMatchesSchema('file-critique-report.v1.json', json);
   });
+
+  it('is rate limited through the full app middleware stack', async () => {
+    mockCreateUserClient.mockReturnValue(createAuthenticatedUserClient('free'));
+    const fullApp = createApp();
+    let res: Response | null = null;
+
+    for (let index = 0; index < 61; index += 1) {
+      res = await fullApp.request('/v1/critique/file', {
+        method: 'POST',
+        headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          essence: validEssence,
+          code: '',
+        }),
+      });
+    }
+
+    expect(res?.status).toBe(429);
+    const json = await res!.json();
+    expect(json.error).toBe('Rate limit exceeded');
+  });
 });
 
 describe('POST /v1/audit/project', () => {
@@ -177,7 +273,10 @@ describe('POST /v1/audit/project', () => {
 
   beforeEach(() => {
     app = createTestApp();
+    _rateLimitStore.clear();
     mockCreateAdminClient.mockReset();
+    mockCreateUserClient.mockReset();
+    mockCreateUserClient.mockReturnValue(createAuthenticatedUserClient());
     mockCreateAdminClient.mockReturnValue(createResolverClient({
       'theme:clean': [
         {
@@ -220,7 +319,7 @@ describe('POST /v1/audit/project', () => {
   it('returns a schema-backed hosted project audit report without dist input', async () => {
     const res = await app.request('/v1/audit/project?namespace=%40official', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
       }),
@@ -239,13 +338,13 @@ describe('POST /v1/audit/project', () => {
   it('uses an optional dist snapshot for runtime verification', async () => {
     const res = await app.request('/v1/audit/project?namespace=%40official', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
         dist: {
           indexHtml: '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Hosted Audit</title></head><body><div id="root"></div><script type="module" src="/assets/app.js"></script></body></html>',
           assets: {
-            '/assets/app.js': 'console.log("/");',
+            'assets/app.js': 'console.log("/");',
           },
         },
       }),
@@ -264,7 +363,7 @@ describe('POST /v1/audit/project', () => {
   it('uses an optional source snapshot for source-level project findings', async () => {
     const res = await app.request('/v1/audit/project?namespace=%40official', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
         sources: {
@@ -299,7 +398,7 @@ describe('POST /v1/audit/project', () => {
   it('rejects invalid source snapshot payloads', async () => {
     const res = await app.request('/v1/audit/project', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
         sources: [],
@@ -311,11 +410,30 @@ describe('POST /v1/audit/project', () => {
     expect(json.error).toBe('sources must include a string-valued `files` object when provided.');
   });
 
+  it('rejects hosted source snapshots targeting .decantr control files', async () => {
+    const res = await app.request('/v1/audit/project', {
+      method: 'POST',
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        essence: validEssence,
+        sources: {
+          files: {
+            '.decantr/context/review-pack.json': '{}',
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(422);
+    const json = await res.json();
+    expect(json.error).toContain('.decantr');
+  });
+
   it('remains callable through the full app middleware stack', async () => {
     const fullApp = createApp();
     const res = await fullApp.request('/v1/audit/project?namespace=%40official', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         essence: validEssence,
       }),

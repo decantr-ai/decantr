@@ -28,6 +28,9 @@ vi.mock('../../src/middleware/auth.js', () => ({
     c.set('auth', mockAuthState.current);
     await next();
   },
+  requireApiKeyScope: () => async (_c: any, next: any) => {
+    await next();
+  },
 }));
 
 vi.mock('../../src/db/client.js', () => ({

@@ -37,7 +37,7 @@ vi.mock('../../src/db/client.js', () => ({
   })),
 }));
 
-const { requireAuth, getAuthContext, optionalAuth } = await import('../../src/middleware/auth.js');
+const { requireAuth, requireApiKeyScope, getAuthContext, optionalAuth } = await import('../../src/middleware/auth.js');
 
 function createTestApp() {
   const app = new Hono();
@@ -47,6 +47,13 @@ function createTestApp() {
   app.get('/protected/resource', (c) => {
     const auth = c.get('auth');
     return c.json({ user: auth.user, isAuthenticated: auth.isAuthenticated });
+  });
+
+  // Scoped API-key route
+  app.use('/content-write/*', requireAuth(), requireApiKeyScope('content:write'));
+  app.post('/content-write/resource', (c) => {
+    const auth = c.get('auth');
+    return c.json({ apiKeyScopes: auth.apiKeyScopes, authSource: auth.authSource });
   });
 
   // Optional auth route
@@ -178,6 +185,65 @@ describe('Auth middleware', () => {
       expect(json.isAuthenticated).toBe(true);
       expect(json.user.id).toBe('user-456');
       expect(json.user.tier).toBe('team');
+    });
+
+    it('should reject API keys that lack the required scope', async () => {
+      mockSingle.mockResolvedValue({
+        data: {
+          id: 'key-readonly',
+          key_hash: 'abc',
+          scopes: ['read'],
+          users: {
+            id: 'user-789',
+            email: 'apiuser@example.com',
+            username: 'api-user',
+            display_name: 'API User',
+            tier: 'team',
+            trusted: false,
+            reputation_score: 10,
+          },
+        },
+        error: null,
+      });
+
+      const res = await app.request('/content-write/resource', {
+        method: 'POST',
+        headers: { 'X-API-Key': 'dk_test_readonly' },
+      });
+
+      expect(res.status).toBe(403);
+      const json = await res.json();
+      expect(json.error).toBe('Insufficient API key scope');
+    });
+
+    it('should allow API keys that include the required scope', async () => {
+      mockSingle.mockResolvedValue({
+        data: {
+          id: 'key-writer',
+          key_hash: 'abc',
+          scopes: ['read', 'content:write'],
+          users: {
+            id: 'user-789',
+            email: 'apiuser@example.com',
+            username: 'api-user',
+            display_name: 'API User',
+            tier: 'team',
+            trusted: false,
+            reputation_score: 10,
+          },
+        },
+        error: null,
+      });
+
+      const res = await app.request('/content-write/resource', {
+        method: 'POST',
+        headers: { 'X-API-Key': 'dk_test_writer' },
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.authSource).toBe('api_key');
+      expect(json.apiKeyScopes).toContain('content:write');
     });
   });
 

@@ -1,0 +1,383 @@
+import { createHash, randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFile, rm } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { basename, isAbsolute, join, relative } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { readArgValue } from './cli-arg-lib.mjs';
+import {
+  getRepoRoot,
+  listPublicPackages,
+  loadPackageSurface,
+  sortReleaseEntries,
+} from './package-surface-lib.mjs';
+
+const require = createRequire(import.meta.url);
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
+const includeExperimental = args.has('--include-experimental');
+const noTarballs = args.has('--no-tarballs');
+const outArg = readArgValue(rawArgs, 'out') ?? 'artifacts/release-evidence';
+const onlyWave = readArgValue(rawArgs, 'wave');
+const onlyNames = new Set(
+  readArgValue(rawArgs, 'only')
+    ? readArgValue(rawArgs, 'only')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+    : [],
+);
+
+const root = getRepoRoot();
+const outDir = isAbsolute(outArg) ? outArg : join(root, outArg);
+const surface = loadPackageSurface(root);
+const publicPackages = listPublicPackages(root);
+const publicByName = new Map(publicPackages.map((pkg) => [pkg.name, pkg]));
+const packageVersionByName = new Map(
+  publicPackages.map((pkg) => [pkg.name, JSON.parse(readFileSync(join(root, pkg.path, 'package.json'), 'utf8')).version]),
+);
+const generatedAt = new Date().toISOString();
+
+function ensureDir(path) {
+  mkdirSync(path, { recursive: true });
+}
+
+function safePackageDirName(name) {
+  return name.replace(/^@/, '').replace(/\//g, '__');
+}
+
+function run(command, commandArgs, options = {}) {
+  const result = spawnSync(command, commandArgs, {
+    cwd: options.cwd ?? root,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 32,
+    env: process.env,
+  });
+
+  if (options.allowFailure) {
+    return result;
+  }
+
+  if (result.status !== 0) {
+    const stderr = result.stderr ? `\n${result.stderr.trim()}` : '';
+    const stdout = result.stdout ? `\n${result.stdout.trim()}` : '';
+    throw new Error(`${command} ${commandArgs.join(' ')} failed.${stderr}${stdout}`);
+  }
+
+  return result;
+}
+
+function readPackageJson(entry) {
+  return JSON.parse(readFileSync(join(root, entry.path, 'package.json'), 'utf8'));
+}
+
+function packagePurl(name, version) {
+  if (name.startsWith('@')) {
+    const [scope, unscoped] = name.slice(1).split('/');
+    return `pkg:npm/%40${encodeURIComponent(scope)}/${encodeURIComponent(unscoped)}@${encodeURIComponent(version)}`;
+  }
+  return `pkg:npm/${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
+}
+
+function resolveDependencyVersion(pkgDir, depName, spec) {
+  if (typeof spec === 'string' && spec.startsWith('workspace:')) {
+    return packageVersionByName.get(depName) ?? spec;
+  }
+
+  try {
+    const packageJsonPath = require.resolve(`${depName}/package.json`, { paths: [pkgDir] });
+    return JSON.parse(readFileSync(packageJsonPath, 'utf8')).version ?? spec;
+  } catch {
+    const fallbackPath = join(root, 'node_modules', depName, 'package.json');
+    if (existsSync(fallbackPath)) {
+      return JSON.parse(readFileSync(fallbackPath, 'utf8')).version ?? spec;
+    }
+  }
+
+  return spec;
+}
+
+function collectDependencies(pkgJson, pkgDir) {
+  const dependencyGroups = {
+    dependencies: pkgJson.dependencies ?? {},
+    peerDependencies: pkgJson.peerDependencies ?? {},
+    optionalDependencies: pkgJson.optionalDependencies ?? {},
+  };
+
+  return Object.entries(dependencyGroups).flatMap(([group, dependencies]) =>
+    Object.entries(dependencies).map(([name, spec]) => ({
+      group,
+      name,
+      spec,
+      resolvedVersion: resolveDependencyVersion(pkgDir, name, spec),
+    })),
+  );
+}
+
+function makeSbom(entry, pkgJson, dependencies) {
+  const packageRef = `pkg:${pkgJson.name}@${pkgJson.version}`;
+  const components = dependencies.map((dep) => {
+    const version = String(dep.resolvedVersion || dep.spec || 'unknown');
+    return {
+      type: 'library',
+      bomRef: `pkg:${dep.name}@${version}`,
+      name: dep.name,
+      version,
+      scope: dep.group === 'dependencies' ? 'required' : 'optional',
+      purl: packagePurl(dep.name, version),
+      properties: [
+        { name: 'decantr:dependencyGroup', value: dep.group },
+        { name: 'decantr:declaredSpec', value: String(dep.spec) },
+      ],
+    };
+  });
+
+  return {
+    bomFormat: 'CycloneDX',
+    specVersion: '1.5',
+    serialNumber: `urn:uuid:${randomUUID()}`,
+    version: 1,
+    metadata: {
+      timestamp: generatedAt,
+      tools: {
+        components: [
+          {
+            type: 'application',
+            name: 'decantr-release-evidence',
+            version: '1.0.0',
+          },
+        ],
+      },
+      component: {
+        type: 'library',
+        bomRef: packageRef,
+        name: pkgJson.name,
+        version: pkgJson.version,
+        purl: packagePurl(pkgJson.name, pkgJson.version),
+        licenses: [{ license: { id: pkgJson.license ?? 'NOASSERTION' } }],
+      },
+    },
+    components,
+    dependencies: [
+      {
+        ref: packageRef,
+        dependsOn: components.map((component) => component.bomRef),
+      },
+    ],
+    properties: [
+      { name: 'decantr:packagePath', value: entry.path },
+      { name: 'decantr:releaseWave', value: entry.releaseWave },
+      { name: 'decantr:surfaceClass', value: entry.surfaceClass },
+      { name: 'decantr:maturity', value: entry.maturity },
+    ],
+  };
+}
+
+function sha256File(path) {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+function normalizePackOutput(stdout) {
+  const parsed = JSON.parse(stdout);
+  return Array.isArray(parsed) ? parsed[0] : parsed;
+}
+
+function makeProvenanceReference(entry, pkgJson, tarballSha256) {
+  return {
+    generatedAt,
+    package: {
+      name: pkgJson.name,
+      version: pkgJson.version,
+      path: entry.path,
+      tarballSha256,
+    },
+    expectedPublish: {
+      command: 'pnpm publish --access public --provenance --tag <dist-tag> --no-git-checks',
+      distTag: entry.defaultDistTag,
+      requiresGithubOidc: true,
+    },
+    githubActions: {
+      repository: process.env.GITHUB_REPOSITORY ?? null,
+      ref: process.env.GITHUB_REF ?? null,
+      sha: process.env.GITHUB_SHA ?? null,
+      workflow: process.env.GITHUB_WORKFLOW ?? null,
+      runId: process.env.GITHUB_RUN_ID ?? null,
+      runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
+    },
+  };
+}
+
+function parseJsonOrRaw(result) {
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      status: result.status,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    };
+  }
+
+  try {
+    return {
+      ok: true,
+      data: JSON.parse(result.stdout),
+    };
+  } catch {
+    return {
+      ok: true,
+      stdout: result.stdout,
+    };
+  }
+}
+
+async function main() {
+  ensureDir(outDir);
+
+  const selected = sortReleaseEntries(surface.packages).filter((entry) => {
+    if (!publicByName.has(entry.name)) return false;
+    if (!includeExperimental && entry.publish !== true) return false;
+    if (onlyWave && entry.releaseWave !== onlyWave) return false;
+    if (onlyNames.size > 0 && !onlyNames.has(entry.name)) return false;
+    return true;
+  });
+
+  if (selected.length === 0) {
+    throw new Error('No packages selected for release evidence generation.');
+  }
+
+  const auditResult = parseJsonOrRaw(run('pnpm', ['audit', '--json'], { allowFailure: true }));
+  writeFileSync(join(outDir, 'vulnerability-report.json'), `${JSON.stringify(auditResult, null, 2)}\n`, 'utf8');
+
+  const licenseResult = parseJsonOrRaw(run('pnpm', ['licenses', 'list', '--json'], { allowFailure: true }));
+  writeFileSync(join(outDir, 'license-report.json'), `${JSON.stringify(licenseResult, null, 2)}\n`, 'utf8');
+
+  const surfaceSnapshot = {
+    generatedAt,
+    packageSurface: surface,
+    publicPackages,
+  };
+  writeFileSync(join(outDir, 'package-surface-snapshot.json'), `${JSON.stringify(surfaceSnapshot, null, 2)}\n`, 'utf8');
+
+  const surfaceDiff = run(
+    'git',
+    ['diff', '--', 'config/package-surface.json', 'docs/reference/package-support-matrix.md', 'packages/*/package.json'],
+    { allowFailure: true },
+  );
+  writeFileSync(join(outDir, 'package-surface-diff.patch'), surfaceDiff.stdout ?? '', 'utf8');
+
+  const packageResults = [];
+  for (const entry of selected) {
+    const pkgJson = readPackageJson(entry);
+    const pkgDir = join(root, entry.path);
+    const evidenceDir = join(outDir, safePackageDirName(entry.name));
+    const tarballDir = join(evidenceDir, 'tarballs');
+    ensureDir(evidenceDir);
+    ensureDir(tarballDir);
+
+    const packResult = run('pnpm', ['--filter', entry.name, 'pack', '--pack-destination', tarballDir, '--json']);
+    const packOutput = normalizePackOutput(packResult.stdout);
+    const tarballPath = packOutput.filename;
+    const tarballSha256 = sha256File(tarballPath);
+    const tarballName = basename(tarballPath);
+
+    if (noTarballs) {
+      await rm(tarballPath, { force: true });
+    } else if (!tarballPath.startsWith(tarballDir)) {
+      await copyFile(tarballPath, join(tarballDir, tarballName));
+    }
+
+    const dependencies = collectDependencies(pkgJson, pkgDir);
+    const sbom = makeSbom(entry, pkgJson, dependencies);
+    const packFiles = {
+      generatedAt,
+      package: {
+        name: pkgJson.name,
+        version: pkgJson.version,
+        path: entry.path,
+      },
+      tarball: {
+        filename: tarballName,
+        sha256: tarballSha256,
+      },
+      files: (packOutput.files ?? []).map((file) => ({
+        path: file.path,
+        size: file.size ?? null,
+        mode: file.mode ?? null,
+      })),
+    };
+    const packageLicenseReport = {
+      generatedAt,
+      package: {
+        name: pkgJson.name,
+        version: pkgJson.version,
+        license: pkgJson.license ?? null,
+      },
+      dependencies,
+      rootLicenseReport: relative(evidenceDir, join(outDir, 'license-report.json')),
+    };
+    const provenanceReference = makeProvenanceReference(entry, pkgJson, tarballSha256);
+
+    writeFileSync(join(evidenceDir, 'sbom.cyclonedx.json'), `${JSON.stringify(sbom, null, 2)}\n`, 'utf8');
+    writeFileSync(join(evidenceDir, 'npm-pack-files.json'), `${JSON.stringify(packFiles, null, 2)}\n`, 'utf8');
+    writeFileSync(join(evidenceDir, 'tarball.sha256'), `${tarballSha256}  ${tarballName}\n`, 'utf8');
+    writeFileSync(join(evidenceDir, 'provenance-reference.json'), `${JSON.stringify(provenanceReference, null, 2)}\n`, 'utf8');
+    writeFileSync(join(evidenceDir, 'license-report.json'), `${JSON.stringify(packageLicenseReport, null, 2)}\n`, 'utf8');
+    writeFileSync(join(evidenceDir, 'vulnerability-report.json'), `${JSON.stringify({
+      generatedAt,
+      package: {
+        name: pkgJson.name,
+        version: pkgJson.version,
+      },
+      rootAuditReport: relative(evidenceDir, join(outDir, 'vulnerability-report.json')),
+      auditOk: auditResult.ok === true,
+    }, null, 2)}\n`, 'utf8');
+
+    packageResults.push({
+      name: entry.name,
+      version: pkgJson.version,
+      path: entry.path,
+      evidencePath: relative(root, evidenceDir),
+      tarball: noTarballs ? null : relative(root, join(tarballDir, tarballName)),
+      sha256: tarballSha256,
+      fileCount: packFiles.files.length,
+    });
+  }
+
+  const manifest = {
+    generatedAt,
+    selectedPackages: packageResults,
+    artifacts: {
+      vulnerabilityReport: relative(root, join(outDir, 'vulnerability-report.json')),
+      licenseReport: relative(root, join(outDir, 'license-report.json')),
+      packageSurfaceSnapshot: relative(root, join(outDir, 'package-surface-snapshot.json')),
+      packageSurfaceDiff: relative(root, join(outDir, 'package-surface-diff.patch')),
+    },
+  };
+
+  writeFileSync(join(outDir, 'release-evidence-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+
+  const markdown = [
+    '# Release Evidence Manifest',
+    '',
+    `- Generated at: ${generatedAt}`,
+    `- Packages: ${packageResults.length}`,
+    `- Vulnerability audit: ${auditResult.ok ? 'ok' : 'failed'}`,
+    `- License report: ${licenseResult.ok ? 'ok' : 'failed'}`,
+    '',
+    '| Package | Version | Files | Tarball SHA-256 |',
+    '| --- | --- | ---: | --- |',
+    ...packageResults.map((pkg) => `| ${pkg.name} | ${pkg.version} | ${pkg.fileCount} | \`${pkg.sha256}\` |`),
+    '',
+  ].join('\n');
+  writeFileSync(join(outDir, 'release-evidence-manifest.md'), `${markdown}\n`, 'utf8');
+  console.log(markdown);
+
+  if (!auditResult.ok) {
+    process.exitCode = 1;
+  }
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});

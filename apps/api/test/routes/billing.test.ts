@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Hono } from 'hono';
 import type { Env } from '../../src/types.js';
 
@@ -68,6 +68,9 @@ vi.mock('../../src/middleware/auth.js', () => ({
       return c.json({ error: 'Unauthorized' }, 401);
     }
     c.set('auth', auth);
+    await next();
+  },
+  requireApiKeyScope: () => async (_c: any, next: any) => {
     await next();
   },
 }));
@@ -206,9 +209,13 @@ function createTestApp() {
 
 describe('Billing routes', () => {
   let app: ReturnType<typeof createTestApp>;
+  const originalBillingEnabled = process.env.REGISTRY_BILLING_ENABLED;
+  const originalAllowedOrigins = process.env.DECANTR_BILLING_ALLOWED_ORIGINS;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env.REGISTRY_BILLING_ENABLED = 'true';
+    process.env.DECANTR_BILLING_ALLOWED_ORIGINS = 'https://app.example.com';
     app = createTestApp();
     mockAuthState.current = {
       user: {
@@ -232,6 +239,19 @@ describe('Billing routes', () => {
     mockStripe.webhooks.constructEvent.mockReturnValue({ id: 'evt_1', type: 'checkout.session.completed' });
     mockHandleStripeWebhook.mockResolvedValue(undefined);
     mockCreateAdminClient.mockReturnValue(createBillingAdminClient());
+  });
+
+  afterEach(() => {
+    if (originalBillingEnabled === undefined) {
+      delete process.env.REGISTRY_BILLING_ENABLED;
+    } else {
+      process.env.REGISTRY_BILLING_ENABLED = originalBillingEnabled;
+    }
+    if (originalAllowedOrigins === undefined) {
+      delete process.env.DECANTR_BILLING_ALLOWED_ORIGINS;
+    } else {
+      process.env.DECANTR_BILLING_ALLOWED_ORIGINS = originalAllowedOrigins;
+    }
   });
 
   it('rejects invalid checkout plans', async () => {

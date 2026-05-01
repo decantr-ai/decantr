@@ -89,6 +89,11 @@
           "items": {
             "$ref": "https://decantr.ai/schemas/execution-pack.common.v1.json#/$defs/pagePattern"
           }
+        },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives emitted into page-pack rendering.",
+          "items": { "type": "string", "minLength": 1 }
         }
       },
       "additionalProperties": false

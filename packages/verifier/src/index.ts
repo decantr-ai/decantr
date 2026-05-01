@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, realpathSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { ReviewExecutionPack } from '@decantr/core';
@@ -14823,11 +14823,24 @@ export function critiqueSource({
   };
 }
 
+function resolveProjectFilePath(projectRoot: string, filePath: string): string {
+  const root = existsSync(projectRoot) ? realpathSync.native(projectRoot) : resolve(projectRoot);
+  const candidatePath = isAbsolute(filePath) ? resolve(filePath) : resolve(root, filePath);
+  const resolvedPath = existsSync(candidatePath) ? realpathSync.native(candidatePath) : candidatePath;
+  const relativePath = relative(root, resolvedPath);
+
+  if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
+    throw new Error(`Path escapes the project root: ${filePath}`);
+  }
+
+  return resolvedPath;
+}
+
 export async function critiqueFile(
   filePath: string,
   projectRoot: string,
 ): Promise<FileCritiqueReport> {
-  const resolvedPath = isAbsolute(filePath) ? filePath : resolve(projectRoot, filePath);
+  const resolvedPath = resolveProjectFilePath(projectRoot, filePath);
   const code = await readFile(resolvedPath, 'utf-8');
   const treatmentsCss = readTextIfExists(join(projectRoot, 'src', 'styles', 'treatments.css'));
   const reviewPack = loadReviewPack(projectRoot);

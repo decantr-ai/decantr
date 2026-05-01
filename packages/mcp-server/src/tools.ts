@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
 import type {
@@ -18,6 +18,7 @@ import {
   mutateEssenceFile,
   readDriftLog,
   readEssenceFile,
+  resolveWorkspacePath,
   validateStringArg,
   writeDriftLog,
 } from './helpers.js';
@@ -139,16 +140,15 @@ async function getHostedExecutionPackManifestPayload(args: Record<string, unknow
 }
 
 async function getHostedFileCritiquePayload(args: Record<string, unknown>) {
-  const client = getPublicAPIClient();
+  const client = getAPIClient();
   const filePath = args.file_path as string;
-  const resolvedFilePath = isAbsolute(filePath) ? filePath : resolve(process.cwd(), filePath);
+  const resolvedFilePath = resolveWorkspacePath(filePath);
+  const snapshotFilePath = relative(process.cwd(), resolvedFilePath).replace(/\\/g, '/') || basename(resolvedFilePath);
   const code = await readFile(resolvedFilePath, 'utf-8');
   const { essence } = await readEssenceFile(args.path as string | undefined);
   const treatmentsPath =
     typeof args.treatments_path === 'string'
-      ? isAbsolute(args.treatments_path)
-        ? args.treatments_path
-        : resolve(process.cwd(), args.treatments_path)
+      ? resolveWorkspacePath(args.treatments_path)
       : join(process.cwd(), 'src', 'styles', 'treatments.css');
   const treatmentsCss = existsSync(treatmentsPath)
     ? readFileSync(treatmentsPath, 'utf-8')
@@ -157,7 +157,7 @@ async function getHostedFileCritiquePayload(args: Record<string, unknown>) {
   return client.critiqueFile(
     {
       essence,
-      filePath,
+      filePath: snapshotFilePath,
       code,
       treatmentsCss,
     },
@@ -180,9 +180,7 @@ function extractHostedAssetPaths(indexHtml: string): string[] {
 
 async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: string) {
   const distRoot = distPathArg
-    ? isAbsolute(distPathArg)
-      ? distPathArg
-      : resolve(projectRoot, distPathArg)
+    ? resolveWorkspacePath(distPathArg, projectRoot)
     : join(projectRoot, 'dist');
   const indexPath = join(distRoot, 'index.html');
 
@@ -194,9 +192,10 @@ async function captureHostedDistSnapshot(projectRoot: string, distPathArg?: stri
   const assets: Record<string, string> = {};
 
   for (const assetPath of extractHostedAssetPaths(indexHtml)) {
-    const assetFilePath = join(distRoot, assetPath.replace(/^[/\\]+/, ''));
+    const snapshotAssetPath = assetPath.replace(/^[/\\]+/, '');
+    const assetFilePath = resolveWorkspacePath(snapshotAssetPath, distRoot);
     if (existsSync(assetFilePath)) {
-      assets[assetPath] = readFileSync(assetFilePath, 'utf-8');
+      assets[snapshotAssetPath] = readFileSync(assetFilePath, 'utf-8');
     }
   }
 
@@ -216,9 +215,7 @@ async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?:
     return undefined;
   }
 
-  const sourcesRoot = isAbsolute(sourcesPathArg)
-    ? sourcesPathArg
-    : resolve(projectRoot, sourcesPathArg);
+  const sourcesRoot = resolveWorkspacePath(sourcesPathArg, projectRoot);
   if (!existsSync(sourcesRoot)) {
     return undefined;
   }
@@ -254,7 +251,7 @@ async function captureHostedSourceSnapshot(projectRoot: string, sourcesPathArg?:
 }
 
 async function getHostedProjectAuditPayload(args: Record<string, unknown>) {
-  const client = getPublicAPIClient();
+  const client = getAPIClient();
   const { essence } = await readEssenceFile(args.path as string | undefined);
   const dist = await captureHostedDistSnapshot(process.cwd(), args.dist_path as string | undefined);
   const sources = await captureHostedSourceSnapshot(
@@ -392,6 +389,10 @@ function hasExecutionPackPayload(payload: {
   json: unknown | null;
 }): boolean {
   return payload.markdown !== null || payload.json !== null;
+}
+
+function allowsHostedUpload(args: Record<string, unknown>): boolean {
+  return args.allow_hosted_upload === true;
 }
 
 function toHostedExecutionPackPayload(pack: { renderedMarkdown?: string } | null | undefined) {
@@ -988,7 +989,7 @@ export const TOOLS = [
     name: 'decantr_audit_project',
     title: 'Audit Project',
     description:
-      'Audit the current project against the essence contract, guard rules, and compiled execution packs. Falls back to the hosted verifier when local compiled pack artifacts are missing. Returns a schema-backed project audit report.',
+      'Audit the current project against the essence contract, guard rules, and compiled execution packs. Can fall back to the hosted verifier when local compiled pack artifacts are missing only when allow_hosted_upload is true. Returns a schema-backed project audit report.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -1012,6 +1013,11 @@ export const TOOLS = [
           description:
             'Optional path to a local source directory to snapshot for hosted source-level verification. For example `src` or `app`.',
         },
+        allow_hosted_upload: {
+          type: 'boolean' as const,
+          description:
+            'Explicitly opt in to uploading local dist/source snapshots to the hosted verifier when local packs are missing. Defaults to false.',
+        },
       },
     },
     annotations: READ_ONLY_NETWORK,
@@ -1021,7 +1027,7 @@ export const TOOLS = [
     name: 'decantr_critique',
     title: 'Design Critique',
     description:
-      'Critique a file against the compiled review contract and Decantr verification heuristics. Falls back to the hosted verifier when local review packs are missing. Returns a schema-backed file critique report with scores, findings, and focus areas.',
+      'Critique a file against the compiled review contract and Decantr verification heuristics. Can fall back to the hosted verifier when local review packs are missing only when allow_hosted_upload is true. Returns a schema-backed file critique report with scores, findings, and focus areas.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -1043,6 +1049,11 @@ export const TOOLS = [
           type: 'string' as const,
           description:
             'Optional path to treatments.css when using hosted fallback. Defaults to ./src/styles/treatments.css.',
+        },
+        allow_hosted_upload: {
+          type: 'boolean' as const,
+          description:
+            'Explicitly opt in to uploading the target source file to the hosted verifier when local review packs are missing. Defaults to false.',
         },
       },
       required: ['file_path'],
@@ -2411,15 +2422,20 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (args.treatments_path != null && typeof args.treatments_path !== 'string') {
         return { error: 'Invalid treatments_path. Must be a string when provided.' };
       }
+      if (args.allow_hosted_upload != null && typeof args.allow_hosted_upload !== 'boolean') {
+        return { error: 'Invalid allow_hosted_upload. Must be a boolean when provided.' };
+      }
       const { critiqueFile } = await import('./critique.js');
       const localReviewPackPath = join(process.cwd(), '.decantr', 'context', 'review-pack.json');
       if (existsSync(localReviewPackPath)) {
         return critiqueFile(args.file_path as string, process.cwd());
       }
 
-      const hosted = await loadHostedFileCritiqueFallback(args);
-      if (hosted.report) {
-        return hosted.report;
+      if (allowsHostedUpload(args)) {
+        const hosted = await loadHostedFileCritiqueFallback(args);
+        if (hosted.report) {
+          return hosted.report;
+        }
       }
 
       return critiqueFile(args.file_path as string, process.cwd());
@@ -2438,6 +2454,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (args.sources_path != null && typeof args.sources_path !== 'string') {
         return { error: 'Invalid sources_path. Must be a string when provided.' };
       }
+      if (args.allow_hosted_upload != null && typeof args.allow_hosted_upload !== 'boolean') {
+        return { error: 'Invalid allow_hosted_upload. Must be a boolean when provided.' };
+      }
       const { auditProject } = await import('@decantr/verifier');
       const projectRoot = process.cwd();
       const hasReviewPack = existsSync(
@@ -2451,9 +2470,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return auditProject(projectRoot);
       }
 
-      const hosted = await loadHostedProjectAuditFallback(args);
-      if (hosted.report) {
-        return hosted.report;
+      if (allowsHostedUpload(args)) {
+        const hosted = await loadHostedProjectAuditFallback(args);
+        if (hosted.report) {
+          return hosted.report;
+        }
       }
 
       return auditProject(projectRoot);

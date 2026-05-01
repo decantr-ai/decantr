@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import {
   chmodSync,
   cpSync,
@@ -200,5 +200,29 @@ describe('new command (e2e)', () => {
     expect(
       existsSync(join(projectDir, '.decantr', 'context', 'section-portfolio-showcase-pack.md')),
     ).toBe(true);
+  });
+
+  it('passes init flags as argv without executing shell metacharacters', () => {
+    const markerPath = join(testDir, 'shell-pwned');
+    const maliciousRegistry = 'https://registry.example.test; touch ../shell-pwned #';
+
+    execFileSync(
+      process.execPath,
+      [
+        cliPath,
+        'new',
+        'argv-smoke',
+        '--offline',
+        `--registry=${maliciousRegistry}`,
+      ],
+      {
+        cwd: testDir,
+        stdio: 'pipe',
+        timeout: 30000,
+      },
+    );
+
+    expect(existsSync(join(testDir, 'argv-smoke'))).toBe(true);
+    expect(existsSync(markerPath)).toBe(false);
   });
 });

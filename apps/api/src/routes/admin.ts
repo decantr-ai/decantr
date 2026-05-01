@@ -39,22 +39,30 @@ function requireAdmin() {
   };
 }
 
-// Admin key-only middleware — for CI/CD sync (no user auth required)
-function requireAdminKeyOnly() {
+// Scoped service-token middleware — for CI/CD sync/prune paths (no user auth required).
+function requireServiceToken(envVar: 'DECANTR_CONTENT_SYNC_TOKEN' | 'DECANTR_CONTENT_PRUNE_TOKEN', headerName: string) {
   return async (c: any, next: any) => {
-    const adminKey = c.req.header('X-Admin-Key') ?? '';
-    const expected = process.env.DECANTR_ADMIN_KEY ?? '';
-    if (!expected || !adminKey || !safeCompare(adminKey, expected)) {
+    const supplied =
+      c.req.header(headerName) ??
+      c.req.header('X-Decantr-Service-Token') ??
+      c.req.header('X-Admin-Key') ??
+      '';
+    const expected = process.env[envVar] ?? process.env.DECANTR_ADMIN_KEY ?? '';
+    if (!expected || !supplied || !safeCompare(supplied, expected)) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
+    c.set('adminAuditIdentity', {
+      auth_source: 'service_token',
+      service_principal: envVar,
+    });
     await next();
   };
 }
 
-// Admin sync endpoint uses admin-key-only auth (no user required, for CI/CD)
-adminRoutes.use('/admin/sync', requireAdminKeyOnly());
-adminRoutes.use('/admin/content/*', requireAdminKeyOnly());
+// Admin sync/prune endpoints use scoped service tokens (no user required, for CI/CD).
+adminRoutes.use('/admin/sync', requireServiceToken('DECANTR_CONTENT_SYNC_TOKEN', 'X-Content-Sync-Token'));
+adminRoutes.use('/admin/content/*', requireServiceToken('DECANTR_CONTENT_PRUNE_TOKEN', 'X-Content-Prune-Token'));
 
 // All other admin endpoints require both user auth + admin key
 adminRoutes.use('/admin/moderation/*', requireAuth());

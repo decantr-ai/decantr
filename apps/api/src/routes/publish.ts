@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import { CONTENT_TYPES, parsePagination } from '../types.js';
 import type { ContentType } from '../types.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { validateEssence } from '@decantr/essence-spec';
@@ -30,7 +30,7 @@ function sanitizeFileName(fileName: string): string {
 }
 
 // POST /v1/content/thumbnail-upload - Create signed upload target
-publishRoutes.post('/content/thumbnail-upload', async (c) => {
+publishRoutes.post('/content/thumbnail-upload', requireApiKeyScope('content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
   const target = body.target === 'organization' ? 'organization' : body.target === 'personal' ? 'personal' : 'community';
@@ -269,7 +269,7 @@ publishRoutes.get('/my/content', async (c) => {
 });
 
 // POST /v1/content - Publish new content
-publishRoutes.post('/content', async (c) => {
+publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
 
@@ -446,9 +446,9 @@ publishRoutes.post('/content', async (c) => {
 });
 
 // PATCH /v1/content/:id - Update own content
-publishRoutes.patch('/content/:id', async (c) => {
+publishRoutes.patch('/content/:id', requireApiKeyScope('content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const contentId = c.req.param('id');
+  const contentId = c.req.param('id')!;
   const body = await c.req.json();
 
   const client = createAdminClient();
@@ -524,9 +524,9 @@ publishRoutes.patch('/content/:id', async (c) => {
 });
 
 // DELETE /v1/content/:id - Delete own content
-publishRoutes.delete('/content/:id', async (c) => {
+publishRoutes.delete('/content/:id', requireApiKeyScope('content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const contentId = c.req.param('id');
+  const contentId = c.req.param('id')!;
 
   const client = createAdminClient();
 
@@ -567,9 +567,9 @@ publishRoutes.delete('/content/:id', async (c) => {
 });
 
 // POST /v1/content/:id/flag - Flag content (deducts 2 reputation points from owner)
-publishRoutes.post('/content/:id/flag', async (c) => {
+publishRoutes.post('/content/:id/flag', requireApiKeyScope('content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const contentId = c.req.param('id');
+  const contentId = c.req.param('id')!;
   const body = await c.req.json().catch(() => ({}));
 
   const client = createAdminClient();

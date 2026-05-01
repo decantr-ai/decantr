@@ -1,0 +1,7 @@
+* @decantr-ai/maintainers
+
+/apps/api/ @decantr-ai/maintainers
+/apps/registry/ @decantr-ai/maintainers
+/packages/ @decantr-ai/maintainers
+/.github/ @decantr-ai/maintainers
+/Dockerfile @decantr-ai/maintainers

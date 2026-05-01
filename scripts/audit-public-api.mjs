@@ -13,6 +13,7 @@
  * Environment variables:
  *   REGISTRY_URL - Public API base URL (default: https://api.decantr.ai/v1)
  *   CONTENT_NAMESPACE - Namespace used for registry list/summary checks (default: @official)
+ *   REGISTRY_API_KEY / DECANTR_API_KEY / PUBLIC_API_AUDIT_API_KEY - Optional key for authenticated hosted analysis checks.
  *   FAIL_ON_PUBLIC_API_ERROR - Set to "true" to exit non-zero when any check fails
  *   PUBLIC_API_AUDIT_CORE_ONLY - Set to "true" to skip hosted pack-select and verifier endpoints
  */
@@ -23,6 +24,11 @@ import { dirname } from 'node:path';
 const args = process.argv.slice(2);
 const REGISTRY_URL = process.env.REGISTRY_URL || 'https://api.decantr.ai/v1';
 const CONTENT_NAMESPACE = process.env.CONTENT_NAMESPACE || '@official';
+const API_KEY =
+  process.env.REGISTRY_API_KEY ||
+  process.env.DECANTR_API_KEY ||
+  process.env.PUBLIC_API_AUDIT_API_KEY ||
+  '';
 const REPORT_PATH =
   args.find((arg) => arg.startsWith('--report-json='))?.slice('--report-json='.length) || null;
 const SUMMARY_PATH =
@@ -41,6 +47,13 @@ function ensureParentDir(path) {
 
 function isObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function hostedAnalysisHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    ...(API_KEY ? { Authorization: `Bearer ${API_KEY}` } : {}),
+  };
 }
 
 async function fetchJson(path, init) {
@@ -175,9 +188,7 @@ const CHECKS = [
       path: `/critique/file?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
       init: {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: hostedAnalysisHeaders(),
         body: JSON.stringify({
           essence: SAMPLE_ESSENCE,
           filePath: 'src/pages/Home.tsx',
@@ -185,11 +196,17 @@ const CHECKS = [
         }),
       },
       validate(response) {
+        if (!API_KEY) {
+          return response.status === 401;
+        }
         return response.ok &&
           isObject(response.json) &&
           response.json.$schema === 'https://decantr.ai/schemas/file-critique-report.v1.json';
       },
       details(response) {
+        if (!API_KEY) {
+          return response.status === 401 ? 'auth required as expected' : response.text;
+        }
         if (isObject(response.json)) {
           return `overall=${response.json.overall ?? 'n/a'} findings=${Array.isArray(response.json.findings) ? response.json.findings.length : 'n/a'}`;
         }
@@ -203,9 +220,7 @@ const CHECKS = [
       path: `/audit/project?namespace=${encodeURIComponent(CONTENT_NAMESPACE)}`,
       init: {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: hostedAnalysisHeaders(),
         body: JSON.stringify({
           essence: SAMPLE_ESSENCE,
           dist: {
@@ -217,11 +232,17 @@ const CHECKS = [
         }),
       },
       validate(response) {
+        if (!API_KEY) {
+          return response.status === 401;
+        }
         return response.ok &&
           isObject(response.json) &&
           response.json.$schema === 'https://decantr.ai/schemas/project-audit-report.v1.json';
       },
       details(response) {
+        if (!API_KEY) {
+          return response.status === 401 ? 'auth required as expected' : response.text;
+        }
         if (isObject(response.json?.summary)) {
           return `runtime_checked=${response.json.summary.runtimeAuditChecked ?? 'n/a'} warnings=${response.json.summary.warnCount ?? 'n/a'}`;
         }

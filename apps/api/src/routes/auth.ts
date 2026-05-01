@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { createHash, randomBytes } from 'crypto';
 import type { Env } from '../types.js';
-import { requireAuth } from '../middleware/auth.js';
+import { API_KEY_SCOPES, isApiKeyScope, requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { getStripe } from '../stripe/client.js';
@@ -20,7 +20,7 @@ export const authRoutes = new Hono<Env>();
 authRoutes.use('/*', requireAuth());
 
 // GET /v1/me
-authRoutes.get('/me', async (c) => {
+authRoutes.get('/me', requireApiKeyScope('read'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const client = createAdminClient();
 
@@ -102,7 +102,7 @@ authRoutes.get('/me', async (c) => {
 });
 
 // PATCH /v1/me
-authRoutes.patch('/me', async (c) => {
+authRoutes.patch('/me', requireApiKeyScope('admin:*'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
 
@@ -165,7 +165,7 @@ authRoutes.patch('/me', async (c) => {
 });
 
 // GET /v1/api-keys
-authRoutes.get('/api-keys', async (c) => {
+authRoutes.get('/api-keys', requireApiKeyScope('api_keys:manage'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const client = createAdminClient();
 
@@ -211,7 +211,7 @@ authRoutes.get('/api-keys', async (c) => {
 });
 
 // POST /v1/api-keys
-authRoutes.post('/api-keys', async (c) => {
+authRoutes.post('/api-keys', requireApiKeyScope('api_keys:manage'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
 
@@ -220,6 +220,11 @@ authRoutes.post('/api-keys', async (c) => {
   }
 
   const scopes = Array.isArray(body.scopes) ? body.scopes : ['read'];
+  if (!scopes.every(isApiKeyScope)) {
+    return c.json({
+      error: `scopes must be one of: ${API_KEY_SCOPES.join(', ')}`,
+    }, 400);
+  }
   const orgId = typeof body.org_id === 'string' && body.org_id.length > 0 ? body.org_id : null;
 
   const client = createAdminClient();
@@ -279,9 +284,9 @@ authRoutes.post('/api-keys', async (c) => {
 });
 
 // DELETE /v1/api-keys/:id
-authRoutes.delete('/api-keys/:id', async (c) => {
+authRoutes.delete('/api-keys/:id', requireApiKeyScope('api_keys:manage'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const keyId = c.req.param('id');
+  const keyId = c.req.param('id')!;
 
   const client = createAdminClient();
   const { data: keyRow } = await client
@@ -334,7 +339,7 @@ authRoutes.delete('/api-keys/:id', async (c) => {
 // ---------------------------------------------------------------------------
 // GDPR: Data Export (Right to Access — Article 15)
 // ---------------------------------------------------------------------------
-authRoutes.get('/me/export', async (c) => {
+authRoutes.get('/me/export', requireApiKeyScope('read'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const userId = auth.user!.id;
   const client = createAdminClient();
@@ -367,7 +372,7 @@ authRoutes.get('/me/export', async (c) => {
 // ---------------------------------------------------------------------------
 // GDPR: Account Deletion (Right to Be Forgotten — Article 17)
 // ---------------------------------------------------------------------------
-authRoutes.delete('/me', async (c) => {
+authRoutes.delete('/me', requireApiKeyScope('admin:*'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const userId = auth.user!.id;
   const client = createAdminClient();

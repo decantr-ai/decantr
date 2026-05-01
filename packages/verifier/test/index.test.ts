@@ -29210,6 +29210,26 @@ describe('verifier', () => {
     }
   });
 
+  it('rejects critique file reads outside the project root', async () => {
+    const projectRoot = createProjectRoot();
+    const outsideName = `outside-${Date.now()}.tsx`;
+    const outsideFile = join(projectRoot, '..', outsideName);
+
+    try {
+      writeFileSync(outsideFile, '<button>Outside</button>\n');
+
+      await expect(critiqueFile(outsideFile, projectRoot)).rejects.toThrow(
+        'Path escapes the project root',
+      );
+      await expect(critiqueFile(`../${outsideName}`, projectRoot)).rejects.toThrow(
+        'Path escapes the project root',
+      );
+    } finally {
+      await rm(outsideFile, { force: true });
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('critiques inline source with a provided hosted review contract', () => {
     const report = critiqueSource({
       filePath: 'src/pages/Home.tsx',

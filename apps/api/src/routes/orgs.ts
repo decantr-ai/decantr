@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../types.js';
 import { CONTENT_TYPES, parsePagination } from '../types.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
@@ -42,9 +42,9 @@ async function requireOrgMembership(
 }
 
 // GET /v1/orgs/:slug
-orgRoutes.get('/orgs/:slug', async (c) => {
+orgRoutes.get('/orgs/:slug', requireApiKeyScope('read', 'org:read', 'org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -73,9 +73,9 @@ orgRoutes.get('/orgs/:slug', async (c) => {
 });
 
 // GET /v1/orgs/:slug/content
-orgRoutes.get('/orgs/:slug/content', async (c) => {
+orgRoutes.get('/orgs/:slug/content', requireApiKeyScope('read', 'org:read', 'org:write', 'content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
   const typeQuery = c.req.query('type');
   const visibilityQuery = c.req.query('visibility');
@@ -176,9 +176,9 @@ orgRoutes.get('/orgs/:slug/content', async (c) => {
 });
 
 // GET /v1/orgs/:slug/members
-orgRoutes.get('/orgs/:slug/members', async (c) => {
+orgRoutes.get('/orgs/:slug/members', requireApiKeyScope('read', 'org:read', 'org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -220,9 +220,9 @@ orgRoutes.get('/orgs/:slug/members', async (c) => {
 });
 
 // GET /v1/orgs/:slug/usage
-orgRoutes.get('/orgs/:slug/usage', async (c) => {
+orgRoutes.get('/orgs/:slug/usage', requireApiKeyScope('read', 'org:read', 'org:write', 'billing:manage'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -288,9 +288,9 @@ orgRoutes.get('/orgs/:slug/usage', async (c) => {
 });
 
 // GET /v1/orgs/:slug/policy
-orgRoutes.get('/orgs/:slug/policy', async (c) => {
+orgRoutes.get('/orgs/:slug/policy', requireApiKeyScope('read', 'org:read', 'org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -316,9 +316,9 @@ orgRoutes.get('/orgs/:slug/policy', async (c) => {
 });
 
 // PATCH /v1/orgs/:slug/policy
-orgRoutes.patch('/orgs/:slug/policy', async (c) => {
+orgRoutes.patch('/orgs/:slug/policy', requireApiKeyScope('org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const body = await c.req.json();
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
@@ -368,9 +368,9 @@ orgRoutes.patch('/orgs/:slug/policy', async (c) => {
 });
 
 // POST /v1/orgs/:slug/content
-orgRoutes.post('/orgs/:slug/content', async (c) => {
+orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const body = await c.req.json();
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
@@ -481,9 +481,9 @@ orgRoutes.post('/orgs/:slug/content', async (c) => {
 });
 
 // POST /v1/orgs/:slug/members
-orgRoutes.post('/orgs/:slug/members', async (c) => {
+orgRoutes.post('/orgs/:slug/members', requireApiKeyScope('org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const body = await c.req.json();
   const client = createAdminClient();
 
@@ -570,10 +570,10 @@ orgRoutes.post('/orgs/:slug/members', async (c) => {
 });
 
 // PATCH /v1/orgs/:slug/members/:user_id
-orgRoutes.patch('/orgs/:slug/members/:user_id', async (c) => {
+orgRoutes.patch('/orgs/:slug/members/:user_id', requireApiKeyScope('org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
-  const targetUserId = c.req.param('user_id');
+  const slug = c.req.param('slug')!;
+  const targetUserId = c.req.param('user_id')!;
   const body = await c.req.json();
   const client = createAdminClient();
 
@@ -633,10 +633,10 @@ orgRoutes.patch('/orgs/:slug/members/:user_id', async (c) => {
 });
 
 // DELETE /v1/orgs/:slug/members/:user_id
-orgRoutes.delete('/orgs/:slug/members/:user_id', async (c) => {
+orgRoutes.delete('/orgs/:slug/members/:user_id', requireApiKeyScope('org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
-  const targetUserId = c.req.param('user_id');
+  const slug = c.req.param('slug')!;
+  const targetUserId = c.req.param('user_id')!;
   const client = createAdminClient();
 
   const { data: org } = await client
@@ -699,9 +699,9 @@ orgRoutes.delete('/orgs/:slug/members/:user_id', async (c) => {
 });
 
 // GET /v1/orgs/:slug/audit
-orgRoutes.get('/orgs/:slug/audit', async (c) => {
+orgRoutes.get('/orgs/:slug/audit', requireApiKeyScope('read', 'org:read', 'org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
   const scope = AUDIT_SCOPES.find((value) => value === c.req.query('scope'));
   const action = c.req.query('action');
@@ -745,9 +745,9 @@ orgRoutes.get('/orgs/:slug/audit', async (c) => {
 });
 
 // GET /v1/orgs/:slug/approvals
-orgRoutes.get('/orgs/:slug/approvals', async (c) => {
+orgRoutes.get('/orgs/:slug/approvals', requireApiKeyScope('read', 'org:read', 'org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
+  const slug = c.req.param('slug')!;
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
@@ -799,10 +799,10 @@ orgRoutes.get('/orgs/:slug/approvals', async (c) => {
 });
 
 // POST /v1/orgs/:slug/approvals/:content_id/approve
-orgRoutes.post('/orgs/:slug/approvals/:content_id/approve', async (c) => {
+orgRoutes.post('/orgs/:slug/approvals/:content_id/approve', requireApiKeyScope('org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
-  const contentId = c.req.param('content_id');
+  const slug = c.req.param('slug')!;
+  const contentId = c.req.param('content_id')!;
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {
@@ -855,10 +855,10 @@ orgRoutes.post('/orgs/:slug/approvals/:content_id/approve', async (c) => {
 });
 
 // POST /v1/orgs/:slug/approvals/:content_id/reject
-orgRoutes.post('/orgs/:slug/approvals/:content_id/reject', async (c) => {
+orgRoutes.post('/orgs/:slug/approvals/:content_id/reject', requireApiKeyScope('org:write'), async (c) => {
   const auth = c.get('auth') as AuthContext;
-  const slug = c.req.param('slug');
-  const contentId = c.req.param('content_id');
+  const slug = c.req.param('slug')!;
+  const contentId = c.req.param('content_id')!;
   const { client, org, membership } = await requireOrgMembership(auth, slug);
 
   if (!org) {

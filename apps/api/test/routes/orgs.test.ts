@@ -35,6 +35,9 @@ vi.mock('../../src/middleware/auth.js', () => ({
     c.set('auth', auth);
     await next();
   },
+  requireApiKeyScope: () => async (_c: any, next: any) => {
+    await next();
+  },
 }));
 
 type AdminClientOptions = {

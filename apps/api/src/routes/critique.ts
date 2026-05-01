@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
-import { dirname, join, normalize } from 'node:path';
+import { dirname, extname, isAbsolute, join, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
 import { validateEssence } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
@@ -9,8 +9,50 @@ import { auditProject, critiqueSource } from '@decantr/verifier';
 import type { Env } from '../types.js';
 import { createPublicContentResolver } from '../lib/content-resolver.js';
 import { logger } from '../lib/logger.js';
+import { requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 
 export const critiqueRoutes = new Hono<Env>();
+
+const MAX_CRITIQUE_CODE_BYTES = 512 * 1024;
+const MAX_TREATMENTS_CSS_BYTES = 256 * 1024;
+const MAX_DIST_INDEX_HTML_BYTES = 1024 * 1024;
+const MAX_DIST_ASSET_COUNT = 64;
+const MAX_DIST_ASSET_BYTES = 1024 * 1024;
+const MAX_DIST_TOTAL_BYTES = 5 * 1024 * 1024;
+const MAX_SOURCE_FILE_COUNT = 128;
+const MAX_SOURCE_FILE_BYTES = 256 * 1024;
+const MAX_SOURCE_TOTAL_BYTES = 3 * 1024 * 1024;
+const HOSTED_AUDIT_TIMEOUT_MS = 10_000;
+
+const HOSTED_SOURCE_EXTENSIONS = new Set([
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.ts',
+  '.tsx',
+  '.mts',
+  '.cts',
+]);
+
+const HOSTED_DIST_EXTENSIONS = new Set([
+  '.css',
+  '.gif',
+  '.html',
+  '.jpeg',
+  '.jpg',
+  '.js',
+  '.json',
+  '.mjs',
+  '.png',
+  '.svg',
+  '.webp',
+  '.woff',
+  '.woff2',
+]);
+
+critiqueRoutes.use('/*', requireAuth());
+critiqueRoutes.use('/*', requireApiKeyScope('read'));
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -38,10 +80,143 @@ function isSourceSnapshot(value: unknown): value is { files: Record<string, stri
     && Object.values(value.files).every(entry => typeof entry === 'string');
 }
 
-function normalizeSnapshotFilePath(filePath: string): string {
-  return normalize(filePath)
-    .replace(/^[/\\]+/, '')
-    .replace(/^(\.\.[/\\])+/, '');
+function byteLength(value: string): number {
+  return Buffer.byteLength(value, 'utf-8');
+}
+
+function reject(status: 413, error: string): { status: 413; error: string };
+function reject(status: 422, error: string): { status: 422; error: string };
+function reject(status: 413 | 422, error: string): { status: 413 | 422; error: string } {
+  return { status, error };
+}
+
+function validateStringBytes(
+  label: string,
+  value: string,
+  maxBytes: number,
+): { status: 413; error: string } | null {
+  const bytes = byteLength(value);
+  if (bytes > maxBytes) {
+    return reject(413, `${label} exceeds the ${maxBytes} byte limit.`);
+  }
+  return null;
+}
+
+function normalizeHostedSnapshotFilePath(
+  filePath: string,
+  allowedExtensions: Set<string>,
+): string {
+  if (filePath.length === 0 || filePath.length > 240) {
+    throw new Error('Snapshot file paths must be between 1 and 240 characters.');
+  }
+  if (isAbsolute(filePath) || /^[a-zA-Z]:[/\\]/.test(filePath)) {
+    throw new Error(`Snapshot file path is absolute: ${filePath}`);
+  }
+
+  const normalized = normalize(filePath).replace(/\\/g, '/');
+  if (normalized === '.' || normalized.startsWith('../') || normalized.includes('/../')) {
+    throw new Error(`Snapshot file path escapes the project root: ${filePath}`);
+  }
+
+  const parts = normalized.split('/');
+  if (parts.some(part => part === '.decantr')) {
+    throw new Error(`Snapshot file path targets .decantr control files: ${filePath}`);
+  }
+  if (parts.some(part => part.startsWith('.'))) {
+    throw new Error(`Snapshot file path targets a hidden control path: ${filePath}`);
+  }
+
+  const extension = extname(normalized).toLowerCase();
+  if (!allowedExtensions.has(extension)) {
+    throw new Error(`Snapshot file path uses an unsupported extension: ${filePath}`);
+  }
+
+  return normalized;
+}
+
+function validateHostedFilePath(
+  filePath: string,
+  allowedExtensions: Set<string>,
+): { status: 422; error: string } | null {
+  try {
+    normalizeHostedSnapshotFilePath(filePath, allowedExtensions);
+    return null;
+  } catch (err) {
+    return reject(422, (err as Error).message);
+  }
+}
+
+function validateDistSnapshotLimits(
+  dist: { indexHtml: string; assets?: Record<string, string> },
+): { status: 413 | 422; error: string } | null {
+  const indexValidation = validateStringBytes('dist.indexHtml', dist.indexHtml, MAX_DIST_INDEX_HTML_BYTES);
+  if (indexValidation) return indexValidation;
+
+  const entries = Object.entries(dist.assets ?? {});
+  if (entries.length > MAX_DIST_ASSET_COUNT) {
+    return reject(413, `dist.assets exceeds the ${MAX_DIST_ASSET_COUNT} file limit.`);
+  }
+
+  let totalBytes = byteLength(dist.indexHtml);
+  for (const [assetPath, contents] of entries) {
+    const pathValidation = validateHostedFilePath(assetPath, HOSTED_DIST_EXTENSIONS);
+    if (pathValidation) return pathValidation;
+    const assetBytes = byteLength(contents);
+    if (assetBytes > MAX_DIST_ASSET_BYTES) {
+      return reject(413, `dist asset exceeds the ${MAX_DIST_ASSET_BYTES} byte limit: ${assetPath}`);
+    }
+    totalBytes += assetBytes;
+  }
+
+  if (totalBytes > MAX_DIST_TOTAL_BYTES) {
+    return reject(413, `dist snapshot exceeds the ${MAX_DIST_TOTAL_BYTES} byte total limit.`);
+  }
+
+  return null;
+}
+
+function validateSourceSnapshotLimits(
+  sources: { files: Record<string, string> },
+): { status: 413 | 422; error: string } | null {
+  const entries = Object.entries(sources.files);
+  if (entries.length > MAX_SOURCE_FILE_COUNT) {
+    return reject(413, `sources.files exceeds the ${MAX_SOURCE_FILE_COUNT} file limit.`);
+  }
+
+  let totalBytes = 0;
+  for (const [filePath, contents] of entries) {
+    const pathValidation = validateHostedFilePath(filePath, HOSTED_SOURCE_EXTENSIONS);
+    if (pathValidation) return pathValidation;
+    const fileBytes = byteLength(contents);
+    if (fileBytes > MAX_SOURCE_FILE_BYTES) {
+      return reject(413, `source file exceeds the ${MAX_SOURCE_FILE_BYTES} byte limit: ${filePath}`);
+    }
+    totalBytes += fileBytes;
+  }
+
+  if (totalBytes > MAX_SOURCE_TOTAL_BYTES) {
+    return reject(413, `source snapshot exceeds the ${MAX_SOURCE_TOTAL_BYTES} byte total limit.`);
+  }
+
+  return null;
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeout: NodeJS.Timeout | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_resolve, rejectTimeout) => {
+        timeout = setTimeout(() => {
+          rejectTimeout(new Error(`Hosted analysis timed out after ${timeoutMs}ms.`));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  }
 }
 
 async function materializeHostedAuditProject(
@@ -68,7 +243,7 @@ async function materializeHostedAuditProject(
     await writeFile(join(distDir, 'index.html'), dist.indexHtml, 'utf-8');
 
     for (const [assetPath, contents] of Object.entries(dist.assets ?? {})) {
-      const normalizedAssetPath = normalizeSnapshotFilePath(assetPath);
+      const normalizedAssetPath = normalizeHostedSnapshotFilePath(assetPath, HOSTED_DIST_EXTENSIONS);
       const destination = join(distDir, normalizedAssetPath);
       await mkdir(dirname(destination), { recursive: true });
       await writeFile(destination, contents, 'utf-8');
@@ -77,7 +252,7 @@ async function materializeHostedAuditProject(
 
   if (sources) {
     for (const [filePath, contents] of Object.entries(sources.files)) {
-      const normalizedFilePath = normalizeSnapshotFilePath(filePath);
+      const normalizedFilePath = normalizeHostedSnapshotFilePath(filePath, HOSTED_SOURCE_EXTENSIONS);
       const destination = join(projectRoot, normalizedFilePath);
       await mkdir(dirname(destination), { recursive: true });
       await writeFile(destination, contents, 'utf-8');
@@ -119,28 +294,46 @@ critiqueRoutes.post('/critique/file', async (c) => {
   if (typeof code !== 'string' || code.trim().length === 0) {
     return c.json({ error: 'Code must be a non-empty string on `code`.' }, 400);
   }
+  const codeSizeValidation = validateStringBytes('code', code, MAX_CRITIQUE_CODE_BYTES);
+  if (codeSizeValidation) {
+    return c.json({ error: codeSizeValidation.error }, codeSizeValidation.status);
+  }
 
   if (filePath != null && typeof filePath !== 'string') {
     return c.json({ error: 'filePath must be a string when provided.' }, 400);
+  }
+  if (typeof filePath === 'string' && filePath.length > 0) {
+    const filePathValidation = validateHostedFilePath(filePath, HOSTED_SOURCE_EXTENSIONS);
+    if (filePathValidation) {
+      return c.json({ error: filePathValidation.error }, filePathValidation.status);
+    }
   }
 
   if (treatmentsCss != null && typeof treatmentsCss !== 'string') {
     return c.json({ error: 'treatmentsCss must be a string when provided.' }, 400);
   }
+  if (typeof treatmentsCss === 'string') {
+    const treatmentsValidation = validateStringBytes('treatmentsCss', treatmentsCss, MAX_TREATMENTS_CSS_BYTES);
+    if (treatmentsValidation) {
+      return c.json({ error: treatmentsValidation.error }, treatmentsValidation.status);
+    }
+  }
 
   const preferredNamespace = c.req.query('namespace') || '@official';
 
   try {
-    const bundle = await compileExecutionPackBundle(essence as unknown as EssenceFile, {
-      resolver: createPublicContentResolver(preferredNamespace),
-    });
-    const report = critiqueSource({
-      filePath: typeof filePath === 'string' && filePath.length > 0 ? filePath : 'Component.tsx',
-      code,
-      reviewPack: bundle.review,
-      packManifest: bundle.manifest,
-      treatmentsCss: typeof treatmentsCss === 'string' ? treatmentsCss : '',
-    });
+    const report = await withTimeout((async () => {
+      const bundle = await compileExecutionPackBundle(essence as unknown as EssenceFile, {
+        resolver: createPublicContentResolver(preferredNamespace),
+      });
+      return critiqueSource({
+        filePath: typeof filePath === 'string' && filePath.length > 0 ? filePath : 'Component.tsx',
+        code,
+        reviewPack: bundle.review,
+        packManifest: bundle.manifest,
+        treatmentsCss: typeof treatmentsCss === 'string' ? treatmentsCss : '',
+      });
+    })(), HOSTED_AUDIT_TIMEOUT_MS);
 
     c.header('Cache-Control', 'no-store');
     return c.json(report);
@@ -181,22 +374,36 @@ critiqueRoutes.post('/audit/project', async (c) => {
   if (dist != null && !isDistSnapshot(dist)) {
     return c.json({ error: 'dist must include string `indexHtml` and optional string-valued `assets`.' }, 400);
   }
+  if (dist != null) {
+    const distValidation = validateDistSnapshotLimits(dist);
+    if (distValidation) {
+      return c.json({ error: distValidation.error }, distValidation.status);
+    }
+  }
 
   if (sources != null && !isSourceSnapshot(sources)) {
     return c.json({ error: 'sources must include a string-valued `files` object when provided.' }, 400);
+  }
+  if (sources != null) {
+    const sourceValidation = validateSourceSnapshotLimits(sources);
+    if (sourceValidation) {
+      return c.json({ error: sourceValidation.error }, sourceValidation.status);
+    }
   }
 
   const preferredNamespace = c.req.query('namespace') || '@official';
 
   let projectRoot: string | null = null;
   try {
-    projectRoot = await materializeHostedAuditProject(
-      essence as unknown as EssenceFile,
-      preferredNamespace,
-      dist as { indexHtml: string; assets?: Record<string, string> } | undefined,
-      sources as { files: Record<string, string> } | undefined,
-    );
-    const report = await auditProject(projectRoot);
+    const report = await withTimeout((async () => {
+      projectRoot = await materializeHostedAuditProject(
+        essence as unknown as EssenceFile,
+        preferredNamespace,
+        dist as { indexHtml: string; assets?: Record<string, string> } | undefined,
+        sources as { files: Record<string, string> } | undefined,
+      );
+      return auditProject(projectRoot);
+    })(), HOSTED_AUDIT_TIMEOUT_MS);
 
     c.header('Cache-Control', 'no-store');
     return c.json({

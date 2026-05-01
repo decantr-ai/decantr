@@ -31,6 +31,9 @@
     "dist",
     "schema"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "publishConfig": {
     "access": "public"
   },

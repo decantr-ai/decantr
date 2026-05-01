@@ -141,6 +141,9 @@
         "pageId": {
           "$ref": "#/$defs/nonEmptyString"
         },
+        "sectionId": {
+          "type": "string"
+        },
         "path": {
           "$ref": "#/$defs/nonEmptyString"
         },
@@ -172,6 +175,14 @@
         "presetDescription": {
           "type": "string",
           "description": "Per-preset prose copied from pattern.presets[preset].description. Rendered by the page-pack markdown as preset-specific guidance."
+        },
+        "interactions": {
+          "type": "array",
+          "description": "Declared interaction requirements copied from the pattern contract.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "additionalProperties": false

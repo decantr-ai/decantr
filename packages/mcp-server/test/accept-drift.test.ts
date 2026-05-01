@@ -37,6 +37,7 @@ function makeV3Essence(): EssenceV3 {
 }
 
 let testDir: string;
+const originalCwd = process.cwd();
 
 beforeEach(async () => {
   testDir = join(
@@ -44,9 +45,11 @@ beforeEach(async () => {
     `decantr-mcp-test-drift-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   await mkdir(testDir, { recursive: true });
+  process.chdir(testDir);
 });
 
 afterEach(async () => {
+  process.chdir(originalCwd);
   await rm(testDir, { recursive: true, force: true });
 });
 
