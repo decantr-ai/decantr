@@ -18,11 +18,44 @@
 │  • Tailwind presence                                                │
 │  • Existing decantr.essence.json                                    │
 │  • Existing AI rule files (CLAUDE.md, .cursorrules, AGENTS.md, etc.)│
+│  • Workspace/app roots (pnpm workspaces, turbo, nx, apps/*)         │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                   BLUEPRINT SELECTION                               │
+│              WORKFLOW POLICY RESOLUTION                             │
+│                                                                     │
+│  Resolve once, before registry reads, adapter work, or file writes: │
+│                                                                     │
+│  workflowMode:                                                      │
+│    greenfield-scaffold | greenfield-contract-only                   │
+│    brownfield-attach  | hybrid-compose                              │
+│                                                                     │
+│  adoptionMode: contract-only | style-bridge | decantr-css           │
+│  contentSource: none | official | custom | cache                    │
+│  assistantBridge: none | preview | apply                            │
+│  projectScope: single-app | workspace-app                           │
+│                                                                     │
+│  --existing is a compatibility alias for brownfield-attach.         │
+│  --project=<path> pins appRoot when a workspace has multiple apps.  │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   WORKFLOW ROUTING                                  │
+│                                                                     │
+│  greenfield-scaffold      → adapter bootstrap + optional registry   │
+│  greenfield-contract-only → local contract/context files only       │
+│  brownfield-attach        → analyze seed or direct attach inventory │
+│  hybrid-compose           → mutate existing essence/context         │
+│                                                                     │
+│  Offline contract-only exits without hosted registry access.        │
+│  Offline registry-backed flows require cache/custom/content dir.    │
+└──────────────────────────┬──────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   BLUEPRINT / CONTENT SELECTION                     │
 │                                                                     │
 │  Two-phase interactive flow:                                        │
 │                                                                     │
@@ -37,8 +70,8 @@
 │    Theme, mode, shape, target, guard, density, shell prompts        │
 │                                                                     │
 │  --yes / --blueprint <id>:  Skip prompts, use defaults/flags        │
-│  --offline (no --blueprint): scaffoldMinimal() → exit early          │
-│  --offline + --blueprint:    Normal flow using cache                 │
+│  --offline (contract-only): scaffoldMinimal() → exit early           │
+│  --offline + --blueprint:    Normal flow using local content only    │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
                            ▼
@@ -182,6 +215,11 @@
 │    .d-glass  { backdrop-filter: blur(8px); ... }                    │
 │    .d-card   { border: 1px solid var(--d-border); ... }             │
 │                                                                     │
+│  CSS files are adoption-mode gated:                                 │
+│    contract-only → no Decantr CSS files or @decantr/css guidance    │
+│    style-bridge  → bridge tokens/files, no @decantr/css requirement │
+│    decantr-css   → full tokens/treatments/decorators guidance       │
+│                                                                     │
 │  .decantr/project.json ◄── Detection results + init metadata        │
 │  .decantr/context/*.md ◄── 3 task files + 1 essence summary         │
 │  .gitignore            ◄── Adds .decantr/cache/ if not present      │
@@ -195,6 +233,7 @@
 │  1. Validate essence against v3 schema                              │
 │  2. Display file creation summary                                   │
 │  3. Generate curated prompt (copy to AI assistant)                  │
+│  4. Optionally preview/apply assistant rule bridge                  │
 └─────────────────────────────────────────────────────────────────────┘
 
 

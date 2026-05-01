@@ -82,7 +82,7 @@ function projectSlug(blueprint) {
 }
 
 function expectedRouterForRouting(routing) {
-  return routing === 'pathname' ? 'BrowserRouter' : 'HashRouter';
+  return routing === 'hash' ? 'HashRouter' : 'BrowserRouter';
 }
 
 function run(command, args, options) {
@@ -98,7 +98,15 @@ function certifyBlueprint(tmpRoot, blueprint, cliPath, contentRoot) {
 
   const newOutput = run(
     process.execPath,
-    [cliPath, 'new', projectName, `--blueprint=${blueprint}`, '--offline'],
+    [
+      cliPath,
+      'new',
+      projectName,
+      `--blueprint=${blueprint}`,
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+      '--offline',
+    ],
     {
       cwd: tmpRoot,
       env: {

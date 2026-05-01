@@ -48,7 +48,7 @@ For each selected blueprint, the matrix:
 
 1. creates a fresh temp project
 2. copies the local curated content corpus into `.decantr/custom/`
-3. runs `decantr init --blueprint=<slug> --offline --yes`
+3. runs `decantr init --blueprint=<slug> --workflow=greenfield --adoption=decantr-css --offline --yes`
 4. verifies these artifacts exist:
    - `decantr.essence.json`
    - `DECANTR.md`
@@ -63,7 +63,7 @@ The command exits non-zero if any blueprint fails.
 
 ## Offline Content Expectations
 
-`decantr init --offline --blueprint=<slug>` now expects a real local content source rather than silently degrading to the default scaffold.
+`decantr init --offline --blueprint=<slug> --workflow=greenfield --adoption=decantr-css` expects a real local content source rather than silently degrading to the default scaffold.
 
 Resolution order:
 
@@ -80,6 +80,7 @@ For cold-start certification runs, the workspace-local scaffold files are the on
 - prefer the generated `scaffold-pack.md`, `scaffold.md`, section packs, and page packs over repo-global Decantr assumptions
 - if local scaffold files disagree with each other, stop and report the mismatch instead of inferring intent from prior knowledge
 - treat a missing compiled pack as a harness failure, not as permission to improvise
+- use explicit workflow/adoption flags in prep and certification commands; do not simulate greenfield by manually creating a runtime and then running `init --existing`
 
 ## Representative Matrix
 

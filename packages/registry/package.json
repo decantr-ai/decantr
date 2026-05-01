@@ -1,6 +1,6 @@
 {
   "name": "@decantr/registry",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
   "author": "Decantr AI",
   "license": "MIT",

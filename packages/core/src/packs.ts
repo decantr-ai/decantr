@@ -109,6 +109,7 @@ export interface ExecutionPackManifest {
 
 export interface ScaffoldPackRoute {
   pageId: string;
+  sectionId?: string;
   path: string;
   patternIds: string[];
   shell?: string;
@@ -202,6 +203,7 @@ export interface SectionNavigationItemPack {
 
 export interface SectionPackRoute {
   pageId: string;
+  sectionId?: string;
   path: string;
   patternIds: string[];
   shell?: string;
@@ -588,13 +590,26 @@ function collectPatternIds(page: IRPageNode): string[] {
   return [...new Set(patternIds)];
 }
 
+function pageIdentity(pageId: string, sectionId?: string | null): string {
+  return sectionId ? `${sectionId}/${pageId}` : pageId;
+}
+
+function pageFileId(pageId: string, sectionId?: string | null): string {
+  return pageIdentity(pageId, sectionId).replace(/[^a-zA-Z0-9._-]+/g, '-');
+}
+
+function routePageLabel(route: Pick<ScaffoldPackRoute, 'pageId' | 'sectionId'>): string {
+  return route.sectionId ? `${route.sectionId}/${route.pageId}` : route.pageId;
+}
+
 function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
   return appNode.routes.flatMap((route) => {
-    const pageNode = findPageNode(appNode, route.pageId);
+    const pageNode = findPageNode(appNode, route.pageId, route.sectionId);
     if (!pageNode) return [];
     return [
       {
         pageId: pageNode.pageId,
+        ...(route.sectionId ? { sectionId: route.sectionId } : {}),
         path: route.path,
         patternIds: collectPatternIds(pageNode),
         shell: route.shell,
@@ -604,15 +619,36 @@ function summarizeRoutes(appNode: IRAppNode): ScaffoldPackRoute[] {
 }
 
 function summarizeSectionRoutes(appNode: IRAppNode, input: SectionPackInput): SectionPackRoute[] {
-  return summarizeRoutes(appNode).filter((route) => input.pageIds.includes(route.pageId));
+  return summarizeRoutes(appNode).filter(
+    (route) =>
+      input.pageIds.includes(route.pageId) && (!route.sectionId || route.sectionId === input.id),
+  );
 }
 
-function summarizePageRoute(appNode: IRAppNode, pageId: string): ScaffoldPackRoute | null {
-  return summarizeRoutes(appNode).find((route) => route.pageId === pageId) ?? null;
+function summarizePageRoute(
+  appNode: IRAppNode,
+  pageId: string,
+  sectionId?: string | null,
+): ScaffoldPackRoute | null {
+  return (
+    summarizeRoutes(appNode).find(
+      (route) =>
+        route.pageId === pageId && (!sectionId || !route.sectionId || route.sectionId === sectionId),
+    ) ?? null
+  );
 }
 
-function findPageNode(appNode: IRAppNode, pageId: string): IRPageNode | null {
-  const page = appNode.children.find((node) => (node as IRPageNode).pageId === pageId);
+function findPageNode(
+  appNode: IRAppNode,
+  pageId: string,
+  sectionId?: string | null,
+): IRPageNode | null {
+  const page = appNode.children.find((node) => {
+    const pageNode = node as IRPageNode;
+    return (
+      pageNode.pageId === pageId && (!sectionId || !pageNode.sectionId || pageNode.sectionId === sectionId)
+    );
+  });
   return page ? (page as IRPageNode) : null;
 }
 
@@ -763,7 +799,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     for (const route of scaffoldPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
       lines.push(
-        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+        `- ${route.path} -> ${routePageLabel(route)}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
       );
     }
     lines.push('');
@@ -810,7 +846,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     for (const route of sectionPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
       lines.push(
-        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+        `- ${route.path} -> ${routePageLabel(route)}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
       );
     }
     lines.push('');
@@ -962,7 +998,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     for (const route of mutationPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
       lines.push(
-        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+        `- ${route.path} -> ${routePageLabel(route)}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
       );
     }
     lines.push('');
@@ -992,7 +1028,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     for (const route of reviewPack.data.routes) {
       const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
       lines.push(
-        `- ${route.path} -> ${route.pageId}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
+        `- ${route.path} -> ${routePageLabel(route)}${route.shell ? ` @ ${route.shell}` : ''} [${patterns}]`,
       );
     }
     lines.push('');
@@ -1173,6 +1209,26 @@ export function listPackPages(essence: EssenceV3): PagePackInput[] {
   }));
 }
 
+function buildPageManifestEntries(pages: PagePackInput[]): PackManifestPageEntry[] {
+  const counts = new Map<string, number>();
+  for (const page of pages) {
+    counts.set(page.pageId, (counts.get(page.pageId) ?? 0) + 1);
+  }
+
+  return pages.map((page) => {
+    const hasDuplicatePageId = (counts.get(page.pageId) ?? 0) > 1;
+    const id = hasDuplicatePageId ? pageIdentity(page.pageId, page.sectionId) : page.pageId;
+    const fileId = hasDuplicatePageId ? pageFileId(page.pageId, page.sectionId) : page.pageId;
+    return {
+      id,
+      markdown: `page-${fileId}-pack.md`,
+      json: `page-${fileId}-pack.json`,
+      sectionId: page.sectionId,
+      sectionRole: page.sectionRole,
+    };
+  });
+}
+
 export function buildScaffoldPack(
   appNode: IRAppNode,
   options: ScaffoldPackBuilderOptions = {},
@@ -1311,8 +1367,8 @@ export function buildPagePack(
   input: PagePackInput,
   options: PagePackBuilderOptions = {},
 ): PageExecutionPack {
-  const pageNode = findPageNode(appNode, input.pageId);
-  const route = summarizePageRoute(appNode, input.pageId);
+  const pageNode = findPageNode(appNode, input.pageId, input.sectionId);
+  const route = summarizePageRoute(appNode, input.pageId, input.sectionId);
 
   if (!pageNode || !route) {
     throw new Error(`Unknown page for page pack: ${input.pageId}`);
@@ -1610,7 +1666,10 @@ export async function compileExecutionPackBundle(
   const review = buildReviewPack(pipeline.ir, {
     target: sharedTarget,
   });
-  const sections = listPackSections(effectiveEssence).map((section) =>
+  const sectionInputs = listPackSections(effectiveEssence);
+  const pageInputs = listPackPages(effectiveEssence);
+
+  const sections = sectionInputs.map((section) =>
     buildSectionPack(pipeline.ir, section, {
       target: sharedTarget,
       // themeDecorators intentionally NOT passed to section packs as of 1.7.22.
@@ -1621,7 +1680,7 @@ export async function compileExecutionPackBundle(
       // renderer to compose the pointer with the correct theme name.
     }),
   );
-  const pages = listPackPages(effectiveEssence).map((page) =>
+  const pages = pageInputs.map((page) =>
     buildPagePack(pipeline.ir, page, {
       target: sharedTarget,
     }),
@@ -1647,19 +1706,13 @@ export async function compileExecutionPackBundle(
       markdown: 'review-pack.md',
       json: 'review-pack.json',
     },
-    sections: listPackSections(effectiveEssence).map((section) => ({
+    sections: sectionInputs.map((section) => ({
       id: section.id,
       markdown: `section-${section.id}-pack.md`,
       json: `section-${section.id}-pack.json`,
       pageIds: section.pageIds,
     })),
-    pages: listPackPages(effectiveEssence).map((page) => ({
-      id: page.pageId,
-      markdown: `page-${page.pageId}-pack.md`,
-      json: `page-${page.pageId}-pack.json`,
-      sectionId: page.sectionId,
-      sectionRole: page.sectionRole,
-    })),
+    pages: buildPageManifestEntries(pageInputs),
     mutations: (['add-page', 'modify'] as const).map((mutationType) => ({
       id: mutationType,
       markdown: `mutation-${mutationType}-pack.md`,
@@ -1699,7 +1752,14 @@ export function selectExecutionPackFromBundle(
       pack = id ? (bundle.sections.find((entry) => entry.data.sectionId === id) ?? null) : null;
       break;
     case 'page':
-      pack = id ? (bundle.pages.find((entry) => entry.data.pageId === id) ?? null) : null;
+      pack = id
+        ? (bundle.pages.find(
+            (entry) =>
+              entry.data.pageId === id ||
+              pageIdentity(entry.data.pageId, entry.data.sectionId) === id ||
+              pageFileId(entry.data.pageId, entry.data.sectionId) === id,
+          ) ?? null)
+        : null;
       break;
     case 'mutation':
       pack = id ? (bundle.mutations.find((entry) => entry.data.mutationType === id) ?? null) : null;

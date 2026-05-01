@@ -83,8 +83,13 @@ describe('new command (e2e)', () => {
     expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
   });
 
-  it('keeps unsupported greenfield targets honest by falling back to contract-only mode', () => {
+  it('creates a Next.js App Router starter through the next-app adapter', () => {
     writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    const fakeBinDir = join(testDir, '.fake-bin');
+    mkdirSync(fakeBinDir, { recursive: true });
+    const fakePnpm = join(fakeBinDir, 'pnpm');
+    writeFileSync(fakePnpm, '#!/bin/sh\nexit 0\n');
+    chmodSync(fakePnpm, 0o755);
 
     const output = execSync(
       `node ${cliPath} new next-smoke --blueprint=agent-marketplace --target=nextjs --offline`,
@@ -93,6 +98,7 @@ describe('new command (e2e)', () => {
         env: {
           ...process.env,
           DECANTR_CONTENT_DIR: contentRoot,
+          PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
         },
         stdio: 'pipe',
         timeout: 30000,
@@ -103,15 +109,48 @@ describe('new command (e2e)', () => {
     const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf-8')) as {
       meta?: { platform?: { routing?: string } };
     };
+    const projectJson = JSON.parse(
+      readFileSync(join(projectDir, '.decantr', 'project.json'), 'utf-8'),
+    ) as { initialized?: { adapterId?: string; workflowMode?: string } };
 
     expect(essence.meta?.platform?.routing).toBe('pathname');
-    expect(existsSync(join(projectDir, 'package.json'))).toBe(false);
-    expect(existsSync(join(projectDir, 'src', 'main.tsx'))).toBe(false);
+    expect(existsSync(join(projectDir, 'package.json'))).toBe(true);
+    expect(existsSync(join(projectDir, 'app', 'layout.tsx'))).toBe(true);
+    expect(existsSync(join(projectDir, 'app', 'page.tsx'))).toBe(true);
     expect(existsSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.md'))).toBe(true);
-    expect(output).toContain(
-      'No greenfield bootstrap adapter is available yet for target "nextjs"',
-    );
-    expect(output).toContain('Contract-only mode for target nextjs');
+    expect(projectJson.initialized?.adapterId).toBe('next-app');
+    expect(projectJson.initialized?.workflowMode).toBe('greenfield-scaffold');
+    expect(output).toContain('Bootstrapped Next.js App Router starter');
+  });
+
+  it('records blank greenfield new as greenfield contract-only instead of brownfield attach', () => {
+    writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    const fakeBinDir = join(testDir, '.fake-bin');
+    mkdirSync(fakeBinDir, { recursive: true });
+    const fakePnpm = join(fakeBinDir, 'pnpm');
+    writeFileSync(fakePnpm, '#!/bin/sh\nexit 0\n');
+    chmodSync(fakePnpm, 0o755);
+
+    execSync(`node ${cliPath} new blank-smoke --offline`, {
+      cwd: testDir,
+      env: {
+        ...process.env,
+        PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
+      },
+      stdio: 'pipe',
+      timeout: 30000,
+    });
+
+    const projectDir = join(testDir, 'blank-smoke');
+    const projectJson = JSON.parse(
+      readFileSync(join(projectDir, '.decantr', 'project.json'), 'utf-8'),
+    ) as { initialized?: { workflowMode?: string; adoptionMode?: string } };
+    const decantrMd = readFileSync(join(projectDir, 'DECANTR.md'), 'utf-8');
+
+    expect(projectJson.initialized?.workflowMode).toBe('greenfield-contract-only');
+    expect(projectJson.initialized?.adoptionMode).toBe('contract-only');
+    expect(existsSync(join(projectDir, 'package.json'))).toBe(false);
+    expect(decantrMd).not.toContain('brownfield attach');
   });
 
   it('prefers DECANTR_CONTENT_DIR over stale workspace cache during offline scaffolding', () => {

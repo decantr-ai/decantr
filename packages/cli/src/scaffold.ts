@@ -37,6 +37,7 @@ import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
 import { generatePersonalityCSS, generateTreatmentCSS } from './treatments.js';
+import type { AdoptionMode, AssistantBridgeMode, ContentSource, WorkflowMode } from './workflow-model.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -603,7 +604,19 @@ export interface ScaffoldResult {
   gitignoreUpdated: boolean;
 }
 
-const CLI_VERSION = '1.0.0';
+function readCliVersion(): string {
+  for (const candidate of [join(__dirname, '..', 'package.json'), join(__dirname, '..', '..', 'package.json')]) {
+    try {
+      const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: string };
+      if (pkg.version) return pkg.version;
+    } catch {
+      /* try next candidate */
+    }
+  }
+  return '0.0.0';
+}
+
+const CLI_VERSION = readCliVersion();
 
 /**
  * Unified theme data — includes color, typography, motion, and visual treatment fields.
@@ -722,7 +735,16 @@ export function generateTokensCSS(
   --d-surface-raised: #27272a;
   --d-border: #3f3f46;
   --d-text: #fafafa;
-  --d-text-muted: #a1a1aa;${spatialLines}
+  --d-text-muted: #a1a1aa;
+  --d-fg: var(--d-text);
+  --d-foreground: var(--d-text);
+  --d-fg-muted: var(--d-text-muted);
+  --d-background: var(--d-bg);
+  --d-muted: var(--d-surface-raised);
+  --d-bg-surface: var(--d-surface);
+  --d-bg-muted: var(--d-surface-raised);
+  --d-border-subtle: var(--d-border);
+  --d-border-muted: var(--d-border);${spatialLines}
 }
 }
 `;
@@ -772,6 +794,18 @@ export function generateTokensCSS(
       '--d-border': palette.border?.[tokenMode] || pickFb('border'),
       '--d-text': palette.text?.[tokenMode] || pickFb('text'),
       '--d-text-muted': palette['text-muted']?.[tokenMode] || pickFb('text-muted'),
+      // Compatibility aliases for older registry decorator and pattern copy.
+      // Keep these as var() aliases so theme toggles automatically follow the
+      // active canonical token values without needing duplicate mode blocks.
+      '--d-fg': 'var(--d-text)',
+      '--d-foreground': 'var(--d-text)',
+      '--d-fg-muted': 'var(--d-text-muted)',
+      '--d-background': 'var(--d-bg)',
+      '--d-muted': 'var(--d-surface-raised)',
+      '--d-bg-surface': 'var(--d-surface)',
+      '--d-bg-muted': 'var(--d-surface-raised)',
+      '--d-border-subtle': 'var(--d-border)',
+      '--d-border-muted': 'var(--d-border)',
       '--d-primary-hover': palette['primary-hover']?.[tokenMode] || seed.primary || '#6366f1',
 
       // Spacing scale
@@ -820,6 +854,8 @@ export function generateTokensCSS(
       '--d-error': themeData.tokens?.base?.danger || '#ef4444',
       '--d-warning': themeData.tokens?.base?.warning || '#f59e0b',
       '--d-info': '#3b82f6',
+      '--d-danger': 'var(--d-error)',
+      '--d-destructive': 'var(--d-error)',
 
       // Motion scale (v2.1 Tier B1). Canonical durations + easings.
       // d-enter-fade, d-pulse, d-glow-hover, etc. all read these.
@@ -1625,6 +1661,7 @@ Do NOT branch component code on the current mode via JS to re-style elements —
 | **Modal backdrop** | \`d-modal-backdrop\` | Scrim with backdrop-blur. Place as a sibling inside \`d-modal\` with \`onClick\` to close. |
 | **Modal panel** | \`d-modal-panel\` | The actual dialog content. \`data-size="sm\\|lg"\` adjusts max-width (default 32rem). |
 | **Command palette** | \`d-palette\` | Specialized modal-panel variant for command palettes — 40rem wide, 60vh max-height. |
+| **Palette search row** | \`d-palette-search\` | Icon + search input row at the top of a palette. Use this wrapper so focus styling belongs to the palette, not the raw input. |
 | **Palette input** | \`d-palette-input\` | Search input at top of palette. |
 | **Palette list** | \`d-palette-list\` | Scrollable command list. |
 | **Palette row** | \`d-palette-row\` | Individual command row. \`data-active="true"\` for keyboard-highlighted row. |
@@ -1638,7 +1675,10 @@ Composition pattern for a command palette (REQUIRED — palette MUST be wrapped 
   <div className="d-modal" data-align="top">
     <div className="d-modal-backdrop" onClick={close} />
     <div className="d-palette">
-      <input className="d-palette-input" placeholder="Type a command..." />
+      <div className="d-palette-search">
+        <Search />
+        <input className="d-palette-input" placeholder="Type a command..." />
+      </div>
       <ul className="d-palette-list">
         <li className="d-palette-section">Navigation</li>
         <li className="d-palette-row" data-active={i === selectedIndex}>
@@ -2121,6 +2161,28 @@ Dark themes emit stronger alpha values automatically.
 | \`zoom-pinch\` | Touch handlers (\`touchstart\`/\`touchmove\`) tracking pinch distance, OR \`gestureend\` on Safari; same scale transform as \`zoom-scroll\` |
 | \`ripple-click\` | \`d-ripple\` on the interactive surface |`;
 
+const CONTRACT_ONLY_CSS_APPROACH = `## Styling Adoption
+
+This project uses Decantr as a **contract and governance layer only**.
+
+Do not install \`@decantr/css\`, rewrite the styling system, or add generated Decantr CSS files unless the task explicitly changes the adoption mode. Preserve the existing framework styling conventions and map them into the Decantr context before changing implementation files.
+
+Use \`.decantr/context/scaffold-pack.md\` and the matching section/page packs to understand visual intent, shell structure, and route contracts. Implement those contracts through the project's current CSS, component library, tokens, or design-system primitives.`;
+
+const STYLE_BRIDGE_CSS_APPROACH = `## Styling Adoption
+
+This project uses Decantr in **style-bridge** mode.
+
+Decantr may generate lightweight bridge files such as \`src/styles/tokens.css\` and \`src/styles/decantr-bridge.css\`, but \`@decantr/css\` is not required. Treat these files as a mapping layer between Decantr context and the app's existing styling system.
+
+Preserve the current CSS framework/component library. Use Decantr tokens and bridge classes only where they clarify design intent without replacing the app's established styling conventions.`;
+
+function getCssApproachContent(adoptionMode?: AdoptionMode): string {
+  if (adoptionMode === 'contract-only') return CONTRACT_ONLY_CSS_APPROACH;
+  if (adoptionMode === 'style-bridge') return STYLE_BRIDGE_CSS_APPROACH;
+  return CSS_APPROACH_CONTENT;
+}
+
 /**
  * Generate DECANTR.md for v3.1 essences.
  *
@@ -2130,7 +2192,9 @@ Dark themes emit stronger alpha values automatically.
 function generateDecantrMdV31(params: {
   guardMode: string;
   cssApproach: string;
-  workflowMode?: 'greenfield-scaffold' | 'brownfield-attach';
+  workflowMode?: WorkflowMode;
+  adoptionMode?: AdoptionMode;
+  analysisArtifacts?: boolean;
   blueprintId?: string;
   themeName?: string;
   themeMode?: string;
@@ -2158,11 +2222,21 @@ function generateDecantrMdV31(params: {
     GUARD_MODE: params.guardMode,
     CSS_APPROACH: params.cssApproach,
     WORKFLOW_MODE:
-      params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold',
+      params.workflowMode === 'brownfield-attach'
+        ? 'brownfield attach'
+        : params.workflowMode === 'greenfield-contract-only'
+          ? 'greenfield contract-only'
+          : params.workflowMode === 'hybrid-compose'
+            ? 'hybrid composition'
+            : 'greenfield scaffold',
     WORKFLOW_GUIDANCE:
       params.workflowMode === 'brownfield-attach'
-        ? `This project is using Decantr in **brownfield attach** mode.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/init-seed.json\` for the recommended attach defaults.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Map existing routes and components onto the declared Decantr sections/pages before creating new files. Registry content is optional in this workflow unless the task explicitly asks for it.`
-        : `This project is using Decantr in **greenfield scaffold** mode.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
+        ? params.analysisArtifacts
+          ? `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nRead \`.decantr/analysis.json\` first for the detected framework, routes, styling, layout, and dependency facts.\nThen read \`.decantr/init-seed.json\` for the recommended attach defaults.\nThen read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Map existing routes and components onto the declared Decantr sections/pages before creating new files. Registry content is optional in this workflow unless the task explicitly asks for it.`
+          : `This project is using Decantr in **brownfield attach** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nNo \`.decantr/analysis.json\` or \`.decantr/init-seed.json\` was present when this context was generated. Inventory the current framework, routes, styling, layout, package manager, and rule files before changing runtime code. Then read \`.decantr/context/scaffold-pack.md\` and \`.decantr/context/scaffold.md\` to understand the Decantr contract you are layering onto the existing app.\n\nPreserve the current framework, package manager, router, and working runtime structure unless the contract gives you a reviewed reason to change them. Registry content is optional in this workflow unless the task explicitly asks for it.`
+        : params.workflowMode === 'greenfield-contract-only'
+          ? `This project is using Decantr in **greenfield contract-only** mode with **${params.adoptionMode || 'contract-only'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth for the app contract, but do not assume Decantr owns the runtime or styling system. Use narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.`
+          : `This project is using Decantr in **greenfield scaffold** mode with **${params.adoptionMode || 'decantr-css'}** adoption.\n\nTreat the compiled execution-pack files as the primary source of truth.\nUse narrative docs only as secondary explanation when the compiled packs are not enough.\nUse only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.\n\nRead \`.decantr/context/scaffold-pack.md\` first for the compact compiled shell, theme, feature, and route contract.\nThen read \`.decantr/context/scaffold.md\` for the fuller app overview, topology, route map, and voice guidance.\nStart implementation from the shell layouts and shared route structure before filling in section pages.`,
   });
 
   // Build project brief
@@ -2173,8 +2247,9 @@ function generateDecantrMdV31(params: {
   const themeDesc = `${params.themeName || 'default'} (${params.themeMode || 'dark'} mode${params.themeShape ? `, ${params.themeShape} shape` : ''})`;
   briefLines.push(`- **Theme:** ${themeDesc}`);
   briefLines.push(
-    `- **Workflow:** ${params.workflowMode === 'brownfield-attach' ? 'brownfield attach' : 'greenfield scaffold'}`,
+    `- **Workflow:** ${params.workflowMode || 'greenfield-scaffold'}`,
   );
+  briefLines.push(`- **Adoption mode:** ${params.adoptionMode || 'decantr-css'}`);
   if (params.personality && params.personality.length > 0) {
     briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
   }
@@ -2285,6 +2360,8 @@ function generateProjectJson(
       hasTypeScript: detected.hasTypeScript,
       hasTailwind: detected.hasTailwind,
       existingRuleFiles: detected.existingRuleFiles,
+      workspaceRoot: options.workspaceRoot || detected.projectRoot,
+      appRoot: options.appRoot || detected.projectRoot,
     },
     overrides: {
       framework: options.target !== detected.framework ? options.target : null,
@@ -2305,6 +2382,12 @@ function generateProjectJson(
       version: CLI_VERSION,
       flags: buildFlagsString(options),
       workflowMode: options.workflowMode || 'greenfield-scaffold',
+      adoptionMode: options.adoptionMode || 'decantr-css',
+      contentSource: options.contentSource || 'none',
+      assistantBridge: options.assistantBridge || 'none',
+      projectScope: options.projectScope || 'single-app',
+      adapterId: options.adapterId || null,
+      analysisArtifacts: Boolean(options.analysisArtifacts),
     },
   };
 
@@ -2322,6 +2405,12 @@ function buildFlagsString(options: InitOptions): string {
   if (options.theme) flags.push(`--theme=${options.theme}`);
   if (options.mode) flags.push(`--mode=${options.mode}`);
   if (options.guard) flags.push(`--guard=${options.guard}`);
+  if (options.workflowMode) flags.push(`--workflow=${options.workflowMode}`);
+  if (options.adoptionMode) flags.push(`--adoption=${options.adoptionMode}`);
+  if (options.assistantBridge) flags.push(`--assistant-bridge=${options.assistantBridge}`);
+  if (options.appRoot && options.workspaceRoot && options.appRoot !== options.workspaceRoot) {
+    flags.push(`--project=${options.appRoot}`);
+  }
   return flags.join(' ');
 }
 
@@ -2413,7 +2502,8 @@ function generateScaffoldTaskContext(
           .map((route) => {
             const patternSummary =
               route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-            return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+            const pageLabel = route.sectionId ? `${route.sectionId}/${route.pageId}` : route.pageId;
+            return `- \`${route.path}\` -> \`${pageLabel}\` [${patternSummary}]`;
           })
           .join('\n')
       : '- No routes declared';
@@ -2487,7 +2577,8 @@ function generateAddPageTaskContext(
           .map((route) => {
             const patternSummary =
               route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-            return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+            const pageLabel = route.sectionId ? `${route.sectionId}/${route.pageId}` : route.pageId;
+            return `- \`${route.path}\` -> \`${pageLabel}\` [${patternSummary}]`;
           })
           .join('\n')
       : '- No routes declared';
@@ -2559,7 +2650,8 @@ function generateModifyTaskContext(
           .map((route) => {
             const patternSummary =
               route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-            return `- \`${route.path}\` -> \`${route.pageId}\` [${patternSummary}]`;
+            const pageLabel = route.sectionId ? `${route.sectionId}/${route.pageId}` : route.pageId;
+            return `- \`${route.path}\` -> \`${pageLabel}\` [${patternSummary}]`;
           })
           .join('\n')
       : '- No routes declared';
@@ -2766,6 +2858,9 @@ export async function scaffoldProject(
   const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, {
     isInitialScaffold: true,
     patternSpecs,
+    workflowMode: options.workflowMode,
+    adoptionMode: options.adoptionMode,
+    analysisArtifacts: options.analysisArtifacts,
   });
 
   // Merge context files from refresh into our list
@@ -2788,7 +2883,15 @@ export async function scaffoldProject(
  * Scaffold a minimal offline project when no blueprint is specified and the registry is unavailable.
  * Creates the bare-minimum files needed to start working with Decantr.
  */
-export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
+export function scaffoldMinimal(
+  projectRoot: string,
+  options: {
+    workflowMode?: WorkflowMode;
+    adoptionMode?: AdoptionMode;
+    contentSource?: ContentSource;
+    assistantBridge?: AssistantBridgeMode;
+  } = {},
+): ScaffoldResult {
   const decantrDir = join(projectRoot, '.decantr');
   const customDir = join(decantrDir, 'custom');
 
@@ -2892,7 +2995,12 @@ export function scaffoldMinimal(projectRoot: string): ScaffoldResult {
       via: 'cli',
       version: CLI_VERSION,
       flags: '--offline --minimal',
-      workflowMode: 'greenfield-scaffold',
+      workflowMode: options.workflowMode || 'greenfield-contract-only',
+      adoptionMode: options.adoptionMode || 'contract-only',
+      contentSource: options.contentSource || 'none',
+      assistantBridge: options.assistantBridge || 'none',
+      projectScope: 'single-app',
+      analysisArtifacts: false,
     },
   };
 
@@ -3039,9 +3147,13 @@ export function writeExecutionPackBundleArtifacts(
     outputPaths.push(sectionPackPath);
   }
 
-  for (const pagePack of bundle.pages) {
+  for (const [index, pagePack] of bundle.pages.entries()) {
+    const manifestPage = bundle.manifest.pages[index];
+    const pageBaseName = manifestPage?.markdown?.endsWith('.md')
+      ? manifestPage.markdown.slice(0, -'.md'.length)
+      : `page-${pagePack.data.pageId}-pack`;
     const pagePackPath = writeExecutionPackArtifacts(
-      join(contextDir, `page-${pagePack.data.pageId}-pack`),
+      join(contextDir, pageBaseName),
       pagePack,
     );
     outputPaths.push(pagePackPath);
@@ -3214,7 +3326,13 @@ export async function refreshDerivedFiles(
   essence: EssenceV3,
   registry: RegistryClient,
   prefetchedThemeData?: ThemeData,
-  options?: { isInitialScaffold?: boolean; patternSpecs?: Record<string, PatternSpecSummary> },
+  options?: {
+    isInitialScaffold?: boolean;
+    patternSpecs?: Record<string, PatternSpecSummary>;
+    workflowMode?: WorkflowMode;
+    adoptionMode?: AdoptionMode;
+    analysisArtifacts?: boolean;
+  },
 ): Promise<RefreshResult> {
   const decantrDir = join(projectRoot, '.decantr');
   const contextDir = join(decantrDir, 'context');
@@ -3225,14 +3343,18 @@ export async function refreshDerivedFiles(
     blueprintId?: string;
     voice?: RegistryBlueprint['voice'];
     initialized?: {
-      workflowMode?: 'greenfield-scaffold' | 'brownfield-attach';
+      workflowMode?: WorkflowMode;
+      adoptionMode?: AdoptionMode;
+      analysisArtifacts?: boolean;
     };
     [key: string]: unknown;
   };
 
   let storedBlueprintId: string | undefined;
   let storedVoice: ScaffoldContextInput['voice'] | undefined;
-  let storedWorkflowMode: 'greenfield-scaffold' | 'brownfield-attach' | undefined;
+  let storedWorkflowMode: WorkflowMode | undefined;
+  let storedAdoptionMode: AdoptionMode | undefined;
+  let storedAnalysisArtifacts = false;
   const projectJsonFilePath = join(decantrDir, 'project.json');
   let projectJsonData: StoredProjectJson = {};
   if (existsSync(projectJsonFilePath)) {
@@ -3242,10 +3364,19 @@ export async function refreshDerivedFiles(
       if (projectJsonData.voice) storedVoice = projectJsonData.voice;
       if (projectJsonData.initialized?.workflowMode)
         storedWorkflowMode = projectJsonData.initialized.workflowMode;
+      if (projectJsonData.initialized?.adoptionMode)
+        storedAdoptionMode = projectJsonData.initialized.adoptionMode;
+      if (projectJsonData.initialized?.analysisArtifacts)
+        storedAnalysisArtifacts = projectJsonData.initialized.analysisArtifacts;
     } catch {
       /* ignore parse errors */
     }
   }
+
+  const effectiveWorkflowMode = options?.workflowMode || storedWorkflowMode || 'greenfield-scaffold';
+  const effectiveAdoptionMode = options?.adoptionMode || storedAdoptionMode || 'decantr-css';
+  const effectiveAnalysisArtifacts =
+    options?.analysisArtifacts ?? storedAnalysisArtifacts ?? false;
 
   // If voice is missing but blueprintId is available, fetch from blueprint
   if (!storedVoice && storedBlueprintId) {
@@ -3278,8 +3409,9 @@ export async function refreshDerivedFiles(
   // ── Fetch theme from registry (use prefetched if available) ──
   // The theme now contains ALL data: seed, palette, decorators, spatial, treatments, etc.
   let themeData: ThemeData | undefined = prefetchedThemeData;
+  const shouldResolveThemeData = effectiveAdoptionMode !== 'contract-only' || Boolean(themeData);
 
-  if (!themeData)
+  if (!themeData && shouldResolveThemeData)
     try {
       const themeResult = await registry.fetchTheme(themeName);
       if (themeResult?.data) {
@@ -3290,7 +3422,9 @@ export async function refreshDerivedFiles(
     }
 
   // Fallback: direct API fetch if registry client returned incomplete data
-  if (!themeData?.seed?.primary) {
+  const registryIsOffline =
+    typeof registry.isOffline === 'function' ? registry.isOffline() : false;
+  if (shouldResolveThemeData && !themeData?.seed?.primary && !registryIsOffline) {
     try {
       const apiUrl = registry.getApiUrl();
       const resp = await fetch(`${apiUrl}/themes/@official/${themeName}`);
@@ -3323,7 +3457,10 @@ export async function refreshDerivedFiles(
 
   // ── Generate CSS files ──
   const stylesDir = join(projectRoot, 'src', 'styles');
-  mkdirSync(stylesDir, { recursive: true });
+  const shouldWriteCss = effectiveAdoptionMode !== 'contract-only';
+  if (shouldWriteCss) {
+    mkdirSync(stylesDir, { recursive: true });
+  }
 
   // Compute spatial tokens from density + theme spatial hints
   const densityLevel = (essence.dna?.spacing?.density || 'comfortable') as
@@ -3345,10 +3482,9 @@ export async function refreshDerivedFiles(
   );
 
   const tokensPath = join(stylesDir, 'tokens.css');
-  // Only overwrite tokens.css if we have meaningful theme data (seed colors present);
-  // preserve existing file if theme fetch returned empty/incomplete data
+  const bridgePath = join(stylesDir, 'decantr-bridge.css');
   const hasRealThemeData = themeData?.seed?.primary || themeData?.palette?.background;
-  if (hasRealThemeData || !existsSync(tokensPath)) {
+  if (shouldWriteCss && (hasRealThemeData || !existsSync(tokensPath))) {
     // Warn loudly when the blueprint asks for a theme-mode the theme doesn't
     // carry palette values for. Previously this was silent and scaffolds got
     // the "wrong" visual mode vs. their personality directive. The token
@@ -3393,32 +3529,40 @@ export async function refreshDerivedFiles(
     // data-mode on <html> and nothing responds.
     const features = essence.blueprint?.features ?? [];
     const hasThemeToggle = features.includes('theme-toggle') || features.includes('theme_toggle');
+    writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens, { hasThemeToggle }));
+  }
+
+  const treatmentsPath = join(stylesDir, 'treatments.css');
+  if (effectiveAdoptionMode === 'decantr-css') {
+    let treatmentCSS = generateTreatmentCSS(
+      spatialTokens,
+      themeData?.treatments,
+      themeData?.decorators,
+      themeName,
+      themeData?.decorator_definitions,
+    );
+    const personalityCSS = generatePersonalityCSS(personality || [], themeData || {});
+    treatmentCSS += personalityCSS;
+    writeFileSync(treatmentsPath, treatmentCSS);
+  } else if (effectiveAdoptionMode === 'style-bridge') {
     writeFileSync(
-      tokensPath,
-      generateTokensCSS(themeData, mode, spatialTokens, { hasThemeToggle }),
+      bridgePath,
+      `/* Decantr style bridge: map these CSS variables into the existing design system. */\n:root {\n  --decantr-bridge-theme: ${themeName};\n  --decantr-bridge-density: ${densityLevel};\n}\n`,
     );
   }
 
-  // Write treatments.css (replaces decorators.css)
-  const treatmentsPath = join(stylesDir, 'treatments.css');
-  let treatmentCSS = generateTreatmentCSS(
-    spatialTokens,
-    themeData?.treatments,
-    themeData?.decorators,
-    themeName,
-    themeData?.decorator_definitions,
-  );
-  const personalityCSS = generatePersonalityCSS(personality || [], themeData || {});
-  treatmentCSS += personalityCSS;
-  writeFileSync(treatmentsPath, treatmentCSS);
-
   const globalPath = join(stylesDir, 'global.css');
   // Only generate global.css if it doesn't exist (don't overwrite user customizations)
-  if (!existsSync(globalPath)) {
+  if (shouldWriteCss && !existsSync(globalPath)) {
     writeFileSync(globalPath, generateGlobalCSS(personality, essence));
   }
 
-  const cssFiles = [tokensPath, treatmentsPath, globalPath];
+  const cssFiles =
+    effectiveAdoptionMode === 'contract-only'
+      ? []
+      : effectiveAdoptionMode === 'style-bridge'
+        ? [tokensPath, bridgePath, globalPath]
+        : [tokensPath, treatmentsPath, globalPath];
 
   // ── Build decorator list for DECANTR.md and section contexts ──
   const earlyDecoratorList: Array<{ name: string; description: string }> = [];
@@ -3453,8 +3597,10 @@ export async function refreshDerivedFiles(
     decantrMdPath,
     generateDecantrMdV31({
       guardMode,
-      cssApproach: CSS_APPROACH_CONTENT,
-      workflowMode: storedWorkflowMode,
+      cssApproach: getCssApproachContent(effectiveAdoptionMode),
+      workflowMode: effectiveWorkflowMode,
+      adoptionMode: effectiveAdoptionMode,
+      analysisArtifacts: effectiveAnalysisArtifacts,
       blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || undefined,
       themeName,
       themeMode: mode,

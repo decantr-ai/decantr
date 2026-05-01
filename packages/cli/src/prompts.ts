@@ -1,5 +1,12 @@
 import { createInterface } from 'node:readline';
 import type { DetectedProject } from './detect.js';
+import type {
+  AdoptionMode,
+  AssistantBridgeMode,
+  ContentSource,
+  WorkflowMode,
+} from './workflow-model.js';
+import type { ProjectScope } from './workspace.js';
 
 // ANSI color codes
 const BOLD = '\x1b[1m';
@@ -22,7 +29,15 @@ export interface InitOptions {
   personality: string[];
   features: string[];
   existing: boolean;
-  workflowMode?: 'greenfield-scaffold' | 'brownfield-attach';
+  workflowMode?: WorkflowMode;
+  adoptionMode?: AdoptionMode;
+  contentSource?: ContentSource;
+  assistantBridge?: AssistantBridgeMode;
+  projectScope?: ProjectScope;
+  workspaceRoot?: string;
+  appRoot?: string;
+  adapterId?: string;
+  analysisArtifacts?: boolean;
   accessibility?: {
     wcag_level?: string;
     cvd_preference?: string;
@@ -32,7 +47,18 @@ export interface InitOptions {
 export type InitWorkflowSeed = Partial<
   Pick<
     InitOptions,
-    'theme' | 'mode' | 'target' | 'guard' | 'density' | 'shell' | 'existing' | 'workflowMode'
+    | 'theme'
+    | 'mode'
+    | 'target'
+    | 'guard'
+    | 'density'
+    | 'shell'
+    | 'existing'
+    | 'workflowMode'
+    | 'adoptionMode'
+    | 'contentSource'
+    | 'assistantBridge'
+    | 'projectScope'
   >
 >;
 
@@ -329,6 +355,10 @@ export async function runInteractivePrompts(
     features: [],
     existing: workflowSeed?.existing || detected.existingEssence,
     workflowMode: workflowSeed?.workflowMode,
+    adoptionMode: workflowSeed?.adoptionMode,
+    contentSource: workflowSeed?.contentSource,
+    assistantBridge: workflowSeed?.assistantBridge,
+    projectScope: workflowSeed?.projectScope,
   };
 }
 
@@ -358,6 +388,20 @@ export function parseFlags(
   if (typeof args.features === 'string')
     options.features = args.features.split(',').map((s) => s.trim());
   if (args.existing === true) options.existing = true;
+  if (
+    args.adoption === 'contract-only' ||
+    args.adoption === 'style-bridge' ||
+    args.adoption === 'decantr-css'
+  ) {
+    options.adoptionMode = args.adoption;
+  }
+  if (
+    args['assistant-bridge'] === 'none' ||
+    args['assistant-bridge'] === 'preview' ||
+    args['assistant-bridge'] === 'apply'
+  ) {
+    options.assistantBridge = args['assistant-bridge'];
+  }
 
   return options;
 }
@@ -387,6 +431,10 @@ export function mergeWithDefaults(
     features: flags.features || [],
     existing: flags.existing || workflowSeed?.existing || detected.existingEssence,
     workflowMode: flags.workflowMode || workflowSeed?.workflowMode,
+    adoptionMode: flags.adoptionMode || workflowSeed?.adoptionMode,
+    contentSource: flags.contentSource || workflowSeed?.contentSource,
+    assistantBridge: flags.assistantBridge || workflowSeed?.assistantBridge,
+    projectScope: flags.projectScope || workflowSeed?.projectScope,
   };
 }
 

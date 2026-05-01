@@ -8,6 +8,7 @@ import { scanRoutes } from '../analyzers/routes.js';
 import { scanStyling } from '../analyzers/styling.js';
 import { detectProject, formatDetection } from '../detect.js';
 import { createBrownfieldInitSeed } from '../workflow-model.js';
+import type { WorkspaceInfo } from '../workspace.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -16,7 +17,7 @@ const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 
-export function cmdAnalyze(projectRoot: string = process.cwd()): void {
+export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: WorkspaceInfo): void {
   console.log(`\n${BOLD}Analyzing project...${RESET}\n`);
 
   // 1. Detect project basics
@@ -42,6 +43,7 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
   console.log(`${DIM}Scanning dependencies...${RESET}`);
   const dependencies = scanDependencies(projectRoot);
   const initSeed = createBrownfieldInitSeed(project, layout, styling);
+  initSeed.projectScope = workspace?.projectScope ?? 'single-app';
 
   // 3. Combine into analysis object
   const analysis = {
@@ -53,6 +55,10 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
       packageManager: project.packageManager,
       hasTypeScript: project.hasTypeScript,
       hasTailwind: project.hasTailwind,
+      existingRuleFiles: project.existingRuleFiles,
+      workspaceRoot: workspace?.workspaceRoot ?? projectRoot,
+      appRoot: workspace?.appRoot ?? projectRoot,
+      projectScope: workspace?.projectScope ?? 'single-app',
     },
     routes,
     components,
@@ -66,8 +72,9 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
       attach: {
         entrypoint: 'decantr analyze',
         contractOnly: true,
+        adoptionMode: 'contract-only',
         initSeedPath: '.decantr/init-seed.json',
-        recommendedCommand: 'decantr init --existing --yes',
+        recommendedCommand: 'decantr init --existing --yes --adoption=contract-only',
       },
       hybrid: {
         ownerCommands: [
@@ -78,6 +85,24 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
           'decantr upgrade',
         ],
       },
+    },
+    retrofitPlan: {
+      recommendedWorkflowMode: 'brownfield-attach',
+      recommendedAdoptionMode: 'contract-only',
+      assistantBridge:
+        project.existingRuleFiles.length > 0
+          ? 'preview existing rule files before applying'
+          : 'none detected',
+      routeAnchors: routes.routes.map((route) => route.path),
+      stylingAnchors: [styling.configFile].filter(Boolean),
+      ruleFiles: project.existingRuleFiles,
+      preserve: [
+        'framework',
+        'package manager',
+        'router',
+        'build tooling',
+        'existing styling system',
+      ],
     },
   };
 
@@ -126,6 +151,6 @@ export function cmdAnalyze(projectRoot: string = process.cwd()): void {
   console.log(`\n${DIM}Written to:${RESET} ${outputPath}`);
   console.log(`${DIM}Init seed:${RESET} ${initSeedPath}`);
   console.log(
-    `\n${YELLOW}Next step:${RESET} Run ${BOLD}decantr init --existing --yes${RESET} to attach Decantr using the generated brownfield seed.\n`,
+    `\n${YELLOW}Next step:${RESET} Run ${BOLD}decantr init --existing --yes --adoption=contract-only${RESET} to attach Decantr using the generated brownfield seed.\n`,
   );
 }

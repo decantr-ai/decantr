@@ -185,7 +185,14 @@ function certifyBlueprint(entry, contentRoot) {
   try {
     hydrateContent(projectRoot, contentRoot);
 
-    const initResult = runCli(projectRoot, ['init', `--blueprint=${entry.id}`, '--offline', '--yes']);
+    const initResult = runCli(projectRoot, [
+      'init',
+      `--blueprint=${entry.id}`,
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+      '--offline',
+      '--yes',
+    ]);
     const paths = requiredPaths(projectRoot);
 
     const filesPresent = Object.fromEntries(

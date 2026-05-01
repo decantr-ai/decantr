@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MagicIntent } from '../src/commands/magic.js';
-import { parseMagicPrompt } from '../src/commands/magic.js';
+import { parseMagicPrompt, resolveTheme } from '../src/commands/magic.js';
 
 describe('parseMagicPrompt', () => {
   it('extracts dark theme hint', () => {
@@ -100,5 +100,58 @@ describe('parseMagicPrompt', () => {
     // but "agent" alone = 1 match, "dashboard" alone = 1 match
     const result = parseMagicPrompt('agent orchestrator workflow');
     expect(result.archetype).toBe('agent-orchestrator');
+  });
+});
+
+describe('resolveTheme', () => {
+  it('scores themes from the RegistryClient fetch result shape', async () => {
+    const intent: MagicIntent = {
+      description: 'consumer social app',
+      themeHints: ['warm', 'playful'],
+      personalityHints: [],
+      constraints: [],
+    };
+
+    const result = await resolveTheme(intent, {
+      async fetchThemes() {
+        return {
+          data: {
+            items: [
+              {
+                id: 'carbon',
+                personality: 'dark technical',
+                tags: ['dark'],
+                modes: ['dark'],
+              },
+              {
+                id: 'swipecircle',
+                personality: 'warm playful photo-centric',
+                tags: ['warm', 'consumer', 'playful'],
+                modes: ['light', 'dark'],
+              },
+            ],
+          },
+        };
+      },
+    });
+
+    expect(result).toEqual({ id: 'swipecircle', mode: 'light' });
+  });
+
+  it('keeps supporting array-shaped theme fixtures', async () => {
+    const intent: MagicIntent = {
+      description: 'dark control room',
+      themeHints: ['dark'],
+      personalityHints: [],
+      constraints: [],
+    };
+
+    const result = await resolveTheme(intent, {
+      async fetchThemes() {
+        return [{ id: 'carbon', personality: 'dark technical', tags: ['dark'], modes: ['dark'] }];
+      },
+    });
+
+    expect(result).toEqual({ id: 'carbon', mode: 'dark' });
   });
 });

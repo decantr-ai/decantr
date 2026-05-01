@@ -124,7 +124,7 @@
       "releaseWave": "delivery",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local greenfield, brownfield, and hybrid Decantr workflows with adapter-driven bootstrap.",
+      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

@@ -1,111 +1,84 @@
 # Decantr Workflow Model
 
-Decantr now treats project setup as a three-workflow system instead of assuming everything starts from blueprint-first scaffolding.
+Decantr resolves an explicit workflow and adoption policy before registry, adapter, or scaffold work begins. The contract layer stays framework-agnostic; adapters translate that contract into project conventions.
 
-The rule is simple:
+## Workflow And Adoption Matrix
 
-- Decantr stays framework-agnostic at the contract layer.
-- Bootstrap becomes adapter-driven.
-- Blueprints are optional.
-- Existing-app adoption is a first-class path.
+| Mode | Use when | Primary command | Default adoption | Registry role |
+| --- | --- | --- | --- | --- |
+| `greenfield-scaffold` | New app from a blueprint/archetype | `decantr new my-app --blueprint=<id>` | `decantr-css` | primary or cached |
+| `greenfield-contract-only` | New repo wants Decantr governance without blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` | `contract-only` | none |
+| `brownfield-attach` | Existing app wants Decantr context and checks | `decantr analyze`, then `decantr init --existing` | `contract-only` | optional |
+| `hybrid-compose` | Attached app selectively adds/removes features, sections, themes, or packs | `decantr add/remove`, `decantr theme switch`, `decantr registry` | existing project setting | opt-in |
 
-## Command Ownership
+Adoption modes:
 
-| Workflow | When to use it | Primary commands | Registry role |
-| --- | --- | --- | --- |
-| Greenfield blueprint | Starting in a new directory from a blueprint or blank Decantr workspace | `decantr new`, `decantr magic` | optional, often primary |
-| Brownfield adoption | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr analyze`, `decantr init --existing` | optional |
-| Hybrid composition | Selectively layering Decantr sections, themes, or features into an attached project | `decantr add/remove`, `decantr theme switch`, `decantr registry`, `decantr upgrade` | opt-in enrichment |
+- `contract-only`: write Decantr essence/context/governance files; do not add Decantr CSS or require `@decantr/css`.
+- `style-bridge`: write lightweight bridge tokens/files that map Decantr intent into the existing style system.
+- `decantr-css`: generate the full Decantr CSS runtime guidance and style files.
 
-## Greenfield Blueprint
+## Adapters
 
-Use this lane when you want a new project directory and a Decantr contract from day one.
+Adapters expose four capabilities:
 
-Command ownership:
+- `bootstrap`: write a runnable greenfield starter.
+- `attach`: describe route/layout/component conventions for an existing app.
+- `styling`: map adoption mode into dependencies, style files, and prompts.
+- `verify`: provide dev/build commands, dist directory, and runtime expectations.
 
-- `decantr new` creates the workspace in a new directory.
-- `decantr magic` stays greenfield-first and helps you choose a contract direction from a natural-language prompt.
+Current adapter availability:
 
-What happens:
+- `react-vite`: runnable bootstrap, attach, styling, verify.
+- `next-app`: runnable Next.js App Router bootstrap, App/Pages Router attach hints, verify.
+- `generic-web`: contract-only fallback for unsupported targets.
 
-1. resolve blueprint, archetype, theme, and contract inputs
-2. generate `decantr.essence.json`, `DECANTR.md`, and compiled execution-pack context files
-3. create the currently available runnable bootstrap adapter when one exists
-4. hand off to the LLM for implementation
-
-Current bootstrap adapter availability in this wave:
-
-- `react-vite` is the runnable greenfield adapter
-- other contract targets remain valid Decantr targets, but initialize in contract-only mode until their adapters land
+Unsupported targets should feel intentional, not broken: Decantr writes the contract and tells the user that the runtime remains theirs.
 
 ## Brownfield Adoption
 
-Use this lane when you already have a project and want Decantr governance without requiring official or community blueprint content.
+Brownfield starts with:
 
-Command ownership:
+```bash
+decantr analyze
+decantr init --existing --yes --adoption=contract-only
+```
 
-- `decantr analyze` is the canonical first step
-- `decantr init --existing` attaches Decantr to the repository
+`analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, and a retrofit plan covering routes, styling, dependencies, rule files, workspace/app roots, and recommended adoption mode.
 
-What happens:
+Direct brownfield init is allowed:
 
-1. detect framework, package manager, routes, layout, styling, and dependencies
-2. write `.decantr/analysis.json`
-3. write `.decantr/init-seed.json` with recommended attach defaults
-4. run `decantr init --existing` to attach the contract and context files
+```bash
+decantr init --existing --yes
+```
 
-Important rule:
+When analysis artifacts are absent, generated guidance tells the LLM to inventory the project first instead of referencing files that do not exist.
 
-- brownfield does **not** require a blueprint
-- brownfield does **not** require registry access
-- registry content is optional enrichment, not a mandatory dependency
+## Assistant Rule Bridge
 
-## Hybrid Composition
+Existing rule files are detected during project analysis and init. Bridge behavior is preview-first:
 
-Use this lane after a project already has Decantr attached.
+- `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`.
+- `decantr rules apply` injects idempotent marked blocks into supported rule files.
+- Cursor uses `.cursor/rules/decantr.mdc`.
+- Brownfield init never mutates rule files unless `--assistant-bridge=apply` is explicit.
 
-This is where teams selectively compose new pieces into a self-owned app instead of starting over:
+## Monorepo And Offline
 
-- add or remove sections/pages/features
-- switch themes
-- fetch registry content when it is useful
-- upgrade contract inputs deliberately
+Workspace roots are detected from `pnpm-workspace.yaml`, package workspaces, `turbo.json`, `nx.json`, and common `apps/*` layouts. Non-interactive workspace-root init requires `--project=<path>` when multiple app candidates exist.
 
-Representative commands:
+Offline behavior:
 
-- `decantr add section <archetype>`
-- `decantr add feature <feature>`
-- `decantr remove ...`
-- `decantr theme switch <theme>`
-- `decantr registry search/get-pack/...`
-- `decantr upgrade`
+- `--offline --adoption=contract-only` works without registry content.
+- Registry-backed blueprint, archetype, or theme flows require local cache/custom content or `DECANTR_CONTENT_DIR`.
+- Supported offline flows must not call the hosted API.
 
-## Why This Model Exists
-
-Blueprint-first scaffolding is great for greenfield exploration, but it is the wrong mental model for every team:
-
-- some teams already have Angular, React, Vue, or custom apps
-- some teams want Decantr governance without adopting registry content
-- some teams only want selected Decantr patterns, themes, or sections later
-
-The workflow model keeps those paths explicit so the CLI does not silently generate the wrong runtime or imply that a blueprint is always required.
-
-## Harness and Certification
-
-The workflow architecture is now certified across three surfaces:
-
-- greenfield blueprint scaffold
-- brownfield `analyze -> init --existing`
-- hybrid follow-up composition
+## Harness And Certification
 
 Use:
 
 ```bash
 pnpm --filter @decantr/cli certify:workflows
-```
-
-That matrix exists alongside the narrower blueprint harness:
-
-```bash
 pnpm --filter @decantr/cli certify:blueprints
 ```
+
+The workflow matrix covers greenfield blueprint, greenfield contract-only, brownfield analyze/init, direct brownfield init, adoption modes, offline flows, unsupported target fallback, monorepo `--project`, Next.js adapter, and hybrid composition.

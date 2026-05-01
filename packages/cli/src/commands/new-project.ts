@@ -38,6 +38,9 @@ export interface NewProjectOptions {
   target?: string;
   offline?: boolean;
   registry?: string;
+  workflow?: string;
+  adoption?: string;
+  assistantBridge?: string;
 }
 
 export async function cmdNewProject(
@@ -48,7 +51,10 @@ export async function cmdNewProject(
   const projectDir = resolve(workspaceRoot, projectName);
   const bootstrapTarget = resolveBootstrapTarget(options.target);
   const bootstrapAdapter = getBootstrapAdapter(bootstrapTarget);
-  const hasRunnableBootstrap = Boolean(bootstrapAdapter);
+  const registryBackedScaffold = Boolean(options.blueprint || options.archetype);
+  const inferredAdoption =
+    options.adoption || (registryBackedScaffold ? 'decantr-css' : 'contract-only');
+  const shouldBootstrapRuntime = Boolean(bootstrapAdapter && inferredAdoption === 'decantr-css');
 
   // Validate project name
   if (!/^[a-z0-9][a-z0-9._-]*$/i.test(projectName)) {
@@ -73,9 +79,15 @@ export async function cmdNewProject(
   console.log(dim(`  Created ${projectName}/`));
 
   const title = projectName.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  if (bootstrapAdapter) {
+  if (shouldBootstrapRuntime && bootstrapAdapter) {
     bootstrapAdapter.writeProjectFiles(projectDir, title, 'hash');
     console.log(dim(`  Bootstrapped ${bootstrapAdapter.label}`));
+  } else if (bootstrapAdapter) {
+    console.log(
+      dim(
+        `  Skipping runtime bootstrap for adoption=${inferredAdoption}; creating a Decantr contract-only workspace.`,
+      ),
+    );
   } else {
     console.log(
       `${YELLOW}  No greenfield bootstrap adapter is available yet for target "${bootstrapTarget.target}" (${bootstrapTarget.packAdapter}).${RESET}`,
@@ -88,7 +100,7 @@ export async function cmdNewProject(
   }
 
   const packageManager = detectPackageManager();
-  if (hasRunnableBootstrap) {
+  if (shouldBootstrapRuntime) {
     console.log(heading('Installing dependencies...'));
     try {
       execSync(`${packageManager} install`, { cwd: projectDir, stdio: 'inherit' });
@@ -132,7 +144,7 @@ export async function cmdNewProject(
   console.log(heading('Initializing Decantr...'));
 
   // Build the init args to pass through
-  const initFlags: string[] = ['--yes', '--existing'];
+  const initFlags: string[] = ['--yes', '--workflow=greenfield', `--adoption=${inferredAdoption}`];
   if (options.blueprint) initFlags.push(`--blueprint=${options.blueprint}`);
   if (options.archetype) initFlags.push(`--archetype=${options.archetype}`);
   if (options.theme) initFlags.push(`--theme=${options.theme}`);
@@ -141,6 +153,7 @@ export async function cmdNewProject(
   if (options.target) initFlags.push(`--target=${options.target}`);
   if (options.offline) initFlags.push('--offline');
   if (options.registry) initFlags.push(`--registry=${options.registry}`);
+  if (options.assistantBridge) initFlags.push(`--assistant-bridge=${options.assistantBridge}`);
 
   try {
     // Reuse the currently-running CLI entrypoint when available.
@@ -152,7 +165,7 @@ export async function cmdNewProject(
         : null;
     const cliPath = cliEntrypoint ? `"${process.execPath}" "${cliEntrypoint}"` : 'npx decantr';
     execSync(`${cliPath} init ${initFlags.join(' ')}`, { cwd: projectDir, stdio: 'inherit' });
-    if (bootstrapAdapter) {
+    if (shouldBootstrapRuntime && bootstrapAdapter) {
       bootstrapAdapter.writeProjectFiles(projectDir, title, detectRoutingMode(projectDir));
     }
   } catch {
@@ -164,12 +177,12 @@ export async function cmdNewProject(
   // 3. Print success
   console.log(success(`\n✓ Project "${projectName}" created!\n`));
   console.log(`  ${cyan('cd ' + projectName)}`);
-  if (bootstrapAdapter) {
+  if (shouldBootstrapRuntime) {
     console.log(`  ${cyan(packageManager + ' run dev')}`);
   } else {
     console.log(
       dim(
-        `  Contract-only mode for target ${bootstrapTarget.target}. Bring your own runtime, or rerun ${cyan(`decantr new ${projectName} --target=react`)} for the current starter adapter.`,
+        `  Contract-only mode for target ${bootstrapTarget.target}. Bring your own runtime, or rerun with ${cyan('--adoption=decantr-css')} for a runnable Decantr CSS starter adapter.`,
       ),
     );
   }

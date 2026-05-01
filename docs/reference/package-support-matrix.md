@@ -18,8 +18,20 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 | `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, and report-schema engine. |
 | `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local greenfield, brownfield, and hybrid Decantr workflows with adapter-driven bootstrap. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, and project governance. |
 | `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development. |
+
+## Adapter Capability Matrix
+
+Adapter support is intentionally separate from npm package support. `@decantr/cli` is the supported delivery package; adapters describe which framework/project targets it can bootstrap, attach to, style, and verify today.
+
+| Adapter | Target | Bootstrap | Attach | Styling | Verify | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| `react-vite` | React + Vite | yes | yes | yes | yes | Primary runnable starter adapter. |
+| `next-app` | Next.js App Router / Pages Router | yes | yes | yes | yes | Boots App Router greenfield projects and records App/Pages Router attach metadata. |
+| `generic-web` | Unsupported or unspecified web targets | no | yes | contract-only | basic | Fallback adapter for contract-only Decantr adoption without runtime ownership. |
+
+Unsupported framework targets are still valid Decantr contract targets. They should resolve through `generic-web` unless and until a runnable adapter lands.
 
 ## Interpretation
 

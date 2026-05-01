@@ -61,7 +61,8 @@ describe('analyze command', () => {
     expect(existsSync(seedPath)).toBe(true);
 
     const analysis = JSON.parse(readFileSync(analysisPath, 'utf-8')) as {
-      decantr?: { workflow?: string; attach?: { recommendedCommand?: string } };
+      decantr?: { workflow?: string; attach?: { recommendedCommand?: string; adoptionMode?: string } };
+      retrofitPlan?: { recommendedAdoptionMode?: string };
     };
     const seed = JSON.parse(readFileSync(seedPath, 'utf-8')) as {
       workflow?: string;
@@ -69,11 +70,17 @@ describe('analyze command', () => {
       shell?: string;
       existing?: boolean;
       registryOptional?: boolean;
+      adoptionMode?: string;
     };
 
     expect(analysis.decantr?.workflow).toBe('brownfield-adoption');
-    expect(analysis.decantr?.attach?.recommendedCommand).toBe('decantr init --existing --yes');
+    expect(analysis.decantr?.attach?.recommendedCommand).toBe(
+      'decantr init --existing --yes --adoption=contract-only',
+    );
+    expect(analysis.decantr?.attach?.adoptionMode).toBe('contract-only');
+    expect(analysis.retrofitPlan?.recommendedAdoptionMode).toBe('contract-only');
     expect(seed.workflow).toBe('brownfield-adoption');
+    expect(seed.adoptionMode).toBe('contract-only');
     expect(seed.target).toBe('react');
     expect(seed.shell).toBe('sidebar-main');
     expect(seed.existing).toBe(true);

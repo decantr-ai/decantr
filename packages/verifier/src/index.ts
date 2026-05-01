@@ -1013,7 +1013,7 @@ function isAnonymousEntryLikeRoute(route: string): boolean {
 }
 
 function isProtectedLikeRoute(route: string): boolean {
-  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin|agents?|marketplace|transparency|logs?|metrics|config|console|studio|pipelines?|projects?|monitoring|overview)(?:\/|$)/i.test(
+  return /(?:^|\/)(?:app|dashboard|workspace|settings|billing|account|profile|admin|agents?|marketplace|browse|search|listings?|seller|buyer|bookings?|favorites|messages?|orders?|checkout|cart|transparency|logs?|metrics|config|console|studio|pipelines?|projects?|monitoring|overview)(?:\/|$)/i.test(
     route,
   );
 }
@@ -1213,7 +1213,7 @@ function appendTopologyFindings(
           'Protected app surfaces need explicit routes so post-auth entry points are unambiguous.',
         ],
         suggestedFix:
-          'Add explicit primary routes such as `/dashboard` or `/app` for the authenticated experience.',
+          'Add explicit primary routes such as `/dashboard`, `/app`, `/browse`, or `/listings` for the authenticated experience.',
       }),
     );
   }
@@ -1266,7 +1266,7 @@ function appendTopologyFindings(
           'Primary routes only expose auth-like destinations and do not appear to include a post-auth application surface.',
         evidence: [`Primary routes: ${topology.primaryRoutes.join(', ')}`],
         suggestedFix:
-          'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, or `/app`.',
+          'Keep login and registration routes in the gateway section, and add at least one primary app route such as `/dashboard`, `/workspace`, `/app`, `/browse`, or `/listings`.',
       }),
     );
   }
@@ -1284,7 +1284,7 @@ function appendTopologyFindings(
           'Primary routes do not appear to include a clear post-auth application destination.',
         evidence: [`Primary routes: ${topology.primaryRoutes.join(', ')}`],
         suggestedFix:
-          'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, or `/app` so the authenticated surface is explicit.',
+          'Use at least one primary route like `/dashboard`, `/workspace`, `/settings`, `/app`, `/browse`, or `/listings` so the authenticated surface is explicit.',
       }),
     );
   }
@@ -2035,14 +2035,14 @@ function appendSourceAuditFindings(
         category: 'Source Audit',
         severity: 'warn',
         message:
-          'Source files still contain inline style attributes, which undermines the compiled treatment contract.',
+          'Source files still contain disallowed inline style attributes, which undermines the compiled treatment contract.',
         evidence: buildSourceAuditEvidence(
           sourceAudit,
           sourceAudit.inlineStyles,
-          'Inline style attributes',
+          'Disallowed inline style attributes',
         ),
         suggestedFix:
-          'Move inline styling into treatments, atoms, or design-token-backed classes so generation stays aligned with the Decantr contract.',
+          'Move static visual styling into treatments, atoms, or design-token-backed classes. Inline style remains acceptable for Decantr CSS-variable writes and truly dynamic geometry.',
       }),
     );
   }
@@ -3222,7 +3222,8 @@ function appendSourceAuditFindings(
       (sourceAudit.authEntrySignals.count > 0 &&
         sourceAudit.signUpFlowSignals.count === 0 &&
         sourceAudit.recoveryFlowSignals.count === 0)) &&
-    sourceAudit.authProtectedRedirectSignals.count === 0
+    sourceAudit.authProtectedRedirectSignals.count === 0 &&
+    sourceAudit.authSuccessSignals.count === 0
   ) {
     findings.push(
       makeFinding({
@@ -5331,6 +5332,7 @@ function getSkipNavTargetId(attributes: ts.JsxAttributes, tagName: string | null
 function isAuthStorageKeyLiteral(node: ts.Expression | undefined): boolean {
   if (!node) return false;
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+    if (node.text === 'decantr_authenticated') return false;
     return /(?:token|auth|jwt|session|access_token|refresh_token)/i.test(node.text);
   }
   return false;
@@ -11574,6 +11576,120 @@ function countWildcardPostMessageSignals(code: string): number {
   return code.match(/\bpostMessage\s*\([^)]*,\s*['"`]\*['"`]/g)?.length ?? 0;
 }
 
+const DYNAMIC_GEOMETRY_STYLE_PROPS = new Set([
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'inset',
+  'width',
+  'height',
+  'minWidth',
+  'minHeight',
+  'maxWidth',
+  'maxHeight',
+  'transform',
+  'transformOrigin',
+  'opacity',
+  'offsetPath',
+  'offsetDistance',
+  'cx',
+  'cy',
+  'x',
+  'y',
+]);
+
+function getJsxAttributeExpression(initializer: ts.JsxAttribute['initializer']): ts.Expression | null {
+  if (!initializer || !ts.isJsxExpression(initializer)) return null;
+  return initializer.expression ?? null;
+}
+
+function getStylePropertyName(name: ts.PropertyName): string | null {
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
+    return name.text;
+  }
+  if (ts.isComputedPropertyName(name)) {
+    return getExpressionLiteralValue(name.expression);
+  }
+  return null;
+}
+
+function unwrapStyleExpression(expression: ts.Expression): ts.Expression {
+  let current = expression;
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isTypeAssertionExpression(current) ||
+    ts.isNonNullExpression(current) ||
+    ts.isSatisfiesExpression(current)
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
+function isDynamicStyleValue(expression: ts.Expression): boolean {
+  const unwrapped = unwrapStyleExpression(expression);
+  if (
+    ts.isStringLiteral(unwrapped) ||
+    ts.isNoSubstitutionTemplateLiteral(unwrapped) ||
+    ts.isNumericLiteral(unwrapped) ||
+    unwrapped.kind === ts.SyntaxKind.TrueKeyword ||
+    unwrapped.kind === ts.SyntaxKind.FalseKeyword ||
+    unwrapped.kind === ts.SyntaxKind.NullKeyword
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function isAllowedInlineStyleObject(objectLiteral: ts.ObjectLiteralExpression): boolean {
+  let sawGeometryProperty = false;
+  let sawDynamicGeometryValue = false;
+
+  for (const property of objectLiteral.properties) {
+    if (!ts.isPropertyAssignment(property)) return false;
+
+    const propertyName = getStylePropertyName(property.name);
+    if (!propertyName) return false;
+
+    if (propertyName.startsWith('--d-')) {
+      continue;
+    }
+
+    if (!DYNAMIC_GEOMETRY_STYLE_PROPS.has(propertyName)) {
+      return false;
+    }
+
+    sawGeometryProperty = true;
+    if (isDynamicStyleValue(property.initializer)) {
+      sawDynamicGeometryValue = true;
+    }
+  }
+
+  return !sawGeometryProperty || sawDynamicGeometryValue;
+}
+
+function isAllowedInlineStyleAttribute(
+  attribute: ts.JsxAttribute,
+  sourceFile: ts.SourceFile,
+  namedExpressions: Map<string, ts.Expression>,
+  namedPropertyAliases: Map<string, NamedPropertyAlias>,
+): boolean {
+  const expression = getJsxAttributeExpression(attribute.initializer);
+  if (!expression) return false;
+
+  const resolved = resolveObjectLiteralExpression(
+    expression,
+    sourceFile,
+    namedExpressions,
+    namedPropertyAliases,
+    new Set(),
+  );
+
+  return resolved ? isAllowedInlineStyleObject(resolved.objectLiteral) : false;
+}
+
 function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const sourceFile = ts.createSourceFile(
     filePath,
@@ -11666,7 +11782,16 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const walk = (node: ts.Node) => {
     if (ts.isJsxAttribute(node)) {
       if (isPropertyNamed(node.name, 'style') && node.initializer) {
-        signals.inlineStyleAttributeCount += 1;
+        if (
+          !isAllowedInlineStyleAttribute(
+            node,
+            sourceFile,
+            namedExpressionInitializers,
+            namedPropertyAliases,
+          )
+        ) {
+          signals.inlineStyleAttributeCount += 1;
+        }
       }
       if (isPropertyNamed(node.name, 'dangerouslySetInnerHTML')) {
         signals.dangerousHtmlCount += 1;
@@ -13805,7 +13930,7 @@ export function critiqueSource({
   }
 
   const hasInlineStyleLiterals =
-    astSignals.inlineStyleAttributeCount > 0 || /style\s*=\s*(?:\{\{|["'])/.test(code);
+    astSignals.inlineStyleAttributeCount > 0 || /style\s*=\s*["']/.test(code);
   if (antiPatternIds.has('inline-styles') && hasInlineStyleLiterals) {
     findings.push(
       makeFinding({
@@ -13816,10 +13941,13 @@ export function critiqueSource({
           'theme-consistency',
         ]),
         message: 'Inline style literals were detected in the reviewed file.',
-        evidence: [filePath, `Inline style attributes: ${astSignals.inlineStyleAttributeCount}`],
+        evidence: [
+          filePath,
+          `Disallowed inline style attributes: ${astSignals.inlineStyleAttributeCount}`,
+        ],
         file: filePath,
         suggestedFix:
-          'Replace inline visual values with treatments, decorators, and CSS variables from the compiled contract.',
+          'Replace static inline visual values with treatments, decorators, and CSS variables from the compiled contract. Keep inline style only for Decantr CSS-variable writes and truly dynamic geometry.',
       }),
     );
   }

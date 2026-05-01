@@ -131,7 +131,7 @@ function buildPatternNode(
 
 /** Build IR tree for a single page from its resolved structure + patterns */
 export function buildPageIR(
-  page: StructurePage,
+  page: StructurePage & { sectionId?: string },
   resolvedPatterns: Map<string, ResolvedPatternEntry>,
   wiring: IRWiring | null,
   theme: RegistryTheme | null,
@@ -229,9 +229,10 @@ export function buildPageIR(
 
   return {
     type: 'page',
-    id: page.id,
+    id: page.sectionId ? `${page.sectionId}:${page.id}` : page.id,
     children,
     pageId: page.id,
+    ...(page.sectionId ? { sectionId: page.sectionId } : {}),
     surface,
     wiring,
     ...(layer ? { layer } : {}),

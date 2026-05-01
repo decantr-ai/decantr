@@ -876,6 +876,129 @@ describe('verifier', () => {
     }
   });
 
+  it('allows Decantr CSS-variable writes and dynamic geometry in inline style audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'pages'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'clean', mode: 'light', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['polished'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'workspace',
+                role: 'primary',
+                shell: 'top-nav-main',
+                features: [],
+                description: 'Workspace',
+                pages: [{ id: 'home', route: '/', layout: ['card-grid'] }],
+              },
+            ],
+            features: [],
+            routes: {
+              '/': { section: 'workspace', page: 'home' },
+            },
+          },
+          meta: {
+            archetype: 'marketplace',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'AllowedStyles.tsx'),
+        `
+          export function AllowedStyles({ index, pos, scale }) {
+            return (
+              <main>
+                <div style={{ ['--d-stagger-index' as never]: index } as React.CSSProperties} />
+                <div style={{ left: \`\${pos.x}%\`, top: \`\${pos.y}%\`, transform: \`translate(\${pos.x}px, \${pos.y}px) scale(\${scale})\` }} />
+              </main>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-inline-styles-present')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('still reports static inline visual styles in source audit', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'pages'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'clean', mode: 'light', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['polished'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'workspace',
+                role: 'primary',
+                shell: 'top-nav-main',
+                features: [],
+                description: 'Workspace',
+                pages: [{ id: 'home', route: '/', layout: ['card-grid'] }],
+              },
+            ],
+            features: [],
+            routes: {
+              '/': { section: 'workspace', page: 'home' },
+            },
+          },
+          meta: {
+            archetype: 'marketplace',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'StaticStyles.tsx'),
+        `
+          export function StaticStyles() {
+            return <main><div style={{ padding: '1rem', color: 'red' }} /></main>;
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-inline-styles-present')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports localhost-style source endpoints before runtime review', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -1786,6 +1909,71 @@ describe('verifier', () => {
             archetype: 'agent-marketplace',
             target: 'react',
             platform: { type: 'spa', routing: 'hash' },
+            guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'auth-primary-routes-not-app-like')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag marketplace primary routes as missing post-auth destinations', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'clean', mode: 'light', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['marketplace'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'auth-full',
+                role: 'gateway',
+                shell: 'centered',
+                features: ['auth'],
+                description: 'Auth entry',
+                pages: [{ id: 'login', route: '/login', layout: ['auth-form'] }],
+              },
+              {
+                id: 'listing-browser',
+                role: 'primary',
+                shell: 'top-nav-main',
+                features: ['search', 'filters'],
+                description: 'Marketplace discovery',
+                pages: [
+                  { id: 'browse', route: '/browse', layout: ['search-filter-bar', 'card-grid'] },
+                  { id: 'listing-detail', route: '/listings/:id', layout: ['detail-header'] },
+                  { id: 'search', route: '/search', layout: ['search-filter-bar'] },
+                ],
+              },
+            ],
+            features: ['auth', 'search', 'filters'],
+            routes: {
+              '/login': { section: 'auth-full', page: 'login' },
+              '/browse': { section: 'listing-browser', page: 'browse' },
+              '/listings/:id': { section: 'listing-browser', page: 'listing-detail' },
+              '/search': { section: 'listing-browser', page: 'search' },
+            },
+          },
+          meta: {
+            archetype: 'two-sided-marketplace',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
             guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
           },
         }, null, 2),
@@ -27593,6 +27781,80 @@ describe('verifier', () => {
     }
   });
 
+  it('does not flag auth entry success redirects when an explicit success state is present', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'routes'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['hero'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'routes', 'LoginPage.tsx'),
+        `
+          export function LoginPage() {
+            const [successMessage, setSuccessMessage] = useState('');
+
+            async function handleSubmit(event) {
+              event.preventDefault();
+              await auth.signIn();
+              setSuccessMessage('Account created');
+            }
+
+            return (
+              <form onSubmit={handleSubmit}>
+                <input type="email" name="email" autoComplete="email" />
+                <input type="password" name="password" autoComplete="current-password" />
+                {successMessage ? <p role="status">{successMessage}</p> : null}
+                <button type="submit">Sign in</button>
+              </form>
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-success-redirect-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('flags project auth surfaces when a declared recovery route is never linked from sign-in flows', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -44365,6 +44627,53 @@ describe('verifier', () => {
     expect(report.findings.some(finding => finding.id === 'state-auth-storage-teardown-missing')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'state-auth-cookie-teardown-missing')).toBe(true);
     expect(report.findings.some(finding => finding.id === 'state-auth-header-teardown-missing')).toBe(true);
+  });
+
+  it('does not treat Decantr dev-auth bypass storage as credential persistence during critique', () => {
+    const report = critiqueSource({
+      filePath: 'src/components/UserMenu.tsx',
+      code: `
+        export function UserMenu() {
+          localStorage.setItem('decantr_authenticated', 'true');
+
+          function handleLogout() {
+            localStorage.removeItem('decantr_authenticated');
+            return redirect('/login');
+          }
+
+          return <button onClick={handleLogout}>Sign out</button>;
+        }
+      `,
+      reviewPack: {
+        $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
+        packVersion: '1.0.0',
+        packType: 'review',
+        objective: 'Review generated output against the compiled Decantr contract.',
+        target: { platform: 'web', framework: 'react', runtime: 'spa', adapter: 'react-vite' },
+        preset: null,
+        scope: { appId: 'app', pageIds: ['dashboard'], patternIds: ['sidebar'] },
+        requiredSetup: [],
+        allowedVocabulary: [],
+        examples: [],
+        antiPatterns: [],
+        successChecks: [],
+        tokenBudget: { target: 1400, max: 2200, strategy: [] },
+        data: {
+          reviewType: 'app',
+          shell: 'sidebar-main',
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          routing: 'hash',
+          features: ['auth'],
+          routes: [{ pageId: 'dashboard', path: '/dashboard', patternIds: ['sidebar'] }],
+          focusAreas: ['route-topology', 'state-handling', 'security-hygiene'],
+          workflow: [],
+        },
+        renderedMarkdown: '# Review Pack\n',
+      },
+    });
+
+    expect(report.findings.some(finding => finding.id === 'state-auth-storage-teardown-missing')).toBe(false);
+    expect(report.findings.some(finding => finding.id === 'security-auth-storage-write')).toBe(false);
   });
 
   it('flags client data caches that are never cleared during critique sign-out flows', () => {

@@ -10,8 +10,9 @@ Decantr is the contract layer between product intent and AI-generated implementa
 
 | Path | Use when | Start with |
 | --- | --- | --- |
-| **[Greenfield blueprint](#greenfield-blueprint)** &nbsp;⭐ | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id>` |
-| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr analyze`, then `decantr init --existing` |
+| **[Greenfield blueprint](#greenfield-blueprint)** &nbsp;⭐ | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
+| **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
+| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr analyze`, then `decantr init --existing --adoption=contract-only` |
 | **[Hybrid composition](docs/reference/workflow-model.md#hybrid-composition)** | Layering sections, themes, or features into an attached project | `decantr add/remove`, `decantr theme switch`, `decantr registry` |
 
 ---
@@ -27,7 +28,7 @@ cd my-app
 
 A blueprint is a published app composition — theme, sections, pages, layouts, voice, and personality. Try `agent-marketplace`, `terminal-dashboard`, or `portfolio` to start, or run `decantr search` to browse the full catalog.
 
-> **Adapter availability.** `react-vite` is the runnable starter adapter in this wave. Other contract targets remain valid Decantr targets but currently initialize in contract-only mode — Decantr writes the contract, you own the runtime.
+> **Adapter availability.** `react-vite` and `next-app` are runnable starter adapters in this wave. Other contract targets remain valid Decantr targets but initialize through `generic-web` contract-only mode — Decantr writes the contract, you own the runtime.
 
 ### 2. What just got generated
 
@@ -139,7 +140,7 @@ Brownfield adoption:
 
 ```bash
 decantr analyze
-decantr init --existing --yes
+decantr init --existing --yes --adoption=contract-only
 ```
 
 Registry and verification:

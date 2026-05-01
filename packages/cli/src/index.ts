@@ -37,6 +37,7 @@ import {
 } from '@decantr/verifier';
 import { clearCredentials, getCredentials, saveCredentials } from './auth.js';
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
+import { applyAssistantBridge, writeAssistantBridgePreview } from './assistant-bridge.js';
 import { cmdAnalyze } from './commands/analyze.js';
 import { cmdCreate } from './commands/create.js';
 import type { ExportTarget } from './commands/export.js';
@@ -44,6 +45,7 @@ import { cmdExport } from './commands/export.js';
 import { cmdMagic } from './commands/magic.js';
 import { cmdMigrate } from './commands/migrate.js';
 import { cmdNewProject } from './commands/new-project.js';
+import { resolveBootstrapTarget } from './bootstrap.js';
 import { cmdPublish } from './commands/publish.js';
 import { cmdRefresh } from './commands/refresh.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
@@ -93,7 +95,13 @@ import {
   listCustomThemes,
   validateCustomTheme,
 } from './theme-commands.js';
-import { hasExistingProjectFootprint, readBrownfieldInitSeed } from './workflow-model.js';
+import {
+  readBrownfieldInitSeed,
+  resolveWorkflowPolicy,
+  type AdoptionMode,
+  type WorkflowMode,
+} from './workflow-model.js';
+import { resolveWorkspaceInfo } from './workspace.js';
 
 // ── Helpers ──
 
@@ -191,13 +199,15 @@ function formatIntelligenceSummary(
 }
 
 interface PromptContext {
-  workflow: 'greenfield-scaffold' | 'brownfield-attach';
+  workflow: WorkflowMode;
+  adoptionMode?: AdoptionMode;
+  analysisArtifacts?: boolean;
   archetype: string;
   blueprint?: string;
   theme: string;
   mode: string;
   target: string;
-  pages: Array<{ id: string; shell: string; layout: string[] }>;
+  pages: Array<{ id: string; sectionId?: string; shell: string; layout: string[] }>;
   personality: string[];
   features: string[];
   guard: string;
@@ -218,8 +228,21 @@ function extractPatternName(item: unknown): string {
 
 function generateGreenfieldPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
+  const usesDecantrCss = ctx.adoptionMode === 'decantr-css' || !ctx.adoptionMode;
 
   lines.push('Build this greenfield application using the Decantr design system.');
+  lines.push('');
+  if (ctx.blueprint) lines.push(`Blueprint: ${ctx.blueprint}`);
+  if (ctx.archetype) lines.push(`Primary archetype: ${ctx.archetype}`);
+  if (ctx.theme) lines.push(`Theme: ${ctx.theme}${ctx.mode ? ` (${ctx.mode})` : ''}`);
+  if (ctx.target) lines.push(`Target: ${ctx.target}`);
+  if (ctx.pages.length > 0) {
+    lines.push(
+      `Routes/pages: ${ctx.pages
+        .map((page) => `${page.sectionId ? `${page.sectionId}/` : ''}${page.id}:${page.shell}`)
+        .join(', ')}`,
+    );
+  }
   lines.push('');
   lines.push(
     'This workspace is a new Decantr scaffold. Use the contract to create or extend the runtime deliberately, not to reverse-engineer a hidden starter.',
@@ -235,210 +258,205 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('Read in this order:');
   lines.push(
-    '1. DECANTR.md for the design spec, "Atoms in 5 minutes" walkthrough, treatment catalog, motion/typography/elevation tables, and the Interaction Requirements canonical-implementation table.',
+    '1. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains route plan, shell layouts, navigation, Required Theme Decorators, and project-wide execution rules.',
   );
   lines.push(
-    '2. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains the route plan, shell layouts, navigation, AND the project-wide "Required Theme Decorators" table (class | intent | apply-to). This table is the authoritative decorator contract; section packs reference it.',
+    '2. Before section work, read the matching .decantr/context/section-*-pack.md first, then .decantr/context/section-*.md only for extra slot/layout detail.',
   );
   lines.push(
-    '3. .decantr/context/scaffold.md for the broader app overview, topology, route map, and voice guidance.',
+    '3. Before route work, read the matching .decantr/context/page-*-pack.md file. Its pattern layout and interaction checklists are contract.',
   );
   lines.push(
-    '4. Before working on any section, read its matching .decantr/context/section-*-pack.md (compact contract — pay close attention to the "Section Directives" block; those are non-negotiable execution rules) and then .decantr/context/section-*.md (long-form context with shell internal_layout + slot guidance).',
+    '4. .decantr/context/scaffold.md for broader topology, route map, and voice guidance after the compact packs are understood.',
   );
   lines.push(
-    '5. Before working on any route/page, read its matching .decantr/context/page-*-pack.md file. The "Interactions (MUST implement each)" checklist per pattern is contract — see the next section.',
+    '5. DECANTR.md as a lookup reference for atoms, treatments, decorators, interaction implementations, and guard rules. Do not let narrative docs override compiled packs.',
   );
   lines.push('');
   lines.push('═══ INTERACTIONS ARE CONTRACT, NOT GUIDANCE ═══');
   lines.push('');
   lines.push(
-    'Each page pack lists an "Interactions (MUST implement each)" checkbox list per pattern. Treat each checkbox as a contract item, NOT a suggestion. The DECANTR.md "Interaction Requirements" table maps each canonical interaction to its required implementation:',
+    'Each page pack lists "Interactions (MUST implement each)" per pattern. Implement the actual behavior, not visible text saying it exists. Use DECANTR.md only to look up the canonical implementation shape when needed.',
   );
   lines.push(
-    '- drag-nodes → onPointerDown/Move handlers with 4px threshold + cursor: grab/grabbing',
-  );
-  lines.push('- status-pulse → d-pulse class on the indicator element');
-  lines.push(
-    '- animate-on-mount → d-enter-fade / d-enter-slide-up / d-enter-scale on the pattern root',
-  );
-  lines.push(
-    '- stagger-children → d-stagger-children parent + style={{ "--d-stagger-index": i }} on each child',
-  );
-  lines.push(
-    '- pan-background → pointer handlers on canvas BACKGROUND only (not nodes); translate viewport transform',
-  );
-  lines.push('- zoom-scroll → onWheel adjusting a scale transform, clamped [0.25, 4]');
-  lines.push('- keyboard-navigation → onKeyDown arrow handlers + tabIndex={0}');
-  lines.push('- focus-trap → Tab cycle inside dialog; restore focus on close');
-  lines.push('- hover-tooltip → data-tooltip + onMouseEnter handler showing popover');
-  lines.push(
-    '- real-time-updates → setInterval (2-8s) updating mock state with d-pulse on changed elements',
-  );
-  lines.push('- scroll-reveal → IntersectionObserver (once: true) triggering d-enter-fade');
-  lines.push('- inline-edit → controlled <input> on click; commit on blur or Enter');
-  lines.push(
-    '- lift-hover / scale-hover / glow-hover → matching d-*-hover treatment classes',
+    'Examples: pointer handlers for dragging/panning, onWheel for zoom, onKeyDown + tabIndex for keyboard navigation, IntersectionObserver for scroll reveal, state updates for real-time indicators, and d-* motion classes where the contract calls for animation.',
   );
   lines.push('');
   lines.push(
-    '`decantr check --strict` FAILS the build when a declared interaction has no matching implementation. The full canonical-implementation table is in DECANTR.md.',
+    '`decantr check --strict` fails when a declared interaction has no matching implementation.',
   );
   lines.push('');
-  lines.push('═══ ATOMS-FIRST FOR LAYOUT — DO NOT INLINE-STYLE ═══');
+  lines.push('═══ STYLING ADOPTION ═══');
   lines.push('');
-  lines.push(
-    'Decantr ships @decantr/css as a runtime atom system (already in package.json). Use atoms via `css(...)` for ALL layout, spacing, sizing, flex/grid, position, and typography sizing — wherever you would otherwise reach for `style={{ display: "flex", gap: "1rem", padding: "1rem", ... }}`.',
-  );
-  lines.push('');
-  lines.push('Mandatory translation (NOT optional). USE THESE EXACT ATOM NAMES:');
-  lines.push(
-    '  ❌ style={{ display: "flex", gap: "1rem" }}                   →  ✅ className={css("_flex _gap4")}',
-  );
-  lines.push(
-    '  ❌ style={{ flexDirection: "column", alignItems: "center" }}  →  ✅ className={css("_col _aic")}',
-  );
-  lines.push(
-    '  ❌ style={{ justifyContent: "space-between" }}                →  ✅ className={css("_jcsb")}',
-  );
-  lines.push(
-    '  ❌ style={{ padding: "1rem 1.5rem" }}                         →  ✅ className={css("_py4 _px6")}',
-  );
-  lines.push(
-    '  ❌ style={{ gridTemplateColumns: "repeat(3, 1fr)" }}           →  ✅ className={css("_grid _gc3")}',
-  );
-  lines.push(
-    '  ❌ style={{ position: "sticky", top: 0 }}                     →  ✅ className={css("_sticky _top0")}',
-  );
-  lines.push(
-    '  ❌ style={{ width: "100%", maxWidth: "40rem" }}               →  ✅ className={css("_wfull _maxw[40rem]")}',
-  );
-  lines.push(
-    '  ❌ style={{ marginInline: "auto" }}                            →  ✅ className={css("_mxauto")}',
-  );
-  lines.push(
-    '  ❌ style={{ fontSize: "1.5rem" }}                              →  ✅ className={css("_text2xl")}',
-  );
-  lines.push('');
-  lines.push(
-    'Atom naming convention: compact prefix-spelling — `_aic` (align-items:center) not `_items-center`, `_jcsb` (justify-content:space-between) not `_justify-between`, `_wfull` not `_w-full`, `_top0` not `_t0`. The runtime accepts hyphenated Tailwind-style aliases as fallback BUT compact prefix is canonical, shorter, and what every existing scaffold uses. Do not invent your own atom shapes — if you need an arbitrary value (e.g. `maxWidth: "72rem"`), use the brackets form `_maxw[72rem]`.',
-  );
-  lines.push('');
-  lines.push(
-    'Combine atoms with treatment / decorator strings: `className={css("_flex _col _gap4") + " d-card clean-card"}`.',
-  );
+  if (ctx.adoptionMode === 'contract-only') {
+    lines.push(
+      'This project is contract-only. Use Decantr packs for design intent and governance, but implement through the app runtime and styling system already present or explicitly chosen for this project.',
+    );
+    lines.push(
+      'Do not install @decantr/css or add Decantr style files unless the adoption mode changes.',
+    );
+  } else if (ctx.adoptionMode === 'style-bridge') {
+    lines.push(
+      'This project uses Decantr style-bridge mode. Use generated bridge tokens as a mapping layer onto the selected styling system; @decantr/css is not required.',
+    );
+  } else {
+    lines.push(
+      'Use @decantr/css atoms via `css(...)` for layout, spacing, sizing, flex/grid, position, and typography sizing. Static visual values should not live in inline style props.',
+    );
+  }
+  if (usesDecantrCss) {
+    lines.push('');
+    lines.push('Use these canonical compact atom shapes:');
+    lines.push(
+      '- Layout: _flex, _col, _aic, _jcc, _jcsb, _grid, _gc3, _gc[2fr_1fr], _gap4, _wrap',
+    );
+    lines.push(
+      '- Spacing/sizing: _p4, _py4, _px6, _wfull, _maxw[40rem], _mxauto, _h[20rem]',
+    );
+    lines.push(
+      '- Position/type: _rel, _abs, _sticky, _top0, _text2xl, _textlg, _fgmuted',
+    );
+    lines.push('- Responsive: _sm:gc2, _lg:gc3, _mdmax:p4, _lg:gc[1.05fr_1fr]');
+    lines.push('');
+    lines.push(
+      'Use compact atom names: `_aic` not `_items-center`, `_jcsb` not `_justify-between`, `_wfull` not `_w-full`, `_top0` not `_t0`. For arbitrary values, use brackets such as `_maxw[72rem]`.',
+    );
+    lines.push('');
+    lines.push(
+      'Combine atoms with treatment / decorator strings: `className={css("_flex _col _gap4") + " d-card clean-card"}`.',
+    );
+  } else {
+    lines.push('');
+    lines.push(
+      'When packs mention atoms, treatments, decorators, or shell class names, treat them as Decantr vocabulary and map the intent into the selected runtime. Keep the literal class names only if this project has a compatible implementation.',
+    );
+  }
   lines.push('');
   lines.push('Inline `style={{...}}` is ONLY acceptable for:');
   lines.push(
-    '  1. CSS custom-property writes the contract REQUIRES (`style={{ "--d-stagger-index": i }}`, `style={{ "--lum-card-color": accent }}`, etc.)',
+    '  1. CSS custom-property writes the contract requires (`--d-stagger-index`, theme color vars, etc.)',
   );
   lines.push(
-    '  2. Truly dynamic geometry no atom can express (computed pan/zoom transforms, draggable-node positions calculated from data, real-time gradient hue interpolation).',
+    '  2. Truly dynamic geometry no atom can express (computed transforms, drag positions, live chart geometry).',
   );
   lines.push('');
-  lines.push(
-    'If you find yourself writing >5 inline styles in a component for static visual values, STOP and migrate to atoms. The full atom reference is in DECANTR.md ("Atoms in 5 minutes" + "Atom Reference"). `decantr check` flags inline-style attributes as a contract violation.',
-  );
+  if (usesDecantrCss) {
+    lines.push(
+      'If a component accumulates static inline visual styles, migrate them to atoms, treatments, decorators, or CSS vars. `decantr check` flags inline-style drift.',
+    );
+  } else {
+    lines.push(
+      'If a component accumulates static inline visual styles, migrate them into the project styling system or mapped Decantr bridge variables. `decantr check` flags inline-style drift.',
+    );
+  }
   lines.push('');
   lines.push('═══ TREATMENT SURFACE — USE WHAT EXISTS ═══');
   lines.push('');
-  lines.push(
-    '60+ treatment classes ship in src/styles/treatments.css. Reach for these BEFORE inventing equivalent CSS. Families:',
-  );
-  lines.push(
-    '- Core surfaces: d-interactive (data-variant + data-size), d-surface, d-data + d-data-row/cell/header, d-control, d-section, d-annotation, d-label',
-  );
-  lines.push(
-    '- Common UI: d-link, d-icon-btn (data-size + data-variant), d-nav-link, d-step-chip (data-step-state="pending|active|done"), d-divider-{top,bottom,left,right}',
-  );
-  lines.push(
-    '- Utility primitives (1.7.21): d-tooltip (data-position), d-empty-state, d-breadcrumb + d-breadcrumb-item (data-current) + d-breadcrumb-separator, d-avatar (data-size), d-icon-well (data-size), d-toggle (data-on), d-toc + d-toc-item (data-current), d-popover',
-  );
-  lines.push(
-    '- Spatial / graph: d-agent-node, d-port (data-side, data-active); d-cta-banner; d-interactive[data-variant="dark"]',
-  );
-  lines.push(
-    '- Shells (14 layouts shipped): d-shell + data-layout="sidebar-main | centered | top-nav-footer | sidebar-aside | top-nav-main | minimal-header | full-bleed | recipefork-top-nav | canvas-overlay | chat-portal | copilot-overlay | terminal-split | three-column-browser | workspace-aside". Child regions: d-shell-sidebar, d-shell-main, d-shell-aside, d-shell-header, d-shell-body, d-shell-footer, d-shell-centered-card, d-shell-list (three-column-browser), d-shell-copilot (copilot-overlay), d-shell-status-bar + d-shell-hotkey-bar (terminal-split), d-shell-overlay (canvas-overlay, with data-corner). d-shell-mobile-trigger + d-shell-mobile-backdrop close the mobile drawer loop.',
-  );
-  lines.push(
-    '- Modal / palette: d-modal (data-align="top"), d-modal-backdrop, d-modal-panel (data-size="sm|lg"), d-palette + d-palette-input/list/row/section, d-kbd, d-hotkey-indicator',
-  );
-  lines.push('- Composite card: d-card, d-card-header, d-card-body, d-card-footer');
-  lines.push(
-    '- Motion: d-enter-fade, d-enter-slide-up, d-enter-scale, d-stagger-children, d-pulse, d-pulse-ring, d-shimmer, d-float, d-glow-hover, d-scale-hover, d-lift-hover, d-ripple',
-  );
-  lines.push(
-    '- Typography: d-display, d-headline, d-title, d-subtitle, d-prose, d-body, d-caption, d-eyebrow, d-numeric, d-mono-text',
-  );
-  lines.push('- Elevation: d-elevate[data-level="0..5"]');
-  lines.push(
-    '- Data-viz: d-timeline-rail + d-timeline-dot[data-state], d-sparkline + d-sparkline-path/area, d-intent-radar + d-intent-radar-ring/axis, d-waveform, d-qr-placeholder, d-conic-ring (--d-conic-value 0..1), d-heatmap-cell',
-  );
+  if (usesDecantrCss) {
+    lines.push(
+      '60+ treatment classes ship in src/styles/treatments.css. Reach for these before inventing CSS:',
+    );
+    lines.push(
+      '- Shells: d-shell + data-layout, d-shell-sidebar/main/aside/header/body/footer, d-shell-mobile-trigger/backdrop',
+    );
+    lines.push(
+      '- Core UI: d-interactive, d-icon-btn, d-nav-link, d-step-chip, d-control, d-card, d-data, d-label, d-annotation',
+    );
+    lines.push(
+      '- Overlays: d-modal, d-modal-backdrop, d-modal-panel, d-palette, d-tooltip, d-popover',
+    );
+    lines.push(
+      '- Motion/type/data-viz: d-enter-*, d-stagger-children, d-pulse, d-lift-hover, d-display/headline/title, d-sparkline, d-conic-ring, d-heatmap-cell',
+    );
+  } else {
+    lines.push(
+      'The treatment names in the packs describe reusable UI roles. Map shells, cards, controls, overlays, motion, typography, and data-viz roles into the project styling system instead of inventing unrelated component language.',
+    );
+  }
   lines.push('');
   lines.push(
-    'Token scales are tunable via CSS vars: --d-motion-{instant,fast,base,slow,slower}, --d-text-{xs..6xl}, --d-elevation-{1..5}, --d-tracking-*, --d-leading-*, --d-weight-*. Themes override per-blueprint.',
+    'Consult DECANTR.md only when you need the full table or exact data-* attributes.',
   );
   lines.push('');
   lines.push('═══ THEME DECORATOR CONTRACT — APPLY OR THE THEME DOES NOT LAND ═══');
   lines.push('');
   lines.push(
-    'Each theme ships 5-15 namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). The full Class | Intent | Apply-to contract for the active theme is in scaffold-pack.md under "Required Theme Decorators". Apply them as additive classes alongside d-* treatments — that is what makes the theme look like the theme rather than "themed colors only."',
+    'Each theme ships namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). Apply the scaffold-pack.md "Required Theme Decorators" as additive classes alongside d-* treatments so the theme lands as more than token colors.',
   );
   lines.push(
-    'Section packs ship a one-line pointer to the scaffold-pack table; the canonical contract is in scaffold-pack.md (also mirrored in DECANTR.md "Decorator Quick Reference" with intent + apply-to + key CSS).',
+    'Section packs may point back to the scaffold-pack table; scaffold-pack.md is authoritative.',
   );
   lines.push('');
   lines.push('═══ HARD RULES (NON-NEGOTIABLE) ═══');
   lines.push('');
-  lines.push(
-    '- Auth pages MUST wrap content in `<div className="d-shell" data-layout="centered"><div className="d-shell-centered-card">{form}</div></div>`. Skipping d-shell-centered-card produces a full-viewport-width card.',
-  );
-  lines.push(
-    '- Command palette MUST wrap `<div className="d-palette">` inside `<div className="d-modal" data-align="top"><div className="d-modal-backdrop" onClick={close} />{palette}</div>`. Without the modal+backdrop wrap, the palette renders as a full-width strip pinned to viewport top. Group commands via d-palette-section eyebrow rows (honor blueprint\'s commands[].section). Each row anatomy: [Lucide icon | label | d-kbd hotkey].',
-  );
+  if (usesDecantrCss) {
+    lines.push(
+      '- Auth pages use `d-shell[data-layout="centered"]` with `d-shell-centered-card` around the form.',
+    );
+    lines.push(
+      '- Command palette uses `d-modal[data-align="top"]` + `d-modal-backdrop` + `d-palette`; rows include Lucide icon, label, and d-kbd hotkey.',
+    );
+  } else {
+    lines.push('- Auth pages use a centered shell with a focused centered-card form surface.');
+    lines.push(
+      '- Command palette uses an accessible modal/palette structure; rows include Lucide icon, label, and keyboard hint where the product contract calls for it.',
+    );
+  }
   lines.push(
     '- Use lucide-react for ALL iconography (already in package.json). Pick semantic icons (Bot, Activity, Database, Search) over generic ones. Do NOT inline SVGs for icons that have Lucide equivalents.',
   );
   lines.push(
-    '- Section Directives (when present in section-*-pack.md) are non-negotiable execution rules. They define layout proportions, treatment stacks (e.g., card-grid uses d-card + d-elevate[1] + d-lift-hover + theme card decorator + d-stagger-children), copy conventions, and pattern-fitness rules per section. Honor them exactly — they encode product-quality decisions the registry author made for this archetype.',
+    '- Section Directives in section packs are execution rules for layout proportions, treatment stacks, copy conventions, and pattern fitness.',
   );
   lines.push(
-    '- Filter chip rows / tab strips MUST use d-step-chip with data-step-state, NOT bare d-interactive. d-step-chip ships proper active-fill, hover-tint, and chip-row sizing. Bare buttons make filter rows look like generic SaaS form controls.',
+    '- Filter chip rows / tab strips use `d-step-chip[data-step-state]`, not bare `d-interactive` buttons.',
+  );
+  lines.push(
+    '- Do not render Decantr guard prose, implementation notes, keyboard shortcut hints, or treatment/debug labels as product UI unless a route/shell contract explicitly declares that text as user-facing.',
+  );
+  lines.push(
+    '- Prevent layout collisions: hero content, CTA banners, cards, footers, and sticky chrome must not overlap or clip at desktop or mobile widths.',
   );
   lines.push('');
   lines.push('═══ IMPLEMENTATION RULES ═══');
   lines.push(
-    '- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.',
+    '- Do not invent routes, sections, shells, themes, or features beyond the compiled packs.',
   );
-  lines.push(
-    '- Prefer scaffold-pack, section-pack, and page-pack guidance over broader narrative docs when they differ.',
-  );
+  lines.push('- Prefer scaffold-pack, section-pack, and page-pack guidance over narrative docs.');
   lines.push(
     '- Start with the shell layouts and route structure first, then build section pages route by route.',
   );
+  if (ctx.adoptionMode === 'decantr-css') {
+    lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
+  } else if (ctx.adoptionMode === 'style-bridge') {
+    lines.push('- Import src/styles/tokens.css and src/styles/decantr-bridge.css where appropriate.');
+  } else {
+    lines.push('- Keep styling imports aligned with the selected runtime; Decantr does not own CSS here.');
+  }
   lines.push(
-    '- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.',
+    usesDecantrCss
+      ? '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.'
+      : '- Map Decantr tokens, treatments, and decorators into the selected runtime instead of inventing an unrelated visual system.',
   );
   lines.push(
-    '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a new visual system.',
+    '- If package.json, app entry files, or router/runtime files are absent, create them for the declared target.',
   );
   lines.push(
-    '- If package.json, app entry files, or router/runtime files are absent, create them explicitly for the declared target instead of assuming a hidden starter already exists in the workspace.',
+    usesDecantrCss
+      ? '- Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.'
+      : '- Colors, spacing, borders, shadows, gradients, and transitions should come from the project styling system or mapped Decantr variables.',
   );
   lines.push(
-    '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables. Inline styles are only acceptable for truly dynamic geometry (computed positions, CSS custom properties like --d-stagger-index, dynamic gradient hues) that cannot be expressed through the contract.',
+    '- Let shells own spacing, centering, and scroll containers unless the route contract says otherwise.',
   );
   lines.push(
-    '- Let shells own spacing, centering, and scroll containers. Pages should not duplicate shell responsibilities with extra full-height wrappers, max-width wrappers, or page-local padding unless the route contract explicitly requires it.',
-  );
-  lines.push(
-    '- If command_palette or hotkeys are declared in the generated context, implement them as real features. Do not merely acknowledge them in copy or comments.',
+    '- If command_palette or hotkeys are declared, implement them as real features rather than visible copy.',
   );
   lines.push(
     '- Treat declared hotkeys as interaction bindings by default, not visible navigation label text, unless the shell or route contract explicitly calls for shown shortcut hints.',
   );
   lines.push(
-    '- If a required decorator class is referenced in the contract but missing from generated CSS, report the contract gap instead of inventing a parallel visual system.',
+    '- If a required decorator class is missing from generated CSS, report the contract gap instead of inventing a parallel system.',
   );
   lines.push(
     '- Do not modify generated context files unless the task is explicitly to regenerate or refresh Decantr context.',
@@ -448,7 +466,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('- Build the shell and shared layout first.');
   lines.push("- Then implement each section's pages using the matching section and page packs.");
   lines.push(
-    '- After implementation, run `decantr check` (primary gate — 8 guard rules including the experiential interactions guard). It fails strict-mode builds when declared interactions[] are not implemented; the suggestions point at the canonical implementation. Run `decantr audit` (supplementary — surfaces inline-style counts, security hygiene findings, accessibility / auth-flow advisories) for deeper diagnostics.',
+    '- After implementation, run `decantr check` (primary gate) and `decantr audit` (supplementary diagnostics).',
   );
   lines.push('- Fix all violations until `decantr check` exits 0.');
   lines.push(
@@ -461,14 +479,36 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
 function generateBrownfieldPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
 
-  lines.push('Attach Decantr to this existing application without rebuilding it from scratch.');
+  lines.push(
+    ctx.workflow === 'hybrid-compose'
+      ? 'Compose the requested Decantr registry contract into this existing application without rebuilding it from scratch.'
+      : 'Attach Decantr to this existing application without rebuilding it from scratch.',
+  );
+  lines.push('');
+  if (ctx.blueprint) lines.push(`Blueprint: ${ctx.blueprint}`);
+  if (ctx.archetype) lines.push(`Primary archetype: ${ctx.archetype}`);
+  if (ctx.theme) lines.push(`Theme: ${ctx.theme}${ctx.mode ? ` (${ctx.mode})` : ''}`);
+  if (ctx.target) lines.push(`Target: ${ctx.target}`);
+  if (ctx.pages.length > 0) {
+    lines.push(
+      `Routes/pages: ${ctx.pages
+        .map((page) => `${page.sectionId ? `${page.sectionId}/` : ''}${page.id}:${page.shell}`)
+        .join(', ')}`,
+    );
+  }
   lines.push('');
   lines.push(
     'Preserve the current framework, package manager, router, build tooling, and working runtime structure unless the generated Decantr contract gives you a reviewed reason to change them.',
   );
   lines.push('');
-  lines.push('Treat .decantr/analysis.json as the factual inventory of the current app.');
-  lines.push('Treat .decantr/init-seed.json as the recommended Decantr attach defaults.');
+  if (ctx.analysisArtifacts) {
+    lines.push('Treat .decantr/analysis.json as the factual inventory of the current app.');
+    lines.push('Treat .decantr/init-seed.json as the recommended Decantr attach defaults.');
+  } else {
+    lines.push(
+      'No Decantr analysis seed is present. Start by inventorying the app before changing runtime files.',
+    );
+  }
   lines.push(
     'Treat the compiled execution-pack files as the Decantr contract you are layering onto the app.',
   );
@@ -477,20 +517,34 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
   );
   lines.push('');
   lines.push('Read in this order:');
-  lines.push(
-    '1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.',
-  );
-  lines.push('2. .decantr/init-seed.json for the intended attach defaults and workflow lane.');
-  lines.push('3. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
-  lines.push(
-    '4. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
-  );
-  lines.push(
-    '5. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.',
-  );
-  lines.push(
-    '6. The matching section and page pack files only when you are working on those specific surfaces.',
-  );
+  if (ctx.analysisArtifacts) {
+    lines.push(
+      '1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.',
+    );
+    lines.push('2. .decantr/init-seed.json for the intended attach defaults and workflow lane.');
+    lines.push('3. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
+    lines.push(
+      '4. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
+    );
+    lines.push(
+      '5. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.',
+    );
+    lines.push(
+      '6. The matching section and page pack files only when you are working on those specific surfaces.',
+    );
+  } else {
+    lines.push('1. Inventory existing framework, routes, styling, layout, rule files, and dependencies.');
+    lines.push('2. DECANTR.md for guard rules, adoption mode, and Decantr operating rules.');
+    lines.push(
+      '3. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
+    );
+    lines.push(
+      '4. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.',
+    );
+    lines.push(
+      '5. The matching section and page pack files only when you are working on those specific surfaces.',
+    );
+  }
   lines.push('');
   lines.push('Implementation rules:');
   lines.push(
@@ -502,21 +556,35 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
   lines.push(
     '- If package.json, router files, or style files already exist, extend them deliberately instead of replacing them with a different starter shape.',
   );
+  if (ctx.adoptionMode === 'decantr-css') {
+    lines.push(
+      '- If Decantr style files are absent, add src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css in a way that fits the current app structure.',
+    );
+    lines.push(
+      '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a parallel visual system.',
+    );
+  } else if (ctx.adoptionMode === 'style-bridge') {
+    lines.push(
+      '- Use Decantr bridge files as a mapping layer onto the existing styling system; do not install @decantr/css unless explicitly requested.',
+    );
+  } else {
+    lines.push(
+      '- Keep the existing styling system. Do not add Decantr CSS files or @decantr/css unless the adoption mode changes.',
+    );
+  }
   lines.push(
-    '- If Decantr style files are absent, add src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css in a way that fits the current app structure.',
-  );
-  lines.push(
-    '- Use the existing Decantr tokens, treatments, and decorators instead of inventing a parallel visual system.',
-  );
-  lines.push(
-    '- Registry content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.',
+    ctx.workflow === 'hybrid-compose'
+      ? '- Registry content is part of this task. Layer it onto the current app through existing route/component anchors before creating new runtime structure.'
+      : '- Registry content is optional in this workflow unless the task explicitly asks for blueprint/theme/pattern enrichment.',
   );
   lines.push(
     '- Do not invent routes, sections, shells, themes, or features that are not present in the compiled packs.',
   );
-  lines.push(
-    '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.',
-  );
+  if (ctx.adoptionMode === 'decantr-css') {
+    lines.push(
+      '- Do not use inline visual style values or component-scoped <style> tags as the primary styling path. Colors, spacing, borders, shadows, gradients, and transitions should come from atoms, treatments, decorators, or CSS variables.',
+    );
+  }
   lines.push(
     '- Let shells own spacing, centering, and scroll containers. Preserve app structure, but remove duplicated shell responsibilities when the contract makes them explicit.',
   );
@@ -549,7 +617,7 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
 }
 
 function generateCuratedPrompt(ctx: PromptContext): string {
-  return ctx.workflow === 'brownfield-attach'
+  return ctx.workflow === 'brownfield-attach' || ctx.workflow === 'hybrid-compose'
     ? generateBrownfieldPrompt(ctx)
     : generateGreenfieldPrompt(ctx);
 }
@@ -877,7 +945,8 @@ async function printHostedExecutionPackBundle(
   console.log(`${BOLD}Route Plan:${RESET}`);
   for (const route of typedBundle.scaffold.data.routes) {
     const patterns = route.patternIds.length > 0 ? route.patternIds.join(', ') : 'none';
-    console.log(`  ${cyan(route.path)} -> ${route.pageId} [${patterns}]`);
+    const pageLabel = route.sectionId ? `${route.sectionId}/${route.pageId}` : route.pageId;
+    console.log(`  ${cyan(route.path)} -> ${pageLabel} [${patterns}]`);
   }
 }
 
@@ -1483,17 +1552,27 @@ interface InitArgs {
   offline?: boolean;
   yes?: boolean;
   registry?: string;
+  workflow?: string;
+  adoption?: string;
+  'assistant-bridge'?: string;
+  project?: string;
 }
 
 async function cmdInit(args: InitArgs) {
-  const projectRoot = process.cwd();
+  const workspaceInfo = resolveWorkspaceInfo(process.cwd(), args.project);
+  if (args.yes && workspaceInfo.requiresProjectSelection) {
+    console.log(error('This looks like a workspace root with multiple app candidates.'));
+    console.log(dim(`Use --project=<path>. Candidates: ${workspaceInfo.appCandidates.join(', ')}`));
+    process.exitCode = 1;
+    return;
+  }
+  const projectRoot = workspaceInfo.appRoot;
 
   console.log(heading('Decantr Project Setup'));
 
   // Detect project configuration
   const detected = detectProject(projectRoot);
   const workflowSeed = readBrownfieldInitSeed(projectRoot);
-  const brownfieldAttach = Boolean(workflowSeed) || hasExistingProjectFootprint(detected);
 
   if (workflowSeed) {
     console.log(dim('  Found .decantr/init-seed.json brownfield guidance.'));
@@ -1512,12 +1591,32 @@ async function cmdInit(args: InitArgs) {
   const requestedBlueprint = Boolean(args.blueprint);
   const requestedArchetype = Boolean(args.archetype);
   const requestedTheme = Boolean(args.theme);
+  const policy = resolveWorkflowPolicy({
+    command: 'init',
+    detected,
+    workflowSeed,
+    requestedWorkflow: args.workflow,
+    requestedAdoption: args.adoption,
+    requestedAssistantBridge: args['assistant-bridge'],
+    requestedBlueprint,
+    requestedArchetype,
+    requestedTheme,
+    explicitExisting: args.existing,
+    offline: args.offline,
+    projectScope: workspaceInfo.projectScope,
+  });
+
+  const preferContractOnly =
+    policy.contentSource === 'none' &&
+    (policy.workflowMode === 'brownfield-attach' ||
+      policy.workflowMode === 'greenfield-contract-only');
+  const shouldUseRegistry = !preferContractOnly || policy.registryRequired;
 
   let offlineSeed = {
     seeded: false,
     strategy: null as 'workspace-cache' | 'configured-content-root' | 'sibling-content-root' | null,
   };
-  if (args.offline) {
+  if (args.offline && shouldUseRegistry) {
     offlineSeed = seedOfflineRegistry(projectRoot, projectRoot);
     if (offlineSeed.seeded) {
       console.log(dim(`  Seeded offline registry content from ${offlineSeed.strategy}.`));
@@ -1540,10 +1639,11 @@ async function cmdInit(args: InitArgs) {
     cacheDir: join(projectRoot, '.decantr', 'cache'),
     apiUrl: args.registry,
     offline: args.offline,
+    projectRoot,
   });
 
   // Check connectivity
-  const apiAvailable = await registryClient.checkApiAvailability();
+  const apiAvailable = shouldUseRegistry ? await registryClient.checkApiAvailability() : false;
   if (!apiAvailable && !args.offline && (requestedBlueprint || requestedArchetype)) {
     const fallbackSeed = seedOfflineRegistry(projectRoot, projectRoot);
     if (fallbackSeed.seeded) {
@@ -1554,16 +1654,11 @@ async function cmdInit(args: InitArgs) {
 
   let selectedBlueprint = 'default';
   let registrySource: 'api' | 'cache' = 'cache';
-  const preferContractOnly = brownfieldAttach && !requestedBlueprint && !requestedArchetype;
-  const workflowMode: 'greenfield-scaffold' | 'brownfield-attach' =
-    workflowSeed || (brownfieldAttach && !requestedBlueprint && !requestedArchetype)
-      ? 'brownfield-attach'
-      : 'greenfield-scaffold';
 
   if (args.yes) {
     // Non-interactive: use --blueprint flag or default
     selectedBlueprint = args.blueprint || 'default';
-  } else if (!apiAvailable) {
+  } else if (shouldUseRegistry && !apiAvailable) {
     // Offline mode with no blueprint specified: use minimal scaffold
     if (!args.blueprint) {
       console.log(`\n${YELLOW}You're offline. Scaffolding minimal Decantr project.${RESET}`);
@@ -1571,7 +1666,12 @@ async function cmdInit(args: InitArgs) {
         dim('Run `decantr sync` or `decantr upgrade` when online to pull full registry content.\n'),
       );
 
-      const result = scaffoldMinimal(projectRoot);
+      const result = scaffoldMinimal(projectRoot, {
+        workflowMode: policy.workflowMode,
+        adoptionMode: policy.adoptionMode,
+        contentSource: policy.contentSource,
+        assistantBridge: policy.assistantBridge,
+      });
 
       console.log(success('\nProject scaffolded (minimal/offline)!\n'));
       console.log('  Files created:');
@@ -1588,7 +1688,7 @@ async function cmdInit(args: InitArgs) {
         `    2. Run ${cyan('decantr refresh')} after syncing to generate scaffold, section, and page packs`,
       );
       console.log(
-        `    3. Read ${cyan('DECANTR.md')} and the generated ${cyan('.decantr/context/*')} files before implementation`,
+        `    3. Read ${cyan('.decantr/context/scaffold-pack.md')} first, then use ${cyan('DECANTR.md')} as a lookup reference`,
       );
       console.log(
         `    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`,
@@ -1614,7 +1714,7 @@ async function cmdInit(args: InitArgs) {
     console.log(`\n${YELLOW}You're offline. Scaffolding Decantr default.${RESET}`);
     console.log(dim('Run `decantr upgrade` when online, or visit decantr.ai/registry\n'));
     selectedBlueprint = 'default';
-  } else if (!preferContractOnly) {
+  } else if (shouldUseRegistry) {
     // Online: fetch blueprints and show simplified prompt
     console.log(dim('Fetching registry content...'));
     const blueprintsResult = await registryClient.fetchBlueprints();
@@ -1626,17 +1726,17 @@ async function cmdInit(args: InitArgs) {
   }
 
   // Fetch registry content for scaffold (sequential to avoid overwhelming the API)
-  const archetypesResult = await registryClient.fetchArchetypes();
-  const blueprintsResult = await registryClient.fetchBlueprints();
-  const themesResult = await registryClient.fetchThemes();
+  const archetypesResult = shouldUseRegistry ? await registryClient.fetchArchetypes() : null;
+  const blueprintsResult = shouldUseRegistry ? await registryClient.fetchBlueprints() : null;
+  const themesResult = shouldUseRegistry ? await registryClient.fetchThemes() : null;
 
-  if (archetypesResult.source.type === 'api') {
+  if (archetypesResult?.source.type === 'api') {
     registrySource = 'api';
   }
 
-  const archetypes = archetypesResult.data.items;
-  const blueprints = blueprintsResult.data.items;
-  const themes = themesResult.data.items;
+  const archetypes = archetypesResult?.data.items ?? [];
+  const blueprints = blueprintsResult?.data.items ?? [];
+  const themes = themesResult?.data.items ?? [];
 
   let options;
 
@@ -1648,7 +1748,10 @@ async function cmdInit(args: InitArgs) {
     personality: Boolean(args.personality),
   };
 
-  if (args.yes || selectedBlueprint !== 'default') {
+  if (preferContractOnly) {
+    const flags = parseFlags(args as Record<string, unknown>, detected);
+    options = mergeWithDefaults(flags, detected, workflowSeed ?? undefined);
+  } else if (args.yes || selectedBlueprint !== 'default') {
     // Non-interactive mode or simplified selection: use flags with defaults
     const flags = parseFlags(args as Record<string, unknown>, detected);
     flags.blueprint = selectedBlueprint !== 'default' ? selectedBlueprint : flags.blueprint;
@@ -1668,7 +1771,15 @@ async function cmdInit(args: InitArgs) {
     userExplicit.shape = true;
     userExplicit.personality = true;
   }
-  options.workflowMode = workflowMode;
+  options.workflowMode = policy.workflowMode;
+  options.adoptionMode = policy.adoptionMode;
+  options.contentSource = policy.contentSource;
+  options.assistantBridge = policy.assistantBridge;
+  options.projectScope = policy.projectScope;
+  options.workspaceRoot = workspaceInfo.workspaceRoot;
+  options.appRoot = workspaceInfo.appRoot;
+  options.analysisArtifacts = policy.hasAnalysisArtifacts;
+  options.adapterId = resolveBootstrapTarget(options.target).adapterId;
 
   // Topology markdown (populated when blueprint has composition)
   let topologyMarkdown = '';
@@ -1693,7 +1804,7 @@ async function cmdInit(args: InitArgs) {
   let patternSpecs: Record<string, PatternSpecSummary> | undefined;
   let blueprintData: RegistryBlueprint | undefined;
 
-  if (options.blueprint) {
+  if (shouldUseRegistry && options.blueprint) {
     // Fetch the blueprint to get its primary archetype and theme
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
@@ -1853,7 +1964,7 @@ async function cmdInit(args: InitArgs) {
         `${YELLOW}  Warning: Could not fetch blueprint "${options.blueprint}". Using defaults.${RESET}`,
       );
     }
-  } else if (options.archetype) {
+  } else if (shouldUseRegistry && options.archetype) {
     // Direct archetype selection
     const archetypeResult = await registryClient.fetchArchetype(options.archetype);
     if (archetypeResult) {
@@ -1874,7 +1985,7 @@ async function cmdInit(args: InitArgs) {
   // Fetch theme data — single fetch, theme now contains all visual treatment data
   let themeData: ThemeData | undefined;
 
-  if (options.theme) {
+  if (shouldUseRegistry && options.theme) {
     const themeResult = await registryClient.fetchTheme(options.theme);
     if (themeResult) {
       themeData = mapRegistryThemeToThemeData(themeResult.data);
@@ -1910,6 +2021,20 @@ async function cmdInit(args: InitArgs) {
     blueprintData,
   );
 
+  let assistantBridgePath: string | null = null;
+  let appliedRuleFiles: string[] = [];
+  if (policy.assistantBridge === 'preview' || policy.assistantBridge === 'apply') {
+    assistantBridgePath = writeAssistantBridgePreview({
+      projectRoot,
+      detected,
+      workflowMode: policy.workflowMode,
+      assistantBridge: policy.assistantBridge,
+    });
+  }
+  if (policy.assistantBridge === 'apply') {
+    appliedRuleFiles = applyAssistantBridge(projectRoot, detected);
+  }
+
   // Output summary
   console.log(success('\nProject scaffolded!\n'));
   console.log('  Files created:');
@@ -1919,6 +2044,12 @@ async function cmdInit(args: InitArgs) {
 
   if (result.gitignoreUpdated) {
     console.log(`    ${dim('.gitignore updated')}`);
+  }
+  if (assistantBridgePath) {
+    console.log(`    ${cyan('.decantr/context/assistant-bridge.md')} Assistant bridge preview`);
+  }
+  if (appliedRuleFiles.length > 0) {
+    console.log(`    ${dim(`Rule bridge applied: ${appliedRuleFiles.join(', ')}`)}`);
   }
 
   if (!existsSync(join(projectRoot, 'package.json'))) {
@@ -1935,14 +2066,15 @@ async function cmdInit(args: InitArgs) {
 
   console.log('');
   console.log('  Next steps:');
-  console.log('    1. Read DECANTR.md for methodology, CSS approach, and guard rules');
+  console.log('    1. Read .decantr/context/scaffold-pack.md first as the primary compiled contract');
   console.log(
-    '    2. Read .decantr/context/scaffold-pack.md first, then .decantr/context/scaffold.md',
+    '    2. Read .decantr/context/scaffold.md for broader topology, route map, and voice guidance',
   );
   console.log('    3. Read the matching section and page packs before implementing each route');
-  console.log('    4. Build the shell and route structure first, then implement the pages');
-  console.log('    5. Run decantr check and decantr audit after implementation');
-  console.log('    6. Explore more at decantr.ai/registry');
+  console.log('    4. Use DECANTR.md as a lookup reference for atoms, treatments, and guard rules');
+  console.log('    5. Build the shell and route structure first, then implement the pages');
+  console.log('    6. Run decantr check and decantr audit after implementation');
+  console.log('    7. Explore more at decantr.ai/registry');
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);
@@ -1970,12 +2102,19 @@ async function cmdInit(args: InitArgs) {
   if (isV3(essence)) {
     const allPages = essence.blueprint.sections
       ? essence.blueprint.sections.flatMap((s: any) =>
-          s.pages.map((p: any) => ({ ...p, _shell: s.shell })),
+          s.pages.map((p: any) => ({ ...p, _sectionId: s.id, _shell: s.shell })),
         )
       : essence.blueprint.pages || [];
     promptPages = allPages.map(
-      (p: { id: string; shell_override?: string | null; layout: unknown[]; _shell?: string }) => ({
+      (p: {
+        id: string;
+        shell_override?: string | null;
+        layout: unknown[];
+        _sectionId?: string;
+        _shell?: string;
+      }) => ({
         id: p.id,
+        sectionId: p._sectionId,
         shell: p.shell_override ?? p._shell ?? essence.blueprint.shell,
         layout: (p.layout || []).map((item: unknown) =>
           typeof item === 'string' ? item : extractPatternName(item),
@@ -1987,8 +2126,9 @@ async function cmdInit(args: InitArgs) {
   }
 
   const promptCtx: PromptContext = {
-    workflow:
-      options.workflowMode === 'brownfield-attach' ? 'brownfield-attach' : 'greenfield-scaffold',
+    workflow: options.workflowMode || 'greenfield-scaffold',
+    adoptionMode: options.adoptionMode,
+    analysisArtifacts: options.analysisArtifacts,
     archetype: options.archetype || 'custom',
     blueprint: options.blueprint,
     theme: options.theme,
@@ -2449,7 +2589,7 @@ function cmdHelp() {
 ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 
 ${BOLD}Usage:${RESET}
-  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X]
+  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css]
   decantr magic <prompt> [--dry-run]
   decantr init [options]
   decantr status
@@ -2468,6 +2608,7 @@ ${BOLD}Usage:${RESET}
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+  decantr rules apply [--project=<path>]
   decantr validate [path]
   decantr theme <subcommand>
   decantr create <type> <name>
@@ -2486,6 +2627,10 @@ ${BOLD}Init Options:${RESET}
   --guard            Guard mode: creative | guided | strict
   --density          Spacing: compact | comfortable | spacious
   --shell            Default shell layout
+  --workflow         Workflow: greenfield | brownfield | hybrid
+  --adoption         Adoption: contract-only | style-bridge | decantr-css
+  --assistant-bridge Assistant rules: none | preview | apply
+  --project          App path inside a workspace/monorepo
   --existing         Initialize in existing project
   --offline          Force offline mode
   --yes, -y          Accept defaults, skip confirmations
@@ -2515,6 +2660,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
   ${cyan('registry')}    Registry management and intelligence summary
+  ${cyan('rules')}       Preview/apply Decantr assistant bridge blocks to repo rule files
   ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
@@ -2522,7 +2668,11 @@ ${BOLD}Examples:${RESET}
   decantr new my-app --blueprint=carbon-ai-portal
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
   decantr init
-  decantr init --existing --blueprint=saas-dashboard --theme=luminarum --yes
+  decantr init --existing --adoption=contract-only --yes
+  decantr init --existing --adoption=style-bridge --assistant-bridge=preview
+  decantr init --workflow=greenfield --adoption=contract-only
+  decantr init --project=apps/web --yes
+  decantr rules apply
   decantr status
   decantr audit
   decantr audit src/pages/HomePage.tsx
@@ -2545,13 +2695,14 @@ ${BOLD}Examples:${RESET}
   decantr create pattern my-card
 
 ${BOLD}Workflow Model:${RESET}
-  ${cyan('Greenfield blueprint')}   decantr new / decantr magic
-  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing
+  ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
+  ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
+  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing --adoption=contract-only
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
-  Current runnable starter adapter: ${cyan('react-vite')}
-  Other contract targets stay framework-agnostic, but currently initialize in contract-only mode until their starter adapters land.
+  Runnable starter adapters: ${cyan('react-vite')}, ${cyan('next-app')}
+  Unsupported targets resolve through ${cyan('generic-web')} contract-only mode until their starter adapters land.
 `);
 }
 
@@ -2629,6 +2780,9 @@ async function main() {
         target: newOpts.target as string | undefined,
         offline: newOpts.offline === true,
         registry: newOpts.registry as string | undefined,
+        workflow: newOpts.workflow as string | undefined,
+        adoption: newOpts.adoption as string | undefined,
+        assistantBridge: newOpts['assistant-bridge'] as string | undefined,
       });
       break;
     }
@@ -3099,7 +3253,48 @@ async function main() {
     }
 
     case 'analyze': {
-      cmdAnalyze(process.cwd());
+      let projectArg: string | undefined;
+      for (let i = 1; i < args.length; i++) {
+        if (args[i].startsWith('--project=')) {
+          projectArg = args[i].split('=')[1];
+        } else if (args[i] === '--project' && args[i + 1]) {
+          projectArg = args[++i];
+        }
+      }
+      const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
+      if (workspaceInfo.requiresProjectSelection) {
+        console.log(error('This looks like a workspace root with multiple app candidates.'));
+        console.log(dim(`Use --project=<path>. Candidates: ${workspaceInfo.appCandidates.join(', ')}`));
+        process.exitCode = 1;
+        break;
+      }
+      cmdAnalyze(workspaceInfo.appRoot, workspaceInfo);
+      break;
+    }
+
+    case 'rules': {
+      const subcommand = args[1];
+      if (subcommand !== 'apply') {
+        console.error(error('Usage: decantr rules apply [--project=<path>]'));
+        process.exitCode = 1;
+        break;
+      }
+      let projectArg: string | undefined;
+      for (let i = 2; i < args.length; i++) {
+        if (args[i].startsWith('--project=')) {
+          projectArg = args[i].split('=')[1];
+        } else if (args[i] === '--project' && args[i + 1]) {
+          projectArg = args[++i];
+        }
+      }
+      const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
+      const detected = detectProject(workspaceInfo.appRoot);
+      const updated = applyAssistantBridge(workspaceInfo.appRoot, detected);
+      if (updated.length === 0) {
+        console.log(dim('Assistant bridge rule files are already up to date.'));
+      } else {
+        console.log(success(`Applied Decantr assistant bridge to ${updated.join(', ')}.`));
+      }
       break;
     }
 

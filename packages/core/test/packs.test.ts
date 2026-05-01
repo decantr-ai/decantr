@@ -349,11 +349,18 @@ describe('buildScaffoldPack', () => {
       { pageId: 'agent-overview', path: '/agents' },
     ]);
     expect(marketingPack?.data.routes).toEqual([
-      { pageId: 'home', path: '/', shell: 'top-nav-footer', patternIds: ['hero'] },
+      {
+        pageId: 'home',
+        sectionId: 'marketing',
+        path: '/',
+        shell: 'top-nav-footer',
+        patternIds: ['hero'],
+      },
     ]);
     expect(agentPack?.data.routes).toEqual([
       {
         pageId: 'agent-overview',
+        sectionId: 'agent-orchestrator',
         path: '/agents',
         shell: 'sidebar-main',
         patternIds: ['form-sections'],
@@ -366,10 +373,109 @@ describe('buildScaffoldPack', () => {
     expect(bundle.scaffold.renderedMarkdown).toContain(
       '- Shells: top-nav-footer (primary), sidebar-main',
     );
-    expect(bundle.scaffold.renderedMarkdown).toContain('- / -> home @ top-nav-footer [hero]');
     expect(bundle.scaffold.renderedMarkdown).toContain(
-      '- /agents -> agent-overview @ sidebar-main [form-sections]',
+      '- / -> marketing/home @ top-nav-footer [hero]',
+    );
+    expect(bundle.scaffold.renderedMarkdown).toContain(
+      '- /agents -> agent-orchestrator/agent-overview @ sidebar-main [form-sections]',
     );
     expect(bundle.scaffold.renderedMarkdown).not.toContain('agent-governance');
+  });
+
+  it('keeps duplicate page IDs scoped by section when compiling packs', async () => {
+    const essence: EssenceV3 = {
+      version: '3.1.0',
+      dna: {
+        theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+        spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+        typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+        color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+        radius: { philosophy: 'rounded', base: 8 },
+        elevation: { system: 'layered', max_levels: 3 },
+        motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+        accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+        personality: ['operational'],
+      },
+      blueprint: {
+        sections: [
+          {
+            id: 'buyer-dashboard',
+            role: 'auxiliary',
+            shell: 'sidebar-main',
+            description: 'Buyer account hub',
+            features: ['messaging'],
+            pages: [{ id: 'messages', route: '/buyer/messages', layout: ['data-table'] }],
+          },
+          {
+            id: 'marketplace-messaging',
+            role: 'auxiliary',
+            shell: 'sidebar-main',
+            description: 'Standalone inbox',
+            features: ['messaging'],
+            pages: [{ id: 'messages', route: '/messages', layout: ['hero'] }],
+          },
+        ],
+        features: ['messaging'],
+        routes: {
+          '/buyer/messages': { section: 'buyer-dashboard', page: 'messages' },
+          '/messages': { section: 'marketplace-messaging', page: 'messages' },
+        },
+      },
+      meta: {
+        archetype: 'marketplace',
+        target: 'react',
+        platform: { type: 'spa', routing: 'hash' },
+        guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+      },
+    };
+
+    const bundle = await compileExecutionPackBundle(essence, { contentRoot });
+    const buyerPack = bundle.sections.find((pack) => pack.data.sectionId === 'buyer-dashboard');
+    const messagingPack = bundle.sections.find(
+      (pack) => pack.data.sectionId === 'marketplace-messaging',
+    );
+    const buyerPagePack = bundle.pages.find(
+      (pack) => pack.data.sectionId === 'buyer-dashboard' && pack.data.pageId === 'messages',
+    );
+    const messagingPagePack = bundle.pages.find(
+      (pack) => pack.data.sectionId === 'marketplace-messaging' && pack.data.pageId === 'messages',
+    );
+
+    expect(buyerPack?.data.routes).toEqual([
+      {
+        pageId: 'messages',
+        sectionId: 'buyer-dashboard',
+        path: '/buyer/messages',
+        shell: 'sidebar-main',
+        patternIds: ['data-table'],
+      },
+    ]);
+    expect(messagingPack?.data.routes).toEqual([
+      {
+        pageId: 'messages',
+        sectionId: 'marketplace-messaging',
+        path: '/messages',
+        shell: 'sidebar-main',
+        patternIds: ['hero'],
+      },
+    ]);
+    expect(buyerPagePack?.data.path).toBe('/buyer/messages');
+    expect(buyerPagePack?.data.patterns.map((pattern) => pattern.id)).toEqual(['data-table']);
+    expect(messagingPagePack?.data.path).toBe('/messages');
+    expect(messagingPagePack?.data.patterns.map((pattern) => pattern.id)).toEqual(['hero']);
+    expect(bundle.manifest.pages.map((page) => page.id)).toEqual([
+      'buyer-dashboard/messages',
+      'marketplace-messaging/messages',
+    ]);
+    expect(bundle.manifest.pages.map((page) => page.markdown)).toEqual([
+      'page-buyer-dashboard-messages-pack.md',
+      'page-marketplace-messaging-messages-pack.md',
+    ]);
+    expect(bundle.scaffold.renderedMarkdown).toContain(
+      '- /buyer/messages -> buyer-dashboard/messages @ sidebar-main [data-table]',
+    );
+    expect(bundle.scaffold.renderedMarkdown).toContain(
+      '- /messages -> marketplace-messaging/messages @ sidebar-main [hero]',
+    );
   });
 });

@@ -1,8 +1,8 @@
-// Workspace prep: scaffold Vite + React and run `decantr init`.
+// Workspace prep: use explicit greenfield Decantr workflow/adoption flags.
 
 import { mkdirSync, writeFileSync, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { join, dirname, resolve } from 'node:path';
+import { basename, join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CLI_RESOLUTION } from './config.mjs';
 
@@ -114,44 +114,70 @@ function resolveCli() {
 }
 
 export function prepWorkspace({ blueprint, workspace }) {
-  mkdirSync(workspace, { recursive: true });
-  mkdirSync(join(workspace, 'src'), { recursive: true });
-
-  // Only write template files if they don't already exist (safe re-runs).
-  const writeIfMissing = (rel, content) => {
-    const abs = join(workspace, rel);
-    if (!existsSync(abs)) writeFileSync(abs, content);
-  };
-
-  writeIfMissing('package.json', JSON.stringify(PACKAGE_JSON, null, 2));
-  writeIfMissing('vite.config.ts', VITE_CONFIG);
-  writeIfMissing('tsconfig.json', TSCONFIG);
-  writeIfMissing('tsconfig.app.json', TSCONFIG);
-  writeIfMissing('index.html', INDEX_HTML);
-
-  // Install deps if node_modules missing.
-  if (!existsSync(join(workspace, 'node_modules'))) {
-    console.log('  installing workspace deps...');
-    execFileSync('npm', ['install'], { cwd: workspace, stdio: 'inherit' });
-  }
-
-  // Resolve CLI and run sync + init.
   const cli = resolveCli();
   console.log(`  using CLI: ${cli.kind} (${cli.command} ${cli.args.join(' ')})`);
 
-  console.log('  decantr sync...');
-  execFileSync(cli.command, [...cli.args, 'sync'], { cwd: workspace, stdio: 'inherit' });
-
-  // If DECANTR_CONTENT_DIR is set, use --offline so the CLI pulls themes/
-  // patterns from that checkout instead of the hosted registry. This is how
-  // we test local edits to decantr-content without publishing.
-  const initArgs = ['init', `--blueprint=${blueprint}`, '--existing', '--yes'];
-  if (process.env.DECANTR_CONTENT_DIR) {
-    initArgs.push('--offline');
-    console.log(`  using DECANTR_CONTENT_DIR=${process.env.DECANTR_CONTENT_DIR} (--offline)`);
+  const createdWithNew = !existsSync(workspace);
+  if (createdWithNew) {
+    const parentDir = dirname(workspace);
+    const projectName = basename(workspace);
+    mkdirSync(parentDir, { recursive: true });
+    const newArgs = [
+      'new',
+      projectName,
+      `--blueprint=${blueprint}`,
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+    ];
+    if (process.env.DECANTR_CONTENT_DIR) {
+      newArgs.push('--offline');
+      console.log(`  using DECANTR_CONTENT_DIR=${process.env.DECANTR_CONTENT_DIR} (--offline)`);
+    }
+    console.log(`  decantr ${newArgs.join(' ')}...`);
+    execFileSync(cli.command, [...cli.args, ...newArgs], { cwd: parentDir, stdio: 'inherit' });
   }
-  console.log(`  decantr ${initArgs.join(' ')}...`);
-  execFileSync(cli.command, [...cli.args, ...initArgs], { cwd: workspace, stdio: 'inherit' });
+
+  if (!createdWithNew) {
+    mkdirSync(workspace, { recursive: true });
+    mkdirSync(join(workspace, 'src'), { recursive: true });
+
+    // Only write template files if they don't already exist (safe re-runs).
+    const writeIfMissing = (rel, content) => {
+      const abs = join(workspace, rel);
+      if (!existsSync(abs)) writeFileSync(abs, content);
+    };
+
+    writeIfMissing('package.json', JSON.stringify(PACKAGE_JSON, null, 2));
+    writeIfMissing('vite.config.ts', VITE_CONFIG);
+    writeIfMissing('tsconfig.json', TSCONFIG);
+    writeIfMissing('tsconfig.app.json', TSCONFIG);
+    writeIfMissing('index.html', INDEX_HTML);
+
+    // Install deps if node_modules missing.
+    if (!existsSync(join(workspace, 'node_modules'))) {
+      console.log('  installing workspace deps...');
+      execFileSync('npm', ['install'], { cwd: workspace, stdio: 'inherit' });
+    }
+
+    console.log('  decantr sync...');
+    execFileSync(cli.command, [...cli.args, 'sync'], { cwd: workspace, stdio: 'inherit' });
+
+    // Existing workspace fallback: keep the runtime, but use explicit
+    // greenfield workflow/adoption flags instead of pretending it is brownfield.
+    const initArgs = [
+      'init',
+      `--blueprint=${blueprint}`,
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+      '--yes',
+    ];
+    if (process.env.DECANTR_CONTENT_DIR) {
+      initArgs.push('--offline');
+      console.log(`  using DECANTR_CONTENT_DIR=${process.env.DECANTR_CONTENT_DIR} (--offline)`);
+    }
+    console.log(`  decantr ${initArgs.join(' ')}...`);
+    execFileSync(cli.command, [...cli.args, ...initArgs], { cwd: workspace, stdio: 'inherit' });
+  }
 
   // Validate scaffold. Tolerate BOTH contract shapes — pack-style (has
   // scaffold-pack.md + pack-manifest.json) and narrative-only (scaffold.md

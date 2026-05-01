@@ -17,19 +17,42 @@ Or run it without installing:
 npx @decantr/cli new my-app --blueprint=agent-marketplace
 ```
 
-Use `decantr new` for a greenfield workspace in a fresh directory.
+Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr analyze` first when you already have an app and want Decantr governance without adopting a blueprint.
 Use `decantr init` to attach Decantr contract/context files to an existing project or to create a contract-only workspace.
 
 Current starter adapter availability:
 
 - `react-vite` is the runnable bootstrap adapter in this wave
-- other contract targets remain valid Decantr targets, but `decantr new` will keep them in contract-only mode until their adapters land
+- `next-app` is the runnable Next.js App Router adapter
+- other contract targets use the `generic-web` contract-only adapter until their runnable adapters land
+
+Explicit workflow/adoption flags:
+
+```bash
+decantr init --workflow=greenfield --adoption=contract-only
+decantr init --existing --adoption=contract-only
+decantr init --existing --adoption=style-bridge
+decantr init --existing --adoption=decantr-css
+decantr init --project=apps/web --yes
+decantr init --assistant-bridge=preview
+decantr rules apply
+```
+
+Adoption modes:
+
+- `contract-only` writes Decantr essence/context/governance files without Decantr CSS files or `@decantr/css` dependency guidance.
+- `style-bridge` writes bridge tokens/files that map Decantr intent onto an existing style system without requiring `@decantr/css`.
+- `decantr-css` writes the full Decantr CSS files and runtime guidance.
+
+Monorepos store both `workspaceRoot` and `appRoot`. In non-interactive workspace-root runs with multiple app candidates, pass `--project=<path>` so Decantr attaches to the intended app.
+
+Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, while `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
 
 ## What It Does
 
 - scaffolds Decantr projects from blueprints, archetypes, or prompts
-- supports three workflow lanes: greenfield blueprint, brownfield adoption, and hybrid composition
+- supports explicit workflow lanes: greenfield blueprint, greenfield contract-only, brownfield adoption, and hybrid composition
 - generates execution-pack context files for AI coding assistants
 - audits projects against Decantr contracts
 - searches the registry and showcase benchmark corpus
@@ -40,8 +63,10 @@ Current starter adapter availability:
 ```bash
 decantr new my-app --blueprint=agent-marketplace
 decantr analyze
-decantr init --existing --yes
+decantr init --existing --yes --adoption=contract-only
 decantr init --existing --blueprint=agent-marketplace
+decantr init --workflow=greenfield --adoption=contract-only
+decantr rules apply
 decantr magic "AI-native analytics workspace"
 decantr audit
 decantr check
@@ -89,7 +114,14 @@ pnpm --filter @decantr/cli certify:workflows
 It covers:
 
 - greenfield blueprint bootstrap
+- greenfield contract-only
 - brownfield `analyze -> init --existing`
+- direct brownfield init
+- adoption modes (`contract-only`, `style-bridge`, `decantr-css`)
+- offline contract-only and offline blueprint flows
+- unsupported target contract-only fallback
+- monorepo `--project` handling
+- Next.js App Router adapter
 - hybrid follow-up composition via Decantr mutation commands
 
 ## Generated Context

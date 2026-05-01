@@ -528,6 +528,17 @@ export function generateTreatmentCSS(
     ['transition', 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease'],
   ]);
 
+  emitRule('.d-step-chip[data-shape="pill"]', [
+    ['width', 'auto'],
+    ['min-width', '2rem'],
+    ['height', 'auto'],
+    ['min-height', '2rem'],
+    ['padding', '0.375rem 0.875rem'],
+    ['border-radius', '9999px'],
+    ['gap', '0.375rem'],
+    ['font-variant-numeric', 'normal'],
+  ]);
+
   emitRule('.d-step-chip[data-step-state="active"]', [
     ['background', 'var(--d-primary)'],
     ['border-color', 'var(--d-primary)'],
@@ -1540,6 +1551,8 @@ export function generateTreatmentCSS(
   // 100%-width strip because the implementation skipped the modal wrap.
   // Self-centering keeps the visual contract intact.
   emitRule('.d-palette', [
+    ['position', 'relative'],
+    ['z-index', '1'],
     ['width', '100%'],
     ['max-width', '40rem'],
     ['margin-inline', 'auto'],
@@ -1554,22 +1567,50 @@ export function generateTreatmentCSS(
   ]);
 
   // Search input at the top of the palette.
-  emitRule('.d-palette-input', [
-    ['padding', '1rem 1.25rem'],
-    ['border', '0'],
+  emitRule('.d-palette-search', [
+    ['display', 'flex'],
+    ['align-items', 'center'],
+    ['gap', '0.75rem'],
+    ['padding', '0.85rem 1rem'],
     ['border-bottom', '1px solid var(--d-border)'],
+    ['background', 'color-mix(in srgb, var(--d-surface) 82%, transparent)'],
+    ['color', 'var(--d-text-muted)'],
+    ['transition', 'background var(--d-motion-fast, 150ms) ease, box-shadow var(--d-motion-fast, 150ms) ease, color var(--d-motion-fast, 150ms) ease'],
+  ]);
+
+  emitRule('.d-palette-search:focus-within', [
+    ['background', 'var(--d-surface)'],
+    ['color', 'var(--d-text)'],
+    ['box-shadow', 'inset 0 -2px 0 var(--d-primary)'],
+  ]);
+
+  emitRule('.d-palette-input', [
+    ['flex', '1'],
+    ['min-width', '0'],
+    ['padding', '0.6rem 0'],
+    ['border', '0'],
     ['background', 'transparent'],
     ['color', 'var(--d-text)'],
-    ['font-size', '1rem'],
+    ['font-size', '1.05rem'],
+    ['line-height', '1.4'],
     ['outline', '0'],
     ['width', '100%'],
   ]);
+
+  emitRule('.d-palette-input:focus-visible', [
+    ['outline', '0'],
+    ['box-shadow', 'none'],
+  ]);
+
+  emitRule('.d-palette-input::placeholder', [['color', 'var(--d-text-muted)']]);
 
   // Scrollable list of commands.
   emitRule('.d-palette-list', [
     ['flex', '1'],
     ['overflow-y', 'auto'],
     ['padding', '0.5rem'],
+    ['display', 'grid'],
+    ['gap', '0.25rem'],
   ]);
 
   // Individual command row.
@@ -1577,16 +1618,33 @@ export function generateTreatmentCSS(
     ['display', 'flex'],
     ['align-items', 'center'],
     ['gap', '0.75rem'],
-    ['padding', '0.5rem 0.75rem'],
-    ['border-radius', 'var(--d-radius-sm)'],
+    ['width', '100%'],
+    ['min-height', '3rem'],
+    ['padding', '0.7rem 0.75rem'],
+    ['border', '0'],
+    ['border-radius', 'var(--d-radius)'],
+    ['background', 'transparent'],
     ['cursor', 'pointer'],
     ['color', 'var(--d-text)'],
-    ['font-size', '0.875rem'],
-    ['transition', 'background 0.1s ease'],
+    ['font', 'inherit'],
+    ['font-size', '0.92rem'],
+    ['text-align', 'left'],
+    ['box-shadow', 'inset 0 0 0 1px transparent'],
+    ['transition', 'background 0.12s ease, box-shadow 0.12s ease, color 0.12s ease'],
   ]);
 
   emitRule('.d-palette-row:hover, .d-palette-row[data-active="true"]', [
     ['background', 'color-mix(in srgb, var(--d-primary) 10%, transparent)'],
+    ['box-shadow', 'inset 0 0 0 1px color-mix(in srgb, var(--d-primary) 24%, transparent)'],
+  ]);
+
+  emitRule('.d-palette-row svg', [
+    ['flex', '0 0 auto'],
+    ['color', 'var(--d-text-muted)'],
+  ]);
+
+  emitRule('.d-palette-row:hover svg, .d-palette-row[data-active="true"] svg', [
+    ['color', 'var(--d-primary)'],
   ]);
 
   // Section label inside a palette (e.g., "Navigation", "Settings").

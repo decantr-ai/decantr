@@ -13,6 +13,37 @@ describe('generateTokensCSS', () => {
     expect(result).toContain('--d-primary');
     expect(result).toContain(':root');
   });
+
+  it('emits legacy foreground aliases as canonical token references', () => {
+    const result = generateTokensCSS(
+      {
+        seed: { primary: '#2563eb' },
+        palette: {
+          background: { light: '#ffffff', dark: '#111111' },
+          surface: { light: '#ffffff', dark: '#1a1a1a' },
+          'surface-raised': { light: '#f8f8f8', dark: '#222222' },
+          border: { light: '#e5e5e5', dark: '#333333' },
+          text: { light: '#111111', dark: '#f5f5f5' },
+          'text-muted': { light: '#6b7280', dark: '#9ca3af' },
+        },
+      },
+      'light',
+      undefined,
+      { hasThemeToggle: true },
+    );
+
+    expect(result).toContain('--d-fg: var(--d-text);');
+    expect(result).toContain('--d-foreground: var(--d-text);');
+    expect(result).toContain('--d-fg-muted: var(--d-text-muted);');
+    expect(result).toContain('--d-background: var(--d-bg);');
+    expect(result).toContain('--d-bg-muted: var(--d-surface-raised);');
+    expect(result).toContain('--d-border-subtle: var(--d-border);');
+    expect(result).toContain('--d-danger: var(--d-error);');
+
+    const darkToggleBlock = result.split(':root[data-mode="dark"]')[1] ?? '';
+    expect(darkToggleBlock).toContain('--d-text: #f5f5f5;');
+    expect(darkToggleBlock).not.toContain('--d-fg:');
+  });
 });
 
 describe('generateTokensCSS spatial tokens', () => {

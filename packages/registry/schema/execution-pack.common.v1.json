@@ -141,6 +141,9 @@
         "pageId": {
           "$ref": "#/$defs/nonEmptyString"
         },
+        "sectionId": {
+          "type": "string"
+        },
         "path": {
           "$ref": "#/$defs/nonEmptyString"
         },

@@ -146,6 +146,72 @@ describe('css()', () => {
       expect(result).toBe('_rounded[100px]');
       expect(extractCSS()).toContain('border-radius:100px');
     });
+
+    it('escapes decimal arbitrary values in base selectors', () => {
+      const result = css('_maxw[1.5rem]');
+      expect(result).toBe('_maxw[1.5rem]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._maxw\\[1\\.5rem\\]');
+      expect(cssText).toContain('max-width:1.5rem');
+    });
+
+    it('escapes decimal arbitrary values in responsive selectors', () => {
+      const result = css('_lg:gc[1.05fr_1fr]');
+      expect(result).toBe('_lg:gc[1.05fr_1fr]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._lg\\:gc\\[1\\.05fr_1fr\\]');
+      expect(cssText).toContain('grid-template-columns:1.05fr 1fr');
+    });
+
+    it('escapes decimal arbitrary values in max-width responsive selectors', () => {
+      const result = css('_mdmax:p[0.75rem]');
+      expect(result).toBe('_mdmax:p[0.75rem]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._mdmax\\:p\\[0\\.75rem\\]');
+      expect(cssText).toContain('padding:0.75rem');
+    });
+
+    it('escapes decimal arbitrary values in container query selectors', () => {
+      const result = css('_cq640:maxw[1.5rem]');
+      expect(result).toBe('_cq640:maxw[1.5rem]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._cq640\\:maxw\\[1\\.5rem\\]');
+      expect(cssText).toContain('max-width:1.5rem');
+    });
+
+    it('escapes decimal arbitrary values in media query selectors', () => {
+      const result = css('_motionSafe:maxw[1.5rem]');
+      expect(result).toBe('_motionSafe:maxw[1.5rem]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._motionSafe\\:maxw\\[1\\.5rem\\]');
+      expect(cssText).toContain('max-width:1.5rem');
+    });
+
+    it('handles hyphenated arbitrary values from content packs', () => {
+      const result = css('_h-[52px] _grid-cols-[1fr_320px]');
+      expect(result).toBe('_h-[52px] _grid-cols-[1fr_320px]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._h-\\[52px\\]');
+      expect(cssText).toContain('height:52px');
+      expect(cssText).toContain('._grid-cols-\\[1fr_320px\\]');
+      expect(cssText).toContain('grid-template-columns:1fr 320px');
+    });
+
+    it('handles alpha colors with hyphenated semantic color aliases', () => {
+      const result = css('_bg-background/85');
+      expect(result).toBe('_bg-background/85');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._bg-background\\/85');
+      expect(cssText).toContain('background:color-mix(in srgb,var(--d-bg) 85%,transparent)');
+    });
+
+    it('escapes responsive hyphenated arbitrary values from content packs', () => {
+      const result = css('_lg:grid-cols-[1.05fr_1fr]');
+      expect(result).toBe('_lg:grid-cols-[1.05fr_1fr]');
+      const cssText = extractCSS();
+      expect(cssText).toContain('._lg\\:grid-cols-\\[1\\.05fr_1fr\\]');
+      expect(cssText).toContain('grid-template-columns:1.05fr 1fr');
+    });
   });
 });
 

@@ -109,6 +109,7 @@ export interface IRRoute {
   path: string;
   pageId: string;
   shell: string;
+  sectionId?: string;
 }
 
 // ─── IR Nodes ────────────────────────────────────────────────
@@ -144,6 +145,7 @@ export interface IRShellNode extends IRNode {
 export interface IRPageNode extends IRNode {
   type: 'page';
   pageId: string;
+  sectionId?: string;
   surface: string; // Surface atom string (or raw spatial intent)
   wiring: IRWiring | null;
 }

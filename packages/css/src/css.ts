@@ -197,6 +197,7 @@ function resolveAtom(atomPart: string): { className: string; decl: string } | nu
 function escapeClass(cls: string): string {
   return cls
     .replace(/:/g, '\\:')
+    .replace(/\./g, '\\.')
     .replace(/\//g, '\\/')
     .replace(/\[/g, '\\[')
     .replace(/\]/g, '\\]')
@@ -351,7 +352,7 @@ export function css(...classes: (string | undefined | null | false)[]): string {
       // Try to resolve atom
       const resolved = resolveAtom(part);
       if (resolved) {
-        const needsEscape = /[/[\]#%(),+]/.test(resolved.className);
+        const needsEscape = /[./[\]#%(),+]/.test(resolved.className);
         inject(
           resolved.className,
           resolved.decl,

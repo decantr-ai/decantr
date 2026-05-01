@@ -216,7 +216,7 @@ export function parseMagicPrompt(prompt: string): MagicIntent {
  * When online, scores registry themes against intent hints by matching
  * personality strings and tags. Falls back to hardcoded map offline.
  */
-async function resolveTheme(
+export async function resolveTheme(
   intent: MagicIntent,
   registryClient?: any,
 ): Promise<{ id: string; mode: 'dark' | 'light' | 'auto' }> {
@@ -225,7 +225,12 @@ async function resolveTheme(
   // Try registry-based scoring first
   if (registryClient) {
     try {
-      const themes = await registryClient.fetchThemes();
+      const themesResult = await registryClient.fetchThemes();
+      const themes = Array.isArray(themesResult)
+        ? themesResult
+        : Array.isArray(themesResult?.data?.items)
+          ? themesResult.data.items
+          : [];
       if (themes && themes.length > 0) {
         const scored = themes
           .map((t: any) => {
@@ -247,9 +252,11 @@ async function resolveTheme(
             ? 'light'
             : intent.themeHints.includes('dark')
               ? 'dark'
-              : scored[0].modes?.includes('dark')
-                ? 'dark'
-                : 'light';
+              : scored[0].modes?.includes('light')
+                ? 'light'
+                : scored[0].modes?.includes('dark')
+                  ? 'dark'
+                  : 'light';
           return { id: scored[0].id, mode };
         }
       }
@@ -752,20 +759,16 @@ export async function cmdMagic(
 
   console.log('');
   console.log(`${BOLD} Ready!${RESET} Next steps:`);
-  console.log(`   1. Read ${cyan('DECANTR.md')} for guard rules, CSS approach, and workflow`);
   console.log(
-    `   2. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`,
+    `   1. Read ${cyan('.decantr/context/scaffold-pack.md')} first as the primary compiled contract`,
   );
   console.log(
-    `   3. Read ${cyan('.decantr/context/scaffold.md')} second for broader topology and voice guidance`,
+    `   2. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/page-*-pack.md')} files before section or route work`,
   );
   console.log(
-    `   4. Read the matching ${cyan('.decantr/context/section-*-pack.md')} and ${cyan('.decantr/context/section-*.md')} files before section work`,
+    `   3. Use ${cyan('DECANTR.md')} as a lookup reference for guard rules, CSS atoms, treatments, decorators, and workflow`,
   );
-  console.log(
-    `   5. Read the matching ${cyan('.decantr/context/page-*-pack.md')} file before route work`,
-  );
-  console.log(`   6. Build the shell and route structure first, then implement each page`);
-  console.log(`   7. Run ${cyan('decantr check')} and ${cyan('decantr audit')} before you ship`);
+  console.log(`   4. Build the shell and route structure first, then implement each page`);
+  console.log(`   5. Run ${cyan('decantr check')} and ${cyan('decantr audit')} before you ship`);
   console.log('');
 }

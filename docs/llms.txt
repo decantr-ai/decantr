@@ -7,13 +7,13 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 ## Docs
 
 - [Homepage](https://decantr.ai/): What Decantr is and why AI-generated UI needs a contract layer.
-- [Workflow model](https://decantr.ai/reference/workflow-model.html): Brand new app, brownfield adoption, hybrid composition.
+- [Workflow model](https://decantr.ai/reference/workflow-model.html): Explicit workflow/adoption policy for greenfield blueprint, greenfield contract-only, brownfield attach, hybrid composition, adapters, monorepos, and offline mode.
 - [Public API reference](https://decantr.ai/reference/registry-public-api.html): Registry endpoints, pack compilation, critique, audit.
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.html): Which packages are stable, beta, or experimental.
 
 ## Packages
 
-- [@decantr/cli](https://www.npmjs.com/package/@decantr/cli): Scaffold new apps, run checks, manage essence, search registry content.
+- [@decantr/cli](https://www.npmjs.com/package/@decantr/cli): Resolve workflow/adoption policy, scaffold or attach Decantr, run checks, manage essence, search registry content.
 - [@decantr/mcp-server](https://www.npmjs.com/package/@decantr/mcp-server): MCP server exposing design intelligence to Claude, Cursor, Windsurf, VS Code, Zed, Continue.dev. Listed at `io.github.decantr-ai/mcp-server` in the official MCP Registry.
 - [@decantr/essence-spec](https://www.npmjs.com/package/@decantr/essence-spec): Essence schemas, validation, migration, TypeScript types.
 - [@decantr/registry](https://www.npmjs.com/package/@decantr/registry): Registry contracts, content utilities, API client surfaces.

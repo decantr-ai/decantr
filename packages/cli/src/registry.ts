@@ -118,6 +118,10 @@ export class RegistryClient {
     return this.apiUrl;
   }
 
+  isOffline(): boolean {
+    return this.offline;
+  }
+
   /**
    * Load content from .decantr/custom/{contentType}/{id}.json
    * Works for ALL content types, not just themes.

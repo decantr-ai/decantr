@@ -512,6 +512,547 @@ const GRID_SPAN: Record<string, string> = {
   rowspanfull: 'grid-row:1/-1',
 };
 
+const TAILWIND_DIRECT: Record<string, string> = {
+  relative: 'position:relative',
+  absolute: 'position:absolute',
+  'gap-auto': 'gap:var(--d-gap,1rem)',
+  'inline-flex': 'display:inline-flex',
+  'inline-grid': 'display:inline-grid',
+  center: 'align-items:center;justify-content:center',
+  'align-center': 'align-items:center',
+  'align-start': 'align-items:flex-start',
+  'flex-col': 'flex-direction:column',
+  'flex-row': 'flex-direction:row',
+  'col-reverse': 'flex-direction:column-reverse',
+  'flex-col-reverse': 'flex-direction:column-reverse',
+  'flex-row-reverse': 'flex-direction:row-reverse',
+  'flex-wrap': 'flex-wrap:wrap',
+  flexwrap: 'flex-wrap:wrap',
+  'flex-nowrap': 'flex-wrap:nowrap',
+  'flex-wrap-nowrap': 'flex-wrap:nowrap',
+  'flex-1': 'flex:1',
+  'flex-auto': 'flex:auto',
+  'flex-none': 'flex:none',
+  'grow-0': 'flex-grow:0',
+  'shrink-0': 'flex-shrink:0',
+  'items-center': 'align-items:center',
+  'items-start': 'align-items:flex-start',
+  'items-end': 'align-items:flex-end',
+  'items-stretch': 'align-items:stretch',
+  'items-baseline': 'align-items:baseline',
+  'justify-center': 'justify-content:center',
+  'justify-start': 'justify-content:flex-start',
+  'justify-end': 'justify-content:flex-end',
+  'justify-between': 'justify-content:space-between',
+  'justify-around': 'justify-content:space-around',
+  'justify-evenly': 'justify-content:space-evenly',
+  'place-items-center': 'place-items:center',
+  'place-content-center': 'place-content:center',
+  'self-center': 'align-self:center',
+  'self-start': 'align-self:flex-start',
+  'self-end': 'align-self:flex-end',
+  'overflow-hidden': 'overflow:hidden',
+  'overflow-auto': 'overflow:auto',
+  'overflow-visible': 'overflow:visible',
+  overflowhidden: 'overflow:hidden',
+  'overflow-x-hidden': 'overflow-x:hidden',
+  'overflow-x-auto': 'overflow-x:auto',
+  'overflow-y-hidden': 'overflow-y:hidden',
+  'overflow-y-auto': 'overflow-y:auto',
+  'scrollbar-thin': 'scrollbar-width:thin',
+  'pointer-events-none': 'pointer-events:none',
+  'pointer-events-auto': 'pointer-events:auto',
+  'pointer-events-restricted': 'pointer-events:none',
+  'cursor-pointer': 'cursor:pointer',
+  'cursor-grab': 'cursor:grab',
+  'select-none': 'user-select:none',
+  'whitespace-nowrap': 'white-space:nowrap',
+  'whitespace-pre': 'white-space:pre',
+  'whitespace-pre-wrap': 'white-space:pre-wrap',
+  'break-words': 'overflow-wrap:break-word',
+  'break-all': 'word-break:break-all',
+  'sr-only':
+    'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0',
+  'not-sr-only':
+    'position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip:auto;white-space:normal',
+  'object-cover': 'object-fit:cover',
+  'object-contain': 'object-fit:contain',
+  'object-center': 'object-position:center',
+  'list-none': 'list-style:none',
+  mono: 'font-family:var(--d-font-mono,ui-monospace,monospace)',
+  'aspect-video': 'aspect-ratio:16/9',
+  'aspect-square': 'aspect-ratio:1/1',
+  full: 'width:100%;height:100%',
+  'w-full': 'width:100%',
+  'h-full': 'height:100%',
+  'w-screen': 'width:100vw',
+  'h-screen': 'height:100vh',
+  'w-auto': 'width:auto',
+  'h-auto': 'height:auto',
+  'w-fit': 'width:fit-content',
+  'h-fit': 'height:fit-content',
+  'min-w-0': 'min-width:0',
+  'min-h-0': 'min-height:0',
+  'min-h-screen': 'min-height:100vh',
+  'min-h-dvh': 'min-height:100dvh',
+  'max-w-full': 'max-width:100%',
+  'max-w-none': 'max-width:none',
+  'mx-auto': 'margin-inline:auto',
+  'my-auto': 'margin-block:auto',
+  'mt-auto': 'margin-top:auto',
+  'mb-auto': 'margin-bottom:auto',
+  'ml-auto': 'margin-left:auto',
+  'mr-auto': 'margin-right:auto',
+  'inset-0': 'inset:0',
+  'inset-x-0': 'left:0;right:0',
+  'inset-y-0': 'top:0;bottom:0',
+  'top-0': 'top:0',
+  'right-0': 'right:0',
+  'bottom-0': 'bottom:0',
+  'left-0': 'left:0',
+  'left-1/2': 'left:50%',
+  'top-1/2': 'top:50%',
+  '-translate-x-1/2': 'translate:-50% 0',
+  '-translate-y-1/2': 'translate:0 -50%',
+  jcs: 'justify-content:flex-start',
+  jce: 'justify-content:flex-end',
+  'border': 'border:1px solid var(--d-border)',
+  'border-t': 'border-top:1px solid var(--d-border)',
+  'border-r': 'border-right:1px solid var(--d-border)',
+  'border-b': 'border-bottom:1px solid var(--d-border)',
+  'border-l': 'border-left:1px solid var(--d-border)',
+  'border-0': 'border:0',
+  border2: 'border:2px solid var(--d-border)',
+  'border-dashed': 'border-style:dashed',
+  borderb: 'border-bottom:1px solid var(--d-border)',
+  borderB: 'border-bottom:1px solid var(--d-border)',
+  borderT: 'border-top:1px solid var(--d-border)',
+  borderR: 'border-right:1px solid var(--d-border)',
+  borderL: 'border-left:1px solid var(--d-border)',
+  bbsolid: 'border-bottom:1px solid var(--d-border)',
+  rfull: 'border-radius:9999px',
+  'rounded-full': 'border-radius:9999px',
+  'rounded-none': 'border-radius:0',
+  'rounded-sm': 'border-radius:0.25rem',
+  'rounded-md': 'border-radius:0.375rem',
+  'rounded-lg': 'border-radius:0.5rem',
+  'rounded-xl': 'border-radius:0.75rem',
+  'rounded-2xl': 'border-radius:1rem',
+  'rounded-3xl': 'border-radius:1.5rem',
+  'shadow-sm': 'box-shadow:0 1px 2px rgba(0,0,0,0.05)',
+  'shadow-md': 'box-shadow:0 4px 6px rgba(0,0,0,0.1)',
+  'shadow-lg': 'box-shadow:0 10px 15px rgba(0,0,0,0.1)',
+  'shadow-xl': 'box-shadow:0 20px 25px rgba(0,0,0,0.1)',
+  'shadow-none': 'box-shadow:none',
+  'backdrop-blur': 'backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)',
+  'backdrop-blur-sm': 'backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)',
+  'backdrop-blur-md': 'backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)',
+  'backdrop-blur-lg': 'backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)',
+  'transition': 'transition:all 0.15s ease',
+  'transition-all': 'transition:all 0.15s ease',
+  'transition-colors': 'transition:color,background-color,border-color 0.15s ease',
+  'scroll-smooth': 'scroll-behavior:smooth',
+  'duration-150': 'transition-duration:150ms',
+  'duration-200': 'transition-duration:200ms',
+  'duration-300': 'transition-duration:300ms',
+  'ease-out': 'transition-timing-function:cubic-bezier(0,0,0.2,1)',
+  'ease-in-out': 'transition-timing-function:cubic-bezier(0.4,0,0.2,1)',
+  tc: 'text-align:center',
+  textCenter: 'text-align:center',
+  fggreen: 'color:#22c55e',
+  compact: 'gap:0.5rem',
+  'auto-rows-fr': 'grid-auto-rows:minmax(0,1fr)',
+};
+
+const TAILWIND_MAX_WIDTH: Record<string, string> = {
+  xs: '20rem',
+  sm: '24rem',
+  md: '28rem',
+  lg: '32rem',
+  xl: '36rem',
+  '2xl': '42rem',
+  '3xl': '48rem',
+  '4xl': '56rem',
+  '5xl': '64rem',
+  '6xl': '72rem',
+  '7xl': '80rem',
+  full: '100%',
+  none: 'none',
+  'screen-sm': '640px',
+  'screen-md': '768px',
+  'screen-lg': '1024px',
+  'screen-xl': '1280px',
+  'screen-2xl': '1536px',
+};
+
+const TAILWIND_ARBITRARY_PROPS: Record<string, string> = {
+  w: 'width',
+  h: 'height',
+  mw: 'max-width',
+  mh: 'max-height',
+  maxw: 'max-width',
+  maxh: 'max-height',
+  minw: 'min-width',
+  minh: 'min-height',
+  'min-w': 'min-width',
+  'min-h': 'min-height',
+  'max-w': 'max-width',
+  'max-h': 'max-height',
+  p: 'padding',
+  px: 'padding-inline',
+  py: 'padding-block',
+  pt: 'padding-top',
+  pr: 'padding-right',
+  pb: 'padding-bottom',
+  pl: 'padding-left',
+  m: 'margin',
+  mx: 'margin-inline',
+  my: 'margin-block',
+  mt: 'margin-top',
+  mr: 'margin-right',
+  mb: 'margin-bottom',
+  ml: 'margin-left',
+  gap: 'gap',
+  'gap-x': 'column-gap',
+  'gap-y': 'row-gap',
+  'grid-cols': 'grid-template-columns',
+  'grid-rows': 'grid-template-rows',
+  gc: 'grid-template-columns',
+  gr: 'grid-template-rows',
+  'border': 'border',
+  bb: 'border-bottom',
+  bt: 'border-top',
+  'rounded': 'border-radius',
+  'text': 'text-align',
+  'bg': 'background',
+  'z': 'z-index',
+  'top': 'top',
+  'right': 'right',
+  'bottom': 'bottom',
+  'left': 'left',
+  'inset': 'inset',
+  'aspect': 'aspect-ratio',
+};
+
+const TAILWIND_SPACING_PROPS: Record<string, string> = {
+  p: 'padding',
+  px: 'padding-inline',
+  py: 'padding-block',
+  pt: 'padding-top',
+  pr: 'padding-right',
+  pb: 'padding-bottom',
+  pl: 'padding-left',
+  m: 'margin',
+  mx: 'margin-inline',
+  my: 'margin-block',
+  mt: 'margin-top',
+  mr: 'margin-right',
+  mb: 'margin-bottom',
+  ml: 'margin-left',
+  gap: 'gap',
+  'gap-x': 'column-gap',
+  'gap-y': 'row-gap',
+  top: 'top',
+  right: 'right',
+  bottom: 'bottom',
+  left: 'left',
+  inset: 'inset',
+};
+
+const FONT_WEIGHTS: Record<string, string> = {
+  light: '300',
+  normal: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+  extrabold: '800',
+};
+
+const LINE_HEIGHTS: Record<string, string> = {
+  none: '1',
+  tight: '1.25',
+  snug: '1.375',
+  normal: '1.5',
+  relaxed: '1.625',
+  loose: '2',
+};
+
+const LETTER_SPACING: Record<string, string> = {
+  tight: '-0.025em',
+  normal: '0',
+  wide: '0.025em',
+  wider: '0.05em',
+  widest: '0.1em',
+};
+
+function spacingValue(token: string): string | null {
+  if (token === 'px') return '1px';
+  const n = Number(token);
+  if (!Number.isFinite(n)) return null;
+  return SPACING_SCALE[n] ?? null;
+}
+
+function fractionValue(token: string): string | null {
+  const match = token.match(/^(\d+)\/(\d+)$/);
+  if (!match) return null;
+  const numerator = Number(match[1]);
+  const denominator = Number(match[2]);
+  if (!denominator) return null;
+  return `${(numerator / denominator) * 100}%`;
+}
+
+function dimensionValue(prop: string, token: string): string | null {
+  if (token === 'full') return '100%';
+  if (token === 'auto') return 'auto';
+  if (token === 'fit') return 'fit-content';
+  if (token === 'min') return 'min-content';
+  if (token === 'max') return 'max-content';
+  if (token === 'screen') return prop.includes('h') ? '100vh' : '100vw';
+  if (token === 'dvh' && prop.includes('h')) return '100dvh';
+  if (prop === 'max-w' && TAILWIND_MAX_WIDTH[token]) return TAILWIND_MAX_WIDTH[token];
+  const spacing = spacingValue(token);
+  if (spacing) return spacing;
+  const fraction = fractionValue(token);
+  if (fraction) return fraction;
+  if (/^\d+(?:\.\d+)?$/.test(token)) return `${token}px`;
+  return null;
+}
+
+function sanitizeTailwindValue(value: string): string {
+  let safe = value.replace(/[{}<>;]/g, '');
+  safe = safe.replace(/url\s*\(/gi, '');
+  return safe.replace(/_/g, ' ');
+}
+
+function semanticColorValue(token: string, prop: 'background' | 'color' | 'border-color'): string | null {
+  const key = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  if (key === 'transparent') return 'transparent';
+  if (key === 'white') return '#fff';
+  if (key === 'black') return '#000';
+  if (key === 'background' || key === 'bg' || key === 'canvas') return 'var(--d-bg)';
+  if (key === 'surface' || key === 'card') return 'var(--d-surface)';
+  if (key === 'surface-subtle' || key === 'surface-muted') {
+    return 'var(--d-surface-1,var(--d-surface))';
+  }
+  if (key === 'surface-raised' || key === 'raised' || key === 'popover') {
+    return 'var(--d-surface-raised)';
+  }
+  if (key === 'primary') return 'var(--d-primary)';
+  if (key === 'secondary') return 'var(--d-secondary)';
+  if (key === 'accent') return 'var(--d-accent)';
+  if (key === 'success') return 'var(--d-success,#22c55e)';
+  if (key === 'warning') return 'var(--d-warning,#f59e0b)';
+  if (key === 'danger' || key === 'error' || key === 'destructive') return 'var(--d-error,#ef4444)';
+  if (key === 'info') return 'var(--d-info,#3b82f6)';
+  if (key === 'green') return '#22c55e';
+  if (key === 'red') return '#ef4444';
+  if (key === 'amber' || key === 'yellow') return '#f59e0b';
+  if (key === 'blue') return '#3b82f6';
+  if (key === 'gray-950') return '#030712';
+  if (key === 'gray' || key === 'slate') return '#64748b';
+  if (key === 'border' || key === 'input') return 'var(--d-border)';
+  if (key === 'text' || key === 'foreground' || key === 'fg') return 'var(--d-text)';
+  if (key === 'muted') {
+    if (prop === 'color') return 'var(--d-text-muted,var(--d-muted))';
+    if (prop === 'border-color') return 'var(--d-muted,var(--d-border))';
+    return 'var(--d-muted,var(--d-surface))';
+  }
+  return null;
+}
+
+function semanticColorDecl(
+  prop: 'background' | 'color' | 'border-color',
+  rawToken: string,
+): string | null {
+  const alphaMatch = rawToken.match(/^(.+)\/(\d+)$/);
+  const token = alphaMatch ? alphaMatch[1] : rawToken;
+  const value = semanticColorValue(token, prop);
+  if (!value) return null;
+
+  if (alphaMatch) {
+    const alpha = Number(alphaMatch[2]);
+    if (!Number.isFinite(alpha) || alpha < 0 || alpha > 100) return null;
+    return `${prop}:color-mix(in srgb,${value} ${alpha}%,transparent)`;
+  }
+
+  return `${prop}:${value}`;
+}
+
+function resolveTailwindishDecl(name: string): string | null {
+  if (TAILWIND_DIRECT[name]) return TAILWIND_DIRECT[name];
+
+  const arbitraryMatch = name.match(/^([a-z]+(?:-[a-z]+)*)-\[([^\]]+)\]$/);
+  if (arbitraryMatch) {
+    const [, prefix, rawValue] = arbitraryMatch;
+    const prop = TAILWIND_ARBITRARY_PROPS[prefix];
+    if (!prop) return null;
+    const value = sanitizeTailwindValue(rawValue);
+    return value ? `${prop}:${value}` : null;
+  }
+
+  const compactArbitraryMatch = name.match(/^([a-z]+(?:-[a-z]+)?)\[([^\]]+)\]$/);
+  if (compactArbitraryMatch) {
+    const [, prefix, rawValue] = compactArbitraryMatch;
+    if (prefix === 'scale') {
+      const value = sanitizeTailwindValue(rawValue);
+      return value ? `transform:scale(${value})` : null;
+    }
+    const prop = TAILWIND_ARBITRARY_PROPS[prefix];
+    if (!prop) return null;
+    const value = sanitizeTailwindValue(rawValue);
+    return value ? `${prop}:${value}` : null;
+  }
+
+  const dimensionMatch = name.match(/^(w|h|min-w|min-h|max-w|max-h)-(.+)$/);
+  if (dimensionMatch) {
+    const [, prop, token] = dimensionMatch;
+    const cssProp = {
+      w: 'width',
+      h: 'height',
+      'min-w': 'min-width',
+      'min-h': 'min-height',
+      'max-w': 'max-width',
+      'max-h': 'max-height',
+    }[prop];
+    const value = dimensionValue(prop, token);
+    if (cssProp && value) return `${cssProp}:${value}`;
+  }
+
+  const spacingMatch = name.match(
+    /^(-?)(gap-x|gap-y|gap|px|py|pt|pr|pb|pl|p|mx|my|mt|mr|mb|ml|m|top|right|bottom|left|inset)-(\d+(?:\.\d+)?|px)$/,
+  );
+  if (spacingMatch) {
+    const [, negative, prefix, token] = spacingMatch;
+    const prop = TAILWIND_SPACING_PROPS[prefix];
+    const value = spacingValue(token);
+    if (prop && value) {
+      const canBeNegative = prop.startsWith('margin') || ['top', 'right', 'bottom', 'left'].includes(prop);
+      if (negative && !canBeNegative) return null;
+      return `${prop}:${negative ? '-' : ''}${value}`;
+    }
+  }
+
+  const gridColsMatch = name.match(/^grid-cols-(\d+)$/);
+  if (gridColsMatch) {
+    return `grid-template-columns:repeat(${gridColsMatch[1]},minmax(0,1fr))`;
+  }
+
+  if (name === 'grid-cols-auto-fill') {
+    return 'grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))';
+  }
+
+  if (name === 'grid-cols-auto') {
+    return 'grid-template-columns:repeat(auto-fit,minmax(0,1fr))';
+  }
+
+  const gridRowsMatch = name.match(/^grid-rows-(\d+)$/);
+  if (gridRowsMatch) {
+    return `grid-template-rows:repeat(${gridRowsMatch[1]},minmax(0,1fr))`;
+  }
+
+  const colSpanMatch = name.match(/^col-span-(\d+|full)$/);
+  if (colSpanMatch) {
+    const span = colSpanMatch[1];
+    return span === 'full' ? 'grid-column:1/-1' : `grid-column:span ${span}/span ${span}`;
+  }
+
+  const rowSpanMatch = name.match(/^row-span-(\d+|full)$/);
+  if (rowSpanMatch) {
+    const span = rowSpanMatch[1];
+    return span === 'full' ? 'grid-row:1/-1' : `grid-row:span ${span}/span ${span}`;
+  }
+
+  const columnsMatch = name.match(/^(?:cols|columns)(\d+)$/);
+  if (columnsMatch) return `columns:${columnsMatch[1]}`;
+
+  const textMatch = name.match(/^text-(.+)$/);
+  if (textMatch) {
+    const token = textMatch[1];
+    if (TEXT_SCALE[token]) return TEXT_SCALE[token];
+    return semanticColorDecl('color', token);
+  }
+
+  const bgMatch = name.match(/^bg-(.+)$/);
+  if (bgMatch) return semanticColorDecl('background', bgMatch[1]);
+
+  const borderColorMatch = name.match(/^border-(.+)$/);
+  if (borderColorMatch) {
+    const decl = semanticColorDecl('border-color', borderColorMatch[1]);
+    if (decl) return decl;
+  }
+
+  const compactBorderColorMatch = name.match(/^border([a-zA-Z0-9-]+\/?\d*)$/);
+  if (compactBorderColorMatch) {
+    const decl = semanticColorDecl('border-color', compactBorderColorMatch[1]);
+    if (decl) return decl;
+  }
+
+  const compactFgMatch = name.match(/^fg([a-zA-Z0-9-]+\/?\d*)$/);
+  if (compactFgMatch) return semanticColorDecl('color', compactFgMatch[1]);
+
+  const compactBgMatch = name.match(/^bg([a-zA-Z0-9-]+\/?\d*)$/);
+  if (compactBgMatch) return semanticColorDecl('background', compactBgMatch[1]);
+
+  const borderSideWidthMatch = name.match(/^border-([trbl])-(\d+)$/);
+  if (borderSideWidthMatch) {
+    const side = { t: 'top', r: 'right', b: 'bottom', l: 'left' }[borderSideWidthMatch[1]];
+    return `border-${side}:${borderSideWidthMatch[2]}px solid var(--d-border)`;
+  }
+
+  const roundedSideMatch = name.match(/^rounded-([rltb])-(sm|md|lg|xl|2xl|3xl|full)$/);
+  if (roundedSideMatch) {
+    const [, side, size] = roundedSideMatch;
+    const value = {
+      sm: '0.25rem',
+      md: '0.375rem',
+      lg: '0.5rem',
+      xl: '0.75rem',
+      '2xl': '1rem',
+      '3xl': '1.5rem',
+      full: '9999px',
+    }[size];
+    if (!value) return null;
+    if (side === 'r') return `border-top-right-radius:${value};border-bottom-right-radius:${value}`;
+    if (side === 'l') return `border-top-left-radius:${value};border-bottom-left-radius:${value}`;
+    if (side === 't') return `border-top-left-radius:${value};border-top-right-radius:${value}`;
+    if (side === 'b') return `border-bottom-left-radius:${value};border-bottom-right-radius:${value}`;
+  }
+
+  const fontMatch = name.match(/^font-(.+)$/);
+  if (fontMatch && FONT_WEIGHTS[fontMatch[1]]) return `font-weight:${FONT_WEIGHTS[fontMatch[1]]}`;
+
+  const leadingMatch = name.match(/^leading-(.+)$/);
+  if (leadingMatch && LINE_HEIGHTS[leadingMatch[1]]) return `line-height:${LINE_HEIGHTS[leadingMatch[1]]}`;
+
+  const trackingMatch = name.match(/^tracking-(.+)$/);
+  if (trackingMatch && LETTER_SPACING[trackingMatch[1]]) {
+    return `letter-spacing:${LETTER_SPACING[trackingMatch[1]]}`;
+  }
+
+  const opacityMatch = name.match(/^opacity-(\d+)$/);
+  if (opacityMatch) {
+    const n = Number(opacityMatch[1]);
+    if (n >= 0 && n <= 100) return `opacity:${n / 100}`;
+  }
+
+  const zMatch = name.match(/^z-(\d+|auto)$/);
+  if (zMatch) return zMatch[1] === 'auto' ? 'z-index:auto' : `z-index:${zMatch[1]}`;
+
+  const compactZMatch = name.match(/^z(\d+)$/);
+  if (compactZMatch) return `z-index:${compactZMatch[1]}`;
+
+  const perspectiveMatch = name.match(/^perspective-(\d+)$/);
+  if (perspectiveMatch) return `perspective:${perspectiveMatch[1]}px`;
+
+  const negativeSpaceXMatch = name.match(/^-space-x-(\d+(?:\.\d+)?)$/);
+  if (negativeSpaceXMatch) {
+    const value = spacingValue(negativeSpaceXMatch[1]);
+    if (value) return `margin-left:-${value}`;
+  }
+
+  return null;
+}
+
 /**
  * Resolve an atom name to its CSS declaration.
  * @param atom - Atom name (e.g., '_flex', '_gap4', '_p2')
@@ -527,6 +1068,8 @@ export function resolveAtomDecl(atom: string): string | null {
   if (GRID_COLS[name]) return GRID_COLS[name];
   if (GRID_ROWS[name]) return GRID_ROWS[name];
   if (GRID_SPAN[name]) return GRID_SPAN[name];
+  const tailwindish = resolveTailwindishDecl(name);
+  if (tailwindish) return tailwindish;
 
   // Text size: _textsm, _textlg, _text2xl
   if (name.startsWith('text')) {

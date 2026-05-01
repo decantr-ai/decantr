@@ -213,6 +213,15 @@ describe('generateTreatmentCSS', () => {
     expect(annotationBlock).not.toContain('margin-top');
   });
 
+  it('includes a pill-shaped d-step-chip variant for filter rows', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    expect(css).toContain('.d-step-chip[data-shape="pill"]');
+    const pillBlock = css.split('.d-step-chip[data-shape="pill"] {')[1]?.split('}')[0] ?? '';
+    expect(pillBlock).toContain('width: auto');
+    expect(pillBlock).toContain('border-radius: 9999px');
+    expect(pillBlock).toContain('padding: 0.375rem 0.875rem');
+  });
+
   // ── 11. Theme treatment overrides ──
 
   it('applies theme treatment overrides to base rules', () => {
@@ -353,6 +362,28 @@ describe('generateTreatmentCSS', () => {
     const anchorBlock = css.split('.d-label[data-anchor] {')[1]?.split('}')[0] ?? '';
     expect(anchorBlock).toContain('padding-left: var(--d-label-px)');
     expect(anchorBlock).toContain('border-left: 2px solid var(--d-accent)');
+  });
+
+  it('resets command palette input and row chrome for polished overlays', () => {
+    const css = generateTreatmentCSS(baseSpatialTokens);
+    const searchBlock = css.split('.d-palette-search {')[1]?.split('}')[0] ?? '';
+    const inputFocusBlock = css.split('.d-palette-input:focus-visible {')[1]?.split('}')[0] ?? '';
+    const paletteBlock = css.split('.d-palette {')[1]?.split('}')[0] ?? '';
+    const rowBlock = css.split('.d-palette-row {')[1]?.split('}')[0] ?? '';
+    const activeBlock =
+      css.split('.d-palette-row:hover, .d-palette-row[data-active="true"] {')[1]?.split('}')[0] ??
+      '';
+
+    expect(paletteBlock).toContain('position: relative');
+    expect(paletteBlock).toContain('z-index: 1');
+    expect(searchBlock).toContain('display: flex');
+    expect(searchBlock).toContain('border-bottom: 1px solid var(--d-border)');
+    expect(inputFocusBlock).toContain('outline: 0');
+    expect(rowBlock).toContain('border: 0');
+    expect(rowBlock).toContain('background: transparent');
+    expect(rowBlock).toContain('font: inherit');
+    expect(rowBlock).toContain('text-align: left');
+    expect(activeBlock).toContain('box-shadow: inset 0 0 0 1px color-mix');
   });
 
   // ── Override stacking with pseudo-selectors ──

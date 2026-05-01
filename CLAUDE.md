@@ -61,6 +61,8 @@ Wine metaphors are used in branding only. Code and schema use normalized terms.
 
 Content lives in **decantr-content** (separate repository at `/Users/davidaimi/projects/decantr-content`) and is the source of truth for all `@official` registry content.
 
+Registry content enriches blueprint/archetype/theme/pattern flows. It is not a hard dependency for brownfield attach or contract-only adoption: those paths must work from local project analysis and generated Decantr contract files, including in offline enterprise scenarios.
+
 **Publishing pipeline:**
 ```
 decantr-content repo (JSON files)
@@ -281,6 +283,30 @@ Authoritative dispatch: `packages/cli/src/index.ts` switch statement. Groups:
 **Help:** `help`
 
 Run `decantr help` for current flags and sub-flags. The `check` and `heal` commands share a case (heal is check with auto-fix).
+
+## Workflow, Adoption, And Adapters
+
+Every scaffold/init path should resolve an explicit policy before registry, adapter, or file-generation work:
+
+| Axis | Values | Default / rule |
+|------|--------|----------------|
+| `workflowMode` | `greenfield-scaffold`, `greenfield-contract-only`, `brownfield-attach`, `hybrid-compose` | Blank greenfield tooling-only flows must stay greenfield, not brownfield. `--existing` aliases brownfield attach. |
+| `adoptionMode` | `contract-only`, `style-bridge`, `decantr-css` | Brownfield defaults to `contract-only`; Decantr CSS is opt-in outside full greenfield scaffold. |
+| `contentSource` | `none`, `official`, `custom`, `cache` | Registry is optional for brownfield and contract-only flows. |
+| `assistantBridge` | `none`, `preview`, `apply` | Preview writes `.decantr/context/assistant-bridge.md`; apply is explicit and idempotent. |
+| `projectScope` | `single-app`, `workspace-app` | Monorepos store both workspace root and app root; non-interactive root runs require `--project` when ambiguous. |
+
+Adapter capabilities are `bootstrap`, `attach`, `styling`, and `verify`.
+
+- `react-vite`: runnable bootstrap plus attach/styling/verify hints.
+- `next-app`: runnable App Router bootstrap plus App/Pages Router attach metadata.
+- `generic-web`: contract-only fallback for unsupported targets.
+
+Assistant rule-file bridge behavior is deliberately conservative:
+
+- Brownfield never mutates CLAUDE/Cursor/agent rule files unless `--assistant-bridge=apply` or `decantr rules apply` is explicit.
+- Preview mode writes the suggested bridge into `.decantr/context/assistant-bridge.md`.
+- Cursor gets a dedicated `.cursor/rules/decantr.mdc`; other supported rule files receive marked blocks that can be updated idempotently.
 
 ## Documentation
 

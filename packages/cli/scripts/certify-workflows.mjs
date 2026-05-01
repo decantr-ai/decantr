@@ -124,14 +124,21 @@ function certifyGreenfield(tmpRoot, cliPath, contentRoot) {
   runCli(
     cliPath,
     tmpRoot,
-    ['new', projectName, '--blueprint=agent-marketplace', '--offline'],
+    [
+      'new',
+      projectName,
+      '--blueprint=agent-marketplace',
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+      '--offline',
+    ],
     contentRoot,
   );
 
   const projectDir = join(tmpRoot, projectName);
   const mainTsx = readFileSync(join(projectDir, 'src', 'main.tsx'), 'utf8');
 
-  if (!mainTsx.includes('HashRouter')) {
+  if (!mainTsx.includes('BrowserRouter')) {
     throw new Error('greenfield workflow did not bootstrap the React/Vite starter');
   }
   if (!existsSync(join(projectDir, '.decantr', 'context', 'pack-manifest.json'))) {
@@ -139,6 +146,29 @@ function certifyGreenfield(tmpRoot, cliPath, contentRoot) {
   }
 
   return { workflow: 'greenfield-blueprint', status: 'passed' };
+}
+
+function readProjectJson(projectDir) {
+  return JSON.parse(readFileSync(join(projectDir, '.decantr', 'project.json'), 'utf8'));
+}
+
+function certifyGreenfieldContractOnly(tmpRoot, cliPath, contentRoot) {
+  const projectDir = join(tmpRoot, 'workflow-greenfield-contract-only');
+  mkdirSync(projectDir, { recursive: true });
+  runCli(
+    cliPath,
+    projectDir,
+    ['init', '--yes', '--offline', '--workflow=greenfield', '--adoption=contract-only'],
+    contentRoot,
+  );
+  const projectJson = readProjectJson(projectDir);
+  if (projectJson.initialized?.workflowMode !== 'greenfield-contract-only') {
+    throw new Error('greenfield contract-only workflow mode was not persisted');
+  }
+  if (existsSync(join(projectDir, 'src', 'styles', 'treatments.css'))) {
+    throw new Error('contract-only init wrote Decantr CSS treatments');
+  }
+  return { workflow: 'greenfield-contract-only', status: 'passed' };
 }
 
 function certifyBrownfield(tmpRoot, cliPath, contentRoot, framework) {
@@ -152,7 +182,12 @@ function certifyBrownfield(tmpRoot, cliPath, contentRoot, framework) {
   }
 
   runCli(cliPath, projectDir, ['analyze'], contentRoot);
-  runCli(cliPath, projectDir, ['init', '--existing', '--yes', '--offline'], contentRoot);
+  runCli(
+    cliPath,
+    projectDir,
+    ['init', '--existing', '--yes', '--offline', '--adoption=contract-only'],
+    contentRoot,
+  );
 
   const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf8'));
   if (
@@ -166,6 +201,118 @@ function certifyBrownfield(tmpRoot, cliPath, contentRoot, framework) {
   }
 
   return { workflow: 'brownfield-adoption', framework, status: 'passed' };
+}
+
+function certifyBrownfieldDirect(tmpRoot, cliPath, contentRoot) {
+  const projectDir = join(tmpRoot, 'workflow-brownfield-direct');
+  mkdirSync(projectDir, { recursive: true });
+  seedReactProject(projectDir);
+  runCli(cliPath, projectDir, ['init', '--existing', '--yes', '--offline'], contentRoot);
+  const projectJson = readProjectJson(projectDir);
+  if (projectJson.initialized?.analysisArtifacts !== false) {
+    throw new Error('direct brownfield init incorrectly claimed analyze artifacts');
+  }
+  if (projectJson.initialized?.adoptionMode !== 'contract-only') {
+    throw new Error('direct brownfield init did not default to contract-only');
+  }
+  return { workflow: 'brownfield-direct', status: 'passed' };
+}
+
+function certifyAdoptionMode(tmpRoot, cliPath, contentRoot, adoptionMode) {
+  const projectDir = join(tmpRoot, `workflow-${adoptionMode}`);
+  mkdirSync(projectDir, { recursive: true });
+  seedReactProject(projectDir);
+  runCli(
+    cliPath,
+    projectDir,
+    ['init', '--existing', '--yes', '--offline', `--adoption=${adoptionMode}`],
+    contentRoot,
+  );
+  const projectJson = readProjectJson(projectDir);
+  if (projectJson.initialized?.adoptionMode !== adoptionMode) {
+    throw new Error(`${adoptionMode} was not persisted`);
+  }
+  if (adoptionMode === 'style-bridge' && !existsSync(join(projectDir, 'src/styles/decantr-bridge.css'))) {
+    throw new Error('style-bridge did not emit bridge CSS');
+  }
+  if (adoptionMode === 'decantr-css' && !existsSync(join(projectDir, 'src/styles/treatments.css'))) {
+    throw new Error('decantr-css did not emit treatments CSS');
+  }
+  return { workflow: `adoption-${adoptionMode}`, status: 'passed' };
+}
+
+function certifyUnsupportedTarget(tmpRoot, cliPath, contentRoot) {
+  const projectName = 'workflow-angular-contract';
+  runCli(
+    cliPath,
+    tmpRoot,
+    [
+      'new',
+      projectName,
+      '--target=angular',
+      '--workflow=greenfield',
+      '--adoption=contract-only',
+      '--offline',
+    ],
+    contentRoot,
+  );
+  const projectDir = join(tmpRoot, projectName);
+  if (existsSync(join(projectDir, 'package.json'))) {
+    throw new Error('unsupported target wrote a runnable starter');
+  }
+  return { workflow: 'unsupported-target-contract-only', status: 'passed' };
+}
+
+function certifyNextAdapter(tmpRoot, cliPath, contentRoot) {
+  const projectName = 'workflow-next';
+  runCli(
+    cliPath,
+    tmpRoot,
+    [
+      'new',
+      projectName,
+      '--target=nextjs',
+      '--blueprint=agent-marketplace',
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+      '--offline',
+    ],
+    contentRoot,
+  );
+  const projectDir = join(tmpRoot, projectName);
+  if (!existsSync(join(projectDir, 'app/layout.tsx'))) {
+    throw new Error('Next.js adapter did not emit App Router layout');
+  }
+  if (readProjectJson(projectDir).initialized?.adapterId !== 'next-app') {
+    throw new Error('Next.js adapter id was not persisted');
+  }
+  return { workflow: 'next-app-adapter', status: 'passed' };
+}
+
+function certifyMonorepoProject(tmpRoot, cliPath, contentRoot) {
+  const workspace = join(tmpRoot, 'workflow-monorepo');
+  mkdirSync(join(workspace, 'apps/web'), { recursive: true });
+  mkdirSync(join(workspace, 'apps/admin'), { recursive: true });
+  writeFileSync(join(workspace, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n');
+  seedReactProject(join(workspace, 'apps/web'));
+  seedReactProject(join(workspace, 'apps/admin'));
+
+  let failedAsExpected = false;
+  try {
+    runCli(cliPath, workspace, ['init', '--yes', '--offline'], contentRoot);
+  } catch {
+    failedAsExpected = true;
+  }
+  if (!failedAsExpected) {
+    throw new Error('workspace root init did not require --project');
+  }
+
+  runCli(cliPath, workspace, ['init', '--yes', '--offline', '--project=apps/web'], contentRoot);
+  const projectJson = readProjectJson(join(workspace, 'apps/web'));
+  if (projectJson.initialized?.projectScope !== 'workspace-app') {
+    throw new Error('workspace app scope was not persisted');
+  }
+  return { workflow: 'monorepo-project', status: 'passed' };
 }
 
 function certifyHybrid(tmpRoot, cliPath, contentRoot) {
@@ -209,8 +356,15 @@ function main() {
   try {
     const checks = [
       () => certifyGreenfield(tmpRoot, cliPath, contentRoot),
+      () => certifyGreenfieldContractOnly(tmpRoot, cliPath, contentRoot),
       () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'react'),
       () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'angular'),
+      () => certifyBrownfieldDirect(tmpRoot, cliPath, contentRoot),
+      () => certifyAdoptionMode(tmpRoot, cliPath, contentRoot, 'style-bridge'),
+      () => certifyAdoptionMode(tmpRoot, cliPath, contentRoot, 'decantr-css'),
+      () => certifyUnsupportedTarget(tmpRoot, cliPath, contentRoot),
+      () => certifyNextAdapter(tmpRoot, cliPath, contentRoot),
+      () => certifyMonorepoProject(tmpRoot, cliPath, contentRoot),
       () => certifyHybrid(tmpRoot, cliPath, contentRoot),
     ];
 

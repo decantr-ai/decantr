@@ -1582,7 +1582,7 @@
       .hero-positioning { margin: -20px auto 32px; max-width: 540px; }
     }
 
-    /* -- Paths selector (three tiles) -- */
+    /* -- Paths selector -- */
     .section-paths { padding-top: 64px; padding-bottom: 64px; }
     .paths-eyebrow {
       text-align: center;
@@ -1594,9 +1594,9 @@
     }
     .paths-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 20px;
-      max-width: 1040px;
+      max-width: 1180px;
       margin: 0 auto;
     }
     .path-tile {
@@ -1622,6 +1622,7 @@
     .path-tile-1 { --glow: rgba(10, 243, 235, 0.25); }
     .path-tile-2 { --glow: rgba(245, 136, 130, 0.25); }
     .path-tile-3 { --glow: rgba(253, 163, 3, 0.22); }
+    .path-tile-4 { --glow: rgba(123, 92, 255, 0.22); }
     .path-tile:hover {
       transform: translateY(-3px);
       border-color: rgba(255,255,255,0.18);
@@ -2430,7 +2431,7 @@
         </div>
         <h3 class="path-tile-name">Greenfield blueprint</h3>
         <p class="path-tile-desc">New project from a published app composition — theme, sections, voice, and personality baked in.</p>
-        <div class="path-tile-cmd"><span class="k">$</span> decantr new my-app <span class="path-tile-flag">--blueprint=X</span></div>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr new my-app <span class="path-tile-flag">--blueprint=X --adoption=decantr-css</span></div>
       </a>
       <a href="#brownfield" class="path-tile path-tile-2 card-decorated reveal reveal-d2">
         <div class="path-tile-head">
@@ -2438,8 +2439,8 @@
           <span class="path-tile-badge">Existing app</span>
         </div>
         <h3 class="path-tile-name">Brownfield adoption</h3>
-        <p class="path-tile-desc">Attach Decantr to an Angular, React, Vue, or plain HTML project — no rewrite, no blueprint required.</p>
-        <div class="path-tile-cmd"><span class="k">$</span> decantr analyze <span class="path-tile-flag">&amp;&amp; init --existing</span></div>
+        <p class="path-tile-desc">Attach Decantr to an existing app as a contract layer first. No rewrite, no CSS takeover.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr init <span class="path-tile-flag">--existing --adoption=contract-only</span></div>
       </a>
       <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
         <div class="path-tile-head">
@@ -2449,6 +2450,15 @@
         <h3 class="path-tile-name">Hybrid composition</h3>
         <p class="path-tile-desc">Any attached project. Add sections, swap themes, pull registry content on demand.</p>
         <div class="path-tile-cmd"><span class="k">$</span> decantr add section <span class="path-tile-flag">· theme switch</span></div>
+      </a>
+      <a href="#works" class="path-tile path-tile-4 card-decorated reveal reveal-d3">
+        <div class="path-tile-head">
+          <i data-lucide="file-check-2" class="path-tile-icon" style="color:var(--purple)"></i>
+          <span class="path-tile-badge">Tooling only</span>
+        </div>
+        <h3 class="path-tile-name">Greenfield contract-only</h3>
+        <p class="path-tile-desc">Start a new repo with Decantr context, checks, and AI contracts while keeping your runtime choices open.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr init <span class="path-tile-flag">--workflow=greenfield --adoption=contract-only</span></div>
       </a>
     </div>
   </div>
@@ -3222,8 +3232,8 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="lane-step-num" style="--accent:var(--amber)">2</div>
         <div class="lane-step-body">
           <h3>Attach</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr init --existing --yes</span></div>
-          <p class="lane-step-desc">Drops in <code>decantr.essence.json</code>, <code>DECANTR.md</code>, and scoped context files that describe what you <em>already</em> built.</p>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr init --existing --yes --adoption=contract-only</span></div>
+          <p class="lane-step-desc">Drops in <code>decantr.essence.json</code>, <code>DECANTR.md</code>, and scoped context files that describe what you <em>already</em> built without requiring Decantr CSS.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d3">
@@ -3382,7 +3392,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
 
 <!-- ==================== WORKS WITH ==================== -->
-<section class="works-section">
+<section class="works-section" id="works">
   <div class="container">
     <h2 class="section-heading reveal" style="margin-bottom:16px">Works with your stack</h2>
     <p class="section-sub reveal" style="margin-bottom:32px">Patterns are framework-agnostic. Your AI assistant writes the code in whatever you're already using.</p>
@@ -3401,7 +3411,7 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="works-group-label"><i data-lucide="code-2" style="width:14px;height:14px"></i>Frameworks</div>
       <div class="works-row-rich">
         <div class="works-tile works-tile-ready"><span class="works-tile-name">React + Vite</span><span class="works-tile-sub">starter adapter</span></div>
-        <div class="works-tile works-tile-compat"><span class="works-tile-name">Next.js</span><span class="works-tile-sub">contract-only</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Next.js</span><span class="works-tile-sub">starter adapter</span></div>
         <div class="works-tile works-tile-compat"><span class="works-tile-name">Vue</span><span class="works-tile-sub">contract-only</span></div>
         <div class="works-tile works-tile-compat"><span class="works-tile-name">Svelte</span><span class="works-tile-sub">contract-only</span></div>
         <div class="works-tile works-tile-compat"><span class="works-tile-name">Angular</span><span class="works-tile-sub">contract-only</span></div>
@@ -3418,7 +3428,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
     </div>
 
-    <p class="works-footnote reveal"><span class="works-legend-dot" style="background:var(--green)"></span>runnable adapter · <span class="works-legend-dot" style="background:var(--muted)"></span>contract-only in this wave — your AI writes the runtime</p>
+    <p class="works-footnote reveal"><span class="works-legend-dot" style="background:var(--green)"></span>runnable adapter · <span class="works-legend-dot" style="background:var(--muted)"></span>generic-web contract-only fallback — your AI writes the runtime</p>
   </div>
 </section>
 

@@ -156,7 +156,7 @@ export function injectResponsive(className: string, declaration: string, bp: str
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  const escaped = escapeSelector(className);
   if (!bpBuffers[bp]) bpBuffers[bp] = [];
   bpBuffers[bp].push(
     `@layer d.atoms{@media(min-width:${BREAKPOINTS[bp as keyof typeof BREAKPOINTS]}px){.${escaped}{${declaration}}}}`,
@@ -175,7 +175,7 @@ export function injectResponsiveMax(className: string, declaration: string, bp: 
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  const escaped = escapeSelector(className);
   const key = `${bp}max`;
   if (!bpBuffers[key]) bpBuffers[key] = [];
   const maxPx = BREAKPOINTS[bp as keyof typeof BREAKPOINTS] - 0.02;
@@ -266,7 +266,7 @@ export function injectContainer(className: string, declaration: string, width: n
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  const escaped = escapeSelector(className);
   cqBuffer.push(`@layer d.atoms{@container(min-width:${width}px){.${escaped}{${declaration}}}}`);
   scheduleFlush();
 }
@@ -306,7 +306,7 @@ export function injectMediaQuery(className: string, declaration: string, query: 
   if (injected.has(className)) return;
   injected.add(className);
   if (typeof document === 'undefined') return;
-  const escaped = className.replace(/:/g, '\\:');
+  const escaped = escapeSelector(className);
   atomBuffer.push(`@layer d.atoms{@media${query}{.${escaped}{${declaration}}}}`);
   scheduleFlush();
 }
@@ -315,6 +315,7 @@ export function injectMediaQuery(className: string, declaration: string, query: 
 function escapeSelector(className: string): string {
   return className
     .replace(/:/g, '\\:')
+    .replace(/\./g, '\\.')
     .replace(/\//g, '\\/')
     .replace(/\[/g, '\\[')
     .replace(/\]/g, '\\]')

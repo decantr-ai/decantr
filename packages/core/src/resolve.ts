@@ -30,10 +30,15 @@ import type {
 import { pascalCase } from './utils.js';
 
 export interface ResolvedPage {
-  page: StructurePage;
+  page: ResolvedStructurePage;
   patterns: Map<string, { pattern: Pattern; preset: ResolvedPreset }>;
   wiring: IRWiring | null;
 }
+
+type ResolvedStructurePage = StructurePage & {
+  sectionId?: string;
+  route?: string;
+};
 
 export interface ResolvedEssence {
   essence: EssenceFile;
@@ -150,12 +155,12 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function buildNavItems(pages: StructurePage[], routes?: IRRoute[]): IRNavItem[] {
+function buildNavItems(pages: ResolvedStructurePage[], routes?: IRRoute[]): IRNavItem[] {
   const routeLookup = new Map<string, string>(
-    (routes ?? []).map((route) => [route.pageId, route.path]),
+    (routes ?? []).map((route) => [routeIdentity(route.pageId, route.sectionId), route.path]),
   );
   return pages.map((page, i) => ({
-    href: routeLookup.get(page.id) ?? routePath(page.id, i),
+    href: routeLookup.get(routeIdentity(page.id, page.sectionId)) ?? routePath(page.id, i),
     icon: NAV_ICONS[page.id] || 'circle',
     label: capitalize(page.id.replace(/-/g, ' ')),
   }));
@@ -199,38 +204,56 @@ function buildThemeFromV3(essence: EssenceV3, isAddon: boolean): IRTheme {
 }
 
 /** Convert v3 BlueprintPage to the StructurePage shape used by the resolver pipeline */
-function blueprintPageToStructurePage(page: BlueprintPage, defaultShell: string): StructurePage {
+function blueprintPageToStructurePage(
+  page: BlueprintPage,
+  defaultShell: string,
+  sectionId?: string,
+): ResolvedStructurePage {
   return {
     id: page.id,
     shell: page.shell_override ?? defaultShell,
     layout: page.layout,
+    ...(sectionId ? { sectionId } : {}),
+    ...(page.route ? { route: page.route } : {}),
     ...(page.surface ? { surface: page.surface } : {}),
   };
 }
 
-function buildV3Routes(
-  essence: EssenceV3,
-  blueprintPages: BlueprintPage[],
-  structurePages: StructurePage[],
-): IRRoute[] {
+function routeIdentity(pageId: string, sectionId?: string): string {
+  return sectionId ? `${sectionId}:${pageId}` : pageId;
+}
+
+function buildV3Routes(essence: EssenceV3, structurePages: ResolvedStructurePage[]): IRRoute[] {
   const explicitRoutes = new Map<string, string>();
 
   for (const [path, entry] of Object.entries(essence.blueprint.routes ?? {})) {
-    if (entry?.page && !explicitRoutes.has(entry.page)) {
-      explicitRoutes.set(entry.page, path);
+    if (!entry?.page) continue;
+    const key = routeIdentity(entry.page, entry.section);
+    if (!explicitRoutes.has(key)) {
+      explicitRoutes.set(key, path);
     }
   }
 
-  for (const page of blueprintPages) {
-    if (page.route && !explicitRoutes.has(page.id)) {
-      explicitRoutes.set(page.id, page.route);
+  for (const page of structurePages) {
+    const key = routeIdentity(page.id, page.sectionId);
+    if (page.route && !explicitRoutes.has(key)) {
+      explicitRoutes.set(key, page.route);
     }
   }
 
   if (explicitRoutes.size > 0) {
     return structurePages.flatMap((page) => {
-      const path = explicitRoutes.get(page.id);
-      return path ? [{ path, pageId: page.id, shell: page.shell }] : [];
+      const path = explicitRoutes.get(routeIdentity(page.id, page.sectionId));
+      return path
+        ? [
+            {
+              path,
+              pageId: page.id,
+              shell: page.shell,
+              ...(page.sectionId ? { sectionId: page.sectionId } : {}),
+            },
+          ]
+        : [];
     });
   }
 
@@ -238,6 +261,7 @@ function buildV3Routes(
     path: routePath(page.id, i),
     pageId: page.id,
     shell: page.shell,
+    ...(page.sectionId ? { sectionId: page.sectionId } : {}),
   }));
 }
 
@@ -454,18 +478,13 @@ async function resolveV3Essence(
 
   // 4. Convert blueprint pages to StructurePage and resolve
   // V3.1 essences may use sections instead of pages; flatten sections into pages
-  const blueprintPages =
-    blueprint.pages ??
-    (blueprint.sections
-      ? blueprint.sections.flatMap((s) => s.pages)
-      : [{ id: 'home', layout: ['hero'] as LayoutItem[] }]);
   const defaultShell = blueprint.shell ?? blueprint.sections?.[0]?.shell ?? 'sidebar-main';
-  const structurePages: StructurePage[] = blueprint.pages
+  const structurePages: ResolvedStructurePage[] = blueprint.pages
     ? blueprint.pages.map((page) => blueprintPageToStructurePage(page, defaultShell))
     : blueprint.sections
       ? blueprint.sections.flatMap((section) =>
           section.pages.map((page) =>
-            blueprintPageToStructurePage(page, section.shell ?? defaultShell),
+            blueprintPageToStructurePage(page, section.shell ?? defaultShell, section.id),
           ),
         )
       : [
@@ -479,7 +498,7 @@ async function resolveV3Essence(
   // 5. Shell config from blueprint
   const shellType = defaultShell;
   const brand = pascalCase(meta.archetype);
-  const routes = buildV3Routes(essence, blueprintPages, structurePages);
+  const routes = buildV3Routes(essence, structurePages);
   const nav = buildNavItems(structurePages, routes);
   const decoration = registryTheme ? buildThemeDecoration(registryTheme) : null;
 
@@ -507,7 +526,7 @@ async function resolveV3Essence(
 // ─── Shared page resolution ────────────────────────────────
 
 async function resolvePages(
-  pages: StructurePage[],
+  pages: ResolvedStructurePage[],
   resolver: ContentResolver,
   registryTheme: RegistryTheme | null,
 ): Promise<ResolvedPage[]> {

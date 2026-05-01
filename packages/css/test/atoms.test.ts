@@ -196,6 +196,75 @@ describe('resolveAtomDecl', () => {
     });
   });
 
+  describe('content-authored Tailwind-style aliases', () => {
+    it('resolves layout aliases emitted by registry shell atoms', () => {
+      expect(resolveAtomDecl('_flex-col')).toBe('flex-direction:column');
+      expect(resolveAtomDecl('_flex-1')).toBe('flex:1');
+      expect(resolveAtomDecl('_min-h-dvh')).toBe('min-height:100dvh');
+      expect(resolveAtomDecl('_max-w-screen-md')).toBe('max-width:768px');
+      expect(resolveAtomDecl('_max-w-6xl')).toBe('max-width:72rem');
+      expect(resolveAtomDecl('_mx-auto')).toBe('margin-inline:auto');
+    });
+
+    it('resolves spaced, color, and border aliases used by content packs', () => {
+      expect(resolveAtomDecl('_gap-3')).toBe('gap:0.75rem');
+      expect(resolveAtomDecl('_px-4')).toBe('padding-inline:1rem');
+      expect(resolveAtomDecl('_pb-20')).toBe('padding-bottom:5rem');
+      expect(resolveAtomDecl('_bg-background/85')).toBe(
+        'background:color-mix(in srgb,var(--d-bg) 85%,transparent)',
+      );
+      expect(resolveAtomDecl('_text-text')).toBe('color:var(--d-text)');
+      expect(resolveAtomDecl('_text-sm')).toBe('font-size:0.875rem;line-height:1.25rem');
+      expect(resolveAtomDecl('_border-b')).toBe('border-bottom:1px solid var(--d-border)');
+      expect(resolveAtomDecl('_border-border')).toBe('border-color:var(--d-border)');
+      expect(resolveAtomDecl('_backdrop-blur')).toBe(
+        'backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)',
+      );
+    });
+
+    it('resolves hyphenated arbitrary-value aliases from content packs', () => {
+      expect(resolveAtomDecl('_h-[52px]')).toBe('height:52px');
+      expect(resolveAtomDecl('_grid-cols-[1fr_320px]')).toBe(
+        'grid-template-columns:1fr 320px',
+      );
+    });
+
+    it('resolves legacy registry aliases observed in authored content', () => {
+      expect(resolveAtomDecl('_relative')).toBe('position:relative');
+      expect(resolveAtomDecl('_absolute')).toBe('position:absolute');
+      expect(resolveAtomDecl('_mono')).toBe(
+        'font-family:var(--d-font-mono,ui-monospace,monospace)',
+      );
+      expect(resolveAtomDecl('_fggreen')).toBe('color:#22c55e');
+      expect(resolveAtomDecl('_borderB')).toBe('border-bottom:1px solid var(--d-border)');
+      expect(resolveAtomDecl('_bordermuted/20')).toBe(
+        'border-color:color-mix(in srgb,var(--d-muted,var(--d-border)) 20%,transparent)',
+      );
+      expect(resolveAtomDecl('_maxw-[560px]')).toBe('max-width:560px');
+      expect(resolveAtomDecl('_max-h[300px]')).toBe('max-height:300px');
+      expect(resolveAtomDecl('_max-w-420')).toBe('max-width:420px');
+      expect(resolveAtomDecl('_columns2')).toBe('columns:2');
+      expect(resolveAtomDecl('_grid-cols-auto-fill')).toBe(
+        'grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))',
+      );
+      expect(resolveAtomDecl('_grid-cols-auto')).toBe(
+        'grid-template-columns:repeat(auto-fit,minmax(0,1fr))',
+      );
+      expect(resolveAtomDecl('_border-l-4')).toBe('border-left:4px solid var(--d-border)');
+      expect(resolveAtomDecl('_borderR')).toBe('border-right:1px solid var(--d-border)');
+      expect(resolveAtomDecl('_rounded-r-lg')).toBe(
+        'border-top-right-radius:0.5rem;border-bottom-right-radius:0.5rem',
+      );
+      expect(resolveAtomDecl('_bgPrimary/10')).toBe(
+        'background:color-mix(in srgb,var(--d-primary) 10%,transparent)',
+      );
+      expect(resolveAtomDecl('_bg-gray-950')).toBe('background:#030712');
+      expect(resolveAtomDecl('_perspective-1000')).toBe('perspective:1000px');
+      expect(resolveAtomDecl('_scale[1.05]')).toBe('transform:scale(1.05)');
+      expect(resolveAtomDecl('_-space-x-2')).toBe('margin-left:-0.5rem');
+    });
+  });
+
   describe('unknown atoms', () => {
     it('returns null for unknown atoms', () => {
       expect(resolveAtomDecl('_unknownAtom')).toBeNull();
