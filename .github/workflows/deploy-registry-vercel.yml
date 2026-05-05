@@ -21,7 +21,7 @@ jobs:
       REGISTRY_PORTAL_EXPECTED_BLUEPRINT: ${{ vars.REGISTRY_PORTAL_EXPECTED_BLUEPRINT || 'ai-copilot-shell' }}
       REGISTRY_PORTAL_EXPECTED_NAMESPACE: ${{ vars.REGISTRY_PORTAL_EXPECTED_NAMESPACE || '@official' }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -57,7 +57,7 @@ jobs:
         run: cat registry-portal-summary.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload post-deploy audit artifacts
         if: ${{ inputs.run_portal_audit }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: post-deploy-registry-portal-audit
           path: |

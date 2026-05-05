@@ -100,7 +100,7 @@ jobs:
           pnpm release:evidence --out=package-release-evidence $ARGS
           cat package-release-evidence/release-evidence-manifest.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload enterprise release evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: package-release-evidence
           path: package-release-evidence/**
