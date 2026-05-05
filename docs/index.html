@@ -2440,7 +2440,7 @@
         </div>
         <h3 class="path-tile-name">Brownfield adoption</h3>
         <p class="path-tile-desc">Attach Decantr to an existing app as a contract layer first. No rewrite, no CSS takeover.</p>
-        <div class="path-tile-cmd"><span class="k">$</span> decantr init <span class="path-tile-flag">--existing --adoption=contract-only</span></div>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr analyze <span class="path-tile-flag">&& decantr init --existing --adoption=contract-only</span></div>
       </a>
       <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
         <div class="path-tile-head">
@@ -3037,7 +3037,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="shield" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>check</div>
-        <p class="cli-desc">Detect and fix drift issues</p>
+        <p class="cli-desc">Detect contract drift and guard violations</p>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>status</div>
@@ -3292,13 +3292,13 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== REGISTRY ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>190+ patterns. 30+ themes. 35+ blueprints.</h2>
+    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>225+ patterns. 30+ themes. 40+ blueprints.</h2>
     <p class="section-sub reveal">A growing library of community-contributed design intelligence. Browse what's available — or publish your own patterns, themes, and blueprints for others to use.</p>
 
     <div class="stats-grid">
       <a href="https://registry.decantr.ai/patterns" target="_blank" rel="noopener" class="stat-card stat-card-1 reveal reveal-d1">
         <div class="stat-icon"><i data-lucide="puzzle" style="width:24px;height:24px;color:var(--coral)"></i></div>
-        <div class="stat-number">200+</div>
+        <div class="stat-number">225+</div>
         <div class="stat-label">Patterns</div>
         <div class="stat-action">Browse →</div>
       </a>
@@ -3310,7 +3310,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </a>
       <a href="https://registry.decantr.ai/blueprints" target="_blank" rel="noopener" class="stat-card stat-card-3 reveal reveal-d3">
         <div class="stat-icon"><i data-lucide="layout-template" style="width:24px;height:24px;color:var(--cyan)"></i></div>
-        <div class="stat-number">35+</div>
+        <div class="stat-number">40+</div>
         <div class="stat-label">Blueprints</div>
         <div class="stat-action">Browse →</div>
       </a>
@@ -3343,22 +3343,22 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/essence-spec</div>
         <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
-        <div class="pkg-version">v1.0.1</div>
+        <div class="pkg-version">v1.0.6</div>
       </div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/registry</div>
         <p class="pkg-desc">Content resolver for patterns, archetypes, themes, blueprints, and shells</p>
-        <div class="pkg-version">v1.0.1</div>
+        <div class="pkg-version">v1.0.4</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/css</div>
         <p class="pkg-desc">Framework-agnostic CSS atoms runtime for layout utilities</p>
-        <div class="pkg-version">v1.0.2</div>
+        <div class="pkg-version">v1.0.6</div>
       </div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/core</div>
         <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
-        <div class="pkg-version">v1.0.0</div>
+        <div class="pkg-version">v1.0.6</div>
       </div>
     </div>
 
@@ -3367,17 +3367,17 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/cli</div>
         <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, and registry sync</p>
-        <div class="pkg-version">v1.7.8</div>
+        <div class="pkg-version">v1.7.26</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>
         <p class="pkg-desc">MCP server exposing 20 design intelligence tools to AI assistants</p>
-        <div class="pkg-version">v1.0.3</div>
+        <div class="pkg-version">v1.0.5</div>
       </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/verifier</div>
         <p class="pkg-desc">Shared audit and critique engine with schema-backed project and file reports</p>
-        <div class="pkg-version">v1.0.1</div>
+        <div class="pkg-version">v1.0.5</div>
       </div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/vite-plugin</div>
