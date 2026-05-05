@@ -8,7 +8,6 @@ import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline';
 
 import { prepWorkspace } from './lib/prep.mjs';
-import { runMobileSmoke } from './lib/mobile-smoke.mjs';
 import { synthesizeReport } from './lib/synthesize.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -214,6 +213,7 @@ async function cmdSmoke(args) {
   console.log(`Starting dev server on :${port}...`);
   const dev = await startDevServer(workspace, port);
   console.log(`✓ Dev server up. Running mobile smoke...`);
+  const { runMobileSmoke } = await import('./lib/mobile-smoke.mjs');
   const routes = detectProbeRoutes(workspace);
   if (routes) {
     console.log(`  probing ${routes.length} blueprint-derived routes: ${routes.map((r) => r.path).join(', ')}`);

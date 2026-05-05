@@ -54,6 +54,7 @@
     "showcase:audit": "node scripts/audit-showcases.mjs",
     "showcase:shortlist": "node scripts/shortlist-showcases.mjs",
     "showcase:verify:shortlist": "tsx scripts/verify-showcase-shortlist.ts",
+    "showcase:dogfood-promote": "node scripts/dogfood-showcase-promotion.mjs",
     "showcase": "pnpm run showcase:build && pnpm run showcase:copy",
     "npm-surface:normalize": "node scripts/normalize-npm-dist-tags.mjs --write"
   },

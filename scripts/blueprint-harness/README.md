@@ -14,6 +14,9 @@ node scripts/blueprint-harness/harness.mjs prompt <workspace>
 node scripts/blueprint-harness/harness.mjs smoke <workspace>
 node scripts/blueprint-harness/harness.mjs synthesize <workspace> --subagent-report=<file>
 node scripts/blueprint-harness/harness.mjs promote <workspace> [--slug=<blueprint>] [--force]
+
+# Non-interactive CI/local dogfood of prep -> promote -> showcase-host build.
+pnpm run showcase:dogfood-promote
 ```
 
 ## What each phase does
@@ -26,6 +29,7 @@ node scripts/blueprint-harness/harness.mjs promote <workspace> [--slug=<blueprin
 | **smoke** | Starts dev server, runs auth-seeded puppeteer against 4 routes × 3 viewports, saves shots to `<workspace>/_harness/mobile-shots/` | ✅ |
 | **synthesize** | Fills the report template from scaffold state + subagent report + mobile shots. Writes to `<output-dir>/<date>-<slug>-harness.md` | ✅ |
 | **promote** | Copies a verified workspace into `apps/showcase-host/src/capsules/<slug>/` so the registry showcase host can serve it | ✅ |
+| **dogfood promote** | Scaffolds a temporary blueprint workspace, promotes it into a temporary showcase-host capsule, builds the host, then removes the temporary capsule | ✅ |
 
 ## Outputs
 
@@ -51,3 +55,4 @@ Artifacts produced:
 - Cold-subagent prompt comes from `templates/cold-prompt.md` — edit there if the official CLI cold-prompt copy changes.
 - Harness prep uses explicit workflow/adoption flags. Do not reintroduce the old greenfield simulation path of creating a runtime manually and then running `init --existing`.
 - New live showcases should be promoted into `apps/showcase-host`, not added as standalone `apps/showcase/<slug>` workspaces.
+- `pnpm run showcase:dogfood-promote` intentionally uses a temporary `dogfood-promote-smoke` capsule and cleans it in `finally`; if a run is interrupted, remove `apps/showcase-host/src/capsules/dogfood-promote-smoke` before retrying.

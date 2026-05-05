@@ -9,6 +9,9 @@ on:
         type: boolean
         default: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy-registry:
     runs-on: ubuntu-latest
