@@ -27,7 +27,7 @@ Current strategic program: `docs/programs/2026-04-08-decantr-vnext-master-progra
 |-----|------|-------------|
 | `decantr-api` | `apps/api/` | Registry API (Hono + Supabase + Stripe) |
 | `decantr-registry` | `apps/registry/` | Registry web app (Next.js + Supabase) |
-| `decantr-showcase` | `apps/showcase/` | ~40 blueprint scaffolds used as regression fixtures and harness test subjects (agent-marketplace, agent-studio, ai-copilot-shell, ecommerce, observability-platform, …). See `apps/showcase/manifest.json`. |
+| `decantr-showcase-host` | `apps/showcase-host/` | Shared Vite host for live blueprint showcase capsules. Capsule source lives in `apps/showcase-host/src/capsules/<slug>/`; metadata and reports remain in `apps/showcase/`. |
 
 ## Terminology
 

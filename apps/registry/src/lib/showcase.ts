@@ -70,7 +70,7 @@ async function getShowcaseDataset(): Promise<ShowcaseDataset> {
 }
 
 export function getShowcaseUrl(blueprintSlug: string, metadata?: ShowcaseMetadata | null): string {
-  return metadata?.url ?? `/showcase/${blueprintSlug}/index.html`;
+  return metadata?.url ?? `/showcase/${blueprintSlug}`;
 }
 
 export async function hasShowcase(blueprintSlug: string): Promise<boolean> {

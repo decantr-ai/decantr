@@ -1,0 +1,86 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "style": "operational",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "compact",
+      "density": "comfortable",
+      "content_gap": "1rem"
+    },
+    "typography": {
+      "scale": "product",
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "neutral-cyan",
+      "accent_count": 1,
+      "cvd_preference": "high-contrast"
+    },
+    "radius": {
+      "philosophy": "restrained",
+      "base": 8
+    },
+    "elevation": {
+      "system": "border-plus-blur",
+      "max_levels": 2
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": false
+    },
+    "personality": [
+      "Quiet operational host for Decantr blueprint showcases. The host chrome should disappear behind the selected capsule and never compete with the blueprint personality."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "showcase-host",
+        "role": "primary",
+        "shell": "full-bleed-frame",
+        "features": ["showcase-routing", "iframe-isolation", "capsule-registry"],
+        "description": "Single runtime host for blueprint showcase capsules.",
+        "pages": [
+          {
+            "id": "showcase",
+            "route": "/showcase/:slug/*",
+            "layout": "full-bleed-frame",
+            "patterns": ["showcase-frame"]
+          }
+        ]
+      }
+    ],
+    "features": ["showcase-routing", "iframe-isolation", "capsule-registry"],
+    "routes": {
+      "/showcase/:slug/*": {
+        "section": "showcase-host",
+        "page": "showcase"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "showcase-host",
+    "target": "registry-showcase-runtime",
+    "platform": {
+      "type": "web",
+      "routing": "vite-history-fallback"
+    },
+    "guard": {
+      "mode": "advisory",
+      "dna_enforcement": "advisory",
+      "blueprint_enforcement": "advisory"
+    }
+  }
+}

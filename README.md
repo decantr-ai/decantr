@@ -107,10 +107,13 @@ Full release/support status lives in [docs/reference/package-support-matrix.md](
 | --- | --- |
 | `apps/api` | Hosted API for registry, packs, critique, audit, auth, org, and billing-adjacent flows |
 | `apps/registry` | Next.js registry portal and internal dogfood surface |
-| `apps/showcase/*` | Generated benchmark apps used as evidence and verification targets |
+| `apps/showcase-host` | Shared Vite host for live blueprint showcase capsules |
+| `apps/showcase/` | Showcase manifest and verification reports used by the API and registry |
 | `packages/*` | Core Decantr packages and supporting runtime surfaces |
 | `docs/` | Public docs, audits, architecture notes, schemas, and runbooks |
 | `scripts/` | Audit, release, showcase, schema, and packaging automation |
+
+Showcase capsule architecture is documented in [docs/reference/showcase-host.md](docs/reference/showcase-host.md).
 
 ## Development
 

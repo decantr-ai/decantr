@@ -13,7 +13,7 @@ export const SHOWCASE_VERIFICATION_RESULTS =
   (SHOWCASE_SHORTLIST_REPORT.results as ShowcaseVerificationEntry[] | undefined) ?? [];
 
 export function getShowcasePublicUrl(slug: string): string {
-  return `/showcase/${slug}/index.html`;
+  return `/showcase/${slug}`;
 }
 
 function normalizeShowcaseEntry(entry: ShowcaseManifestEntry): ShowcaseManifestEntry {

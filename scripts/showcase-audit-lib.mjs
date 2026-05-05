@@ -1,6 +1,11 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, join } from 'node:path';
-import { getActiveShowcaseEntries, loadShowcaseManifest, showcaseRoot } from './showcase-manifest.mjs';
+import {
+  getActiveShowcaseEntries,
+  loadShowcaseManifest,
+  showcaseCapsulesRoot,
+  showcaseHostRoot,
+} from './showcase-manifest.mjs';
 
 const CODE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.css', '.html']);
 const SKIP_DIRS = new Set(['dist', 'node_modules', '.git', '.turbo']);
@@ -33,7 +38,7 @@ function countMatches(content, pattern) {
 }
 
 export function auditShowcaseEntry(entry) {
-  const rootDir = join(showcaseRoot, entry.slug);
+  const rootDir = join(showcaseCapsulesRoot, entry.slug);
   const files = listFiles(rootDir);
 
   let inlineStyleCount = 0;
@@ -62,7 +67,7 @@ export function auditShowcaseEntry(entry) {
     hardcodedColorCount,
     utilityLeakageCount,
     decantrTreatmentCount,
-    hasDist: existsSync(join(rootDir, 'dist')),
+    hasDist: existsSync(join(showcaseHostRoot, 'dist')),
     hasPackManifest: existsSync(join(rootDir, '.decantr', 'context', 'pack-manifest.json')),
   };
 }

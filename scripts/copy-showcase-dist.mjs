@@ -4,36 +4,30 @@ import {
   getPublicShowcaseEntries,
   loadShortlistVerificationReport,
   repoRoot,
-  showcaseRoot,
+  showcaseHostRoot,
 } from './showcase-manifest.mjs';
 
 const dryRun = process.argv.includes('--dry-run');
 const targetRoot = join(repoRoot, 'apps', 'registry', 'public', 'showcase');
+const distDir = join(showcaseHostRoot, 'dist');
 const activeEntries = getPublicShowcaseEntries();
 const verificationReport = loadShortlistVerificationReport();
 const verificationBySlug = new Map(verificationReport.results.map(entry => [entry.slug, entry]));
 
-for (const entry of activeEntries) {
-  const distDir = join(showcaseRoot, entry.slug, 'dist');
-  if (!existsSync(distDir)) continue;
+if (!existsSync(distDir)) {
+  console.error(`Showcase host dist is missing at ${distDir}. Run scripts/build-showcases.mjs first.`);
+  process.exit(1);
+}
 
-  const targetDir = join(targetRoot, entry.slug);
-
-  // Clean target directory
-  if (!dryRun && existsSync(targetDir)) {
-    rmSync(targetDir, { recursive: true });
-  }
-  if (!dryRun) {
-    mkdirSync(targetDir, { recursive: true });
-  }
-
-  // Copy dist contents
-  if (!dryRun) {
-    cpSync(distDir, targetDir, { recursive: true });
-    console.log(`Copied ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
-  } else {
-    console.log(`[dry-run] copy ${entry.slug}/dist -> apps/registry/public/showcase/${entry.slug}/`);
-  }
+if (!dryRun && existsSync(targetRoot)) {
+  rmSync(targetRoot, { recursive: true });
+}
+if (!dryRun) {
+  mkdirSync(targetRoot, { recursive: true });
+  cpSync(distDir, targetRoot, { recursive: true });
+  console.log('Copied showcase-host/dist -> apps/registry/public/showcase/');
+} else {
+  console.log('[dry-run] copy showcase-host/dist -> apps/registry/public/showcase/');
 }
 
 const publicManifest = {
@@ -46,7 +40,7 @@ const publicManifest = {
     goldenCandidate: entry.goldenCandidate ?? false,
     notes: entry.notes ?? null,
     verification: verificationBySlug.get(entry.slug) ?? null,
-    url: `/showcase/${entry.slug}/index.html`,
+    url: `/showcase/${entry.slug}`,
   })),
 };
 

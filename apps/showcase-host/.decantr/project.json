@@ -1,0 +1,8 @@
+{
+  "projectId": "showcase-host",
+  "blueprintId": "showcase-host",
+  "workflow": "brownfield-attach",
+  "adoption": "style-bridge",
+  "createdBy": "decantr",
+  "notes": "Canonical host for Decantr showcase capsules. Individual capsules keep their own Decantr contracts under src/capsules/<slug>."
+}

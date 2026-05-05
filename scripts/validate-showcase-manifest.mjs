@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import {
   loadShowcaseManifest,
   loadShortlistVerificationReport,
-  showcaseRoot,
+  showcaseCapsulesRoot,
 } from './showcase-manifest.mjs';
 
 const ALLOWED_STATUS = new Set(['active', 'removed']);
@@ -49,13 +49,13 @@ for (const entry of manifest.apps) {
     errors.push(`Showcase "${entry.slug}" must declare an origin.`);
   }
 
-  const showcaseDir = join(showcaseRoot, entry.slug);
+  const showcaseDir = join(showcaseCapsulesRoot, entry.slug);
   if (entry.status === 'active' && !existsSync(showcaseDir)) {
-    errors.push(`Active showcase "${entry.slug}" is missing its directory at ${showcaseDir}.`);
+    errors.push(`Active showcase "${entry.slug}" is missing its capsule at ${showcaseDir}.`);
   }
 
   if (entry.status === 'removed' && existsSync(showcaseDir)) {
-    errors.push(`Removed showcase "${entry.slug}" still exists on disk at ${showcaseDir}.`);
+    errors.push(`Removed showcase "${entry.slug}" still has a capsule on disk at ${showcaseDir}.`);
   }
 
   if (entry.goldenCandidate !== undefined) {
@@ -77,9 +77,9 @@ for (const entry of manifest.apps) {
   }
 }
 
-const shortlistedSlugs = new Set(
+const reportableSlugs = new Set(
   manifest.apps
-    .filter(entry => entry.status === 'active' && Boolean(entry.goldenCandidate))
+    .filter(entry => entry.status === 'active')
     .map(entry => entry.slug),
 );
 const reportResults = Array.isArray(shortlistReport.results) ? shortlistReport.results : [];
@@ -140,8 +140,8 @@ if (reportResults.length > 0) {
     }
     seenReportSlugs.add(entry.slug);
 
-    if (!shortlistedSlugs.has(entry.slug)) {
-      errors.push(`Showcase shortlist report entry "${entry.slug}" is not an active golden shortlist entry in the manifest.`);
+    if (!reportableSlugs.has(entry.slug)) {
+      errors.push(`Showcase verification report entry "${entry.slug}" is not an active entry in the manifest.`);
     }
 
     if (!ALLOWED_CLASSIFICATIONS.has(entry.classification)) {
@@ -240,9 +240,9 @@ if (reportResults.length > 0) {
     }
   }
 
-  for (const slug of shortlistedSlugs) {
+  for (const slug of reportableSlugs) {
     if (!seenReportSlugs.has(slug)) {
-      errors.push(`Showcase shortlist report is missing active shortlisted entry "${slug}".`);
+      errors.push(`Showcase verification report is missing active entry "${slug}".`);
     }
   }
 }

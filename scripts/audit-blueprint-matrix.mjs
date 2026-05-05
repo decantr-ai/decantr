@@ -179,6 +179,24 @@ function excerpt(text) {
   return lines.slice(-12).join('\n');
 }
 
+function normalizePromptText(text) {
+  return text
+    .replace(/\x1b\[[0-9;]*m/g, '')
+    .replaceAll('`', '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function hasExecutionPackPrimarySourceGuidance(text) {
+  return normalizePromptText(text).includes('Treat the compiled execution-pack files as the primary source of truth.');
+}
+
+function hasCheckAndAuditGuidance(text) {
+  const normalized = normalizePromptText(text);
+  return normalized.includes('After implementation, run decantr check')
+    && normalized.includes('and decantr audit');
+}
+
 function certifyBlueprint(entry, contentRoot) {
   const projectRoot = mkdtempSync(join(tmpdir(), `decantr-blueprint-${entry.id}-`));
 
@@ -200,12 +218,12 @@ function certifyBlueprint(entry, contentRoot) {
     );
 
     const promptAligned =
-      initResult.stdout.includes('Treat the compiled execution-pack files as the primary source of truth.') &&
-      initResult.stdout.includes('After implementation, run decantr check and decantr audit');
+      hasExecutionPackPrimarySourceGuidance(initResult.stdout) &&
+      hasCheckAndAuditGuidance(initResult.stdout);
 
     const decantrContent = existsSync(paths.decantr) ? readFileSync(paths.decantr, 'utf-8') : '';
     const decantrAligned =
-      decantrContent.includes('Treat the compiled execution-pack files as the primary source of truth.') &&
+      hasExecutionPackPrimarySourceGuidance(decantrContent) &&
       decantrContent.includes('Run `decantr check` to detect drift violations while editing');
 
     let checkResult = { status: 1, durationMs: 0, stdout: '', stderr: '' };

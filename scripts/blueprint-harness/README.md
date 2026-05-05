@@ -13,6 +13,7 @@ node scripts/blueprint-harness/harness.mjs prep <blueprint-slug> [--workspace=<d
 node scripts/blueprint-harness/harness.mjs prompt <workspace>
 node scripts/blueprint-harness/harness.mjs smoke <workspace>
 node scripts/blueprint-harness/harness.mjs synthesize <workspace> --subagent-report=<file>
+node scripts/blueprint-harness/harness.mjs promote <workspace> [--slug=<blueprint>] [--force]
 ```
 
 ## What each phase does
@@ -24,6 +25,7 @@ node scripts/blueprint-harness/harness.mjs synthesize <workspace> --subagent-rep
 | **dispatch** | **[OPERATOR]** Dispatch cold subagent with the prompt, save its report to `<workspace>/_harness/subagent-report.md` | ❌ operator step |
 | **smoke** | Starts dev server, runs auth-seeded puppeteer against 4 routes × 3 viewports, saves shots to `<workspace>/_harness/mobile-shots/` | ✅ |
 | **synthesize** | Fills the report template from scaffold state + subagent report + mobile shots. Writes to `<output-dir>/<date>-<slug>-harness.md` | ✅ |
+| **promote** | Copies a verified workspace into `apps/showcase-host/src/capsules/<slug>/` so the registry showcase host can serve it | ✅ |
 
 ## Outputs
 
@@ -48,3 +50,4 @@ Artifacts produced:
 - `localStorage.decantr_authenticated = 'true'` is seeded on the origin before every route to bypass the scaffold's mock auth gate. Keep this in sync if the scaffold's auth storage key changes (`src/lib/auth.ts`).
 - Cold-subagent prompt comes from `templates/cold-prompt.md` — edit there if the official CLI cold-prompt copy changes.
 - Harness prep uses explicit workflow/adoption flags. Do not reintroduce the old greenfield simulation path of creating a runtime manually and then running `init --existing`.
+- New live showcases should be promoted into `apps/showcase-host`, not added as standalone `apps/showcase/<slug>` workspaces.

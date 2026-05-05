@@ -3,10 +3,11 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { auditBuiltDist, type RuntimeAudit } from '../packages/verifier/src/runtime.ts';
 import {
-  getShortlistedShowcaseEntries,
+  getActiveShowcaseEntries,
   repoRoot,
   shortlistVerificationReportPath,
-  showcaseRoot,
+  showcaseCapsulesRoot,
+  showcaseHostRoot,
 } from './showcase-manifest.mjs';
 import { auditShowcaseEntry, buildShowcaseVerificationResult } from './showcase-audit-lib.mjs';
 
@@ -22,9 +23,9 @@ const reportJsonPath = requestedReportJsonPath ?? shortlistVerificationReportPat
 const dryRun = process.argv.includes('--dry-run');
 
 function extractShowcaseRouteHints(entry: { slug: string }): string[] {
-  const essencePath = join(showcaseRoot, entry.slug, 'decantr.essence.json');
+  const essencePath = join(showcaseCapsulesRoot, entry.slug, 'decantr.essence.json');
   if (!existsSync(essencePath)) {
-    return ['/'];
+    return [`/showcase/${entry.slug}`, `/showcase/${entry.slug}/`];
   }
 
   try {
@@ -51,9 +52,12 @@ function extractShowcaseRouteHints(entry: { slug: string }): string[] {
       }
     }
 
-    return [...routes].filter(Boolean).slice(0, 8);
+    return [...routes]
+      .filter(Boolean)
+      .map((route) => route === '/' ? `/showcase/${entry.slug}` : `/showcase/${entry.slug}${normalizeRouteHint(route)}`)
+      .slice(0, 8);
   } catch {
-    return ['/'];
+    return [`/showcase/${entry.slug}`, `/showcase/${entry.slug}/`];
   }
 }
 
@@ -113,50 +117,52 @@ function buildSmokeResult(runtimeAudit: RuntimeAudit, durationMs: number) {
 }
 
 async function main() {
-  const shortlisted = getShortlistedShowcaseEntries();
+  const activeShowcases = getActiveShowcaseEntries();
 
-  if (shortlisted.length === 0) {
-    console.error('No shortlisted showcase apps were found in the manifest.');
+  if (activeShowcases.length === 0) {
+    console.error('No active showcase capsules were found in the manifest.');
     process.exit(1);
   }
 
   const results = [];
   let failedBuilds = 0;
   let failedSmokes = 0;
+  let buildPassed: boolean | null = null;
+  let buildDurationMs = 0;
 
-  for (const entry of shortlisted) {
-    const filter = `./apps/showcase/${entry.slug}`;
-    const appRoot = join(showcaseRoot, entry.slug);
+  const filter = './apps/showcase-host';
 
-    if (dryRun) {
-      console.log(`[dry-run] pnpm --filter "${filter}" build`);
-      console.log(`[dry-run] runtime audit ${entry.slug} dist output`);
-      results.push(buildShowcaseVerificationResult(auditShowcaseEntry(entry), {
-        buildPassed: null,
-        durationMs: 0,
-      }));
-      continue;
-    }
-
-    console.log(`Verifying shortlisted showcase: ${entry.slug}`);
+  if (dryRun) {
+    console.log(`[dry-run] pnpm --filter "${filter}" build`);
+  } else {
+    console.log('Building showcase host once for capsule verification.');
     const startedAt = Date.now();
     const build = spawnSync('pnpm', ['--filter', filter, 'build'], {
       cwd: repoRoot,
       encoding: 'utf-8',
     });
-    const durationMs = Date.now() - startedAt;
-    const audit = auditShowcaseEntry(entry);
-    const buildPassed = build.status === 0;
-    let smoke = null;
+    buildDurationMs = Date.now() - startedAt;
+    buildPassed = build.status === 0;
 
     if (!buildPassed) {
-      failedBuilds += 1;
-      console.error(`Build failed for ${entry.slug}`);
+      failedBuilds = activeShowcases.length;
+      console.error('Showcase host build failed.');
       if (build.stdout) process.stderr.write(build.stdout);
       if (build.stderr) process.stderr.write(build.stderr);
+    }
+  }
+
+  for (const entry of activeShowcases) {
+    const audit = auditShowcaseEntry(entry);
+    let smoke = null;
+
+    if (dryRun) {
+      console.log(`[dry-run] runtime audit ${entry.slug} through showcase host`);
+    } else if (!buildPassed) {
+      console.error(`Skipping smoke for ${entry.slug} because showcase host build failed.`);
     } else {
       const smokeStartedAt = Date.now();
-      const runtimeAudit = await auditBuiltDist(appRoot, {
+      const runtimeAudit = await auditBuiltDist(showcaseHostRoot, {
         routeHints: extractShowcaseRouteHints(entry),
       });
       smoke = buildSmokeResult(runtimeAudit, Date.now() - smokeStartedAt);
@@ -168,7 +174,7 @@ async function main() {
 
     results.push(buildShowcaseVerificationResult(audit, {
       buildPassed,
-      durationMs,
+      durationMs: buildDurationMs,
       smoke,
     }));
   }
@@ -245,7 +251,7 @@ async function main() {
     withPackManifestCount: results.filter(entry => entry.drift.hasPackManifest).length,
   };
 
-  console.log(`Verified ${summary.appCount} shortlisted showcase app(s).`);
+  console.log(`Verified ${summary.appCount} active showcase capsule(s).`);
   console.log(`Builds passed: ${summary.passedBuilds}`);
   console.log(`Builds failed: ${summary.failedBuilds}`);
   console.log(`Average build duration: ${summary.averageDurationMs}ms`);

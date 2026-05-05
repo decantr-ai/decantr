@@ -6,12 +6,14 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 
 export const repoRoot = join(scriptDir, '..');
 export const showcaseRoot = join(repoRoot, 'apps', 'showcase');
+export const showcaseHostRoot = join(repoRoot, 'apps', 'showcase-host');
+export const showcaseCapsulesRoot = join(showcaseHostRoot, 'src', 'capsules');
 export const showcaseManifestPath = join(showcaseRoot, 'manifest.json');
 export const showcaseReportsRoot = join(showcaseRoot, 'reports');
 export const shortlistVerificationReportPath = join(showcaseReportsRoot, 'shortlist-verification.json');
 
 export function getShowcasePublicUrl(slug) {
-  return `/showcase/${slug}/index.html`;
+  return `/showcase/${slug}`;
 }
 
 export function normalizeShowcaseEntry(entry) {

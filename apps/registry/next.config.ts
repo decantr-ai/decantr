@@ -3,17 +3,13 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@decantr/registry'],
+  rewrites: async () => [
+    {
+      source: '/showcase/:path*',
+      destination: '/showcase/index.html',
+    },
+  ],
   redirects: async () => [
-    {
-      source: '/showcase/:slug',
-      destination: '/showcase/:slug/index.html',
-      permanent: false,
-    },
-    {
-      source: '/showcase/:slug/',
-      destination: '/showcase/:slug/index.html',
-      permanent: false,
-    },
     {
       source: '/registry',
       destination: '/',

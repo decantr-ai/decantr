@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Blueprint harness CLI — orchestrates the scaffold-test pipeline.
 
-import { mkdirSync, existsSync, writeFileSync, readFileSync } from 'node:fs';
+import { cpSync, mkdirSync, existsSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { spawn, execFileSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,12 +21,14 @@ const USAGE = `Usage:
   blueprint-harness prompt <workspace>
   blueprint-harness smoke <workspace> [--port=5173] [--output=<dir>]
   blueprint-harness synthesize <workspace> --subagent-report=<file> [--output=<dir>]
+  blueprint-harness promote <workspace> [--slug=<blueprint>] [--force]
 
 Options:
   --workspace=<dir>          Workspace path (default: /tmp/harness-<date>-<blueprint>/my-app)
   --output=<dir>             Output dir for artifacts (default: .claude/harness-runs/<date>-<blueprint>)
   --port=<n>                 Dev server port (default: 5173)
   --subagent-report=<file>   Path to the cold-subagent report markdown
+  --force                    Replace an existing showcase-host capsule during promote
 `;
 
 // Derive a short set of representative routes from the scaffolded essence.
@@ -266,6 +268,48 @@ async function cmdSynthesize(args) {
   return result;
 }
 
+function assertPromotableWorkspace(workspace) {
+  const required = [
+    'src',
+    'DECANTR.md',
+    'decantr.essence.json',
+    '.decantr/project.json',
+  ];
+  const missing = required.filter((relativePath) => !existsSync(join(workspace, relativePath)));
+  if (missing.length > 0) {
+    throw new Error(`workspace is missing required scaffold artifacts: ${missing.join(', ')}`);
+  }
+}
+
+async function cmdPromote(args) {
+  const workspace = args._[0];
+  if (!workspace) throw new Error('missing workspace path');
+  assertPromotableWorkspace(workspace);
+
+  const slug = args.slug ?? detectBlueprintSlug(workspace);
+  if (!slug || slug === 'unknown') {
+    throw new Error('unable to detect blueprint slug; pass --slug=<blueprint>');
+  }
+
+  const target = resolve(MONOREPO_ROOT, 'apps/showcase-host/src/capsules', slug);
+  if (existsSync(target)) {
+    if (args.force !== true) {
+      throw new Error(`capsule already exists at ${target}; pass --force to replace it`);
+    }
+    rmSync(target, { recursive: true, force: true });
+  }
+
+  mkdirSync(target, { recursive: true });
+  cpSync(join(workspace, 'src'), join(target, 'src'), { recursive: true });
+  cpSync(join(workspace, 'DECANTR.md'), join(target, 'DECANTR.md'));
+  cpSync(join(workspace, 'decantr.essence.json'), join(target, 'decantr.essence.json'));
+  cpSync(join(workspace, '.decantr'), join(target, '.decantr'), { recursive: true });
+
+  console.log(`✓ Promoted ${slug} -> ${target}`);
+  console.log('Next: run `pnpm run showcase:verify:shortlist` from the monorepo root.');
+  return { slug, target };
+}
+
 async function cmdRun(args) {
   const blueprint = args._[0];
   if (!blueprint) throw new Error('missing blueprint slug');
@@ -305,6 +349,7 @@ async function main() {
     prompt: cmdPrompt,
     smoke: cmdSmoke,
     synthesize: cmdSynthesize,
+    promote: cmdPromote,
   };
   const fn = dispatch[cmd];
   if (!fn) {
