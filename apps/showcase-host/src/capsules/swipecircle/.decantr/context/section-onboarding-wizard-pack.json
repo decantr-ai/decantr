@@ -1,0 +1,140 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the onboarding-wizard section using the compiled centered shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "account-step",
+      "profile-step",
+      "interests-step"
+    ],
+    "patternIds": [
+      "onboarding-wizard",
+      "auth-form",
+      "cta-section",
+      "content-uploader",
+      "form",
+      "chip-multiselect"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "onboarding-wizard",
+    "gateway",
+    "centered",
+    "swipecircle",
+    "light",
+    "auth",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "auth-form",
+    "cta-section",
+    "content-uploader",
+    "form",
+    "chip-multiselect"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "onboarding-wizard",
+    "role": "gateway",
+    "shell": "centered",
+    "description": "Gateway archetype for multi-step new-user onboarding flows. Three-step wizard pattern: account creation, profile completion (with photo upload), and interests selection. Each step occupies its own route on the centered shell with a stepper progress indicator at the top. Designed for consumer apps where post-auth profile completion is required before entering the primary app surface.",
+    "features": [
+      "auth",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker"
+    ],
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routes": [
+      {
+        "pageId": "account-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/signup",
+        "patternIds": [
+          "onboarding-wizard",
+          "auth-form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "profile-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/profile",
+        "patternIds": [
+          "onboarding-wizard",
+          "content-uploader",
+          "form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "interests-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/interests",
+        "patternIds": [
+          "onboarding-wizard",
+          "chip-multiselect",
+          "cta-section"
+        ],
+        "shell": "centered"
+      }
+    ],
+    "directives": [
+      "All three steps use the swipecircle theme — warm peach backgrounds, coral primaries, pill CTAs",
+      "Stepper component is consistent across all 3 pages — only the dot states change",
+      "After step 3 success, route to /discover (the primary app surface)",
+      "If user reloads mid-flow, persist progress in localStorage so they don't lose state",
+      "Each step's primary CTA is disabled until validation passes — no ghost-clicking through invalid steps"
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the onboarding-wizard section using the compiled centered shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=account-step, profile-step, interests-step | patterns=onboarding-wizard, auth-form, cta-section, content-uploader, form, chip-multiselect\n\n## Section Contract\n- Section: onboarding-wizard\n- Role: gateway\n- Shell: centered\n- Theme: swipecircle (light)\n- Features: auth, photo-upload, step-validation, form-validation, interests-picker\n- Description: Gateway archetype for multi-step new-user onboarding flows. Three-step wizard pattern: account creation, profile completion (with photo upload), and interests selection. Each step occupies its own route on the centered shell with a stepper progress indicator at the top. Designed for consumer apps where post-auth profile completion is required before entering the primary app surface.\n\n## Section Routes\n- /signup -> onboarding-wizard/account-step @ centered [onboarding-wizard, auth-form, cta-section]\n- /onboarding/profile -> onboarding-wizard/profile-step @ centered [onboarding-wizard, content-uploader, form, cta-section]\n- /onboarding/interests -> onboarding-wizard/interests-step @ centered [onboarding-wizard, chip-multiselect, cta-section]\n\n## Section Directives\n\nExecution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.\n\n- All three steps use the swipecircle theme — warm peach backgrounds, coral primaries, pill CTAs\n- Stepper component is consistent across all 3 pages — only the dot states change\n- After step 3 success, route to /discover (the primary app surface)\n- If user reloads mid-flow, persist progress in localStorage so they don't lose state\n- Each step's primary CTA is disabled until validation passes — no ghost-clicking through invalid steps\n\n## Theme Decorators\n\nTheme `swipecircle` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- onboarding-wizard\n- gateway\n- centered\n- swipecircle\n- light\n- auth\n- photo-upload\n- step-validation\n- form-validation\n- interests-picker\n- auth-form\n- cta-section\n- content-uploader\n- form\n- chip-multiselect\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

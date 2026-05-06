@@ -1,0 +1,137 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the recipefork-profile section using the compiled recipefork-top-nav shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "me",
+      "my-recipes",
+      "public-profile"
+    ],
+    "patternIds": [
+      "creator-profile",
+      "account-settings",
+      "stats-overview",
+      "card-grid",
+      "filter-bar",
+      "recipefork-activity-feed"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "recipefork-profile",
+    "auxiliary",
+    "recipefork-top-nav",
+    "recipefork",
+    "light",
+    "profile-editing",
+    "follows",
+    "collections",
+    "activity-feed",
+    "public-profiles",
+    "branch-analytics",
+    "creator-profile",
+    "account-settings",
+    "stats-overview",
+    "card-grid",
+    "filter-bar",
+    "recipefork-activity-feed"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "recipefork-profile",
+    "role": "auxiliary",
+    "shell": "recipefork-top-nav",
+    "description": "Current-user and public profile surfaces for Recipefork with editable identity, a dedicated owner recipe workspace, public recipe/cookbook grids, follower stats, owner-only branch analytics, recent activity, and social navigation back into recipes and cookbooks.",
+    "features": [
+      "profile-editing",
+      "follows",
+      "collections",
+      "activity-feed",
+      "public-profiles",
+      "branch-analytics"
+    ],
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "me",
+        "sectionId": "recipefork-profile",
+        "path": "/profile",
+        "patternIds": [
+          "creator-profile",
+          "account-settings",
+          "stats-overview",
+          "card-grid"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "my-recipes",
+        "sectionId": "recipefork-profile",
+        "path": "/recipes",
+        "patternIds": [
+          "stats-overview",
+          "filter-bar",
+          "card-grid"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "public-profile",
+        "sectionId": "recipefork-profile",
+        "path": "/profile/:id",
+        "patternIds": [
+          "creator-profile",
+          "stats-overview",
+          "card-grid",
+          "recipefork-activity-feed"
+        ],
+        "shell": "recipefork-top-nav"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the recipefork-profile section using the compiled recipefork-top-nav shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=me, my-recipes, public-profile | patterns=creator-profile, account-settings, stats-overview, card-grid, filter-bar, recipefork-activity-feed\n\n## Section Contract\n- Section: recipefork-profile\n- Role: auxiliary\n- Shell: recipefork-top-nav\n- Theme: recipefork (light)\n- Features: profile-editing, follows, collections, activity-feed, public-profiles, branch-analytics\n- Description: Current-user and public profile surfaces for Recipefork with editable identity, a dedicated owner recipe workspace, public recipe/cookbook grids, follower stats, owner-only branch analytics, recent activity, and social navigation back into recipes and cookbooks.\n\n## Section Routes\n- /profile -> recipefork-profile/me @ recipefork-top-nav [creator-profile, account-settings, stats-overview, card-grid]\n- /recipes -> recipefork-profile/my-recipes @ recipefork-top-nav [stats-overview, filter-bar, card-grid]\n- /profile/:id -> recipefork-profile/public-profile @ recipefork-top-nav [creator-profile, stats-overview, card-grid, recipefork-activity-feed]\n\n## Theme Decorators\n\nTheme `recipefork` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- recipefork-profile\n- auxiliary\n- recipefork-top-nav\n- recipefork\n- light\n- profile-editing\n- follows\n- collections\n- activity-feed\n- public-profiles\n- branch-analytics\n- creator-profile\n- account-settings\n- stats-overview\n- card-grid\n- filter-bar\n- recipefork-activity-feed\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

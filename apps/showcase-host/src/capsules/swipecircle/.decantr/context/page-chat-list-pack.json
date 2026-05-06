@@ -1,0 +1,154 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the chat-list route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "chat-list"
+    ],
+    "patternIds": [
+      "conversation-list",
+      "hero",
+      "bottom-tab-bar"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "chat-list",
+    "mobile-tab-bar",
+    "swipe-feed",
+    "primary",
+    "swipecircle",
+    "light",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "demo-mode",
+    "keyboard-shortcuts",
+    "conversation-list",
+    "stack",
+    "hero",
+    "bottom-tab-bar",
+    "flex-row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "chat-list",
+    "path": "/chat",
+    "shell": "mobile-tab-bar",
+    "sectionId": "swipe-feed",
+    "sectionRole": "primary",
+    "features": [
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "demo-mode",
+      "keyboard-shortcuts"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "conversation-list",
+        "alias": "conversation-list",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Full conversation list with search and details",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "real-time-updates",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "empty-state",
+        "layout": "stack",
+        "presetDescription": "Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "glow-hover",
+          "float-idle"
+        ]
+      },
+      {
+        "id": "bottom-tab-bar",
+        "alias": "bottom-tab-bar",
+        "preset": "standard",
+        "layout": "flex-row",
+        "presetDescription": "Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.",
+        "interactions": [
+          "click-select",
+          "scale-hover",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      }
+    ],
+    "directives": [
+      "Conversation list shows each chat as a row: circular avatar (using swipecircle-photo-frame), name, last message preview (truncated 1 line), timestamp (e.g., '2h', 'Yesterday', 'Mon'), and an unread coral dot if unread.",
+      "Tap a conversation to navigate to /chat/:userId (the chat-thread page).",
+      "If no conversations yet: show hero empty-state 'Start a conversation. Match with someone first!' with a Heart icon and a CTA back to /discover.",
+      "Bottom-tab-bar with 'Chat' active. Badge dot on Chat tab cleared when this page is viewed."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the chat-list route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=chat-list | patterns=conversation-list, hero, bottom-tab-bar\n\n## Page Contract\n- Page: chat-list\n- Path: /chat\n- Shell: mobile-tab-bar\n- Section: swipe-feed (primary)\n- Theme: swipecircle (light)\n- Features: swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, demo-mode, keyboard-shortcuts\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- conversation-list -> conversation-list [stack | standard]\n  > Full conversation list with search and details\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] real-time-updates\n  - [ ] animate-on-mount\n- hero -> hero [stack | empty-state]\n  > Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] glow-hover\n  - [ ] float-idle\n- bottom-tab-bar -> bottom-tab-bar [flex-row | standard]\n  > Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] scale-hover\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Conversation list shows each chat as a row: circular avatar (using swipecircle-photo-frame), name, last message preview (truncated 1 line), timestamp (e.g., '2h', 'Yesterday', 'Mon'), and an unread coral dot if unread.\n- Tap a conversation to navigate to /chat/:userId (the chat-thread page).\n- If no conversations yet: show hero empty-state 'Start a conversation. Match with someone first!' with a Heart icon and a CTA back to /discover.\n- Bottom-tab-bar with 'Chat' active. Badge dot on Chat tab cleared when this page is viewed.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

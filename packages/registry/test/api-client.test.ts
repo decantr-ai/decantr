@@ -485,7 +485,19 @@ describe('RegistryAPIClient showcase endpoints', () => {
         JSON.stringify({
           total: 2,
           shortlisted: 1,
-          apps: [{ slug: 'portfolio', status: 'active', classification: 'B' }],
+          apps: [
+            {
+              slug: 'portfolio',
+              status: 'active',
+              classification: 'B',
+              thumbnail: {
+                src: '/showcase/thumbnails/portfolio.png',
+                alt: 'Portfolio blueprint showcase screenshot',
+                width: 1600,
+                height: 1000,
+              },
+            },
+          ],
         }),
         {
           status: 200,
@@ -499,6 +511,8 @@ describe('RegistryAPIClient showcase endpoints', () => {
 
     expect(result.total).toBe(2);
     expect(result.apps[0]?.slug).toBe('portfolio');
+    expect(result.apps[0]?.thumbnail?.src).toBe('/showcase/thumbnails/portfolio.png');
+    expect(result.apps[0]?.thumbnail?.width).toBe(1600);
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
   });
 

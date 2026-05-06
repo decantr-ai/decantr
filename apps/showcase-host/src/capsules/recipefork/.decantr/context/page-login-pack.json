@@ -1,0 +1,99 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the login route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "login"
+    ],
+    "patternIds": [
+      "auth-form"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "login",
+    "recipefork-top-nav",
+    "recipefork-auth",
+    "gateway",
+    "recipefork",
+    "light",
+    "auth",
+    "oauth",
+    "auth-form",
+    "stack"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "login",
+    "path": "/auth",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-auth",
+    "sectionRole": "gateway",
+    "features": [
+      "auth",
+      "oauth"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "auth-form",
+        "alias": "auth-form",
+        "preset": "login",
+        "layout": "stack",
+        "presetDescription": "Email/password login with OAuth options",
+        "interactions": [
+          "animate-on-mount",
+          "keyboard-navigation",
+          "inline-edit"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the login route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=login | patterns=auth-form\n\n## Page Contract\n- Page: login\n- Path: /auth\n- Shell: recipefork-top-nav\n- Section: recipefork-auth (gateway)\n- Theme: recipefork (light)\n- Features: auth, oauth\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- auth-form -> auth-form [stack | login]\n  > Email/password login with OAuth options\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] inline-edit\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

@@ -6,6 +6,8 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 
 export const repoRoot = join(scriptDir, '..');
 export const showcaseRoot = join(repoRoot, 'apps', 'showcase');
+export const showcaseAssetsRoot = join(showcaseRoot, 'assets');
+export const showcaseThumbnailSourceRoot = join(showcaseAssetsRoot, 'thumbnails');
 export const showcaseHostRoot = join(repoRoot, 'apps', 'showcase-host');
 export const showcaseCapsulesRoot = join(showcaseHostRoot, 'src', 'capsules');
 export const showcaseManifestPath = join(showcaseRoot, 'manifest.json');
@@ -16,10 +18,32 @@ export function getShowcasePublicUrl(slug) {
   return `/showcase/${slug}`;
 }
 
+export function getShowcaseThumbnailPublicSrc(slug) {
+  return `/showcase/thumbnails/${slug}.png`;
+}
+
+export function getShowcaseThumbnailSourcePath(slug) {
+  return join(showcaseThumbnailSourceRoot, `${slug}.png`);
+}
+
+export function getDefaultShowcaseThumbnail(slug) {
+  return {
+    src: getShowcaseThumbnailPublicSrc(slug),
+    alt: `${slug.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')} blueprint showcase screenshot`,
+    width: 1600,
+    height: 1000,
+  };
+}
+
 export function normalizeShowcaseEntry(entry) {
+  const conventionalThumbnail = existsSync(getShowcaseThumbnailSourcePath(entry.slug))
+    ? getDefaultShowcaseThumbnail(entry.slug)
+    : null;
+
   return {
     ...entry,
     url: entry.url ?? getShowcasePublicUrl(entry.slug),
+    thumbnail: entry.thumbnail ?? conventionalThumbnail,
   };
 }
 

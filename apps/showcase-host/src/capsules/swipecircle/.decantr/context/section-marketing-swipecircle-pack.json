@@ -1,0 +1,141 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the marketing-swipecircle section using the compiled top-nav-footer shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home"
+    ],
+    "patternIds": [
+      "hero-split",
+      "cta-section",
+      "features",
+      "how-it-works",
+      "testimonials",
+      "footer"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "marketing-swipecircle",
+    "public",
+    "top-nav-footer",
+    "swipecircle",
+    "light",
+    "marketing",
+    "seo",
+    "conversion",
+    "demo-mode",
+    "hero-split",
+    "cta-section",
+    "features",
+    "how-it-works",
+    "testimonials",
+    "footer"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "marketing-swipecircle",
+    "role": "public",
+    "shell": "top-nav-footer",
+    "description": "Public marketing landing page for SwipeCircle — a mobile-first swipe-based social rating community. Photo-first hero with 'Rate. Connect. Vibe.' tagline, dual sign-up/log-in CTAs plus a demo mode entry, feature highlights showing the swipe loop, social proof, and a final conversion CTA. Optimized for casual consumer first-impressions.",
+    "features": [
+      "marketing",
+      "seo",
+      "conversion",
+      "demo-mode"
+    ],
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "marketing-swipecircle",
+        "path": "/",
+        "patternIds": [
+          "hero-split",
+          "cta-section",
+          "features",
+          "how-it-works",
+          "testimonials",
+          "footer"
+        ],
+        "shell": "top-nav-footer"
+      }
+    ],
+    "navigationItems": [
+      {
+        "label": "How It Works",
+        "route": "/#how-it-works",
+        "icon": "Sparkles"
+      },
+      {
+        "label": "About",
+        "route": "/#about",
+        "icon": "Heart"
+      },
+      {
+        "label": "Log In",
+        "route": "/login",
+        "icon": "LogIn"
+      },
+      {
+        "label": "Sign Up",
+        "route": "/signup",
+        "icon": "UserPlus"
+      }
+    ],
+    "directives": [
+      "All CTAs use pill shape (border-radius: 9999px)",
+      "Primary buttons fill coral; secondary buttons use white border + transparent fill",
+      "Demo Mode link sets a localStorage flag and navigates to /discover with mock data — no actual auth",
+      "Hero must work on mobile portrait — stack hero text + CTAs vertically, swipe-card mockup moves below on narrow viewports",
+      "Hero, auth CTA, feature cards, how-it-works, final CTA, and footer must be laid out as normal page sections with clear spacing. Do NOT use fixed/sticky CTA strips or negative margins that can cover the headline, cards, or footer content.",
+      "Do not render implementation notes, pattern labels, Decantr guard prose, or hotkey/debug hints as visible marketing copy.",
+      "Page is fully accessible: heading hierarchy h1→h2→h3, all CTAs keyboard-focusable with visible focus rings, alt text on all imagery"
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the marketing-swipecircle section using the compiled top-nav-footer shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=home | patterns=hero-split, cta-section, features, how-it-works, testimonials, footer\n\n## Section Contract\n- Section: marketing-swipecircle\n- Role: public\n- Shell: top-nav-footer\n- Theme: swipecircle (light)\n- Features: marketing, seo, conversion, demo-mode\n- Description: Public marketing landing page for SwipeCircle — a mobile-first swipe-based social rating community. Photo-first hero with 'Rate. Connect. Vibe.' tagline, dual sign-up/log-in CTAs plus a demo mode entry, feature highlights showing the swipe loop, social proof, and a final conversion CTA. Optimized for casual consumer first-impressions.\n\n## Section Routes\n- / -> marketing-swipecircle/home @ top-nav-footer [hero-split, cta-section, features, how-it-works, testimonials, footer]\n\n## Section Navigation\n\nRender these items in the shell's primary navigation. Exact match on label, route, and icon.\n\n- How It Works → /#how-it-works · icon: Sparkles\n- About → /#about · icon: Heart\n- Log In → /login · icon: LogIn\n- Sign Up → /signup · icon: UserPlus\n\n## Section Directives\n\nExecution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.\n\n- All CTAs use pill shape (border-radius: 9999px)\n- Primary buttons fill coral; secondary buttons use white border + transparent fill\n- Demo Mode link sets a localStorage flag and navigates to /discover with mock data — no actual auth\n- Hero must work on mobile portrait — stack hero text + CTAs vertically, swipe-card mockup moves below on narrow viewports\n- Hero, auth CTA, feature cards, how-it-works, final CTA, and footer must be laid out as normal page sections with clear spacing. Do NOT use fixed/sticky CTA strips or negative margins that can cover the headline, cards, or footer content.\n- Do not render implementation notes, pattern labels, Decantr guard prose, or hotkey/debug hints as visible marketing copy.\n- Page is fully accessible: heading hierarchy h1→h2→h3, all CTAs keyboard-focusable with visible focus rings, alt text on all imagery\n\n## Theme Decorators\n\nTheme `swipecircle` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- marketing-swipecircle\n- public\n- top-nav-footer\n- swipecircle\n- light\n- marketing\n- seo\n- conversion\n- demo-mode\n- hero-split\n- cta-section\n- features\n- how-it-works\n- testimonials\n- footer\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

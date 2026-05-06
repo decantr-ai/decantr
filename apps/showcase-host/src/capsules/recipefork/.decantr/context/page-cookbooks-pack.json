@@ -1,0 +1,118 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the cookbooks route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "cookbooks"
+    ],
+    "patternIds": [
+      "card-grid",
+      "cta-section"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "cookbooks",
+    "recipefork-top-nav",
+    "recipefork-cookbooks",
+    "auxiliary",
+    "recipefork",
+    "light",
+    "collections",
+    "visibility",
+    "recipe-saving",
+    "card-grid",
+    "grid",
+    "cta-section",
+    "hero"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "cookbooks",
+    "path": "/cookbooks",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-cookbooks",
+    "sectionRole": "auxiliary",
+    "features": [
+      "collections",
+      "visibility",
+      "recipe-saving"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "card-grid",
+        "alias": "card-grid",
+        "preset": "collection",
+        "layout": "grid",
+        "presetDescription": "Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.",
+        "interactions": [
+          "lift-hover",
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "standard",
+        "layout": "hero",
+        "presetDescription": "Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the cookbooks route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=cookbooks | patterns=card-grid, cta-section\n\n## Page Contract\n- Page: cookbooks\n- Path: /cookbooks\n- Shell: recipefork-top-nav\n- Section: recipefork-cookbooks (auxiliary)\n- Theme: recipefork (light)\n- Features: collections, visibility, recipe-saving\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- card-grid -> card-grid [grid | collection]\n  > Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- cta-section -> cta-section [hero | standard]\n  > Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

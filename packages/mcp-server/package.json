@@ -1,6 +1,6 @@
 {
   "name": "@decantr/mcp-server",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "mcpName": "io.github.decantr-ai/mcp-server",
   "description": "MCP server for Decantr — exposes design intelligence, packs, and verification to AI coding assistants",
   "keywords": [
@@ -48,7 +48,7 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "pnpm build",
+    "prepublishOnly": "node ../../scripts/guard-pnpm-publish.mjs && pnpm build",
     "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {

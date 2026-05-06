@@ -1,0 +1,359 @@
+{
+  "$schema": "https://decantr.ai/schemas/review-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "review",
+  "objective": "Review generated output against the compiled Decantr contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home",
+      "login",
+      "account-step",
+      "profile-step",
+      "interests-step",
+      "discover",
+      "matches",
+      "chat-list",
+      "chat-thread",
+      "profile-own",
+      "profile-other",
+      "settings"
+    ],
+    "patternIds": [
+      "hero-split",
+      "cta-section",
+      "features",
+      "how-it-works",
+      "testimonials",
+      "footer",
+      "auth-form",
+      "onboarding-wizard",
+      "content-uploader",
+      "form",
+      "chip-multiselect",
+      "filter-bar",
+      "spatial-card-stack",
+      "swipe-action-bar",
+      "match-celebration",
+      "hero",
+      "bottom-tab-bar",
+      "presence-avatars",
+      "stats-bar",
+      "avatar-grid-tile",
+      "conversation-list",
+      "chat-header",
+      "chat-thread",
+      "chat-input",
+      "mobile-profile-hero",
+      "tech-pills",
+      "settings-nav"
+    ]
+  },
+  "requiredSetup": [
+    "Read the compiled scaffold and route packs before reviewing code.",
+    "Use concrete evidence from the workspace instead of purely stylistic intuition."
+  ],
+  "allowedVocabulary": [
+    "app",
+    "top-nav-footer",
+    "swipecircle",
+    "light",
+    "marketing",
+    "seo",
+    "conversion",
+    "demo-mode",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "keyboard-shortcuts",
+    "theme-toggle",
+    "hero-split",
+    "cta-section",
+    "features",
+    "how-it-works",
+    "testimonials",
+    "footer",
+    "auth-form",
+    "onboarding-wizard",
+    "content-uploader",
+    "form",
+    "chip-multiselect",
+    "spatial-card-stack",
+    "swipe-action-bar",
+    "hero",
+    "bottom-tab-bar",
+    "presence-avatars",
+    "stats-bar",
+    "avatar-grid-tile",
+    "conversation-list",
+    "chat-header",
+    "chat-thread",
+    "chat-input",
+    "mobile-profile-hero",
+    "tech-pills",
+    "settings-nav",
+    "route-topology",
+    "theme-consistency",
+    "treatment-usage",
+    "accessibility",
+    "responsive-design"
+  ],
+  "examples": [],
+  "antiPatterns": [
+    {
+      "id": "inline-styles",
+      "summary": "Avoid inline style literals as the primary styling path.",
+      "guidance": "Move visual styling into tokens.css and treatments.css instead of component-local style objects."
+    },
+    {
+      "id": "hardcoded-colors",
+      "summary": "Avoid hardcoded color literals.",
+      "guidance": "Use CSS variables and theme decorators instead of hex, rgb, or hsl values."
+    },
+    {
+      "id": "utility-framework-leakage",
+      "summary": "Avoid utility-framework leakage as the primary design language.",
+      "guidance": "Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks."
+    }
+  ],
+  "successChecks": [
+    {
+      "id": "review-contract-baseline",
+      "label": "Review findings should use the compiled route, shell, and theme contract as the baseline.",
+      "severity": "error"
+    },
+    {
+      "id": "review-evidence",
+      "label": "Each critique finding should cite concrete evidence from the generated workspace.",
+      "severity": "error"
+    },
+    {
+      "id": "review-remediation",
+      "label": "Suggested fixes should point back to code changes or essence updates when contract drift exists.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "reviewType": "app",
+    "shell": "top-nav-footer",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routing": "history",
+    "features": [
+      "marketing",
+      "seo",
+      "conversion",
+      "demo-mode",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker",
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "keyboard-shortcuts",
+      "theme-toggle"
+    ],
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "marketing-swipecircle",
+        "path": "/",
+        "patternIds": [
+          "hero-split",
+          "cta-section",
+          "features",
+          "how-it-works",
+          "testimonials",
+          "footer"
+        ],
+        "shell": "top-nav-footer"
+      },
+      {
+        "pageId": "login",
+        "sectionId": "auth-full",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "account-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/signup",
+        "patternIds": [
+          "onboarding-wizard",
+          "auth-form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "profile-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/profile",
+        "patternIds": [
+          "onboarding-wizard",
+          "content-uploader",
+          "form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "interests-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/interests",
+        "patternIds": [
+          "onboarding-wizard",
+          "chip-multiselect",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "discover",
+        "sectionId": "swipe-feed",
+        "path": "/discover",
+        "patternIds": [
+          "filter-bar",
+          "spatial-card-stack",
+          "swipe-action-bar",
+          "match-celebration",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "matches",
+        "sectionId": "swipe-feed",
+        "path": "/matches",
+        "patternIds": [
+          "presence-avatars",
+          "stats-bar",
+          "avatar-grid-tile",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-list",
+        "sectionId": "swipe-feed",
+        "path": "/chat",
+        "patternIds": [
+          "conversation-list",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-thread",
+        "sectionId": "swipe-feed",
+        "path": "/chat/:userId",
+        "patternIds": [
+          "chat-header",
+          "chat-thread",
+          "chat-input",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-own",
+        "sectionId": "swipe-feed",
+        "path": "/me",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "settings-nav",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-other",
+        "sectionId": "swipe-feed",
+        "path": "/u/:userId",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "settings",
+        "sectionId": "swipe-feed",
+        "path": "/settings",
+        "patternIds": [
+          "settings-nav",
+          "form",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      }
+    ],
+    "focusAreas": [
+      "route-topology",
+      "theme-consistency",
+      "treatment-usage",
+      "accessibility",
+      "responsive-design"
+    ],
+    "workflow": [
+      "Read the scaffold pack and page packs before evaluating generated code.",
+      "Compare findings against the compiled route, shell, and theme contract first.",
+      "Escalate contract drift into essence updates when the requested output intentionally changes topology or theme identity."
+    ]
+  },
+  "renderedMarkdown": "# Review Pack\n\n**Objective:** Review generated output against the compiled Decantr contract.\n**Target:** react-vite (react)\n**Scope:** pages=home, login, account-step, profile-step, interests-step, discover, matches, chat-list, chat-thread, profile-own, profile-other, settings | patterns=hero-split, cta-section, features, how-it-works, testimonials, footer, auth-form, onboarding-wizard, content-uploader, form, chip-multiselect, filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar, presence-avatars, stats-bar, avatar-grid-tile, conversation-list, chat-header, chat-thread, chat-input, mobile-profile-hero, tech-pills, settings-nav\n\n## Review Contract\n- Review Type: app\n- Shell: top-nav-footer\n- Theme: swipecircle (light)\n- Routing: history\n- Features: marketing, seo, conversion, demo-mode, auth, mfa, oauth, email-verification, password-reset, photo-upload, step-validation, form-validation, interests-picker, swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, keyboard-shortcuts, theme-toggle\n\n## Review Topology\n- / -> marketing-swipecircle/home @ top-nav-footer [hero-split, cta-section, features, how-it-works, testimonials, footer]\n- /login -> auth-full/login @ centered [auth-form]\n- /signup -> onboarding-wizard/account-step @ centered [onboarding-wizard, auth-form, cta-section]\n- /onboarding/profile -> onboarding-wizard/profile-step @ centered [onboarding-wizard, content-uploader, form, cta-section]\n- /onboarding/interests -> onboarding-wizard/interests-step @ centered [onboarding-wizard, chip-multiselect, cta-section]\n- /discover -> swipe-feed/discover @ mobile-tab-bar [filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar]\n- /matches -> swipe-feed/matches @ mobile-tab-bar [presence-avatars, stats-bar, avatar-grid-tile, hero, bottom-tab-bar]\n- /chat -> swipe-feed/chat-list @ mobile-tab-bar [conversation-list, hero, bottom-tab-bar]\n- /chat/:userId -> swipe-feed/chat-thread @ mobile-tab-bar [chat-header, chat-thread, chat-input, bottom-tab-bar]\n- /me -> swipe-feed/profile-own @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, settings-nav, bottom-tab-bar]\n- /u/:userId -> swipe-feed/profile-other @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, bottom-tab-bar]\n- /settings -> swipe-feed/settings @ mobile-tab-bar [settings-nav, form, bottom-tab-bar]\n\n## Focus Areas\n- route-topology\n- theme-consistency\n- treatment-usage\n- accessibility\n- responsive-design\n\n## Review Workflow\n- Read the scaffold pack and page packs before evaluating generated code.\n- Compare findings against the compiled route, shell, and theme contract first.\n- Escalate contract drift into essence updates when the requested output intentionally changes topology or theme identity.\n\n## Required Setup\n- Read the compiled scaffold and route packs before reviewing code.\n- Use concrete evidence from the workspace instead of purely stylistic intuition.\n\n## Allowed Vocabulary\n- app\n- top-nav-footer\n- swipecircle\n- light\n- marketing\n- seo\n- conversion\n- demo-mode\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- photo-upload\n- step-validation\n- form-validation\n- interests-picker\n- swipe-deck\n- matches\n- match-celebration\n- chat\n- profile\n- filter-bar\n- tab-navigation\n- empty-states\n- keyboard-shortcuts\n- theme-toggle\n- hero-split\n- cta-section\n- features\n- how-it-works\n- testimonials\n- footer\n- auth-form\n- onboarding-wizard\n- content-uploader\n- form\n- chip-multiselect\n- spatial-card-stack\n- swipe-action-bar\n- hero\n- bottom-tab-bar\n- presence-avatars\n- stats-bar\n- avatar-grid-tile\n- conversation-list\n- chat-header\n- chat-thread\n- chat-input\n- mobile-profile-hero\n- tech-pills\n- settings-nav\n- route-topology\n- theme-consistency\n- treatment-usage\n- accessibility\n- responsive-design\n\n## Success Checks\n- Review findings should use the compiled route, shell, and theme contract as the baseline. [error]\n- Each critique finding should cite concrete evidence from the generated workspace. [error]\n- Suggested fixes should point back to code changes or essence updates when contract drift exists. [warn]\n\n## Anti-Patterns\n- Avoid inline style literals as the primary styling path.: Move visual styling into tokens.css and treatments.css instead of component-local style objects.\n- Avoid hardcoded color literals.: Use CSS variables and theme decorators instead of hex, rgb, or hsl values.\n- Avoid utility-framework leakage as the primary design language.: Prefer compiled Decantr treatments and contract vocabulary over ad hoc utility class stacks.\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

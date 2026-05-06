@@ -1,0 +1,770 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "pill",
+      "base": 16
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "expressive",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Mobile-first social discovery with playful coral-pink energy and warm peach undertones. Photo-centric swipe deck dominates the screen — cards feel tactile, almost like polaroids you'd shuffle through. Pill-shaped buttons everywhere with bouncy spring physics. Soft drop shadows replace harsh borders. Bottom tabs provide always-visible navigation. Match moments feel celebratory with a coral-to-violet burst; chats feel intimate with rounded bubbles and warm timestamps. Empty states encourage rather than scold. Designed to feel native on iPhone but elegantly scaled on desktop with a 480px-wide centered column. Hinge meets BeReal meets a Dribbble shot — never desperate, always inviting. Every interaction rewards: the spring of a card, the burst of a like, the warmth of a new match."
+    ],
+    "constraints": {
+      "mode": "light",
+      "effects": {
+        "max_width_app": "480px",
+        "photo_aspect": "3/4",
+        "tab_bar_height": "64px",
+        "header_height": "52px",
+        "swipe_threshold": "30%",
+        "card_size": "320x420"
+      }
+    }
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "marketing-swipecircle",
+        "role": "public",
+        "shell": "top-nav-footer",
+        "features": [
+          "marketing",
+          "seo",
+          "conversion",
+          "demo-mode"
+        ],
+        "description": "Public marketing landing page for SwipeCircle — a mobile-first swipe-based social rating community. Photo-first hero with 'Rate. Connect. Vibe.' tagline, dual sign-up/log-in CTAs plus a demo mode entry, feature highlights showing the swipe loop, social proof, and a final conversion CTA. Optimized for casual consumer first-impressions.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              {
+                "pattern": "hero-split",
+                "preset": "centered"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "standard"
+              },
+              {
+                "pattern": "features",
+                "preset": "standard"
+              },
+              {
+                "pattern": "how-it-works",
+                "preset": "standard"
+              },
+              {
+                "pattern": "testimonials",
+                "preset": "standard"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "banner"
+              },
+              {
+                "pattern": "footer",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Hero tagline: 'Rate. Connect. Vibe.' — three-word punch. Keep it fully visible in the first viewport with no clipping, transforms, or overlapping CTA strips.",
+              "Hero subhead: warm, inviting, ~12-18 words — describe the swipe-and-connect promise without being thirsty",
+              "Hero background should feel photo-first and premium: use a real-looking swipe card mockup/photo stack on a mostly white or warm off-white surface with coral/violet accents. Avoid a single solid peach gradient slab as the whole hero.",
+              "Auth CTA section provides TWO equal-weight buttons: 'Sign Up' (primary coral pill) and 'Log In' (secondary white-bordered pill), plus a small ghost link below: 'Try Demo Mode' for instant exploration without signup. It must sit in normal document flow below the hero copy or inside the hero composition, never as a fixed or overlapping banner.",
+              "Features section highlights the four pillars: Swipe (heart icon), Match (sparkle icon), Chat (message icon), Vibe (smile icon) — short blurb per pillar, soft white cards with subtle peach tint and enough internal padding that text never hugs the border.",
+              "How-it-works walks through the 3-step loop: 1) Build your profile, 2) Swipe through your circle, 3) Chat with matches — illustrated by photo cards or compact mockups rather than empty bordered slabs",
+              "Testimonials use real-feeling first-name + age tags (no LinkedIn-style headshots) — '— Maya, 27', '— Jordan, 32' — feels like reading text messages from friends",
+              "Final CTA banner is coral-fill with white text + arrow icon: 'Find your circle today →'",
+              "Footer remains warm: about, privacy, terms, contact — no enterprise compliance noise. Footer must be part of the page flow and must not cover the how-it-works or CTA content."
+            ],
+            "route": "/"
+          }
+        ],
+        "navigation_items": [
+          {
+            "label": "How It Works",
+            "route": "/#how-it-works",
+            "icon": "Sparkles"
+          },
+          {
+            "label": "About",
+            "route": "/#about",
+            "icon": "Heart"
+          },
+          {
+            "label": "Log In",
+            "route": "/login",
+            "icon": "LogIn"
+          },
+          {
+            "label": "Sign Up",
+            "route": "/signup",
+            "icon": "UserPlus"
+          }
+        ],
+        "directives": [
+          "All CTAs use pill shape (border-radius: 9999px)",
+          "Primary buttons fill coral; secondary buttons use white border + transparent fill",
+          "Demo Mode link sets a localStorage flag and navigates to /discover with mock data — no actual auth",
+          "Hero must work on mobile portrait — stack hero text + CTAs vertically, swipe-card mockup moves below on narrow viewports",
+          "Hero, auth CTA, feature cards, how-it-works, final CTA, and footer must be laid out as normal page sections with clear spacing. Do NOT use fixed/sticky CTA strips or negative margins that can cover the headline, cards, or footer content.",
+          "Do not render implementation notes, pattern labels, Decantr guard prose, or hotkey/debug hints as visible marketing copy.",
+          "Page is fully accessible: heading hierarchy h1→h2→h3, all CTAs keyboard-focusable with visible focus rings, alt text on all imagery"
+        ]
+      },
+      {
+        "id": "auth-full",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "mfa",
+          "oauth",
+          "email-verification",
+          "password-reset"
+        ],
+        "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "login"
+              }
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "register"
+              }
+            ]
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "forgot-password"
+              }
+            ]
+          },
+          {
+            "id": "reset-password",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "reset-password"
+              }
+            ]
+          },
+          {
+            "id": "verify-email",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "verify-email"
+              }
+            ]
+          },
+          {
+            "id": "mfa-setup",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "mfa-setup"
+              }
+            ]
+          },
+          {
+            "id": "mfa-verify",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "mfa-verify"
+              }
+            ]
+          },
+          {
+            "id": "phone-verify",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "phone-verify"
+              }
+            ]
+          }
+        ],
+        "directives": [
+          "Use `d-shell[data-layout=\"centered\"]` + `d-shell-centered-card` for all auth pages — NOT a hand-rolled centering wrapper.",
+          "Auth bypass for dev: `localStorage.decantr_authenticated = 'true'` gates protected routes. The login/register pages accept ANY credentials (no real backend) and set the flag before redirecting to the blueprint's authenticated entry route.",
+          "OAuth provider buttons MUST use real icons from lucide-react (Github, Chrome, Mail) — no inline SVGs or emoji stand-ins.",
+          "MFA code inputs render as a single `d-control` with `inputMode=\"numeric\"` and `autoComplete=\"one-time-code\"` + `maxLength=6`, not 6 separate digit boxes.",
+          "Error + success states use `d-annotation[data-status=\"error|success\"]` above the form, never inline red/green text.",
+          "Route guards compose with route elements, not shell outlets — wrap protected route components in a `<RequireAuth>` HOC/wrapper that checks the auth flag before rendering. Do NOT render the entire shell unconditionally and gate inside its outlet — that produces a reauth flash. Redirect happens before any protected page mounts.",
+          "MFA setup pages render the QR code via `d-qr-placeholder` (CSS-only). MFA verify pages use the single-control `d-control` numeric input. Phone-verify pages use a separate `d-control[type=\"tel\"]` with country-code prefix in a `d-step-chip` to its left. These three pages share an archetype but have distinct rendering — never collapse them into one component."
+        ]
+      },
+      {
+        "id": "onboarding-wizard",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth",
+          "photo-upload",
+          "step-validation",
+          "form-validation",
+          "interests-picker"
+        ],
+        "description": "Gateway archetype for multi-step new-user onboarding flows. Three-step wizard pattern: account creation, profile completion (with photo upload), and interests selection. Each step occupies its own route on the centered shell with a stepper progress indicator at the top. Designed for consumer apps where post-auth profile completion is required before entering the primary app surface.",
+        "pages": [
+          {
+            "id": "account-step",
+            "layout": [
+              {
+                "pattern": "onboarding-wizard",
+                "preset": "stepper"
+              },
+              {
+                "pattern": "auth-form",
+                "preset": "register"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "banner"
+              }
+            ],
+            "directives": [
+              "Show step indicator: 1 of 3, active dot in coral, upcoming dots in muted border style",
+              "Validate email format inline as user types (with 240ms debounce)",
+              "Password strength meter shows below the field — coral=weak, accent=medium, success=strong",
+              "Primary CTA label: 'Continue →' — disabled until form is valid",
+              "Secondary text below form: 'Already have an account? Log in' — link to /login"
+            ],
+            "route": "/signup"
+          },
+          {
+            "id": "profile-step",
+            "layout": [
+              {
+                "pattern": "onboarding-wizard",
+                "preset": "stepper"
+              },
+              {
+                "pattern": "content-uploader",
+                "preset": "single"
+              },
+              {
+                "pattern": "form",
+                "preset": "standard"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "banner"
+              }
+            ],
+            "directives": [
+              "Show step indicator: 2 of 3, dot 1 in success-state (filled coral with check), dot 2 active, dot 3 muted",
+              "Photo uploader at the top: large dashed-border drop zone with cloud icon. Tap on mobile opens native picker. Selected photo shows with a small Edit overlay button.",
+              "Form fields: Age (number input, 18+ required), Gender (3-option select with Other text input), Location (city autocomplete), Bio (textarea, 1-3 sentence guidance, 280 char limit with counter)",
+              "All fields except Bio are required. Bio shows 'optional but recommended' helper text.",
+              "Primary CTA: 'Continue →' — disabled until age + gender + location are valid AND a photo is uploaded",
+              "Secondary text: 'Skip for now' (smaller, ghost link) — only enabled if photo is uploaded; profile completion can finish in app"
+            ],
+            "route": "/onboarding/profile"
+          },
+          {
+            "id": "interests-step",
+            "layout": [
+              {
+                "pattern": "onboarding-wizard",
+                "preset": "stepper"
+              },
+              {
+                "pattern": "chip-multiselect",
+                "preset": "standard"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "banner"
+              }
+            ],
+            "directives": [
+              "Show step indicator: 3 of 3, dots 1 and 2 in success state, dot 3 active",
+              "Heading above chip grid: 'What are you into?' (large, display font)",
+              "Sub-heading: 'Pick 3-5 interests so we can introduce you to your circle.'",
+              "Default interest chips: Music, Travel, Fitness, Food, Movies, Books, Gaming, Outdoors, Art, Tech, Wellness, Animals — 12 categories, all selectable simultaneously",
+              "Validation: minimum 3 selected, maximum 5. Below 3: helper text turns danger color. Above 5: chips lock and show 'Max 5 reached' tooltip",
+              "Primary CTA label: 'Complete Profile →' — disabled until 3-5 chips are selected",
+              "On submit: POST profile, route to /discover (the primary swipe feed)"
+            ],
+            "route": "/onboarding/interests"
+          }
+        ],
+        "directives": [
+          "All three steps use the swipecircle theme — warm peach backgrounds, coral primaries, pill CTAs",
+          "Stepper component is consistent across all 3 pages — only the dot states change",
+          "After step 3 success, route to /discover (the primary app surface)",
+          "If user reloads mid-flow, persist progress in localStorage so they don't lose state",
+          "Each step's primary CTA is disabled until validation passes — no ghost-clicking through invalid steps"
+        ]
+      },
+      {
+        "id": "swipe-feed",
+        "role": "primary",
+        "shell": "mobile-tab-bar",
+        "features": [
+          "swipe-deck",
+          "matches",
+          "match-celebration",
+          "chat",
+          "profile",
+          "filter-bar",
+          "tab-navigation",
+          "empty-states",
+          "demo-mode",
+          "keyboard-shortcuts"
+        ],
+        "description": "Primary archetype for mobile-first swipe-based social discovery apps. Hosts the core swipe deck (discover), matches grid, chat list and thread, own/other profile views, and settings — all under a single mobile-tab-bar shell with persistent bottom navigation. The first archetype in Decantr's catalog purpose-built around a card-stack swipe loop with match celebration and 1:1 chat.",
+        "pages": [
+          {
+            "id": "discover",
+            "layout": [
+              {
+                "pattern": "filter-bar",
+                "preset": "compact"
+              },
+              {
+                "pattern": "spatial-card-stack",
+                "preset": "deck"
+              },
+              {
+                "pattern": "swipe-action-bar",
+                "preset": "three-button"
+              },
+              {
+                "pattern": "match-celebration",
+                "preset": "first-match"
+              },
+              {
+                "pattern": "hero",
+                "preset": "empty-state"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Filter bar at top of body: 4 chips — All / Nearby / My Interests / New — single-select, default 'All'. Changing selection refetches the deck with mock data.",
+              "Swipe deck occupies the largest visual share of the body — at least 60% of body height. Card width 320px, aspect ratio 3/4. Use spatial-card-stack deck preset gestural defaults (30% threshold, ±15deg rotateY, spring physics).",
+              "Each card uses swipe-card pattern as its content slot — full-bleed photo with bottom gradient overlay carrying name, age, distance, bio, interests.",
+              "Swipe-action-bar sits 16px above the bottom-tab-bar with 3 buttons: Pass (X), Super Like (star, optional), Like (heart). Hotkeys: ←/↑/→.",
+              "On a successful match (mock-randomized: 30% chance on right-swipe in demo mode), trigger match-celebration overlay. First-match preset includes confetti.",
+              "When the deck is exhausted: show hero empty-state with copy 'You've seen everyone nearby! Check back later.' + a Refresh button that re-randomizes the mock deck.",
+              "Bottom-tab-bar persists with 'Swipe' tab active. Badge dots appear on Matches and Chat tabs when new matches/messages arrive."
+            ],
+            "route": "/discover"
+          },
+          {
+            "id": "matches",
+            "layout": [
+              {
+                "pattern": "presence-avatars",
+                "preset": "detailed"
+              },
+              {
+                "pattern": "stats-bar",
+                "preset": "default"
+              },
+              {
+                "pattern": "avatar-grid-tile",
+                "preset": "standard"
+              },
+              {
+                "pattern": "hero",
+                "preset": "empty-state"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Top section: 'New Matches' label with horizontal scrolling presence-avatars rail showing matches from the last 24h. Tap an avatar to open the chat thread.",
+              "Below the rail: stats-bar with 1-2 stats — 'X new matches', 'Y total connections'. Use coral primary accent for the numerics.",
+              "Main grid: 3-column responsive grid of avatar-grid-tile (4 cols on tablet+, 5 cols on desktop within the 480px column). Each tile shows the matched user's circular avatar, name, and a violet new-match dot if unviewed. Tap navigates to /u/:userId.",
+              "If no matches yet: show hero empty-state with copy 'No matches yet. Keep swiping — your circle is forming.' and an illustration of two avatars meeting.",
+              "Bottom-tab-bar with 'Matches' active. Badge dot on Matches tab cleared when this page is viewed."
+            ],
+            "route": "/matches"
+          },
+          {
+            "id": "chat-list",
+            "layout": [
+              {
+                "pattern": "conversation-list",
+                "preset": "standard"
+              },
+              {
+                "pattern": "hero",
+                "preset": "empty-state"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Conversation list shows each chat as a row: circular avatar (using swipecircle-photo-frame), name, last message preview (truncated 1 line), timestamp (e.g., '2h', 'Yesterday', 'Mon'), and an unread coral dot if unread.",
+              "Tap a conversation to navigate to /chat/:userId (the chat-thread page).",
+              "If no conversations yet: show hero empty-state 'Start a conversation. Match with someone first!' with a Heart icon and a CTA back to /discover.",
+              "Bottom-tab-bar with 'Chat' active. Badge dot on Chat tab cleared when this page is viewed."
+            ],
+            "route": "/chat"
+          },
+          {
+            "id": "chat-thread",
+            "layout": [
+              {
+                "pattern": "chat-header",
+                "preset": "compact"
+              },
+              {
+                "pattern": "chat-thread",
+                "preset": "standard"
+              },
+              {
+                "pattern": "chat-input",
+                "preset": "standard"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Chat header has back-button (left), partner avatar + name (center, tap → opens /u/:userId), and a More menu (right) for mute/block/report.",
+              "Messages area is the only scrolling region. My messages render right-aligned with coral fill (swipecircle-bubble decorator); their messages render left-aligned with cream fill.",
+              "Pre-populated mock conversation: 4-6 messages showing realistic banter (greeting, question, response, follow-up).",
+              "Composer at the bottom: rounded-pill text input with auto-grow (max 4 lines), Smile/Attach icons inside, Send button (coral pill) appears on right when input is non-empty.",
+              "Bottom-tab-bar remains visible by default. On input focus, hide tab-bar with a 200ms slide-down to maximize keyboard space; restore on blur."
+            ],
+            "route": "/chat/:userId"
+          },
+          {
+            "id": "profile-own",
+            "layout": [
+              {
+                "pattern": "mobile-profile-hero",
+                "preset": "own-profile"
+              },
+              {
+                "pattern": "stats-bar",
+                "preset": "default"
+              },
+              {
+                "pattern": "tech-pills",
+                "preset": "standard"
+              },
+              {
+                "pattern": "settings-nav",
+                "preset": "standard"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Profile hero uses own-profile preset: full-bleed cover photo (45vh), overlapping circular avatar, name+age+bio, single 'Edit Profile' coral pill CTA.",
+              "Stats-bar shows 3 stats: 'X swiped', 'Y matches', 'Z.W★ rating' — each stat formatted with lowercase units per voice guidelines.",
+              "Interests display: tech-pills rendered as the curated interest list selected during onboarding (read-only here; editable via Edit Profile).",
+              "Settings-nav: a list of links — Notifications, Privacy, Help, Logout (simulated). Tap navigates to /settings or relevant sub-routes.",
+              "Bottom-tab-bar with 'Profile' active. No badge on Profile tab."
+            ],
+            "route": "/me"
+          },
+          {
+            "id": "profile-other",
+            "layout": [
+              {
+                "pattern": "mobile-profile-hero",
+                "preset": "other-profile"
+              },
+              {
+                "pattern": "stats-bar",
+                "preset": "default"
+              },
+              {
+                "pattern": "tech-pills",
+                "preset": "standard"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Profile hero uses other-profile preset: cover, avatar, name+age+bio, three action buttons (Message coral pill / Like Again white-bordered pill / Report icon-only ghost). Back button at top-left of cover.",
+              "Stats-bar shows: 'Joined {date}', 'Active {timestamp}', 'Mutual matches: N' — informational, not numeric metrics.",
+              "Interests display: shared interests highlighted (coral-filled), other interests in muted-border style.",
+              "Bottom-tab-bar inherits active state from the page user navigated from (typically Matches or Chat). Hidden on input focus is N/A here (no input)."
+            ],
+            "route": "/u/:userId"
+          },
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "pattern": "settings-nav",
+                "preset": "standard"
+              },
+              {
+                "pattern": "form",
+                "preset": "standard"
+              },
+              {
+                "pattern": "bottom-tab-bar",
+                "preset": "standard"
+              }
+            ],
+            "directives": [
+              "Settings-nav at the top: vertical list of sections — Notifications, Privacy, Account, Help, About — each with a chevron-right and a brief subtitle.",
+              "Below the nav, a form with toggles for the most-used preferences: Push notifications (on/off), Show me on Discover (on/off), Read receipts (on/off).",
+              "Bottom of the page: a 'Log Out' link in danger color (var(--d-danger)). Confirmation modal on tap. In demo mode, logout clears the localStorage demo flag and routes to /.",
+              "Bottom-tab-bar with 'Profile' active (settings is a sub-route of profile)."
+            ],
+            "route": "/settings"
+          }
+        ],
+        "navigation_items": [
+          {
+            "label": "Swipe",
+            "route": "/discover",
+            "icon": "Heart",
+            "hotkey": "g d",
+            "active_match": "/discover"
+          },
+          {
+            "label": "Matches",
+            "route": "/matches",
+            "icon": "Users",
+            "hotkey": "g m",
+            "active_match": "/matches",
+            "badge": "new-matches-count"
+          },
+          {
+            "label": "Chat",
+            "route": "/chat",
+            "icon": "MessageCircle",
+            "hotkey": "g c",
+            "active_match": "/chat",
+            "badge": "unread-chats-count"
+          },
+          {
+            "label": "Profile",
+            "route": "/me",
+            "icon": "User",
+            "hotkey": "g p",
+            "active_match": "/me"
+          }
+        ],
+        "directives": [
+          "All pages share the mobile-tab-bar shell and persist the bottom-tab-bar across page transitions",
+          "Bottom-tab-bar 4 items: Swipe (/discover, Heart icon, hotkey g d), Matches (/matches, Users icon, hotkey g m), Chat (/chat, MessageCircle icon, hotkey g c), Profile (/me, User icon, hotkey g p)",
+          "Swipe gestures (← / →) only fire on the /discover route — input_guard prevents firing while typing in chat",
+          "Match celebration triggers on a successful right-swipe (mocked: 30% chance in demo mode) — first-match preset adds confetti, subsequent matches use subsequent-match preset",
+          "All photo content uses circular swipecircle-photo-frame for avatars, full-bleed with gradient overlay for cards",
+          "Demo mode (localStorage flag 'sc_demo' = true) populates 30 mock cards on first /discover load, 12 mock matches, and 3 pre-existing chat threads with sample histories"
+        ]
+      }
+    ],
+    "features": [
+      "marketing",
+      "seo",
+      "conversion",
+      "demo-mode",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker",
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "keyboard-shortcuts",
+      "theme-toggle"
+    ],
+    "routes": {
+      "/": {
+        "section": "marketing-swipecircle",
+        "page": "home"
+      },
+      "/login": {
+        "section": "auth-full",
+        "page": "login"
+      },
+      "/signup": {
+        "section": "onboarding-wizard",
+        "page": "account-step"
+      },
+      "/onboarding/profile": {
+        "section": "onboarding-wizard",
+        "page": "profile-step"
+      },
+      "/onboarding/interests": {
+        "section": "onboarding-wizard",
+        "page": "interests-step"
+      },
+      "/discover": {
+        "section": "swipe-feed",
+        "page": "discover"
+      },
+      "/matches": {
+        "section": "swipe-feed",
+        "page": "matches"
+      },
+      "/chat": {
+        "section": "swipe-feed",
+        "page": "chat-list"
+      },
+      "/chat/:userId": {
+        "section": "swipe-feed",
+        "page": "chat-thread"
+      },
+      "/me": {
+        "section": "swipe-feed",
+        "page": "profile-own"
+      },
+      "/u/:userId": {
+        "section": "swipe-feed",
+        "page": "profile-other"
+      },
+      "/settings": {
+        "section": "swipe-feed",
+        "page": "settings"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "marketing-swipecircle",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "history"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "Organization",
+        "WebApplication",
+        "MobileApplication"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:image",
+        "twitter:card",
+        "og:title"
+      ]
+    },
+    "navigation": {
+      "command_palette": false,
+      "hotkeys": [
+        {
+          "key": "ArrowLeft",
+          "action": "swipe-pass",
+          "label": "Pass on current card"
+        },
+        {
+          "key": "ArrowRight",
+          "action": "swipe-like",
+          "label": "Like current card"
+        },
+        {
+          "key": "ArrowUp",
+          "action": "super-like",
+          "label": "Super-like current card"
+        },
+        {
+          "key": "g d",
+          "route": "/discover",
+          "label": "Go to Discover"
+        },
+        {
+          "key": "g m",
+          "route": "/matches",
+          "label": "Go to Matches"
+        },
+        {
+          "key": "g c",
+          "route": "/chat",
+          "label": "Go to Chat"
+        },
+        {
+          "key": "g p",
+          "route": "/me",
+          "label": "Go to Profile"
+        }
+      ],
+      "hotkey_semantics": {
+        "chord_window_ms": 900,
+        "input_guard": true,
+        "modifier_suppression": true,
+        "match_case": false
+      }
+    }
+  }
+}

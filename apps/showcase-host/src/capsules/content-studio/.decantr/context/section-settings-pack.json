@@ -1,0 +1,86 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the settings section using the compiled sidebar-main shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "settings"
+    ],
+    "patternIds": [
+      "form-sections"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "settings",
+    "auxiliary",
+    "sidebar-main",
+    "editorial",
+    "light",
+    "form-sections"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "settings",
+    "role": "auxiliary",
+    "shell": "sidebar-main",
+    "description": "Application settings and preferences page",
+    "features": [],
+    "theme": {
+      "id": "editorial",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "routes": [
+      {
+        "pageId": "settings",
+        "sectionId": "settings",
+        "path": "/settings",
+        "patternIds": [
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the settings section using the compiled sidebar-main shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=settings | patterns=form-sections\n\n## Section Contract\n- Section: settings\n- Role: auxiliary\n- Shell: sidebar-main\n- Theme: editorial (light)\n- Description: Application settings and preferences page\n\n## Section Routes\n- /settings -> settings/settings @ sidebar-main [form-sections]\n\n## Theme Decorators\n\nTheme `editorial` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- settings\n- auxiliary\n- sidebar-main\n- editorial\n- light\n- form-sections\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

@@ -23,6 +23,87 @@ const onlyNames = new Set(
         .filter(Boolean)
     : [],
 );
+const DEPENDENCY_FIELDS = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+];
+
+function parsePackOutput(stdout) {
+  const parsed = JSON.parse(stdout.trim());
+  const packResult = Array.isArray(parsed) ? parsed[0] : parsed;
+
+  if (!packResult?.filename || typeof packResult.filename !== 'string') {
+    throw new Error('pnpm pack did not report a tarball filename.');
+  }
+
+  return packResult.filename;
+}
+
+function assertNoWorkspaceProtocolDependencies(packageJson, label) {
+  const leaks = [];
+
+  for (const field of DEPENDENCY_FIELDS) {
+    const dependencies = packageJson[field];
+    if (!dependencies || typeof dependencies !== 'object' || Array.isArray(dependencies)) continue;
+
+    for (const [dependencyName, dependencyVersion] of Object.entries(dependencies)) {
+      if (typeof dependencyVersion === 'string' && dependencyVersion.startsWith('workspace:')) {
+        leaks.push(`${field}.${dependencyName}=${dependencyVersion}`);
+      }
+    }
+  }
+
+  if (leaks.length > 0) {
+    throw new Error(`${label} contains workspace protocol dependencies: ${leaks.join(', ')}`);
+  }
+}
+
+function auditPackedManifest(entry, cwd, packageVersion) {
+  const tempPackDir = mkdtempSync(join(tmpdir(), 'decantr-pack-'));
+
+  try {
+    const packResult = spawnSync('pnpm', ['pack', '--pack-destination', tempPackDir, '--json'], {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env,
+    });
+
+    if (packResult.status !== 0) {
+      if (packResult.stdout) process.stdout.write(packResult.stdout);
+      if (packResult.stderr) process.stderr.write(packResult.stderr);
+      process.exit(packResult.status ?? 1);
+    }
+
+    const tarballPath = parsePackOutput(packResult.stdout);
+    const manifestResult = spawnSync('tar', ['-xOf', tarballPath, 'package/package.json'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    if (manifestResult.status !== 0) {
+      if (manifestResult.stdout) process.stdout.write(manifestResult.stdout);
+      if (manifestResult.stderr) process.stderr.write(manifestResult.stderr);
+      process.exit(manifestResult.status ?? 1);
+    }
+
+    const packedPackageJson = JSON.parse(manifestResult.stdout);
+    if (packedPackageJson.name !== entry.name) {
+      throw new Error(`Packed manifest name mismatch: expected ${entry.name}, found ${packedPackageJson.name}`);
+    }
+    if (packedPackageJson.version !== packageVersion) {
+      throw new Error(
+        `Packed manifest version mismatch for ${entry.name}: expected ${packageVersion}, found ${packedPackageJson.version}`,
+      );
+    }
+
+    assertNoWorkspaceProtocolDependencies(packedPackageJson, `${entry.name}@${packageVersion} packed manifest`);
+  } finally {
+    rmSync(tempPackDir, { recursive: true, force: true });
+  }
+}
 
 if (dryRun && publishDryRun) {
   console.error('Use either --dry-run (selection only) or --publish-dry-run (npm publish preflight), not both.');
@@ -66,29 +147,28 @@ for (const entry of selected) {
     continue;
   }
 
-  const tempPackDir = versionAlreadyPublished ? mkdtempSync(join(tmpdir(), 'decantr-pack-')) : null;
   const cmd = versionAlreadyPublished
-    ? ['pack', '--pack-destination', tempPackDir]
+    ? null
     : ['publish', '--access', 'public', ...(ciProvenance ? ['--provenance'] : []), '--tag', distTag, '--no-git-checks'];
   if (publishDryRun && !versionAlreadyPublished) {
     cmd.push('--dry-run');
   }
 
-  const action = versionAlreadyPublished ? 'Packing' : 'Publishing';
+  const action = versionAlreadyPublished ? 'Auditing packed manifest for' : 'Publishing';
   const suffix = versionAlreadyPublished ? ` (version ${packageVersion} is already published)` : ` with tag ${distTag}`;
   console.log(`${prefix}${action} ${entry.name} from ${entry.path}${suffix} (wave ${entry.releaseWave}, order ${entry.publishOrder})`);
 
   if (dryRun) continue;
+
+  auditPackedManifest(entry, cwd, packageVersion);
+
+  if (versionAlreadyPublished) continue;
 
   const result = spawnSync('pnpm', cmd, {
     cwd,
     stdio: 'inherit',
     env: process.env,
   });
-
-  if (tempPackDir) {
-    rmSync(tempPackDir, { recursive: true, force: true });
-  }
 
   if (result.status !== 0) {
     process.exit(result.status ?? 1);

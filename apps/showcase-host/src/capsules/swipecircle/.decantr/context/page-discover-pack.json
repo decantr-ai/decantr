@@ -1,0 +1,202 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the discover route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "discover"
+    ],
+    "patternIds": [
+      "filter-bar",
+      "spatial-card-stack",
+      "swipe-action-bar",
+      "match-celebration",
+      "hero",
+      "bottom-tab-bar"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "discover",
+    "mobile-tab-bar",
+    "swipe-feed",
+    "primary",
+    "swipecircle",
+    "light",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "demo-mode",
+    "keyboard-shortcuts",
+    "row",
+    "spatial-card-stack",
+    "spatial",
+    "swipe-action-bar",
+    "flex-row",
+    "hero",
+    "stack",
+    "bottom-tab-bar"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "discover",
+    "path": "/discover",
+    "shell": "mobile-tab-bar",
+    "sectionId": "swipe-feed",
+    "sectionRole": "primary",
+    "features": [
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "demo-mode",
+      "keyboard-shortcuts"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "filter-bar",
+        "alias": "filter-bar",
+        "preset": "compact",
+        "layout": "row",
+        "presetDescription": "Search input only, filters in a collapsible popover",
+        "interactions": [
+          "inline-edit",
+          "animate-on-mount",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "spatial-card-stack",
+        "alias": "spatial-card-stack",
+        "preset": "deck",
+        "layout": "spatial",
+        "presetDescription": "Swipeable card stack where cards are layered along the Z-axis — front card is full-size and interactive, cards behind progressively scale down, dim, and offset upward",
+        "interactions": [
+          "lift-hover",
+          "click-select",
+          "animate-on-mount",
+          "stagger-children"
+        ]
+      },
+      {
+        "id": "swipe-action-bar",
+        "alias": "swipe-action-bar",
+        "preset": "three-button",
+        "layout": "flex-row",
+        "presetDescription": "X / Star / Heart — the classic swipe-app trio. Centered horizontally with even spacing. Heart and X are the primary 60px buttons, Star is a smaller premium 48px between them.",
+        "interactions": [
+          "click-select",
+          "scale-hover",
+          "keyboard-navigation",
+          "ripple-click"
+        ]
+      },
+      {
+        "id": "match-celebration",
+        "alias": "match-celebration",
+        "preset": "first-match",
+        "layout": "spatial",
+        "presetDescription": "Full-impact first-match celebration with confetti, burst gradient, avatar pair animation, and a delightful 'It's a Match!' headline. Auto-dismiss after 4s unless user interacts.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "focus-trap",
+          "click-select"
+        ]
+      },
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "empty-state",
+        "layout": "stack",
+        "presetDescription": "Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "glow-hover",
+          "float-idle"
+        ]
+      },
+      {
+        "id": "bottom-tab-bar",
+        "alias": "bottom-tab-bar",
+        "preset": "standard",
+        "layout": "flex-row",
+        "presetDescription": "Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.",
+        "interactions": [
+          "click-select",
+          "scale-hover",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      }
+    ],
+    "directives": [
+      "Filter bar at top of body: 4 chips — All / Nearby / My Interests / New — single-select, default 'All'. Changing selection refetches the deck with mock data.",
+      "Swipe deck occupies the largest visual share of the body — at least 60% of body height. Card width 320px, aspect ratio 3/4. Use spatial-card-stack deck preset gestural defaults (30% threshold, ±15deg rotateY, spring physics).",
+      "Each card uses swipe-card pattern as its content slot — full-bleed photo with bottom gradient overlay carrying name, age, distance, bio, interests.",
+      "Swipe-action-bar sits 16px above the bottom-tab-bar with 3 buttons: Pass (X), Super Like (star, optional), Like (heart). Hotkeys: ←/↑/→.",
+      "On a successful match (mock-randomized: 30% chance on right-swipe in demo mode), trigger match-celebration overlay. First-match preset includes confetti.",
+      "When the deck is exhausted: show hero empty-state with copy 'You've seen everyone nearby! Check back later.' + a Refresh button that re-randomizes the mock deck.",
+      "Bottom-tab-bar persists with 'Swipe' tab active. Badge dots appear on Matches and Chat tabs when new matches/messages arrive."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the discover route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=discover | patterns=filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar\n\n## Page Contract\n- Page: discover\n- Path: /discover\n- Shell: mobile-tab-bar\n- Section: swipe-feed (primary)\n- Theme: swipecircle (light)\n- Features: swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, demo-mode, keyboard-shortcuts\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- filter-bar -> filter-bar [row | compact]\n  > Search input only, filters in a collapsible popover\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n- spatial-card-stack -> spatial-card-stack [spatial | deck]\n  > Swipeable card stack where cards are layered along the Z-axis — front card is full-size and interactive, cards behind progressively scale down, dim, and offset upward\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n- swipe-action-bar -> swipe-action-bar [flex-row | three-button]\n  > X / Star / Heart — the classic swipe-app trio. Centered horizontally with even spacing. Heart and X are the primary 60px buttons, Star is a smaller premium 48px between them.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] scale-hover\n  - [ ] keyboard-navigation\n  - [ ] ripple-click\n- match-celebration -> match-celebration [spatial | first-match]\n  > Full-impact first-match celebration with confetti, burst gradient, avatar pair animation, and a delightful 'It's a Match!' headline. Auto-dismiss after 4s unless user interacts.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] focus-trap\n  - [ ] click-select\n- hero -> hero [stack | empty-state]\n  > Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] glow-hover\n  - [ ] float-idle\n- bottom-tab-bar -> bottom-tab-bar [flex-row | standard]\n  > Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] scale-hover\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Filter bar at top of body: 4 chips — All / Nearby / My Interests / New — single-select, default 'All'. Changing selection refetches the deck with mock data.\n- Swipe deck occupies the largest visual share of the body — at least 60% of body height. Card width 320px, aspect ratio 3/4. Use spatial-card-stack deck preset gestural defaults (30% threshold, ±15deg rotateY, spring physics).\n- Each card uses swipe-card pattern as its content slot — full-bleed photo with bottom gradient overlay carrying name, age, distance, bio, interests.\n- Swipe-action-bar sits 16px above the bottom-tab-bar with 3 buttons: Pass (X), Super Like (star, optional), Like (heart). Hotkeys: ←/↑/→.\n- On a successful match (mock-randomized: 30% chance on right-swipe in demo mode), trigger match-celebration overlay. First-match preset includes confetti.\n- When the deck is exhausted: show hero empty-state with copy 'You've seen everyone nearby! Check back later.' + a Refresh button that re-randomizes the mock deck.\n- Bottom-tab-bar persists with 'Swipe' tab active. Badge dots appear on Matches and Chat tabs when new matches/messages arrive.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

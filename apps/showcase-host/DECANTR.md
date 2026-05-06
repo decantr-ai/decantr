@@ -9,6 +9,7 @@ This app is the canonical Decantr showcase runtime. It hosts all blueprint showc
 - Keep capsule source under `src/capsules/<blueprint-slug>/`.
 - Keep capsule route URLs stable as `/showcase/<blueprint-slug>` and `/showcase/<blueprint-slug>/<route>`.
 - Do not import capsule components into the registry app directly. Registry pages should link to the host URL or embed it with `?embed=1`.
+- Keep showcase screenshots in `apps/showcase/assets/thumbnails/<blueprint-slug>.png` at 1600x1000. The registry build copies them to `/showcase/thumbnails/<blueprint-slug>.png`; never edit generated files under `apps/registry/public/showcase/` by hand.
 
 ## Visual Direction
 

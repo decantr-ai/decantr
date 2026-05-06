@@ -3778,6 +3778,42 @@
     gap: 0.5rem;
   }
 
+  .registry-card-showcase-status {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.625rem;
+    padding: 0.25rem 0.5625rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--d-border) 70%, transparent);
+    color: var(--d-text-muted);
+    background: color-mix(in srgb, var(--d-surface-raised) 78%, transparent);
+    font-size: 0.71875rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .registry-card-showcase-status[data-status='live'] {
+    border-color: color-mix(in srgb, var(--d-green) 42%, transparent);
+    color: color-mix(in srgb, var(--d-green) 82%, var(--d-text));
+    background: color-mix(in srgb, var(--d-green) 12%, transparent);
+  }
+
+  .registry-card-showcase-status[data-status='benchmark'] {
+    border-color: color-mix(in srgb, var(--d-cyan) 44%, transparent);
+    color: color-mix(in srgb, var(--d-cyan) 86%, var(--d-text));
+    background: color-mix(in srgb, var(--d-cyan) 12%, transparent);
+  }
+
+  .registry-card-showcase-status[data-status='pending'] {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--d-amber) 46%, transparent);
+    color: color-mix(in srgb, var(--d-amber) 76%, var(--d-text));
+    background: color-mix(in srgb, var(--d-amber) 10%, transparent);
+  }
+
   .registry-card-action-row .d-interactive {
     width: fit-content;
     min-height: 2.5rem;
@@ -4214,6 +4250,13 @@
 
     .registry-source-strip[data-mode='desktop'] {
       display: none;
+    }
+
+    .registry-browser-shell .registry-type-strip {
+      flex-wrap: wrap;
+      overflow: visible;
+      row-gap: 0.5rem;
+      padding-bottom: 0;
     }
 
     .registry-search-actions {

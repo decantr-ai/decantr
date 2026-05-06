@@ -5,10 +5,12 @@ import {
   loadShortlistVerificationReport,
   repoRoot,
   showcaseHostRoot,
+  showcaseThumbnailSourceRoot,
 } from './showcase-manifest.mjs';
 
 const dryRun = process.argv.includes('--dry-run');
 const targetRoot = join(repoRoot, 'apps', 'registry', 'public', 'showcase');
+const thumbnailTargetRoot = join(targetRoot, 'thumbnails');
 const distDir = join(showcaseHostRoot, 'dist');
 const activeEntries = getPublicShowcaseEntries();
 const verificationReport = loadShortlistVerificationReport();
@@ -26,8 +28,16 @@ if (!dryRun) {
   mkdirSync(targetRoot, { recursive: true });
   cpSync(distDir, targetRoot, { recursive: true });
   console.log('Copied showcase-host/dist -> apps/registry/public/showcase/');
+  if (existsSync(showcaseThumbnailSourceRoot)) {
+    mkdirSync(thumbnailTargetRoot, { recursive: true });
+    cpSync(showcaseThumbnailSourceRoot, thumbnailTargetRoot, { recursive: true });
+    console.log('Copied showcase thumbnails -> apps/registry/public/showcase/thumbnails/');
+  }
 } else {
   console.log('[dry-run] copy showcase-host/dist -> apps/registry/public/showcase/');
+  if (existsSync(showcaseThumbnailSourceRoot)) {
+    console.log('[dry-run] copy showcase thumbnails -> apps/registry/public/showcase/thumbnails/');
+  }
 }
 
 const publicManifest = {
@@ -39,6 +49,7 @@ const publicManifest = {
     target: entry.target ?? null,
     goldenCandidate: entry.goldenCandidate ?? false,
     notes: entry.notes ?? null,
+    thumbnail: entry.thumbnail ?? null,
     verification: verificationBySlug.get(entry.slug) ?? null,
     url: `/showcase/${entry.slug}`,
   })),

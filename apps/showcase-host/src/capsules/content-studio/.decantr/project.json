@@ -1,0 +1,57 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "npm",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": [],
+    "workspaceRoot": "/private/tmp/decantr-showcase-plan-content-studio/my-app",
+    "appRoot": "/private/tmp/decantr-showcase-plan-content-studio/my-app"
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "needs-sync",
+    "lastSync": "2026-05-06T12:43:10.200Z",
+    "registrySource": "cache",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-05-06T12:43:10.200Z",
+    "via": "cli",
+    "version": "1.7.27",
+    "flags": "--blueprint=content-studio --theme=editorial --mode=light --guard=strict --workflow=greenfield-scaffold --adoption=decantr-css --assistant-bridge=none",
+    "workflowMode": "greenfield-scaffold",
+    "adoptionMode": "decantr-css",
+    "contentSource": "cache",
+    "assistantBridge": "none",
+    "projectScope": "single-app",
+    "adapterId": "react-vite",
+    "analysisArtifacts": false
+  },
+  "blueprintId": "content-studio",
+  "voice": {
+    "tone": "Clear, editorial, and operational.",
+    "cta_verbs": [
+      "Write",
+      "Edit",
+      "Publish",
+      "Review",
+      "Update"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Buy now"
+    ],
+    "empty_states": "Supportive and work-focused. Empty drafts should encourage the writer to start a new piece, not feel like a blank admin panel.",
+    "errors": "Brief and practical. Explain what failed and what the editor should do next.",
+    "loading": "Quiet table and editor skeletons. No flashy loading motion."
+  }
+}

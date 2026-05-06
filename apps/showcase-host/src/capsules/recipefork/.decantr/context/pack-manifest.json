@@ -1,0 +1,193 @@
+{
+  "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-05-06T12:44:08.730Z",
+  "scaffold": {
+    "id": "scaffold",
+    "markdown": "scaffold-pack.md",
+    "json": "scaffold-pack.json"
+  },
+  "review": {
+    "id": "review",
+    "markdown": "review-pack.md",
+    "json": "review-pack.json"
+  },
+  "sections": [
+    {
+      "id": "recipefork-landing",
+      "markdown": "section-recipefork-landing-pack.md",
+      "json": "section-recipefork-landing-pack.json",
+      "pageIds": [
+        "home"
+      ]
+    },
+    {
+      "id": "recipefork-recipe-detail",
+      "markdown": "section-recipefork-recipe-detail-pack.md",
+      "json": "section-recipefork-recipe-detail-pack.json",
+      "pageIds": [
+        "recipe-detail"
+      ]
+    },
+    {
+      "id": "recipefork-social",
+      "markdown": "section-recipefork-social-pack.md",
+      "json": "section-recipefork-social-pack.json",
+      "pageIds": [
+        "feed"
+      ]
+    },
+    {
+      "id": "recipefork-ai-kitchen",
+      "markdown": "section-recipefork-ai-kitchen-pack.md",
+      "json": "section-recipefork-ai-kitchen-pack.json",
+      "pageIds": [
+        "chat",
+        "generate"
+      ]
+    },
+    {
+      "id": "recipefork-cookbooks",
+      "markdown": "section-recipefork-cookbooks-pack.md",
+      "json": "section-recipefork-cookbooks-pack.json",
+      "pageIds": [
+        "cookbooks",
+        "cookbook-detail"
+      ]
+    },
+    {
+      "id": "recipefork-recipe-authoring",
+      "markdown": "section-recipefork-recipe-authoring-pack.md",
+      "json": "section-recipefork-recipe-authoring-pack.json",
+      "pageIds": [
+        "create",
+        "edit"
+      ]
+    },
+    {
+      "id": "recipefork-profile",
+      "markdown": "section-recipefork-profile-pack.md",
+      "json": "section-recipefork-profile-pack.json",
+      "pageIds": [
+        "me",
+        "my-recipes",
+        "public-profile"
+      ]
+    },
+    {
+      "id": "recipefork-auth",
+      "markdown": "section-recipefork-auth-pack.md",
+      "json": "section-recipefork-auth-pack.json",
+      "pageIds": [
+        "login"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "markdown": "page-home-pack.md",
+      "json": "page-home-pack.json",
+      "sectionId": "recipefork-landing",
+      "sectionRole": "public"
+    },
+    {
+      "id": "recipe-detail",
+      "markdown": "page-recipe-detail-pack.md",
+      "json": "page-recipe-detail-pack.json",
+      "sectionId": "recipefork-recipe-detail",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "feed",
+      "markdown": "page-feed-pack.md",
+      "json": "page-feed-pack.json",
+      "sectionId": "recipefork-social",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "chat",
+      "markdown": "page-chat-pack.md",
+      "json": "page-chat-pack.json",
+      "sectionId": "recipefork-ai-kitchen",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "generate",
+      "markdown": "page-generate-pack.md",
+      "json": "page-generate-pack.json",
+      "sectionId": "recipefork-ai-kitchen",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "cookbooks",
+      "markdown": "page-cookbooks-pack.md",
+      "json": "page-cookbooks-pack.json",
+      "sectionId": "recipefork-cookbooks",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "cookbook-detail",
+      "markdown": "page-cookbook-detail-pack.md",
+      "json": "page-cookbook-detail-pack.json",
+      "sectionId": "recipefork-cookbooks",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "create",
+      "markdown": "page-create-pack.md",
+      "json": "page-create-pack.json",
+      "sectionId": "recipefork-recipe-authoring",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "edit",
+      "markdown": "page-edit-pack.md",
+      "json": "page-edit-pack.json",
+      "sectionId": "recipefork-recipe-authoring",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "me",
+      "markdown": "page-me-pack.md",
+      "json": "page-me-pack.json",
+      "sectionId": "recipefork-profile",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "my-recipes",
+      "markdown": "page-my-recipes-pack.md",
+      "json": "page-my-recipes-pack.json",
+      "sectionId": "recipefork-profile",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "public-profile",
+      "markdown": "page-public-profile-pack.md",
+      "json": "page-public-profile-pack.json",
+      "sectionId": "recipefork-profile",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "login",
+      "markdown": "page-login-pack.md",
+      "json": "page-login-pack.json",
+      "sectionId": "recipefork-auth",
+      "sectionRole": "gateway"
+    }
+  ],
+  "mutations": [
+    {
+      "id": "add-page",
+      "markdown": "mutation-add-page-pack.md",
+      "json": "mutation-add-page-pack.json",
+      "mutationType": "add-page"
+    },
+    {
+      "id": "modify",
+      "markdown": "mutation-modify-pack.md",
+      "json": "mutation-modify-pack.json",
+      "mutationType": "modify"
+    }
+  ]
+}

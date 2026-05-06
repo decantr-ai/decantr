@@ -1,0 +1,138 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the my-recipes route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "my-recipes"
+    ],
+    "patternIds": [
+      "stats-overview",
+      "filter-bar",
+      "card-grid"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "my-recipes",
+    "recipefork-top-nav",
+    "recipefork-profile",
+    "auxiliary",
+    "recipefork",
+    "light",
+    "profile-editing",
+    "follows",
+    "collections",
+    "activity-feed",
+    "public-profiles",
+    "branch-analytics",
+    "stats-overview",
+    "grid",
+    "filter-bar",
+    "row",
+    "card-grid"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "my-recipes",
+    "path": "/recipes",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-profile",
+    "sectionRole": "auxiliary",
+    "features": [
+      "profile-editing",
+      "follows",
+      "collections",
+      "activity-feed",
+      "public-profiles",
+      "branch-analytics"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [
+      "pageSearch"
+    ],
+    "patterns": [
+      {
+        "id": "stats-overview",
+        "alias": "stats-overview",
+        "preset": "standard",
+        "layout": "grid",
+        "presetDescription": "Horizontal row of stat items with label, value, and trend indicator",
+        "interactions": [
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "filter-bar",
+        "alias": "filter-bar",
+        "preset": "standard",
+        "layout": "row",
+        "presetDescription": "Search input + dropdown filters + action buttons in a horizontal bar",
+        "interactions": [
+          "inline-edit",
+          "animate-on-mount",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "card-grid",
+        "alias": "card-grid",
+        "preset": "content",
+        "layout": "grid",
+        "presetDescription": "Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.",
+        "interactions": [
+          "lift-hover",
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "scroll-reveal"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the my-recipes route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=my-recipes | patterns=stats-overview, filter-bar, card-grid\n\n## Page Contract\n- Page: my-recipes\n- Path: /recipes\n- Shell: recipefork-top-nav\n- Section: recipefork-profile (auxiliary)\n- Theme: recipefork (light)\n- Features: profile-editing, follows, collections, activity-feed, public-profiles, branch-analytics\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- stats-overview -> stats-overview [grid | standard]\n  > Horizontal row of stat items with label, value, and trend indicator\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n- filter-bar -> filter-bar [row | standard]\n  > Search input + dropdown filters + action buttons in a horizontal bar\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n- card-grid -> card-grid [grid | content]\n  > Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n\n## Wiring Signals\n- pageSearch\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

@@ -1,0 +1,64 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "npm",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": [],
+    "workspaceRoot": "/private/tmp/decantr-showcase-plan-swipecircle/my-app",
+    "appRoot": "/private/tmp/decantr-showcase-plan-swipecircle/my-app"
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "needs-sync",
+    "lastSync": "2026-05-06T12:44:08.492Z",
+    "registrySource": "cache",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-05-06T12:44:08.492Z",
+    "via": "cli",
+    "version": "1.7.27",
+    "flags": "--blueprint=swipecircle --theme=swipecircle --mode=light --guard=strict --workflow=greenfield-scaffold --adoption=decantr-css --assistant-bridge=none",
+    "workflowMode": "greenfield-scaffold",
+    "adoptionMode": "decantr-css",
+    "contentSource": "cache",
+    "assistantBridge": "none",
+    "projectScope": "single-app",
+    "adapterId": "react-vite",
+    "analysisArtifacts": false
+  },
+  "blueprintId": "swipecircle",
+  "voice": {
+    "tone": "Playful, warm, encouraging — never desperate, never pushy",
+    "cta_verbs": [
+      "Swipe",
+      "Like",
+      "Pass",
+      "Match",
+      "Send",
+      "View",
+      "Connect",
+      "Vibe"
+    ],
+    "avoid": [
+      "Submit",
+      "Click here",
+      "Please enter",
+      "Buy now",
+      "Convert",
+      "Engage"
+    ],
+    "empty_states": "Encouraging — 'You've seen everyone nearby! Check back later.' / 'Keep swiping — your circle is forming.' Never use the word error or failure in empty states.",
+    "errors": "Friendly — 'That didn't work, try again?' / 'Looks like that's taken — try another?' Avoid blame language.",
+    "loading": "Brief — 'Finding your circle…' / 'Bringing you new faces…' Never use spinning percentage indicators.",
+    "metrics_format": "Lowercase units — '124 swipes', '18 matches', '4.2★ rating'. No commas in small numbers; no leading zeros."
+  }
+}

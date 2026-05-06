@@ -1,0 +1,106 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the auth-full section using the compiled centered shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "login"
+    ],
+    "patternIds": [
+      "auth-form"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "auth-full",
+    "gateway",
+    "centered",
+    "swipecircle",
+    "light",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "auth-form"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "auth-full",
+    "role": "gateway",
+    "shell": "centered",
+    "description": "Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.",
+    "features": [
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset"
+    ],
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routes": [
+      {
+        "pageId": "login",
+        "sectionId": "auth-full",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      }
+    ],
+    "directives": [
+      "Use `d-shell[data-layout=\"centered\"]` + `d-shell-centered-card` for all auth pages — NOT a hand-rolled centering wrapper.",
+      "Auth bypass for dev: `localStorage.decantr_authenticated = 'true'` gates protected routes. The login/register pages accept ANY credentials (no real backend) and set the flag before redirecting to the blueprint's authenticated entry route.",
+      "OAuth provider buttons MUST use real icons from lucide-react (Github, Chrome, Mail) — no inline SVGs or emoji stand-ins.",
+      "MFA code inputs render as a single `d-control` with `inputMode=\"numeric\"` and `autoComplete=\"one-time-code\"` + `maxLength=6`, not 6 separate digit boxes.",
+      "Error + success states use `d-annotation[data-status=\"error|success\"]` above the form, never inline red/green text.",
+      "Route guards compose with route elements, not shell outlets — wrap protected route components in a `<RequireAuth>` HOC/wrapper that checks the auth flag before rendering. Do NOT render the entire shell unconditionally and gate inside its outlet — that produces a reauth flash. Redirect happens before any protected page mounts.",
+      "MFA setup pages render the QR code via `d-qr-placeholder` (CSS-only). MFA verify pages use the single-control `d-control` numeric input. Phone-verify pages use a separate `d-control[type=\"tel\"]` with country-code prefix in a `d-step-chip` to its left. These three pages share an archetype but have distinct rendering — never collapse them into one component."
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the auth-full section using the compiled centered shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=login | patterns=auth-form\n\n## Section Contract\n- Section: auth-full\n- Role: gateway\n- Shell: centered\n- Theme: swipecircle (light)\n- Features: auth, mfa, oauth, email-verification, password-reset\n- Description: Complete authentication flow with login, register, forgot password, reset password, email verification, and MFA setup/verify.\n\n## Section Routes\n- /login -> auth-full/login @ centered [auth-form]\n\n## Section Directives\n\nExecution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.\n\n- Use `d-shell[data-layout=\"centered\"]` + `d-shell-centered-card` for all auth pages — NOT a hand-rolled centering wrapper.\n- Auth bypass for dev: `localStorage.decantr_authenticated = 'true'` gates protected routes. The login/register pages accept ANY credentials (no real backend) and set the flag before redirecting to the blueprint's authenticated entry route.\n- OAuth provider buttons MUST use real icons from lucide-react (Github, Chrome, Mail) — no inline SVGs or emoji stand-ins.\n- MFA code inputs render as a single `d-control` with `inputMode=\"numeric\"` and `autoComplete=\"one-time-code\"` + `maxLength=6`, not 6 separate digit boxes.\n- Error + success states use `d-annotation[data-status=\"error|success\"]` above the form, never inline red/green text.\n- Route guards compose with route elements, not shell outlets — wrap protected route components in a `<RequireAuth>` HOC/wrapper that checks the auth flag before rendering. Do NOT render the entire shell unconditionally and gate inside its outlet — that produces a reauth flash. Redirect happens before any protected page mounts.\n- MFA setup pages render the QR code via `d-qr-placeholder` (CSS-only). MFA verify pages use the single-control `d-control` numeric input. Phone-verify pages use a separate `d-control[type=\"tel\"]` with country-code prefix in a `d-step-chip` to its left. These three pages share an archetype but have distinct rendering — never collapse them into one component.\n\n## Theme Decorators\n\nTheme `swipecircle` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- auth-full\n- gateway\n- centered\n- swipecircle\n- light\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- auth-form\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

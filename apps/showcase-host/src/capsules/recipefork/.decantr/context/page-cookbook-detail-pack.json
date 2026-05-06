@@ -1,0 +1,120 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the cookbook-detail route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "cookbook-detail"
+    ],
+    "patternIds": [
+      "hero",
+      "card-grid"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "cookbook-detail",
+    "recipefork-top-nav",
+    "recipefork-cookbooks",
+    "auxiliary",
+    "recipefork",
+    "light",
+    "collections",
+    "visibility",
+    "recipe-saving",
+    "hero",
+    "stack",
+    "card-grid",
+    "grid"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "cookbook-detail",
+    "path": "/cookbooks/:id",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-cookbooks",
+    "sectionRole": "auxiliary",
+    "features": [
+      "collections",
+      "visibility",
+      "recipe-saving"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "image-overlay",
+        "layout": "stack",
+        "presetDescription": "Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "glow-hover",
+          "float-idle"
+        ]
+      },
+      {
+        "id": "card-grid",
+        "alias": "card-grid",
+        "preset": "content",
+        "layout": "grid",
+        "presetDescription": "Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.",
+        "interactions": [
+          "lift-hover",
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "scroll-reveal"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the cookbook-detail route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=cookbook-detail | patterns=hero, card-grid\n\n## Page Contract\n- Page: cookbook-detail\n- Path: /cookbooks/:id\n- Shell: recipefork-top-nav\n- Section: recipefork-cookbooks (auxiliary)\n- Theme: recipefork (light)\n- Features: collections, visibility, recipe-saving\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- hero -> hero [stack | image-overlay]\n  > Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] glow-hover\n  - [ ] float-idle\n- card-grid -> card-grid [grid | content]\n  > Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

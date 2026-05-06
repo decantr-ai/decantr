@@ -1,0 +1,199 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the home route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home"
+    ],
+    "patternIds": [
+      "hero-split",
+      "cta-section",
+      "features",
+      "how-it-works",
+      "testimonials",
+      "footer"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "home",
+    "top-nav-footer",
+    "marketing-swipecircle",
+    "public",
+    "swipecircle",
+    "light",
+    "marketing",
+    "seo",
+    "conversion",
+    "demo-mode",
+    "hero-split",
+    "hero",
+    "cta-section",
+    "row",
+    "features",
+    "grid",
+    "how-it-works",
+    "testimonials",
+    "footer",
+    "stack"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "home",
+    "path": "/",
+    "shell": "top-nav-footer",
+    "sectionId": "marketing-swipecircle",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "conversion",
+      "demo-mode"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "hero-split",
+        "alias": "hero-split",
+        "preset": "centered",
+        "layout": "hero",
+        "presetDescription": "Centered single-column layout with media above and text below. Logo/image centered at top, followed by centered title, tagline, and CTA buttons. Good for simpler landing pages.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "banner",
+        "layout": "row",
+        "presetDescription": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      },
+      {
+        "id": "features",
+        "alias": "features",
+        "preset": "grid",
+        "layout": "grid",
+        "presetDescription": "Grid of feature cards, each with icon, heading, and description",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "how-it-works",
+        "alias": "how-it-works",
+        "preset": "horizontal",
+        "layout": "grid",
+        "presetDescription": "Horizontal row of 3-4 steps connected by lines/arrows",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "testimonials",
+        "alias": "testimonials",
+        "preset": "grid",
+        "layout": "grid",
+        "presetDescription": "Grid of testimonial cards, each with quote, avatar, name, and role",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scroll-reveal",
+          "drag-reorder"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "banner",
+        "layout": "row",
+        "presetDescription": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      },
+      {
+        "id": "footer",
+        "alias": "footer",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Multi-column footer with link groups, social icons, and copyright",
+        "interactions": [
+          "hover-reveal",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Hero tagline: 'Rate. Connect. Vibe.' — three-word punch. Keep it fully visible in the first viewport with no clipping, transforms, or overlapping CTA strips.",
+      "Hero subhead: warm, inviting, ~12-18 words — describe the swipe-and-connect promise without being thirsty",
+      "Hero background should feel photo-first and premium: use a real-looking swipe card mockup/photo stack on a mostly white or warm off-white surface with coral/violet accents. Avoid a single solid peach gradient slab as the whole hero.",
+      "Auth CTA section provides TWO equal-weight buttons: 'Sign Up' (primary coral pill) and 'Log In' (secondary white-bordered pill), plus a small ghost link below: 'Try Demo Mode' for instant exploration without signup. It must sit in normal document flow below the hero copy or inside the hero composition, never as a fixed or overlapping banner.",
+      "Features section highlights the four pillars: Swipe (heart icon), Match (sparkle icon), Chat (message icon), Vibe (smile icon) — short blurb per pillar, soft white cards with subtle peach tint and enough internal padding that text never hugs the border.",
+      "How-it-works walks through the 3-step loop: 1) Build your profile, 2) Swipe through your circle, 3) Chat with matches — illustrated by photo cards or compact mockups rather than empty bordered slabs",
+      "Testimonials use real-feeling first-name + age tags (no LinkedIn-style headshots) — '— Maya, 27', '— Jordan, 32' — feels like reading text messages from friends",
+      "Final CTA banner is coral-fill with white text + arrow icon: 'Find your circle today →'",
+      "Footer remains warm: about, privacy, terms, contact — no enterprise compliance noise. Footer must be part of the page flow and must not cover the how-it-works or CTA content."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the home route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=home | patterns=hero-split, cta-section, features, how-it-works, testimonials, footer\n\n## Page Contract\n- Page: home\n- Path: /\n- Shell: top-nav-footer\n- Section: marketing-swipecircle (public)\n- Theme: swipecircle (light)\n- Features: marketing, seo, conversion, demo-mode\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- hero-split -> hero-split [hero | centered]\n  > Centered single-column layout with media above and text below. Logo/image centered at top, followed by centered title, tagline, and CTA buttons. Good for simpler landing pages.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scroll-reveal\n- cta-section -> cta-section [row | banner]\n  > Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n- features -> features [grid | grid]\n  > Grid of feature cards, each with icon, heading, and description\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scroll-reveal\n- how-it-works -> how-it-works [grid | horizontal]\n  > Horizontal row of 3-4 steps connected by lines/arrows\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scroll-reveal\n- testimonials -> testimonials [grid | grid]\n  > Grid of testimonial cards, each with quote, avatar, name, and role\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scroll-reveal\n  - [ ] drag-reorder\n- cta-section -> cta-section [row | banner]\n  > Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n- footer -> footer [stack | standard]\n  > Multi-column footer with link groups, social icons, and copyright\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Hero tagline: 'Rate. Connect. Vibe.' — three-word punch. Keep it fully visible in the first viewport with no clipping, transforms, or overlapping CTA strips.\n- Hero subhead: warm, inviting, ~12-18 words — describe the swipe-and-connect promise without being thirsty\n- Hero background should feel photo-first and premium: use a real-looking swipe card mockup/photo stack on a mostly white or warm off-white surface with coral/violet accents. Avoid a single solid peach gradient slab as the whole hero.\n- Auth CTA section provides TWO equal-weight buttons: 'Sign Up' (primary coral pill) and 'Log In' (secondary white-bordered pill), plus a small ghost link below: 'Try Demo Mode' for instant exploration without signup. It must sit in normal document flow below the hero copy or inside the hero composition, never as a fixed or overlapping banner.\n- Features section highlights the four pillars: Swipe (heart icon), Match (sparkle icon), Chat (message icon), Vibe (smile icon) — short blurb per pillar, soft white cards with subtle peach tint and enough internal padding that text never hugs the border.\n- How-it-works walks through the 3-step loop: 1) Build your profile, 2) Swipe through your circle, 3) Chat with matches — illustrated by photo cards or compact mockups rather than empty bordered slabs\n- Testimonials use real-feeling first-name + age tags (no LinkedIn-style headshots) — '— Maya, 27', '— Jordan, 32' — feels like reading text messages from friends\n- Final CTA banner is coral-fill with white text + arrow icon: 'Find your circle today →'\n- Footer remains warm: about, privacy, terms, contact — no enterprise compliance noise. Footer must be part of the page flow and must not cover the how-it-works or CTA content.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

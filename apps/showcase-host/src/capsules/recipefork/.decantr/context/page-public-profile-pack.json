@@ -1,0 +1,159 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the public-profile route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "public-profile"
+    ],
+    "patternIds": [
+      "creator-profile",
+      "stats-overview",
+      "card-grid",
+      "recipefork-activity-feed"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "public-profile",
+    "recipefork-top-nav",
+    "recipefork-profile",
+    "auxiliary",
+    "recipefork",
+    "light",
+    "profile-editing",
+    "follows",
+    "collections",
+    "activity-feed",
+    "public-profiles",
+    "branch-analytics",
+    "creator-profile",
+    "stack",
+    "stats-overview",
+    "grid",
+    "card-grid",
+    "recipefork-activity-feed"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "public-profile",
+    "path": "/profile/:id",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-profile",
+    "sectionRole": "auxiliary",
+    "features": [
+      "profile-editing",
+      "follows",
+      "collections",
+      "activity-feed",
+      "public-profiles",
+      "branch-analytics"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "creator-profile",
+        "alias": "creator-profile",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Full creator profile page with hero banner, tabbed navigation for posts, memberships, and about",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "hover-reveal"
+        ]
+      },
+      {
+        "id": "stats-overview",
+        "alias": "stats-overview",
+        "preset": "standard",
+        "layout": "grid",
+        "presetDescription": "Horizontal row of stat items with label, value, and trend indicator",
+        "interactions": [
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "card-grid",
+        "alias": "card-grid",
+        "preset": "collection",
+        "layout": "grid",
+        "presetDescription": "Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.",
+        "interactions": [
+          "lift-hover",
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "card-grid",
+        "alias": "card-grid",
+        "preset": "collection",
+        "layout": "grid",
+        "presetDescription": "Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.",
+        "interactions": [
+          "lift-hover",
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "recipefork-activity-feed",
+        "alias": "recipefork-activity-feed",
+        "preset": "preview-cards",
+        "layout": "stack",
+        "presetDescription": "Vertical rail of linked activity cards with preview image, event icon, summary text, actor attribution, and timestamp."
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the public-profile route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=public-profile | patterns=creator-profile, stats-overview, card-grid, recipefork-activity-feed\n\n## Page Contract\n- Page: public-profile\n- Path: /profile/:id\n- Shell: recipefork-top-nav\n- Section: recipefork-profile (auxiliary)\n- Theme: recipefork (light)\n- Features: profile-editing, follows, collections, activity-feed, public-profiles, branch-analytics\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- creator-profile -> creator-profile [stack | standard]\n  > Full creator profile page with hero banner, tabbed navigation for posts, memberships, and about\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] hover-reveal\n- stats-overview -> stats-overview [grid | standard]\n  > Horizontal row of stat items with label, value, and trend indicator\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n- card-grid -> card-grid [grid | collection]\n  > Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- card-grid -> card-grid [grid | collection]\n  > Collection/category cards with background image, overlay title, item count. Grid: 2/3 cols.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- recipefork-activity-feed -> recipefork-activity-feed [stack | preview-cards]\n  > Vertical rail of linked activity cards with preview image, event icon, summary text, actor attribution, and timestamp.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the editor route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "editor"
+    ],
+    "patternIds": [
+      "doc-editor"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "editor",
+    "sidebar-main",
+    "content-author",
+    "auxiliary",
+    "editorial",
+    "light",
+    "editing",
+    "publishing",
+    "auto-save",
+    "markdown",
+    "doc-editor",
+    "stack"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "editor",
+    "path": "/drafts/:id",
+    "shell": "sidebar-main",
+    "sectionId": "content-author",
+    "sectionRole": "auxiliary",
+    "features": [
+      "editing",
+      "publishing",
+      "auto-save",
+      "markdown"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "editorial",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "doc-editor",
+        "alias": "doc-editor",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Full-featured block editor with toolbar, slash commands, and collaboration features",
+        "interactions": [
+          "animate-on-mount",
+          "inline-edit",
+          "keyboard-navigation"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the editor route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=editor | patterns=doc-editor\n\n## Page Contract\n- Page: editor\n- Path: /drafts/:id\n- Shell: sidebar-main\n- Section: content-author (auxiliary)\n- Theme: editorial (light)\n- Features: editing, publishing, auto-save, markdown\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- doc-editor -> doc-editor [stack | standard]\n  > Full-featured block editor with toolbar, slash commands, and collaboration features\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] inline-edit\n  - [ ] keyboard-navigation\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

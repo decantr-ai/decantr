@@ -1,0 +1,415 @@
+{
+  "$schema": "https://decantr.ai/schemas/scaffold-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "scaffold",
+  "objective": "Scaffold the recipefork app shell and declared routes.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home",
+      "recipe-detail",
+      "feed",
+      "chat",
+      "generate",
+      "cookbooks",
+      "cookbook-detail",
+      "create",
+      "edit",
+      "me",
+      "my-recipes",
+      "public-profile",
+      "login"
+    ],
+    "patternIds": [
+      "hero",
+      "card-grid",
+      "testimonials",
+      "cta-section",
+      "detail-header",
+      "recipefork-fork-provenance",
+      "recipefork-chef-ingredients-display",
+      "recipefork-chef-instructions-display",
+      "recipefork-presentation-display",
+      "recipefork-cooking-tips-display",
+      "comment-thread",
+      "filter-bar",
+      "recipefork-activity-feed",
+      "chat-thread",
+      "chat-input",
+      "content-uploader",
+      "recipefork-recipe-mode-switch",
+      "recipefork-recipe-metadata-form",
+      "recipefork-cookbook-assignment",
+      "recipefork-simple-recipe-editor",
+      "recipefork-chef-ingredients-editor",
+      "recipefork-chef-instruction-editor",
+      "recipefork-presentation-editor",
+      "recipefork-cooking-tips-editor",
+      "recipefork-recipe-story-editor",
+      "creator-profile",
+      "account-settings",
+      "stats-overview",
+      "auth-form"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the declared routes as the topology source of truth.",
+    "Preserve the resolved theme and shell contract unless the task explicitly mutates them."
+  ],
+  "allowedVocabulary": [
+    "recipefork-top-nav",
+    "recipefork",
+    "light",
+    "marketing",
+    "seo",
+    "sharing",
+    "comments",
+    "reactions",
+    "forking",
+    "chef-mode",
+    "presentation",
+    "cooking-tips",
+    "lineage",
+    "branch-analytics",
+    "social",
+    "activity-feed",
+    "follows",
+    "engagement-ranking",
+    "lineage-cues",
+    "chat-history",
+    "image-upload",
+    "auth",
+    "generation-history",
+    "collections",
+    "visibility",
+    "recipe-saving",
+    "simple-mode",
+    "drafts",
+    "hydrated-editing",
+    "structured-ingredients",
+    "hierarchical-instructions",
+    "mode-conversion",
+    "rich-story",
+    "autosave",
+    "cookbook-assignment",
+    "profile-editing",
+    "public-profiles",
+    "oauth",
+    "supabase-auth",
+    "supabase-storage",
+    "supabase-realtime",
+    "public-browse",
+    "gated-actions",
+    "hero",
+    "card-grid",
+    "testimonials",
+    "cta-section",
+    "detail-header",
+    "recipefork-fork-provenance",
+    "recipefork-chef-ingredients-display",
+    "recipefork-chef-instructions-display",
+    "recipefork-presentation-display",
+    "recipefork-cooking-tips-display",
+    "comment-thread",
+    "filter-bar",
+    "recipefork-activity-feed",
+    "chat-thread",
+    "chat-input",
+    "content-uploader",
+    "recipefork-recipe-mode-switch",
+    "recipefork-recipe-metadata-form",
+    "recipefork-cookbook-assignment",
+    "recipefork-simple-recipe-editor",
+    "recipefork-chef-ingredients-editor",
+    "recipefork-chef-instruction-editor",
+    "recipefork-presentation-editor",
+    "recipefork-cooking-tips-editor",
+    "recipefork-recipe-story-editor",
+    "creator-profile",
+    "account-settings",
+    "stats-overview",
+    "auth-form"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "route-topology",
+      "label": "Routes and page IDs match the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "shell-consistency",
+      "label": "The declared shell contract is preserved unless the task explicitly mutates it.",
+      "severity": "error"
+    },
+    {
+      "id": "theme-consistency",
+      "label": "Theme identity and mode remain consistent across scaffolded routes.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "shell": "recipefork-top-nav",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "routing": "history",
+    "features": [
+      "marketing",
+      "seo",
+      "sharing",
+      "comments",
+      "reactions",
+      "forking",
+      "chef-mode",
+      "presentation",
+      "cooking-tips",
+      "lineage",
+      "branch-analytics",
+      "social",
+      "activity-feed",
+      "follows",
+      "engagement-ranking",
+      "lineage-cues",
+      "chat-history",
+      "image-upload",
+      "auth",
+      "generation-history",
+      "collections",
+      "visibility",
+      "recipe-saving",
+      "simple-mode",
+      "drafts",
+      "hydrated-editing",
+      "structured-ingredients",
+      "hierarchical-instructions",
+      "mode-conversion",
+      "rich-story",
+      "autosave",
+      "cookbook-assignment",
+      "profile-editing",
+      "public-profiles",
+      "oauth",
+      "supabase-auth",
+      "supabase-storage",
+      "supabase-realtime",
+      "public-browse",
+      "gated-actions"
+    ],
+    "navigation": {
+      "commandPalette": false,
+      "hotkeys": []
+    },
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "recipefork-landing",
+        "path": "/",
+        "patternIds": [
+          "hero",
+          "card-grid",
+          "testimonials",
+          "cta-section"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "recipe-detail",
+        "sectionId": "recipefork-recipe-detail",
+        "path": "/recipe/:id",
+        "patternIds": [
+          "hero",
+          "detail-header",
+          "recipefork-fork-provenance",
+          "recipefork-chef-ingredients-display",
+          "recipefork-chef-instructions-display",
+          "recipefork-presentation-display",
+          "recipefork-cooking-tips-display",
+          "comment-thread"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "feed",
+        "sectionId": "recipefork-social",
+        "path": "/feed",
+        "patternIds": [
+          "filter-bar",
+          "card-grid",
+          "recipefork-activity-feed"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "chat",
+        "sectionId": "recipefork-ai-kitchen",
+        "path": "/chat",
+        "patternIds": [
+          "chat-thread",
+          "chat-input"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "generate",
+        "sectionId": "recipefork-ai-kitchen",
+        "path": "/generate",
+        "patternIds": [
+          "content-uploader",
+          "detail-header"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "cookbooks",
+        "sectionId": "recipefork-cookbooks",
+        "path": "/cookbooks",
+        "patternIds": [
+          "card-grid",
+          "cta-section"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "cookbook-detail",
+        "sectionId": "recipefork-cookbooks",
+        "path": "/cookbooks/:id",
+        "patternIds": [
+          "hero",
+          "card-grid"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "create",
+        "sectionId": "recipefork-recipe-authoring",
+        "path": "/recipe/new",
+        "patternIds": [
+          "recipefork-recipe-mode-switch",
+          "recipefork-recipe-metadata-form",
+          "recipefork-cookbook-assignment",
+          "recipefork-simple-recipe-editor",
+          "recipefork-chef-ingredients-editor",
+          "recipefork-chef-instruction-editor",
+          "recipefork-presentation-editor",
+          "recipefork-cooking-tips-editor",
+          "recipefork-recipe-story-editor"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "edit",
+        "sectionId": "recipefork-recipe-authoring",
+        "path": "/recipe/edit/:id",
+        "patternIds": [
+          "detail-header",
+          "recipefork-recipe-metadata-form",
+          "recipefork-cookbook-assignment",
+          "recipefork-simple-recipe-editor",
+          "recipefork-chef-ingredients-editor",
+          "recipefork-chef-instruction-editor",
+          "recipefork-presentation-editor",
+          "recipefork-cooking-tips-editor",
+          "recipefork-recipe-story-editor"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "me",
+        "sectionId": "recipefork-profile",
+        "path": "/profile",
+        "patternIds": [
+          "creator-profile",
+          "account-settings",
+          "stats-overview",
+          "card-grid"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "my-recipes",
+        "sectionId": "recipefork-profile",
+        "path": "/recipes",
+        "patternIds": [
+          "stats-overview",
+          "filter-bar",
+          "card-grid"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "public-profile",
+        "sectionId": "recipefork-profile",
+        "path": "/profile/:id",
+        "patternIds": [
+          "creator-profile",
+          "stats-overview",
+          "card-grid",
+          "recipefork-activity-feed"
+        ],
+        "shell": "recipefork-top-nav"
+      },
+      {
+        "pageId": "login",
+        "sectionId": "recipefork-auth",
+        "path": "/auth",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "recipefork-top-nav"
+      }
+    ],
+    "themeDecorators": [
+      {
+        "class": "recipefork-surface",
+        "intent": "Use on app roots and wide content surfaces where food photography and forms should carry the visual weight rather than decorative theme effects.",
+        "applyTo": "Page roots, Shell body regions"
+      },
+      {
+        "class": "recipefork-nav",
+        "intent": "Use for sticky product nav bars where route links, theme toggle, profile entry, and create actions share a single 64px row.",
+        "applyTo": "Top navigation, Sticky headers"
+      },
+      {
+        "class": "recipefork-card",
+        "intent": "Use for cookbook cards, feed cards, stat blocks, and editor sections that should feel product-grade but not ornamental.",
+        "applyTo": "Cards, Form sections, Sidebar blocks"
+      },
+      {
+        "class": "recipefork-input",
+        "intent": "Use on all recipe authoring and auth controls to keep the product visually consistent across simple and Chef Mode surfaces.",
+        "applyTo": "Inputs, Selects, Textareas"
+      },
+      {
+        "class": "recipefork-photo",
+        "intent": "Use for hero images, cookbook covers, and generated recipe previews where the photo is the visual anchor.",
+        "applyTo": "Recipe hero surfaces, Cookbook cover imagery, Photo-to-recipe previews"
+      },
+      {
+        "class": "recipefork-editor",
+        "intent": "Use for optional story editors and long-form recipe notes without overwhelming the surrounding authoring form.",
+        "applyTo": "Story editors, Expandable narrative blocks"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Scaffold Pack\n\n**Objective:** Scaffold the recipefork app shell and declared routes.\n**Target:** react-vite (react)\n**Scope:** pages=home, recipe-detail, feed, chat, generate, cookbooks, cookbook-detail, create, edit, me, my-recipes, public-profile, login | patterns=hero, card-grid, testimonials, cta-section, detail-header, recipefork-fork-provenance, recipefork-chef-ingredients-display, recipefork-chef-instructions-display, recipefork-presentation-display, recipefork-cooking-tips-display, comment-thread, filter-bar, recipefork-activity-feed, chat-thread, chat-input, content-uploader, recipefork-recipe-mode-switch, recipefork-recipe-metadata-form, recipefork-cookbook-assignment, recipefork-simple-recipe-editor, recipefork-chef-ingredients-editor, recipefork-chef-instruction-editor, recipefork-presentation-editor, recipefork-cooking-tips-editor, recipefork-recipe-story-editor, creator-profile, account-settings, stats-overview, auth-form\n\n## Scaffold Contract\n- Shell: recipefork-top-nav\n- Theme: recipefork (light)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: marketing, seo, sharing, comments, reactions, forking, chef-mode, presentation, cooking-tips, lineage, branch-analytics, social, activity-feed, follows, engagement-ranking, lineage-cues, chat-history, image-upload, auth, generation-history, collections, visibility, recipe-saving, simple-mode, drafts, hydrated-editing, structured-ingredients, hierarchical-instructions, mode-conversion, rich-story, autosave, cookbook-assignment, profile-editing, public-profiles, oauth, supabase-auth, supabase-storage, supabase-realtime, public-browse, gated-actions\n\n## Route Plan\n- / -> recipefork-landing/home @ recipefork-top-nav [hero, card-grid, testimonials, cta-section]\n- /recipe/:id -> recipefork-recipe-detail/recipe-detail @ recipefork-top-nav [hero, detail-header, recipefork-fork-provenance, recipefork-chef-ingredients-display, recipefork-chef-instructions-display, recipefork-presentation-display, recipefork-cooking-tips-display, comment-thread]\n- /feed -> recipefork-social/feed @ recipefork-top-nav [filter-bar, card-grid, recipefork-activity-feed]\n- /chat -> recipefork-ai-kitchen/chat @ recipefork-top-nav [chat-thread, chat-input]\n- /generate -> recipefork-ai-kitchen/generate @ recipefork-top-nav [content-uploader, detail-header]\n- /cookbooks -> recipefork-cookbooks/cookbooks @ recipefork-top-nav [card-grid, cta-section]\n- /cookbooks/:id -> recipefork-cookbooks/cookbook-detail @ recipefork-top-nav [hero, card-grid]\n- /recipe/new -> recipefork-recipe-authoring/create @ recipefork-top-nav [recipefork-recipe-mode-switch, recipefork-recipe-metadata-form, recipefork-cookbook-assignment, recipefork-simple-recipe-editor, recipefork-chef-ingredients-editor, recipefork-chef-instruction-editor, recipefork-presentation-editor, recipefork-cooking-tips-editor, recipefork-recipe-story-editor]\n- /recipe/edit/:id -> recipefork-recipe-authoring/edit @ recipefork-top-nav [detail-header, recipefork-recipe-metadata-form, recipefork-cookbook-assignment, recipefork-simple-recipe-editor, recipefork-chef-ingredients-editor, recipefork-chef-instruction-editor, recipefork-presentation-editor, recipefork-cooking-tips-editor, recipefork-recipe-story-editor]\n- /profile -> recipefork-profile/me @ recipefork-top-nav [creator-profile, account-settings, stats-overview, card-grid]\n- /recipes -> recipefork-profile/my-recipes @ recipefork-top-nav [stats-overview, filter-bar, card-grid]\n- /profile/:id -> recipefork-profile/public-profile @ recipefork-top-nav [creator-profile, stats-overview, card-grid, recipefork-activity-feed]\n- /auth -> recipefork-auth/login @ recipefork-top-nav [auth-form]\n\n## Required Theme Decorators (recipefork)\n\nThese classes carry the active theme's visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these across all sections — without them, every page reads as \"themed colors only\" with no theme character. Section packs reference this table; the contract is project-wide.\n\n| Class | Intent | Apply to |\n|-------|--------|----------|\n| `.recipefork-surface` | Use on app roots and wide content surfaces where food photography and forms should carry the visual weight rather than decorative theme effects. | Page roots, Shell body regions |\n| `.recipefork-nav` | Use for sticky product nav bars where route links, theme toggle, profile entry, and create actions share a single 64px row. | Top navigation, Sticky headers |\n| `.recipefork-card` | Use for cookbook cards, feed cards, stat blocks, and editor sections that should feel product-grade but not ornamental. | Cards, Form sections, Sidebar blocks |\n| `.recipefork-input` | Use on all recipe authoring and auth controls to keep the product visually consistent across simple and Chef Mode surfaces. | Inputs, Selects, Textareas |\n| `.recipefork-photo` | Use for hero images, cookbook covers, and generated recipe previews where the photo is the visual anchor. | Recipe hero surfaces, Cookbook cover imagery, Photo-to-recipe previews |\n| `.recipefork-editor` | Use for optional story editors and long-form recipe notes without overwhelming the surrounding authoring form. | Story editors, Expandable narrative blocks |\n\n## Required Setup\n- Treat the declared routes as the topology source of truth.\n- Preserve the resolved theme and shell contract unless the task explicitly mutates them.\n\n## Allowed Vocabulary\n- recipefork-top-nav\n- recipefork\n- light\n- marketing\n- seo\n- sharing\n- comments\n- reactions\n- forking\n- chef-mode\n- presentation\n- cooking-tips\n- lineage\n- branch-analytics\n- social\n- activity-feed\n- follows\n- engagement-ranking\n- lineage-cues\n- chat-history\n- image-upload\n- auth\n- generation-history\n- collections\n- visibility\n- recipe-saving\n- simple-mode\n- drafts\n- hydrated-editing\n- structured-ingredients\n- hierarchical-instructions\n- mode-conversion\n- rich-story\n- autosave\n- cookbook-assignment\n- profile-editing\n- public-profiles\n- oauth\n- supabase-auth\n- supabase-storage\n- supabase-realtime\n- public-browse\n- gated-actions\n- hero\n- card-grid\n- testimonials\n- cta-section\n- detail-header\n- recipefork-fork-provenance\n- recipefork-chef-ingredients-display\n- recipefork-chef-instructions-display\n- recipefork-presentation-display\n- recipefork-cooking-tips-display\n- comment-thread\n- filter-bar\n- recipefork-activity-feed\n- chat-thread\n- chat-input\n- content-uploader\n- recipefork-recipe-mode-switch\n- recipefork-recipe-metadata-form\n- recipefork-cookbook-assignment\n- recipefork-simple-recipe-editor\n- recipefork-chef-ingredients-editor\n- recipefork-chef-instruction-editor\n- recipefork-presentation-editor\n- recipefork-cooking-tips-editor\n- recipefork-recipe-story-editor\n- creator-profile\n- account-settings\n- stats-overview\n- auth-form\n\n## Success Checks\n- Routes and page IDs match the compiled topology. [error]\n- The declared shell contract is preserved unless the task explicitly mutates it. [error]\n- Theme identity and mode remain consistent across scaffolded routes. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

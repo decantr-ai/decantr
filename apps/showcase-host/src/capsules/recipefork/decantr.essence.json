@@ -1,0 +1,598 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 700,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "rounded",
+      "base": 8
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "subtle",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Recipefork is a neutral, production-grade recipe product that lets food photography and authoring depth carry the experience. Public browsing feels clean and modern; Chef Mode is the critical differentiator, with structured ingredients, nested instruction groups, optional plating presentation, dynamic cooking tips, explicit recipe visibility controls, draft workflows, and no-loss hydrated editing."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "recipefork-landing",
+        "role": "public",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "marketing",
+          "seo"
+        ],
+        "description": "Recipefork's public landing page under the shared product nav, combining hero marketing, featured recipes, community proof, and conversion calls without switching to a separate shell.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              {
+                "pattern": "hero",
+                "preset": "landing"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "content"
+              },
+              {
+                "pattern": "testimonials",
+                "preset": "standard"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "standard"
+              }
+            ],
+            "route": "/"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-recipe-detail",
+        "role": "primary",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "sharing",
+          "comments",
+          "reactions",
+          "forking",
+          "chef-mode",
+          "presentation",
+          "cooking-tips",
+          "lineage",
+          "branch-analytics"
+        ],
+        "description": "Recipefork's recipe detail surface with hero imagery, summary/actions, Chef Mode ingredient and instruction displays, optional plating presentation, dynamic cooking tips, public provenance attribution, owner-only branch analytics, and comments, all under the shared Recipefork top-nav shell.",
+        "pages": [
+          {
+            "id": "recipe-detail",
+            "layout": [
+              {
+                "pattern": "hero",
+                "preset": "image-overlay"
+              },
+              {
+                "pattern": "detail-header",
+                "preset": "standard"
+              },
+              {
+                "pattern": "recipefork-fork-provenance",
+                "preset": "lineage-card"
+              },
+              {
+                "pattern": "recipefork-chef-ingredients-display",
+                "preset": "scaled"
+              },
+              {
+                "pattern": "recipefork-chef-instructions-display",
+                "preset": "hierarchical"
+              },
+              {
+                "pattern": "recipefork-presentation-display",
+                "preset": "numbered-steps"
+              },
+              {
+                "pattern": "recipefork-cooking-tips-display",
+                "preset": "bullet-list"
+              },
+              {
+                "pattern": "comment-thread",
+                "preset": "sidebar"
+              }
+            ],
+            "route": "/recipe/:id"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-social",
+        "role": "auxiliary",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "social",
+          "activity-feed",
+          "comments",
+          "reactions",
+          "follows",
+          "forking",
+          "engagement-ranking",
+          "lineage-cues"
+        ],
+        "description": "Recipefork's public discovery feed with engagement-aware recipe ranking, event filters, followed-creator cues, fork-depth/root lineage badges on cards, and a preview-card community activity rail.",
+        "pages": [
+          {
+            "id": "feed",
+            "layout": [
+              {
+                "pattern": "filter-bar",
+                "preset": "standard"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "content"
+              },
+              {
+                "pattern": "recipefork-activity-feed",
+                "preset": "preview-cards"
+              }
+            ],
+            "route": "/feed"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-ai-kitchen",
+        "role": "auxiliary",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "chat-history",
+          "image-upload",
+          "auth",
+          "generation-history"
+        ],
+        "description": "Authenticated AI kitchen workspace for Recipefork with chat history and photo-to-recipe generation flows.",
+        "pages": [
+          {
+            "id": "chat",
+            "layout": [
+              {
+                "pattern": "chat-thread",
+                "preset": "standard"
+              },
+              {
+                "pattern": "chat-input",
+                "preset": "standard"
+              }
+            ],
+            "route": "/chat"
+          },
+          {
+            "id": "generate",
+            "layout": [
+              {
+                "pattern": "content-uploader",
+                "preset": "single"
+              },
+              {
+                "pattern": "detail-header",
+                "preset": "standard"
+              }
+            ],
+            "route": "/generate"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-cookbooks",
+        "role": "auxiliary",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "collections",
+          "visibility",
+          "recipe-saving"
+        ],
+        "description": "Cookbook management and cookbook detail views for Recipefork, including creation, visibility state, owner-only editing, public cookbook viewing, and recipe collection browsing.",
+        "pages": [
+          {
+            "id": "cookbooks",
+            "layout": [
+              {
+                "pattern": "card-grid",
+                "preset": "collection"
+              },
+              {
+                "pattern": "cta-section",
+                "preset": "compact"
+              }
+            ],
+            "route": "/cookbooks"
+          },
+          {
+            "id": "cookbook-detail",
+            "layout": [
+              {
+                "pattern": "hero",
+                "preset": "image-overlay"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "content"
+              }
+            ],
+            "route": "/cookbooks/:id"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-recipe-authoring",
+        "role": "auxiliary",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "simple-mode",
+          "chef-mode",
+          "drafts",
+          "image-upload",
+          "hydrated-editing",
+          "structured-ingredients",
+          "hierarchical-instructions",
+          "presentation",
+          "cooking-tips",
+          "mode-conversion",
+          "rich-story",
+          "autosave",
+          "cookbook-assignment"
+        ],
+        "description": "Dual-mode recipe authoring workspace for Recipefork with Simple Mode and Chef Mode editing, drafts, hydrated editing, a shared structured ingredient editor, safe simple-to-chef conversion, hierarchical instruction groups, optional plating presentation, inline cookbook assignment, cooking tips, and rich recipe stories.",
+        "pages": [
+          {
+            "id": "create",
+            "layout": [
+              {
+                "pattern": "recipefork-recipe-mode-switch",
+                "preset": "split"
+              },
+              {
+                "pattern": "recipefork-recipe-metadata-form",
+                "preset": "authoring"
+              },
+              {
+                "pattern": "recipefork-cookbook-assignment",
+                "preset": "inline-assignment"
+              },
+              {
+                "pattern": "recipefork-simple-recipe-editor",
+                "preset": "standard"
+              },
+              {
+                "pattern": "recipefork-chef-ingredients-editor",
+                "preset": "structured"
+              },
+              {
+                "pattern": "recipefork-chef-instruction-editor",
+                "preset": "hierarchical"
+              },
+              {
+                "pattern": "recipefork-presentation-editor",
+                "preset": "ai-assisted"
+              },
+              {
+                "pattern": "recipefork-cooking-tips-editor",
+                "preset": "bullet-editor"
+              },
+              {
+                "pattern": "recipefork-recipe-story-editor",
+                "preset": "expandable"
+              }
+            ],
+            "route": "/recipe/new"
+          },
+          {
+            "id": "edit",
+            "layout": [
+              {
+                "pattern": "detail-header",
+                "preset": "standard"
+              },
+              {
+                "pattern": "recipefork-recipe-metadata-form",
+                "preset": "authoring"
+              },
+              {
+                "pattern": "recipefork-cookbook-assignment",
+                "preset": "inline-assignment"
+              },
+              {
+                "pattern": "recipefork-simple-recipe-editor",
+                "preset": "standard"
+              },
+              {
+                "pattern": "recipefork-chef-ingredients-editor",
+                "preset": "structured"
+              },
+              {
+                "pattern": "recipefork-chef-instruction-editor",
+                "preset": "hierarchical"
+              },
+              {
+                "pattern": "recipefork-presentation-editor",
+                "preset": "ai-assisted"
+              },
+              {
+                "pattern": "recipefork-cooking-tips-editor",
+                "preset": "bullet-editor"
+              },
+              {
+                "pattern": "recipefork-recipe-story-editor",
+                "preset": "expandable"
+              }
+            ],
+            "route": "/recipe/edit/:id"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-profile",
+        "role": "auxiliary",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "profile-editing",
+          "follows",
+          "collections",
+          "activity-feed",
+          "public-profiles",
+          "branch-analytics"
+        ],
+        "description": "Current-user and public profile surfaces for Recipefork with editable identity, a dedicated owner recipe workspace, public recipe/cookbook grids, follower stats, owner-only branch analytics, recent activity, and social navigation back into recipes and cookbooks.",
+        "pages": [
+          {
+            "id": "me",
+            "layout": [
+              {
+                "pattern": "creator-profile",
+                "preset": "standard"
+              },
+              {
+                "pattern": "account-settings",
+                "preset": "standard"
+              },
+              {
+                "pattern": "stats-overview",
+                "preset": "standard"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "content"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "collection"
+              }
+            ],
+            "route": "/profile"
+          },
+          {
+            "id": "my-recipes",
+            "layout": [
+              {
+                "pattern": "stats-overview",
+                "preset": "standard"
+              },
+              {
+                "pattern": "filter-bar",
+                "preset": "standard"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "content"
+              }
+            ],
+            "route": "/recipes"
+          },
+          {
+            "id": "public-profile",
+            "layout": [
+              {
+                "pattern": "creator-profile",
+                "preset": "standard"
+              },
+              {
+                "pattern": "stats-overview",
+                "preset": "standard"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "content"
+              },
+              {
+                "pattern": "card-grid",
+                "preset": "collection"
+              },
+              {
+                "pattern": "recipefork-activity-feed",
+                "preset": "preview-cards"
+              }
+            ],
+            "route": "/profile/:id"
+          }
+        ]
+      },
+      {
+        "id": "recipefork-auth",
+        "role": "gateway",
+        "shell": "recipefork-top-nav",
+        "features": [
+          "auth",
+          "oauth"
+        ],
+        "description": "Recipefork's shared-shell authentication entry surface. The auth card lives inside the product navbar shell rather than switching to a detached centered-only auth layout.",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "login"
+              }
+            ],
+            "route": "/auth"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "marketing",
+      "seo",
+      "sharing",
+      "comments",
+      "reactions",
+      "forking",
+      "chef-mode",
+      "presentation",
+      "cooking-tips",
+      "lineage",
+      "branch-analytics",
+      "social",
+      "activity-feed",
+      "follows",
+      "engagement-ranking",
+      "lineage-cues",
+      "chat-history",
+      "image-upload",
+      "auth",
+      "generation-history",
+      "collections",
+      "visibility",
+      "recipe-saving",
+      "simple-mode",
+      "drafts",
+      "hydrated-editing",
+      "structured-ingredients",
+      "hierarchical-instructions",
+      "mode-conversion",
+      "rich-story",
+      "autosave",
+      "cookbook-assignment",
+      "profile-editing",
+      "public-profiles",
+      "oauth",
+      "supabase-auth",
+      "supabase-storage",
+      "supabase-realtime",
+      "public-browse",
+      "gated-actions"
+    ],
+    "routes": {
+      "/": {
+        "section": "recipefork-landing",
+        "page": "home"
+      },
+      "/feed": {
+        "section": "recipefork-social",
+        "page": "feed"
+      },
+      "/profile": {
+        "section": "recipefork-profile",
+        "page": "me"
+      },
+      "/recipes": {
+        "section": "recipefork-profile",
+        "page": "my-recipes"
+      },
+      "/profile/:id": {
+        "section": "recipefork-profile",
+        "page": "public-profile"
+      },
+      "/recipe/:id": {
+        "section": "recipefork-recipe-detail",
+        "page": "recipe-detail"
+      },
+      "/chat": {
+        "section": "recipefork-ai-kitchen",
+        "page": "chat"
+      },
+      "/generate": {
+        "section": "recipefork-ai-kitchen",
+        "page": "generate"
+      },
+      "/cookbooks": {
+        "section": "recipefork-cookbooks",
+        "page": "cookbooks"
+      },
+      "/cookbooks/:id": {
+        "section": "recipefork-cookbooks",
+        "page": "cookbook-detail"
+      },
+      "/recipe/new": {
+        "section": "recipefork-recipe-authoring",
+        "page": "create"
+      },
+      "/recipe/edit/:id": {
+        "section": "recipefork-recipe-authoring",
+        "page": "edit"
+      },
+      "/auth": {
+        "section": "recipefork-auth",
+        "page": "login"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "recipefork-landing",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "history"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication",
+        "Recipe",
+        "CollectionPage",
+        "ProfilePage"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:image"
+      ]
+    }
+  }
+}

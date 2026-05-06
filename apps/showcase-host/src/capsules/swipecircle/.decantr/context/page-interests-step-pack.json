@@ -1,0 +1,146 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the interests-step route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "interests-step"
+    ],
+    "patternIds": [
+      "onboarding-wizard",
+      "chip-multiselect",
+      "cta-section"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "interests-step",
+    "centered",
+    "onboarding-wizard",
+    "gateway",
+    "swipecircle",
+    "light",
+    "auth",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "stack",
+    "chip-multiselect",
+    "flex-row",
+    "cta-section",
+    "row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "interests-step",
+    "path": "/onboarding/interests",
+    "shell": "centered",
+    "sectionId": "onboarding-wizard",
+    "sectionRole": "gateway",
+    "features": [
+      "auth",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "onboarding-wizard",
+        "alias": "onboarding-wizard",
+        "preset": "stepper",
+        "layout": "stack",
+        "presetDescription": "Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "click-select",
+          "keyboard-navigation",
+          "focus-trap"
+        ]
+      },
+      {
+        "id": "chip-multiselect",
+        "alias": "chip-multiselect",
+        "preset": "standard",
+        "layout": "flex-row",
+        "presetDescription": "Wrapping flex grid of toggleable pill chips. Selected chips get coral fill + white text + check icon; unselected use border-only treatment. Optional helper text and inline validation message below.",
+        "interactions": [
+          "click-select",
+          "scale-hover",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "banner",
+        "layout": "row",
+        "presetDescription": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      }
+    ],
+    "directives": [
+      "Show step indicator: 3 of 3, dots 1 and 2 in success state, dot 3 active",
+      "Heading above chip grid: 'What are you into?' (large, display font)",
+      "Sub-heading: 'Pick 3-5 interests so we can introduce you to your circle.'",
+      "Default interest chips: Music, Travel, Fitness, Food, Movies, Books, Gaming, Outdoors, Art, Tech, Wellness, Animals — 12 categories, all selectable simultaneously",
+      "Validation: minimum 3 selected, maximum 5. Below 3: helper text turns danger color. Above 5: chips lock and show 'Max 5 reached' tooltip",
+      "Primary CTA label: 'Complete Profile →' — disabled until 3-5 chips are selected",
+      "On submit: POST profile, route to /discover (the primary swipe feed)"
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the interests-step route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=interests-step | patterns=onboarding-wizard, chip-multiselect, cta-section\n\n## Page Contract\n- Page: interests-step\n- Path: /onboarding/interests\n- Shell: centered\n- Section: onboarding-wizard (gateway)\n- Theme: swipecircle (light)\n- Features: auth, photo-upload, step-validation, form-validation, interests-picker\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- onboarding-wizard -> onboarding-wizard [stack | stepper]\n  > Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] click-select\n  - [ ] keyboard-navigation\n  - [ ] focus-trap\n- chip-multiselect -> chip-multiselect [flex-row | standard]\n  > Wrapping flex grid of toggleable pill chips. Selected chips get coral fill + white text + check icon; unselected use border-only treatment. Optional helper text and inline validation message below.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] scale-hover\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n- cta-section -> cta-section [row | banner]\n  > Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Show step indicator: 3 of 3, dots 1 and 2 in success state, dot 3 active\n- Heading above chip grid: 'What are you into?' (large, display font)\n- Sub-heading: 'Pick 3-5 interests so we can introduce you to your circle.'\n- Default interest chips: Music, Travel, Fitness, Food, Movies, Books, Gaming, Outdoors, Art, Tech, Wellness, Animals — 12 categories, all selectable simultaneously\n- Validation: minimum 3 selected, maximum 5. Below 3: helper text turns danger color. Above 5: chips lock and show 'Max 5 reached' tooltip\n- Primary CTA label: 'Complete Profile →' — disabled until 3-5 chips are selected\n- On submit: POST profile, route to /discover (the primary swipe feed)\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

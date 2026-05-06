@@ -59,7 +59,7 @@
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "pnpm build",
+    "prepublishOnly": "node ../../scripts/guard-pnpm-publish.mjs && pnpm build",
     "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {

@@ -1,0 +1,195 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the edit route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "edit"
+    ],
+    "patternIds": [
+      "detail-header",
+      "recipefork-recipe-metadata-form",
+      "recipefork-cookbook-assignment",
+      "recipefork-simple-recipe-editor",
+      "recipefork-chef-ingredients-editor",
+      "recipefork-chef-instruction-editor",
+      "recipefork-presentation-editor",
+      "recipefork-cooking-tips-editor",
+      "recipefork-recipe-story-editor"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "edit",
+    "recipefork-top-nav",
+    "recipefork-recipe-authoring",
+    "auxiliary",
+    "recipefork",
+    "light",
+    "simple-mode",
+    "chef-mode",
+    "drafts",
+    "image-upload",
+    "hydrated-editing",
+    "structured-ingredients",
+    "hierarchical-instructions",
+    "presentation",
+    "cooking-tips",
+    "mode-conversion",
+    "rich-story",
+    "autosave",
+    "cookbook-assignment",
+    "detail-header",
+    "row",
+    "recipefork-recipe-metadata-form",
+    "stack",
+    "recipefork-cookbook-assignment",
+    "recipefork-simple-recipe-editor",
+    "recipefork-chef-ingredients-editor",
+    "recipefork-chef-instruction-editor",
+    "recipefork-presentation-editor",
+    "recipefork-cooking-tips-editor",
+    "recipefork-recipe-story-editor"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "edit",
+    "path": "/recipe/edit/:id",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-recipe-authoring",
+    "sectionRole": "auxiliary",
+    "features": [
+      "simple-mode",
+      "chef-mode",
+      "drafts",
+      "image-upload",
+      "hydrated-editing",
+      "structured-ingredients",
+      "hierarchical-instructions",
+      "presentation",
+      "cooking-tips",
+      "mode-conversion",
+      "rich-story",
+      "autosave",
+      "cookbook-assignment"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "detail-header",
+        "alias": "detail-header",
+        "preset": "standard",
+        "layout": "row",
+        "presetDescription": "Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.",
+        "interactions": [
+          "hover-reveal",
+          "keyboard-navigation",
+          "animate-on-mount",
+          "click-select"
+        ]
+      },
+      {
+        "id": "recipefork-recipe-metadata-form",
+        "alias": "recipefork-recipe-metadata-form",
+        "preset": "authoring",
+        "layout": "stack",
+        "presetDescription": "Top section of the create and edit experience with hero upload, recipe title block, core metadata, tags, and draft/publish actions."
+      },
+      {
+        "id": "recipefork-cookbook-assignment",
+        "alias": "recipefork-cookbook-assignment",
+        "preset": "inline-assignment",
+        "layout": "stack",
+        "presetDescription": "Authoring-side cookbook assignment section with skeleton loading, cookbook chips/cards, and inline create-new-cookbook controls that run before final redirect."
+      },
+      {
+        "id": "recipefork-simple-recipe-editor",
+        "alias": "recipefork-simple-recipe-editor",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Basic recipe editor with two ordered lists: raw ingredient lines and raw instruction lines."
+      },
+      {
+        "id": "recipefork-chef-ingredients-editor",
+        "alias": "recipefork-chef-ingredients-editor",
+        "preset": "structured",
+        "layout": "stack",
+        "presetDescription": "Row-based structured ingredient editor with autosuggest, scaling controls, and stable ingredient IDs for downstream instruction linking. Although originally introduced for Chef Mode, Recipefork now uses this as the shared ingredient authoring surface across recipe modes."
+      },
+      {
+        "id": "recipefork-chef-instruction-editor",
+        "alias": "recipefork-chef-instruction-editor",
+        "preset": "hierarchical",
+        "layout": "stack",
+        "presetDescription": "Advanced instruction editor that supports parent instruction groups with nested sub-steps as well as stand-alone advanced steps in the same workflow. Stand-alone steps still expose image, timing, and ingredient-link controls."
+      },
+      {
+        "id": "recipefork-presentation-editor",
+        "alias": "recipefork-presentation-editor",
+        "preset": "ai-assisted",
+        "layout": "stack",
+        "presetDescription": "Chef Mode presentation section with segmented AI/manual/none controls, an AI generation call-to-action that is disabled until the recipe passes a plating-readiness checklist, and a numbered plating-step editor that supports images and ordering."
+      },
+      {
+        "id": "recipefork-cooking-tips-editor",
+        "alias": "recipefork-cooking-tips-editor",
+        "preset": "bullet-editor",
+        "layout": "stack",
+        "presetDescription": "Optional bullet-note editor with add, reorder, and remove controls."
+      },
+      {
+        "id": "recipefork-recipe-story-editor",
+        "alias": "recipefork-recipe-story-editor",
+        "preset": "expandable",
+        "layout": "stack",
+        "presetDescription": "Collapsed optional section that expands into a lightweight rich-text editor with formatting toolbar."
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the edit route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=edit | patterns=detail-header, recipefork-recipe-metadata-form, recipefork-cookbook-assignment, recipefork-simple-recipe-editor, recipefork-chef-ingredients-editor, recipefork-chef-instruction-editor, recipefork-presentation-editor, recipefork-cooking-tips-editor, recipefork-recipe-story-editor\n\n## Page Contract\n- Page: edit\n- Path: /recipe/edit/:id\n- Shell: recipefork-top-nav\n- Section: recipefork-recipe-authoring (auxiliary)\n- Theme: recipefork (light)\n- Features: simple-mode, chef-mode, drafts, image-upload, hydrated-editing, structured-ingredients, hierarchical-instructions, presentation, cooking-tips, mode-conversion, rich-story, autosave, cookbook-assignment\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- detail-header -> detail-header [row | standard]\n  > Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n  - [ ] click-select\n- recipefork-recipe-metadata-form -> recipefork-recipe-metadata-form [stack | authoring]\n  > Top section of the create and edit experience with hero upload, recipe title block, core metadata, tags, and draft/publish actions.\n- recipefork-cookbook-assignment -> recipefork-cookbook-assignment [stack | inline-assignment]\n  > Authoring-side cookbook assignment section with skeleton loading, cookbook chips/cards, and inline create-new-cookbook controls that run before final redirect.\n- recipefork-simple-recipe-editor -> recipefork-simple-recipe-editor [stack | standard]\n  > Basic recipe editor with two ordered lists: raw ingredient lines and raw instruction lines.\n- recipefork-chef-ingredients-editor -> recipefork-chef-ingredients-editor [stack | structured]\n  > Row-based structured ingredient editor with autosuggest, scaling controls, and stable ingredient IDs for downstream instruction linking. Although originally introduced for Chef Mode, Recipefork now uses this as the shared ingredient authoring surface across recipe modes.\n- recipefork-chef-instruction-editor -> recipefork-chef-instruction-editor [stack | hierarchical]\n  > Advanced instruction editor that supports parent instruction groups with nested sub-steps as well as stand-alone advanced steps in the same workflow. Stand-alone steps still expose image, timing, and ingredient-link controls.\n- recipefork-presentation-editor -> recipefork-presentation-editor [stack | ai-assisted]\n  > Chef Mode presentation section with segmented AI/manual/none controls, an AI generation call-to-action that is disabled until the recipe passes a plating-readiness checklist, and a numbered plating-step editor that supports images and ordering.\n- recipefork-cooking-tips-editor -> recipefork-cooking-tips-editor [stack | bullet-editor]\n  > Optional bullet-note editor with add, reorder, and remove controls.\n- recipefork-recipe-story-editor -> recipefork-recipe-story-editor [stack | expandable]\n  > Collapsed optional section that expands into a lightweight rich-text editor with formatting toolbar.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

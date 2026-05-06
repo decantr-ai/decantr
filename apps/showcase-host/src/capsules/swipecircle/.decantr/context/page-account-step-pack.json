@@ -1,0 +1,142 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the account-step route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "account-step"
+    ],
+    "patternIds": [
+      "onboarding-wizard",
+      "auth-form",
+      "cta-section"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "account-step",
+    "centered",
+    "onboarding-wizard",
+    "gateway",
+    "swipecircle",
+    "light",
+    "auth",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "stack",
+    "auth-form",
+    "cta-section",
+    "row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "account-step",
+    "path": "/signup",
+    "shell": "centered",
+    "sectionId": "onboarding-wizard",
+    "sectionRole": "gateway",
+    "features": [
+      "auth",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "onboarding-wizard",
+        "alias": "onboarding-wizard",
+        "preset": "stepper",
+        "layout": "stack",
+        "presetDescription": "Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "click-select",
+          "keyboard-navigation",
+          "focus-trap"
+        ]
+      },
+      {
+        "id": "auth-form",
+        "alias": "auth-form",
+        "preset": "register",
+        "layout": "stack",
+        "presetDescription": "Registration form with password strength indicator",
+        "interactions": [
+          "animate-on-mount",
+          "keyboard-navigation",
+          "inline-edit"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "banner",
+        "layout": "row",
+        "presetDescription": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      }
+    ],
+    "directives": [
+      "Show step indicator: 1 of 3, active dot in coral, upcoming dots in muted border style",
+      "Validate email format inline as user types (with 240ms debounce)",
+      "Password strength meter shows below the field — coral=weak, accent=medium, success=strong",
+      "Primary CTA label: 'Continue →' — disabled until form is valid",
+      "Secondary text below form: 'Already have an account? Log in' — link to /login"
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the account-step route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=account-step | patterns=onboarding-wizard, auth-form, cta-section\n\n## Page Contract\n- Page: account-step\n- Path: /signup\n- Shell: centered\n- Section: onboarding-wizard (gateway)\n- Theme: swipecircle (light)\n- Features: auth, photo-upload, step-validation, form-validation, interests-picker\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- onboarding-wizard -> onboarding-wizard [stack | stepper]\n  > Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] click-select\n  - [ ] keyboard-navigation\n  - [ ] focus-trap\n- auth-form -> auth-form [stack | register]\n  > Registration form with password strength indicator\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] inline-edit\n- cta-section -> cta-section [row | banner]\n  > Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Show step indicator: 1 of 3, active dot in coral, upcoming dots in muted border style\n- Validate email format inline as user types (with 240ms debounce)\n- Password strength meter shows below the field — coral=weak, accent=medium, success=strong\n- Primary CTA label: 'Continue →' — disabled until form is valid\n- Secondary text below form: 'Already have an account? Log in' — link to /login\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

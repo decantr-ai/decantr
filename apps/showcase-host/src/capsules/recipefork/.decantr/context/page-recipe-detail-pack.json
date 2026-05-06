@@ -1,0 +1,193 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the recipe-detail route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "recipe-detail"
+    ],
+    "patternIds": [
+      "hero",
+      "detail-header",
+      "recipefork-fork-provenance",
+      "recipefork-chef-ingredients-display",
+      "recipefork-chef-instructions-display",
+      "recipefork-presentation-display",
+      "recipefork-cooking-tips-display",
+      "comment-thread"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "recipe-detail",
+    "recipefork-top-nav",
+    "recipefork-recipe-detail",
+    "primary",
+    "recipefork",
+    "light",
+    "sharing",
+    "comments",
+    "reactions",
+    "forking",
+    "chef-mode",
+    "presentation",
+    "cooking-tips",
+    "lineage",
+    "branch-analytics",
+    "hero",
+    "stack",
+    "detail-header",
+    "row",
+    "recipefork-fork-provenance",
+    "recipefork-chef-ingredients-display",
+    "recipefork-chef-instructions-display",
+    "recipefork-presentation-display",
+    "recipefork-cooking-tips-display",
+    "comment-thread",
+    "column"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "recipe-detail",
+    "path": "/recipe/:id",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-recipe-detail",
+    "sectionRole": "primary",
+    "features": [
+      "sharing",
+      "comments",
+      "reactions",
+      "forking",
+      "chef-mode",
+      "presentation",
+      "cooking-tips",
+      "lineage",
+      "branch-analytics"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "image-overlay",
+        "layout": "stack",
+        "presetDescription": "Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "glow-hover",
+          "float-idle"
+        ]
+      },
+      {
+        "id": "detail-header",
+        "alias": "detail-header",
+        "preset": "standard",
+        "layout": "row",
+        "presetDescription": "Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.",
+        "interactions": [
+          "hover-reveal",
+          "keyboard-navigation",
+          "animate-on-mount",
+          "click-select"
+        ]
+      },
+      {
+        "id": "recipefork-fork-provenance",
+        "alias": "recipefork-fork-provenance",
+        "preset": "lineage-card",
+        "layout": "stack",
+        "presetDescription": "Inline provenance card that keeps the direct parent visible and exposes the root original when different for all viewers. Branch metrics, history stacks, and descendant timelines are owner-facing expansions rather than public browsing defaults."
+      },
+      {
+        "id": "recipefork-chef-ingredients-display",
+        "alias": "recipefork-chef-ingredients-display",
+        "preset": "scaled",
+        "layout": "stack",
+        "presetDescription": "Ingredient list with recipe scaling controls and converted quantity display."
+      },
+      {
+        "id": "recipefork-chef-instructions-display",
+        "alias": "recipefork-chef-instructions-display",
+        "preset": "hierarchical",
+        "layout": "stack",
+        "presetDescription": "Display grouped Chef Mode instruction sets with optional simple stand-alone steps mixed into the flow."
+      },
+      {
+        "id": "recipefork-presentation-display",
+        "alias": "recipefork-presentation-display",
+        "preset": "numbered-steps",
+        "layout": "stack",
+        "presetDescription": "Presentation card inserted after recipe instructions, with clear numbering, optional imagery, and an AI/manual provenance badge."
+      },
+      {
+        "id": "recipefork-cooking-tips-display",
+        "alias": "recipefork-cooking-tips-display",
+        "preset": "bullet-list",
+        "layout": "stack",
+        "presetDescription": "Sidebar or support-surface bullet list of recipe-specific cooking tips."
+      },
+      {
+        "id": "comment-thread",
+        "alias": "comment-thread",
+        "preset": "sidebar",
+        "layout": "column",
+        "presetDescription": "Full thread display in aside panel",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "real-time-updates",
+          "inline-edit",
+          "hover-reveal"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the recipe-detail route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=recipe-detail | patterns=hero, detail-header, recipefork-fork-provenance, recipefork-chef-ingredients-display, recipefork-chef-instructions-display, recipefork-presentation-display, recipefork-cooking-tips-display, comment-thread\n\n## Page Contract\n- Page: recipe-detail\n- Path: /recipe/:id\n- Shell: recipefork-top-nav\n- Section: recipefork-recipe-detail (primary)\n- Theme: recipefork (light)\n- Features: sharing, comments, reactions, forking, chef-mode, presentation, cooking-tips, lineage, branch-analytics\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- hero -> hero [stack | image-overlay]\n  > Full-bleed image with gradient overlay, content at bottom. Used for recipe/cookbook detail headers.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] glow-hover\n  - [ ] float-idle\n- detail-header -> detail-header [row | standard]\n  > Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n  - [ ] click-select\n- recipefork-fork-provenance -> recipefork-fork-provenance [stack | lineage-card]\n  > Inline provenance card that keeps the direct parent visible and exposes the root original when different for all viewers. Branch metrics, history stacks, and descendant timelines are owner-facing expansions rather than public browsing defaults.\n- recipefork-chef-ingredients-display -> recipefork-chef-ingredients-display [stack | scaled]\n  > Ingredient list with recipe scaling controls and converted quantity display.\n- recipefork-chef-instructions-display -> recipefork-chef-instructions-display [stack | hierarchical]\n  > Display grouped Chef Mode instruction sets with optional simple stand-alone steps mixed into the flow.\n- recipefork-presentation-display -> recipefork-presentation-display [stack | numbered-steps]\n  > Presentation card inserted after recipe instructions, with clear numbering, optional imagery, and an AI/manual provenance badge.\n- recipefork-cooking-tips-display -> recipefork-cooking-tips-display [stack | bullet-list]\n  > Sidebar or support-surface bullet list of recipe-specific cooking tips.\n- comment-thread -> comment-thread [column | sidebar]\n  > Full thread display in aside panel\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] inline-edit\n  - [ ] hover-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

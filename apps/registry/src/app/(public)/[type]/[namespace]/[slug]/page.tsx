@@ -411,6 +411,10 @@ function getShowcaseDescription(showcaseMeta: NonNullable<Awaited<ReturnType<typ
   return showcaseMeta.notes || 'This blueprint has a live showcase build in the audited Decantr corpus.';
 }
 
+function getShowcaseEmbedUrl(showcaseUrl: string) {
+  return showcaseUrl.includes('?') ? `${showcaseUrl}&embed=1` : `${showcaseUrl}?embed=1`;
+}
+
 function getThemeLabel(theme: BlueprintLaunchpadModel['theme']): string {
   if (!theme) return 'Custom theme';
   return [theme.id, theme.mode, theme.shape].filter(Boolean).join(' / ');
@@ -459,6 +463,12 @@ function BlueprintPreview({
         <div className={styles.previewMedia} data-empty={!screenshotUrl}>
           {screenshotUrl ? (
             <img src={screenshotUrl} alt={`${name} screenshot preview`} loading="lazy" />
+          ) : showcaseUrl ? (
+            <iframe
+              src={getShowcaseEmbedUrl(showcaseUrl)}
+              title={`${name} live showcase preview`}
+              loading="lazy"
+            />
           ) : (
             <div className={styles.previewMediaPlaceholder}>
               <span>Screenshot pending</span>
@@ -626,6 +636,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
   const showcaseUrl = showcaseMeta ? getShowcaseUrl(slug, showcaseMeta) : null;
+  const previewImageUrl = showcaseMeta?.thumbnail?.src ?? content.thumbnail_url ?? null;
   const primarySignal = getPrimarySignal(content, Boolean(showcaseUrl));
   const quickStart = getQuickStartContent(singular, namespace, slug);
   const usageBullets = getUsageBullets(singular, tags);
@@ -753,7 +764,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                   />
                   <LaunchMetricCard
                     label="Showcase"
-                    value={showcaseMeta ? 'Live' : 'Pending'}
+                    value={showcaseMeta?.goldenCandidate ? 'Benchmark' : showcaseMeta ? 'Live' : 'Pending'}
                     detail={showcaseVerification?.smoke.passed ? 'smoke verified' : 'preview status'}
                     tone="green"
                   />
@@ -825,7 +836,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
               <BlueprintPreview
                 model={blueprintModel}
                 showcaseUrl={showcaseUrl}
-                screenshotUrl={content.thumbnail_url}
+                screenshotUrl={previewImageUrl}
                 name={name}
               />
             </section>

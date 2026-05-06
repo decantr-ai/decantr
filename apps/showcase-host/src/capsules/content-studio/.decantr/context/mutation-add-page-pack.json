@@ -1,0 +1,168 @@
+{
+  "$schema": "https://decantr.ai/schemas/mutation-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "mutation",
+  "objective": "Execute the add-page workflow against the compiled app contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "drafts",
+      "editor",
+      "published",
+      "login",
+      "register",
+      "forgot-password",
+      "settings"
+    ],
+    "patternIds": [
+      "data-table",
+      "doc-editor",
+      "auth-form",
+      "form-sections"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the compiled topology as the source of truth until the essence changes.",
+    "Refresh Decantr context after structural mutations so downstream tasks read current packs."
+  ],
+  "allowedVocabulary": [
+    "add-page",
+    "sidebar-main",
+    "editorial",
+    "light",
+    "editing",
+    "publishing",
+    "auto-save",
+    "markdown",
+    "auth",
+    "theme-toggle",
+    "data-table",
+    "doc-editor",
+    "auth-form",
+    "form-sections"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "mutation-essence-first",
+      "label": "New pages are declared in the essence before any code generation begins.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-shell-contract",
+      "label": "New routes inherit an existing shell and section contract unless the essence changes first.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-refresh",
+      "label": "Refresh compiled packs after the mutation so downstream tasks read current topology.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "mutationType": "add-page",
+    "shell": "sidebar-main",
+    "theme": {
+      "id": "editorial",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "routing": "history",
+    "features": [
+      "editing",
+      "publishing",
+      "auto-save",
+      "markdown",
+      "auth",
+      "theme-toggle"
+    ],
+    "routes": [
+      {
+        "pageId": "drafts",
+        "sectionId": "content-author",
+        "path": "/drafts",
+        "patternIds": [
+          "data-table"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "editor",
+        "sectionId": "content-author",
+        "path": "/drafts/:id",
+        "patternIds": [
+          "doc-editor"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "published",
+        "sectionId": "content-author",
+        "path": "/published",
+        "patternIds": [
+          "data-table"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "login",
+        "sectionId": "auth-flow",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "sectionId": "auth-flow",
+        "path": "/register",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "sectionId": "auth-flow",
+        "path": "/forgot-password",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "settings",
+        "sectionId": "settings",
+        "path": "/settings",
+        "patternIds": [
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      }
+    ],
+    "workflow": [
+      "Declare the new page in the essence before generating code.",
+      "Refresh Decantr context so section and page packs include the new route.",
+      "Read the relevant section pack and new page pack before implementation."
+    ]
+  },
+  "renderedMarkdown": "# Mutation Pack\n\n**Objective:** Execute the add-page workflow against the compiled app contract.\n**Target:** react-vite (react)\n**Scope:** pages=drafts, editor, published, login, register, forgot-password, settings | patterns=data-table, doc-editor, auth-form, form-sections\n\n## Mutation Contract\n- Operation: add-page\n- Shell: sidebar-main\n- Theme: editorial (light)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: editing, publishing, auto-save, markdown, auth, theme-toggle\n\n## Route Topology\n- /drafts -> content-author/drafts @ sidebar-main [data-table]\n- /drafts/:id -> content-author/editor @ sidebar-main [doc-editor]\n- /published -> content-author/published @ sidebar-main [data-table]\n- /login -> auth-flow/login @ centered [auth-form]\n- /register -> auth-flow/register @ centered [auth-form]\n- /forgot-password -> auth-flow/forgot-password @ centered [auth-form]\n- /settings -> settings/settings @ sidebar-main [form-sections]\n\n## Workflow\n- Declare the new page in the essence before generating code.\n- Refresh Decantr context so section and page packs include the new route.\n- Read the relevant section pack and new page pack before implementation.\n\n## Required Setup\n- Treat the compiled topology as the source of truth until the essence changes.\n- Refresh Decantr context after structural mutations so downstream tasks read current packs.\n\n## Allowed Vocabulary\n- add-page\n- sidebar-main\n- editorial\n- light\n- editing\n- publishing\n- auto-save\n- markdown\n- auth\n- theme-toggle\n- data-table\n- doc-editor\n- auth-form\n- form-sections\n\n## Success Checks\n- New pages are declared in the essence before any code generation begins. [error]\n- New routes inherit an existing shell and section contract unless the essence changes first. [error]\n- Refresh compiled packs after the mutation so downstream tasks read current topology. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

@@ -1,0 +1,181 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the matches route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "matches"
+    ],
+    "patternIds": [
+      "presence-avatars",
+      "stats-bar",
+      "avatar-grid-tile",
+      "hero",
+      "bottom-tab-bar"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "matches",
+    "mobile-tab-bar",
+    "swipe-feed",
+    "primary",
+    "swipecircle",
+    "light",
+    "swipe-deck",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "demo-mode",
+    "keyboard-shortcuts",
+    "presence-avatars",
+    "row",
+    "stats-bar",
+    "avatar-grid-tile",
+    "stack",
+    "hero",
+    "bottom-tab-bar",
+    "flex-row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "matches",
+    "path": "/matches",
+    "shell": "mobile-tab-bar",
+    "sectionId": "swipe-feed",
+    "sectionRole": "primary",
+    "features": [
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "demo-mode",
+      "keyboard-shortcuts"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "presence-avatars",
+        "alias": "presence-avatars",
+        "preset": "detailed",
+        "layout": "row",
+        "presetDescription": "Avatars with online/away status dots",
+        "interactions": [
+          "animate-on-mount",
+          "hover-reveal"
+        ]
+      },
+      {
+        "id": "stats-bar",
+        "alias": "stats-bar",
+        "preset": "default",
+        "layout": "row",
+        "presetDescription": "Equal-width stat items in a row",
+        "interactions": [
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "avatar-grid-tile",
+        "alias": "avatar-grid-tile",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Square card with circular 80px avatar centered above a single-line name. Optional violet new-match dot at top-right of the avatar. Used as the repeating tile in a matches-grid.",
+        "interactions": [
+          "scale-hover",
+          "lift-hover",
+          "click-select",
+          "stagger-children",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "empty-state",
+        "layout": "stack",
+        "presetDescription": "Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "glow-hover",
+          "float-idle"
+        ]
+      },
+      {
+        "id": "bottom-tab-bar",
+        "alias": "bottom-tab-bar",
+        "preset": "standard",
+        "layout": "flex-row",
+        "presetDescription": "Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.",
+        "interactions": [
+          "click-select",
+          "scale-hover",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      }
+    ],
+    "directives": [
+      "Top section: 'New Matches' label with horizontal scrolling presence-avatars rail showing matches from the last 24h. Tap an avatar to open the chat thread.",
+      "Below the rail: stats-bar with 1-2 stats — 'X new matches', 'Y total connections'. Use coral primary accent for the numerics.",
+      "Main grid: 3-column responsive grid of avatar-grid-tile (4 cols on tablet+, 5 cols on desktop within the 480px column). Each tile shows the matched user's circular avatar, name, and a violet new-match dot if unviewed. Tap navigates to /u/:userId.",
+      "If no matches yet: show hero empty-state with copy 'No matches yet. Keep swiping — your circle is forming.' and an illustration of two avatars meeting.",
+      "Bottom-tab-bar with 'Matches' active. Badge dot on Matches tab cleared when this page is viewed."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the matches route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=matches | patterns=presence-avatars, stats-bar, avatar-grid-tile, hero, bottom-tab-bar\n\n## Page Contract\n- Page: matches\n- Path: /matches\n- Shell: mobile-tab-bar\n- Section: swipe-feed (primary)\n- Theme: swipecircle (light)\n- Features: swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, demo-mode, keyboard-shortcuts\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- presence-avatars -> presence-avatars [row | detailed]\n  > Avatars with online/away status dots\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] hover-reveal\n- stats-bar -> stats-bar [row | default]\n  > Equal-width stat items in a row\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n- avatar-grid-tile -> avatar-grid-tile [stack | standard]\n  > Square card with circular 80px avatar centered above a single-line name. Optional violet new-match dot at top-right of the avatar. Used as the repeating tile in a matches-grid.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] scale-hover\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n- hero -> hero [stack | empty-state]\n  > Empty state placeholder with illustration slot, message, and action CTA. Used when a list or page has no data yet.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] glow-hover\n  - [ ] float-idle\n- bottom-tab-bar -> bottom-tab-bar [flex-row | standard]\n  > Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] scale-hover\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Top section: 'New Matches' label with horizontal scrolling presence-avatars rail showing matches from the last 24h. Tap an avatar to open the chat thread.\n- Below the rail: stats-bar with 1-2 stats — 'X new matches', 'Y total connections'. Use coral primary accent for the numerics.\n- Main grid: 3-column responsive grid of avatar-grid-tile (4 cols on tablet+, 5 cols on desktop within the 480px column). Each tile shows the matched user's circular avatar, name, and a violet new-match dot if unviewed. Tap navigates to /u/:userId.\n- If no matches yet: show hero empty-state with copy 'No matches yet. Keep swiping — your circle is forming.' and an illustration of two avatars meeting.\n- Bottom-tab-bar with 'Matches' active. Badge dot on Matches tab cleared when this page is viewed.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

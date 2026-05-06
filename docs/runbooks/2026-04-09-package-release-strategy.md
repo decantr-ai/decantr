@@ -124,8 +124,12 @@ The workflow:
 - supports a manual `dist_tag` override for coordinated release waves
 - supports `dry_run_only=true` in the publish workflow so a wave can be rehearsed in GitHub Actions without mutating npm
 - now also supports `--publish-dry-run` for local artifact preflight:
-  - uses `npm publish --dry-run` for versions that are not yet published
-  - uses `npm pack --dry-run` for versions that are already on npm, so package-shape validation still works without failing on duplicate-version checks
+  - audits the `pnpm pack` tarball manifest before any publish attempt
+  - fails when a packed manifest still contains `workspace:*` dependency ranges
+  - uses `pnpm publish --dry-run` for versions that are not yet published
+  - uses the packed-manifest audit for versions that are already on npm, so package-shape validation still works without failing on duplicate-version checks
+
+Packages must be published with `pnpm publish` through `scripts/publish-packages.mjs`. Direct `npm publish` does not rewrite pnpm workspace dependency ranges and is blocked by each public package's `prepublishOnly` guard.
 
 Retired package handling now uses `config/package-retirements.json` plus:
 

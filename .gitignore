@@ -33,6 +33,7 @@ apps/registry/public/showcase/index.html
 apps/registry/public/showcase/manifest.json
 apps/registry/public/showcase/shortlist.json
 apps/registry/public/showcase/shortlist-verification.json
+apps/registry/public/showcase/thumbnails/
 
 # Registry backups (local only)
 apps/registry-backup/
@@ -43,6 +44,8 @@ apps/registry/.next/
 
 # Decantr cache
 .decantr/cache/
+apps/showcase-host/src/capsules/*/.decantr/cache/
+apps/showcase-host/src/capsules/*/.decantr/custom/
 
 # Hide Superpowers
 .superpowers

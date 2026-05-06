@@ -1,0 +1,331 @@
+{
+  "$schema": "https://decantr.ai/schemas/mutation-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "mutation",
+  "objective": "Execute the modify workflow against the compiled app contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home",
+      "login",
+      "account-step",
+      "profile-step",
+      "interests-step",
+      "discover",
+      "matches",
+      "chat-list",
+      "chat-thread",
+      "profile-own",
+      "profile-other",
+      "settings"
+    ],
+    "patternIds": [
+      "hero-split",
+      "cta-section",
+      "features",
+      "how-it-works",
+      "testimonials",
+      "footer",
+      "auth-form",
+      "onboarding-wizard",
+      "content-uploader",
+      "form",
+      "chip-multiselect",
+      "filter-bar",
+      "spatial-card-stack",
+      "swipe-action-bar",
+      "match-celebration",
+      "hero",
+      "bottom-tab-bar",
+      "presence-avatars",
+      "stats-bar",
+      "avatar-grid-tile",
+      "conversation-list",
+      "chat-header",
+      "chat-thread",
+      "chat-input",
+      "mobile-profile-hero",
+      "tech-pills",
+      "settings-nav"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the compiled topology as the source of truth until the essence changes.",
+    "Refresh Decantr context after structural mutations so downstream tasks read current packs."
+  ],
+  "allowedVocabulary": [
+    "modify",
+    "top-nav-footer",
+    "swipecircle",
+    "light",
+    "marketing",
+    "seo",
+    "conversion",
+    "demo-mode",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "keyboard-shortcuts",
+    "theme-toggle",
+    "hero-split",
+    "cta-section",
+    "features",
+    "how-it-works",
+    "testimonials",
+    "footer",
+    "auth-form",
+    "onboarding-wizard",
+    "content-uploader",
+    "form",
+    "chip-multiselect",
+    "spatial-card-stack",
+    "swipe-action-bar",
+    "hero",
+    "bottom-tab-bar",
+    "presence-avatars",
+    "stats-bar",
+    "avatar-grid-tile",
+    "conversation-list",
+    "chat-header",
+    "chat-thread",
+    "chat-input",
+    "mobile-profile-hero",
+    "tech-pills",
+    "settings-nav"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "mutation-existing-topology",
+      "label": "Modified routes remain coherent with the compiled topology unless the essence changes first.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-theme-contract",
+      "label": "Theme, shell, and page identity stay aligned with the current contract during edits.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-page-pack-first",
+      "label": "Route-local edits should start from the compiled page pack rather than improvised structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "mutationType": "modify",
+    "shell": "top-nav-footer",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routing": "history",
+    "features": [
+      "marketing",
+      "seo",
+      "conversion",
+      "demo-mode",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker",
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "keyboard-shortcuts",
+      "theme-toggle"
+    ],
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "marketing-swipecircle",
+        "path": "/",
+        "patternIds": [
+          "hero-split",
+          "cta-section",
+          "features",
+          "how-it-works",
+          "testimonials",
+          "footer"
+        ],
+        "shell": "top-nav-footer"
+      },
+      {
+        "pageId": "login",
+        "sectionId": "auth-full",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "account-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/signup",
+        "patternIds": [
+          "onboarding-wizard",
+          "auth-form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "profile-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/profile",
+        "patternIds": [
+          "onboarding-wizard",
+          "content-uploader",
+          "form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "interests-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/interests",
+        "patternIds": [
+          "onboarding-wizard",
+          "chip-multiselect",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "discover",
+        "sectionId": "swipe-feed",
+        "path": "/discover",
+        "patternIds": [
+          "filter-bar",
+          "spatial-card-stack",
+          "swipe-action-bar",
+          "match-celebration",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "matches",
+        "sectionId": "swipe-feed",
+        "path": "/matches",
+        "patternIds": [
+          "presence-avatars",
+          "stats-bar",
+          "avatar-grid-tile",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-list",
+        "sectionId": "swipe-feed",
+        "path": "/chat",
+        "patternIds": [
+          "conversation-list",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-thread",
+        "sectionId": "swipe-feed",
+        "path": "/chat/:userId",
+        "patternIds": [
+          "chat-header",
+          "chat-thread",
+          "chat-input",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-own",
+        "sectionId": "swipe-feed",
+        "path": "/me",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "settings-nav",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-other",
+        "sectionId": "swipe-feed",
+        "path": "/u/:userId",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "settings",
+        "sectionId": "swipe-feed",
+        "path": "/settings",
+        "patternIds": [
+          "settings-nav",
+          "form",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      }
+    ],
+    "workflow": [
+      "Read the page pack for the route you are modifying first.",
+      "Stop and update the essence before changing route, shell, or pattern contracts.",
+      "Validate and check drift after code changes complete."
+    ]
+  },
+  "renderedMarkdown": "# Mutation Pack\n\n**Objective:** Execute the modify workflow against the compiled app contract.\n**Target:** react-vite (react)\n**Scope:** pages=home, login, account-step, profile-step, interests-step, discover, matches, chat-list, chat-thread, profile-own, profile-other, settings | patterns=hero-split, cta-section, features, how-it-works, testimonials, footer, auth-form, onboarding-wizard, content-uploader, form, chip-multiselect, filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar, presence-avatars, stats-bar, avatar-grid-tile, conversation-list, chat-header, chat-thread, chat-input, mobile-profile-hero, tech-pills, settings-nav\n\n## Mutation Contract\n- Operation: modify\n- Shell: top-nav-footer\n- Theme: swipecircle (light)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: marketing, seo, conversion, demo-mode, auth, mfa, oauth, email-verification, password-reset, photo-upload, step-validation, form-validation, interests-picker, swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, keyboard-shortcuts, theme-toggle\n\n## Route Topology\n- / -> marketing-swipecircle/home @ top-nav-footer [hero-split, cta-section, features, how-it-works, testimonials, footer]\n- /login -> auth-full/login @ centered [auth-form]\n- /signup -> onboarding-wizard/account-step @ centered [onboarding-wizard, auth-form, cta-section]\n- /onboarding/profile -> onboarding-wizard/profile-step @ centered [onboarding-wizard, content-uploader, form, cta-section]\n- /onboarding/interests -> onboarding-wizard/interests-step @ centered [onboarding-wizard, chip-multiselect, cta-section]\n- /discover -> swipe-feed/discover @ mobile-tab-bar [filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar]\n- /matches -> swipe-feed/matches @ mobile-tab-bar [presence-avatars, stats-bar, avatar-grid-tile, hero, bottom-tab-bar]\n- /chat -> swipe-feed/chat-list @ mobile-tab-bar [conversation-list, hero, bottom-tab-bar]\n- /chat/:userId -> swipe-feed/chat-thread @ mobile-tab-bar [chat-header, chat-thread, chat-input, bottom-tab-bar]\n- /me -> swipe-feed/profile-own @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, settings-nav, bottom-tab-bar]\n- /u/:userId -> swipe-feed/profile-other @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, bottom-tab-bar]\n- /settings -> swipe-feed/settings @ mobile-tab-bar [settings-nav, form, bottom-tab-bar]\n\n## Workflow\n- Read the page pack for the route you are modifying first.\n- Stop and update the essence before changing route, shell, or pattern contracts.\n- Validate and check drift after code changes complete.\n\n## Required Setup\n- Treat the compiled topology as the source of truth until the essence changes.\n- Refresh Decantr context after structural mutations so downstream tasks read current packs.\n\n## Allowed Vocabulary\n- modify\n- top-nav-footer\n- swipecircle\n- light\n- marketing\n- seo\n- conversion\n- demo-mode\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- photo-upload\n- step-validation\n- form-validation\n- interests-picker\n- swipe-deck\n- matches\n- match-celebration\n- chat\n- profile\n- filter-bar\n- tab-navigation\n- empty-states\n- keyboard-shortcuts\n- theme-toggle\n- hero-split\n- cta-section\n- features\n- how-it-works\n- testimonials\n- footer\n- auth-form\n- onboarding-wizard\n- content-uploader\n- form\n- chip-multiselect\n- spatial-card-stack\n- swipe-action-bar\n- hero\n- bottom-tab-bar\n- presence-avatars\n- stats-bar\n- avatar-grid-tile\n- conversation-list\n- chat-header\n- chat-thread\n- chat-input\n- mobile-profile-hero\n- tech-pills\n- settings-nav\n\n## Success Checks\n- Modified routes remain coherent with the compiled topology unless the essence changes first. [error]\n- Theme, shell, and page identity stay aligned with the current contract during edits. [error]\n- Route-local edits should start from the compiled page pack rather than improvised structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

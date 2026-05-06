@@ -636,6 +636,12 @@ export interface ShowcaseManifestEntry {
   target?: string | null;
   goldenCandidate?: string | boolean;
   notes?: string | null;
+  thumbnail?: {
+    src: string;
+    alt: string;
+    width?: number;
+    height?: number;
+  } | null;
   url?: string | null;
   verification?: ShowcaseVerificationEntry | null;
 }

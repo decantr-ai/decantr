@@ -1,0 +1,231 @@
+{
+  "version": "3.1.0",
+  "dna": {
+    "theme": {
+      "id": "editorial",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 2
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "none",
+      "duration_scale": 1,
+      "reduce_motion": true
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "Focused editorial workspace for writers and editors. The interface should feel quiet, efficient, and typographically disciplined. Writing and publishing tools are present, but the chrome stays secondary to the article work itself. Think editorial CMS rather than noisy analytics dashboard."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "content-author",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [
+          "editing",
+          "publishing",
+          "auto-save",
+          "markdown"
+        ],
+        "description": "Author and editor dashboard for managing drafts, editing articles, and viewing published content. Functional workspace focused on writing productivity.",
+        "pages": [
+          {
+            "id": "drafts",
+            "layout": [
+              {
+                "pattern": "data-table",
+                "preset": "standard"
+              }
+            ],
+            "route": "/drafts"
+          },
+          {
+            "id": "editor",
+            "layout": [
+              {
+                "pattern": "doc-editor",
+                "preset": "standard"
+              }
+            ],
+            "route": "/drafts/:id"
+          },
+          {
+            "id": "published",
+            "layout": [
+              {
+                "pattern": "data-table",
+                "preset": "standard"
+              }
+            ],
+            "route": "/published"
+          }
+        ]
+      },
+      {
+        "id": "auth-flow",
+        "role": "gateway",
+        "shell": "centered",
+        "features": [
+          "auth"
+        ],
+        "description": "Login, registration, and password recovery with OAuth support",
+        "pages": [
+          {
+            "id": "login",
+            "layout": [
+              "auth-form"
+            ],
+            "route": "/login"
+          },
+          {
+            "id": "register",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "register"
+              }
+            ],
+            "route": "/register"
+          },
+          {
+            "id": "forgot-password",
+            "layout": [
+              {
+                "pattern": "auth-form",
+                "preset": "reset"
+              }
+            ],
+            "route": "/forgot-password"
+          }
+        ]
+      },
+      {
+        "id": "settings",
+        "role": "auxiliary",
+        "shell": "sidebar-main",
+        "features": [],
+        "description": "Application settings and preferences page",
+        "pages": [
+          {
+            "id": "settings",
+            "layout": [
+              {
+                "pattern": "form-sections",
+                "preset": "settings"
+              }
+            ],
+            "route": "/settings"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "editing",
+      "publishing",
+      "auto-save",
+      "markdown",
+      "auth",
+      "theme-toggle"
+    ],
+    "routes": {
+      "/login": {
+        "section": "auth-flow",
+        "page": "login"
+      },
+      "/register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/forgot-password": {
+        "section": "auth-flow",
+        "page": "forgot-password"
+      },
+      "/drafts": {
+        "section": "content-author",
+        "page": "drafts"
+      },
+      "/drafts/:id": {
+        "section": "content-author",
+        "page": "editor"
+      },
+      "/published": {
+        "section": "content-author",
+        "page": "published"
+      },
+      "/settings": {
+        "section": "settings",
+        "page": "settings"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "content-author",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "history"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebApplication"
+      ],
+      "meta_priorities": [
+        "description"
+      ]
+    },
+    "navigation": {
+      "command_palette": true,
+      "hotkeys": [
+        {
+          "key": "g d",
+          "route": "/drafts",
+          "label": "Go to Drafts"
+        },
+        {
+          "key": "g p",
+          "route": "/published",
+          "label": "Go to Published"
+        },
+        {
+          "key": "g s",
+          "route": "/settings",
+          "label": "Go to Settings"
+        }
+      ]
+    }
+  }
+}

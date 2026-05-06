@@ -1,43 +1,521 @@
 {
   "apps": [
-    { "slug": "agent-marketplace", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "agent-studio", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "ai-copilot-shell", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: relatively low drift signal for the current corpus, but still legacy output with no compiled pack manifest." },
-    { "slug": "ai-native-crm", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "ai-video-studio", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "carbon-ai-portal", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: lower-noise React/Vite scaffold worth preserving as benchmark evidence." },
-    { "slug": "civic-platform", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "climate-dashboard", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "cloud-platform", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "content-site", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: useful marketing/content benchmark with lower drift than most of the corpus." },
-    { "slug": "creator-monetization-platform", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "data-pipeline-studio", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "deal-room", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "ecommerce", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "ecommerce-admin", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "esports-hq", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "event-community-hub", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "financial-dashboard", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "fractional-ownership", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "gaming-platform", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "health-wellness-portal", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "legal-research", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "multi-tenant-platform", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "observability-platform", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "portfolio", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: currently the lowest-noise active showcase app in the corpus." },
-    { "slug": "producer-studio", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "product-landing", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: strong landing-page benchmark despite legacy inline-style drift." },
-    { "slug": "property-management-portal", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "realtime-collaboration-workspace", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "recipe-community", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "registry-platform", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: strategically relevant to Decantr and relatively low-noise for the current corpus." },
-    { "slug": "research-lab", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "restaurant-ops", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "saas-dashboard", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "spatial-collaboration", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: lower-noise than most app-style showcases while still exercising richer UI surfaces." },
-    { "slug": "knowledge-base", "status": "active", "classification": "B", "origin": "attempted-blueprint-scaffold", "target": "react-vite", "goldenCandidate": "shortlist", "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: useful content-heavy benchmark with moderate Decantr treatment adoption." },
-    { "slug": "terminal-dashboard", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
-    { "slug": "two-sided-marketplace", "status": "active", "classification": "pending", "origin": "attempted-blueprint-scaffold" },
+    {
+      "slug": "agent-marketplace",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/agent-marketplace.png",
+        "alt": "Agent Marketplace blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "agent-studio",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/agent-studio.png",
+        "alt": "Agent Studio blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "ai-copilot-shell",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: relatively low drift signal for the current corpus, but still legacy output with no compiled pack manifest.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/ai-copilot-shell.png",
+        "alt": "Ai Copilot Shell blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "ai-native-crm",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/ai-native-crm.png",
+        "alt": "Ai Native Crm blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "ai-video-studio",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/ai-video-studio.png",
+        "alt": "Ai Video Studio blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "carbon-ai-portal",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: lower-noise React/Vite scaffold worth preserving as benchmark evidence.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/carbon-ai-portal.png",
+        "alt": "Carbon Ai Portal blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "civic-platform",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/civic-platform.png",
+        "alt": "Civic Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "climate-dashboard",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/climate-dashboard.png",
+        "alt": "Climate Dashboard blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "cloud-platform",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/cloud-platform.png",
+        "alt": "Cloud Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "content-site",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: useful marketing/content benchmark with lower drift than most of the corpus.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/content-site.png",
+        "alt": "Content Site blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "content-studio",
+      "status": "active",
+      "classification": "pending",
+      "origin": "blueprint-harness-promotion",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/content-studio.png",
+        "alt": "Content Studio blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "creator-monetization-platform",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/creator-monetization-platform.png",
+        "alt": "Creator Monetization Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "data-pipeline-studio",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/data-pipeline-studio.png",
+        "alt": "Data Pipeline Studio blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "deal-room",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/deal-room.png",
+        "alt": "Deal Room blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "ecommerce",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/ecommerce.png",
+        "alt": "Ecommerce blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "ecommerce-admin",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/ecommerce-admin.png",
+        "alt": "Ecommerce Admin blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "esports-hq",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/esports-hq.png",
+        "alt": "Esports Hq blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "event-community-hub",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/event-community-hub.png",
+        "alt": "Event Community Hub blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "financial-dashboard",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/financial-dashboard.png",
+        "alt": "Financial Dashboard blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "fractional-ownership",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/fractional-ownership.png",
+        "alt": "Fractional Ownership blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "gaming-platform",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/gaming-platform.png",
+        "alt": "Gaming Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "health-wellness-portal",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/health-wellness-portal.png",
+        "alt": "Health Wellness Portal blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "knowledge-base",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: useful content-heavy benchmark with moderate Decantr treatment adoption.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/knowledge-base.png",
+        "alt": "Knowledge Base blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "legal-research",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/legal-research.png",
+        "alt": "Legal Research blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "multi-tenant-platform",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/multi-tenant-platform.png",
+        "alt": "Multi Tenant Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "observability-platform",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/observability-platform.png",
+        "alt": "Observability Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "portfolio",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: currently the lowest-noise active showcase app in the corpus.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/portfolio.png",
+        "alt": "Portfolio blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "producer-studio",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/producer-studio.png",
+        "alt": "Producer Studio blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "product-landing",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: strong landing-page benchmark despite legacy inline-style drift.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/product-landing.png",
+        "alt": "Product Landing blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "property-management-portal",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/property-management-portal.png",
+        "alt": "Property Management Portal blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "realtime-collaboration-workspace",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/realtime-collaboration-workspace.png",
+        "alt": "Realtime Collaboration Workspace blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "recipe-community",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/recipe-community.png",
+        "alt": "Recipe Community blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "recipefork",
+      "status": "active",
+      "classification": "pending",
+      "origin": "blueprint-harness-promotion",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/recipefork.png",
+        "alt": "Recipefork blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "registry-platform",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: strategically relevant to Decantr and relatively low-noise for the current corpus.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/registry-platform.png",
+        "alt": "Registry Platform blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "research-lab",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/research-lab.png",
+        "alt": "Research Lab blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "restaurant-ops",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/restaurant-ops.png",
+        "alt": "Restaurant Ops blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "saas-dashboard",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/saas-dashboard.png",
+        "alt": "Saas Dashboard blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "spatial-collaboration",
+      "status": "active",
+      "classification": "B",
+      "origin": "attempted-blueprint-scaffold",
+      "target": "react-vite",
+      "goldenCandidate": "shortlist",
+      "notes": "Provisional shortlist candidate from the 2026-04-08 heuristic audit baseline: lower-noise than most app-style showcases while still exercising richer UI surfaces.",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/spatial-collaboration.png",
+        "alt": "Spatial Collaboration blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "swipecircle",
+      "status": "active",
+      "classification": "pending",
+      "origin": "blueprint-harness-promotion",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/swipecircle.png",
+        "alt": "Swipecircle blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "terminal-dashboard",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/terminal-dashboard.png",
+        "alt": "Terminal Dashboard blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
+      "slug": "two-sided-marketplace",
+      "status": "active",
+      "classification": "pending",
+      "origin": "attempted-blueprint-scaffold",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/two-sided-marketplace.png",
+        "alt": "Two Sided Marketplace blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
     {
       "slug": "workbench",
       "status": "removed",

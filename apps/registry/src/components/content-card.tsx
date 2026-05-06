@@ -25,13 +25,27 @@ export function ContentCard({
   const showcaseUrl = showcaseMetadata?.verification?.build.passed && showcaseMetadata?.verification?.smoke.passed
     ? getShowcaseUrl(item.slug, showcaseMetadata)
     : null;
+  const isBlueprint = typePresentation.singular === 'blueprint';
+  const previewImageUrl = showcaseMetadata?.thumbnail?.src ?? item.thumbnail_url ?? null;
+  const showcaseStatusLabel = isBlueprint
+    ? showcaseMetadata?.goldenCandidate
+      ? 'Benchmark'
+      : showcaseUrl
+      ? 'Live showcase'
+      : 'Showcase pending'
+    : null;
+  const showcaseStatus = showcaseMetadata?.goldenCandidate
+    ? 'benchmark'
+    : showcaseUrl
+    ? 'live'
+    : 'pending';
 
   return (
     <article className="lum-card-outlined registry-card" data-type={typePresentation.singular}>
-      {item.thumbnail_url ? (
+      {previewImageUrl ? (
         <div className="registry-card-media">
           <img
-            src={item.thumbnail_url}
+            src={previewImageUrl}
             alt={`${name} preview`}
             className="registry-card-media-image"
             loading="lazy"
@@ -64,6 +78,12 @@ export function ContentCard({
               <span className="registry-card-meta-item">{formatContentDate(item.published_at)}</span>
             ) : null}
           </div>
+
+          {showcaseStatusLabel ? (
+            <span className="registry-card-showcase-status" data-status={showcaseStatus}>
+              {showcaseStatusLabel}
+            </span>
+          ) : null}
 
           <div className="registry-card-action-row">
             <Link href={href} className="d-interactive registry-card-open" data-variant="primary">

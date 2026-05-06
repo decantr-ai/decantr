@@ -1,0 +1,69 @@
+/* Editorial theme decorators */
+@layer decorators {
+
+/* ── Clean card with hairline border and generous whitespace ── */
+.editorial-card {
+  background: var(--d-surface);
+  border: 1px solid var(--d-border);
+  padding: var(--d-surface-p);
+}
+
+/* ── Small uppercase caption text ── */
+.editorial-caption {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--d-text-muted);
+}
+
+/* ── Thin separator with generous spacing ── */
+.editorial-divider {
+  border: none;
+  border-top: 1px solid var(--d-border);
+  margin: 2rem 0;
+}
+
+/* ── Oversized initial letter for article openings ── */
+.editorial-dropcap::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.8;
+  font-weight: 700;
+  margin-right: 0.1em;
+  margin-top: 0.05em;
+  color: var(--d-text);
+}
+
+/* ── Large italic pullquote with left accent border ── */
+.editorial-pullquote {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.25rem;
+  font-style: italic;
+  line-height: 1.6;
+  border-left: 3px solid var(--d-secondary, #c41e3a);
+  padding-left: 1.5rem;
+  margin: 2.5rem 0;
+  color: var(--d-text);
+}
+
+/* ── Accent link hover ── */
+.editorial-link {
+  color: var(--d-accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 150ms ease;
+}
+
+.editorial-link:hover {
+  border-bottom-color: var(--d-accent);
+}
+
+/* ── Subtle raised surface for feature cards ── */
+.editorial-raised {
+  background: var(--d-surface-raised);
+  border: 1px solid var(--d-border);
+}
+
+} /* end @layer decorators */

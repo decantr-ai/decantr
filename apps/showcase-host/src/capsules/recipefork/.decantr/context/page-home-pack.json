@@ -1,0 +1,147 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the home route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home"
+    ],
+    "patternIds": [
+      "hero",
+      "card-grid",
+      "testimonials",
+      "cta-section"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "home",
+    "recipefork-top-nav",
+    "recipefork-landing",
+    "public",
+    "recipefork",
+    "light",
+    "marketing",
+    "seo",
+    "hero",
+    "stack",
+    "card-grid",
+    "grid",
+    "testimonials",
+    "cta-section"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "home",
+    "path": "/",
+    "shell": "recipefork-top-nav",
+    "sectionId": "recipefork-landing",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "hero",
+        "alias": "hero",
+        "preset": "landing",
+        "layout": "stack",
+        "presetDescription": "Centered headline + CTA + optional media",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scale-hover",
+          "glow-hover",
+          "float-idle"
+        ]
+      },
+      {
+        "id": "card-grid",
+        "alias": "card-grid",
+        "preset": "content",
+        "layout": "grid",
+        "presetDescription": "Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.",
+        "interactions": [
+          "lift-hover",
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "scroll-reveal"
+        ]
+      },
+      {
+        "id": "testimonials",
+        "alias": "testimonials",
+        "preset": "grid",
+        "layout": "grid",
+        "presetDescription": "Grid of testimonial cards, each with quote, avatar, name, and role",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "scroll-reveal",
+          "drag-reorder"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "standard",
+        "layout": "hero",
+        "presetDescription": "Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      }
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the home route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=home | patterns=hero, card-grid, testimonials, cta-section\n\n## Page Contract\n- Page: home\n- Path: /\n- Shell: recipefork-top-nav\n- Section: recipefork-landing (public)\n- Theme: recipefork (light)\n- Features: marketing, seo\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- hero -> hero [stack | landing]\n  > Centered headline + CTA + optional media\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scale-hover\n  - [ ] glow-hover\n  - [ ] float-idle\n- card-grid -> card-grid [grid | content]\n  > Content/blog cards with thumbnail, title, excerpt, author, date. Grid: 1/2/3 cols.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- testimonials -> testimonials [grid | grid]\n  > Grid of testimonial cards, each with quote, avatar, name, and role\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] scroll-reveal\n  - [ ] drag-reorder\n- cta-section -> cta-section [hero | standard]\n  > Centered headline + subtext + primary/secondary buttons. Background can have gradient or subtle pattern.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

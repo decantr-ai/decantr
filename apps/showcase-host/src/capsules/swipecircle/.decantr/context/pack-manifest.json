@@ -1,0 +1,157 @@
+{
+  "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-05-06T12:44:08.497Z",
+  "scaffold": {
+    "id": "scaffold",
+    "markdown": "scaffold-pack.md",
+    "json": "scaffold-pack.json"
+  },
+  "review": {
+    "id": "review",
+    "markdown": "review-pack.md",
+    "json": "review-pack.json"
+  },
+  "sections": [
+    {
+      "id": "marketing-swipecircle",
+      "markdown": "section-marketing-swipecircle-pack.md",
+      "json": "section-marketing-swipecircle-pack.json",
+      "pageIds": [
+        "home"
+      ]
+    },
+    {
+      "id": "auth-full",
+      "markdown": "section-auth-full-pack.md",
+      "json": "section-auth-full-pack.json",
+      "pageIds": [
+        "login"
+      ]
+    },
+    {
+      "id": "onboarding-wizard",
+      "markdown": "section-onboarding-wizard-pack.md",
+      "json": "section-onboarding-wizard-pack.json",
+      "pageIds": [
+        "account-step",
+        "profile-step",
+        "interests-step"
+      ]
+    },
+    {
+      "id": "swipe-feed",
+      "markdown": "section-swipe-feed-pack.md",
+      "json": "section-swipe-feed-pack.json",
+      "pageIds": [
+        "discover",
+        "matches",
+        "chat-list",
+        "chat-thread",
+        "profile-own",
+        "profile-other",
+        "settings"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "markdown": "page-home-pack.md",
+      "json": "page-home-pack.json",
+      "sectionId": "marketing-swipecircle",
+      "sectionRole": "public"
+    },
+    {
+      "id": "login",
+      "markdown": "page-login-pack.md",
+      "json": "page-login-pack.json",
+      "sectionId": "auth-full",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "account-step",
+      "markdown": "page-account-step-pack.md",
+      "json": "page-account-step-pack.json",
+      "sectionId": "onboarding-wizard",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "profile-step",
+      "markdown": "page-profile-step-pack.md",
+      "json": "page-profile-step-pack.json",
+      "sectionId": "onboarding-wizard",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "interests-step",
+      "markdown": "page-interests-step-pack.md",
+      "json": "page-interests-step-pack.json",
+      "sectionId": "onboarding-wizard",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "discover",
+      "markdown": "page-discover-pack.md",
+      "json": "page-discover-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "matches",
+      "markdown": "page-matches-pack.md",
+      "json": "page-matches-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "chat-list",
+      "markdown": "page-chat-list-pack.md",
+      "json": "page-chat-list-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "chat-thread",
+      "markdown": "page-chat-thread-pack.md",
+      "json": "page-chat-thread-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "profile-own",
+      "markdown": "page-profile-own-pack.md",
+      "json": "page-profile-own-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "profile-other",
+      "markdown": "page-profile-other-pack.md",
+      "json": "page-profile-other-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    },
+    {
+      "id": "settings",
+      "markdown": "page-settings-pack.md",
+      "json": "page-settings-pack.json",
+      "sectionId": "swipe-feed",
+      "sectionRole": "primary"
+    }
+  ],
+  "mutations": [
+    {
+      "id": "add-page",
+      "markdown": "mutation-add-page-pack.md",
+      "json": "mutation-add-page-pack.json",
+      "mutationType": "add-page"
+    },
+    {
+      "id": "modify",
+      "markdown": "mutation-modify-pack.md",
+      "json": "mutation-modify-pack.json",
+      "mutationType": "modify"
+    }
+  ]
+}

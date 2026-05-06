@@ -1,0 +1,167 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the chat-thread route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "chat-thread"
+    ],
+    "patternIds": [
+      "chat-header",
+      "chat-thread",
+      "chat-input",
+      "bottom-tab-bar"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "chat-thread",
+    "mobile-tab-bar",
+    "swipe-feed",
+    "primary",
+    "swipecircle",
+    "light",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "demo-mode",
+    "keyboard-shortcuts",
+    "chat-header",
+    "row",
+    "stack",
+    "chat-input",
+    "bottom-tab-bar",
+    "flex-row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "chat-thread",
+    "path": "/chat/:userId",
+    "shell": "mobile-tab-bar",
+    "sectionId": "swipe-feed",
+    "sectionRole": "primary",
+    "features": [
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "demo-mode",
+      "keyboard-shortcuts"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "chat-header",
+        "alias": "chat-header",
+        "preset": "compact",
+        "layout": "row",
+        "presetDescription": "Minimal header for mobile or constrained layouts",
+        "interactions": [
+          "hover-reveal",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "chat-thread",
+        "alias": "chat-thread",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Standard chat thread with messages and anchored input",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "real-time-updates",
+          "scroll-reveal",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "chat-input",
+        "alias": "chat-input",
+        "preset": "standard",
+        "layout": "stack",
+        "presetDescription": "Auto-expanding textarea with attach and send buttons",
+        "interactions": [
+          "inline-edit",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "bottom-tab-bar",
+        "alias": "bottom-tab-bar",
+        "preset": "standard",
+        "layout": "flex-row",
+        "presetDescription": "Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.",
+        "interactions": [
+          "click-select",
+          "scale-hover",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      }
+    ],
+    "directives": [
+      "Chat header has back-button (left), partner avatar + name (center, tap → opens /u/:userId), and a More menu (right) for mute/block/report.",
+      "Messages area is the only scrolling region. My messages render right-aligned with coral fill (swipecircle-bubble decorator); their messages render left-aligned with cream fill.",
+      "Pre-populated mock conversation: 4-6 messages showing realistic banter (greeting, question, response, follow-up).",
+      "Composer at the bottom: rounded-pill text input with auto-grow (max 4 lines), Smile/Attach icons inside, Send button (coral pill) appears on right when input is non-empty.",
+      "Bottom-tab-bar remains visible by default. On input focus, hide tab-bar with a 200ms slide-down to maximize keyboard space; restore on blur."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the chat-thread route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=chat-thread | patterns=chat-header, chat-thread, chat-input, bottom-tab-bar\n\n## Page Contract\n- Page: chat-thread\n- Path: /chat/:userId\n- Shell: mobile-tab-bar\n- Section: swipe-feed (primary)\n- Theme: swipecircle (light)\n- Features: swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, demo-mode, keyboard-shortcuts\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- chat-header -> chat-header [row | compact]\n  > Minimal header for mobile or constrained layouts\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] animate-on-mount\n- chat-thread -> chat-thread [stack | standard]\n  > Standard chat thread with messages and anchored input\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] scroll-reveal\n  - [ ] keyboard-navigation\n- chat-input -> chat-input [stack | standard]\n  > Auto-expanding textarea with attach and send buttons\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n- bottom-tab-bar -> bottom-tab-bar [flex-row | standard]\n  > Four-item bottom tab bar with icon above label. Active item has color-shift, icon scale, and underline dot. Sticky bottom on mobile, sticky bottom of centered column on desktop.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] scale-hover\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Chat header has back-button (left), partner avatar + name (center, tap → opens /u/:userId), and a More menu (right) for mute/block/report.\n- Messages area is the only scrolling region. My messages render right-aligned with coral fill (swipecircle-bubble decorator); their messages render left-aligned with cream fill.\n- Pre-populated mock conversation: 4-6 messages showing realistic banter (greeting, question, response, follow-up).\n- Composer at the bottom: rounded-pill text input with auto-grow (max 4 lines), Smile/Attach icons inside, Send button (coral pill) appears on right when input is non-empty.\n- Bottom-tab-bar remains visible by default. On input focus, hide tab-bar with a 200ms slide-down to maximize keyboard space; restore on blur.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

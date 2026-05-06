@@ -24,6 +24,8 @@ describe('GET /v1/showcase/*', () => {
     expect(json.apps.some((entry: { slug: string }) => entry.slug === 'portfolio')).toBe(true);
     const shortlistEntry = json.apps.find((entry: { slug: string }) => entry.slug === 'portfolio');
     expect(shortlistEntry?.url).toBe('/showcase/portfolio');
+    expect(shortlistEntry?.thumbnail?.src).toBe('/showcase/thumbnails/portfolio.png');
+    expect(shortlistEntry?.thumbnail?.width).toBe(1600);
     expect(shortlistEntry?.verification?.verificationStatus).toBe('smoke-green');
     expect(
       json.apps.every(

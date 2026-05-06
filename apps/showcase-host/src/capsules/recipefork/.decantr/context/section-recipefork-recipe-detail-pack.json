@@ -1,0 +1,126 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the recipefork-recipe-detail section using the compiled recipefork-top-nav shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "recipe-detail"
+    ],
+    "patternIds": [
+      "hero",
+      "detail-header",
+      "recipefork-fork-provenance",
+      "recipefork-chef-ingredients-display",
+      "recipefork-chef-instructions-display",
+      "recipefork-presentation-display",
+      "recipefork-cooking-tips-display",
+      "comment-thread"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "recipefork-recipe-detail",
+    "primary",
+    "recipefork-top-nav",
+    "recipefork",
+    "light",
+    "sharing",
+    "comments",
+    "reactions",
+    "forking",
+    "chef-mode",
+    "presentation",
+    "cooking-tips",
+    "lineage",
+    "branch-analytics",
+    "hero",
+    "detail-header",
+    "recipefork-fork-provenance",
+    "recipefork-chef-ingredients-display",
+    "recipefork-chef-instructions-display",
+    "recipefork-presentation-display",
+    "recipefork-cooking-tips-display",
+    "comment-thread"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "recipefork-recipe-detail",
+    "role": "primary",
+    "shell": "recipefork-top-nav",
+    "description": "Recipefork's recipe detail surface with hero imagery, summary/actions, Chef Mode ingredient and instruction displays, optional plating presentation, dynamic cooking tips, public provenance attribution, owner-only branch analytics, and comments, all under the shared Recipefork top-nav shell.",
+    "features": [
+      "sharing",
+      "comments",
+      "reactions",
+      "forking",
+      "chef-mode",
+      "presentation",
+      "cooking-tips",
+      "lineage",
+      "branch-analytics"
+    ],
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "recipe-detail",
+        "sectionId": "recipefork-recipe-detail",
+        "path": "/recipe/:id",
+        "patternIds": [
+          "hero",
+          "detail-header",
+          "recipefork-fork-provenance",
+          "recipefork-chef-ingredients-display",
+          "recipefork-chef-instructions-display",
+          "recipefork-presentation-display",
+          "recipefork-cooking-tips-display",
+          "comment-thread"
+        ],
+        "shell": "recipefork-top-nav"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the recipefork-recipe-detail section using the compiled recipefork-top-nav shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=recipe-detail | patterns=hero, detail-header, recipefork-fork-provenance, recipefork-chef-ingredients-display, recipefork-chef-instructions-display, recipefork-presentation-display, recipefork-cooking-tips-display, comment-thread\n\n## Section Contract\n- Section: recipefork-recipe-detail\n- Role: primary\n- Shell: recipefork-top-nav\n- Theme: recipefork (light)\n- Features: sharing, comments, reactions, forking, chef-mode, presentation, cooking-tips, lineage, branch-analytics\n- Description: Recipefork's recipe detail surface with hero imagery, summary/actions, Chef Mode ingredient and instruction displays, optional plating presentation, dynamic cooking tips, public provenance attribution, owner-only branch analytics, and comments, all under the shared Recipefork top-nav shell.\n\n## Section Routes\n- /recipe/:id -> recipefork-recipe-detail/recipe-detail @ recipefork-top-nav [hero, detail-header, recipefork-fork-provenance, recipefork-chef-ingredients-display, recipefork-chef-instructions-display, recipefork-presentation-display, recipefork-cooking-tips-display, comment-thread]\n\n## Theme Decorators\n\nTheme `recipefork` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- recipefork-recipe-detail\n- primary\n- recipefork-top-nav\n- recipefork\n- light\n- sharing\n- comments\n- reactions\n- forking\n- chef-mode\n- presentation\n- cooking-tips\n- lineage\n- branch-analytics\n- hero\n- detail-header\n- recipefork-fork-provenance\n- recipefork-chef-ingredients-display\n- recipefork-chef-instructions-display\n- recipefork-presentation-display\n- recipefork-cooking-tips-display\n- comment-thread\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

@@ -1,0 +1,419 @@
+{
+  "$schema": "https://decantr.ai/schemas/scaffold-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "scaffold",
+  "objective": "Scaffold the swipecircle app shell and declared routes.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home",
+      "login",
+      "account-step",
+      "profile-step",
+      "interests-step",
+      "discover",
+      "matches",
+      "chat-list",
+      "chat-thread",
+      "profile-own",
+      "profile-other",
+      "settings"
+    ],
+    "patternIds": [
+      "hero-split",
+      "cta-section",
+      "features",
+      "how-it-works",
+      "testimonials",
+      "footer",
+      "auth-form",
+      "onboarding-wizard",
+      "content-uploader",
+      "form",
+      "chip-multiselect",
+      "filter-bar",
+      "spatial-card-stack",
+      "swipe-action-bar",
+      "match-celebration",
+      "hero",
+      "bottom-tab-bar",
+      "presence-avatars",
+      "stats-bar",
+      "avatar-grid-tile",
+      "conversation-list",
+      "chat-header",
+      "chat-thread",
+      "chat-input",
+      "mobile-profile-hero",
+      "tech-pills",
+      "settings-nav"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the declared routes as the topology source of truth.",
+    "Preserve the resolved theme and shell contract unless the task explicitly mutates them."
+  ],
+  "allowedVocabulary": [
+    "top-nav-footer",
+    "swipecircle",
+    "light",
+    "marketing",
+    "seo",
+    "conversion",
+    "demo-mode",
+    "auth",
+    "mfa",
+    "oauth",
+    "email-verification",
+    "password-reset",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "keyboard-shortcuts",
+    "theme-toggle",
+    "hero-split",
+    "cta-section",
+    "features",
+    "how-it-works",
+    "testimonials",
+    "footer",
+    "auth-form",
+    "onboarding-wizard",
+    "content-uploader",
+    "form",
+    "chip-multiselect",
+    "spatial-card-stack",
+    "swipe-action-bar",
+    "hero",
+    "bottom-tab-bar",
+    "presence-avatars",
+    "stats-bar",
+    "avatar-grid-tile",
+    "conversation-list",
+    "chat-header",
+    "chat-thread",
+    "chat-input",
+    "mobile-profile-hero",
+    "tech-pills",
+    "settings-nav"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "route-topology",
+      "label": "Routes and page IDs match the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "shell-consistency",
+      "label": "The declared shell contract is preserved unless the task explicitly mutates it.",
+      "severity": "error"
+    },
+    {
+      "id": "theme-consistency",
+      "label": "Theme identity and mode remain consistent across scaffolded routes.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "shell": "top-nav-footer",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routing": "history",
+    "features": [
+      "marketing",
+      "seo",
+      "conversion",
+      "demo-mode",
+      "auth",
+      "mfa",
+      "oauth",
+      "email-verification",
+      "password-reset",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker",
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "keyboard-shortcuts",
+      "theme-toggle"
+    ],
+    "navigation": {
+      "commandPalette": false,
+      "hotkeys": [
+        {
+          "key": "ArrowLeft",
+          "label": "Pass on current card"
+        },
+        {
+          "key": "ArrowRight",
+          "label": "Like current card"
+        },
+        {
+          "key": "ArrowUp",
+          "label": "Super-like current card"
+        },
+        {
+          "key": "g d",
+          "route": "/discover",
+          "label": "Go to Discover"
+        },
+        {
+          "key": "g m",
+          "route": "/matches",
+          "label": "Go to Matches"
+        },
+        {
+          "key": "g c",
+          "route": "/chat",
+          "label": "Go to Chat"
+        },
+        {
+          "key": "g p",
+          "route": "/me",
+          "label": "Go to Profile"
+        }
+      ],
+      "hotkeySemantics": {
+        "chord_window_ms": 900,
+        "input_guard": true,
+        "modifier_suppression": true,
+        "match_case": false
+      }
+    },
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "marketing-swipecircle",
+        "path": "/",
+        "patternIds": [
+          "hero-split",
+          "cta-section",
+          "features",
+          "how-it-works",
+          "testimonials",
+          "footer"
+        ],
+        "shell": "top-nav-footer"
+      },
+      {
+        "pageId": "login",
+        "sectionId": "auth-full",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "account-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/signup",
+        "patternIds": [
+          "onboarding-wizard",
+          "auth-form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "profile-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/profile",
+        "patternIds": [
+          "onboarding-wizard",
+          "content-uploader",
+          "form",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "interests-step",
+        "sectionId": "onboarding-wizard",
+        "path": "/onboarding/interests",
+        "patternIds": [
+          "onboarding-wizard",
+          "chip-multiselect",
+          "cta-section"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "discover",
+        "sectionId": "swipe-feed",
+        "path": "/discover",
+        "patternIds": [
+          "filter-bar",
+          "spatial-card-stack",
+          "swipe-action-bar",
+          "match-celebration",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "matches",
+        "sectionId": "swipe-feed",
+        "path": "/matches",
+        "patternIds": [
+          "presence-avatars",
+          "stats-bar",
+          "avatar-grid-tile",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-list",
+        "sectionId": "swipe-feed",
+        "path": "/chat",
+        "patternIds": [
+          "conversation-list",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-thread",
+        "sectionId": "swipe-feed",
+        "path": "/chat/:userId",
+        "patternIds": [
+          "chat-header",
+          "chat-thread",
+          "chat-input",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-own",
+        "sectionId": "swipe-feed",
+        "path": "/me",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "settings-nav",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-other",
+        "sectionId": "swipe-feed",
+        "path": "/u/:userId",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "settings",
+        "sectionId": "swipe-feed",
+        "path": "/settings",
+        "patternIds": [
+          "settings-nav",
+          "form",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      }
+    ],
+    "themeDecorators": [
+      {
+        "class": "swipecircle-card",
+        "intent": "Use for swipe-deck cards and any content card that leads with imagery. The bottom gradient ensures text overlay remains readable against any photo. The coral-tinted shadow signals warmth without harshness — replaces neutral grey shadows that read as enterprise.",
+        "applyTo": "Swipe deck cards, Profile preview cards, Match cards, Story-style content cards"
+      },
+      {
+        "class": "swipecircle-pill",
+        "intent": "Use for ALL primary CTAs. The pill shape signals approachability over enterprise sharpness. The spring scale on press provides satisfying haptic-like feedback.",
+        "applyTo": "Primary CTAs, Sign Up / Log In buttons, Send Message / Edit Profile, Step navigation in onboarding"
+      },
+      {
+        "class": "swipecircle-tab-active",
+        "intent": "Use ONLY on the active tab in the bottom-tab-bar. The violet dot is the primary visual signal of selected state — bright enough to read at a glance, subtle enough not to scream. The icon scale provides a secondary cue.",
+        "applyTo": "Active bottom-tab item, Active step indicator in stepper, Selected filter chip"
+      },
+      {
+        "class": "swipecircle-match-burst",
+        "intent": "Use exclusively in the match-celebration overlay. The burst signals reward and joy. The slow rotate adds magic without distracting from the central avatars meeting.",
+        "applyTo": "First-match celebration overlay, Major milestone achievements, First message sent celebration"
+      },
+      {
+        "class": "swipecircle-photo-frame",
+        "intent": "Use for ALL avatar imagery (profile, matches, chat). The double-ring frame elevates the photo into a proper portrait — signals care for identity. Cream inner gap provides clean separation from any background.",
+        "applyTo": "Profile avatar, Match grid avatars, Chat header avatar, Card photo thumbnails"
+      },
+      {
+        "class": "swipecircle-chip-selected",
+        "intent": "Use in chip-multiselect (interest picker) for the selected state. The fill provides immediate clarity of selection. The check icon doubles down on accessibility for color-blind users.",
+        "applyTo": "Selected interest chips in onboarding, Selected filter chips, Selected category tags"
+      },
+      {
+        "class": "swipecircle-action-button",
+        "intent": "Use exclusively for the swipe-action-bar buttons. The size is intentionally generous (56-64px) for thumb-friendly mobile tapping. The color coding matches semantic meaning — heart for like (coral=love), X for pass (muted=neutral-no), star for super-like (violet=premium).",
+        "applyTo": "Swipe action bar (X, Heart, Star), Floating action buttons, Quick-action overlays on cards"
+      },
+      {
+        "class": "swipecircle-floating-bar",
+        "intent": "Use for the bottom-tab-bar shell region. The backdrop-blur lets content behind subtly bleed through, signaling that content continues underneath rather than being chopped. Soft border-top is the only visual separator — no harsh hairline.",
+        "applyTo": "Bottom-tab-bar container, Floating action bar above tabs, Sticky action footer in mobile flows"
+      },
+      {
+        "class": "swipecircle-bubble",
+        "intent": "Use for chat-message rendering. The fill colors instantly communicate ownership — coral for self, cream for partner. The directional tail (small triangle peeking from the bubble corner) reinforces conversational direction.",
+        "applyTo": "Chat message bubbles, Inline notification toasts, Mention popups"
+      },
+      {
+        "class": "swipecircle-grid-tile",
+        "intent": "Use for the matches-grid tiles. The square card with circular avatar inside creates a tidy grid rhythm while preserving the photo-portrait feel. The new-match violet dot is the primary signal of unseen matches.",
+        "applyTo": "Matches grid tiles, Friends list items, Discoverable people grid"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Scaffold Pack\n\n**Objective:** Scaffold the swipecircle app shell and declared routes.\n**Target:** react-vite (react)\n**Scope:** pages=home, login, account-step, profile-step, interests-step, discover, matches, chat-list, chat-thread, profile-own, profile-other, settings | patterns=hero-split, cta-section, features, how-it-works, testimonials, footer, auth-form, onboarding-wizard, content-uploader, form, chip-multiselect, filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar, presence-avatars, stats-bar, avatar-grid-tile, conversation-list, chat-header, chat-thread, chat-input, mobile-profile-hero, tech-pills, settings-nav\n\n## Scaffold Contract\n- Shell: top-nav-footer\n- Shells: top-nav-footer (primary), centered, mobile-tab-bar\n- Theme: swipecircle (light)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: marketing, seo, conversion, demo-mode, auth, mfa, oauth, email-verification, password-reset, photo-upload, step-validation, form-validation, interests-picker, swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, keyboard-shortcuts, theme-toggle\n- Navigation:\n  - Hotkeys (chord window 900ms; suppress during text-input focus; ignore when modifier held):\n    - ArrowLeft: Pass on current card\n    - ArrowRight: Like current card\n    - ArrowUp: Super-like current card\n    - g d: Go to Discover — /discover\n    - g m: Go to Matches — /matches\n    - g c: Go to Chat — /chat\n    - g p: Go to Profile — /me\n\n## Route Plan\n- / -> marketing-swipecircle/home @ top-nav-footer [hero-split, cta-section, features, how-it-works, testimonials, footer]\n- /login -> auth-full/login @ centered [auth-form]\n- /signup -> onboarding-wizard/account-step @ centered [onboarding-wizard, auth-form, cta-section]\n- /onboarding/profile -> onboarding-wizard/profile-step @ centered [onboarding-wizard, content-uploader, form, cta-section]\n- /onboarding/interests -> onboarding-wizard/interests-step @ centered [onboarding-wizard, chip-multiselect, cta-section]\n- /discover -> swipe-feed/discover @ mobile-tab-bar [filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar]\n- /matches -> swipe-feed/matches @ mobile-tab-bar [presence-avatars, stats-bar, avatar-grid-tile, hero, bottom-tab-bar]\n- /chat -> swipe-feed/chat-list @ mobile-tab-bar [conversation-list, hero, bottom-tab-bar]\n- /chat/:userId -> swipe-feed/chat-thread @ mobile-tab-bar [chat-header, chat-thread, chat-input, bottom-tab-bar]\n- /me -> swipe-feed/profile-own @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, settings-nav, bottom-tab-bar]\n- /u/:userId -> swipe-feed/profile-other @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, bottom-tab-bar]\n- /settings -> swipe-feed/settings @ mobile-tab-bar [settings-nav, form, bottom-tab-bar]\n\n## Required Theme Decorators (swipecircle)\n\nThese classes carry the active theme's visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these across all sections — without them, every page reads as \"themed colors only\" with no theme character. Section packs reference this table; the contract is project-wide.\n\n| Class | Intent | Apply to |\n|-------|--------|----------|\n| `.swipecircle-card` | Use for swipe-deck cards and any content card that leads with imagery. The bottom gradient ensures text overlay remains readable against any photo. The coral-tinted shadow signals warmth without harshness — replaces neutral grey shadows that read as enterprise. | Swipe deck cards, Profile preview cards, Match cards, Story-style content cards |\n| `.swipecircle-pill` | Use for ALL primary CTAs. The pill shape signals approachability over enterprise sharpness. The spring scale on press provides satisfying haptic-like feedback. | Primary CTAs, Sign Up / Log In buttons, Send Message / Edit Profile, Step navigation in onboarding |\n| `.swipecircle-tab-active` | Use ONLY on the active tab in the bottom-tab-bar. The violet dot is the primary visual signal of selected state — bright enough to read at a glance, subtle enough not to scream. The icon scale provides a secondary cue. | Active bottom-tab item, Active step indicator in stepper, Selected filter chip |\n| `.swipecircle-match-burst` | Use exclusively in the match-celebration overlay. The burst signals reward and joy. The slow rotate adds magic without distracting from the central avatars meeting. | First-match celebration overlay, Major milestone achievements, First message sent celebration |\n| `.swipecircle-photo-frame` | Use for ALL avatar imagery (profile, matches, chat). The double-ring frame elevates the photo into a proper portrait — signals care for identity. Cream inner gap provides clean separation from any background. | Profile avatar, Match grid avatars, Chat header avatar, Card photo thumbnails |\n| `.swipecircle-chip-selected` | Use in chip-multiselect (interest picker) for the selected state. The fill provides immediate clarity of selection. The check icon doubles down on accessibility for color-blind users. | Selected interest chips in onboarding, Selected filter chips, Selected category tags |\n| `.swipecircle-action-button` | Use exclusively for the swipe-action-bar buttons. The size is intentionally generous (56-64px) for thumb-friendly mobile tapping. The color coding matches semantic meaning — heart for like (coral=love), X for pass (muted=neutral-no), star for super-like (violet=premium). | Swipe action bar (X, Heart, Star), Floating action buttons, Quick-action overlays on cards |\n| `.swipecircle-floating-bar` | Use for the bottom-tab-bar shell region. The backdrop-blur lets content behind subtly bleed through, signaling that content continues underneath rather than being chopped. Soft border-top is the only visual separator — no harsh hairline. | Bottom-tab-bar container, Floating action bar above tabs, Sticky action footer in mobile flows |\n| `.swipecircle-bubble` | Use for chat-message rendering. The fill colors instantly communicate ownership — coral for self, cream for partner. The directional tail (small triangle peeking from the bubble corner) reinforces conversational direction. | Chat message bubbles, Inline notification toasts, Mention popups |\n| `.swipecircle-grid-tile` | Use for the matches-grid tiles. The square card with circular avatar inside creates a tidy grid rhythm while preserving the photo-portrait feel. The new-match violet dot is the primary signal of unseen matches. | Matches grid tiles, Friends list items, Discoverable people grid |\n\n## Required Setup\n- Treat the declared routes as the topology source of truth.\n- Preserve the resolved theme and shell contract unless the task explicitly mutates them.\n\n## Allowed Vocabulary\n- top-nav-footer\n- swipecircle\n- light\n- marketing\n- seo\n- conversion\n- demo-mode\n- auth\n- mfa\n- oauth\n- email-verification\n- password-reset\n- photo-upload\n- step-validation\n- form-validation\n- interests-picker\n- swipe-deck\n- matches\n- match-celebration\n- chat\n- profile\n- filter-bar\n- tab-navigation\n- empty-states\n- keyboard-shortcuts\n- theme-toggle\n- hero-split\n- cta-section\n- features\n- how-it-works\n- testimonials\n- footer\n- auth-form\n- onboarding-wizard\n- content-uploader\n- form\n- chip-multiselect\n- spatial-card-stack\n- swipe-action-bar\n- hero\n- bottom-tab-bar\n- presence-avatars\n- stats-bar\n- avatar-grid-tile\n- conversation-list\n- chat-header\n- chat-thread\n- chat-input\n- mobile-profile-hero\n- tech-pills\n- settings-nav\n\n## Success Checks\n- Routes and page IDs match the compiled topology. [error]\n- The declared shell contract is preserved unless the task explicitly mutates it. [error]\n- Theme identity and mode remain consistent across scaffolded routes. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

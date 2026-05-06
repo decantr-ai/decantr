@@ -1,0 +1,109 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the recipefork-social section using the compiled recipefork-top-nav shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "feed"
+    ],
+    "patternIds": [
+      "filter-bar",
+      "card-grid",
+      "recipefork-activity-feed"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "recipefork-social",
+    "auxiliary",
+    "recipefork-top-nav",
+    "recipefork",
+    "light",
+    "social",
+    "activity-feed",
+    "comments",
+    "reactions",
+    "follows",
+    "forking",
+    "engagement-ranking",
+    "lineage-cues",
+    "filter-bar",
+    "card-grid",
+    "recipefork-activity-feed"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "recipefork-social",
+    "role": "auxiliary",
+    "shell": "recipefork-top-nav",
+    "description": "Recipefork's public discovery feed with engagement-aware recipe ranking, event filters, followed-creator cues, fork-depth/root lineage badges on cards, and a preview-card community activity rail.",
+    "features": [
+      "social",
+      "activity-feed",
+      "comments",
+      "reactions",
+      "follows",
+      "forking",
+      "engagement-ranking",
+      "lineage-cues"
+    ],
+    "theme": {
+      "id": "recipefork",
+      "mode": "light",
+      "shape": "rounded"
+    },
+    "routes": [
+      {
+        "pageId": "feed",
+        "sectionId": "recipefork-social",
+        "path": "/feed",
+        "patternIds": [
+          "filter-bar",
+          "card-grid",
+          "recipefork-activity-feed"
+        ],
+        "shell": "recipefork-top-nav"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the recipefork-social section using the compiled recipefork-top-nav shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=feed | patterns=filter-bar, card-grid, recipefork-activity-feed\n\n## Section Contract\n- Section: recipefork-social\n- Role: auxiliary\n- Shell: recipefork-top-nav\n- Theme: recipefork (light)\n- Features: social, activity-feed, comments, reactions, follows, forking, engagement-ranking, lineage-cues\n- Description: Recipefork's public discovery feed with engagement-aware recipe ranking, event filters, followed-creator cues, fork-depth/root lineage badges on cards, and a preview-card community activity rail.\n\n## Section Routes\n- /feed -> recipefork-social/feed @ recipefork-top-nav [filter-bar, card-grid, recipefork-activity-feed]\n\n## Theme Decorators\n\nTheme `recipefork` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- recipefork-social\n- auxiliary\n- recipefork-top-nav\n- recipefork\n- light\n- social\n- activity-feed\n- comments\n- reactions\n- follows\n- forking\n- engagement-ranking\n- lineage-cues\n- filter-bar\n- card-grid\n- recipefork-activity-feed\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

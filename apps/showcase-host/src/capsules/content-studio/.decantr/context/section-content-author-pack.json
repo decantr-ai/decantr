@@ -1,0 +1,117 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the content-author section using the compiled sidebar-main shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "drafts",
+      "editor",
+      "published"
+    ],
+    "patternIds": [
+      "data-table",
+      "doc-editor"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "content-author",
+    "auxiliary",
+    "sidebar-main",
+    "editorial",
+    "light",
+    "editing",
+    "publishing",
+    "auto-save",
+    "markdown",
+    "data-table",
+    "doc-editor"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "content-author",
+    "role": "auxiliary",
+    "shell": "sidebar-main",
+    "description": "Author and editor dashboard for managing drafts, editing articles, and viewing published content. Functional workspace focused on writing productivity.",
+    "features": [
+      "editing",
+      "publishing",
+      "auto-save",
+      "markdown"
+    ],
+    "theme": {
+      "id": "editorial",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "routes": [
+      {
+        "pageId": "drafts",
+        "sectionId": "content-author",
+        "path": "/drafts",
+        "patternIds": [
+          "data-table"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "editor",
+        "sectionId": "content-author",
+        "path": "/drafts/:id",
+        "patternIds": [
+          "doc-editor"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "published",
+        "sectionId": "content-author",
+        "path": "/published",
+        "patternIds": [
+          "data-table"
+        ],
+        "shell": "sidebar-main"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the content-author section using the compiled sidebar-main shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=drafts, editor, published | patterns=data-table, doc-editor\n\n## Section Contract\n- Section: content-author\n- Role: auxiliary\n- Shell: sidebar-main\n- Theme: editorial (light)\n- Features: editing, publishing, auto-save, markdown\n- Description: Author and editor dashboard for managing drafts, editing articles, and viewing published content. Functional workspace focused on writing productivity.\n\n## Section Routes\n- /drafts -> content-author/drafts @ sidebar-main [data-table]\n- /drafts/:id -> content-author/editor @ sidebar-main [doc-editor]\n- /published -> content-author/published @ sidebar-main [data-table]\n\n## Theme Decorators\n\nTheme `editorial` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- content-author\n- auxiliary\n- sidebar-main\n- editorial\n- light\n- editing\n- publishing\n- auto-save\n- markdown\n- data-table\n- doc-editor\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

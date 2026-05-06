@@ -1,0 +1,157 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the profile-step route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "profile-step"
+    ],
+    "patternIds": [
+      "onboarding-wizard",
+      "content-uploader",
+      "form",
+      "cta-section"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "profile-step",
+    "centered",
+    "onboarding-wizard",
+    "gateway",
+    "swipecircle",
+    "light",
+    "auth",
+    "photo-upload",
+    "step-validation",
+    "form-validation",
+    "interests-picker",
+    "stack",
+    "content-uploader",
+    "form",
+    "cta-section",
+    "row"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "profile-step",
+    "path": "/onboarding/profile",
+    "shell": "centered",
+    "sectionId": "onboarding-wizard",
+    "sectionRole": "gateway",
+    "features": [
+      "auth",
+      "photo-upload",
+      "step-validation",
+      "form-validation",
+      "interests-picker"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "onboarding-wizard",
+        "alias": "onboarding-wizard",
+        "preset": "stepper",
+        "layout": "stack",
+        "presetDescription": "Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "click-select",
+          "keyboard-navigation",
+          "focus-trap"
+        ]
+      },
+      {
+        "id": "content-uploader",
+        "alias": "content-uploader",
+        "preset": "single",
+        "layout": "stack",
+        "presetDescription": "Single file upload with large preview area",
+        "interactions": [
+          "drag-reorder",
+          "animate-on-mount",
+          "click-select"
+        ]
+      },
+      {
+        "id": "form",
+        "alias": "form",
+        "preset": "settings",
+        "layout": "stack",
+        "presetDescription": "Vertical stack of sections, each with a title/description on the left and form fields on the right (2-column layout per section). Save button at bottom.",
+        "interactions": [
+          "animate-on-mount",
+          "inline-edit",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "cta-section",
+        "alias": "cta-section",
+        "preset": "banner",
+        "layout": "row",
+        "presetDescription": "Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
+      }
+    ],
+    "directives": [
+      "Show step indicator: 2 of 3, dot 1 in success-state (filled coral with check), dot 2 active, dot 3 muted",
+      "Photo uploader at the top: large dashed-border drop zone with cloud icon. Tap on mobile opens native picker. Selected photo shows with a small Edit overlay button.",
+      "Form fields: Age (number input, 18+ required), Gender (3-option select with Other text input), Location (city autocomplete), Bio (textarea, 1-3 sentence guidance, 280 char limit with counter)",
+      "All fields except Bio are required. Bio shows 'optional but recommended' helper text.",
+      "Primary CTA: 'Continue →' — disabled until age + gender + location are valid AND a photo is uploaded",
+      "Secondary text: 'Skip for now' (smaller, ghost link) — only enabled if photo is uploaded; profile completion can finish in app"
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the profile-step route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=profile-step | patterns=onboarding-wizard, content-uploader, form, cta-section\n\n## Page Contract\n- Page: profile-step\n- Path: /onboarding/profile\n- Shell: centered\n- Section: onboarding-wizard (gateway)\n- Theme: swipecircle (light)\n- Features: auth, photo-upload, step-validation, form-validation, interests-picker\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- onboarding-wizard -> onboarding-wizard [stack | stepper]\n  > Numbered horizontal step indicator at the top with sequential content panels below — the classic wizard pattern for linear multi-step flows with validation between steps\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] click-select\n  - [ ] keyboard-navigation\n  - [ ] focus-trap\n- content-uploader -> content-uploader [stack | single]\n  > Single file upload with large preview area\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] drag-reorder\n  - [ ] animate-on-mount\n  - [ ] click-select\n- form -> form [stack | settings]\n  > Vertical stack of sections, each with a title/description on the left and form fields on the right (2-column layout per section). Save button at bottom.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] inline-edit\n  - [ ] keyboard-navigation\n- cta-section -> cta-section [row | banner]\n  > Compact horizontal bar with text on left, single button on right. Good for inline CTAs between content sections.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Show step indicator: 2 of 3, dot 1 in success-state (filled coral with check), dot 2 active, dot 3 muted\n- Photo uploader at the top: large dashed-border drop zone with cloud icon. Tap on mobile opens native picker. Selected photo shows with a small Edit overlay button.\n- Form fields: Age (number input, 18+ required), Gender (3-option select with Other text input), Location (city autocomplete), Bio (textarea, 1-3 sentence guidance, 280 char limit with counter)\n- All fields except Bio are required. Bio shows 'optional but recommended' helper text.\n- Primary CTA: 'Continue →' — disabled until age + gender + location are valid AND a photo is uploaded\n- Secondary text: 'Skip for now' (smaller, ghost link) — only enabled if photo is uploaded; profile completion can finish in app\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

@@ -1,0 +1,59 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "npm",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": [],
+    "workspaceRoot": "/private/tmp/decantr-showcase-plan-recipefork/my-app",
+    "appRoot": "/private/tmp/decantr-showcase-plan-recipefork/my-app"
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "needs-sync",
+    "lastSync": "2026-05-06T12:44:08.725Z",
+    "registrySource": "cache",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-05-06T12:44:08.725Z",
+    "via": "cli",
+    "version": "1.7.27",
+    "flags": "--blueprint=recipefork --theme=recipefork --mode=light --guard=strict --workflow=greenfield-scaffold --adoption=decantr-css --assistant-bridge=none",
+    "workflowMode": "greenfield-scaffold",
+    "adoptionMode": "decantr-css",
+    "contentSource": "cache",
+    "assistantBridge": "none",
+    "projectScope": "single-app",
+    "adapterId": "react-vite",
+    "analysisArtifacts": false
+  },
+  "blueprintId": "recipefork",
+  "voice": {
+    "tone": "Encouraging, practical, and food-aware without becoming gimmicky.",
+    "cta_verbs": [
+      "Create",
+      "Save",
+      "Cook",
+      "Follow",
+      "Generate",
+      "Edit"
+    ],
+    "avoid": [
+      "Execute",
+      "Deploy",
+      "Submit",
+      "Synergize"
+    ],
+    "empty_states": "Calm and motivating. Empty cookbook and empty recipe states should encourage creation rather than feel like errors.",
+    "errors": "Plainspoken and actionable. Tell the user what failed and how to recover.",
+    "loading": "Product-style skeletons and calm motion rather than decorative animation."
+  }
+}

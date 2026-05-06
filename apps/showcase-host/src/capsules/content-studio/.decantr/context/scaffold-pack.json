@@ -1,0 +1,208 @@
+{
+  "$schema": "https://decantr.ai/schemas/scaffold-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "scaffold",
+  "objective": "Scaffold the editorial app shell and declared routes.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "drafts",
+      "editor",
+      "published",
+      "login",
+      "register",
+      "forgot-password",
+      "settings"
+    ],
+    "patternIds": [
+      "data-table",
+      "doc-editor",
+      "auth-form",
+      "form-sections"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the declared routes as the topology source of truth.",
+    "Preserve the resolved theme and shell contract unless the task explicitly mutates them."
+  ],
+  "allowedVocabulary": [
+    "sidebar-main",
+    "editorial",
+    "light",
+    "editing",
+    "publishing",
+    "auto-save",
+    "markdown",
+    "auth",
+    "theme-toggle",
+    "data-table",
+    "doc-editor",
+    "auth-form",
+    "form-sections"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "route-topology",
+      "label": "Routes and page IDs match the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "shell-consistency",
+      "label": "The declared shell contract is preserved unless the task explicitly mutates it.",
+      "severity": "error"
+    },
+    {
+      "id": "theme-consistency",
+      "label": "Theme identity and mode remain consistent across scaffolded routes.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "shell": "sidebar-main",
+    "theme": {
+      "id": "editorial",
+      "mode": "light",
+      "shape": "sharp"
+    },
+    "routing": "history",
+    "features": [
+      "editing",
+      "publishing",
+      "auto-save",
+      "markdown",
+      "auth",
+      "theme-toggle"
+    ],
+    "navigation": {
+      "commandPalette": true,
+      "hotkeys": [
+        {
+          "key": "g d",
+          "route": "/drafts",
+          "label": "Go to Drafts"
+        },
+        {
+          "key": "g p",
+          "route": "/published",
+          "label": "Go to Published"
+        },
+        {
+          "key": "g s",
+          "route": "/settings",
+          "label": "Go to Settings"
+        }
+      ]
+    },
+    "routes": [
+      {
+        "pageId": "drafts",
+        "sectionId": "content-author",
+        "path": "/drafts",
+        "patternIds": [
+          "data-table"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "editor",
+        "sectionId": "content-author",
+        "path": "/drafts/:id",
+        "patternIds": [
+          "doc-editor"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "published",
+        "sectionId": "content-author",
+        "path": "/published",
+        "patternIds": [
+          "data-table"
+        ],
+        "shell": "sidebar-main"
+      },
+      {
+        "pageId": "login",
+        "sectionId": "auth-flow",
+        "path": "/login",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "sectionId": "auth-flow",
+        "path": "/register",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "sectionId": "auth-flow",
+        "path": "/forgot-password",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "settings",
+        "sectionId": "settings",
+        "path": "/settings",
+        "patternIds": [
+          "form-sections"
+        ],
+        "shell": "sidebar-main"
+      }
+    ],
+    "themeDecorators": [
+      {
+        "class": "editorial-card",
+        "intent": "Use for article cards and content containers. Minimal styling lets typography and imagery do all the visual work.",
+        "applyTo": "Article cards, Content containers, Feature summaries, Editorial layouts"
+      },
+      {
+        "class": "editorial-pullquote",
+        "intent": "Use to highlight key quotes and important passages. The left border in red creates dramatic emphasis within long-form content.",
+        "applyTo": "Pull quotes, Key excerpts, Highlighted passages, Testimonials"
+      },
+      {
+        "class": "editorial-divider",
+        "intent": "Use between major content sections. Generous vertical spacing creates the dramatic pacing of a print magazine layout.",
+        "applyTo": "Section dividers, Article breaks, Content section separators"
+      },
+      {
+        "class": "editorial-caption",
+        "intent": "Use for image captions, bylines, dates, and metadata labels. Uppercase tracking creates the classic editorial meta-text treatment.",
+        "applyTo": "Image captions, Bylines, Date labels, Category labels"
+      },
+      {
+        "class": "editorial-dropcap",
+        "intent": "Use at the start of article sections for dramatic editorial opening. The oversized letter signals a new section or chapter.",
+        "applyTo": "Article openers, Chapter starts, Section introductions"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Scaffold Pack\n\n**Objective:** Scaffold the editorial app shell and declared routes.\n**Target:** react-vite (react)\n**Scope:** pages=drafts, editor, published, login, register, forgot-password, settings | patterns=data-table, doc-editor, auth-form, form-sections\n\n## Scaffold Contract\n- Shell: sidebar-main\n- Shells: sidebar-main (primary), centered\n- Theme: editorial (light)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: editing, publishing, auto-save, markdown, auth, theme-toggle\n- Navigation:\n  - command palette required\n  - Hotkeys:\n    - g d: Go to Drafts — /drafts\n    - g p: Go to Published — /published\n    - g s: Go to Settings — /settings\n\n## Route Plan\n- /drafts -> content-author/drafts @ sidebar-main [data-table]\n- /drafts/:id -> content-author/editor @ sidebar-main [doc-editor]\n- /published -> content-author/published @ sidebar-main [data-table]\n- /login -> auth-flow/login @ centered [auth-form]\n- /register -> auth-flow/register @ centered [auth-form]\n- /forgot-password -> auth-flow/forgot-password @ centered [auth-form]\n- /settings -> settings/settings @ sidebar-main [form-sections]\n\n## Required Theme Decorators (editorial)\n\nThese classes carry the active theme's visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these across all sections — without them, every page reads as \"themed colors only\" with no theme character. Section packs reference this table; the contract is project-wide.\n\n| Class | Intent | Apply to |\n|-------|--------|----------|\n| `.editorial-card` | Use for article cards and content containers. Minimal styling lets typography and imagery do all the visual work. | Article cards, Content containers, Feature summaries, Editorial layouts |\n| `.editorial-pullquote` | Use to highlight key quotes and important passages. The left border in red creates dramatic emphasis within long-form content. | Pull quotes, Key excerpts, Highlighted passages, Testimonials |\n| `.editorial-divider` | Use between major content sections. Generous vertical spacing creates the dramatic pacing of a print magazine layout. | Section dividers, Article breaks, Content section separators |\n| `.editorial-caption` | Use for image captions, bylines, dates, and metadata labels. Uppercase tracking creates the classic editorial meta-text treatment. | Image captions, Bylines, Date labels, Category labels |\n| `.editorial-dropcap` | Use at the start of article sections for dramatic editorial opening. The oversized letter signals a new section or chapter. | Article openers, Chapter starts, Section introductions |\n\n## Required Setup\n- Treat the declared routes as the topology source of truth.\n- Preserve the resolved theme and shell contract unless the task explicitly mutates them.\n\n## Allowed Vocabulary\n- sidebar-main\n- editorial\n- light\n- editing\n- publishing\n- auto-save\n- markdown\n- auth\n- theme-toggle\n- data-table\n- doc-editor\n- auth-form\n- form-sections\n\n## Success Checks\n- Routes and page IDs match the compiled topology. [error]\n- The declared shell contract is preserved unless the task explicitly mutates it. [error]\n- Theme identity and mode remain consistent across scaffolded routes. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

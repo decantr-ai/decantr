@@ -1,0 +1,260 @@
+{
+  "$schema": "https://decantr.ai/schemas/section-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "section",
+  "objective": "Implement the swipe-feed section using the compiled mobile-tab-bar shell contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "discover",
+      "matches",
+      "chat-list",
+      "chat-thread",
+      "profile-own",
+      "profile-other",
+      "settings"
+    ],
+    "patternIds": [
+      "filter-bar",
+      "spatial-card-stack",
+      "swipe-action-bar",
+      "match-celebration",
+      "hero",
+      "bottom-tab-bar",
+      "presence-avatars",
+      "stats-bar",
+      "avatar-grid-tile",
+      "conversation-list",
+      "chat-header",
+      "chat-thread",
+      "chat-input",
+      "mobile-profile-hero",
+      "tech-pills",
+      "settings-nav",
+      "form"
+    ]
+  },
+  "requiredSetup": [
+    "Use the declared section routes as the source of truth for this slice of the app.",
+    "Keep the section shell consistent unless the task explicitly changes the shell contract."
+  ],
+  "allowedVocabulary": [
+    "swipe-feed",
+    "primary",
+    "mobile-tab-bar",
+    "swipecircle",
+    "light",
+    "swipe-deck",
+    "matches",
+    "match-celebration",
+    "chat",
+    "profile",
+    "filter-bar",
+    "tab-navigation",
+    "empty-states",
+    "demo-mode",
+    "keyboard-shortcuts",
+    "spatial-card-stack",
+    "swipe-action-bar",
+    "hero",
+    "bottom-tab-bar",
+    "presence-avatars",
+    "stats-bar",
+    "avatar-grid-tile",
+    "conversation-list",
+    "chat-header",
+    "chat-thread",
+    "chat-input",
+    "mobile-profile-hero",
+    "tech-pills",
+    "settings-nav",
+    "form"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "section-route-coherence",
+      "label": "Section pages and routes remain coherent with the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "section-shell-consistency",
+      "label": "The section shell contract stays consistent across its routes.",
+      "severity": "error"
+    },
+    {
+      "id": "section-pattern-coverage",
+      "label": "Primary section patterns are represented without adding off-contract filler sections.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "sectionId": "swipe-feed",
+    "role": "primary",
+    "shell": "mobile-tab-bar",
+    "description": "Primary archetype for mobile-first swipe-based social discovery apps. Hosts the core swipe deck (discover), matches grid, chat list and thread, own/other profile views, and settings — all under a single mobile-tab-bar shell with persistent bottom navigation. The first archetype in Decantr's catalog purpose-built around a card-stack swipe loop with match celebration and 1:1 chat.",
+    "features": [
+      "swipe-deck",
+      "matches",
+      "match-celebration",
+      "chat",
+      "profile",
+      "filter-bar",
+      "tab-navigation",
+      "empty-states",
+      "demo-mode",
+      "keyboard-shortcuts"
+    ],
+    "theme": {
+      "id": "swipecircle",
+      "mode": "light",
+      "shape": "pill"
+    },
+    "routes": [
+      {
+        "pageId": "discover",
+        "sectionId": "swipe-feed",
+        "path": "/discover",
+        "patternIds": [
+          "filter-bar",
+          "spatial-card-stack",
+          "swipe-action-bar",
+          "match-celebration",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "matches",
+        "sectionId": "swipe-feed",
+        "path": "/matches",
+        "patternIds": [
+          "presence-avatars",
+          "stats-bar",
+          "avatar-grid-tile",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-list",
+        "sectionId": "swipe-feed",
+        "path": "/chat",
+        "patternIds": [
+          "conversation-list",
+          "hero",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "chat-thread",
+        "sectionId": "swipe-feed",
+        "path": "/chat/:userId",
+        "patternIds": [
+          "chat-header",
+          "chat-thread",
+          "chat-input",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-own",
+        "sectionId": "swipe-feed",
+        "path": "/me",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "settings-nav",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "profile-other",
+        "sectionId": "swipe-feed",
+        "path": "/u/:userId",
+        "patternIds": [
+          "mobile-profile-hero",
+          "stats-bar",
+          "tech-pills",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      },
+      {
+        "pageId": "settings",
+        "sectionId": "swipe-feed",
+        "path": "/settings",
+        "patternIds": [
+          "settings-nav",
+          "form",
+          "bottom-tab-bar"
+        ],
+        "shell": "mobile-tab-bar"
+      }
+    ],
+    "navigationItems": [
+      {
+        "label": "Swipe",
+        "route": "/discover",
+        "icon": "Heart",
+        "hotkey": "g d",
+        "active_match": "/discover"
+      },
+      {
+        "label": "Matches",
+        "route": "/matches",
+        "icon": "Users",
+        "hotkey": "g m",
+        "active_match": "/matches",
+        "badge": "new-matches-count"
+      },
+      {
+        "label": "Chat",
+        "route": "/chat",
+        "icon": "MessageCircle",
+        "hotkey": "g c",
+        "active_match": "/chat",
+        "badge": "unread-chats-count"
+      },
+      {
+        "label": "Profile",
+        "route": "/me",
+        "icon": "User",
+        "hotkey": "g p",
+        "active_match": "/me"
+      }
+    ],
+    "directives": [
+      "All pages share the mobile-tab-bar shell and persist the bottom-tab-bar across page transitions",
+      "Bottom-tab-bar 4 items: Swipe (/discover, Heart icon, hotkey g d), Matches (/matches, Users icon, hotkey g m), Chat (/chat, MessageCircle icon, hotkey g c), Profile (/me, User icon, hotkey g p)",
+      "Swipe gestures (← / →) only fire on the /discover route — input_guard prevents firing while typing in chat",
+      "Match celebration triggers on a successful right-swipe (mocked: 30% chance in demo mode) — first-match preset adds confetti, subsequent matches use subsequent-match preset",
+      "All photo content uses circular swipecircle-photo-frame for avatars, full-bleed with gradient overlay for cards",
+      "Demo mode (localStorage flag 'sc_demo' = true) populates 30 mock cards on first /discover load, 12 mock matches, and 3 pre-existing chat threads with sample histories"
+    ]
+  },
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the swipe-feed section using the compiled mobile-tab-bar shell contract.\n**Target:** react-vite (react)\n**Scope:** pages=discover, matches, chat-list, chat-thread, profile-own, profile-other, settings | patterns=filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar, presence-avatars, stats-bar, avatar-grid-tile, conversation-list, chat-header, chat-thread, chat-input, mobile-profile-hero, tech-pills, settings-nav, form\n\n## Section Contract\n- Section: swipe-feed\n- Role: primary\n- Shell: mobile-tab-bar\n- Theme: swipecircle (light)\n- Features: swipe-deck, matches, match-celebration, chat, profile, filter-bar, tab-navigation, empty-states, demo-mode, keyboard-shortcuts\n- Description: Primary archetype for mobile-first swipe-based social discovery apps. Hosts the core swipe deck (discover), matches grid, chat list and thread, own/other profile views, and settings — all under a single mobile-tab-bar shell with persistent bottom navigation. The first archetype in Decantr's catalog purpose-built around a card-stack swipe loop with match celebration and 1:1 chat.\n\n## Section Routes\n- /discover -> swipe-feed/discover @ mobile-tab-bar [filter-bar, spatial-card-stack, swipe-action-bar, match-celebration, hero, bottom-tab-bar]\n- /matches -> swipe-feed/matches @ mobile-tab-bar [presence-avatars, stats-bar, avatar-grid-tile, hero, bottom-tab-bar]\n- /chat -> swipe-feed/chat-list @ mobile-tab-bar [conversation-list, hero, bottom-tab-bar]\n- /chat/:userId -> swipe-feed/chat-thread @ mobile-tab-bar [chat-header, chat-thread, chat-input, bottom-tab-bar]\n- /me -> swipe-feed/profile-own @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, settings-nav, bottom-tab-bar]\n- /u/:userId -> swipe-feed/profile-other @ mobile-tab-bar [mobile-profile-hero, stats-bar, tech-pills, bottom-tab-bar]\n- /settings -> swipe-feed/settings @ mobile-tab-bar [settings-nav, form, bottom-tab-bar]\n\n## Section Navigation\n\nRender these items in the shell's primary navigation. Exact match on label, route, and icon.\n\n- Swipe → /discover · icon: Heart · hotkey: g d · active match: `/discover`\n- Matches → /matches · icon: Users · hotkey: g m · badge: new-matches-count · active match: `/matches`\n- Chat → /chat · icon: MessageCircle · hotkey: g c · badge: unread-chats-count · active match: `/chat`\n- Profile → /me · icon: User · hotkey: g p · active match: `/me`\n\n## Section Directives\n\nExecution-level rules every page in this section must obey. Follow exactly — these live in the pack contract, not narrative prose.\n\n- All pages share the mobile-tab-bar shell and persist the bottom-tab-bar across page transitions\n- Bottom-tab-bar 4 items: Swipe (/discover, Heart icon, hotkey g d), Matches (/matches, Users icon, hotkey g m), Chat (/chat, MessageCircle icon, hotkey g c), Profile (/me, User icon, hotkey g p)\n- Swipe gestures (← / →) only fire on the /discover route — input_guard prevents firing while typing in chat\n- Match celebration triggers on a successful right-swipe (mocked: 30% chance in demo mode) — first-match preset adds confetti, subsequent matches use subsequent-match preset\n- All photo content uses circular swipecircle-photo-frame for avatars, full-bleed with gradient overlay for cards\n- Demo mode (localStorage flag 'sc_demo' = true) populates 30 mock cards on first /discover load, 12 mock matches, and 3 pre-existing chat threads with sample histories\n\n## Theme Decorators\n\nTheme `swipecircle` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- swipe-feed\n- primary\n- mobile-tab-bar\n- swipecircle\n- light\n- swipe-deck\n- matches\n- match-celebration\n- chat\n- profile\n- filter-bar\n- tab-navigation\n- empty-states\n- demo-mode\n- keyboard-shortcuts\n- spatial-card-stack\n- swipe-action-bar\n- hero\n- bottom-tab-bar\n- presence-avatars\n- stats-bar\n- avatar-grid-tile\n- conversation-list\n- chat-header\n- chat-thread\n- chat-input\n- mobile-profile-hero\n- tech-pills\n- settings-nav\n- form\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

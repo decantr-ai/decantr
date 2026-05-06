@@ -32,6 +32,15 @@ const selected = sortReleaseEntries(surface.packages).filter((entry) => {
   return true;
 });
 
+function createPublishPackagesCommand(extraArgs = []) {
+  const parts = ['node scripts/publish-packages.mjs', ...extraArgs];
+  if (onlyWave) parts.push(`--wave=${onlyWave}`);
+  if (onlyNames.size > 0) parts.push(`--only=${[...onlyNames].join(',')}`);
+  if (includeExperimental) parts.push('--include-experimental');
+  if (tagOverride) parts.push(`--tag-override=${tagOverride}`);
+  return parts.join(' ');
+}
+
 const commands = selected.map((entry) => {
   const cwd = join(root, entry.path);
   const packageJson = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'));
@@ -100,6 +109,10 @@ const output = {
     includeExperimental,
     tagOverride,
   },
+  wrapperCommands: {
+    preflight: createPublishPackagesCommand(['--publish-dry-run']),
+    publish: createPublishPackagesCommand(),
+  },
   commands,
   npmRepairs: selectedRepairs,
 };
@@ -119,6 +132,13 @@ const lines = [
   `- Include experimental: ${includeExperimental ? 'yes' : 'no'}`,
   `- Tag override: ${tagOverride ?? 'none'}`,
   `- Auth check: \`npm whoami\``,
+  '',
+  '## Wrapper Commands',
+  '',
+  `- preflight: \`${output.wrapperCommands.preflight}\``,
+  `- publish: \`${output.wrapperCommands.publish}\``,
+  '',
+  'The wrapper commands are preferred because they audit packed tarball manifests before publishing.',
   '',
 ];
 
