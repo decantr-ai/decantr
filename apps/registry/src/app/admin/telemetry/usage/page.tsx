@@ -6,6 +6,7 @@ import {
   type TelemetryUsageSource,
 } from '@/lib/api';
 import { requireAdminRequestContext } from '@/lib/admin-workspace';
+import { upsertTelemetryAlias } from '../actions';
 
 export const metadata: Metadata = {
   title: 'Telemetry Usage',
@@ -57,6 +58,10 @@ function formatTimestamp(value: string | null) {
 function actorStatus(actorType: string) {
   if (actorType === 'customer') return 'success';
   return 'info';
+}
+
+function candidateLabel(identityId: string, sources: string[]) {
+  return `Usage candidate ${identityId} (${sources.join(', ')})`.slice(0, 160);
 }
 
 export default async function AdminTelemetryUsagePage({
@@ -238,10 +243,21 @@ export default async function AdminTelemetryUsagePage({
                       {candidate.sources.join(', ')} · {formatNumber(candidate.events)} events · {formatTimestamp(candidate.last_seen)}
                     </span>
                   </span>
-                  <span className="registry-inline-actions">
+                  <div className="registry-inline-actions">
                     <span className="d-annotation" data-status={actorStatus(candidate.actor_type)}>
                       {candidate.actor_type}
                     </span>
+                    {actorOptions.slice(0, 3).map((option) => (
+                      <form key={option.value} action={upsertTelemetryAlias}>
+                        <input type="hidden" name="identity_type" value={candidate.identity_type} />
+                        <input type="hidden" name="identity_id" value={candidate.identity_id} />
+                        <input type="hidden" name="actor_type" value={option.value} />
+                        <input type="hidden" name="label" value={candidateLabel(candidate.identity_id, candidate.sources)} />
+                        <button type="submit" className="d-interactive" data-variant="ghost">
+                          Mark {option.label.toLowerCase()}
+                        </button>
+                      </form>
+                    ))}
                     <Link
                       href={`/admin/telemetry?q=${encodeURIComponent(candidate.identity_id)}`}
                       className="d-interactive"
@@ -249,7 +265,7 @@ export default async function AdminTelemetryUsagePage({
                     >
                       Alias
                     </Link>
-                  </span>
+                  </div>
                 </div>
               )) : (
                 <span className="registry-admin-row-meta">No unaliased identities in this range.</span>

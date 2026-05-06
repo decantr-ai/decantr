@@ -35,6 +35,7 @@ export async function upsertTelemetryAlias(formData: FormData) {
   const { token, adminKey } = await requireAdminRequestContext();
   await api.upsertAdminTelemetryAlias(token, adminKey, readAliasWrite(formData));
   revalidatePath('/admin/telemetry');
+  revalidatePath('/admin/telemetry/usage');
   revalidatePath('/admin/reports');
 }
 
@@ -42,6 +43,7 @@ export async function updateTelemetryAlias(aliasId: string, formData: FormData) 
   const { token, adminKey } = await requireAdminRequestContext();
   await api.updateAdminTelemetryAlias(token, adminKey, aliasId, readAliasPatch(formData));
   revalidatePath('/admin/telemetry');
+  revalidatePath('/admin/telemetry/usage');
   revalidatePath('/admin/reports');
 }
 
@@ -49,5 +51,6 @@ export async function deleteTelemetryAlias(aliasId: string, _formData?: FormData
   const { token, adminKey } = await requireAdminRequestContext();
   await api.deleteAdminTelemetryAlias(token, adminKey, aliasId);
   revalidatePath('/admin/telemetry');
+  revalidatePath('/admin/telemetry/usage');
   revalidatePath('/admin/reports');
 }

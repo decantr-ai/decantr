@@ -7,15 +7,39 @@ export const metadata: Metadata = {
   title: 'Commercial Reports',
 };
 
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-US').format(value);
+}
+
 export default async function AdminReportsPage() {
   const { token, adminKey } = await requireAdminRequestContext();
 
   let summary = null;
   let error: string | null = null;
-  try {
-    summary = await api.getCommercialSummary(token, adminKey);
-  } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load commercial summary';
+  let customerUsage = null;
+  let telemetryUsageError: string | null = null;
+  const [summaryResult, customerUsageResult] = await Promise.allSettled([
+    api.getCommercialSummary(token, adminKey),
+    api.getAdminTelemetryUsage(token, adminKey, {
+      actor_type: 'customer',
+      days: 30,
+    }),
+  ]);
+
+  if (summaryResult.status === 'fulfilled') {
+    summary = summaryResult.value;
+  } else {
+    error = summaryResult.reason instanceof Error
+      ? summaryResult.reason.message
+      : 'Failed to load commercial summary';
+  }
+
+  if (customerUsageResult.status === 'fulfilled') {
+    customerUsage = customerUsageResult.value;
+  } else {
+    telemetryUsageError = customerUsageResult.reason instanceof Error
+      ? customerUsageResult.reason.message
+      : 'Failed to load customer-clean telemetry';
   }
 
   return (
@@ -27,12 +51,17 @@ export default async function AdminReportsPage() {
             Review customer distribution, package footprint, and the recent commercial usage signal in one admin workspace.
           </p>
         </div>
-        <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
-          Open organizations
-        </Link>
-        <Link href="/admin/telemetry" className="d-interactive" data-variant="ghost">
-          Telemetry
-        </Link>
+        <div className="registry-inline-actions">
+          <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
+            Open organizations
+          </Link>
+          <Link href="/admin/telemetry/usage?actor_type=customer&days=30" className="d-interactive" data-variant="ghost">
+            Customer usage
+          </Link>
+          <Link href="/admin/telemetry" className="d-interactive" data-variant="ghost">
+            Telemetry
+          </Link>
+        </div>
       </div>
 
       {error ? (
@@ -58,6 +87,56 @@ export default async function AdminReportsPage() {
                 Total seat capacity: {summary.totals.seat_limit_total}
               </div>
             </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Customer-Clean Telemetry
+            </span>
+            {telemetryUsageError ? (
+              <div className="d-annotation registry-inline-error" data-status="info">
+                {telemetryUsageError}
+              </div>
+            ) : null}
+            {customerUsage ? (
+              <div className="registry-admin-stack">
+                <div className="registry-admin-stat-grid">
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.total_events)}</span>
+                    <span className="registry-admin-row-meta">Customer events</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.active_installs)}</span>
+                    <span className="registry-admin-row-meta">Active installs</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.active_projects)}</span>
+                    <span className="registry-admin-row-meta">Active projects</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.active_orgs)}</span>
+                    <span className="registry-admin-row-meta">Active orgs</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.failure_events)}</span>
+                    <span className="registry-admin-row-meta">Failure signals</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.candidate_aliases)}</span>
+                    <span className="registry-admin-row-meta">Unaliased ids</span>
+                  </div>
+                </div>
+                <div className="d-surface registry-admin-stack">
+                  <span className="registry-admin-row-title">Top customer events</span>
+                  {customerUsage.event_counts.slice(0, 6).map((row) => (
+                    <div key={`${row.event}-${row.actor_type}`} className="registry-admin-row">
+                      <span className="registry-admin-row-title">{row.event}</span>
+                      <span className="registry-admin-row-meta">{formatNumber(row.count)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </section>
 
           <section className="d-section" data-density="compact">

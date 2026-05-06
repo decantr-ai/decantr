@@ -17,6 +17,11 @@ const apiKey =
   process.env.POSTHOG_PERSONAL_API_KEY?.trim() ||
   (dryRun ? 'dry-run' : requiredEnv('POSTHOG_PERSONAL_API_KEY'));
 const dashboardId = process.env.POSTHOG_DASHBOARD_ID || '1549290';
+const alertThresholds = {
+  customerDropRate: readNumberEnv('TELEMETRY_CUSTOMER_DROP_RATE_ALERT_THRESHOLD', 0.25),
+  failureEvents: readNumberEnv('TELEMETRY_FAILURE_ALERT_THRESHOLD', 3),
+  failureRate: readNumberEnv('TELEMETRY_FAILURE_RATE_ALERT_THRESHOLD', 0.05),
+};
 
 if (!projectId) {
   fail('Missing POSTHOG_ENVIRONMENT_ID. POSTHOG_PROJECT_ID is also accepted as an alias.');
@@ -30,16 +35,23 @@ const dashboardUrl = `${host}/project/${encodeURIComponent(projectId)}/dashboard
 const currentRows = await runHogQl(countsQuery(7, 0));
 const previousRows = await runHogQl(countsQuery(14, 7));
 const customerRows = await runHogQl(customerCountsQuery(7, 0));
+const previousCustomerRows = await runHogQl(customerCountsQuery(14, 7));
 const sourceRows = await runHogQl(sourceQuery(7, 0));
+const customerSourceRows = await runHogQl(customerSourceQuery(7, 0));
 const actorRows = await runHogQl(actorQuery(7, 0));
 const failureRows = await runHogQl(failureQuery(7, 0));
+const customerIdentityRows = await runHogQl(customerIdentityQuery(7, 0));
 
 const markdown = renderMarkdown({
+  alertThresholds,
   actorRows,
   currentRows,
+  customerIdentityRows,
   customerRows,
+  customerSourceRows,
   dashboardUrl,
   failureRows,
+  previousCustomerRows,
   previousRows,
   sourceRows,
 });
@@ -147,6 +159,40 @@ function customerCountsQuery(daysFrom, daysTo) {
   `;
 }
 
+function customerSourceQuery(daysFrom, daysTo) {
+  return `
+    select
+      properties.decantr_source as source,
+      count() as count
+    from events
+    where timestamp >= now() - interval ${daysFrom} day
+      and timestamp < now() - interval ${daysTo} day
+      and event in (${eventListSql()})
+      and properties.decantr_actor_type = 'customer'
+    group by source
+    order by count desc
+  `;
+}
+
+function customerIdentityQuery(daysFrom, daysTo) {
+  return `
+    select
+      distinct_id,
+      properties.decantr_install_id as install_id,
+      properties.decantr_project_id as project_id,
+      properties.decantr_source as source,
+      count() as count
+    from events
+    where timestamp >= now() - interval ${daysFrom} day
+      and timestamp < now() - interval ${daysTo} day
+      and event in (${eventListSql()})
+      and properties.decantr_actor_type = 'customer'
+    group by distinct_id, install_id, project_id, source
+    order by count desc
+    limit 10
+  `;
+}
+
 function failureQuery(daysFrom, daysTo) {
   return `
     select
@@ -190,22 +236,42 @@ function eventListSql() {
 }
 
 function renderMarkdown({
+  alertThresholds,
   actorRows,
   currentRows,
+  customerIdentityRows,
   customerRows,
+  customerSourceRows,
   dashboardUrl,
   failureRows,
+  previousCustomerRows,
   previousRows,
   sourceRows,
 }) {
   const current = rowsToMap(currentRows);
   const previous = rowsToMap(previousRows);
   const customer = rowsToMap(customerRows);
+  const previousCustomer = rowsToMap(previousCustomerRows);
   const eventNames = [...new Set([...current.keys(), ...previous.keys()])].sort();
   const totalCurrent = sumMap(current);
   const totalPrevious = sumMap(previous);
   const totalCustomer = sumMap(customer);
+  const totalPreviousCustomer = sumMap(previousCustomer);
   const totalDelta = totalCurrent - totalPrevious;
+  const customerDelta = totalCustomer - totalPreviousCustomer;
+  const failureTotal = failureRows.reduce((total, [, count]) => total + (Number(count) || 0), 0);
+  const failureRate = totalCurrent > 0 ? failureTotal / totalCurrent : 0;
+  const customerIdentities = normalizeCustomerIdentityRows(customerIdentityRows);
+  const alerts = buildOperatingAlerts({
+    alertThresholds,
+    customerDelta,
+    customerIdentities,
+    failureRate,
+    failureTotal,
+    totalCurrent,
+    totalCustomer,
+    totalPreviousCustomer,
+  });
 
   const lines = [
     '# Decantr Weekly Telemetry Snapshot',
@@ -213,7 +279,13 @@ function renderMarkdown({
     `Dashboard: ${dashboardUrl}`,
     '',
     `Total tracked events: ${formatNumber(totalCurrent)} (${formatDelta(totalDelta)} vs previous 7 days)`,
-    `Customer-attributed events: ${formatNumber(totalCustomer)}`,
+    `Customer-attributed events: ${formatNumber(totalCustomer)} (${formatDelta(customerDelta)} vs previous 7 days)`,
+    `Active customer identities: ${formatNumber(customerIdentities.length)}`,
+    `Failure signals: ${formatNumber(failureTotal)} (${formatPercent(failureRate)} of tracked events)`,
+    '',
+    '## Operating Alerts',
+    '',
+    ...(alerts.length ? alerts.map((alert) => `- ${alert}`) : ['- No alert thresholds triggered.']),
     '',
     '## Event Movement',
     '',
@@ -234,6 +306,11 @@ function renderMarkdown({
     lines.push(`| ${source || 'unknown'} | ${formatNumber(Number(count) || 0)} |`);
   }
 
+  lines.push('', '## Customer Source Mix', '', '| Source | Last 7d |', '| --- | ---: |');
+  for (const [source, count] of customerSourceRows) {
+    lines.push(`| ${source || 'unknown'} | ${formatNumber(Number(count) || 0)} |`);
+  }
+
   lines.push(
     '',
     '## Actor Mix',
@@ -245,6 +322,22 @@ function renderMarkdown({
     lines.push(
       `| ${actorType || 'unclassified'} | ${source || 'unknown'} | ${formatNumber(Number(count) || 0)} |`,
     );
+  }
+
+  lines.push(
+    '',
+    '## Active Customer Identities',
+    '',
+  );
+  if (customerIdentities.length === 0) {
+    lines.push('No customer-attributed identities were recorded in the last 7 days.');
+  } else {
+    lines.push('| Identity | Install | Project | Source | Events |', '| --- | --- | --- | --- | ---: |');
+    for (const row of customerIdentities) {
+      lines.push(
+        `| \`${row.distinctId}\` | ${row.installId || 'none'} | ${row.projectId || 'none'} | ${row.source || 'unknown'} | ${formatNumber(row.count)} |`,
+      );
+    }
   }
 
   lines.push('', '## Failure Signals', '');
@@ -267,6 +360,8 @@ function renderMarkdown({
     `- Customer registry discovery signals: ${formatNumber((customer.get('registry_web.search_performed') ?? 0) + (customer.get('registry_web.content_opened') ?? 0) + (customer.get('registry.item.resolved') ?? 0))}`,
     `- Commercial-intent signals: ${formatNumber((current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
     `- Customer commercial-intent signals: ${formatNumber((customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
+    `- Active customer identities: ${formatNumber(customerIdentities.length)}`,
+    `- Failure rate: ${formatPercent(failureRate)}`,
   );
 
   return lines.join('\n');
@@ -283,6 +378,21 @@ function sumMap(map) {
 }
 
 function sampleRows(query) {
+  if (query.includes('distinct_id') && query.includes('properties.decantr_install_id as install_id')) {
+    return [
+      ['install_customer_1', 'install_customer_1', 'project_alpha', 'cli', 18],
+      ['user_customer_2', null, 'project_beta', 'api', 7],
+    ];
+  }
+  if (
+    query.includes('properties.decantr_source as source') &&
+    query.includes("properties.decantr_actor_type = 'customer'")
+  ) {
+    return [
+      ['cli', 18],
+      ['api', 7],
+    ];
+  }
   if (query.includes('properties.decantr_actor_type as actor_type')) {
     return [
       ['anonymous', 'registry-web', 42],
@@ -327,11 +437,79 @@ function formatNumber(value) {
   return new Intl.NumberFormat('en-US').format(value);
 }
 
+function formatPercent(value) {
+  return `${new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+    style: 'percent',
+  }).format(value)}`;
+}
+
 function formatDelta(value) {
   const formatted = formatNumber(Math.abs(value));
   if (value > 0) return `+${formatted}`;
   if (value < 0) return `-${formatted}`;
   return '0';
+}
+
+function normalizeCustomerIdentityRows(rows) {
+  return rows.map(([distinctId, installId, projectId, source, count]) => ({
+    count: Number(count) || 0,
+    distinctId: String(distinctId || 'unknown'),
+    installId: installId ? String(installId) : '',
+    projectId: projectId ? String(projectId) : '',
+    source: source ? String(source) : '',
+  }));
+}
+
+function buildOperatingAlerts({
+  alertThresholds,
+  customerDelta,
+  customerIdentities,
+  failureRate,
+  failureTotal,
+  totalCurrent,
+  totalCustomer,
+  totalPreviousCustomer,
+}) {
+  const alerts = [];
+
+  if (totalCurrent === 0) {
+    alerts.push('No Decantr telemetry events were recorded in the last 7 days.');
+  }
+
+  if (totalCustomer === 0) {
+    alerts.push('No customer-attributed telemetry events were recorded in the last 7 days.');
+  }
+
+  if (failureTotal >= alertThresholds.failureEvents || failureRate >= alertThresholds.failureRate) {
+    alerts.push(
+      `Failure signals reached ${formatNumber(failureTotal)} events (${formatPercent(failureRate)}).`,
+    );
+  }
+
+  if (
+    totalPreviousCustomer > 0 &&
+    customerDelta < 0 &&
+    Math.abs(customerDelta) / totalPreviousCustomer >= alertThresholds.customerDropRate
+  ) {
+    alerts.push(
+      `Customer-attributed events are down ${formatPercent(Math.abs(customerDelta) / totalPreviousCustomer)} week over week.`,
+    );
+  }
+
+  if (customerIdentities.length > 0) {
+    alerts.push(
+      `${formatNumber(customerIdentities.length)} active customer identities were observed; review unaliased candidates in /admin/telemetry/usage.`,
+    );
+  }
+
+  return alerts;
+}
+
+function readNumberEnv(key, fallback) {
+  const value = Number(process.env[key]);
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
 function requiredEnv(key) {

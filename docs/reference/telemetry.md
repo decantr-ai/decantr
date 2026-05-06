@@ -111,6 +111,14 @@ pnpm telemetry:weekly-snapshot
 
 It reads the same PostHog env values and requires `query:read`. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes a markdown summary to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the same markdown payload to a webhook.
 
+The weekly snapshot includes total/customer event movement, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
+
+```env
+TELEMETRY_FAILURE_ALERT_THRESHOLD=3
+TELEMETRY_FAILURE_RATE_ALERT_THRESHOLD=0.05
+TELEMETRY_CUSTOMER_DROP_RATE_ALERT_THRESHOLD=0.25
+```
+
 ## Admin Usage Intelligence
 
 Registry admins can inspect live telemetry usage from:
@@ -131,7 +139,9 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_QUERY_HOST` can be omitted when the project is in PostHog US cloud; set it explicitly for other PostHog regions or self-hosted deployments. The personal API key needs `query:read`.
 
-The response includes total/customer/internal/failure events, source mix, actor mix, active identities, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean.
+The response includes total/customer/internal/failure events, source mix, actor mix, active identities, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
+
+The commercial reports page also pulls a 30-day customer-filtered usage readout from the same endpoint, so operator reports can distinguish customer adoption from internal/official Decantr activity without exporting PostHog data.
 
 ## API Wiring
 
