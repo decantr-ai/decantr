@@ -1,6 +1,7 @@
 import type { TelemetrySink } from './client.js';
 import {
   DECANTR_TELEMETRY_SCHEMA_VERSION,
+  resolveTelemetryActorType,
   type DecantrTelemetryEvent,
   type TelemetryProperties,
 } from './events.js';
@@ -75,6 +76,7 @@ function toPostHogProperties(
     $groups: groups,
     $process_person_profile: options.processPersonProfile ?? false,
     decantr_anonymous_id: event.context.anonymousId ?? null,
+    decantr_actor_type: resolveTelemetryActorType(event.context),
     decantr_install_id: event.context.installId ?? null,
     decantr_org_id: event.context.orgId ?? null,
     decantr_project_id: event.context.projectId ?? null,

@@ -35,6 +35,18 @@ Allowed signals include command names, registry sources, registry content IDs, p
 
 Private registries do not need a separate telemetry surface yet. Use `registry.item.resolved` with `registrySource: "private"` and `visibility: "private"` when that product line lands.
 
+## Actor Attribution
+
+Every event can carry `context.actorType` so Decantr can distinguish founder/internal usage from real customer adoption without relying on remembered PostHog person ids.
+
+- `anonymous`: unauthenticated registry/API browsing or resolution with only an anonymous id.
+- `customer`: authenticated hosted usage, org/project usage, or opted-in CLI install/project usage.
+- `internal`: Decantr team traffic identified by server-side opaque id allowlists or explicit internal CLI env.
+- `official_pipeline`: Decantr-owned content validation/publish automation.
+- `service`: backend service events that are not attributable to a user, org, install, project, or anonymous visitor.
+
+If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API also normalizes public ingest events and can override known Decantr-owned IDs through `DECANTR_INTERNAL_USER_IDS`, `DECANTR_INTERNAL_ORG_IDS`, `DECANTR_INTERNAL_INSTALL_IDS`, `DECANTR_INTERNAL_PROJECT_IDS`, and `DECANTR_INTERNAL_ANONYMOUS_IDS`.
+
 ## PostHog
 
 ```ts

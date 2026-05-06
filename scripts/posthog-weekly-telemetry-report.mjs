@@ -29,11 +29,15 @@ if (projectId.startsWith('phc_')) {
 const dashboardUrl = `${host}/project/${encodeURIComponent(projectId)}/dashboard/${dashboardId}`;
 const currentRows = await runHogQl(countsQuery(7, 0));
 const previousRows = await runHogQl(countsQuery(14, 7));
+const customerRows = await runHogQl(customerCountsQuery(7, 0));
 const sourceRows = await runHogQl(sourceQuery(7, 0));
+const actorRows = await runHogQl(actorQuery(7, 0));
 const failureRows = await runHogQl(failureQuery(7, 0));
 
 const markdown = renderMarkdown({
+  actorRows,
   currentRows,
+  customerRows,
   dashboardUrl,
   failureRows,
   previousRows,
@@ -113,6 +117,36 @@ function sourceQuery(daysFrom, daysTo) {
   `;
 }
 
+function actorQuery(daysFrom, daysTo) {
+  return `
+    select
+      properties.decantr_actor_type as actor_type,
+      properties.decantr_source as source,
+      count() as count
+    from events
+    where timestamp >= now() - interval ${daysFrom} day
+      and timestamp < now() - interval ${daysTo} day
+      and event in (${eventListSql()})
+    group by actor_type, source
+    order by count desc
+  `;
+}
+
+function customerCountsQuery(daysFrom, daysTo) {
+  return `
+    select
+      event,
+      count() as count
+    from events
+    where timestamp >= now() - interval ${daysFrom} day
+      and timestamp < now() - interval ${daysTo} day
+      and event in (${eventListSql()})
+      and properties.decantr_actor_type = 'customer'
+    group by event
+    order by count desc
+  `;
+}
+
 function failureQuery(daysFrom, daysTo) {
   return `
     select
@@ -155,12 +189,22 @@ function eventListSql() {
     .join(', ');
 }
 
-function renderMarkdown({ currentRows, dashboardUrl, failureRows, previousRows, sourceRows }) {
+function renderMarkdown({
+  actorRows,
+  currentRows,
+  customerRows,
+  dashboardUrl,
+  failureRows,
+  previousRows,
+  sourceRows,
+}) {
   const current = rowsToMap(currentRows);
   const previous = rowsToMap(previousRows);
+  const customer = rowsToMap(customerRows);
   const eventNames = [...new Set([...current.keys(), ...previous.keys()])].sort();
   const totalCurrent = sumMap(current);
   const totalPrevious = sumMap(previous);
+  const totalCustomer = sumMap(customer);
   const totalDelta = totalCurrent - totalPrevious;
 
   const lines = [
@@ -169,6 +213,7 @@ function renderMarkdown({ currentRows, dashboardUrl, failureRows, previousRows, 
     `Dashboard: ${dashboardUrl}`,
     '',
     `Total tracked events: ${formatNumber(totalCurrent)} (${formatDelta(totalDelta)} vs previous 7 days)`,
+    `Customer-attributed events: ${formatNumber(totalCustomer)}`,
     '',
     '## Event Movement',
     '',
@@ -189,6 +234,19 @@ function renderMarkdown({ currentRows, dashboardUrl, failureRows, previousRows, 
     lines.push(`| ${source || 'unknown'} | ${formatNumber(Number(count) || 0)} |`);
   }
 
+  lines.push(
+    '',
+    '## Actor Mix',
+    '',
+    '| Actor type | Source | Last 7d |',
+    '| --- | --- | ---: |',
+  );
+  for (const [actorType, source, count] of actorRows) {
+    lines.push(
+      `| ${actorType || 'unclassified'} | ${source || 'unknown'} | ${formatNumber(Number(count) || 0)} |`,
+    );
+  }
+
   lines.push('', '## Failure Signals', '');
   if (failureRows.length === 0) {
     lines.push('No failure events were recorded in the last 7 days.');
@@ -204,8 +262,11 @@ function renderMarkdown({ currentRows, dashboardUrl, failureRows, previousRows, 
     '## CEO Readout',
     '',
     `- Activation signals: ${formatNumber((current.get('user.signup.completed') ?? 0) + (current.get('api_key.created') ?? 0))}`,
+    `- Customer activation signals: ${formatNumber((customer.get('user.signup.completed') ?? 0) + (customer.get('api_key.created') ?? 0))}`,
     `- Registry discovery signals: ${formatNumber((current.get('registry_web.search_performed') ?? 0) + (current.get('registry_web.content_opened') ?? 0) + (current.get('registry.item.resolved') ?? 0))}`,
+    `- Customer registry discovery signals: ${formatNumber((customer.get('registry_web.search_performed') ?? 0) + (customer.get('registry_web.content_opened') ?? 0) + (customer.get('registry.item.resolved') ?? 0))}`,
     `- Commercial-intent signals: ${formatNumber((current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
+    `- Customer commercial-intent signals: ${formatNumber((customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
   );
 
   return lines.join('\n');
@@ -222,6 +283,20 @@ function sumMap(map) {
 }
 
 function sampleRows(query) {
+  if (query.includes('properties.decantr_actor_type as actor_type')) {
+    return [
+      ['anonymous', 'registry-web', 42],
+      ['customer', 'api', 25],
+      ['official_pipeline', 'content-ci', 12],
+    ];
+  }
+  if (query.includes("properties.decantr_actor_type = 'customer'")) {
+    return [
+      ['registry.item.resolved', 25],
+      ['execution_pack.compiled', 9],
+      ['api_key.created', 2],
+    ];
+  }
   if (query.includes('properties.decantr_source')) {
     return [
       ['registry-web', 42],

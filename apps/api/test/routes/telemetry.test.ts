@@ -22,6 +22,7 @@ const validEvent = {
     timestamp: '2026-05-06T00:00:00.000Z',
     context: {
       source: 'cli',
+      actorType: 'customer',
       environment: 'production',
       projectId: 'project_test',
       installId: 'install_test',
@@ -87,6 +88,26 @@ describe('POST /v1/telemetry/events', () => {
           name: 'unknown.event',
           context: { source: 'cli' },
           properties: {},
+        },
+      }),
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects telemetry events with unknown actor attribution', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/telemetry/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...validEvent,
+        event: {
+          ...validEvent.event,
+          context: {
+            ...validEvent.event.context,
+            actorType: 'team-member',
+          },
         },
       }),
     });

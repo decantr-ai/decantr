@@ -18,6 +18,7 @@ describe('PostHog telemetry sink', () => {
         environment: 'production',
         serviceName: 'decantr-api',
         serviceVersion: '2.0.0',
+        actorType: 'customer',
         userId: 'user_123',
         orgId: 'org_123',
         projectId: 'project_123',
@@ -57,6 +58,7 @@ describe('PostHog telemetry sink', () => {
       },
       $process_person_profile: false,
       decantr_anonymous_id: null,
+      decantr_actor_type: 'customer',
       decantr_org_id: 'org_123',
       decantr_project_id: 'project_123',
       decantr_schema_version: '0.1.0',
@@ -65,5 +67,30 @@ describe('PostHog telemetry sink', () => {
       service_name: 'decantr-api',
       service_version: '2.0.0',
     });
+  });
+
+  it('infers official pipeline actor type for content CI events', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    const sink = createPostHogTelemetrySink({
+      apiKey: 'ph_test_key',
+      fetch: fetchMock,
+      host: 'https://us.i.posthog.com/',
+    });
+    const event: DecantrTelemetryEvent = {
+      name: 'content.validation.completed',
+      context: {
+        source: 'content-ci',
+        environment: 'production',
+        anonymousId: 'content_pipeline',
+      },
+      properties: {
+        valid: true,
+      },
+    };
+
+    await sink.capture(event);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.properties.decantr_actor_type).toBe('official_pipeline');
   });
 });

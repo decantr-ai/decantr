@@ -3,7 +3,9 @@ import {
   createNoopTelemetrySink,
   createPostHogTelemetrySink,
   createTelemetryClient,
+  resolveTelemetryActorType,
   type DecantrTelemetryEvent,
+  type TelemetryActorResolutionOptions,
   type TelemetryContext,
   type TelemetryEnvironment,
   type TelemetrySink,
@@ -52,16 +54,38 @@ export function emitApiServiceTelemetry(event: ApiTelemetryEventInput): void {
 
 export function captureTelemetryEvent(event: DecantrTelemetryEvent): void {
   const telemetry = getApiTelemetryClient();
-  void telemetry.capture(event);
+  void telemetry.capture({
+    ...event,
+    context: normalizeTelemetryContext(event.context),
+  } as DecantrTelemetryEvent);
 }
 
 function createApiTelemetryContext(context: Partial<TelemetryContext>): TelemetryContext {
-  return {
+  return normalizeTelemetryContext({
     source: 'api',
     environment: getTelemetryEnvironment(),
     serviceName: 'decantr-api',
     serviceVersion: process.env.DECANTR_API_VERSION,
     ...context,
+  });
+}
+
+function normalizeTelemetryContext(context: TelemetryContext): TelemetryContext {
+  const normalized: TelemetryContext = {
+    environment: getTelemetryEnvironment(),
+    ...context,
+  };
+  const serverResolvedActorType = resolveTelemetryActorType(
+    { ...normalized, actorType: undefined },
+    getInternalActorOptions(),
+  );
+
+  return {
+    ...normalized,
+    actorType:
+      serverResolvedActorType === 'internal' || serverResolvedActorType === 'official_pipeline'
+        ? serverResolvedActorType
+        : resolveTelemetryActorType(normalized, getInternalActorOptions()),
   };
 }
 
@@ -120,4 +144,21 @@ function getTelemetryEnvironment(): TelemetryEnvironment {
     return value;
   }
   return 'production';
+}
+
+function getInternalActorOptions(): TelemetryActorResolutionOptions {
+  return {
+    internalAnonymousIds: parseCsvEnv('DECANTR_INTERNAL_ANONYMOUS_IDS'),
+    internalInstallIds: parseCsvEnv('DECANTR_INTERNAL_INSTALL_IDS'),
+    internalOrgIds: parseCsvEnv('DECANTR_INTERNAL_ORG_IDS'),
+    internalProjectIds: parseCsvEnv('DECANTR_INTERNAL_PROJECT_IDS'),
+    internalUserIds: parseCsvEnv('DECANTR_INTERNAL_USER_IDS'),
+  };
+}
+
+function parseCsvEnv(key: string): string[] {
+  return (process.env[key] ?? '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
 }

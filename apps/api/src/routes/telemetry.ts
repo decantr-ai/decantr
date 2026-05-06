@@ -1,6 +1,7 @@
 import {
   DECANTR_TELEMETRY_SCHEMA_VERSION,
   isDecantrTelemetryEventName,
+  isTelemetryActorType,
   type DecantrTelemetryEvent,
   type TelemetrySource,
 } from '@decantr/telemetry';
@@ -36,6 +37,15 @@ function parseTelemetryEvent(body: unknown): DecantrTelemetryEvent | null {
   }
 
   if (!isRecord(event.context) || !isPublicTelemetrySource(event.context.source)) {
+    return null;
+  }
+
+  if (
+    'actorType' in event.context &&
+    event.context.actorType !== undefined &&
+    event.context.actorType !== null &&
+    !isTelemetryActorType(event.context.actorType)
+  ) {
     return null;
   }
 

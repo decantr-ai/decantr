@@ -77,7 +77,7 @@ These events support the first board-level and operator-level metrics:
 
 ## PostHog Policy
 
-PostHog is the fast product analytics lane. The `createPostHogTelemetrySink` adapter sends Decantr event names directly, uses opaque Decantr IDs for `distinct_id`, maps `orgId` and `projectId` to groups, and defaults `$process_person_profile` to `false`.
+PostHog is the fast product analytics lane. The `createPostHogTelemetrySink` adapter sends Decantr event names directly, uses opaque Decantr IDs for `distinct_id`, maps `orgId` and `projectId` to groups, writes `decantr_actor_type`, and defaults `$process_person_profile` to `false`.
 
 The first-party Decantr dashboard should not depend on PostHog exports. It should consume the same `@decantr/telemetry` contract through a Decantr-controlled ingestion endpoint.
 
@@ -99,7 +99,7 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. To also provision cohorts and alerts, add `cohort:read`, `cohort:write`, `alert:read`, and `alert:write`. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
 
-The dashboard automation creates saved insights for activation, core usage, commercial intent, registry-web adoption, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
+The dashboard automation creates saved insights for activation, core usage, customer-only usage, commercial intent, registry-web adoption, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
 
 ## Weekly Snapshot Reporting
 
@@ -134,6 +134,28 @@ The hosted API currently emits:
 - `org.created` from team checkout provisioning
 
 Telemetry failures are logged at debug level and must not block request handling.
+
+### Actor Attribution
+
+All telemetry should classify the actor behind the event through `context.actorType` or allow the API/sink to infer it:
+
+- `anonymous`: unauthenticated registry/API traffic.
+- `customer`: authenticated hosted usage, org/project usage, or opted-in external CLI usage.
+- `internal`: Decantr team traffic.
+- `official_pipeline`: Decantr-owned content CI validation/publish automation.
+- `service`: unattributed backend service work.
+
+The hosted API normalizes public telemetry ingest before forwarding to PostHog. Configure server-side internal allowlists with comma-separated opaque ids:
+
+```env
+DECANTR_INTERNAL_USER_IDS=
+DECANTR_INTERNAL_ORG_IDS=
+DECANTR_INTERNAL_INSTALL_IDS=
+DECANTR_INTERNAL_PROJECT_IDS=
+DECANTR_INTERNAL_ANONYMOUS_IDS=
+```
+
+The CLI can explicitly mark Decantr-owned local runs with `DECANTR_TELEMETRY_ACTOR_TYPE=internal`. External opted-in CLI usage defaults to `customer`.
 
 ## Registry Web Wiring
 

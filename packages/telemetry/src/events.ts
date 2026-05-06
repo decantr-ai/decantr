@@ -2,6 +2,14 @@ export const DECANTR_TELEMETRY_SCHEMA_VERSION = '0.1.0';
 
 export type TelemetrySource = 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
 export type TelemetryEnvironment = 'development' | 'preview' | 'production' | 'test';
+export const DECANTR_TELEMETRY_ACTOR_TYPES = [
+  'anonymous',
+  'customer',
+  'internal',
+  'official_pipeline',
+  'service',
+] as const;
+export type TelemetryActorType = (typeof DECANTR_TELEMETRY_ACTOR_TYPES)[number];
 export type RegistrySource = 'cache' | 'custom' | 'none' | 'official' | 'private';
 export type WorkflowMode =
   | 'brownfield-attach'
@@ -52,6 +60,7 @@ export type TelemetryProperties = Record<string, TelemetryPropertyValue>;
 
 export interface TelemetryContext {
   source: TelemetrySource;
+  actorType?: TelemetryActorType;
   environment?: TelemetryEnvironment;
   serviceName?: string;
   serviceVersion?: string;
@@ -63,6 +72,70 @@ export interface TelemetryContext {
   sessionId?: string;
   userId?: string;
   orgId?: string;
+}
+
+export interface TelemetryActorResolutionOptions {
+  internalAnonymousIds?: readonly string[] | ReadonlySet<string>;
+  internalInstallIds?: readonly string[] | ReadonlySet<string>;
+  internalOrgIds?: readonly string[] | ReadonlySet<string>;
+  internalProjectIds?: readonly string[] | ReadonlySet<string>;
+  internalUserIds?: readonly string[] | ReadonlySet<string>;
+}
+
+export function isTelemetryActorType(value: unknown): value is TelemetryActorType {
+  return (
+    typeof value === 'string' &&
+    (DECANTR_TELEMETRY_ACTOR_TYPES as readonly string[]).includes(value)
+  );
+}
+
+export function resolveTelemetryActorType(
+  context: TelemetryContext,
+  options: TelemetryActorResolutionOptions = {},
+): TelemetryActorType {
+  if (context.actorType) return context.actorType;
+
+  if (context.source === 'content-ci') {
+    return 'official_pipeline';
+  }
+
+  if (matchesInternalActor(context, options)) {
+    return 'internal';
+  }
+
+  if (context.userId || context.orgId || context.projectId || context.installId) {
+    return 'customer';
+  }
+
+  if (context.anonymousId) {
+    return 'anonymous';
+  }
+
+  return 'service';
+}
+
+function matchesInternalActor(
+  context: TelemetryContext,
+  options: TelemetryActorResolutionOptions,
+): boolean {
+  return (
+    idListHas(options.internalAnonymousIds, context.anonymousId) ||
+    idListHas(options.internalInstallIds, context.installId) ||
+    idListHas(options.internalOrgIds, context.orgId) ||
+    idListHas(options.internalProjectIds, context.projectId) ||
+    idListHas(options.internalUserIds, context.userId)
+  );
+}
+
+function idListHas(
+  values: readonly string[] | ReadonlySet<string> | undefined,
+  value: string | undefined,
+): boolean {
+  if (!values || !value) return false;
+  if (typeof (values as ReadonlySet<string>).has === 'function') {
+    return (values as ReadonlySet<string>).has(value);
+  }
+  return (values as readonly string[]).includes(value);
 }
 
 export interface TelemetryEventBase<

@@ -6,6 +6,7 @@ import { sendCliCommandTelemetry } from '../src/telemetry.js';
 
 let projectRoot = '';
 let configDir = '';
+let previousActorType: string | undefined;
 let previousConfigDir: string | undefined;
 let previousTelemetryEndpoint: string | undefined;
 
@@ -29,6 +30,7 @@ function readJson(path: string): Record<string, unknown> {
 }
 
 beforeEach(() => {
+  previousActorType = process.env.DECANTR_TELEMETRY_ACTOR_TYPE;
   previousConfigDir = process.env.DECANTR_CONFIG_DIR;
   previousTelemetryEndpoint = process.env.DECANTR_TELEMETRY_ENDPOINT;
 
@@ -40,6 +42,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  restoreEnv('DECANTR_TELEMETRY_ACTOR_TYPE', previousActorType);
   restoreEnv('DECANTR_CONFIG_DIR', previousConfigDir);
   restoreEnv('DECANTR_TELEMETRY_ENDPOINT', previousTelemetryEndpoint);
   vi.unstubAllGlobals();
@@ -76,6 +79,7 @@ describe('CLI command telemetry', () => {
     expect(body.schemaVersion).toBe('0.1.0');
     expect(body.event.name).toBe('cli.command.completed');
     expect(body.event.context.source).toBe('cli');
+    expect(body.event.context.actorType).toBe('customer');
     expect(body.event.context.environment).toBe('production');
     expect(body.event.context.installId).toMatch(/^install_/);
     expect(body.event.context.projectId).toMatch(/^project_/);
@@ -97,6 +101,28 @@ describe('CLI command telemetry', () => {
     const projectConfig = readJson(join(projectRoot, '.decantr', 'project.json'));
     expect(globalConfig.telemetryInstallId).toBe(body.event.context.installId);
     expect(projectConfig.telemetryProjectId).toBe(body.event.context.projectId);
+  });
+
+  it('allows Decantr-owned CLI runs to opt into internal actor attribution', async () => {
+    writeProjectConfig({ telemetry: true });
+    process.env.DECANTR_TELEMETRY_ACTOR_TYPE = 'internal';
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendCliCommandTelemetry({
+      args: ['refresh'],
+      durationMs: 42,
+      projectRoot,
+      success: true,
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body)) as {
+      event: {
+        context: Record<string, unknown>;
+      };
+    };
+    expect(body.event.context.actorType).toBe('internal');
   });
 
   it('does not capture when project telemetry is not opted in', async () => {

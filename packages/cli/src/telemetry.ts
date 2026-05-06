@@ -8,8 +8,10 @@ import {
   createFetchTelemetrySink,
   createTelemetryClient,
   type DecantrTelemetryEvent,
+  isTelemetryActorType,
   type ProjectScope,
   type RegistrySource,
+  type TelemetryActorType,
   type WorkflowMode,
 } from '@decantr/telemetry';
 
@@ -122,6 +124,7 @@ export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): 
     name: 'cli.command.completed',
     context: {
       source: 'cli',
+      actorType: getTelemetryActorType(),
       environment: 'production',
       decantrVersion: getCliVersion(),
       installId: identities.installId,
@@ -255,6 +258,11 @@ function getConfigDir(): string {
 
 function getTelemetryEventsEndpoint(): string {
   return process.env.DECANTR_TELEMETRY_ENDPOINT || DEFAULT_TELEMETRY_EVENTS_ENDPOINT;
+}
+
+function getTelemetryActorType(): TelemetryActorType {
+  const configured = process.env.DECANTR_TELEMETRY_ACTOR_TYPE;
+  return isTelemetryActorType(configured) ? configured : 'customer';
 }
 
 function normalizeCommand(command: string | undefined): string | null {

@@ -106,6 +106,22 @@ const insightSpecs = [
     ]),
   },
   {
+    name: 'Customer product usage',
+    description:
+      'Daily customer-attributed product usage, excluding anonymous browsing, Decantr internal traffic, and the official content pipeline.',
+    query: trendLine(
+      [
+        [events.registryItemResolved, 'Registry item resolved'],
+        [events.executionPackCompiled, 'Execution pack compiled'],
+        [events.executionPackSelected, 'Execution pack selected'],
+        [events.auditCompleted, 'Audit completed'],
+        [events.critiqueCompleted, 'Critique completed'],
+        [events.cliCommandCompleted, 'CLI command completed'],
+      ],
+      { properties: [actorProperty('customer')] },
+    ),
+  },
+  {
     name: 'Commercial intent',
     description:
       'Daily commercial-intent signals: new hosted profiles, API keys, and team/org creation.',
@@ -192,6 +208,27 @@ const insightSpecs = [
       [events.contentPublishCompleted, 'Content publish'],
       [events.registryWebPageViewed, 'Registry web'],
     ]),
+  },
+  {
+    name: 'Actor type mix',
+    description:
+      'All Decantr telemetry volume split by anonymous, customer, internal, official-pipeline, and service actor classes.',
+    query: trendBar(
+      [
+        [events.cliCommandCompleted, 'CLI'],
+        [events.registryItemResolved, 'Registry/API/MCP'],
+        [events.executionPackCompiled, 'Execution packs'],
+        [events.contentValidationCompleted, 'Content CI'],
+        [events.contentPublishCompleted, 'Content publish'],
+        [events.registryWebPageViewed, 'Registry web'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'decantr_actor_type',
+          breakdown_type: 'event',
+        },
+      },
+    ),
   },
   {
     name: 'Failure signals',
@@ -543,6 +580,15 @@ function failureProperty(key) {
     operator: 'exact',
     type: 'event',
     value: false,
+  };
+}
+
+function actorProperty(actorType) {
+  return {
+    key: 'decantr_actor_type',
+    operator: 'exact',
+    type: 'event',
+    value: actorType,
   };
 }
 

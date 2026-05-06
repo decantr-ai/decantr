@@ -5,6 +5,7 @@ import {
   createTelemetryClient,
   type DecantrTelemetryEvent,
   type DecantrTelemetryEventName,
+  type TelemetryActorType,
   type TelemetryEnvironment,
   type TelemetryProperties,
 } from '@decantr/telemetry';
@@ -25,6 +26,7 @@ const ANONYMOUS_ID_KEY = 'decantr:registry-web:anonymous-id';
 const DEFAULT_ENDPOINT = 'https://api.decantr.ai/v1/telemetry/events';
 
 interface RegistryWebIdentity {
+  actorType?: TelemetryActorType | null;
   orgId?: string | null;
   plan?: string | null;
   userId?: string | null;
@@ -81,6 +83,7 @@ export function RegistryWebTelemetryProvider({ children }: { children: ReactNode
         name,
         context: {
           source: 'registry-web',
+          actorType: currentIdentity.actorType ?? inferRegistryWebActorType(currentIdentity),
           environment,
           serviceName: 'decantr-registry-web',
           registrySource: 'official',
@@ -98,6 +101,7 @@ export function RegistryWebTelemetryProvider({ children }: { children: ReactNode
 
   const setIdentity = useCallback((nextIdentity: RegistryWebIdentity) => {
     setIdentityState({
+      actorType: nextIdentity.actorType ?? null,
       orgId: nextIdentity.orgId ?? null,
       plan: nextIdentity.plan ?? null,
       userId: nextIdentity.userId ?? null,
@@ -177,17 +181,18 @@ function RegistryWebRouteTracker({
 }
 
 export function RegistryWebTelemetryIdentity({
+  actorType,
   orgId,
   plan,
   userId,
 }: RegistryWebIdentity) {
   const { capture, setIdentity } = useRegistryWebTelemetry();
-  const identityKey = `${userId ?? 'anonymous'}:${orgId ?? 'no-org'}:${plan ?? 'unknown'}`;
+  const identityKey = `${actorType ?? 'auto'}:${userId ?? 'anonymous'}:${orgId ?? 'no-org'}:${plan ?? 'unknown'}`;
   const lastLinkedIdentity = useRef<string | null>(null);
 
   useEffect(() => {
-    setIdentity({ orgId, plan, userId });
-  }, [orgId, plan, setIdentity, userId]);
+    setIdentity({ actorType, orgId, plan, userId });
+  }, [actorType, orgId, plan, setIdentity, userId]);
 
   useEffect(() => {
     if (!userId || lastLinkedIdentity.current === identityKey) return;
@@ -284,6 +289,11 @@ function resolveTelemetryEnvironment(): TelemetryEnvironment {
     return value;
   }
   return process.env.NODE_ENV === 'production' ? 'production' : 'development';
+}
+
+function inferRegistryWebActorType(identity: RegistryWebIdentity): TelemetryActorType {
+  if (identity.userId || identity.orgId) return 'customer';
+  return 'anonymous';
 }
 
 function resolveAnonymousId(): string {
