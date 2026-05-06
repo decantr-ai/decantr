@@ -89,6 +89,9 @@ The hosted API currently emits:
 - `execution_pack.selected` from `/v1/packs/select`
 - `critique.completed` from `/v1/critique/file`
 - `audit.completed` from `/v1/audit/project`
+- `user.signup.completed` from hosted profile provisioning
+- `api_key.created` from `/v1/api-keys`
+- `org.created` from team checkout provisioning
 
 Telemetry failures are logged at debug level and must not block request handling.
 

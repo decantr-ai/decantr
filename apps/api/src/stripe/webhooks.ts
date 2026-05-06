@@ -3,6 +3,7 @@ import { STRIPE_PRO_PRICE_ID, STRIPE_TEAM_PRICE_ID } from './client.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { emitApiServiceTelemetry } from '../lib/telemetry.js';
 
 type UserTier = 'free' | 'pro' | 'team' | 'enterprise';
 
@@ -117,6 +118,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
           org_id: newOrg.id,
           user_id: userId,
           role: 'owner',
+        });
+
+        emitApiServiceTelemetry({
+          name: 'org.created',
+          context: {
+            userId,
+            orgId: newOrg.id,
+          },
+          properties: {
+            success: true,
+            channel: 'stripe_checkout',
+            entrypoint: 'team_checkout',
+            plan: 'team',
+            seatLimit: subscriptionQuantity,
+          },
         });
       }
     } else {

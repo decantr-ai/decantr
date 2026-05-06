@@ -16,32 +16,53 @@ const TELEMETRY_TIMEOUT_MS = 3000;
 
 let client: ReturnType<typeof createTelemetryClient> | null = null;
 
+type ApiTelemetryEventInput = Omit<DecantrTelemetryEvent, 'context'> & {
+  context?: Partial<TelemetryContext>;
+};
+
 export function emitApiTelemetry(
   c: Context<Env>,
-  event: Omit<DecantrTelemetryEvent, 'context'> & { context?: Partial<TelemetryContext> },
+  event: ApiTelemetryEventInput,
 ): void {
   const telemetry = getApiTelemetryClient();
   const auth = c.get('auth');
 
   void telemetry.capture({
     ...event,
-    context: {
-      source: 'api',
-      environment: getTelemetryEnvironment(),
-      serviceName: 'decantr-api',
-      serviceVersion: process.env.DECANTR_API_VERSION,
+    context: createApiTelemetryContext({
       anonymousId: auth?.user?.id ? undefined : 'api:anonymous',
       userId: auth?.user?.id,
       orgId: auth?.apiKeyOrgId ?? undefined,
       registrySource: c.req.query('namespace') === '@official' ? 'official' : undefined,
       ...event.context,
-    },
+    }),
+  } as DecantrTelemetryEvent);
+}
+
+export function emitApiServiceTelemetry(event: ApiTelemetryEventInput): void {
+  const telemetry = getApiTelemetryClient();
+  void telemetry.capture({
+    ...event,
+    context: createApiTelemetryContext({
+      anonymousId: event.context?.userId ? undefined : 'api:anonymous',
+      ...event.context,
+    }),
   } as DecantrTelemetryEvent);
 }
 
 export function captureTelemetryEvent(event: DecantrTelemetryEvent): void {
   const telemetry = getApiTelemetryClient();
   void telemetry.capture(event);
+}
+
+function createApiTelemetryContext(context: Partial<TelemetryContext>): TelemetryContext {
+  return {
+    source: 'api',
+    environment: getTelemetryEnvironment(),
+    serviceName: 'decantr-api',
+    serviceVersion: process.env.DECANTR_API_VERSION,
+    ...context,
+  };
 }
 
 function getApiTelemetryClient(): ReturnType<typeof createTelemetryClient> {

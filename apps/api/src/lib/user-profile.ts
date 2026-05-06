@@ -1,5 +1,6 @@
 import { createAdminClient } from '../db/client.js';
 import type { Database } from '../db/types.js';
+import { emitApiServiceTelemetry } from './telemetry.js';
 
 type UserRow = Database['public']['Tables']['users']['Row'];
 
@@ -86,8 +87,34 @@ export async function ensureUserProfile(identity: AuthIdentity): Promise<UserRow
     .single();
 
   if (error || !data) {
+    emitApiServiceTelemetry({
+      name: 'user.signup.completed',
+      context: {
+        userId: identity.id,
+      },
+      properties: {
+        success: false,
+        channel: 'auth',
+        entrypoint: 'profile_provisioning',
+        plan: 'free',
+        errorCode: 'user_profile_provision_failed',
+      },
+    });
     throw error ?? new Error('Failed to provision user profile');
   }
+
+  emitApiServiceTelemetry({
+    name: 'user.signup.completed',
+    context: {
+      userId: data.id,
+    },
+    properties: {
+      success: true,
+      channel: 'auth',
+      entrypoint: 'profile_provisioning',
+      plan: data.tier,
+    },
+  });
 
   return data;
 }

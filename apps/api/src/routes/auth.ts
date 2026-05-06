@@ -12,6 +12,7 @@ import {
   type OrganizationEntitlementSummary,
 } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { emitApiTelemetry } from '../lib/telemetry.js';
 import { ensureUserProfile } from '../lib/user-profile.js';
 
 export const authRoutes = new Hono<Env>();
@@ -278,11 +279,26 @@ authRoutes.post('/api-keys', requireApiKeyScope('api_keys:manage'), async (c) =>
     },
   });
 
+  emitApiTelemetry(c, {
+    name: 'api_key.created',
+    context: {
+      orgId: orgId ?? undefined,
+    },
+    properties: {
+      success: true,
+      channel: auth.authSource === 'api_key' ? 'api_key' : 'jwt',
+      entrypoint: orgId ? 'organization_api_key' : 'user_api_key',
+      plan: auth.user!.tier,
+      orgScoped: Boolean(orgId),
+      scopeCount: scopes.length,
+    },
+  });
+
   // Return the raw key ONCE (it's hashed in the DB, can't be retrieved later)
   return c.json({
     ...data,
     key: rawKey,
-      warning: 'Save this key now. It cannot be retrieved again.',
+    warning: 'Save this key now. It cannot be retrieved again.',
   }, 201);
 });
 
