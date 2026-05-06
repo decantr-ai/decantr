@@ -360,6 +360,42 @@ export interface AdminTelemetryCandidateAlias {
   sources: string[];
 }
 
+export interface AdminTelemetryUsageSummary {
+  active_anonymous_ids: number;
+  active_identities: number;
+  active_installs: number;
+  active_orgs: number;
+  active_projects: number;
+  candidate_aliases: number;
+  customer_events: number;
+  failure_events: number;
+  internal_events: number;
+  official_pipeline_events: number;
+  total_events: number;
+}
+
+export interface AdminTelemetryUsageTrend {
+  change_rate: number | null;
+  current: number;
+  delta: number;
+  previous: number;
+}
+
+export interface AdminTelemetrySignalBucket {
+  change_rate: number | null;
+  current_events: number;
+  delta: number;
+  key: string;
+  label: string;
+  previous_events: number;
+}
+
+export interface AdminTelemetryOperatingAlert {
+  detail: string;
+  level: 'critical' | 'info' | 'warning';
+  title: string;
+}
+
 export interface AdminTelemetryUsageResponse {
   actor_type: TelemetryActorType | null;
   active_identities: AdminTelemetryActiveIdentity[];
@@ -368,21 +404,21 @@ export interface AdminTelemetryUsageResponse {
   event_counts: Array<{ actor_type: string; count: number; event: string }>;
   failure_counts: Array<{ count: number; event: string }>;
   generated_at: string;
+  operating_alerts: AdminTelemetryOperatingAlert[];
+  previous_summary: AdminTelemetryUsageSummary;
   range_days: number;
+  signal_buckets: AdminTelemetrySignalBucket[];
   source: TelemetryUsageSource | null;
   source_mix: Array<{ count: number; source: string }>;
-  summary: {
-    active_anonymous_ids: number;
-    active_identities: number;
-    active_installs: number;
-    active_orgs: number;
-    active_projects: number;
-    candidate_aliases: number;
-    customer_events: number;
-    failure_events: number;
-    internal_events: number;
-    official_pipeline_events: number;
-    total_events: number;
+  summary: AdminTelemetryUsageSummary;
+  trends: {
+    active_identities: AdminTelemetryUsageTrend;
+    active_installs: AdminTelemetryUsageTrend;
+    active_projects: AdminTelemetryUsageTrend;
+    customer_events: AdminTelemetryUsageTrend;
+    failure_events: AdminTelemetryUsageTrend;
+    failure_rate: AdminTelemetryUsageTrend;
+    total_events: AdminTelemetryUsageTrend;
   };
 }
 

@@ -1,4 +1,8 @@
-import { api } from '@/lib/api';
+import {
+  api,
+  type AdminTelemetryOperatingAlert,
+  type AdminTelemetryUsageTrend,
+} from '@/lib/api';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { requireAdminRequestContext } from '@/lib/admin-workspace';
@@ -9,6 +13,22 @@ export const metadata: Metadata = {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US').format(value);
+}
+
+function formatDelta(value: number) {
+  const formatted = formatNumber(Math.abs(value));
+  if (value > 0) return `+${formatted}`;
+  if (value < 0) return `-${formatted}`;
+  return '0';
+}
+
+function trendMeta(trend: AdminTelemetryUsageTrend) {
+  return `${formatDelta(trend.delta)} vs previous`;
+}
+
+function alertStatus(level: AdminTelemetryOperatingAlert['level']) {
+  if (level === 'critical') return 'error';
+  return level;
 }
 
 export default async function AdminReportsPage() {
@@ -104,36 +124,76 @@ export default async function AdminReportsPage() {
                   <div className="d-surface registry-admin-stat">
                     <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.total_events)}</span>
                     <span className="registry-admin-row-meta">Customer events</span>
+                    <span className="registry-admin-row-meta">{trendMeta(customerUsage.trends.total_events)}</span>
                   </div>
                   <div className="d-surface registry-admin-stat">
                     <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.active_installs)}</span>
                     <span className="registry-admin-row-meta">Active installs</span>
+                    <span className="registry-admin-row-meta">{trendMeta(customerUsage.trends.active_installs)}</span>
                   </div>
                   <div className="d-surface registry-admin-stat">
                     <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.active_projects)}</span>
                     <span className="registry-admin-row-meta">Active projects</span>
+                    <span className="registry-admin-row-meta">{trendMeta(customerUsage.trends.active_projects)}</span>
                   </div>
                   <div className="d-surface registry-admin-stat">
                     <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.active_orgs)}</span>
                     <span className="registry-admin-row-meta">Active orgs</span>
+                    <span className="registry-admin-row-meta">
+                      Previous {formatNumber(customerUsage.previous_summary.active_orgs)}
+                    </span>
                   </div>
                   <div className="d-surface registry-admin-stat">
                     <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.failure_events)}</span>
                     <span className="registry-admin-row-meta">Failure signals</span>
+                    <span className="registry-admin-row-meta">{trendMeta(customerUsage.trends.failure_events)}</span>
                   </div>
                   <div className="d-surface registry-admin-stat">
                     <span className="registry-admin-row-title">{formatNumber(customerUsage.summary.candidate_aliases)}</span>
                     <span className="registry-admin-row-meta">Unaliased ids</span>
+                    <span className="registry-admin-row-meta">Needs attribution</span>
                   </div>
                 </div>
-                <div className="d-surface registry-admin-stack">
-                  <span className="registry-admin-row-title">Top customer events</span>
-                  {customerUsage.event_counts.slice(0, 6).map((row) => (
-                    <div key={`${row.event}-${row.actor_type}`} className="registry-admin-row">
-                      <span className="registry-admin-row-title">{row.event}</span>
-                      <span className="registry-admin-row-meta">{formatNumber(row.count)}</span>
-                    </div>
-                  ))}
+                <div className="registry-admin-card-grid">
+                  <div className="d-surface registry-admin-stack">
+                    <span className="registry-admin-row-title">Top customer events</span>
+                    {customerUsage.event_counts.slice(0, 6).map((row) => (
+                      <div key={`${row.event}-${row.actor_type}`} className="registry-admin-row">
+                        <span className="registry-admin-row-title">{row.event}</span>
+                        <span className="registry-admin-row-meta">{formatNumber(row.count)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-surface registry-admin-stack">
+                    <span className="registry-admin-row-title">Signal buckets</span>
+                    {customerUsage.signal_buckets.map((bucket) => (
+                      <div key={bucket.key} className="registry-admin-row">
+                        <span className="registry-admin-row-copy">
+                          <span className="registry-admin-row-title">{bucket.label}</span>
+                          <span className="registry-admin-row-meta">
+                            Previous {formatNumber(bucket.previous_events)} · {formatDelta(bucket.delta)}
+                          </span>
+                        </span>
+                        <span className="registry-admin-row-meta">{formatNumber(bucket.current_events)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="d-surface registry-admin-stack">
+                    <span className="registry-admin-row-title">Operating alerts</span>
+                    {customerUsage.operating_alerts.length ? customerUsage.operating_alerts.map((alert) => (
+                      <div key={`${alert.level}-${alert.title}`} className="registry-admin-row">
+                        <span className="registry-admin-row-copy">
+                          <span className="registry-admin-row-title">{alert.title}</span>
+                          <span className="registry-admin-row-meta">{alert.detail}</span>
+                        </span>
+                        <span className="d-annotation" data-status={alertStatus(alert.level)}>
+                          {alert.level}
+                        </span>
+                      </div>
+                    )) : (
+                      <span className="registry-admin-row-meta">No alert thresholds triggered.</span>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : null}

@@ -10,6 +10,38 @@ export const TELEMETRY_USAGE_DAY_RANGES = [1, 7, 14, 30, 90] as const;
 
 const POSTHOG_QUERY_TIMEOUT_MS = 8_000;
 const DEFAULT_POSTHOG_QUERY_HOST = 'https://us.posthog.com';
+const TELEMETRY_SIGNAL_BUCKETS = [
+  {
+    key: 'activation',
+    label: 'Activation',
+    events: ['user.signup.completed', 'api_key.created'],
+  },
+  {
+    key: 'registry_discovery',
+    label: 'Registry discovery',
+    events: ['registry_web.search_performed', 'registry_web.content_opened', 'registry.item.resolved'],
+  },
+  {
+    key: 'cli_adoption',
+    label: 'CLI adoption',
+    events: ['cli.command.completed', 'registry.sync.completed'],
+  },
+  {
+    key: 'hosted_intelligence',
+    label: 'Hosted intelligence',
+    events: ['execution_pack.compiled', 'execution_pack.selected', 'critique.completed', 'audit.completed'],
+  },
+  {
+    key: 'content_pipeline',
+    label: 'Content pipeline',
+    events: ['content.validation.completed', 'content.publish.completed'],
+  },
+  {
+    key: 'commercial_intent',
+    label: 'Commercial intent',
+    events: ['registry_web.billing_viewed', 'registry_web.api_key_page_viewed', 'registry_web.organization_viewed', 'org.created'],
+  },
+] as const;
 
 export type TelemetryUsageSource = (typeof TELEMETRY_USAGE_SOURCES)[number];
 
@@ -67,6 +99,42 @@ export interface TelemetryUsageCandidateAlias {
   sources: string[];
 }
 
+export interface TelemetryUsageSummary {
+  active_anonymous_ids: number;
+  active_identities: number;
+  active_installs: number;
+  active_orgs: number;
+  active_projects: number;
+  candidate_aliases: number;
+  customer_events: number;
+  failure_events: number;
+  internal_events: number;
+  official_pipeline_events: number;
+  total_events: number;
+}
+
+export interface TelemetryUsageTrend {
+  change_rate: number | null;
+  current: number;
+  delta: number;
+  previous: number;
+}
+
+export interface TelemetryUsageSignalBucket {
+  change_rate: number | null;
+  current_events: number;
+  delta: number;
+  key: string;
+  label: string;
+  previous_events: number;
+}
+
+export interface TelemetryUsageOperatingAlert {
+  detail: string;
+  level: 'critical' | 'info' | 'warning';
+  title: string;
+}
+
 export interface AdminTelemetryUsageResponse {
   actor_type: TelemetryActorType | null;
   active_identities: TelemetryUsageActiveIdentity[];
@@ -75,21 +143,21 @@ export interface AdminTelemetryUsageResponse {
   event_counts: TelemetryUsageEventCount[];
   failure_counts: TelemetryUsageFailureCount[];
   generated_at: string;
+  operating_alerts: TelemetryUsageOperatingAlert[];
+  previous_summary: TelemetryUsageSummary;
   range_days: number;
+  signal_buckets: TelemetryUsageSignalBucket[];
   source: TelemetryUsageSource | null;
   source_mix: TelemetryUsageSourceCount[];
-  summary: {
-    active_anonymous_ids: number;
-    active_identities: number;
-    active_installs: number;
-    active_orgs: number;
-    active_projects: number;
-    candidate_aliases: number;
-    customer_events: number;
-    failure_events: number;
-    internal_events: number;
-    official_pipeline_events: number;
-    total_events: number;
+  summary: TelemetryUsageSummary;
+  trends: {
+    active_identities: TelemetryUsageTrend;
+    active_installs: TelemetryUsageTrend;
+    active_projects: TelemetryUsageTrend;
+    customer_events: TelemetryUsageTrend;
+    failure_events: TelemetryUsageTrend;
+    failure_rate: TelemetryUsageTrend;
+    total_events: TelemetryUsageTrend;
   };
 }
 
@@ -180,24 +248,47 @@ export async function fetchPostHogTelemetryUsage(input: {
 
   const [
     eventCounts,
+    previousEventCounts,
     sourceMix,
     actorMix,
     failureCounts,
+    previousFailureCounts,
     activeIdentities,
+    previousActiveIdentities,
   ] = await Promise.all([
     runHogQl(input.config, eventCountsQuery(filters)),
+    runHogQl(input.config, eventCountsQuery({ ...filters, offsetDays: input.days })),
     runHogQl(input.config, sourceMixQuery(filters)),
     runHogQl(input.config, actorMixQuery(filters)),
     runHogQl(input.config, failureCountsQuery(filters)),
+    runHogQl(input.config, failureCountsQuery({ ...filters, offsetDays: input.days })),
     runHogQl(input.config, activeIdentitiesQuery(filters)),
+    runHogQl(input.config, activeIdentitiesQuery({ ...filters, offsetDays: input.days })),
   ]);
 
   const eventRows = eventCounts.map(toEventCount);
+  const previousEventRows = previousEventCounts.map(toEventCount);
   const sourceRows = sourceMix.map(toSourceCount);
   const actorRows = actorMix.map(toActorCount);
   const failureRows = failureCounts.map(toFailureCount);
+  const previousFailureRows = previousFailureCounts.map(toFailureCount);
   const activeRows = activeIdentities.map(toActiveIdentity);
+  const previousActiveRows = previousActiveIdentities.map(toActiveIdentity);
   const candidateAliases = collectCandidateAliases(activeRows, input.existingAliases);
+  const previousSummary = summarizeUsage({
+    activeRows: previousActiveRows,
+    candidateAliases: [],
+    eventRows: previousEventRows,
+    failureRows: previousFailureRows,
+  });
+  const summary = summarizeUsage({
+    activeRows,
+    candidateAliases,
+    eventRows,
+    failureRows,
+  });
+  const trends = buildUsageTrends(summary, previousSummary);
+  const signalBuckets = buildSignalBuckets(eventRows, previousEventRows);
 
   return {
     actor_type: input.actorType ?? null,
@@ -207,15 +298,19 @@ export async function fetchPostHogTelemetryUsage(input: {
     event_counts: eventRows,
     failure_counts: failureRows,
     generated_at: new Date().toISOString(),
+    operating_alerts: buildOperatingAlerts({
+      candidateAliases,
+      signalBuckets,
+      summary,
+      trends,
+    }),
+    previous_summary: previousSummary,
     range_days: input.days,
+    signal_buckets: signalBuckets,
     source: (input.source as TelemetryUsageSource | undefined) ?? null,
     source_mix: sourceRows,
-    summary: summarizeUsage({
-      activeRows,
-      candidateAliases,
-      eventRows,
-      failureRows,
-    }),
+    summary,
+    trends,
   };
 }
 
@@ -275,14 +370,14 @@ async function runHogQl(config: PostHogTelemetryUsageConfig, query: string): Pro
   }
 }
 
-function eventCountsQuery(filters: { actorType?: TelemetryActorType; days: number; source?: TelemetrySource }) {
+function eventCountsQuery(filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource }) {
   return `
     select
       event,
       properties.decantr_actor_type as actor_type,
       count() as count
     from events
-    where timestamp >= now() - interval ${filters.days} day
+    where ${timeRangeSql(filters)}
       and event in (${eventListSql()})
       ${filterSql(filters)}
     group by event, actor_type
@@ -291,13 +386,13 @@ function eventCountsQuery(filters: { actorType?: TelemetryActorType; days: numbe
   `;
 }
 
-function sourceMixQuery(filters: { actorType?: TelemetryActorType; days: number; source?: TelemetrySource }) {
+function sourceMixQuery(filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource }) {
   return `
     select
       properties.decantr_source as source,
       count() as count
     from events
-    where timestamp >= now() - interval ${filters.days} day
+    where ${timeRangeSql(filters)}
       and event in (${eventListSql()})
       ${filterSql(filters)}
     group by source
@@ -306,14 +401,14 @@ function sourceMixQuery(filters: { actorType?: TelemetryActorType; days: number;
   `;
 }
 
-function actorMixQuery(filters: { actorType?: TelemetryActorType; days: number; source?: TelemetrySource }) {
+function actorMixQuery(filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource }) {
   return `
     select
       properties.decantr_actor_type as actor_type,
       properties.decantr_source as source,
       count() as count
     from events
-    where timestamp >= now() - interval ${filters.days} day
+    where ${timeRangeSql(filters)}
       and event in (${eventListSql()})
       ${filterSql(filters)}
     group by actor_type, source
@@ -322,13 +417,13 @@ function actorMixQuery(filters: { actorType?: TelemetryActorType; days: number; 
   `;
 }
 
-function failureCountsQuery(filters: { actorType?: TelemetryActorType; days: number; source?: TelemetrySource }) {
+function failureCountsQuery(filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource }) {
   return `
     select
       event,
       count() as count
     from events
-    where timestamp >= now() - interval ${filters.days} day
+    where ${timeRangeSql(filters)}
       and event in (${eventListSql()})
       ${filterSql(filters)}
       and (properties.success = false or properties.valid = false)
@@ -338,7 +433,7 @@ function failureCountsQuery(filters: { actorType?: TelemetryActorType; days: num
   `;
 }
 
-function activeIdentitiesQuery(filters: { actorType?: TelemetryActorType; days: number; source?: TelemetrySource }) {
+function activeIdentitiesQuery(filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource }) {
   return `
     select
       distinct_id,
@@ -351,13 +446,23 @@ function activeIdentitiesQuery(filters: { actorType?: TelemetryActorType; days: 
       count() as events,
       max(timestamp) as last_seen
     from events
-    where timestamp >= now() - interval ${filters.days} day
+    where ${timeRangeSql(filters)}
       and event in (${eventListSql()})
       ${filterSql(filters)}
     group by distinct_id, actor_type, source, install_id, project_id, anonymous_id, org_id
     order by events desc
     limit 100
   `;
+}
+
+function timeRangeSql(filters: { days: number; offsetDays?: number }) {
+  const offsetDays = filters.offsetDays ?? 0;
+  const startDays = filters.days + offsetDays;
+  if (offsetDays > 0) {
+    return `timestamp >= now() - interval ${startDays} day
+      and timestamp < now() - interval ${offsetDays} day`;
+  }
+  return `timestamp >= now() - interval ${filters.days} day`;
 }
 
 function filterSql(filters: { actorType?: TelemetryActorType; source?: TelemetrySource }) {
@@ -468,7 +573,7 @@ function summarizeUsage(input: {
   candidateAliases: TelemetryUsageCandidateAlias[];
   eventRows: TelemetryUsageEventCount[];
   failureRows: TelemetryUsageFailureCount[];
-}): AdminTelemetryUsageResponse['summary'] {
+}): TelemetryUsageSummary {
   const activeDistinctIds = new Set<string>();
   const activeInstallIds = new Set<string>();
   const activeProjectIds = new Set<string>();
@@ -500,6 +605,146 @@ function summarizeUsage(input: {
 
 function sumEventRows(rows: TelemetryUsageEventCount[], actorType: TelemetryActorType) {
   return rows.reduce((total, row) => total + (row.actor_type === actorType ? row.count : 0), 0);
+}
+
+function buildUsageTrends(
+  summary: TelemetryUsageSummary,
+  previousSummary: TelemetryUsageSummary,
+): AdminTelemetryUsageResponse['trends'] {
+  const currentFailureRate = summary.total_events > 0 ? summary.failure_events / summary.total_events : 0;
+  const previousFailureRate = previousSummary.total_events > 0
+    ? previousSummary.failure_events / previousSummary.total_events
+    : 0;
+
+  return {
+    active_identities: buildTrend(summary.active_identities, previousSummary.active_identities),
+    active_installs: buildTrend(summary.active_installs, previousSummary.active_installs),
+    active_projects: buildTrend(summary.active_projects, previousSummary.active_projects),
+    customer_events: buildTrend(summary.customer_events, previousSummary.customer_events),
+    failure_events: buildTrend(summary.failure_events, previousSummary.failure_events),
+    failure_rate: buildTrend(currentFailureRate, previousFailureRate),
+    total_events: buildTrend(summary.total_events, previousSummary.total_events),
+  };
+}
+
+function buildTrend(current: number, previous: number): TelemetryUsageTrend {
+  return {
+    change_rate: previous > 0 ? (current - previous) / previous : null,
+    current,
+    delta: current - previous,
+    previous,
+  };
+}
+
+function buildSignalBuckets(
+  eventRows: TelemetryUsageEventCount[],
+  previousEventRows: TelemetryUsageEventCount[],
+): TelemetryUsageSignalBucket[] {
+  const current = rowsToEventTotals(eventRows);
+  const previous = rowsToEventTotals(previousEventRows);
+
+  return TELEMETRY_SIGNAL_BUCKETS.map((bucket) => {
+    const currentEvents = sumEvents(current, bucket.events);
+    const previousEvents = sumEvents(previous, bucket.events);
+    return {
+      change_rate: previousEvents > 0 ? (currentEvents - previousEvents) / previousEvents : null,
+      current_events: currentEvents,
+      delta: currentEvents - previousEvents,
+      key: bucket.key,
+      label: bucket.label,
+      previous_events: previousEvents,
+    };
+  });
+}
+
+function rowsToEventTotals(rows: TelemetryUsageEventCount[]) {
+  const totals = new Map<string, number>();
+  for (const row of rows) {
+    totals.set(row.event, (totals.get(row.event) ?? 0) + row.count);
+  }
+  return totals;
+}
+
+function sumEvents(totals: Map<string, number>, events: readonly string[]) {
+  return events.reduce((total, event) => total + (totals.get(event) ?? 0), 0);
+}
+
+function buildOperatingAlerts(input: {
+  candidateAliases: TelemetryUsageCandidateAlias[];
+  signalBuckets: TelemetryUsageSignalBucket[];
+  summary: TelemetryUsageSummary;
+  trends: AdminTelemetryUsageResponse['trends'];
+}): TelemetryUsageOperatingAlert[] {
+  const alerts: TelemetryUsageOperatingAlert[] = [];
+  const failureRate = input.trends.failure_rate.current;
+  const commercialIntent = input.signalBuckets.find((bucket) => bucket.key === 'commercial_intent');
+  const activation = input.signalBuckets.find((bucket) => bucket.key === 'activation');
+
+  if (input.summary.total_events === 0) {
+    alerts.push({
+      level: 'critical',
+      title: 'No telemetry in range',
+      detail: 'No Decantr telemetry events were recorded for this filter and period.',
+    });
+  }
+
+  if (input.summary.failure_events >= 3 || failureRate >= 0.05) {
+    alerts.push({
+      level: failureRate >= 0.1 ? 'critical' : 'warning',
+      title: 'Failure signals elevated',
+      detail: `${input.summary.failure_events} failure events represent ${formatRate(failureRate)} of tracked events.`,
+    });
+  }
+
+  if (
+    input.trends.customer_events.previous > 0 &&
+    input.trends.customer_events.change_rate !== null &&
+    input.trends.customer_events.change_rate <= -0.25
+  ) {
+    alerts.push({
+      level: 'warning',
+      title: 'Customer usage down',
+      detail: `Customer-attributed events changed ${formatSignedRate(input.trends.customer_events.change_rate)} versus the previous period.`,
+    });
+  }
+
+  if (input.candidateAliases.length > 0) {
+    alerts.push({
+      level: 'info',
+      title: 'Unaliased identities found',
+      detail: `${input.candidateAliases.length} active identities need customer/internal classification review.`,
+    });
+  }
+
+  if (activation && activation.current_events > 0 && activation.previous_events === 0) {
+    alerts.push({
+      level: 'info',
+      title: 'Activation detected',
+      detail: `${activation.current_events} activation events appeared with no previous-period baseline.`,
+    });
+  }
+
+  if (commercialIntent && commercialIntent.current_events > commercialIntent.previous_events) {
+    alerts.push({
+      level: 'info',
+      title: 'Commercial intent rising',
+      detail: `Commercial-intent events are ${formatSignedNumber(commercialIntent.delta)} versus the previous period.`,
+    });
+  }
+
+  return alerts;
+}
+
+function formatRate(value: number) {
+  return `${Math.round(value * 1000) / 10}%`;
+}
+
+function formatSignedRate(value: number) {
+  return `${value >= 0 ? '+' : ''}${formatRate(value)}`;
+}
+
+function formatSignedNumber(value: number) {
+  return `${value >= 0 ? '+' : ''}${value}`;
 }
 
 function collectCandidateAliases(

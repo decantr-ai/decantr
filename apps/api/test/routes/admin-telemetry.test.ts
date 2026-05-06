@@ -258,13 +258,19 @@ describe('Admin telemetry routes', () => {
     const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
       const body = JSON.parse(String(init?.body ?? '{}'));
       const query = String(body.query?.query ?? '');
+      const previousPeriod = query.includes('timestamp < now() - interval 7 day');
       let results: unknown[] = [];
 
       if (query.includes('group by event, actor_type')) {
-        results = [
-          ['cli.command.completed', 'customer', 3],
-          ['registry.item.resolved', 'internal', 2],
-        ];
+        results = previousPeriod
+          ? [
+              ['cli.command.completed', 'customer', 1],
+              ['registry.item.resolved', 'internal', 2],
+            ]
+          : [
+              ['cli.command.completed', 'customer', 3],
+              ['registry.item.resolved', 'internal', 2],
+            ];
       } else if (query.includes('group by source')) {
         results = [
           ['cli', 3],
@@ -276,32 +282,46 @@ describe('Admin telemetry routes', () => {
           ['internal', 'api', 2],
         ];
       } else if (query.includes('and (properties.success = false or properties.valid = false)')) {
-        results = [['audit.completed', 1]];
+        results = previousPeriod ? [] : [['audit.completed', 1]];
       } else if (query.includes('group by distinct_id, actor_type, source')) {
-        results = [
-          [
-            'install_unknown',
-            'customer',
-            'cli',
-            'install_unknown',
-            'project_customer',
-            null,
-            'org-2',
-            3,
-            '2026-05-06T00:00:00Z',
-          ],
-          [
-            'install_founder',
-            'internal',
-            'cli',
-            'install_founder',
-            null,
-            null,
-            'org-1',
-            2,
-            '2026-05-06T01:00:00Z',
-          ],
-        ];
+        results = previousPeriod
+          ? [
+              [
+                'install_founder',
+                'internal',
+                'cli',
+                'install_founder',
+                null,
+                null,
+                'org-1',
+                2,
+                '2026-04-30T00:00:00Z',
+              ],
+            ]
+          : [
+              [
+                'install_unknown',
+                'customer',
+                'cli',
+                'install_unknown',
+                'project_customer',
+                null,
+                'org-2',
+                3,
+                '2026-05-06T00:00:00Z',
+              ],
+              [
+                'install_founder',
+                'internal',
+                'cli',
+                'install_founder',
+                null,
+                null,
+                'org-1',
+                2,
+                '2026-05-06T01:00:00Z',
+              ],
+            ];
       }
 
       return new Response(JSON.stringify({ results }), {
@@ -321,7 +341,7 @@ describe('Admin telemetry routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchMock).toHaveBeenCalledTimes(8);
     expect(json.summary).toMatchObject({
       total_events: 5,
       customer_events: 3,
@@ -333,6 +353,38 @@ describe('Admin telemetry routes', () => {
       active_orgs: 2,
       candidate_aliases: 1,
     });
+    expect(json.previous_summary).toMatchObject({
+      total_events: 3,
+      customer_events: 1,
+      internal_events: 2,
+      failure_events: 0,
+      active_identities: 1,
+      active_installs: 1,
+      active_projects: 0,
+      active_orgs: 1,
+      candidate_aliases: 0,
+    });
+    expect(json.trends).toMatchObject({
+      total_events: { current: 5, previous: 3, delta: 2 },
+      customer_events: { current: 3, previous: 1, delta: 2 },
+      failure_events: { current: 1, previous: 0, delta: 1 },
+    });
+    expect(json.signal_buckets).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: 'cli_adoption',
+        current_events: 3,
+        previous_events: 1,
+        delta: 2,
+      }),
+    ]));
+    expect(json.operating_alerts).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        title: 'Failure signals elevated',
+      }),
+      expect.objectContaining({
+        title: 'Unaliased identities found',
+      }),
+    ]));
     expect(json.event_counts[0]).toMatchObject({
       event: 'cli.command.completed',
       actor_type: 'customer',

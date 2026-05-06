@@ -139,7 +139,18 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_QUERY_HOST` can be omitted when the project is in PostHog US cloud; set it explicitly for other PostHog regions or self-hosted deployments. The personal API key needs `query:read`.
 
-The response includes total/customer/internal/failure events, source mix, actor mix, active identities, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
+The response includes total/customer/internal/failure events, source mix, actor mix, active identities, previous-period summaries, period-over-period trends, product signal buckets, operating alerts, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
+
+Signal buckets group raw telemetry events into operator-level adoption lanes:
+
+- `activation`: signups and API key creation.
+- `registry_discovery`: registry search, content opens, and hosted item resolution.
+- `cli_adoption`: CLI command completion and registry sync activity.
+- `hosted_intelligence`: execution-pack, critique, and audit usage.
+- `content_pipeline`: content validation and publish automation.
+- `commercial_intent`: billing, API key, organization, and org creation signals.
+
+Operating alerts are computed in the API response from the same query payload. They flag missing telemetry, elevated failure rates, customer usage drops, unaliased identities, fresh activation, and rising commercial intent. They are intentionally lightweight for now so they can later feed a Decantr-owned dashboard or private-registry operator console without changing event names.
 
 The commercial reports page also pulls a 30-day customer-filtered usage readout from the same endpoint, so operator reports can distinguish customer adoption from internal/official Decantr activity without exporting PostHog data.
 

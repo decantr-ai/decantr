@@ -2,6 +2,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
   api,
+  type AdminTelemetryOperatingAlert,
+  type AdminTelemetryUsageTrend,
   type TelemetryActorType,
   type TelemetryUsageSource,
 } from '@/lib/api';
@@ -43,6 +45,30 @@ function parseDays(value: unknown) {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US').format(value);
+}
+
+function formatDelta(value: number) {
+  const formatted = formatNumber(Math.abs(value));
+  if (value > 0) return `+${formatted}`;
+  if (value < 0) return `-${formatted}`;
+  return '0';
+}
+
+function formatPercent(value: number) {
+  return `${Math.round(value * 1000) / 10}%`;
+}
+
+function trendMeta(trend: AdminTelemetryUsageTrend) {
+  return `${formatDelta(trend.delta)} vs previous`;
+}
+
+function rateTrendMeta(trend: AdminTelemetryUsageTrend) {
+  return `${formatPercent(trend.current)} rate · ${formatDelta(Math.round(trend.delta * 1000) / 10)} pts`;
+}
+
+function alertStatus(level: AdminTelemetryOperatingAlert['level']) {
+  if (level === 'critical') return 'error';
+  return level;
 }
 
 function formatTimestamp(value: string | null) {
@@ -153,27 +179,75 @@ export default async function AdminTelemetryUsagePage({
               <div className="d-surface registry-admin-stat">
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.total_events)}</span>
                 <span className="registry-admin-row-meta">Tracked events</span>
+                <span className="registry-admin-row-meta">{trendMeta(usage.trends.total_events)}</span>
               </div>
               <div className="d-surface registry-admin-stat">
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.customer_events)}</span>
                 <span className="registry-admin-row-meta">Customer events</span>
+                <span className="registry-admin-row-meta">{trendMeta(usage.trends.customer_events)}</span>
               </div>
               <div className="d-surface registry-admin-stat">
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.internal_events)}</span>
                 <span className="registry-admin-row-meta">Internal events</span>
+                <span className="registry-admin-row-meta">
+                  Previous {formatNumber(usage.previous_summary.internal_events)}
+                </span>
               </div>
               <div className="d-surface registry-admin-stat">
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.active_installs)}</span>
                 <span className="registry-admin-row-meta">Active installs</span>
+                <span className="registry-admin-row-meta">{trendMeta(usage.trends.active_installs)}</span>
               </div>
               <div className="d-surface registry-admin-stat">
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.active_projects)}</span>
                 <span className="registry-admin-row-meta">Active projects</span>
+                <span className="registry-admin-row-meta">{trendMeta(usage.trends.active_projects)}</span>
               </div>
               <div className="d-surface registry-admin-stat">
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.failure_events)}</span>
                 <span className="registry-admin-row-meta">Failure signals</span>
+                <span className="registry-admin-row-meta">{rateTrendMeta(usage.trends.failure_rate)}</span>
               </div>
+            </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Operating Alerts
+            </span>
+            <div className="d-surface registry-admin-stack">
+              {usage.operating_alerts.length ? usage.operating_alerts.map((alert) => (
+                <div key={`${alert.level}-${alert.title}`} className="registry-admin-row">
+                  <span className="registry-admin-row-copy">
+                    <span className="registry-admin-row-title">{alert.title}</span>
+                    <span className="registry-admin-row-meta">{alert.detail}</span>
+                  </span>
+                  <span className="d-annotation" data-status={alertStatus(alert.level)}>
+                    {alert.level}
+                  </span>
+                </div>
+              )) : (
+                <span className="registry-admin-row-meta">No alert thresholds triggered.</span>
+              )}
+            </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Signal Buckets
+            </span>
+            <div className="d-surface registry-admin-stack">
+              {usage.signal_buckets.map((bucket) => (
+                <div key={bucket.key} className="registry-admin-row">
+                  <span className="registry-admin-row-copy">
+                    <span className="registry-admin-row-title">{bucket.label}</span>
+                    <span className="registry-admin-row-meta">
+                      Previous {formatNumber(bucket.previous_events)} · {formatDelta(bucket.delta)}
+                    </span>
+                  </span>
+                  <span className="registry-admin-row-meta">{formatNumber(bucket.current_events)}</span>
+                </div>
+              ))}
             </div>
           </section>
 
