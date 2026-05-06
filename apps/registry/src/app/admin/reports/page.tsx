@@ -8,6 +8,7 @@ import {
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { requireAdminRequestContext } from '@/lib/admin-workspace';
+import { summarizeTelemetryPipelineHealth } from '@/lib/telemetry-pipeline-health';
 
 export const metadata: Metadata = {
   title: 'Commercial Reports',
@@ -31,6 +32,16 @@ function trendMeta(trend: AdminTelemetryUsageTrend) {
 function alertStatus(level: AdminTelemetryOperatingAlert['level']) {
   if (level === 'critical') return 'error';
   return level;
+}
+
+function formatTimestamp(value: string | null) {
+  if (!value) return 'Unknown';
+  return new Date(value).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 function attributionLabel(row: AdminTelemetryAttributionRow) {
@@ -129,6 +140,11 @@ export default async function AdminReportsPage() {
       : 'Failed to load telemetry attribution snapshots';
   }
 
+  const customerPipelineHealth = summarizeTelemetryPipelineHealth({
+    attributionSnapshots: customerAttributionSnapshots?.items ?? [],
+    usageSnapshots: customerSnapshots?.items ?? [],
+  });
+
   return (
     <div className="registry-page-stack">
       <div className="registry-page-intro registry-admin-head">
@@ -200,6 +216,33 @@ export default async function AdminReportsPage() {
                 {attributionSnapshotError}
               </div>
             ) : null}
+            <div className="registry-admin-stat-grid">
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{customerPipelineHealth.label}</span>
+                <span className="registry-admin-row-meta">{customerPipelineHealth.detail}</span>
+                <span className="d-annotation" data-status={customerPipelineHealth.status}>
+                  {customerPipelineHealth.status}
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">
+                  {formatTimestamp(customerPipelineHealth.usageSnapshotLastCapturedAt)}
+                </span>
+                <span className="registry-admin-row-meta">Latest customer snapshot</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(customerPipelineHealth.usageSnapshotCount)} stored rows
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">
+                  {formatTimestamp(customerPipelineHealth.attributionSnapshotLastCapturedAt)}
+                </span>
+                <span className="registry-admin-row-meta">Latest attribution snapshot</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(customerPipelineHealth.attributionSnapshotCount)} stored rows
+                </span>
+              </div>
+            </div>
             {customerUsage ? (
               <div className="registry-admin-stack">
                 <div className="registry-admin-stat-grid">

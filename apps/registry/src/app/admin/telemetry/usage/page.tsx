@@ -11,6 +11,7 @@ import {
   type TelemetryUsageSource,
 } from '@/lib/api';
 import { requireAdminRequestContext } from '@/lib/admin-workspace';
+import { summarizeTelemetryPipelineHealth } from '@/lib/telemetry-pipeline-health';
 import { upsertTelemetryAlias } from '../actions';
 
 export const metadata: Metadata = {
@@ -203,6 +204,11 @@ export default async function AdminTelemetryUsagePage({
     error = err instanceof Error ? err.message : 'Failed to load telemetry usage';
   }
 
+  const pipelineHealth = summarizeTelemetryPipelineHealth({
+    attributionSnapshots: attributionSnapshots?.items ?? [],
+    usageSnapshots: snapshotHistory?.items ?? [],
+  });
+
   return (
     <div className="registry-page-stack">
       <div className="registry-page-intro registry-admin-head">
@@ -268,6 +274,39 @@ export default async function AdminTelemetryUsagePage({
             </button>
           </div>
         </form>
+      </section>
+
+      <section className="d-section" data-density="compact">
+        <span className="d-label registry-anchor-label">
+          Telemetry Pipeline Health
+        </span>
+        <div className="registry-admin-stat-grid">
+          <div className="d-surface registry-admin-stat">
+            <span className="registry-admin-row-title">{pipelineHealth.label}</span>
+            <span className="registry-admin-row-meta">{pipelineHealth.detail}</span>
+            <span className="d-annotation" data-status={pipelineHealth.status}>
+              {pipelineHealth.status}
+            </span>
+          </div>
+          <div className="d-surface registry-admin-stat">
+            <span className="registry-admin-row-title">
+              {formatTimestamp(pipelineHealth.usageSnapshotLastCapturedAt)}
+            </span>
+            <span className="registry-admin-row-meta">Latest usage snapshot</span>
+            <span className="registry-admin-row-meta">
+              {formatNumber(pipelineHealth.usageSnapshotCount)} stored rows
+            </span>
+          </div>
+          <div className="d-surface registry-admin-stat">
+            <span className="registry-admin-row-title">
+              {formatTimestamp(pipelineHealth.attributionSnapshotLastCapturedAt)}
+            </span>
+            <span className="registry-admin-row-meta">Latest attribution snapshot</span>
+            <span className="registry-admin-row-meta">
+              {formatNumber(pipelineHealth.attributionSnapshotCount)} stored rows
+            </span>
+          </div>
+        </div>
       </section>
 
       {usage ? (
