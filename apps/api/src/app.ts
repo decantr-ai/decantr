@@ -15,6 +15,7 @@ import { orgRoutes } from './routes/orgs.js';
 import { adminRoutes } from './routes/admin.js';
 import { billingRoutes } from './routes/billing.js';
 import { userRoutes } from './routes/users.js';
+import { telemetryRoutes } from './routes/telemetry.js';
 import { optionalAuth } from './middleware/auth.js';
 import { rateLimiter } from './middleware/rate-limit.js';
 import { requestLogger } from './middleware/request-logger.js';
@@ -145,6 +146,7 @@ export function createApp(): Hono<Env> {
   app.route('/v1', showcaseRoutes);
   app.route('/v1', intelligenceRoutes);
   app.route('/v1', packRoutes);
+  app.route('/v1', telemetryRoutes);
   app.route('/v1', critiqueRoutes);
   app.route('/v1', authRoutes);
   app.route('/v1', publishRoutes);

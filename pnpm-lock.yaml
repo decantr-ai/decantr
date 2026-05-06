@@ -44,6 +44,9 @@ importers:
       '@decantr/registry':
         specifier: workspace:*
         version: link:../../packages/registry
+      '@decantr/telemetry':
+        specifier: workspace:*
+        version: link:../../packages/telemetry
       '@decantr/verifier':
         specifier: workspace:*
         version: link:../../packages/verifier
@@ -179,6 +182,9 @@ importers:
       '@decantr/registry':
         specifier: workspace:*
         version: link:../registry
+      '@decantr/telemetry':
+        specifier: workspace:*
+        version: link:../telemetry
       '@decantr/verifier':
         specifier: workspace:*
         version: link:../verifier
@@ -233,6 +239,8 @@ importers:
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec
+
+  packages/telemetry: {}
 
   packages/verifier:
     dependencies:

@@ -1,14 +1,17 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, extname, isAbsolute, join, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
 import { validateEssence } from '@decantr/essence-spec';
 import type { EssenceFile } from '@decantr/essence-spec';
 import { compileExecutionPackBundle } from '@decantr/core';
+import type { RegistryItemResolvedProperties, RegistrySource } from '@decantr/telemetry';
 import { auditProject, critiqueSource } from '@decantr/verifier';
 import type { Env } from '../types.js';
 import { createPublicContentResolver } from '../lib/content-resolver.js';
 import { logger } from '../lib/logger.js';
+import { emitApiTelemetry } from '../lib/telemetry.js';
 import { requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 
 export const critiqueRoutes = new Hono<Env>();
@@ -222,6 +225,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 async function materializeHostedAuditProject(
   essence: EssenceFile,
   namespace: string,
+  resolveTelemetryOptions: Parameters<typeof createPublicContentResolver>[1],
   dist?: { indexHtml: string; assets?: Record<string, string> },
   sources?: { files: Record<string, string> },
 ): Promise<string> {
@@ -231,7 +235,7 @@ async function materializeHostedAuditProject(
   await writeFile(join(projectRoot, 'decantr.essence.json'), JSON.stringify(essence, null, 2) + '\n', 'utf-8');
 
   const bundle = await compileExecutionPackBundle(essence, {
-    resolver: createPublicContentResolver(namespace),
+    resolver: createPublicContentResolver(namespace, resolveTelemetryOptions),
   });
 
   await writeFile(join(contextDir, 'review-pack.json'), JSON.stringify(bundle.review, null, 2) + '\n', 'utf-8');
@@ -263,6 +267,7 @@ async function materializeHostedAuditProject(
 }
 
 critiqueRoutes.post('/critique/file', async (c) => {
+  const startedAt = Date.now();
   let body: unknown;
   try {
     body = await c.req.json();
@@ -324,7 +329,7 @@ critiqueRoutes.post('/critique/file', async (c) => {
   try {
     const report = await withTimeout((async () => {
       const bundle = await compileExecutionPackBundle(essence as unknown as EssenceFile, {
-        resolver: createPublicContentResolver(preferredNamespace),
+        resolver: createPublicContentResolver(preferredNamespace, createResolveTelemetryOptions(c)),
       });
       return critiqueSource({
         filePath: typeof filePath === 'string' && filePath.length > 0 ? filePath : 'Component.tsx',
@@ -336,14 +341,42 @@ critiqueRoutes.post('/critique/file', async (c) => {
     })(), HOSTED_AUDIT_TIMEOUT_MS);
 
     c.header('Cache-Control', 'no-store');
+    emitApiTelemetry(c, {
+      name: 'critique.completed',
+      context: {
+        registrySource: registrySourceForNamespace(preferredNamespace),
+      },
+      properties: {
+        scope: 'hosted',
+        success: true,
+        durationMs: Date.now() - startedAt,
+        overall: report.overall,
+        errorCount: countFindingsBySeverity(report.findings, 'error'),
+        warnCount: countFindingsBySeverity(report.findings, 'warn'),
+        infoCount: countFindingsBySeverity(report.findings, 'info'),
+      },
+    });
     return c.json(report);
   } catch (error) {
+    emitApiTelemetry(c, {
+      name: 'critique.completed',
+      context: {
+        registrySource: registrySourceForNamespace(preferredNamespace),
+      },
+      properties: {
+        scope: 'hosted',
+        success: false,
+        durationMs: Date.now() - startedAt,
+        errorCode: 'hosted_file_critique_failed',
+      },
+    });
     logger.error({ err: error }, 'Hosted file critique failed');
     return c.json({ error: (error as Error).message || 'Hosted file critique failed' }, 500);
   }
 });
 
 critiqueRoutes.post('/audit/project', async (c) => {
+  const startedAt = Date.now();
   let body: unknown;
   try {
     body = await c.req.json();
@@ -399,6 +432,7 @@ critiqueRoutes.post('/audit/project', async (c) => {
       projectRoot = await materializeHostedAuditProject(
         essence as unknown as EssenceFile,
         preferredNamespace,
+        createResolveTelemetryOptions(c),
         dist as { indexHtml: string; assets?: Record<string, string> } | undefined,
         sources as { files: Record<string, string> } | undefined,
       );
@@ -406,11 +440,38 @@ critiqueRoutes.post('/audit/project', async (c) => {
     })(), HOSTED_AUDIT_TIMEOUT_MS);
 
     c.header('Cache-Control', 'no-store');
+    emitApiTelemetry(c, {
+      name: 'audit.completed',
+      context: {
+        registrySource: registrySourceForNamespace(preferredNamespace),
+      },
+      properties: {
+        scope: 'hosted',
+        success: true,
+        durationMs: Date.now() - startedAt,
+        errorCount: report.summary.errorCount,
+        warnCount: report.summary.warnCount,
+        pageCount: report.summary.pageCount,
+        runtimePassed: report.summary.runtimePassed,
+      },
+    });
     return c.json({
       ...report,
       projectRoot: '[hosted-audit]',
     });
   } catch (error) {
+    emitApiTelemetry(c, {
+      name: 'audit.completed',
+      context: {
+        registrySource: registrySourceForNamespace(preferredNamespace),
+      },
+      properties: {
+        scope: 'hosted',
+        success: false,
+        durationMs: Date.now() - startedAt,
+        errorCode: 'hosted_project_audit_failed',
+      },
+    });
     logger.error({ err: error }, 'Hosted project audit failed');
     return c.json({ error: (error as Error).message || 'Hosted project audit failed' }, 500);
   } finally {
@@ -419,3 +480,36 @@ critiqueRoutes.post('/audit/project', async (c) => {
     }
   }
 });
+
+function countFindingsBySeverity(
+  findings: Array<{ severity?: string }>,
+  severity: 'error' | 'info' | 'warn',
+): number {
+  return findings.filter(finding => finding.severity === severity).length;
+}
+
+function registrySourceForNamespace(namespace: string): 'custom' | 'official' {
+  return namespace === '@official' ? 'official' : 'custom';
+}
+
+function createResolveTelemetryOptions(c: Context<Env>) {
+  return {
+    onResolve(properties: RegistryItemResolvedProperties) {
+      emitApiTelemetry(c, {
+        name: 'registry.item.resolved',
+        context: {
+          registrySource: isRegistrySource(properties.registrySource) ? properties.registrySource : undefined,
+        },
+        properties,
+      });
+    },
+  };
+}
+
+function isRegistrySource(value: unknown): value is RegistrySource {
+  return value === 'cache'
+    || value === 'custom'
+    || value === 'none'
+    || value === 'official'
+    || value === 'private';
+}

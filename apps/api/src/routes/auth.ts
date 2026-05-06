@@ -16,8 +16,11 @@ import { ensureUserProfile } from '../lib/user-profile.js';
 
 export const authRoutes = new Hono<Env>();
 
-// All auth routes require authentication
-authRoutes.use('/*', requireAuth());
+// Auth routes require authentication, without shadowing other /v1 route modules.
+authRoutes.use('/me', requireAuth());
+authRoutes.use('/me/*', requireAuth());
+authRoutes.use('/api-keys', requireAuth());
+authRoutes.use('/api-keys/*', requireAuth());
 
 // GET /v1/me
 authRoutes.get('/me', requireApiKeyScope('read'), async (c) => {

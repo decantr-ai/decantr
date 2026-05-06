@@ -16,6 +16,7 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 | `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | Registry contracts, schemas, API client, and public content utilities. |
 | `@decantr/css` | core-supported | `public-foundation` | stable | `foundation` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Framework-agnostic CSS atom runtime for Decantr projects. |
 | `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers. |
+| `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, and report-schema engine. |
 | `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
 | `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, and project governance. |
@@ -55,7 +56,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 
 ## Surface Snapshot
 
-- Stable public: 7
+- Stable public: 8
 - Internal only: 0
 - Experimental hold: 1
 
@@ -65,6 +66,7 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 - `@decantr/registry` in `foundation` wave
 - `@decantr/css` in `foundation` wave
 - `@decantr/core` in `foundation` wave
+- `@decantr/telemetry` in `foundation` wave
 - `@decantr/verifier` in `delivery` wave
 - `@decantr/mcp-server` in `delivery` wave
 - `@decantr/cli` in `delivery` wave
@@ -85,6 +87,7 @@ The active Decantr product surface is:
 - `@decantr/registry`
 - `@decantr/css`
 - `@decantr/core`
+- `@decantr/telemetry`
 - `@decantr/verifier`
 - `@decantr/mcp-server`
 - `@decantr/cli`

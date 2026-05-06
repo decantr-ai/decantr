@@ -77,6 +77,25 @@
       }
     },
     {
+      "name": "@decantr/telemetry",
+      "path": "packages/telemetry",
+      "support": "core-supported",
+      "surfaceClass": "public-foundation",
+      "maturity": "stable",
+      "publish": true,
+      "releaseWave": "foundation",
+      "publishOrder": 50,
+      "defaultDistTag": "latest",
+      "summary": "Privacy-preserving telemetry event contracts, clients, and analytics sinks.",
+      "releaseReadiness": {
+        "stableCandidate": true,
+        "docsAligned": true,
+        "ciCovered": true,
+        "productIntegrated": true,
+        "blockers": []
+      }
+    },
+    {
       "name": "@decantr/mcp-server",
       "path": "packages/mcp-server",
       "support": "core-supported",

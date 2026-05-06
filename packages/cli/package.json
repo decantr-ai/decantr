@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "1.7.26",
+  "version": "1.7.27",
   "description": "Decantr CLI — scaffold, audit, and maintain Decantr projects from the terminal",
   "author": "Decantr AI",
   "license": "MIT",
@@ -42,6 +42,7 @@
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
+    "@decantr/telemetry": "workspace:*",
     "@decantr/verifier": "workspace:*"
   }
 }

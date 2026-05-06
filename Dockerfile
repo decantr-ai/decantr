@@ -11,12 +11,14 @@ COPY apps/api/package.json ./apps/api/package.json
 COPY packages/essence-spec/package.json ./packages/essence-spec/package.json
 COPY packages/registry/package.json ./packages/registry/package.json
 COPY packages/core/package.json ./packages/core/package.json
+COPY packages/telemetry/package.json ./packages/telemetry/package.json
 COPY packages/verifier/package.json ./packages/verifier/package.json
 
 RUN pnpm install --frozen-lockfile \
   --filter @decantr/essence-spec... \
   --filter @decantr/registry... \
   --filter @decantr/core... \
+  --filter @decantr/telemetry... \
   --filter @decantr/verifier... \
   --filter ./apps/api...
 
@@ -26,9 +28,10 @@ COPY apps/showcase/reports/shortlist-verification.json ./apps/showcase/reports/s
 COPY packages/essence-spec/ ./packages/essence-spec/
 COPY packages/registry/ ./packages/registry/
 COPY packages/core/ ./packages/core/
+COPY packages/telemetry/ ./packages/telemetry/
 COPY packages/verifier/ ./packages/verifier/
 
-RUN pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/verifier --filter ./apps/api build
+RUN pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/telemetry --filter @decantr/verifier --filter ./apps/api build
 RUN pnpm --filter ./apps/api --prod deploy --legacy /prod/api
 
 FROM node:24-slim@sha256:03eae3ef7e88a9de535496fb488d67e02b9d96a063a8967bae657744ecd513f2

@@ -1,5 +1,6 @@
 import type { ContentResolver, ContentType, ResolvedContent } from '@decantr/registry';
 import type { Archetype, Blueprint, Pattern, Shell, Theme } from '@decantr/registry';
+import type { RegistryItemResolvedProperties } from '@decantr/telemetry';
 import { createAdminClient } from '../db/client.js';
 
 type ContentMap = {
@@ -14,6 +15,10 @@ interface ContentRow<T> {
   namespace: string;
   slug: string;
   data: T;
+}
+
+interface PublicContentResolverOptions {
+  onResolve?: (event: RegistryItemResolvedProperties) => void;
 }
 
 function pickPreferredRow<T>(
@@ -33,11 +38,13 @@ function pickPreferredRow<T>(
 
 export function createPublicContentResolver(
   preferredNamespace: string = '@official',
+  options: PublicContentResolverOptions = {},
 ): ContentResolver {
   const client = createAdminClient();
 
   return {
     async resolve<T extends ContentType>(type: T, id: string): Promise<ResolvedContent<ContentMap[T]> | null> {
+      const startedAt = Date.now();
       const { data, error } = await client
         .from('content')
         .select('namespace, slug, data')
@@ -48,6 +55,15 @@ export function createPublicContentResolver(
         .limit(5);
 
       if (error || !Array.isArray(data)) {
+        options.onResolve?.({
+          contentType: type,
+          success: false,
+          durationMs: Date.now() - startedAt,
+          errorCode: 'registry_resolve_failed',
+          itemId: id,
+          namespace: preferredNamespace,
+          registrySource: registrySourceForNamespace(preferredNamespace),
+        });
         return null;
       }
 
@@ -56,8 +72,27 @@ export function createPublicContentResolver(
         preferredNamespace,
       );
       if (!row) {
+        options.onResolve?.({
+          contentType: type,
+          success: false,
+          durationMs: Date.now() - startedAt,
+          errorCode: 'registry_item_not_found',
+          itemId: id,
+          namespace: preferredNamespace,
+          registrySource: registrySourceForNamespace(preferredNamespace),
+        });
         return null;
       }
+
+      options.onResolve?.({
+        contentType: type,
+        success: true,
+        durationMs: Date.now() - startedAt,
+        itemId: id,
+        namespace: row.namespace,
+        registrySource: registrySourceForNamespace(row.namespace),
+        visibility: 'public',
+      });
 
       return {
         item: row.data,
@@ -66,4 +101,8 @@ export function createPublicContentResolver(
       };
     },
   };
+}
+
+function registrySourceForNamespace(namespace: string): 'custom' | 'official' {
+  return namespace === '@official' ? 'official' : 'custom';
 }

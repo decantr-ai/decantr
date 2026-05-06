@@ -63,6 +63,7 @@ import {
   runSimplifiedInit,
 } from './prompts.js';
 import { RegistryClient, syncRegistry } from './registry.js';
+import { sendCliCommandTelemetry } from './telemetry.js';
 import {
   type BlueprintOverrides,
   type ComposeSectionsResult,
@@ -3369,8 +3370,26 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(error((e as Error).message));
-  if ((e as Error).stack) console.error((e as Error).stack);
-  process.exitCode = 1;
-});
+const cliStartedAt = Date.now();
+const cliArgs = process.argv.slice(2);
+
+main()
+  .then(async () => {
+    await sendCliCommandTelemetry({
+      args: cliArgs,
+      durationMs: Date.now() - cliStartedAt,
+      projectRoot: process.cwd(),
+      success: !process.exitCode || process.exitCode === 0,
+    });
+  })
+  .catch(async (e) => {
+    console.error(error((e as Error).message));
+    if ((e as Error).stack) console.error((e as Error).stack);
+    process.exitCode = 1;
+    await sendCliCommandTelemetry({
+      args: cliArgs,
+      durationMs: Date.now() - cliStartedAt,
+      projectRoot: process.cwd(),
+      success: false,
+    });
+  });

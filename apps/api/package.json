@@ -15,6 +15,7 @@
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
+    "@decantr/telemetry": "workspace:*",
     "@decantr/verifier": "workspace:*",
     "@hono/node-server": "^1.19.13",
     "@supabase/supabase-js": "^2.101.1",

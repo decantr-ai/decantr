@@ -1,0 +1,57 @@
+{
+  "name": "@decantr/telemetry",
+  "version": "0.1.0",
+  "description": "Privacy-preserving telemetry contracts, clients, and analytics sinks for Decantr",
+  "author": "Decantr AI",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/decantr-ai/decantr/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/decantr-ai/decantr.git",
+    "directory": "packages/telemetry"
+  },
+  "homepage": "https://decantr.ai",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./client": {
+      "import": "./dist/client.js",
+      "types": "./dist/client.d.ts"
+    },
+    "./events": {
+      "import": "./dist/events.js",
+      "types": "./dist/events.d.ts"
+    },
+    "./posthog": {
+      "import": "./dist/posthog.js",
+      "types": "./dist/posthog.d.ts"
+    },
+    "./privacy": {
+      "import": "./dist/privacy.js",
+      "types": "./dist/privacy.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm build",
+    "preversion": "pnpm build && pnpm test"
+  }
+}
