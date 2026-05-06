@@ -2,29 +2,46 @@
 
 **Objective:** Implement the detail route using the compiled page contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=detail | patterns=blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer
+**Scope:** pages=detail | patterns=content-detail-hero, json-viewer
 
 ## Page Contract
 - Page: detail
-- Path: /:type/:namespace/:slug
+- Path: /detail
 - Shell: top-nav-main
 - Section: registry-browser (primary)
 - Theme: luminarum (dark)
 - Features: search, pagination
-- Surface: _flex _col _gap4
+- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1
 
 ## Page Patterns
-- blueprint-launch-hero -> blueprint-launch-hero [column | default]
-- command-rail -> command-rail [column | default]
-- blueprint-anatomy -> blueprint-anatomy [column | default]
-- contract-explorer -> contract-explorer [column | default]
-- json-viewer -> json-viewer [stack | artifact]
-  > Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.
-  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
-  - [ ] hover-reveal
-  - [ ] click-select
-  - [ ] animate-on-mount
-  - [ ] keyboard-navigation
+- content-detail-hero -> content-detail-hero [stack | standard]
+- json-viewer -> json-viewer [stack | collapsible]
 
-## Shared Contract
-Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.
+## Required Setup
+- Keep the compiled route and shell contract stable for this page.
+- Treat the listed page patterns as the primary structure for this route.
+
+## Allowed Vocabulary
+- detail
+- top-nav-main
+- registry-browser
+- primary
+- luminarum
+- dark
+- search
+- pagination
+- content-detail-hero
+- stack
+- json-viewer
+
+## Success Checks
+- The page keeps the compiled route, shell, and section contract intact. [error]
+- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]
+- Any declared wiring signals remain coherent with the rendered page structure. [warn]
+
+## Token Budget
+- Target: 1400
+- Max: 2200
+- Prefer route summaries over repeated prose.
+- Use compact vocabulary lists instead of large reference tables.
+- Include only task-relevant examples and checks.

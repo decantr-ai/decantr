@@ -1,7 +1,7 @@
 {
   "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
   "version": "1.0.0",
-  "generatedAt": "2026-05-06T00:41:58.421Z",
+  "generatedAt": "2026-04-09T12:16:22.407Z",
   "scaffold": {
     "id": "scaffold",
     "markdown": "scaffold-pack.md",
@@ -36,9 +36,7 @@
         "api-keys",
         "settings",
         "billing",
-        "team",
-        "governance",
-        "private-registry"
+        "team"
       ]
     },
     {
@@ -47,9 +45,7 @@
       "json": "section-admin-moderation-pack.json",
       "pageIds": [
         "moderation-queue",
-        "commercial-reports",
-        "organizations",
-        "organization-detail"
+        "moderation-detail"
       ]
     },
     {
@@ -57,7 +53,9 @@
       "markdown": "section-auth-flow-pack.md",
       "json": "section-auth-flow-pack.json",
       "pageIds": [
-        "login"
+        "login",
+        "register",
+        "forgot-password"
       ]
     }
   ],
@@ -147,20 +145,6 @@
       "sectionRole": "primary"
     },
     {
-      "id": "governance",
-      "markdown": "page-governance-pack.md",
-      "json": "page-governance-pack.json",
-      "sectionId": "user-dashboard",
-      "sectionRole": "primary"
-    },
-    {
-      "id": "private-registry",
-      "markdown": "page-private-registry-pack.md",
-      "json": "page-private-registry-pack.json",
-      "sectionId": "user-dashboard",
-      "sectionRole": "primary"
-    },
-    {
       "id": "moderation-queue",
       "markdown": "page-moderation-queue-pack.md",
       "json": "page-moderation-queue-pack.json",
@@ -168,23 +152,9 @@
       "sectionRole": "auxiliary"
     },
     {
-      "id": "commercial-reports",
-      "markdown": "page-commercial-reports-pack.md",
-      "json": "page-commercial-reports-pack.json",
-      "sectionId": "admin-moderation",
-      "sectionRole": "auxiliary"
-    },
-    {
-      "id": "organizations",
-      "markdown": "page-organizations-pack.md",
-      "json": "page-organizations-pack.json",
-      "sectionId": "admin-moderation",
-      "sectionRole": "auxiliary"
-    },
-    {
-      "id": "organization-detail",
-      "markdown": "page-organization-detail-pack.md",
-      "json": "page-organization-detail-pack.json",
+      "id": "moderation-detail",
+      "markdown": "page-moderation-detail-pack.md",
+      "json": "page-moderation-detail-pack.json",
       "sectionId": "admin-moderation",
       "sectionRole": "auxiliary"
     },
@@ -192,6 +162,20 @@
       "id": "login",
       "markdown": "page-login-pack.md",
       "json": "page-login-pack.json",
+      "sectionId": "auth-flow",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "register",
+      "markdown": "page-register-pack.md",
+      "json": "page-register-pack.json",
+      "sectionId": "auth-flow",
+      "sectionRole": "gateway"
+    },
+    {
+      "id": "forgot-password",
+      "markdown": "page-forgot-password-pack.md",
+      "json": "page-forgot-password-pack.json",
       "sectionId": "auth-flow",
       "sectionRole": "gateway"
     }

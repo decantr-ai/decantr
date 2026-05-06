@@ -59,11 +59,9 @@
           {
             "id": "homepage",
             "layout": [
-              "blueprint-launch-hero",
               "search-filter-bar",
-              "featured-launchpad-list",
-              "launchpad-flow",
-              "registry-link-list"
+              "content-card-grid",
+              "kpi-grid"
             ],
             "route": "/"
           },
@@ -86,10 +84,7 @@
           {
             "id": "detail",
             "layout": [
-              "blueprint-launch-hero",
-              "command-rail",
-              "blueprint-anatomy",
-              "contract-explorer",
+              "content-detail-hero",
               "json-viewer"
             ],
             "route": "/:type/:namespace/:slug"

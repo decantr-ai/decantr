@@ -71,7 +71,7 @@
   },
   "data": {
     "pageId": "overview",
-    "path": "/dashboard",
+    "path": "/overview",
     "shell": "sidebar-main",
     "sectionId": "user-dashboard",
     "sectionRole": "primary",
@@ -79,7 +79,7 @@
       "auth",
       "api-keys"
     ],
-    "surface": "_flex _col _gap4",
+    "surface": "_flex _col _gap_gap4 _p4 _overflow[auto] _flex1",
     "theme": {
       "id": "luminarum",
       "mode": "dark",
@@ -91,42 +91,21 @@
         "id": "kpi-grid",
         "alias": "kpi-grid",
         "preset": "dashboard",
-        "layout": "grid",
-        "presetDescription": "4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.",
-        "interactions": [
-          "lift-hover",
-          "click-select",
-          "animate-on-mount",
-          "stagger-children",
-          "real-time-updates",
-          "hover-tooltip"
-        ]
+        "layout": "grid"
       },
       {
         "id": "reputation-badge",
         "alias": "reputation-badge",
         "preset": "standard",
-        "layout": "inline",
-        "presetDescription": "Inline reputation display with score number and trust level icon. Color-coded by trust threshold.",
-        "interactions": [
-          "animate-on-mount"
-        ]
+        "layout": "inline"
       },
       {
         "id": "activity-feed",
         "alias": "activity-feed",
         "preset": "standard",
-        "layout": "column",
-        "presetDescription": "Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.",
-        "interactions": [
-          "animate-on-mount",
-          "stagger-children",
-          "real-time-updates",
-          "hover-reveal",
-          "scroll-reveal"
-        ]
+        "layout": "column"
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the overview route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=overview | patterns=kpi-grid, reputation-badge, activity-feed\n\n## Page Contract\n- Page: overview\n- Path: /dashboard\n- Shell: sidebar-main\n- Section: user-dashboard (primary)\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n- reputation-badge -> reputation-badge [inline | standard]\n  > Inline reputation display with score number and trust level icon. Color-coded by trust threshold.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the overview route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=overview | patterns=kpi-grid, reputation-badge, activity-feed\n\n## Page Contract\n- Page: overview\n- Path: /overview\n- Shell: sidebar-main\n- Section: user-dashboard (primary)\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1\n\n## Page Patterns\n- kpi-grid -> kpi-grid [grid | dashboard]\n- reputation-badge -> reputation-badge [inline | standard]\n- activity-feed -> activity-feed [column | standard]\n\n## Required Setup\n- Keep the compiled route and shell contract stable for this page.\n- Treat the listed page patterns as the primary structure for this route.\n\n## Allowed Vocabulary\n- overview\n- sidebar-main\n- user-dashboard\n- primary\n- luminarum\n- dark\n- auth\n- api-keys\n- kpi-grid\n- grid\n- reputation-badge\n- inline\n- activity-feed\n- column\n\n## Success Checks\n- The page keeps the compiled route, shell, and section contract intact. [error]\n- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]\n- Any declared wiring signals remain coherent with the rendered page structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
 }

@@ -2,7 +2,7 @@
 
 **Objective:** Review generated output against the compiled Decantr contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=homepage, browse, browse-type, detail, profile, overview, content, content-new, api-keys, settings, billing, team, governance, private-registry, moderation-queue, commercial-reports, organizations, organization-detail, login | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list, content-card-grid, command-rail, blueprint-anatomy, contract-explorer, json-viewer, detail-header, activity-feed, kpi-grid, reputation-badge, form, api-key-row, account-settings, tier-upgrade-card, team-member-row, moderation-queue-item, auth-form
+**Scope:** pages=homepage, browse, browse-type, detail, profile, overview, content, content-new, api-keys, settings, billing, team, moderation-queue, moderation-detail, login, register, forgot-password | patterns=search-filter-bar, content-card-grid, kpi-grid, content-detail-hero, json-viewer, detail-header, activity-feed, reputation-badge, form, api-key-row, account-settings, tier-upgrade-card, team-member-row, moderation-queue-item, auth-form
 
 ## Review Contract
 - Review Type: app
@@ -12,25 +12,23 @@
 - Features: search, pagination, auth, api-keys, admin
 
 ## Review Topology
-- / -> registry-browser/homepage @ top-nav-main [blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list]
-- /browse -> registry-browser/browse @ top-nav-main [search-filter-bar, content-card-grid]
-- /browse/:type -> registry-browser/browse-type @ top-nav-main [search-filter-bar, content-card-grid]
-- /:type/:namespace/:slug -> registry-browser/detail @ top-nav-main [blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer]
-- /profile/:username -> registry-browser/profile @ top-nav-main [detail-header, content-card-grid, activity-feed]
-- /dashboard -> user-dashboard/overview @ sidebar-main [kpi-grid, reputation-badge, activity-feed]
-- /dashboard/content -> user-dashboard/content @ sidebar-main [content-card-grid]
-- /dashboard/content/new -> user-dashboard/content-new @ sidebar-main [form, json-viewer]
-- /dashboard/api-keys -> user-dashboard/api-keys @ sidebar-main [api-key-row]
-- /dashboard/settings -> user-dashboard/settings @ sidebar-main [account-settings]
-- /dashboard/billing -> user-dashboard/billing @ sidebar-main [tier-upgrade-card, kpi-grid]
-- /dashboard/team -> user-dashboard/team @ sidebar-main [kpi-grid, team-member-row]
-- /dashboard/governance -> user-dashboard/governance @ sidebar-main [kpi-grid, activity-feed, content-card-grid]
-- /dashboard/private-registry -> user-dashboard/private-registry @ sidebar-main [search-filter-bar, content-card-grid]
-- /admin/moderation -> admin-moderation/moderation-queue @ sidebar-main [search-filter-bar, moderation-queue-item]
-- /admin/reports -> admin-moderation/commercial-reports @ sidebar-main [kpi-grid, activity-feed]
-- /admin/organizations -> admin-moderation/organizations @ sidebar-main [search-filter-bar, content-card-grid, activity-feed]
-- /admin/organizations/:slug -> admin-moderation/organization-detail @ sidebar-main [detail-header, kpi-grid, activity-feed, content-card-grid]
-- /login -> auth-flow/login @ centered [auth-form]
+- / -> homepage [search-filter-bar, content-card-grid, kpi-grid]
+- /browse -> browse [search-filter-bar, content-card-grid]
+- /browse-type -> browse-type [search-filter-bar, content-card-grid]
+- /detail -> detail [content-detail-hero, json-viewer]
+- /profile -> profile [detail-header, content-card-grid, activity-feed]
+- /overview -> overview [kpi-grid, reputation-badge, activity-feed]
+- /content -> content [content-card-grid]
+- /content-new -> content-new [form, json-viewer]
+- /api-keys -> api-keys [api-key-row]
+- /settings -> settings [account-settings]
+- /billing -> billing [tier-upgrade-card, kpi-grid]
+- /team -> team [kpi-grid, team-member-row]
+- /moderation-queue -> moderation-queue [search-filter-bar, moderation-queue-item]
+- /moderation-detail/:id -> moderation-detail [content-detail-hero, json-viewer, moderation-queue-item]
+- /login -> login [auth-form]
+- /register -> register [auth-form]
+- /forgot-password -> forgot-password [auth-form]
 
 ## Focus Areas
 - route-topology
@@ -58,19 +56,13 @@
 - auth
 - api-keys
 - admin
-- blueprint-launch-hero
 - search-filter-bar
-- featured-launchpad-list
-- launchpad-flow
-- registry-link-list
 - content-card-grid
-- command-rail
-- blueprint-anatomy
-- contract-explorer
+- kpi-grid
+- content-detail-hero
 - json-viewer
 - detail-header
 - activity-feed
-- kpi-grid
 - reputation-badge
 - form
 - api-key-row

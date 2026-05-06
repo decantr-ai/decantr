@@ -6,22 +6,40 @@
 
 ## Page Contract
 - Page: content
-- Path: /dashboard/content
+- Path: /content
 - Shell: sidebar-main
 - Section: user-dashboard (primary)
 - Theme: luminarum (dark)
 - Features: auth, api-keys
-- Surface: _flex _col _gap4
+- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1
 
 ## Page Patterns
 - content-card-grid -> content-card-grid [grid | standard]
-  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.
-  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
-  - [ ] lift-hover
-  - [ ] stagger-children
-  - [ ] animate-on-mount
-  - [ ] click-select
-  - [ ] scroll-reveal
 
-## Shared Contract
-Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.
+## Required Setup
+- Keep the compiled route and shell contract stable for this page.
+- Treat the listed page patterns as the primary structure for this route.
+
+## Allowed Vocabulary
+- content
+- sidebar-main
+- user-dashboard
+- primary
+- luminarum
+- dark
+- auth
+- api-keys
+- content-card-grid
+- grid
+
+## Success Checks
+- The page keeps the compiled route, shell, and section contract intact. [error]
+- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]
+- Any declared wiring signals remain coherent with the rendered page structure. [warn]
+
+## Token Budget
+- Target: 1400
+- Max: 2200
+- Prefer route summaries over repeated prose.
+- Use compact vocabulary lists instead of large reference tables.
+- Include only task-relevant examples and checks.

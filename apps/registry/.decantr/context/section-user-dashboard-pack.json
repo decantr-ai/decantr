@@ -19,9 +19,7 @@
       "api-keys",
       "settings",
       "billing",
-      "team",
-      "governance",
-      "private-registry"
+      "team"
     ],
     "patternIds": [
       "kpi-grid",
@@ -33,8 +31,7 @@
       "api-key-row",
       "account-settings",
       "tier-upgrade-card",
-      "team-member-row",
-      "search-filter-bar"
+      "team-member-row"
     ]
   },
   "requiredSetup": [
@@ -58,8 +55,7 @@
     "api-key-row",
     "account-settings",
     "tier-upgrade-card",
-    "team-member-row",
-    "search-filter-bar"
+    "team-member-row"
   ],
   "examples": [],
   "antiPatterns": [],
@@ -106,94 +102,59 @@
     "routes": [
       {
         "pageId": "overview",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard",
+        "path": "/overview",
         "patternIds": [
           "kpi-grid",
           "reputation-badge",
           "activity-feed"
-        ],
-        "shell": "sidebar-main"
+        ]
       },
       {
         "pageId": "content",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/content",
+        "path": "/content",
         "patternIds": [
           "content-card-grid"
-        ],
-        "shell": "sidebar-main"
+        ]
       },
       {
         "pageId": "content-new",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/content/new",
+        "path": "/content-new",
         "patternIds": [
           "form",
           "json-viewer"
-        ],
-        "shell": "sidebar-main"
+        ]
       },
       {
         "pageId": "api-keys",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/api-keys",
+        "path": "/api-keys",
         "patternIds": [
           "api-key-row"
-        ],
-        "shell": "sidebar-main"
+        ]
       },
       {
         "pageId": "settings",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/settings",
+        "path": "/settings",
         "patternIds": [
           "account-settings"
-        ],
-        "shell": "sidebar-main"
+        ]
       },
       {
         "pageId": "billing",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/billing",
+        "path": "/billing",
         "patternIds": [
           "tier-upgrade-card",
           "kpi-grid"
-        ],
-        "shell": "sidebar-main"
+        ]
       },
       {
         "pageId": "team",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/team",
+        "path": "/team",
         "patternIds": [
           "kpi-grid",
           "team-member-row"
-        ],
-        "shell": "sidebar-main"
-      },
-      {
-        "pageId": "governance",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/governance",
-        "patternIds": [
-          "kpi-grid",
-          "activity-feed",
-          "content-card-grid"
-        ],
-        "shell": "sidebar-main"
-      },
-      {
-        "pageId": "private-registry",
-        "sectionId": "user-dashboard",
-        "path": "/dashboard/private-registry",
-        "patternIds": [
-          "search-filter-bar",
-          "content-card-grid"
-        ],
-        "shell": "sidebar-main"
+        ]
       }
     ]
   },
-  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the user-dashboard section using the compiled sidebar-main shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=overview, content, content-new, api-keys, settings, billing, team, governance, private-registry | patterns=kpi-grid, reputation-badge, activity-feed, content-card-grid, form, json-viewer, api-key-row, account-settings, tier-upgrade-card, team-member-row, search-filter-bar\n\n## Section Contract\n- Section: user-dashboard\n- Role: primary\n- Shell: sidebar-main\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Description: Authenticated user area with content management, API key management, account settings, and activity overview.\n\n## Section Routes\n- /dashboard -> user-dashboard/overview @ sidebar-main [kpi-grid, reputation-badge, activity-feed]\n- /dashboard/content -> user-dashboard/content @ sidebar-main [content-card-grid]\n- /dashboard/content/new -> user-dashboard/content-new @ sidebar-main [form, json-viewer]\n- /dashboard/api-keys -> user-dashboard/api-keys @ sidebar-main [api-key-row]\n- /dashboard/settings -> user-dashboard/settings @ sidebar-main [account-settings]\n- /dashboard/billing -> user-dashboard/billing @ sidebar-main [tier-upgrade-card, kpi-grid]\n- /dashboard/team -> user-dashboard/team @ sidebar-main [kpi-grid, team-member-row]\n- /dashboard/governance -> user-dashboard/governance @ sidebar-main [kpi-grid, activity-feed, content-card-grid]\n- /dashboard/private-registry -> user-dashboard/private-registry @ sidebar-main [search-filter-bar, content-card-grid]\n\n## Theme Decorators\n\nTheme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- user-dashboard\n- primary\n- sidebar-main\n- luminarum\n- dark\n- auth\n- api-keys\n- kpi-grid\n- reputation-badge\n- activity-feed\n- content-card-grid\n- form\n- json-viewer\n- api-key-row\n- account-settings\n- tier-upgrade-card\n- team-member-row\n- search-filter-bar\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the user-dashboard section using the compiled sidebar-main shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=overview, content, content-new, api-keys, settings, billing, team | patterns=kpi-grid, reputation-badge, activity-feed, content-card-grid, form, json-viewer, api-key-row, account-settings, tier-upgrade-card, team-member-row\n\n## Section Contract\n- Section: user-dashboard\n- Role: primary\n- Shell: sidebar-main\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Description: Authenticated user area with content management, API key management, account settings, and activity overview.\n\n## Section Routes\n- /overview -> overview [kpi-grid, reputation-badge, activity-feed]\n- /content -> content [content-card-grid]\n- /content-new -> content-new [form, json-viewer]\n- /api-keys -> api-keys [api-key-row]\n- /settings -> settings [account-settings]\n- /billing -> billing [tier-upgrade-card, kpi-grid]\n- /team -> team [kpi-grid, team-member-row]\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- user-dashboard\n- primary\n- sidebar-main\n- luminarum\n- dark\n- auth\n- api-keys\n- kpi-grid\n- reputation-badge\n- activity-feed\n- content-card-grid\n- form\n- json-viewer\n- api-key-row\n- account-settings\n- tier-upgrade-card\n- team-member-row\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
 }

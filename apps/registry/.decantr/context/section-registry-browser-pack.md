@@ -2,7 +2,7 @@
 
 **Objective:** Implement the registry-browser section using the compiled top-nav-main shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=homepage, browse, browse-type, detail, profile | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list, content-card-grid, command-rail, blueprint-anatomy, contract-explorer, json-viewer, detail-header, activity-feed
+**Scope:** pages=homepage, browse, browse-type, detail, profile | patterns=search-filter-bar, content-card-grid, kpi-grid, content-detail-hero, json-viewer, detail-header, activity-feed
 
 ## Section Contract
 - Section: registry-browser
@@ -13,15 +13,11 @@
 - Description: Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.
 
 ## Section Routes
-- / -> registry-browser/homepage @ top-nav-main [blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list]
-- /browse -> registry-browser/browse @ top-nav-main [search-filter-bar, content-card-grid]
-- /browse/:type -> registry-browser/browse-type @ top-nav-main [search-filter-bar, content-card-grid]
-- /:type/:namespace/:slug -> registry-browser/detail @ top-nav-main [blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer]
-- /profile/:username -> registry-browser/profile @ top-nav-main [detail-header, content-card-grid, activity-feed]
-
-## Theme Decorators
-
-Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Required Theme Decorators". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md "Decorator Quick Reference" for the same table.
+- / -> homepage [search-filter-bar, content-card-grid, kpi-grid]
+- /browse -> browse [search-filter-bar, content-card-grid]
+- /browse-type -> browse-type [search-filter-bar, content-card-grid]
+- /detail -> detail [content-detail-hero, json-viewer]
+- /profile -> profile [detail-header, content-card-grid, activity-feed]
 
 ## Required Setup
 - Use the declared section routes as the source of truth for this slice of the app.
@@ -35,15 +31,10 @@ Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Re
 - dark
 - search
 - pagination
-- blueprint-launch-hero
 - search-filter-bar
-- featured-launchpad-list
-- launchpad-flow
-- registry-link-list
 - content-card-grid
-- command-rail
-- blueprint-anatomy
-- contract-explorer
+- kpi-grid
+- content-detail-hero
 - json-viewer
 - detail-header
 - activity-feed

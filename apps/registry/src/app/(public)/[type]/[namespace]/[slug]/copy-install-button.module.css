@@ -33,11 +33,3 @@
   line-height: 1.4;
   color: var(--d-text-muted);
 }
-
-.actionButton[data-variant='primary'] .actionCommand {
-  color: color-mix(in srgb, #fff 94%, transparent);
-}
-
-.actionButton[data-variant='primary'] .actionHint {
-  color: color-mix(in srgb, #fff 76%, transparent);
-}

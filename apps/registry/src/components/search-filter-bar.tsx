@@ -148,7 +148,7 @@ export function SearchFilterBar({
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search Decantr registry..."
+          placeholder="Search Decantr blueprints, themes, patterns, archetypes, or shells..."
           className="d-control registry-search-input"
           aria-label="Search registry content"
         />

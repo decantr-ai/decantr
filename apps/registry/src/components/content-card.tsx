@@ -21,7 +21,6 @@ export function ContentCard({
   const name = item.name || item.slug;
   const sourceLine = getDisplaySourceLine(item);
   const itemStatus = 'status' in item ? item.status : null;
-  const primaryActionLabel = typePresentation.singular === 'blueprint' ? 'Open launchpad' : 'Open details';
   const showcaseUrl = showcaseMetadata?.verification?.build.passed && showcaseMetadata?.verification?.smoke.passed
     ? getShowcaseUrl(item.slug, showcaseMetadata)
     : null;
@@ -65,10 +64,16 @@ export function ContentCard({
             ) : null}
           </div>
 
-          <div className="registry-card-action-row">
-            <Link href={href} className="d-interactive registry-card-open" data-variant="primary">
+          {showcaseUrl ? (
+            <a
+              href={showcaseUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="d-interactive registry-card-showcase"
+              data-variant="primary"
+            >
               <svg
-                className="registry-card-action-icon"
+                className="registry-card-showcase-icon"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -77,38 +82,12 @@ export function ContentCard({
                 strokeLinejoin="round"
                 aria-hidden="true"
               >
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
+                <path d="M7 17 17 7" />
+                <path d="M7 7h10v10" />
               </svg>
-              <span>{primaryActionLabel}</span>
-            </Link>
-
-            {showcaseUrl ? (
-              <a
-                href={showcaseUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="d-interactive registry-card-showcase"
-                data-variant="ghost"
-                aria-label={`Open showcase for ${name}`}
-              >
-                <svg
-                  className="registry-card-action-icon"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M7 17 17 7" />
-                  <path d="M7 7h10v10" />
-                </svg>
-                <span>Showcase</span>
-              </a>
-            ) : null}
-          </div>
+              <span>Open showcase</span>
+            </a>
+          ) : null}
         </div>
 
         {editable ? (
