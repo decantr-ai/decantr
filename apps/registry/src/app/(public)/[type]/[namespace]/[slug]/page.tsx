@@ -34,6 +34,119 @@ type EvidenceSection = {
   items: string[];
 };
 
+type BlueprintRoute = {
+  path: string;
+  page?: string;
+  shell?: string;
+  archetype?: string;
+  section?: string;
+};
+
+type BlueprintRouteGroup = {
+  id: string;
+  routes: BlueprintRoute[];
+};
+
+type BlueprintLaunchpadModel = {
+  compose: string[];
+  features: string[];
+  routeGroups: BlueprintRouteGroup[];
+  routes: BlueprintRoute[];
+  shells: string[];
+  suggestedThemes: string[];
+  theme: {
+    id: string;
+    mode?: string;
+    shape?: string;
+  } | null;
+  voiceTone: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function getStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : [];
+}
+
+function getBlueprintCompose(data: Record<string, unknown>): string[] {
+  const compose = data.compose;
+  if (!Array.isArray(compose)) return [];
+
+  return compose
+    .map((entry) => {
+      if (typeof entry === 'string') return entry;
+      if (isRecord(entry) && typeof entry.archetype === 'string') return entry.archetype;
+      return null;
+    })
+    .filter((entry): entry is string => Boolean(entry));
+}
+
+function getBlueprintRoutes(data: Record<string, unknown>): BlueprintRoute[] {
+  const rawRoutes = data.routes;
+  if (!isRecord(rawRoutes)) return [];
+
+  return Object.entries(rawRoutes).map(([path, value]) => {
+    const route = isRecord(value) ? value : {};
+    return {
+      path,
+      page: typeof route.page === 'string' ? route.page : undefined,
+      shell: typeof route.shell === 'string' ? route.shell : undefined,
+      archetype: typeof route.archetype === 'string' ? route.archetype : undefined,
+      section: typeof route.section === 'string' ? route.section : undefined,
+    };
+  });
+}
+
+function getBlueprintTheme(data: Record<string, unknown>): BlueprintLaunchpadModel['theme'] {
+  if (!isRecord(data.theme)) return null;
+
+  return {
+    id: typeof data.theme.id === 'string' ? data.theme.id : 'custom theme',
+    mode: typeof data.theme.mode === 'string' ? data.theme.mode : undefined,
+    shape: typeof data.theme.shape === 'string' ? data.theme.shape : undefined,
+  };
+}
+
+function buildRouteGroups(routes: BlueprintRoute[]): BlueprintRouteGroup[] {
+  const groups = new Map<string, BlueprintRoute[]>();
+
+  for (const route of routes) {
+    const key = route.archetype || route.section || route.shell || 'routes';
+    groups.set(key, [...(groups.get(key) ?? []), route]);
+  }
+
+  return Array.from(groups.entries()).map(([id, groupRoutes]) => ({
+    id,
+    routes: groupRoutes,
+  }));
+}
+
+function getBlueprintLaunchpadModel(data: Record<string, unknown>): BlueprintLaunchpadModel {
+  const routes = getBlueprintRoutes(data);
+  const shells = [...new Set(routes.map((route) => route.shell).filter((shell): shell is string => Boolean(shell)))];
+  const voice = isRecord(data.voice) ? data.voice : null;
+
+  return {
+    compose: getBlueprintCompose(data),
+    features: getStringArray(data.features),
+    routeGroups: buildRouteGroups(routes),
+    routes,
+    shells,
+    suggestedThemes: getStringArray(data.suggested_themes),
+    theme: getBlueprintTheme(data),
+    voiceTone: voice && typeof voice.tone === 'string' ? voice.tone : null,
+  };
+}
+
+function formatCompactNumber(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    notation: value >= 1000 ? 'compact' : 'standard',
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 function singularType(type: string): string {
   return type.endsWith('s') ? type.slice(0, -1) : type;
 }
@@ -298,6 +411,170 @@ function getShowcaseDescription(showcaseMeta: NonNullable<Awaited<ReturnType<typ
   return showcaseMeta.notes || 'This blueprint has a live showcase build in the audited Decantr corpus.';
 }
 
+function getThemeLabel(theme: BlueprintLaunchpadModel['theme']): string {
+  if (!theme) return 'Custom theme';
+  return [theme.id, theme.mode, theme.shape].filter(Boolean).join(' / ');
+}
+
+function LaunchMetricCard({
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone: 'pink' | 'amber' | 'cyan' | 'green';
+}) {
+  return (
+    <div className={styles.launchMetricCard} data-tone={tone}>
+      <span className={styles.launchMetricLabel}>{label}</span>
+      <strong className={styles.launchMetricValue}>{value}</strong>
+      <span className={styles.launchMetricDetail}>{detail}</span>
+    </div>
+  );
+}
+
+function BlueprintPreview({
+  model,
+  showcaseUrl,
+  screenshotUrl,
+  name,
+}: {
+  model: BlueprintLaunchpadModel;
+  showcaseUrl: string | null;
+  screenshotUrl?: string | null;
+  name: string;
+}) {
+  const previewGroups = model.routeGroups.slice(0, 4);
+
+  return (
+    <div className={styles.launchPreview} aria-label="Blueprint composition preview">
+      <div className={styles.previewHeader}>
+        <span>Contract topology</span>
+        <strong>{model.theme?.id ?? 'blueprint contract'}</strong>
+      </div>
+      <div className={styles.previewStage}>
+        <div className={styles.previewMedia} data-empty={!screenshotUrl}>
+          {screenshotUrl ? (
+            <img src={screenshotUrl} alt={`${name} screenshot preview`} loading="lazy" />
+          ) : (
+            <div className={styles.previewMediaPlaceholder}>
+              <span>Screenshot pending</span>
+              <strong>{name}</strong>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.previewBody}>
+          <div className={styles.previewRail}>
+            {(model.compose.length > 0 ? model.compose : ['registry-browser']).slice(0, 4).map((section) => (
+              <span key={section}>{section}</span>
+            ))}
+          </div>
+          <div className={styles.previewCanvas}>
+            {previewGroups.length > 0 ? (
+              previewGroups.map((group, index) => (
+                <div key={group.id} className={styles.previewRouteCluster} data-index={index}>
+                  <div className={styles.previewRouteHeader}>
+                    <span>{group.id}</span>
+                    <strong>{group.routes.length}</strong>
+                  </div>
+                  <div className={styles.previewRouteLines}>
+                    {group.routes.slice(0, 3).map((route) => (
+                      <span key={route.path}>{route.path}</span>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={styles.previewEmpty}>Route map appears after the contract declares routes.</div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className={styles.previewFooter}>
+        <span>{formatCompactNumber(model.routes.length)} routes mapped</span>
+        {showcaseUrl ? (
+          <a href={showcaseUrl} target="_blank" rel="noreferrer" className={styles.previewShowcaseLink}>
+            Open live preview
+          </a>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function BlueprintAnatomy({ model }: { model: BlueprintLaunchpadModel }) {
+  if (model.routeGroups.length === 0) return null;
+
+  return (
+    <section className={styles.launchSection} aria-labelledby="blueprint-anatomy-title">
+      <div className={styles.launchSectionHeader}>
+        <span className={styles.launchEyebrow}>Blueprint anatomy</span>
+        <h2 id="blueprint-anatomy-title" className={styles.launchSectionTitle}>
+          The app structure before you scaffold
+        </h2>
+        <p className={styles.launchSectionCopy}>
+          Decantr packages the product topology into sections, shells, pages, and route intent so the scaffold starts with a coherent application shape.
+        </p>
+      </div>
+
+      <div className={styles.anatomyGrid}>
+        {model.routeGroups.map((group) => (
+          <article key={group.id} className={styles.anatomyCard}>
+            <div className={styles.anatomyCardHeader}>
+              <h3>{group.id}</h3>
+              <span>{group.routes.length} routes</span>
+            </div>
+            <div className={styles.anatomyRouteList}>
+              {group.routes.slice(0, 5).map((route) => (
+                <div key={route.path} className={styles.anatomyRoute}>
+                  <code>{route.path}</code>
+                  <span>{route.page ?? route.shell ?? 'page'}</span>
+                </div>
+              ))}
+              {group.routes.length > 5 ? (
+                <span className={styles.anatomyMore}>+{group.routes.length - 5} more routes</span>
+              ) : null}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function RegistryEvidenceDisclosure({ evidence }: { evidence: EvidenceSection[] }) {
+  if (evidence.length === 0) return null;
+
+  return (
+    <section className={styles.evidenceSection} aria-label="Registry evidence">
+      <details className={styles.evidenceDisclosure}>
+        <summary className={styles.evidenceSummary}>
+          <span>
+            Registry evidence
+            <small>Publisher and verification details</small>
+          </span>
+        </summary>
+        <div className={styles.evidenceGrid}>
+          {evidence.map((section) => (
+            <article key={section.title} className={styles.evidenceCard}>
+              <h3>{section.title}</h3>
+              <ul>
+                {section.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </details>
+    </section>
+  );
+}
+
 interface DetailPageProps {
   params: Promise<{ type: string; namespace: string; slug: string }>;
 }
@@ -348,20 +625,14 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const benchmarkBackedIntelligence = intelligence ? hasBenchmarkBackedIntelligence(intelligence) : false;
   const showcaseMeta = singular === 'blueprint' ? await getShowcaseMetadata(slug) : null;
   const showcaseVerification = showcaseMeta?.verification ?? null;
-  const showcaseUrl =
-    showcaseVerification?.build.passed && showcaseVerification?.smoke.passed
-      ? getShowcaseUrl(slug, showcaseMeta)
-      : null;
+  const showcaseUrl = showcaseMeta ? getShowcaseUrl(slug, showcaseMeta) : null;
   const primarySignal = getPrimarySignal(content, Boolean(showcaseUrl));
   const quickStart = getQuickStartContent(singular, namespace, slug);
   const usageBullets = getUsageBullets(singular, tags);
   const displaySourceLine = getDisplaySourceLine(content);
-  const artifactDefaultTab =
-    singular === 'blueprint'
-      ? 'commands'
-      : intelligence || showcaseMeta
-        ? 'overview'
-        : 'json';
+  const contentData = isRecord(content.data) ? content.data : {};
+  const blueprintModel = singular === 'blueprint' ? getBlueprintLaunchpadModel(contentData) : null;
+  const artifactDefaultTab = blueprintModel || intelligence || showcaseMeta ? 'overview' : 'json';
   const artifactCommands: ActionSpec[] = [
     ...quickStart.actions,
     ...(showcaseUrl
@@ -441,202 +712,265 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
           <span className={styles.currentCrumb}>{slug}</span>
         </nav>
 
-        <section className={`d-surface ${styles.heroSurface}`} data-elevation="raised" aria-labelledby="registry-detail-title">
-          <div className={styles.heroGrid}>
-            <div className={styles.heroMain}>
-              <div className={styles.badgeRow}>
-                <span className={`d-annotation ${styles.typeBadge} ${typeStyles.badge}`}>
-                  {singular}
-                </span>
-                {primarySignal ? (
-                  <span className="d-annotation" data-status={primarySignal.status}>
-                    {primarySignal.label}
+        {blueprintModel ? (
+          <>
+            <section className={styles.launchHero} aria-labelledby="registry-detail-title">
+              <div className={styles.launchHeroCopy}>
+                <div className={styles.launchTitleBlock}>
+                  <span className={styles.launchKicker}>
+                    {namespace === '@official' ? 'Official blueprint' : `${namespace} blueprint`}
                   </span>
-                ) : null}
+                  <h1 id="registry-detail-title" className={styles.launchTitle}>
+                    {name}
+                  </h1>
+                  {description ? <p className={styles.launchDescription}>{description}</p> : null}
+                </div>
+
+                <div className={styles.launchMetaRow}>
+                  <span>{displaySourceLine}</span>
+                  <span>v{content.version}</span>
+                  {content.published_at ? <span>{formatDate(content.published_at)}</span> : null}
+                </div>
+
+                <div className={styles.launchMetrics}>
+                  <LaunchMetricCard
+                    label="Sections"
+                    value={formatCompactNumber(blueprintModel.compose.length || blueprintModel.routeGroups.length)}
+                    detail="product zones"
+                    tone="pink"
+                  />
+                  <LaunchMetricCard
+                    label="Routes"
+                    value={formatCompactNumber(blueprintModel.routes.length)}
+                    detail="pages mapped"
+                    tone="cyan"
+                  />
+                  <LaunchMetricCard
+                    label="Features"
+                    value={formatCompactNumber(blueprintModel.features.length)}
+                    detail="capabilities"
+                    tone="amber"
+                  />
+                  <LaunchMetricCard
+                    label="Showcase"
+                    value={showcaseMeta ? 'Live' : 'Pending'}
+                    detail={showcaseVerification?.smoke.passed ? 'smoke verified' : 'preview status'}
+                    tone="green"
+                  />
+                </div>
               </div>
 
-              <div className={styles.titleRow}>
-                <h1 id="registry-detail-title" className={styles.heroTitle}>
-                  {name}
-                </h1>
-                <span className={styles.versionPill}>v{content.version}</span>
+              <div className={styles.launchHeroAside}>
+                <aside id="launch-commands" className={styles.launchCommandRail} aria-label="Launch commands">
+                  <span className={styles.launchEyebrow}>{quickStart.eyebrow}</span>
+                  <h2>{quickStart.title}</h2>
+                  <p>{quickStart.description}</p>
+                  <div className={styles.actionStack}>
+                    {quickStart.actions.map((action) => (
+                      <CopyInstallButton
+                        key={action.label}
+                        installCmd={action.command}
+                        label={action.label}
+                        commandText={action.command}
+                        hint={action.hint}
+                        variant={action.variant}
+                      />
+                    ))}
+                    {showcaseUrl ? (
+                      <a
+                        href={showcaseUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`d-interactive ${styles.actionLink}`}
+                        data-variant="showcase"
+                      >
+                        <span className={styles.actionLinkIcon} aria-hidden="true">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M7 17 17 7" />
+                            <path d="M9 7h8v8" />
+                            <path d="M5 5h6" />
+                            <path d="M5 5v14h14v-6" />
+                          </svg>
+                        </span>
+                        <span className={styles.actionLinkCopy}>
+                          <strong>Open live showcase</strong>
+                          <span>Preview the generated app</span>
+                        </span>
+                      </a>
+                    ) : null}
+                  </div>
+                </aside>
+              </div>
+            </section>
+
+            <section className={styles.launchSection} aria-labelledby="blueprint-preview-title">
+              <div className={styles.launchSectionHeader}>
+                <span className={styles.launchEyebrow}>Preview</span>
+                <h2 id="blueprint-preview-title" className={styles.launchSectionTitle}>
+                  See the product shape before you scaffold
+                </h2>
+                <p className={styles.launchSectionCopy}>
+                  The launch map turns route, shell, and archetype data into a quick read of the application you are about to generate.
+                </p>
+              </div>
+              <BlueprintPreview
+                model={blueprintModel}
+                showcaseUrl={showcaseUrl}
+                screenshotUrl={content.thumbnail_url}
+                name={name}
+              />
+            </section>
+
+            <section className={styles.launchSection} aria-labelledby="what-ships-title">
+              <div className={styles.launchSectionHeader}>
+                <span className={styles.launchEyebrow}>What ships</span>
+                <h2 id="what-ships-title" className={styles.launchSectionTitle}>
+                  A complete starting point, not a loose component bundle
+                </h2>
+                <p className={styles.launchSectionCopy}>
+                  This blueprint carries application topology, shell choices, theme intent, route mapping, and feature coverage into the scaffold.
+                </p>
               </div>
 
-              {description ? (
-                <p className={styles.description}>{description}</p>
-              ) : null}
-
-              <div className={styles.metaRow}>
-                <span className={styles.metaItem}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
-                    <path d="M20 7h-9a2 2 0 0 1-2-2V4" />
-                    <path d="M14 2H8a2 2 0 0 0-2 2v3" />
-                    <path d="M4 7h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
-                  </svg>
-                  {displaySourceLine}
-                </span>
-                {content.published_at ? (
-                  <span className={styles.metaItem}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.metaIcon}>
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                      <line x1="16" y1="2" x2="16" y2="6" />
-                      <line x1="8" y1="2" x2="8" y2="6" />
-                      <line x1="3" y1="10" x2="21" y2="10" />
-                    </svg>
-                    {formatDate(content.published_at)}
-                  </span>
-                ) : null}
+              <div className={styles.shipGrid}>
+                <article className={styles.shipCard}>
+                  <span>Theme system</span>
+                  <strong>{getThemeLabel(blueprintModel.theme)}</strong>
+                  <p>Tokens, treatments, decorators, and interaction states are pre-bound to the blueprint.</p>
+                </article>
+                <article className={styles.shipCard}>
+                  <span>Shells</span>
+                  <strong>{blueprintModel.shells.length ? blueprintModel.shells.join(', ') : 'Declared by sections'}</strong>
+                  <p>Top-level layout contracts define the public, dashboard, admin, and gateway frames.</p>
+                </article>
+                <article className={styles.shipCard}>
+                  <span>Suggested variants</span>
+                  <strong>{blueprintModel.suggestedThemes.length ? blueprintModel.suggestedThemes.join(', ') : 'Theme-ready'}</strong>
+                  <p>Useful when you want the same product topology with a different Decantr visual system.</p>
+                </article>
               </div>
 
-              {limitedTags.length > 0 ? (
-                <div className={styles.capabilityStrip}>
-                  {limitedTags.map((tag) => (
-                    <span key={tag} className="d-annotation">
-                      {tag}
-                    </span>
+              {blueprintModel.features.length > 0 ? (
+                <div className={styles.featureCloud} aria-label="Blueprint features">
+                  {blueprintModel.features.map((feature) => (
+                    <span key={feature}>{feature}</span>
                   ))}
                 </div>
               ) : null}
-            </div>
 
-            <aside className={styles.quickStartPanel} aria-label="Quick start">
-              <span className={styles.panelEyebrow}>{quickStart.eyebrow}</span>
-              <h2 className={styles.panelTitle}>{quickStart.title}</h2>
-              <p className={styles.panelDescription}>{quickStart.description}</p>
-              <div className={styles.actionStack}>
-                {quickStart.actions.map((action) => (
-                  <CopyInstallButton
-                    key={action.label}
-                    installCmd={action.command}
-                    label={action.label}
-                    commandText={action.command}
-                    hint={action.hint}
-                    variant={action.variant}
-                  />
-                ))}
-                {showcaseUrl ? (
-                  <a
-                    href={showcaseUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`d-interactive ${styles.actionLink}`}
-                    data-variant="ghost"
-                  >
-                    Open showcase
-                  </a>
-                ) : null}
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <div className={styles.summaryGrid}>
-          <section className={`d-surface ${styles.summaryCard} ${styles.summaryCardPrimary}`} data-elevation="raised" aria-label="Usage guidance">
-            <span className={styles.summaryEyebrow}>How to use this</span>
-            <h2 className={styles.summaryTitle}>What to do next</h2>
-            <p className={styles.supportingCopy}>
-              Use the official command rail first, then inspect the raw contract when you need implementation detail or drift debugging.
-            </p>
-            <ul className={styles.infoList}>
-              {usageBullets.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </section>
-
-          {intelligence ? (
-            <section className={`d-surface ${styles.summaryCard} ${styles.summaryCardAccent}`} data-elevation="raised" aria-label="Registry intelligence">
-              <span className={styles.summaryEyebrow}>Trust snapshot</span>
-              <h2 className={styles.summaryTitle}>Registry intelligence</h2>
-              <div className={styles.factRow}>
-                {intelligence.recommended ? (
-                  <span className="d-annotation" data-status="success">recommended</span>
-                ) : null}
-                {benchmarkBackedIntelligence ? (
-                  <span className="d-annotation">
-                    {intelligence.benchmark_confidence} benchmark confidence
-                  </span>
-                ) : null}
-              </div>
-              <p className={styles.supportingCopy}>{getIntelligenceDescription(intelligence)}</p>
-              <div className={styles.factList}>
-                <div>Quality score: {intelligence.quality_score ?? 'n/a'}</div>
-                <div>Confidence score: {intelligence.confidence_score ?? 'n/a'}</div>
-                {formatVerificationLabel(intelligence.verification_status) ? (
-                  <div>Verification: {formatVerificationLabel(intelligence.verification_status)}</div>
-                ) : null}
-                {intelligence.last_verified_at ? (
-                  <div>Last verified: {formatDate(intelligence.last_verified_at)}</div>
-                ) : null}
-              </div>
-              <details className={styles.detailsBlock}>
-                <summary className={styles.detailsSummary}>Why this is trusted</summary>
-                <div className={styles.detailsContent}>
-                  {intelligence.target_coverage.length > 0 ? (
-                    <div>Targets: {intelligence.target_coverage.join(', ')}</div>
-                  ) : null}
-                  {recommendationReasons.length > 0 ? (
-                    <div>Recommended because: {recommendationReasons.join(', ')}</div>
-                  ) : null}
-                  {!intelligence.recommended && recommendationBlockers.length > 0 ? (
-                    <div>Holding back: {recommendationBlockers.join(', ')}</div>
-                  ) : null}
-                  {intelligence.evidence.length > 0 ? (
-                    <div>Evidence: {intelligence.evidence.join(', ')}</div>
-                  ) : null}
-                  {benchmarkBackedIntelligence && intelligence.benchmark?.target ? (
-                    <div>Benchmark target: {intelligence.benchmark.target}</div>
-                  ) : null}
-                </div>
-              </details>
-            </section>
-          ) : null}
-
-          {showcaseMeta ? (
-            <section className={`d-surface ${styles.summaryCard} ${styles.summaryCardSuccess}`} data-elevation="raised" aria-label="Showcase verification">
-              <span className={styles.summaryEyebrow}>Live validation</span>
-              <h2 className={styles.summaryTitle}>Showcase verification</h2>
-              <div className={styles.factRow}>
-                <span className="d-annotation" data-status={showcaseMeta.goldenCandidate ? 'success' : 'info'}>
-                  {showcaseMeta.goldenCandidate ? 'shortlisted showcase' : 'live showcase'}
-                </span>
-              </div>
-              <p className={styles.supportingCopy}>{getShowcaseDescription(showcaseMeta)}</p>
-              <div className={styles.factList}>
-                <div>Classification: {showcaseMeta.classification}</div>
-                {showcaseMeta.target ? <div>Target runtime: {showcaseMeta.target}</div> : null}
-                {showcaseVerification ? <div>Drift signal: {showcaseVerification.drift.signal}</div> : null}
-                {showcaseVerification ? (
-                  <div>Build / smoke: {showcaseVerification.build.passed ? 'passing' : 'failing'} / {showcaseVerification.smoke.passed ? 'passing' : 'failing'}</div>
-                ) : null}
-              </div>
-              {showcaseVerification ? (
-                <details className={styles.detailsBlock}>
-                  <summary className={styles.detailsSummary}>Technical verification summary</summary>
-                  <div className={styles.detailsContent}>
-                    <div>Build: {showcaseVerification.build.passed ? 'passing' : 'failing'} in {formatDuration(showcaseVerification.build.durationMs)}</div>
-                    <div>Smoke: {showcaseVerification.smoke.passed ? 'passing' : 'failing'} in {formatDuration(showcaseVerification.smoke.durationMs)}</div>
-                    <div>Routes: {showcaseVerification.smoke.routeDocumentsPassed}/{showcaseVerification.smoke.routeDocumentsChecked} documents passed</div>
-                    <div>Hints matched: {showcaseVerification.smoke.routeHintsMatched}/{showcaseVerification.smoke.routeHintsChecked.length}</div>
-                    <div>Assets: {showcaseVerification.smoke.assetCount} files, {showcaseVerification.smoke.totalAssetBytes} total bytes</div>
-                  </div>
-                </details>
+              {blueprintModel.voiceTone ? (
+                <p className={styles.voiceNote}>{blueprintModel.voiceTone}</p>
               ) : null}
             </section>
-          ) : null}
-        </div>
+
+            <BlueprintAnatomy model={blueprintModel} />
+          </>
+        ) : (
+          <>
+            <section className={`d-surface ${styles.heroSurface}`} data-elevation="raised" aria-labelledby="registry-detail-title">
+              <div className={styles.heroGrid}>
+                <div className={styles.heroMain}>
+                  <div className={styles.badgeRow}>
+                    <span className={`d-annotation ${styles.typeBadge} ${typeStyles.badge}`}>
+                      {singular}
+                    </span>
+                    {primarySignal ? (
+                      <span className="d-annotation" data-status={primarySignal.status}>
+                        {primarySignal.label}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className={styles.titleRow}>
+                    <h1 id="registry-detail-title" className={styles.heroTitle}>
+                      {name}
+                    </h1>
+                    <span className={styles.versionPill}>v{content.version}</span>
+                  </div>
+
+                  {description ? <p className={styles.description}>{description}</p> : null}
+
+                  <div className={styles.metaRow}>
+                    <span className={styles.metaItem}>{displaySourceLine}</span>
+                    {content.published_at ? <span className={styles.metaItem}>{formatDate(content.published_at)}</span> : null}
+                  </div>
+
+                  {limitedTags.length > 0 ? (
+                    <div className={styles.capabilityStrip}>
+                      {limitedTags.map((tag) => (
+                        <span key={tag} className="d-annotation">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+
+                <aside className={styles.quickStartPanel} aria-label="Quick start">
+                  <span className={styles.panelEyebrow}>{quickStart.eyebrow}</span>
+                  <h2 className={styles.panelTitle}>{quickStart.title}</h2>
+                  <p className={styles.panelDescription}>{quickStart.description}</p>
+                  <div className={styles.actionStack}>
+                    {quickStart.actions.map((action) => (
+                      <CopyInstallButton
+                        key={action.label}
+                        installCmd={action.command}
+                        label={action.label}
+                        commandText={action.command}
+                        hint={action.hint}
+                        variant={action.variant}
+                      />
+                    ))}
+                  </div>
+                </aside>
+              </div>
+            </section>
+
+            <section className={styles.launchSection} aria-label="Usage guidance">
+              <div className={styles.launchSectionHeader}>
+                <span className={styles.launchEyebrow}>How to use this</span>
+                <h2 className={styles.launchSectionTitle}>What to do next</h2>
+              </div>
+              <ul className={styles.infoList}>
+                {usageBullets.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+          </>
+        )}
 
         {content.data ? (
-          <div className={styles.jsonSection}>
+          <section className={styles.contractSection} aria-labelledby="contract-explorer-title">
+            <div className={styles.launchSectionHeader}>
+              <span className={styles.launchEyebrow}>Contract explorer</span>
+              <h2 id="contract-explorer-title" className={styles.launchSectionTitle}>
+                Inspect the source of truth
+              </h2>
+              <p className={styles.launchSectionCopy}>
+                The contract remains available when you need route detail, theme bindings, or raw JSON for automation.
+              </p>
+            </div>
             <JsonViewer
               data={content.data}
-              title={`${namespace}/${slug} — contract JSON`}
+              title={`${namespace}/${slug} — contract`}
               defaultTab={artifactDefaultTab}
-              commands={artifactCommands}
-              evidence={artifactEvidence}
+              commands={blueprintModel ? [] : artifactCommands}
+              evidence={[]}
             />
-          </div>
+          </section>
         ) : null}
+
+        <RegistryEvidenceDisclosure evidence={artifactEvidence} />
       </div>
     </main>
   );

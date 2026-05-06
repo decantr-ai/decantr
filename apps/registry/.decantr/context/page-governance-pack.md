@@ -1,12 +1,12 @@
 # Page Pack
 
-**Objective:** Implement the team route using the compiled page contract.
+**Objective:** Implement the governance route using the compiled page contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=team | patterns=kpi-grid, team-member-row
+**Scope:** pages=governance | patterns=kpi-grid, activity-feed, content-card-grid
 
 ## Page Contract
-- Page: team
-- Path: /dashboard/team
+- Page: governance
+- Path: /dashboard/governance
 - Shell: sidebar-main
 - Section: user-dashboard (primary)
 - Theme: luminarum (dark)
@@ -23,10 +23,22 @@
   - [ ] stagger-children
   - [ ] real-time-updates
   - [ ] hover-tooltip
-- team-member-row -> team-member-row [row | standard]
-  > Full team member row with avatar, name, email, role badge, joined date, and role-change/remove actions. The row can wrap into a stacked card-like composition when horizontal space gets tight.
+- activity-feed -> activity-feed [column | standard]
+  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
   - [ ] animate-on-mount
+  - [ ] stagger-children
+  - [ ] real-time-updates
+  - [ ] hover-reveal
+  - [ ] scroll-reveal
+- content-card-grid -> content-card-grid [grid | standard]
+  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] lift-hover
+  - [ ] stagger-children
+  - [ ] animate-on-mount
+  - [ ] click-select
+  - [ ] scroll-reveal
 
 ## Shared Contract
 Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.

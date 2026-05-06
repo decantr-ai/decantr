@@ -68,7 +68,7 @@
   },
   "data": {
     "pageId": "billing",
-    "path": "/billing",
+    "path": "/dashboard/billing",
     "shell": "sidebar-main",
     "sectionId": "user-dashboard",
     "sectionRole": "primary",
@@ -76,7 +76,7 @@
       "auth",
       "api-keys"
     ],
-    "surface": "_flex _col _gap_gap4 _p4 _overflow[auto] _flex1",
+    "surface": "_flex _col _gap4",
     "theme": {
       "id": "luminarum",
       "mode": "dark",
@@ -88,15 +88,31 @@
         "id": "tier-upgrade-card",
         "alias": "tier-upgrade-card",
         "preset": "standard",
-        "layout": "stack"
+        "layout": "stack",
+        "presetDescription": "Pricing card with plan name, monthly price, feature checklist, and upgrade button. Vertical stack layout.",
+        "interactions": [
+          "lift-hover",
+          "click-select",
+          "animate-on-mount",
+          "stagger-children"
+        ]
       },
       {
         "id": "kpi-grid",
         "alias": "kpi-grid",
         "preset": "dashboard",
-        "layout": "grid"
+        "layout": "grid",
+        "presetDescription": "4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.",
+        "interactions": [
+          "lift-hover",
+          "click-select",
+          "animate-on-mount",
+          "stagger-children",
+          "real-time-updates",
+          "hover-tooltip"
+        ]
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the billing route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=billing | patterns=tier-upgrade-card, kpi-grid\n\n## Page Contract\n- Page: billing\n- Path: /billing\n- Shell: sidebar-main\n- Section: user-dashboard (primary)\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1\n\n## Page Patterns\n- tier-upgrade-card -> tier-upgrade-card [stack | standard]\n- kpi-grid -> kpi-grid [grid | dashboard]\n\n## Required Setup\n- Keep the compiled route and shell contract stable for this page.\n- Treat the listed page patterns as the primary structure for this route.\n\n## Allowed Vocabulary\n- billing\n- sidebar-main\n- user-dashboard\n- primary\n- luminarum\n- dark\n- auth\n- api-keys\n- tier-upgrade-card\n- stack\n- kpi-grid\n- grid\n\n## Success Checks\n- The page keeps the compiled route, shell, and section contract intact. [error]\n- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]\n- Any declared wiring signals remain coherent with the rendered page structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the billing route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=billing | patterns=tier-upgrade-card, kpi-grid\n\n## Page Contract\n- Page: billing\n- Path: /dashboard/billing\n- Shell: sidebar-main\n- Section: user-dashboard (primary)\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- tier-upgrade-card -> tier-upgrade-card [stack | standard]\n  > Pricing card with plan name, monthly price, feature checklist, and upgrade button. Vertical stack layout.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

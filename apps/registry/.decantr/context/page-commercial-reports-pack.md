@@ -1,16 +1,16 @@
 # Page Pack
 
-**Objective:** Implement the team route using the compiled page contract.
+**Objective:** Implement the commercial-reports route using the compiled page contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=team | patterns=kpi-grid, team-member-row
+**Scope:** pages=commercial-reports | patterns=kpi-grid, activity-feed
 
 ## Page Contract
-- Page: team
-- Path: /dashboard/team
+- Page: commercial-reports
+- Path: /admin/reports
 - Shell: sidebar-main
-- Section: user-dashboard (primary)
+- Section: admin-moderation (auxiliary)
 - Theme: luminarum (dark)
-- Features: auth, api-keys
+- Features: auth, admin
 - Surface: _flex _col _gap4
 
 ## Page Patterns
@@ -23,10 +23,14 @@
   - [ ] stagger-children
   - [ ] real-time-updates
   - [ ] hover-tooltip
-- team-member-row -> team-member-row [row | standard]
-  > Full team member row with avatar, name, email, role badge, joined date, and role-change/remove actions. The row can wrap into a stacked card-like composition when horizontal space gets tight.
+- activity-feed -> activity-feed [column | standard]
+  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
   - [ ] animate-on-mount
+  - [ ] stagger-children
+  - [ ] real-time-updates
+  - [ ] hover-reveal
+  - [ ] scroll-reveal
 
 ## Shared Contract
 Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.
