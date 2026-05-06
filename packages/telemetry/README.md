@@ -47,6 +47,8 @@ Every event can carry `context.actorType` so Decantr can distinguish founder/int
 
 If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API normalizes public ingest events with server-authoritative attribution from Supabase identity flags, `telemetry_identity_aliases`, and fallback overrides through `DECANTR_INTERNAL_USER_IDS`, `DECANTR_INTERNAL_ORG_IDS`, `DECANTR_INTERNAL_INSTALL_IDS`, `DECANTR_INTERNAL_PROJECT_IDS`, and `DECANTR_INTERNAL_ANONYMOUS_IDS`.
 
+The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `install`, and `project` aliases without writing SQL. Aliases can be linked by user email/id or organization slug/id. Mutations are audit logged and clear the hosted API actor-resolution cache.
+
 ## PostHog
 
 ```ts

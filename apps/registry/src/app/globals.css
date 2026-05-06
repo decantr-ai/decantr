@@ -619,6 +619,13 @@
     align-items: end;
   }
 
+  .registry-admin-telemetry-filter-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr) repeat(2, minmax(11rem, 14rem)) auto;
+    align-items: end;
+  }
+
   .registry-plan-grid {
     display: grid;
     gap: 1rem;
@@ -889,6 +896,50 @@
   .registry-admin-stack {
     display: grid;
     gap: 0.75rem;
+  }
+
+  .registry-admin-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .registry-admin-stat {
+    display: grid;
+    gap: 0.25rem;
+    min-height: 5rem;
+  }
+
+  .registry-admin-alias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+  }
+
+  .registry-admin-alias-row {
+    display: grid;
+    gap: 0.875rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--d-border);
+  }
+
+  .registry-admin-alias-row-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .registry-admin-monospace {
+    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    overflow-wrap: anywhere;
+  }
+
+  .registry-field-stack {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
   }
 
   .registry-admin-row {
@@ -4121,7 +4172,8 @@
     .registry-form-grid-split,
     .registry-inline-form,
     .registry-three-field-form,
-    .registry-admin-filter-grid {
+    .registry-admin-filter-grid,
+    .registry-admin-telemetry-filter-grid {
       grid-template-columns: 1fr;
     }
 

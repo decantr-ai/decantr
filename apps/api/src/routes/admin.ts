@@ -1,5 +1,10 @@
 import { Hono } from 'hono';
 import { timingSafeEqual } from 'node:crypto';
+import {
+  DECANTR_TELEMETRY_ACTOR_TYPES,
+  isTelemetryActorType,
+  type TelemetryActorType,
+} from '@decantr/telemetry';
 import type { Env } from '../types.js';
 import { parsePagination, CONTENT_TYPES } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -8,9 +13,26 @@ import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { clearTelemetryActorCache } from '../lib/telemetry-actor.js';
 
 export const adminRoutes = new Hono<Env>();
 const ORG_TIERS = ['team', 'enterprise'] as const;
+const TELEMETRY_IDENTITY_TYPES = ['anonymous', 'install', 'project'] as const;
+type TelemetryIdentityType = (typeof TELEMETRY_IDENTITY_TYPES)[number];
+
+const TELEMETRY_ALIAS_SELECT = `
+  id,
+  identity_type,
+  identity_id,
+  actor_type,
+  user_id,
+  org_id,
+  label,
+  created_at,
+  updated_at,
+  users(email, display_name, username, is_internal, is_test),
+  organizations(name, slug, is_internal, is_test)
+`;
 
 /** Timing-safe string comparison to prevent timing attacks on admin key */
 function safeCompare(a: string, b: string): boolean {
@@ -74,6 +96,10 @@ adminRoutes.use('/admin/organizations', requireAuth());
 adminRoutes.use('/admin/organizations', requireAdmin());
 adminRoutes.use('/admin/organizations/*', requireAuth());
 adminRoutes.use('/admin/organizations/*', requireAdmin());
+adminRoutes.use('/admin/telemetry', requireAuth());
+adminRoutes.use('/admin/telemetry', requireAdmin());
+adminRoutes.use('/admin/telemetry/*', requireAuth());
+adminRoutes.use('/admin/telemetry/*', requireAdmin());
 adminRoutes.use('/admin/users/*', requireAuth());
 adminRoutes.use('/admin/users/*', requireAdmin());
 
@@ -292,6 +318,259 @@ function parseTelemetryClassificationPatch(body: unknown): { is_internal: boolea
   };
 }
 
+function isTelemetryIdentityType(value: unknown): value is TelemetryIdentityType {
+  return (
+    typeof value === 'string' &&
+    (TELEMETRY_IDENTITY_TYPES as readonly string[]).includes(value)
+  );
+}
+
+function readOptionalString(value: unknown, maxLength = 256): string | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > maxLength) {
+    return null;
+  }
+  return trimmed;
+}
+
+function parseTelemetryAliasWrite(body: unknown): {
+  actor_type: TelemetryActorType;
+  identity_id: string;
+  identity_type: TelemetryIdentityType;
+  label: string | null;
+  org_ref: string | null;
+  user_ref: string | null;
+} | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null;
+  }
+
+  const input = body as Record<string, unknown>;
+  const identityId = readOptionalString(input.identity_id);
+  if (!identityId || !isTelemetryIdentityType(input.identity_type) || !isTelemetryActorType(input.actor_type)) {
+    return null;
+  }
+
+  return {
+    identity_type: input.identity_type,
+    identity_id: identityId,
+    actor_type: input.actor_type,
+    user_ref: readOptionalString(input.user_ref ?? input.user_id) ?? null,
+    org_ref: readOptionalString(input.org_ref ?? input.org_id) ?? null,
+    label: readOptionalString(input.label, 160) ?? null,
+  };
+}
+
+function parseTelemetryAliasPatch(body: unknown): {
+  actor_type?: TelemetryActorType;
+  label?: string | null;
+  org_ref?: string | null;
+  user_ref?: string | null;
+} | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null;
+  }
+
+  const input = body as Record<string, unknown>;
+  const patch: {
+    actor_type?: TelemetryActorType;
+    label?: string | null;
+    org_ref?: string | null;
+    user_ref?: string | null;
+  } = {};
+
+  if ('actor_type' in input) {
+    if (!isTelemetryActorType(input.actor_type)) {
+      return null;
+    }
+    patch.actor_type = input.actor_type;
+  }
+
+  if ('user_ref' in input || 'user_id' in input) {
+    patch.user_ref = readOptionalString(input.user_ref ?? input.user_id) ?? null;
+  }
+
+  if ('org_ref' in input || 'org_id' in input) {
+    patch.org_ref = readOptionalString(input.org_ref ?? input.org_id) ?? null;
+  }
+
+  if ('label' in input) {
+    patch.label = readOptionalString(input.label, 160) ?? null;
+  }
+
+  return Object.keys(patch).length ? patch : null;
+}
+
+function looksLikeUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function resolveTelemetryAliasLinkIds(
+  client: ReturnType<typeof createAdminClient>,
+  input: {
+    actor_type?: TelemetryActorType;
+    identity_id?: string;
+    identity_type?: TelemetryIdentityType;
+    label?: string | null;
+    org_ref?: string | null;
+    user_ref?: string | null;
+  },
+): Promise<
+  | {
+      actor_type?: TelemetryActorType;
+      identity_id?: string;
+      identity_type?: TelemetryIdentityType;
+      label?: string | null;
+      org_id?: string | null;
+      user_id?: string | null;
+    }
+  | { error: string }
+> {
+  const output: {
+    actor_type?: TelemetryActorType;
+    identity_id?: string;
+    identity_type?: TelemetryIdentityType;
+    label?: string | null;
+    org_id?: string | null;
+    user_id?: string | null;
+  } = {};
+
+  if ('actor_type' in input) output.actor_type = input.actor_type;
+  if ('identity_id' in input) output.identity_id = input.identity_id;
+  if ('identity_type' in input) output.identity_type = input.identity_type;
+  if ('label' in input) output.label = input.label ?? null;
+
+  if ('user_ref' in input) {
+    const userRef = input.user_ref;
+    if (!userRef) {
+      output.user_id = null;
+    } else if (looksLikeUuid(userRef)) {
+      output.user_id = userRef;
+    } else if (userRef.includes('@')) {
+      const { data, error } = await client
+        .from('users')
+        .select('id')
+        .ilike('email', userRef)
+        .maybeSingle();
+      if (error || !data?.id) {
+        return { error: 'User email was not found' };
+      }
+      output.user_id = data.id;
+    } else {
+      output.user_id = userRef;
+    }
+  }
+
+  if ('org_ref' in input) {
+    const orgRef = input.org_ref;
+    if (!orgRef) {
+      output.org_id = null;
+    } else if (looksLikeUuid(orgRef)) {
+      output.org_id = orgRef;
+    } else {
+      const { data, error } = await client
+        .from('organizations')
+        .select('id')
+        .eq('slug', orgRef)
+        .maybeSingle();
+      if (error || !data?.id) {
+        return { error: 'Organization slug was not found' };
+      }
+      output.org_id = data.id;
+    }
+  }
+
+  return output;
+}
+
+function formatTelemetryAlias(row: any) {
+  const user = Array.isArray(row.users) ? row.users[0] : row.users;
+  const organization = Array.isArray(row.organizations) ? row.organizations[0] : row.organizations;
+
+  return {
+    id: row.id,
+    identity_type: row.identity_type,
+    identity_id: row.identity_id,
+    actor_type: row.actor_type,
+    user_id: row.user_id ?? null,
+    org_id: row.org_id ?? null,
+    label: row.label ?? null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    user: user ? {
+      email: user.email ?? '',
+      display_name: user.display_name ?? null,
+      username: user.username ?? null,
+      is_internal: user.is_internal ?? false,
+      is_test: user.is_test ?? false,
+    } : null,
+    organization: organization ? {
+      name: organization.name ?? '',
+      slug: organization.slug ?? '',
+      is_internal: organization.is_internal ?? false,
+      is_test: organization.is_test ?? false,
+    } : null,
+  };
+}
+
+function telemetryAliasMatchesQuery(alias: ReturnType<typeof formatTelemetryAlias>, q: string) {
+  if (!q) return true;
+  const haystack = [
+    alias.identity_id,
+    alias.label,
+    alias.user_id,
+    alias.org_id,
+    alias.user?.email,
+    alias.user?.display_name,
+    alias.user?.username,
+    alias.organization?.name,
+    alias.organization?.slug,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+  return haystack.includes(q);
+}
+
+function countBy<T extends string>(values: T[], allValues: readonly T[]): Record<T, number> {
+  const counts = Object.fromEntries(allValues.map((value) => [value, 0])) as Record<T, number>;
+  for (const value of values) {
+    counts[value] = (counts[value] ?? 0) + 1;
+  }
+  return counts;
+}
+
+async function recordTelemetryAliasAudit(
+  auth: AuthContext,
+  action: 'telemetry_alias.deleted' | 'telemetry_alias.updated' | 'telemetry_alias.upserted',
+  alias: any,
+) {
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: alias.org_id ?? null,
+    scope: 'organization',
+    action,
+    target_type: 'telemetry_identity_alias',
+    target_id: alias.id,
+    details: {
+      identity_type: alias.identity_type,
+      identity_id: alias.identity_id,
+      actor_type: alias.actor_type,
+      user_id: alias.user_id ?? null,
+      org_id: alias.org_id ?? null,
+      label: alias.label ?? null,
+    },
+  });
+}
+
 // GET /v1/admin/organizations
 adminRoutes.get('/admin/organizations', async (c) => {
   const client = createAdminClient();
@@ -508,6 +787,7 @@ adminRoutes.patch('/admin/organizations/:slug/telemetry', async (c) => {
     return c.json({ error: 'Organization not found' }, 404);
   }
 
+  clearTelemetryActorCache();
   await recordAuditEvent({
     actor_user_id: auth.user!.id,
     org_id: org.id,
@@ -546,6 +826,7 @@ adminRoutes.patch('/admin/users/:id/telemetry', async (c) => {
     return c.json({ error: 'User not found' }, 404);
   }
 
+  clearTelemetryActorCache();
   await recordAuditEvent({
     actor_user_id: auth.user!.id,
     scope: 'user',
@@ -561,6 +842,156 @@ adminRoutes.patch('/admin/users/:id/telemetry', async (c) => {
   return c.json({ user });
 });
 
+// GET /v1/admin/telemetry/aliases
+adminRoutes.get('/admin/telemetry/aliases', async (c) => {
+  const client = createAdminClient();
+  const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
+  const q = c.req.query('q')?.trim().toLowerCase() ?? '';
+  const identityType = TELEMETRY_IDENTITY_TYPES.find((value) => value === c.req.query('identity_type'));
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
+  const userId = c.req.query('user_id')?.trim();
+  const orgId = c.req.query('org_id')?.trim();
+
+  const { data, error } = await client
+    .from('telemetry_identity_aliases')
+    .select(TELEMETRY_ALIAS_SELECT)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    return c.json({ error: 'Failed to fetch telemetry identity aliases' }, 500);
+  }
+
+  const filtered = (data ?? [])
+    .map(formatTelemetryAlias)
+    .filter((alias) => {
+      if (identityType && alias.identity_type !== identityType) return false;
+      if (actorType && alias.actor_type !== actorType) return false;
+      if (userId && alias.user_id !== userId) return false;
+      if (orgId && alias.org_id !== orgId) return false;
+      return telemetryAliasMatchesQuery(alias, q);
+    });
+
+  const items = filtered.slice(offset, offset + limit);
+
+  return c.json({
+    total: filtered.length,
+    limit,
+    offset,
+    summary: {
+      by_actor_type: countBy(filtered.map((alias) => alias.actor_type), DECANTR_TELEMETRY_ACTOR_TYPES),
+      by_identity_type: countBy(filtered.map((alias) => alias.identity_type), TELEMETRY_IDENTITY_TYPES),
+    },
+    items,
+  });
+});
+
+// POST /v1/admin/telemetry/aliases
+adminRoutes.post('/admin/telemetry/aliases', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const client = createAdminClient();
+  const alias = parseTelemetryAliasWrite(await c.req.json().catch(() => null));
+
+  if (!alias) {
+    return c.json({
+      error: 'identity_type, identity_id, and a valid actor_type are required',
+    }, 400);
+  }
+
+  const resolvedAlias = await resolveTelemetryAliasLinkIds(client, alias);
+  if ('error' in resolvedAlias) {
+    return c.json({ error: resolvedAlias.error }, 400);
+  }
+  if (!resolvedAlias.identity_type || !resolvedAlias.identity_id || !resolvedAlias.actor_type) {
+    return c.json({ error: 'identity_type, identity_id, and a valid actor_type are required' }, 400);
+  }
+
+  const { data, error } = await client
+    .from('telemetry_identity_aliases')
+    .upsert({
+      identity_type: resolvedAlias.identity_type,
+      identity_id: resolvedAlias.identity_id,
+      actor_type: resolvedAlias.actor_type,
+      user_id: resolvedAlias.user_id ?? null,
+      org_id: resolvedAlias.org_id ?? null,
+      label: resolvedAlias.label ?? null,
+    }, { onConflict: 'identity_type,identity_id' })
+    .select(TELEMETRY_ALIAS_SELECT)
+    .single();
+
+  if (error || !data) {
+    return c.json({ error: 'Failed to save telemetry identity alias' }, 400);
+  }
+
+  clearTelemetryActorCache();
+  await recordTelemetryAliasAudit(auth, 'telemetry_alias.upserted', data);
+
+  return c.json({ alias: formatTelemetryAlias(data) }, 201);
+});
+
+// PATCH /v1/admin/telemetry/aliases/:id
+adminRoutes.patch('/admin/telemetry/aliases/:id', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const client = createAdminClient();
+  const aliasId = c.req.param('id');
+  const patch = parseTelemetryAliasPatch(await c.req.json().catch(() => null));
+
+  if (!patch) {
+    return c.json({ error: 'At least one valid telemetry alias field is required' }, 400);
+  }
+
+  const resolvedPatch = await resolveTelemetryAliasLinkIds(client, patch);
+  if ('error' in resolvedPatch) {
+    return c.json({ error: resolvedPatch.error }, 400);
+  }
+
+  const { data, error } = await client
+    .from('telemetry_identity_aliases')
+    .update(resolvedPatch)
+    .eq('id', aliasId)
+    .select(TELEMETRY_ALIAS_SELECT)
+    .single();
+
+  if (error || !data) {
+    return c.json({ error: 'Telemetry identity alias not found' }, 404);
+  }
+
+  clearTelemetryActorCache();
+  await recordTelemetryAliasAudit(auth, 'telemetry_alias.updated', data);
+
+  return c.json({ alias: formatTelemetryAlias(data) });
+});
+
+// DELETE /v1/admin/telemetry/aliases/:id
+adminRoutes.delete('/admin/telemetry/aliases/:id', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const client = createAdminClient();
+  const aliasId = c.req.param('id');
+
+  const { data: existing, error: fetchError } = await client
+    .from('telemetry_identity_aliases')
+    .select(TELEMETRY_ALIAS_SELECT)
+    .eq('id', aliasId)
+    .single();
+
+  if (fetchError || !existing) {
+    return c.json({ error: 'Telemetry identity alias not found' }, 404);
+  }
+
+  const { error: deleteError } = await client
+    .from('telemetry_identity_aliases')
+    .delete()
+    .eq('id', aliasId);
+
+  if (deleteError) {
+    return c.json({ error: 'Failed to delete telemetry identity alias' }, 500);
+  }
+
+  clearTelemetryActorCache();
+  await recordTelemetryAliasAudit(auth, 'telemetry_alias.deleted', existing);
+
+  return c.json({ alias: formatTelemetryAlias(existing) });
+});
+
 // GET /v1/admin/commercial/summary
 adminRoutes.get('/admin/commercial/summary', async (c) => {
   const client = createAdminClient();
@@ -574,6 +1005,7 @@ adminRoutes.get('/admin/commercial/summary', async (c) => {
     orgContentResult,
     approvalsResult,
     auditResult,
+    telemetryAliasesResult,
     usageRowsResult,
   ] = await Promise.all([
     client.from('users').select('tier'),
@@ -583,6 +1015,7 @@ adminRoutes.get('/admin/commercial/summary', async (c) => {
     client.from('content').select('*', { count: 'exact', head: true }).not('org_id', 'is', null),
     client.from('content').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     client.from('audit_logs').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
+    client.from('telemetry_identity_aliases').select('identity_type, actor_type'),
     client.from('usage_events').select('metric, quantity').gte('created_at', thirtyDaysAgo),
   ]);
 
@@ -599,6 +1032,10 @@ adminRoutes.get('/admin/commercial/summary', async (c) => {
   }
 
   const usageTotals = aggregateUsageTotals((usageRowsResult.data ?? []) as Array<{ metric?: string | null; quantity?: number | null }>);
+  const telemetryAliasRows = (telemetryAliasesResult.data ?? []) as Array<{
+    actor_type: TelemetryActorType;
+    identity_type: TelemetryIdentityType;
+  }>;
 
   return c.json({
     users_by_tier: usersByTier,
@@ -615,6 +1052,17 @@ adminRoutes.get('/admin/commercial/summary', async (c) => {
       private_package_publishes_30d: usageTotals.private_package_publish ?? 0,
       org_package_publishes_30d: usageTotals.org_package_publish ?? 0,
       approval_actions_30d: usageTotals.approval_action ?? 0,
+    },
+    telemetry: {
+      aliases_total: telemetryAliasRows.length,
+      aliases_by_actor_type: countBy(
+        telemetryAliasRows.map((row) => row.actor_type),
+        DECANTR_TELEMETRY_ACTOR_TYPES,
+      ),
+      aliases_by_identity_type: countBy(
+        telemetryAliasRows.map((row) => row.identity_type),
+        TELEMETRY_IDENTITY_TYPES,
+      ),
     },
   });
 });

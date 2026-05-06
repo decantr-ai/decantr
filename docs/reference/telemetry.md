@@ -165,6 +165,31 @@ DECANTR_INTERNAL_ANONYMOUS_IDS=
 
 External opted-in CLI usage defaults to `customer`. Decantr-owned local CLI runs should be marked by adding their opaque install/project id to `telemetry_identity_aliases` or the env allowlists above.
 
+### Identity Control Plane
+
+Admins can manage durable identity overrides from the registry portal:
+
+```text
+/admin/telemetry
+```
+
+The page supports the first operational loop for attribution hygiene:
+
+- add or update an `anonymous`, `install`, or `project` alias
+- classify it as `customer`, `internal`, `official_pipeline`, `anonymous`, or `service`
+- optionally attach the alias to a Supabase user by email or id, and an organization by slug or id
+- keep a human label for support/debugging context
+- audit every create, update, and delete operation
+
+Alias changes clear the API actor-resolution cache immediately, so subsequent telemetry uses the new classification without waiting for the normal cache TTL. The commercial reports page also shows alias counts by actor and identity type.
+
+To show PostHog event-explorer links in the admin page, expose the numeric project id to the registry server environment:
+
+```env
+POSTHOG_HOST=https://us.posthog.com
+POSTHOG_ENVIRONMENT_ID=
+```
+
 ## Registry Web Wiring
 
 `apps/registry` emits public registry-web telemetry to the hosted first-party ingest endpoint. It uses a browser-local opaque anonymous id, upgrades context with authenticated user and organization ids when available, and emits:

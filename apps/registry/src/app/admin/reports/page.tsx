@@ -30,6 +30,9 @@ export default async function AdminReportsPage() {
         <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
           Open organizations
         </Link>
+        <Link href="/admin/telemetry" className="d-interactive" data-variant="ghost">
+          Telemetry
+        </Link>
       </div>
 
       {error ? (
@@ -99,6 +102,23 @@ export default async function AdminReportsPage() {
               </div>
               <div>
                 Audit events: {summary.totals.audit_events_30d}
+              </div>
+            </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Telemetry Attribution
+            </span>
+            <div className="d-surface registry-surface-stack registry-admin-summary-list">
+              <div>
+                Aliases: {summary.telemetry?.aliases_total ?? 0}
+              </div>
+              <div>
+                Actor mix — Customer: {summary.telemetry?.aliases_by_actor_type.customer ?? 0} · Internal: {summary.telemetry?.aliases_by_actor_type.internal ?? 0} · Pipeline: {summary.telemetry?.aliases_by_actor_type.official_pipeline ?? 0}
+              </div>
+              <div>
+                Identity mix — Installs: {summary.telemetry?.aliases_by_identity_type.install ?? 0} · Projects: {summary.telemetry?.aliases_by_identity_type.project ?? 0} · Anonymous: {summary.telemetry?.aliases_by_identity_type.anonymous ?? 0}
               </div>
             </div>
           </section>

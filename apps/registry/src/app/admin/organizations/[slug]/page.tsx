@@ -129,6 +129,13 @@ export default async function AdminOrganizationDetailPage({
                 <button type="submit" className="d-interactive" data-variant="primary">
                   Save classification
                 </button>
+                <Link
+                  href={`/admin/telemetry?org_id=${encodeURIComponent(detail.organization.id)}`}
+                  className="d-interactive"
+                  data-variant="ghost"
+                >
+                  View aliases
+                </Link>
               </div>
             </form>
           </section>
@@ -183,6 +190,13 @@ export default async function AdminOrganizationDetailPage({
                     <button type="submit" className="d-interactive" data-variant="ghost">
                       Save
                     </button>
+                    <Link
+                      href={`/admin/telemetry?user_id=${encodeURIComponent(member.user_id)}`}
+                      className="d-interactive"
+                      data-variant="ghost"
+                    >
+                      Aliases
+                    </Link>
                   </form>
                 </div>
               ))}

@@ -122,6 +122,17 @@ function createAdminSummaryClient() {
             }).then(resolve, reject);
           }
 
+          if (table === 'telemetry_identity_aliases') {
+            return Promise.resolve({
+              data: [
+                { identity_type: 'install', actor_type: 'internal' },
+                { identity_type: 'project', actor_type: 'customer' },
+                { identity_type: 'anonymous', actor_type: 'internal' },
+              ],
+              error: null,
+            }).then(resolve, reject);
+          }
+
           return Promise.resolve({ data: [], error: null }).then(resolve, reject);
         },
       };
@@ -179,6 +190,18 @@ describe('GET /v1/admin/commercial/summary', () => {
       private_package_publishes_30d: 6,
       org_package_publishes_30d: 9,
       approval_actions_30d: 4,
+    });
+    expect(json.telemetry).toMatchObject({
+      aliases_total: 3,
+      aliases_by_actor_type: {
+        customer: 1,
+        internal: 2,
+      },
+      aliases_by_identity_type: {
+        anonymous: 1,
+        install: 1,
+        project: 1,
+      },
     });
   });
 

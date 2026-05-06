@@ -330,6 +330,7 @@ function classifyRoute(pathname: string): string {
   if (pathname === '/dashboard/governance') return 'governance';
   if (pathname.startsWith('/dashboard')) return 'dashboard';
   if (pathname.startsWith('/admin/organizations')) return 'admin_organizations';
+  if (pathname.startsWith('/admin/telemetry')) return 'admin_telemetry';
   if (pathname.startsWith('/admin')) return 'admin';
   if (/^\/[^/]+\/[^/]+\/[^/]+/.test(pathname)) return 'content_detail';
   return 'other';

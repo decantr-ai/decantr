@@ -178,6 +178,11 @@ export interface AdminCommercialSummary {
     org_package_publishes_30d: number;
     approval_actions_30d: number;
   };
+  telemetry?: {
+    aliases_total: number;
+    aliases_by_actor_type: Record<TelemetryActorType, number>;
+    aliases_by_identity_type: Record<TelemetryIdentityType, number>;
+  };
 }
 
 export interface AdminOrganizationSummary {
@@ -267,6 +272,70 @@ export interface ModerationQueueResponse {
 export interface TelemetryClassificationPatch {
   is_internal: boolean;
   is_test: boolean;
+}
+
+export type TelemetryIdentityType = 'anonymous' | 'install' | 'project';
+export type TelemetryActorType =
+  | 'anonymous'
+  | 'customer'
+  | 'internal'
+  | 'official_pipeline'
+  | 'service';
+
+export interface AdminTelemetryIdentityAlias {
+  id: string;
+  identity_type: TelemetryIdentityType;
+  identity_id: string;
+  actor_type: TelemetryActorType;
+  user_id: string | null;
+  org_id: string | null;
+  label: string | null;
+  created_at: string;
+  updated_at: string;
+  user: null | {
+    email: string;
+    display_name: string | null;
+    username: string | null;
+    is_internal: boolean;
+    is_test: boolean;
+  };
+  organization: null | {
+    name: string;
+    slug: string;
+    is_internal: boolean;
+    is_test: boolean;
+  };
+}
+
+export interface AdminTelemetryAliasListResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  summary: {
+    by_actor_type: Record<TelemetryActorType, number>;
+    by_identity_type: Record<TelemetryIdentityType, number>;
+  };
+  items: AdminTelemetryIdentityAlias[];
+}
+
+export interface AdminTelemetryAliasWrite {
+  identity_type: TelemetryIdentityType;
+  identity_id: string;
+  actor_type: TelemetryActorType;
+  user_ref?: string | null;
+  org_ref?: string | null;
+  user_id?: string | null;
+  org_id?: string | null;
+  label?: string | null;
+}
+
+export interface AdminTelemetryAliasPatch {
+  actor_type?: TelemetryActorType;
+  user_ref?: string | null;
+  org_ref?: string | null;
+  user_id?: string | null;
+  org_id?: string | null;
+  label?: string | null;
 }
 
 interface FetchOptions {
@@ -672,6 +741,62 @@ export const api = {
     adminFetch<AdminOrganizationDetail>(`/admin/organizations/${slug}`, {
       token,
       adminKey,
+    }),
+  getAdminTelemetryAliases: (
+    token: string,
+    adminKey: string,
+    params?: {
+      actor_type?: TelemetryActorType;
+      identity_type?: TelemetryIdentityType;
+      limit?: number;
+      offset?: number;
+      org_id?: string;
+      q?: string;
+      user_id?: string;
+    },
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.actor_type) query.actor_type = params.actor_type;
+    if (params?.identity_type) query.identity_type = params.identity_type;
+    if (params?.limit != null) query.limit = String(params.limit);
+    if (params?.offset != null) query.offset = String(params.offset);
+    if (params?.org_id) query.org_id = params.org_id;
+    if (params?.q) query.q = params.q;
+    if (params?.user_id) query.user_id = params.user_id;
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<AdminTelemetryAliasListResponse>(`/admin/telemetry/aliases${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  upsertAdminTelemetryAlias: (
+    token: string,
+    adminKey: string,
+    alias: AdminTelemetryAliasWrite,
+  ) =>
+    adminFetch<{ alias: AdminTelemetryIdentityAlias }>('/admin/telemetry/aliases', {
+      token,
+      adminKey,
+      method: 'POST',
+      body: JSON.stringify(alias),
+    }),
+  updateAdminTelemetryAlias: (
+    token: string,
+    adminKey: string,
+    aliasId: string,
+    patch: AdminTelemetryAliasPatch,
+  ) =>
+    adminFetch<{ alias: AdminTelemetryIdentityAlias }>(`/admin/telemetry/aliases/${aliasId}`, {
+      token,
+      adminKey,
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    }),
+  deleteAdminTelemetryAlias: (token: string, adminKey: string, aliasId: string) =>
+    adminFetch<{ alias: AdminTelemetryIdentityAlias }>(`/admin/telemetry/aliases/${aliasId}`, {
+      token,
+      adminKey,
+      method: 'DELETE',
     }),
   updateAdminOrganizationTelemetry: (
     token: string,
