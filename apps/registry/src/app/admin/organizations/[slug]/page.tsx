@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { api } from '@/lib/api';
+import {
+  api,
+  type AdminTelemetryAttributionSnapshot,
+} from '@/lib/api';
 import { requireAdminRequestContext } from '@/lib/admin-workspace';
 import {
   updateOrganizationTelemetryClassification,
@@ -12,13 +15,41 @@ export const metadata: Metadata = {
   title: 'Organization Detail',
 };
 
-function formatTimestamp(value: string) {
+function formatTimestamp(value: string | null) {
+  if (!value) return 'Unknown';
   return new Date(value).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-US').format(value);
+}
+
+function summarizeTelemetryRows(rows: AdminTelemetryAttributionSnapshot[]) {
+  const projectIds = new Set<string>();
+  const sources = new Set<string>();
+  let events = 0;
+  let lastSeen: string | null = null;
+
+  for (const row of rows) {
+    events += row.events;
+    if (row.project_id) projectIds.add(row.project_id);
+    if (row.row_source) sources.add(row.row_source);
+    if (row.last_seen && (!lastSeen || new Date(row.last_seen) > new Date(lastSeen))) {
+      lastSeen = row.last_seen;
+    }
+  }
+
+  return {
+    events,
+    lastSeen,
+    projects: projectIds.size,
+    sources: sources.size,
+  };
 }
 
 export default async function AdminOrganizationDetailPage({
@@ -30,12 +61,25 @@ export default async function AdminOrganizationDetailPage({
   const { token, adminKey } = await requireAdminRequestContext();
 
   let detail = null;
+  let telemetrySnapshots = null;
   let error: string | null = null;
+  let telemetryError: string | null = null;
   try {
     detail = await api.getAdminOrganization(token, adminKey, slug);
+    telemetrySnapshots = await api.getAdminTelemetryAttributionSnapshots(token, adminKey, {
+      days: 30,
+      limit: 12,
+      org_id: detail.organization.id,
+    });
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load organization detail';
+    if (!detail) {
+      error = err instanceof Error ? err.message : 'Failed to load organization detail';
+    } else {
+      telemetryError = err instanceof Error ? err.message : 'Failed to load organization telemetry';
+    }
   }
+
+  const telemetrySummary = telemetrySnapshots ? summarizeTelemetryRows(telemetrySnapshots.items) : null;
 
   return (
     <div className="registry-page-stack">
@@ -138,6 +182,69 @@ export default async function AdminOrganizationDetailPage({
                 </Link>
               </div>
             </form>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Stored Telemetry Attribution
+            </span>
+
+            {telemetryError ? (
+              <div className="d-annotation registry-inline-error" data-status="info">
+                {telemetryError}
+              </div>
+            ) : null}
+
+            {telemetrySummary && telemetrySnapshots?.items.length ? (
+              <div className="registry-admin-stack">
+                <div className="registry-admin-stat-grid">
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(telemetrySummary.events)}</span>
+                    <span className="registry-admin-row-meta">Attributed events</span>
+                    <span className="registry-admin-row-meta">Stored 30-day rows</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatNumber(telemetrySummary.projects)}</span>
+                    <span className="registry-admin-row-meta">Active projects</span>
+                    <span className="registry-admin-row-meta">{formatNumber(telemetrySummary.sources)} sources</span>
+                  </div>
+                  <div className="d-surface registry-admin-stat">
+                    <span className="registry-admin-row-title">{formatTimestamp(telemetrySummary.lastSeen)}</span>
+                    <span className="registry-admin-row-meta">Last seen</span>
+                    <span className="registry-admin-row-meta">From snapshot history</span>
+                  </div>
+                </div>
+
+                <div className="d-surface registry-admin-stack">
+                  {telemetrySnapshots.items.map((row) => (
+                    <div key={row.id} className="registry-admin-row">
+                      <span className="registry-admin-row-copy">
+                        <span className="registry-admin-row-title registry-admin-monospace">
+                          {row.project_id ?? 'no project'}
+                        </span>
+                        <span className="registry-admin-row-meta">
+                          {row.snapshot_date} · {row.row_source} · {row.row_actor_type} · {formatTimestamp(row.last_seen)}
+                        </span>
+                      </span>
+                      <span className="registry-admin-row-meta">{formatNumber(row.events)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="d-surface registry-admin-stack">
+                <span className="registry-admin-row-meta">
+                  No stored attribution rows for this organization in the latest 30-day snapshot.
+                </span>
+                <Link
+                  href="/admin/telemetry/usage?days=30"
+                  className="d-interactive"
+                  data-variant="ghost"
+                >
+                  Open telemetry usage
+                </Link>
+              </div>
+            )}
           </section>
 
           <section className="d-section" data-density="compact">
