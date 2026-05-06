@@ -1,6 +1,8 @@
 import type { TelemetryActorType } from '@decantr/telemetry';
 import type {
+  AdminTelemetryAttributionResponse,
   AdminTelemetryUsageResponse,
+  TelemetryAttributionRow,
   TelemetryUsageOperatingAlert,
   TelemetryUsageSignalBucket,
   TelemetryUsageSource,
@@ -45,6 +47,30 @@ export interface TelemetryUsageSnapshotRecord {
   total_events: number;
   trends: Record<string, unknown>;
   unclassified_events: number;
+  updated_at: string;
+}
+
+export interface TelemetryAttributionSnapshotRecord {
+  actor_type: TelemetryUsageSnapshotActor;
+  captured_at: string;
+  created_at: string;
+  events: number;
+  id: string;
+  last_seen: string | null;
+  org_id: string | null;
+  org_is_internal: boolean;
+  org_is_test: boolean;
+  org_name: string | null;
+  org_slug: string | null;
+  org_tier: string | null;
+  project_id: string | null;
+  range_days: number;
+  row_actor_type: string;
+  row_rank: number;
+  row_source: string;
+  snapshot_date: string;
+  source: TelemetryUsageSnapshotSource;
+  summary: Record<string, unknown>;
   updated_at: string;
 }
 
@@ -207,6 +233,106 @@ export async function listTelemetryUsageSnapshots(
     signal_buckets: bucketsBySnapshot.get(snapshot.id) ?? [],
     operating_alerts: alertsBySnapshot.get(snapshot.id) ?? [],
   }));
+}
+
+export async function persistTelemetryAttributionSnapshot(
+  client: SupabaseLikeClient,
+  attribution: AdminTelemetryAttributionResponse,
+): Promise<TelemetryAttributionSnapshotRecord[]> {
+  const snapshotDate = attribution.generated_at.slice(0, 10);
+  const actorType = normalizeSnapshotActor(attribution.actor_type);
+  const source = normalizeSnapshotSource(attribution.source);
+
+  const deleteResult = await client
+    .from('telemetry_attribution_snapshots')
+    .delete()
+    .eq('snapshot_date', snapshotDate)
+    .eq('range_days', attribution.range_days)
+    .eq('actor_type', actorType)
+    .eq('source', source);
+
+  if (deleteResult.error) {
+    throw new Error('Failed to replace telemetry attribution snapshots');
+  }
+
+  if (!attribution.rows.length) return [];
+
+  const { error } = await client
+    .from('telemetry_attribution_snapshots')
+    .insert(attribution.rows.map((row, index) => attributionRowPayload({
+      actorType,
+      capturedAt: attribution.generated_at,
+      rangeDays: attribution.range_days,
+      row,
+      rowRank: index + 1,
+      snapshotDate,
+      source,
+      summary: attribution.summary,
+    })));
+
+  if (error) {
+    throw new Error('Failed to persist telemetry attribution snapshots');
+  }
+
+  return listTelemetryAttributionSnapshots(client, {
+    days: attribution.range_days,
+    limit: Math.max(attribution.rows.length, 1),
+    snapshotActor: actorType,
+    snapshotDate,
+    snapshotSource: source,
+  });
+}
+
+export async function listTelemetryAttributionSnapshots(
+  client: SupabaseLikeClient,
+  filters: {
+    actorType?: TelemetryActorType;
+    days?: number;
+    limit: number;
+    orgId?: string;
+    projectId?: string;
+    snapshotActor?: TelemetryUsageSnapshotActor;
+    snapshotDate?: string;
+    snapshotSource?: TelemetryUsageSnapshotSource;
+    source?: TelemetryUsageSource;
+  },
+): Promise<TelemetryAttributionSnapshotRecord[]> {
+  let query = client
+    .from('telemetry_attribution_snapshots')
+    .select('*')
+    .order('captured_at', { ascending: false })
+    .order('row_rank', { ascending: true })
+    .limit(filters.limit);
+
+  if (filters.snapshotDate) {
+    query = query.eq('snapshot_date', filters.snapshotDate);
+  }
+  if (filters.days) {
+    query = query.eq('range_days', filters.days);
+  }
+  if (filters.snapshotActor) {
+    query = query.eq('actor_type', filters.snapshotActor);
+  } else if (filters.actorType) {
+    query = query.eq('actor_type', filters.actorType);
+  }
+  if (filters.snapshotSource) {
+    query = query.eq('source', filters.snapshotSource);
+  } else if (filters.source) {
+    query = query.eq('source', filters.source);
+  }
+  if (filters.orgId) {
+    query = query.eq('org_id', filters.orgId);
+  }
+  if (filters.projectId) {
+    query = query.eq('project_id', filters.projectId);
+  }
+
+  const { data, error } = await query;
+  if (error) {
+    throw new Error('Failed to fetch telemetry attribution snapshots');
+  }
+
+  return ((data ?? []) as unknown[]).map(formatAttributionSnapshot);
 }
 
 function buildTelemetryDataQuality(usage: AdminTelemetryUsageResponse) {
@@ -423,8 +549,79 @@ function groupBySnapshot<T extends { usage_snapshot_id: string }>(rows: T[]) {
   return grouped;
 }
 
+function attributionRowPayload(input: {
+  actorType: TelemetryUsageSnapshotActor;
+  capturedAt: string;
+  rangeDays: number;
+  row: TelemetryAttributionRow;
+  rowRank: number;
+  snapshotDate: string;
+  source: TelemetryUsageSnapshotSource;
+  summary: AdminTelemetryAttributionResponse['summary'];
+}) {
+  return {
+    actor_type: input.actorType,
+    captured_at: input.capturedAt,
+    events: input.row.events,
+    last_seen: input.row.last_seen,
+    org_id: input.row.org_id,
+    org_is_internal: input.row.organization?.is_internal ?? false,
+    org_is_test: input.row.organization?.is_test ?? false,
+    org_name: input.row.organization?.name ?? null,
+    org_slug: input.row.organization?.slug ?? null,
+    org_tier: input.row.organization?.tier ?? null,
+    project_id: input.row.project_id,
+    range_days: input.rangeDays,
+    row_actor_type: normalizeAttributionRowActor(input.row.actor_type),
+    row_rank: input.rowRank,
+    row_source: input.row.source || 'unknown',
+    snapshot_date: input.snapshotDate,
+    source: input.source,
+    summary: input.summary,
+  };
+}
+
+function formatAttributionSnapshot(row: unknown): TelemetryAttributionSnapshotRecord {
+  const data = row as Record<string, unknown>;
+  return {
+    actor_type: readSnapshotActor(data.actor_type),
+    captured_at: readString(data.captured_at),
+    created_at: readString(data.created_at),
+    events: readNumber(data.events),
+    id: readString(data.id),
+    last_seen: readNullableString(data.last_seen),
+    org_id: readNullableString(data.org_id),
+    org_is_internal: readBoolean(data.org_is_internal),
+    org_is_test: readBoolean(data.org_is_test),
+    org_name: readNullableString(data.org_name),
+    org_slug: readNullableString(data.org_slug),
+    org_tier: readNullableString(data.org_tier),
+    project_id: readNullableString(data.project_id),
+    range_days: readNumber(data.range_days),
+    row_actor_type: normalizeAttributionRowActor(readString(data.row_actor_type)),
+    row_rank: readNumber(data.row_rank),
+    row_source: readString(data.row_source) || 'unknown',
+    snapshot_date: readString(data.snapshot_date),
+    source: readSnapshotSource(data.source),
+    summary: readObject(data.summary),
+    updated_at: readString(data.updated_at),
+  };
+}
+
+function normalizeAttributionRowActor(actorType: string) {
+  return actorType || 'unclassified';
+}
+
 function readString(value: unknown) {
   return typeof value === 'string' ? value : '';
+}
+
+function readNullableString(value: unknown) {
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function readBoolean(value: unknown) {
+  return value === true;
 }
 
 function readNumber(value: unknown) {

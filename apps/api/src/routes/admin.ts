@@ -26,7 +26,9 @@ import {
   type TelemetryAttributionOrganization,
 } from '../lib/posthog-telemetry-usage.js';
 import {
+  listTelemetryAttributionSnapshots,
   listTelemetryUsageSnapshots,
+  persistTelemetryAttributionSnapshot,
   persistTelemetryUsageSnapshot,
   type TelemetryUsageSnapshotRunRequest,
 } from '../lib/telemetry-usage-snapshots.js';
@@ -1023,6 +1025,7 @@ adminRoutes.post('/admin/telemetry-snapshots/run', async (c) => {
 
   try {
     const snapshots = [];
+    const attributionSnapshots = [];
     for (const request of requests) {
       const usage = await fetchPostHogTelemetryUsage({
         actorType: request.actorType,
@@ -1032,9 +1035,38 @@ adminRoutes.post('/admin/telemetry-snapshots/run', async (c) => {
         source: request.source,
       });
       snapshots.push(await persistTelemetryUsageSnapshot(client, usage));
+
+      const attribution = await fetchPostHogTelemetryAttribution({
+        actorType: request.actorType,
+        config: configResult.config,
+        days: request.days,
+        limit: 100,
+        source: request.source,
+      });
+      const orgIds = [...new Set(attribution.rows.map((row) => row.org_id).filter((id): id is string => Boolean(id)))];
+      const orgResult = await fetchTelemetryAttributionOrganizations(client, orgIds);
+      const enrichedAttribution = 'error' in orgResult
+        ? attribution
+        : attachTelemetryAttributionOrganizations(attribution, orgResult.organizations);
+
+      if ('error' in orgResult) {
+        logger.warn({ error: orgResult.error }, 'Failed to enrich telemetry attribution snapshot organizations');
+      }
+
+      const attributionRows = await persistTelemetryAttributionSnapshot(client, enrichedAttribution);
+      attributionSnapshots.push({
+        actor_type: enrichedAttribution.actor_type ?? 'all',
+        active_orgs: enrichedAttribution.summary.active_orgs,
+        active_projects: enrichedAttribution.summary.active_projects,
+        range_days: enrichedAttribution.range_days,
+        rows: attributionRows.length,
+        source: enrichedAttribution.source ?? 'all',
+        total_events: enrichedAttribution.summary.total_events,
+      });
     }
 
     return c.json({
+      attribution_snapshots: attributionSnapshots,
       generated_at: new Date().toISOString(),
       snapshots,
     });
@@ -1042,8 +1074,41 @@ adminRoutes.post('/admin/telemetry-snapshots/run', async (c) => {
     logger.warn({
       error: error instanceof Error ? error.message : String(error),
       status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
-    }, 'Failed to persist telemetry usage snapshot');
-    return c.json({ error: 'Failed to persist telemetry usage snapshot' }, 502);
+    }, 'Failed to persist telemetry snapshots');
+    return c.json({ error: 'Failed to persist telemetry snapshots' }, 502);
+  }
+});
+
+// GET /v1/admin/telemetry/attribution/snapshots
+adminRoutes.get('/admin/telemetry/attribution/snapshots', async (c) => {
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
+  const sourceParam = c.req.query('source');
+  const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
+  const daysParam = c.req.query('days');
+  const days = daysParam ? parseTelemetryUsageDays(daysParam) : undefined;
+  const limit = parseTelemetryAttributionLimit(c.req.query('limit'));
+  const orgId = readOptionalString(c.req.query('org_id'), 512) ?? undefined;
+  const projectId = readOptionalString(c.req.query('project_id'), 512) ?? undefined;
+  const client = createAdminClient();
+
+  try {
+    const items = await listTelemetryAttributionSnapshots(client, {
+      actorType,
+      days,
+      limit,
+      orgId,
+      projectId,
+      source,
+    });
+    return c.json({
+      items,
+      total: items.length,
+    });
+  } catch (error) {
+    logger.warn({
+      error: error instanceof Error ? error.message : String(error),
+    }, 'Failed to fetch telemetry attribution snapshots');
+    return c.json({ error: 'Failed to fetch telemetry attribution snapshots' }, 500);
   }
 });
 

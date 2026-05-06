@@ -144,6 +144,35 @@ function createAdminTelemetryClient() {
       updated_at: '2026-05-06T02:00:00.000Z',
     },
   ];
+  const attributionSnapshots: any[] = [
+    {
+      id: 'attribution-existing',
+      snapshot_date: '2026-05-06',
+      captured_at: '2026-05-06T02:00:00.000Z',
+      range_days: 30,
+      actor_type: 'customer',
+      source: 'all',
+      row_rank: 1,
+      row_actor_type: 'customer',
+      row_source: 'cli',
+      org_id: 'org-2',
+      org_name: 'Customer Co',
+      org_slug: 'customer-co',
+      org_tier: 'team',
+      org_is_internal: false,
+      org_is_test: false,
+      project_id: 'project_customer',
+      events: 9,
+      last_seen: '2026-05-06T01:00:00.000Z',
+      summary: {
+        active_orgs: 1,
+        active_projects: 1,
+        total_events: 9,
+      },
+      created_at: '2026-05-06T02:00:00.000Z',
+      updated_at: '2026-05-06T02:00:00.000Z',
+    },
+  ];
   const signalBucketSnapshots: any[] = [
     {
       id: 'bucket-existing',
@@ -225,6 +254,16 @@ function createAdminTelemetryClient() {
               operatingAlertSnapshots.push({
                 id: `alert-${operatingAlertSnapshots.length + 1}`,
                 created_at: '2026-05-06T03:00:00.000Z',
+                ...row,
+              });
+            }
+          }
+          if (table === 'telemetry_attribution_snapshots') {
+            for (const row of rows) {
+              attributionSnapshots.push({
+                id: `attribution-${attributionSnapshots.length + 1}`,
+                created_at: '2026-05-06T03:00:00.000Z',
+                updated_at: '2026-05-06T03:00:00.000Z',
                 ...row,
               });
             }
@@ -337,6 +376,11 @@ function createAdminTelemetryClient() {
             return Promise.resolve({ data: null, error: null }).then(resolve, reject);
           }
 
+          if (table === 'telemetry_attribution_snapshots' && state.deleteRequested) {
+            removeMatching(attributionSnapshots, state.filters);
+            return Promise.resolve({ data: null, error: null }).then(resolve, reject);
+          }
+
           if (table === 'telemetry_identity_aliases') {
             return Promise.resolve({ data: aliases, error: null }).then(resolve, reject);
           }
@@ -358,6 +402,13 @@ function createAdminTelemetryClient() {
           if (table === 'telemetry_operating_alert_snapshots') {
             return Promise.resolve({
               data: applyQueryState(operatingAlertSnapshots, state),
+              error: null,
+            }).then(resolve, reject);
+          }
+
+          if (table === 'telemetry_attribution_snapshots') {
+            return Promise.resolve({
+              data: applyQueryState(attributionSnapshots, state),
               error: null,
             }).then(resolve, reject);
           }
@@ -690,6 +741,10 @@ describe('Admin telemetry routes', () => {
         results = previousPeriod
           ? [['cli.command.completed', 'customer', 1]]
           : [['cli.command.completed', 'customer', 3]];
+      } else if (query.includes('group by org_id, project_id, source, actor_type')) {
+        results = [
+          ['org-2', 'project_customer', 'cli', 'customer', 3, '2026-05-06T00:00:00Z'],
+        ];
       } else if (query.includes('group by source')) {
         results = [['cli', 3]];
       } else if (query.includes('group by actor_type, source')) {
@@ -736,8 +791,17 @@ describe('Admin telemetry routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(fetchMock).toHaveBeenCalledTimes(8);
+    expect(fetchMock).toHaveBeenCalledTimes(9);
     expect(json.snapshots).toHaveLength(1);
+    expect(json.attribution_snapshots).toEqual([
+      expect.objectContaining({
+        actor_type: 'customer',
+        range_days: 7,
+        rows: 1,
+        source: 'all',
+        total_events: 3,
+      }),
+    ]);
     expect(json.snapshots[0]).toMatchObject({
       actor_type: 'customer',
       range_days: 7,
@@ -773,6 +837,10 @@ describe('Admin telemetry routes', () => {
         results = previousPeriod
           ? [['cli.command.completed', 'customer', 1]]
           : [['cli.command.completed', 'customer', 3]];
+      } else if (query.includes('group by org_id, project_id, source, actor_type')) {
+        results = [
+          ['org-2', 'project_customer', 'cli', 'customer', 3, '2026-05-06T00:00:00Z'],
+        ];
       } else if (query.includes('group by source')) {
         results = [['cli', 3]];
       } else if (query.includes('group by actor_type, source')) {
@@ -816,8 +884,9 @@ describe('Admin telemetry routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(fetchMock).toHaveBeenCalledTimes(24);
+    expect(fetchMock).toHaveBeenCalledTimes(27);
     expect(json.snapshots).toHaveLength(3);
+    expect(json.attribution_snapshots).toHaveLength(3);
     expect(json.snapshots.map((snapshot: { actor_type: string; range_days: number; source: string }) => ({
       actor_type: snapshot.actor_type,
       range_days: snapshot.range_days,
@@ -853,6 +922,31 @@ describe('Admin telemetry routes', () => {
     });
     expect(json.items[0].operating_alerts[0]).toMatchObject({
       title: 'Unaliased identities found',
+    });
+  });
+
+  it('lists stored telemetry attribution snapshots', async () => {
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry/attribution/snapshots?actor_type=customer&days=30', {
+      headers: {
+        Authorization: 'Bearer test-token',
+        'X-Admin-Key': 'test-admin-key',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items[0]).toMatchObject({
+      actor_type: 'customer',
+      events: 9,
+      org_id: 'org-2',
+      org_slug: 'customer-co',
+      project_id: 'project_customer',
+      range_days: 30,
+      row_actor_type: 'customer',
+      row_source: 'cli',
     });
   });
 

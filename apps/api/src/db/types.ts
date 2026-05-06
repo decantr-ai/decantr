@@ -544,6 +544,78 @@ export interface Database {
         };
         Relationships: [];
       };
+      telemetry_attribution_snapshots: {
+        Row: {
+          id: string;
+          snapshot_date: string;
+          captured_at: string;
+          range_days: number;
+          actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          row_rank: number;
+          row_actor_type: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service' | 'unclassified';
+          row_source: string;
+          org_id: string | null;
+          org_name: string | null;
+          org_slug: string | null;
+          org_tier: 'team' | 'enterprise' | null;
+          org_is_internal: boolean;
+          org_is_test: boolean;
+          project_id: string | null;
+          events: number;
+          last_seen: string | null;
+          summary: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          snapshot_date?: string;
+          captured_at?: string;
+          range_days: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          row_rank?: number;
+          row_actor_type?: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service' | 'unclassified';
+          row_source?: string;
+          org_id?: string | null;
+          org_name?: string | null;
+          org_slug?: string | null;
+          org_tier?: 'team' | 'enterprise' | null;
+          org_is_internal?: boolean;
+          org_is_test?: boolean;
+          project_id?: string | null;
+          events?: number;
+          last_seen?: string | null;
+          summary?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          snapshot_date?: string;
+          captured_at?: string;
+          range_days?: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          row_rank?: number;
+          row_actor_type?: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service' | 'unclassified';
+          row_source?: string;
+          org_id?: string | null;
+          org_name?: string | null;
+          org_slug?: string | null;
+          org_tier?: 'team' | 'enterprise' | null;
+          org_is_internal?: boolean;
+          org_is_test?: boolean;
+          project_id?: string | null;
+          events?: number;
+          last_seen?: string | null;
+          summary?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       telemetry_signal_bucket_snapshots: {
         Row: {
           id: string;

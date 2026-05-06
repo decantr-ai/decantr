@@ -463,6 +463,35 @@ export interface AdminTelemetryAttributionResponse {
   };
 }
 
+export interface AdminTelemetryAttributionSnapshot {
+  actor_type: TelemetryActorType | 'all';
+  captured_at: string;
+  created_at: string;
+  events: number;
+  id: string;
+  last_seen: string | null;
+  org_id: string | null;
+  org_is_internal: boolean;
+  org_is_test: boolean;
+  org_name: string | null;
+  org_slug: string | null;
+  org_tier: string | null;
+  project_id: string | null;
+  range_days: number;
+  row_actor_type: string;
+  row_rank: number;
+  row_source: string;
+  snapshot_date: string;
+  source: TelemetryUsageSource | 'all';
+  summary: Record<string, unknown>;
+  updated_at: string;
+}
+
+export interface AdminTelemetryAttributionSnapshotHistoryResponse {
+  items: AdminTelemetryAttributionSnapshot[];
+  total: number;
+}
+
 export interface AdminTelemetryUsageSnapshot {
   active_anonymous_ids: number;
   active_identities: number;
@@ -987,6 +1016,31 @@ export const api = {
     if (params?.source) query.source = params.source;
     const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
     return adminFetch<AdminTelemetryAttributionResponse>(`/admin/telemetry/attribution${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  getAdminTelemetryAttributionSnapshots: (
+    token: string,
+    adminKey: string,
+    params?: {
+      actor_type?: TelemetryActorType;
+      days?: number;
+      limit?: number;
+      org_id?: string;
+      project_id?: string;
+      source?: TelemetryUsageSource;
+    },
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.actor_type) query.actor_type = params.actor_type;
+    if (params?.days != null) query.days = String(params.days);
+    if (params?.limit != null) query.limit = String(params.limit);
+    if (params?.org_id) query.org_id = params.org_id;
+    if (params?.project_id) query.project_id = params.project_id;
+    if (params?.source) query.source = params.source;
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<AdminTelemetryAttributionSnapshotHistoryResponse>(`/admin/telemetry/attribution/snapshots${qs}`, {
       token,
       adminKey,
     });
