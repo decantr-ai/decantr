@@ -111,6 +111,28 @@ pnpm telemetry:weekly-snapshot
 
 It reads the same PostHog env values and requires `query:read`. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes a markdown summary to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the same markdown payload to a webhook.
 
+## Admin Usage Intelligence
+
+Registry admins can inspect live telemetry usage from:
+
+```text
+/admin/telemetry/usage
+```
+
+The page calls the protected API endpoint `GET /v1/admin/telemetry/usage`, which runs HogQL against PostHog and joins active install/project/anonymous ids with Supabase telemetry aliases. This keeps PostHog personal API credentials in the API runtime instead of the registry app.
+
+Configure the API runtime with:
+
+```env
+POSTHOG_QUERY_HOST=https://us.posthog.com
+POSTHOG_ENVIRONMENT_ID=
+POSTHOG_PERSONAL_API_KEY=
+```
+
+`POSTHOG_QUERY_HOST` can be omitted when the project is in PostHog US cloud; set it explicitly for other PostHog regions or self-hosted deployments. The personal API key needs `query:read`.
+
+The response includes total/customer/internal/failure events, source mix, actor mix, active identities, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean.
+
 ## API Wiring
 
 `apps/api` emits fire-and-forget telemetry when configured with:

@@ -281,6 +281,7 @@ export type TelemetryActorType =
   | 'internal'
   | 'official_pipeline'
   | 'service';
+export type TelemetryUsageSource = 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
 
 export interface AdminTelemetryIdentityAlias {
   id: string;
@@ -336,6 +337,53 @@ export interface AdminTelemetryAliasPatch {
   user_id?: string | null;
   org_id?: string | null;
   label?: string | null;
+}
+
+export interface AdminTelemetryActiveIdentity {
+  actor_type: string;
+  anonymous_id: string | null;
+  distinct_id: string;
+  events: number;
+  install_id: string | null;
+  last_seen: string | null;
+  org_id: string | null;
+  project_id: string | null;
+  source: string;
+}
+
+export interface AdminTelemetryCandidateAlias {
+  actor_type: string;
+  events: number;
+  identity_id: string;
+  identity_type: TelemetryIdentityType;
+  last_seen: string | null;
+  sources: string[];
+}
+
+export interface AdminTelemetryUsageResponse {
+  actor_type: TelemetryActorType | null;
+  active_identities: AdminTelemetryActiveIdentity[];
+  actor_mix: Array<{ actor_type: string; count: number; source: string }>;
+  candidate_aliases: AdminTelemetryCandidateAlias[];
+  event_counts: Array<{ actor_type: string; count: number; event: string }>;
+  failure_counts: Array<{ count: number; event: string }>;
+  generated_at: string;
+  range_days: number;
+  source: TelemetryUsageSource | null;
+  source_mix: Array<{ count: number; source: string }>;
+  summary: {
+    active_anonymous_ids: number;
+    active_identities: number;
+    active_installs: number;
+    active_orgs: number;
+    active_projects: number;
+    candidate_aliases: number;
+    customer_events: number;
+    failure_events: number;
+    internal_events: number;
+    official_pipeline_events: number;
+    total_events: number;
+  };
 }
 
 interface FetchOptions {
@@ -765,6 +813,25 @@ export const api = {
     if (params?.user_id) query.user_id = params.user_id;
     const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
     return adminFetch<AdminTelemetryAliasListResponse>(`/admin/telemetry/aliases${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  getAdminTelemetryUsage: (
+    token: string,
+    adminKey: string,
+    params?: {
+      actor_type?: TelemetryActorType;
+      days?: number;
+      source?: TelemetryUsageSource;
+    },
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.actor_type) query.actor_type = params.actor_type;
+    if (params?.days != null) query.days = String(params.days);
+    if (params?.source) query.source = params.source;
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<AdminTelemetryUsageResponse>(`/admin/telemetry/usage${qs}`, {
       token,
       adminKey,
     });

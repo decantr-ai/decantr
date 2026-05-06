@@ -104,6 +104,9 @@ export default async function AdminTelemetryPage({
           </p>
         </div>
         <div className="registry-inline-actions">
+          <Link href="/admin/telemetry/usage" className="d-interactive" data-variant="ghost">
+            Usage
+          </Link>
           <Link href="/admin/organizations" className="d-interactive" data-variant="ghost">
             Organizations
           </Link>

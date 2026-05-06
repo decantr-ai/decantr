@@ -14,6 +14,14 @@ import { logger } from '../lib/logger.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { clearTelemetryActorCache } from '../lib/telemetry-actor.js';
+import {
+  fetchPostHogTelemetryUsage,
+  getPostHogTelemetryUsageConfig,
+  isPostHogTelemetryUsageError,
+  isTelemetryUsageSource,
+  parseTelemetryUsageDays,
+  type TelemetryAliasIdentityRef,
+} from '../lib/posthog-telemetry-usage.js';
 
 export const adminRoutes = new Hono<Env>();
 const ORG_TIERS = ['team', 'enterprise'] as const;
@@ -840,6 +848,53 @@ adminRoutes.patch('/admin/users/:id/telemetry', async (c) => {
   });
 
   return c.json({ user });
+});
+
+// GET /v1/admin/telemetry/usage
+adminRoutes.get('/admin/telemetry/usage', async (c) => {
+  const configResult = getPostHogTelemetryUsageConfig();
+  if ('error' in configResult) {
+    return c.json({
+      error: configResult.error,
+      missing: configResult.missing,
+    }, 503);
+  }
+
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
+  const sourceParam = c.req.query('source');
+  const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
+  const days = parseTelemetryUsageDays(c.req.query('days'));
+  const client = createAdminClient();
+
+  const { data: aliasRows, error: aliasError } = await client
+    .from('telemetry_identity_aliases')
+    .select('identity_type, identity_id');
+
+  if (aliasError) {
+    return c.json({ error: 'Failed to fetch telemetry identity aliases' }, 500);
+  }
+
+  try {
+    const usage = await fetchPostHogTelemetryUsage({
+      actorType,
+      config: configResult.config,
+      days,
+      existingAliases: ((aliasRows ?? []) as TelemetryAliasIdentityRef[]).filter((alias) =>
+        isTelemetryIdentityType(alias.identity_type) &&
+        typeof alias.identity_id === 'string' &&
+        alias.identity_id.length > 0
+      ),
+      source,
+    });
+
+    return c.json(usage);
+  } catch (error) {
+    logger.warn({
+      error: error instanceof Error ? error.message : String(error),
+      status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
+    }, 'Failed to query PostHog telemetry usage');
+    return c.json({ error: 'Failed to query PostHog telemetry usage' }, 502);
+  }
 });
 
 // GET /v1/admin/telemetry/aliases

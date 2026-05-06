@@ -39,6 +39,7 @@ function buildItems(props: CommandPaletteProps): CommandItem[] {
     items.push({ href: '/admin/moderation', label: 'Moderation' });
     items.push({ href: '/admin/organizations', label: 'Organizations' });
     items.push({ href: '/admin/telemetry', label: 'Telemetry' });
+    items.push({ href: '/admin/telemetry/usage', label: 'Telemetry Usage' });
     items.push({ href: '/admin/reports', label: 'Reports' });
   }
 

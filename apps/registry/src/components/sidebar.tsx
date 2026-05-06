@@ -285,6 +285,7 @@ function buildNavGroups(workspace: WorkspaceSnapshot): NavGroup[] {
             { href: '/admin/moderation', icon: ShieldIcon, label: 'Moderation' },
             { href: '/admin/organizations', icon: UsersIcon, label: 'Organizations' },
             { href: '/admin/telemetry', icon: KeyIcon, label: 'Telemetry' },
+            { href: '/admin/telemetry/usage', icon: BarChartIcon, label: 'Usage' },
             { href: '/admin/reports', icon: BarChartIcon, label: 'Reports' },
           ],
         }]

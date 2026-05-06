@@ -44,6 +44,14 @@ function createTestApp() {
   return app;
 }
 
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+  process.env[key] = value;
+}
+
 function createAdminTelemetryClient() {
   const aliases = [
     {
@@ -195,6 +203,12 @@ function createAdminTelemetryClient() {
 
 describe('Admin telemetry routes', () => {
   const originalAdminKey = process.env.DECANTR_ADMIN_KEY;
+  const originalPostHogQueryHost = process.env.POSTHOG_QUERY_HOST;
+  const originalPostHogAppHost = process.env.POSTHOG_APP_HOST;
+  const originalPostHogHost = process.env.POSTHOG_HOST;
+  const originalPostHogEnvironmentId = process.env.POSTHOG_ENVIRONMENT_ID;
+  const originalPostHogProjectId = process.env.POSTHOG_PROJECT_ID;
+  const originalPostHogPersonalApiKey = process.env.POSTHOG_PERSONAL_API_KEY;
 
   beforeEach(() => {
     process.env.DECANTR_ADMIN_KEY = 'test-admin-key';
@@ -204,6 +218,13 @@ describe('Admin telemetry routes', () => {
 
   afterEach(() => {
     process.env.DECANTR_ADMIN_KEY = originalAdminKey;
+    restoreEnv('POSTHOG_QUERY_HOST', originalPostHogQueryHost);
+    restoreEnv('POSTHOG_APP_HOST', originalPostHogAppHost);
+    restoreEnv('POSTHOG_HOST', originalPostHogHost);
+    restoreEnv('POSTHOG_ENVIRONMENT_ID', originalPostHogEnvironmentId);
+    restoreEnv('POSTHOG_PROJECT_ID', originalPostHogProjectId);
+    restoreEnv('POSTHOG_PERSONAL_API_KEY', originalPostHogPersonalApiKey);
+    vi.unstubAllGlobals();
   });
 
   it('lists telemetry aliases with filters and summaries', async () => {
@@ -227,6 +248,127 @@ describe('Admin telemetry routes', () => {
       actor_type: 'internal',
       user: { email: 'founder@decantr.ai' },
       organization: { slug: 'decantr' },
+    });
+  });
+
+  it('returns protected PostHog telemetry usage with candidate aliases', async () => {
+    process.env.POSTHOG_QUERY_HOST = 'https://us.posthog.com';
+    process.env.POSTHOG_ENVIRONMENT_ID = '411435';
+    process.env.POSTHOG_PERSONAL_API_KEY = 'test-personal-key';
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}'));
+      const query = String(body.query?.query ?? '');
+      let results: unknown[] = [];
+
+      if (query.includes('group by event, actor_type')) {
+        results = [
+          ['cli.command.completed', 'customer', 3],
+          ['registry.item.resolved', 'internal', 2],
+        ];
+      } else if (query.includes('group by source')) {
+        results = [
+          ['cli', 3],
+          ['api', 2],
+        ];
+      } else if (query.includes('group by actor_type, source')) {
+        results = [
+          ['customer', 'cli', 3],
+          ['internal', 'api', 2],
+        ];
+      } else if (query.includes('and (properties.success = false or properties.valid = false)')) {
+        results = [['audit.completed', 1]];
+      } else if (query.includes('group by distinct_id, actor_type, source')) {
+        results = [
+          [
+            'install_unknown',
+            'customer',
+            'cli',
+            'install_unknown',
+            'project_customer',
+            null,
+            'org-2',
+            3,
+            '2026-05-06T00:00:00Z',
+          ],
+          [
+            'install_founder',
+            'internal',
+            'cli',
+            'install_founder',
+            null,
+            null,
+            'org-1',
+            2,
+            '2026-05-06T01:00:00Z',
+          ],
+        ];
+      }
+
+      return new Response(JSON.stringify({ results }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const app = createTestApp();
+    const res = await app.request('/v1/admin/telemetry/usage?days=7&actor_type=customer', {
+      headers: {
+        Authorization: 'Bearer test-token',
+        'X-Admin-Key': 'test-admin-key',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(json.summary).toMatchObject({
+      total_events: 5,
+      customer_events: 3,
+      internal_events: 2,
+      failure_events: 1,
+      active_identities: 2,
+      active_installs: 2,
+      active_projects: 1,
+      active_orgs: 2,
+      candidate_aliases: 1,
+    });
+    expect(json.event_counts[0]).toMatchObject({
+      event: 'cli.command.completed',
+      actor_type: 'customer',
+      count: 3,
+    });
+    expect(json.candidate_aliases).toEqual([
+      expect.objectContaining({
+        identity_type: 'install',
+        identity_id: 'install_unknown',
+        actor_type: 'customer',
+        events: 3,
+      }),
+    ]);
+  });
+
+  it('reports missing PostHog query configuration for telemetry usage', async () => {
+    delete process.env.POSTHOG_QUERY_HOST;
+    delete process.env.POSTHOG_APP_HOST;
+    delete process.env.POSTHOG_HOST;
+    delete process.env.POSTHOG_ENVIRONMENT_ID;
+    delete process.env.POSTHOG_PROJECT_ID;
+    delete process.env.POSTHOG_PERSONAL_API_KEY;
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry/usage', {
+      headers: {
+        Authorization: 'Bearer test-token',
+        'X-Admin-Key': 'test-admin-key',
+      },
+    });
+
+    expect(res.status).toBe(503);
+    const json = await res.json();
+    expect(json).toMatchObject({
+      error: 'PostHog query environment is not configured',
+      missing: ['POSTHOG_ENVIRONMENT_ID', 'POSTHOG_PERSONAL_API_KEY'],
     });
   });
 
