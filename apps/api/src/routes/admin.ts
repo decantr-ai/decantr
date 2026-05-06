@@ -26,6 +26,7 @@ import {
   type TelemetryAttributionOrganization,
 } from '../lib/posthog-telemetry-usage.js';
 import {
+  buildTelemetrySnapshotHealth,
   listTelemetryAttributionSnapshots,
   listTelemetryUsageSnapshots,
   persistTelemetryAttributionSnapshot,
@@ -1191,6 +1192,46 @@ adminRoutes.get('/admin/telemetry/usage', async (c) => {
       status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
     }, 'Failed to query PostHog telemetry usage');
     return c.json({ error: 'Failed to query PostHog telemetry usage' }, 502);
+  }
+});
+
+// GET /v1/admin/telemetry/snapshots/health
+adminRoutes.get('/admin/telemetry/snapshots/health', async (c) => {
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
+  const sourceParam = c.req.query('source');
+  const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
+  const daysParam = c.req.query('days');
+  const days = daysParam ? parseTelemetryUsageDays(daysParam) : undefined;
+  const client = createAdminClient();
+
+  try {
+    const [usageSnapshots, attributionSnapshots] = await Promise.all([
+      listTelemetryUsageSnapshots(client, {
+        actorType,
+        days,
+        limit: 1,
+        source,
+      }),
+      listTelemetryAttributionSnapshots(client, {
+        actorType,
+        days,
+        limit: 100,
+        source,
+      }),
+    ]);
+
+    return c.json(buildTelemetrySnapshotHealth({
+      actorType,
+      attributionSnapshots,
+      days,
+      source,
+      usageSnapshots,
+    }));
+  } catch (error) {
+    logger.warn({
+      error: error instanceof Error ? error.message : String(error),
+    }, 'Failed to fetch telemetry snapshot health');
+    return c.json({ error: 'Failed to fetch telemetry snapshot health' }, 500);
   }
 });
 

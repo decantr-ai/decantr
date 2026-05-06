@@ -100,9 +100,36 @@ export interface TelemetryUsageSnapshotDetail extends TelemetryUsageSnapshotReco
   signal_buckets: TelemetrySignalBucketSnapshotRecord[];
 }
 
+export type TelemetrySnapshotHealthStatus = 'success' | 'warning' | 'error' | 'info';
+
+export interface TelemetrySnapshotHealthMetric {
+  captured_at: string | null;
+  rows: number;
+  snapshot_date: string | null;
+  total_events: number;
+}
+
+export interface TelemetrySnapshotHealthSummary {
+  actor_type: TelemetryUsageSnapshotActor;
+  attribution_snapshot: TelemetrySnapshotHealthMetric;
+  detail: string;
+  generated_at: string;
+  label: string;
+  latest_captured_at: string | null;
+  latest_snapshot_age_days: number | null;
+  range_days: number | null;
+  source: TelemetryUsageSnapshotSource;
+  status: TelemetrySnapshotHealthStatus;
+  usage_snapshot: TelemetrySnapshotHealthMetric;
+}
+
 interface SupabaseLikeClient {
   from: (table: string) => any;
 }
+
+const dayInMs = 24 * 60 * 60 * 1000;
+const freshSnapshotWindowDays = 8;
+const staleSnapshotWindowDays = 14;
 
 export async function persistTelemetryUsageSnapshot(
   client: SupabaseLikeClient,
@@ -335,6 +362,54 @@ export async function listTelemetryAttributionSnapshots(
   return ((data ?? []) as unknown[]).map(formatAttributionSnapshot);
 }
 
+export function buildTelemetrySnapshotHealth(input: {
+  actorType?: TelemetryActorType;
+  attributionSnapshots?: TelemetryAttributionSnapshotRecord[];
+  days?: number;
+  now?: Date;
+  source?: TelemetryUsageSource;
+  usageSnapshots?: TelemetryUsageSnapshotDetail[];
+}): TelemetrySnapshotHealthSummary {
+  const now = input.now ?? new Date();
+  const usageSnapshots = input.usageSnapshots ?? [];
+  const attributionSnapshots = input.attributionSnapshots ?? [];
+  const latestUsageSnapshot = latestByCapturedAt(usageSnapshots);
+  const latestAttributionRows = latestAttributionSnapshotRows(attributionSnapshots);
+  const usageTimestamp = parseTimestamp(latestUsageSnapshot?.captured_at ?? latestUsageSnapshot?.created_at);
+  const attributionTimestamp = parseTimestamp(
+    latestAttributionRows[0]?.captured_at ?? latestAttributionRows[0]?.created_at,
+  );
+  const latestSnapshotTimestamp = maxTimestamp([usageTimestamp, attributionTimestamp]);
+  const latestSnapshotAgeDays = latestSnapshotTimestamp === null
+    ? null
+    : Math.max(0, (now.getTime() - latestSnapshotTimestamp) / dayInMs);
+  const status = statusForAge(latestSnapshotAgeDays);
+
+  return {
+    actor_type: normalizeSnapshotActor(input.actorType ?? null),
+    attribution_snapshot: {
+      captured_at: attributionTimestamp === null ? null : new Date(attributionTimestamp).toISOString(),
+      rows: latestAttributionRows.length,
+      snapshot_date: latestAttributionRows[0]?.snapshot_date ?? null,
+      total_events: latestAttributionRows.reduce((total, row) => total + row.events, 0),
+    },
+    detail: detailForSnapshotHealth(status, latestSnapshotAgeDays),
+    generated_at: now.toISOString(),
+    label: labelForSnapshotHealth(status),
+    latest_captured_at: latestSnapshotTimestamp === null ? null : new Date(latestSnapshotTimestamp).toISOString(),
+    latest_snapshot_age_days: latestSnapshotAgeDays,
+    range_days: input.days ?? null,
+    source: normalizeSnapshotSource(input.source ?? null),
+    status,
+    usage_snapshot: {
+      captured_at: usageTimestamp === null ? null : new Date(usageTimestamp).toISOString(),
+      rows: latestUsageSnapshot ? 1 : 0,
+      snapshot_date: latestUsageSnapshot?.snapshot_date ?? null,
+      total_events: latestUsageSnapshot?.total_events ?? 0,
+    },
+  };
+}
+
 function buildTelemetryDataQuality(usage: AdminTelemetryUsageResponse) {
   const totalEvents = usage.summary.total_events;
   const unclassifiedRate = totalEvents > 0 ? usage.summary.unclassified_events / totalEvents : 0;
@@ -547,6 +622,86 @@ function groupBySnapshot<T extends { usage_snapshot_id: string }>(rows: T[]) {
     grouped.set(row.usage_snapshot_id, items);
   }
   return grouped;
+}
+
+function latestByCapturedAt<T extends { captured_at: string; created_at?: string }>(items: T[]): T | null {
+  let latest: T | null = null;
+  let latestTimestamp: number | null = null;
+
+  for (const item of items) {
+    const timestamp = parseTimestamp(item.captured_at || item.created_at);
+    if (timestamp === null) continue;
+    if (latestTimestamp === null || timestamp > latestTimestamp) {
+      latest = item;
+      latestTimestamp = timestamp;
+    }
+  }
+
+  return latest;
+}
+
+function latestAttributionSnapshotRows(
+  snapshots: TelemetryAttributionSnapshotRecord[],
+): TelemetryAttributionSnapshotRecord[] {
+  const latest = latestByCapturedAt(snapshots);
+  if (!latest) return [];
+
+  return snapshots.filter((snapshot) =>
+    snapshot.captured_at === latest.captured_at &&
+    snapshot.snapshot_date === latest.snapshot_date &&
+    snapshot.range_days === latest.range_days &&
+    snapshot.actor_type === latest.actor_type &&
+    snapshot.source === latest.source
+  );
+}
+
+function parseTimestamp(value: string | null | undefined) {
+  if (!value) return null;
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? null : timestamp;
+}
+
+function maxTimestamp(values: Array<number | null>) {
+  const timestamps = values.filter((timestamp): timestamp is number => timestamp !== null);
+  return timestamps.length ? Math.max(...timestamps) : null;
+}
+
+function ageCopy(ageDays: number | null) {
+  if (ageDays === null) return 'unknown';
+  if (ageDays < 1) return 'today';
+  const roundedDays = Math.floor(ageDays);
+  if (roundedDays === 1) return '1 day ago';
+  return `${roundedDays} days ago`;
+}
+
+function statusForAge(ageDays: number | null): TelemetrySnapshotHealthStatus {
+  if (ageDays === null) return 'info';
+  if (ageDays <= freshSnapshotWindowDays) return 'success';
+  if (ageDays <= staleSnapshotWindowDays) return 'warning';
+  return 'error';
+}
+
+function labelForSnapshotHealth(status: TelemetrySnapshotHealthStatus) {
+  if (status === 'success') return 'Fresh';
+  if (status === 'warning') return 'Stale';
+  if (status === 'error') return 'Missed snapshot';
+  return 'No stored snapshots';
+}
+
+function detailForSnapshotHealth(status: TelemetrySnapshotHealthStatus, ageDays: number | null) {
+  if (status === 'success') {
+    return `Latest stored telemetry snapshot was captured ${ageCopy(ageDays)}.`;
+  }
+
+  if (status === 'warning') {
+    return `Latest stored telemetry snapshot was captured ${ageCopy(ageDays)}; confirm the weekly job is still running.`;
+  }
+
+  if (status === 'error') {
+    return `Latest stored telemetry snapshot was captured ${ageCopy(ageDays)}; investigate the weekly job.`;
+  }
+
+  return 'No stored usage or attribution snapshots are available for this filter yet.';
 }
 
 function attributionRowPayload(input: {

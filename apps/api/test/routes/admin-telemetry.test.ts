@@ -477,6 +477,7 @@ describe('Admin telemetry routes', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     process.env.DECANTR_ADMIN_KEY = originalAdminKey;
     restoreEnv('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', originalTelemetrySnapshotToken);
     restoreEnv('POSTHOG_QUERY_HOST', originalPostHogQueryHost);
@@ -948,6 +949,44 @@ describe('Admin telemetry routes', () => {
       row_actor_type: 'customer',
       row_source: 'cli',
     });
+  });
+
+  it('reports stored telemetry snapshot health', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-06T03:00:00.000Z'));
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry/snapshots/health?actor_type=customer&days=30', {
+      headers: {
+        Authorization: 'Bearer test-token',
+        'X-Admin-Key': 'test-admin-key',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toMatchObject({
+      actor_type: 'customer',
+      attribution_snapshot: {
+        captured_at: '2026-05-06T02:00:00.000Z',
+        rows: 1,
+        snapshot_date: '2026-05-06',
+        total_events: 9,
+      },
+      generated_at: '2026-05-06T03:00:00.000Z',
+      label: 'Fresh',
+      latest_captured_at: '2026-05-06T02:00:00.000Z',
+      range_days: 30,
+      source: 'all',
+      status: 'success',
+      usage_snapshot: {
+        captured_at: '2026-05-06T02:00:00.000Z',
+        rows: 1,
+        snapshot_date: '2026-05-06',
+        total_events: 12,
+      },
+    });
+    expect(json.latest_snapshot_age_days).toBeCloseTo(1 / 24);
   });
 
   it('reports missing PostHog query configuration for telemetry usage', async () => {
