@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { RegistryWebTelemetryIdentity } from '@/components/registry-web-telemetry';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { NavHeader } from './nav-header';
 
@@ -27,6 +28,7 @@ export default async function PublicLayout({
 
   return (
     <div className="registry-public-frame">
+      <RegistryWebTelemetryIdentity userId={user?.id ?? null} />
       <header className="registry-public-header">
         <Link href="/" className="registry-brand-link">
           <svg

@@ -48,6 +48,34 @@ describe('POST /v1/telemetry/events', () => {
     expect(await res.json()).toEqual({ accepted: true });
   });
 
+  it('accepts registry web telemetry events for the public product surface', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/telemetry/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        schemaVersion: '0.1.0',
+        event: {
+          name: 'registry_web.page_viewed',
+          timestamp: '2026-05-06T00:00:00.000Z',
+          context: {
+            source: 'registry-web',
+            environment: 'production',
+            anonymousId: 'registry_web:test',
+          },
+          properties: {
+            authenticated: false,
+            route: 'browse',
+            routePath: '/browse',
+            surface: 'registry_browser',
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(202);
+  });
+
   it('rejects malformed telemetry events', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/telemetry/events', {

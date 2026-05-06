@@ -1,0 +1,28 @@
+name: Telemetry Weekly Snapshot
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+
+      - name: Generate weekly telemetry snapshot
+        env:
+          POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+          POSTHOG_ENVIRONMENT_ID: ${{ secrets.POSTHOG_ENVIRONMENT_ID }}
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_DASHBOARD_ID: ${{ vars.POSTHOG_DASHBOARD_ID || '1549290' }}
+          TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL: ${{ secrets.TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL }}
+        run: node scripts/posthog-weekly-telemetry-report.mjs

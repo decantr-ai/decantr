@@ -24,6 +24,14 @@ export const DECANTR_TELEMETRY_EVENT_NAMES = [
   'execution_pack.compiled',
   'execution_pack.selected',
   'org.created',
+  'registry_web.api_key_page_viewed',
+  'registry_web.billing_viewed',
+  'registry_web.content_opened',
+  'registry_web.identity_linked',
+  'registry_web.organization_viewed',
+  'registry_web.page_viewed',
+  'registry_web.search_performed',
+  'registry_web.signup_clicked',
   'registry.item.resolved',
   'registry.sync.completed',
   'user.signup.completed',
@@ -167,6 +175,39 @@ export interface ProductEventProperties extends TelemetryProperties {
   plan?: string;
 }
 
+export interface RegistryWebPageViewedProperties extends TelemetryProperties {
+  authenticated: boolean;
+  orgScoped?: boolean;
+  plan?: string;
+  queryPresent?: boolean;
+  route: string;
+  routePath: string;
+  surface: string;
+}
+
+export interface RegistryWebSearchPerformedProperties extends TelemetryProperties {
+  contentType?: string;
+  queryLength: number;
+  resultCount?: number;
+  sort?: string;
+  sourceFilter?: string;
+  surface: string;
+}
+
+export interface RegistryWebContentOpenedProperties extends TelemetryProperties {
+  contentSource?: string;
+  contentType: string;
+  namespace?: string;
+  slug?: string;
+  surface: string;
+}
+
+export interface RegistryWebCommercialPageViewedProperties extends TelemetryProperties {
+  orgScoped?: boolean;
+  plan?: string;
+  surface: string;
+}
+
 export type DecantrTelemetryEvent =
   | TelemetryEventBase<'api_key.created', ProductEventProperties>
   | TelemetryEventBase<'audit.completed', AuditCompletedProperties>
@@ -177,6 +218,14 @@ export type DecantrTelemetryEvent =
   | TelemetryEventBase<'execution_pack.compiled', ExecutionPackCompiledProperties>
   | TelemetryEventBase<'execution_pack.selected', ExecutionPackSelectedProperties>
   | TelemetryEventBase<'org.created', ProductEventProperties>
+  | TelemetryEventBase<'registry_web.api_key_page_viewed', RegistryWebCommercialPageViewedProperties>
+  | TelemetryEventBase<'registry_web.billing_viewed', RegistryWebCommercialPageViewedProperties>
+  | TelemetryEventBase<'registry_web.content_opened', RegistryWebContentOpenedProperties>
+  | TelemetryEventBase<'registry_web.identity_linked', RegistryWebCommercialPageViewedProperties>
+  | TelemetryEventBase<'registry_web.organization_viewed', RegistryWebCommercialPageViewedProperties>
+  | TelemetryEventBase<'registry_web.page_viewed', RegistryWebPageViewedProperties>
+  | TelemetryEventBase<'registry_web.search_performed', RegistryWebSearchPerformedProperties>
+  | TelemetryEventBase<'registry_web.signup_clicked', RegistryWebCommercialPageViewedProperties>
   | TelemetryEventBase<'registry.item.resolved', RegistryItemResolvedProperties>
   | TelemetryEventBase<'registry.sync.completed', RegistrySyncCompletedProperties>
   | TelemetryEventBase<'user.signup.completed', ProductEventProperties>;

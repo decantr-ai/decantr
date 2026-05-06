@@ -96,6 +96,9 @@ importers:
       '@decantr/registry':
         specifier: workspace:*
         version: link:../../packages/registry
+      '@decantr/telemetry':
+        specifier: workspace:*
+        version: link:../../packages/telemetry
       '@supabase/ssr':
         specifier: ^0.9.0
         version: 0.9.0(@supabase/supabase-js@2.101.1)

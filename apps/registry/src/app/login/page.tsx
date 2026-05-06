@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
 import { createClient } from '@/lib/supabase/client';
 
 type AuthMode = 'login' | 'register' | 'forgot-password';
@@ -65,6 +66,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { capture } = useRegistryWebTelemetry();
 
   const authConfigured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -123,6 +125,10 @@ export default function LoginPage() {
           return;
         }
       } else if (mode === 'register') {
+        capture('registry_web.signup_clicked', {
+          orgScoped: false,
+          surface: 'signup_form_submit',
+        });
         const { error: err } = await supabase.auth.signUp({
           email,
           password,
@@ -158,6 +164,12 @@ export default function LoginPage() {
   }
 
   function switchMode(next: AuthMode) {
+    if (next === 'register') {
+      capture('registry_web.signup_clicked', {
+        orgScoped: false,
+        surface: 'login_mode_toggle',
+      });
+    }
     setMode(next);
     setError('');
     setMessage('');

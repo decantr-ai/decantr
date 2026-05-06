@@ -1,6 +1,6 @@
 {
   "name": "@decantr/telemetry",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Privacy-preserving telemetry contracts, clients, and analytics sinks for Decantr",
   "author": "Decantr AI",
   "license": "MIT",

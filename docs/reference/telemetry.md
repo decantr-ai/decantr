@@ -47,6 +47,14 @@ The first event vocabulary is intentionally small:
 - `user.signup.completed`
 - `org.created`
 - `api_key.created`
+- `registry_web.page_viewed`
+- `registry_web.search_performed`
+- `registry_web.content_opened`
+- `registry_web.signup_clicked`
+- `registry_web.api_key_page_viewed`
+- `registry_web.billing_viewed`
+- `registry_web.organization_viewed`
+- `registry_web.identity_linked`
 
 Private registries are accounted for through the generic registry event model rather than a separate first release surface: use `registrySource: "private"` and `visibility: "private"` when that product line is enabled.
 
@@ -64,6 +72,8 @@ These events support the first board-level and operator-level metrics:
 - critique and audit failure modes
 - content validation health
 - authenticated org and API key creation
+- registry-web discovery and commercial intent
+- anonymous-to-authenticated identity linking
 
 ## PostHog Policy
 
@@ -87,7 +97,19 @@ POSTHOG_ENVIRONMENT_ID=
 POSTHOG_PERSONAL_API_KEY=
 ```
 
-`POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
+`POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. To also provision cohorts and alerts, add `cohort:read`, `cohort:write`, `alert:read`, and `alert:write`. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
+
+The dashboard automation creates saved insights for activation, core usage, commercial intent, registry-web adoption, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
+
+## Weekly Snapshot Reporting
+
+The weekly operator memo runs through:
+
+```bash
+pnpm telemetry:weekly-snapshot
+```
+
+It reads the same PostHog env values and requires `query:read`. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes a markdown summary to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the same markdown payload to a webhook.
 
 ## API Wiring
 
@@ -112,6 +134,21 @@ The hosted API currently emits:
 - `org.created` from team checkout provisioning
 
 Telemetry failures are logged at debug level and must not block request handling.
+
+## Registry Web Wiring
+
+`apps/registry` emits public registry-web telemetry to the hosted first-party ingest endpoint. It uses a browser-local opaque anonymous id, upgrades context with authenticated user and organization ids when available, and emits:
+
+- `registry_web.page_viewed` from route changes
+- `registry_web.search_performed` from public registry search submissions
+- `registry_web.content_opened` from content detail views
+- `registry_web.signup_clicked` from signup CTAs and register submissions
+- `registry_web.api_key_page_viewed` from the API key dashboard
+- `registry_web.billing_viewed` from billing and plan review
+- `registry_web.organization_viewed` from team/private-registry organization surfaces
+- `registry_web.identity_linked` when an anonymous registry session becomes authenticated
+
+The registry app can override the default endpoint with `NEXT_PUBLIC_DECANTR_TELEMETRY_ENDPOINT` and can disable client telemetry with `NEXT_PUBLIC_DECANTR_TELEMETRY_DISABLED=true`.
 
 ## First-Party Ingest
 

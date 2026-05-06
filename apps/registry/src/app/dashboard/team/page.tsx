@@ -8,6 +8,7 @@ import {
   updateRoleAction,
 } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
+import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
 import { api } from '@/lib/api';
 import { createClient } from '@/lib/supabase/client';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
@@ -293,6 +294,7 @@ export default function TeamPage() {
   const [error, setError] = useState<string | null>(null);
   const [isInviting, startInvite] = useTransition();
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const { capture } = useRegistryWebTelemetry();
 
   async function reloadOrgState(token: string, slug: string) {
     if (!token || !slug) {
@@ -339,6 +341,16 @@ export default function TeamPage() {
 
     void syncOrgState();
   }, [orgSlug, workspace.activeOrganization?.slug]);
+
+  useEffect(() => {
+    capture('registry_web.organization_viewed', {
+      memberCount: members.length,
+      orgScoped: Boolean(orgSlug),
+      plan: workspace.tier,
+      seatLimit,
+      surface: 'dashboard_team',
+    });
+  }, [capture, members.length, orgSlug, seatLimit, workspace.tier]);
 
   function handleInvite(event: React.FormEvent) {
     event.preventDefault();

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
 
 interface NavHeaderProps {
   user: { id: string; email?: string } | null;
@@ -18,6 +19,7 @@ export function NavHeader({ user }: NavHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { capture } = useRegistryWebTelemetry();
 
   const closeMenu = useCallback(() => setMenuOpen(false), []);
 
@@ -155,7 +157,13 @@ export function NavHeader({ user }: NavHeaderProps) {
                 </Link>
                 <Link
                   href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    capture('registry_web.signup_clicked', {
+                      orgScoped: false,
+                      surface: 'mobile_nav',
+                    });
+                    setMobileMenuOpen(false);
+                  }}
                   className="d-interactive no-underline registry-mobile-menu-link"
                   data-variant="primary"
                 >
@@ -215,6 +223,12 @@ export function NavHeader({ user }: NavHeaderProps) {
             href="/login"
             className="d-interactive no-underline registry-nav-desktop-auth registry-nav-compact-link"
             data-variant="primary"
+            onClick={() =>
+              capture('registry_web.signup_clicked', {
+                orgScoped: false,
+                surface: 'desktop_nav',
+              })
+            }
           >
             Sign up
           </Link>

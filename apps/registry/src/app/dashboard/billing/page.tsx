@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { upgradeAction, manageBillingAction } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
+import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 /* ── Icons ── */
@@ -205,11 +206,22 @@ export default function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const billingLaunchEnabled = process.env.NEXT_PUBLIC_REGISTRY_BILLING_ENABLED === 'true';
+  const { capture } = useRegistryWebTelemetry();
 
   const billing = workspace.billing;
   const currentTier = workspace.tier.toLowerCase();
   const planName = currentTier.charAt(0).toUpperCase() + currentTier.slice(1);
   const activeOrg = workspace.activeOrganization;
+
+  useEffect(() => {
+    capture('registry_web.billing_viewed', {
+      billingEnabled: billingLaunchEnabled,
+      hasSubscription: Boolean(billing?.subscription),
+      orgScoped: Boolean(activeOrg),
+      plan: currentTier,
+      surface: 'dashboard_billing',
+    });
+  }, [activeOrg, billing?.subscription, billingLaunchEnabled, capture, currentTier]);
 
   const kpiItems = [
     {

@@ -24,6 +24,14 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `user.signup.completed`
 - `org.created`
 - `api_key.created`
+- `registry_web.page_viewed`
+- `registry_web.search_performed`
+- `registry_web.content_opened`
+- `registry_web.signup_clicked`
+- `registry_web.api_key_page_viewed`
+- `registry_web.billing_viewed`
+- `registry_web.organization_viewed`
+- `registry_web.identity_linked`
 
 Private registries do not need a separate telemetry surface yet. Use `registry.item.resolved` with `registrySource: "private"` and `visibility: "private"` when that product line lands.
 

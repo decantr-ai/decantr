@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useTransition } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { createApiKeyAction, revokeApiKeyAction } from './actions';
 import { api } from '@/lib/api';
+import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 interface ApiKeyDisplay {
@@ -157,8 +158,10 @@ export default function ApiKeysPage() {
   const [orgId, setOrgId] = useState('');
   const [scopes, setScopes] = useState<Set<string>>(new Set(['read']));
   const [error, setError] = useState<string | null>(null);
+  const [keysLoaded, setKeysLoaded] = useState(false);
   const [isCreating, startCreate] = useTransition();
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const { capture } = useRegistryWebTelemetry();
 
   useEffect(() => {
     if (keyTarget === 'organization' && !workspace.capabilities.canUseOrganizationFeatures) {
@@ -189,6 +192,8 @@ export default function ApiKeysPage() {
       }
     } catch {
       // ignore load failures in the empty-state flow
+    } finally {
+      setKeysLoaded(true);
     }
   }, [me?.organizations, workspace.activeOrganization?.id]);
 
@@ -248,6 +253,23 @@ export default function ApiKeysPage() {
   }
 
   const activeKeys = keys.filter((key) => !key.revoked_at);
+
+  useEffect(() => {
+    if (!keysLoaded) return;
+
+    capture('registry_web.api_key_page_viewed', {
+      activeKeyCount: activeKeys.length,
+      orgScoped: workspace.capabilities.canUseOrganizationFeatures,
+      plan: workspace.tier,
+      surface: 'dashboard_api_keys',
+    });
+  }, [
+    activeKeys.length,
+    capture,
+    keysLoaded,
+    workspace.capabilities.canUseOrganizationFeatures,
+    workspace.tier,
+  ]);
 
   return (
     <div className="registry-page-stack">

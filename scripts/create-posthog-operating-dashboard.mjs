@@ -9,6 +9,13 @@ const TAGS = ['decantr', 'telemetry', 'operating-dashboard'];
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 
+class PostHogApiError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
 loadOptionalEnvFiles();
 
 const host = (process.env.POSTHOG_HOST?.trim() || (dryRun ? 'https://us.posthog.com' : requiredEnv('POSTHOG_HOST'))).replace(
@@ -38,6 +45,7 @@ if (host.includes('.i.posthog.com')) {
 }
 
 const apiPrefix = `/api/environments/${encodeURIComponent(environmentId)}`;
+const projectApiPrefix = `/api/projects/${encodeURIComponent(environmentId)}`;
 
 const events = {
   apiKeyCreated: 'api_key.created',
@@ -49,6 +57,14 @@ const events = {
   executionPackCompiled: 'execution_pack.compiled',
   executionPackSelected: 'execution_pack.selected',
   orgCreated: 'org.created',
+  registryWebApiKeyPageViewed: 'registry_web.api_key_page_viewed',
+  registryWebBillingViewed: 'registry_web.billing_viewed',
+  registryWebContentOpened: 'registry_web.content_opened',
+  registryWebIdentityLinked: 'registry_web.identity_linked',
+  registryWebOrganizationViewed: 'registry_web.organization_viewed',
+  registryWebPageViewed: 'registry_web.page_viewed',
+  registryWebSearchPerformed: 'registry_web.search_performed',
+  registryWebSignupClicked: 'registry_web.signup_clicked',
   registryItemResolved: 'registry.item.resolved',
   registrySyncCompleted: 'registry.sync.completed',
   userSignupCompleted: 'user.signup.completed',
@@ -68,6 +84,7 @@ const insightSpecs = [
         layout: 'horizontal',
       },
       series: [
+        eventNode(events.registryWebSignupClicked, 'Signup clicked'),
         eventNode(events.userSignupCompleted, 'Signup completed'),
         eventNode(events.apiKeyCreated, 'API key created'),
         eventNode(events.registryItemResolved, 'Registry item resolved'),
@@ -94,8 +111,53 @@ const insightSpecs = [
       'Daily commercial-intent signals: new hosted profiles, API keys, and team/org creation.',
     query: trendLine([
       [events.userSignupCompleted, 'Signup completed'],
+      [events.registryWebSignupClicked, 'Signup clicked'],
+      [events.registryWebApiKeyPageViewed, 'API key page viewed'],
+      [events.registryWebBillingViewed, 'Billing viewed'],
       [events.apiKeyCreated, 'API key created'],
       [events.orgCreated, 'Organization created'],
+    ]),
+  },
+  {
+    name: 'Registry web adoption',
+    description:
+      'Daily registry web product usage across page views, search, content detail opens, and authenticated identity links.',
+    query: trendLine([
+      [events.registryWebPageViewed, 'Page viewed'],
+      [events.registryWebSearchPerformed, 'Search performed'],
+      [events.registryWebContentOpened, 'Content opened'],
+      [events.registryWebIdentityLinked, 'Identity linked'],
+    ]),
+  },
+  {
+    name: 'Registry web discovery funnel',
+    description:
+      'Tracks browser discovery from page view to search to content detail opens and signup intent.',
+    query: insightViz({
+      kind: 'FunnelsQuery',
+      dateRange: last30Days(),
+      filterTestAccounts: false,
+      funnelsFilter: {
+        funnelVizType: 'steps',
+        layout: 'horizontal',
+      },
+      series: [
+        eventNode(events.registryWebPageViewed, 'Page viewed'),
+        eventNode(events.registryWebSearchPerformed, 'Search performed'),
+        eventNode(events.registryWebContentOpened, 'Content opened'),
+        eventNode(events.registryWebSignupClicked, 'Signup clicked'),
+      ],
+    }),
+  },
+  {
+    name: 'Registry web commercial intent',
+    description:
+      'Daily web-surface commercial signals from billing, API key, organization, private registry, and signup touchpoints.',
+    query: trendLine([
+      [events.registryWebSignupClicked, 'Signup clicked'],
+      [events.registryWebApiKeyPageViewed, 'API key page viewed'],
+      [events.registryWebBillingViewed, 'Billing viewed'],
+      [events.registryWebOrganizationViewed, 'Organization viewed'],
     ]),
   },
   {
@@ -128,6 +190,7 @@ const insightSpecs = [
       [events.executionPackCompiled, 'Execution packs'],
       [events.contentValidationCompleted, 'Content CI'],
       [events.contentPublishCompleted, 'Content publish'],
+      [events.registryWebPageViewed, 'Registry web'],
     ]),
   },
   {
@@ -157,6 +220,42 @@ const insightSpecs = [
   },
 ];
 
+const cohortSpecs = [
+  {
+    name: 'Decantr: Activated users',
+    description:
+      'Users who completed a hosted signup, created an API key, or compiled an execution pack in the last 30 days.',
+    filters: cohortFilters('OR', [
+      performedEvent(events.userSignupCompleted),
+      performedEvent(events.apiKeyCreated),
+      performedEvent(events.executionPackCompiled),
+    ]),
+  },
+  {
+    name: 'Decantr: Commercial-intent users',
+    description:
+      'Users who touched billing, API keys, organization surfaces, team creation, or signup intent in the last 30 days.',
+    filters: cohortFilters('OR', [
+      performedEvent(events.registryWebBillingViewed),
+      performedEvent(events.registryWebApiKeyPageViewed),
+      performedEvent(events.registryWebOrganizationViewed),
+      performedEvent(events.registryWebSignupClicked),
+      performedEvent(events.apiKeyCreated),
+      performedEvent(events.orgCreated),
+    ]),
+  },
+  {
+    name: 'Decantr: Content power users',
+    description:
+      'Users who repeatedly search or open registry content, or repeatedly resolve registry items, in the last 30 days.',
+    filters: cohortFilters('OR', [
+      performedEvent(events.registryWebSearchPerformed, 5),
+      performedEvent(events.registryWebContentOpened, 5),
+      performedEvent(events.registryItemResolved, 10),
+    ]),
+  },
+];
+
 const dashboard = await upsertDashboard();
 const insightResults = [];
 
@@ -170,11 +269,53 @@ for (const [index, spec] of insightSpecs.entries()) {
   insightResults.push(insight);
 }
 
+const cohortResults = await runOptionalSetup('cohorts', ['cohort:read', 'cohort:write'], async () => {
+  const results = [];
+  for (const spec of cohortSpecs) {
+    results.push(await upsertCohort(spec));
+  }
+  return results;
+});
+
+const alertResults = await runOptionalSetup('alerts', ['alert:read', 'alert:write'], async () => {
+  const insightsByName = new Map(insightResults.map((insight) => [insight.name, insight]));
+  const failureInsight = insightsByName.get('Failure signals');
+  const commercialInsight = insightsByName.get('Commercial intent');
+  const specs = [
+    failureInsight
+      ? {
+          insightId: failureInsight.id,
+          name: 'Decantr: failure events detected',
+          thresholdName: 'Any failure event',
+          seriesIndex: 0,
+          lowerBound: 0,
+        }
+      : null,
+    commercialInsight
+      ? {
+          insightId: commercialInsight.id,
+          name: 'Decantr: commercial-intent spike',
+          thresholdName: 'Commercial intent above baseline threshold',
+          seriesIndex: 0,
+          lowerBound: 10,
+        }
+      : null,
+  ].filter(Boolean);
+
+  const results = [];
+  for (const spec of specs) {
+    results.push(await upsertAlert(spec));
+  }
+  return results;
+});
+
 const dashboardUrl = `${host}/project/${encodeURIComponent(environmentId)}/dashboard/${dashboard.id}`;
 console.log(`Dashboard ready: ${DASHBOARD_NAME}`);
 console.log(`Dashboard id: ${dashboard.id}`);
 console.log(`Dashboard URL: ${dashboardUrl}`);
 console.log(`Insights attached: ${insightResults.length}`);
+console.log(`Cohorts ready: ${cohortResults.length}`);
+console.log(`Alerts ready: ${alertResults.length}`);
 
 async function upsertDashboard() {
   const existing = await findByExactName(`${apiPrefix}/dashboards/`, DASHBOARD_NAME);
@@ -226,6 +367,88 @@ async function upsertInsight(spec) {
   });
 }
 
+async function upsertCohort(spec) {
+  const existing = await findByExactName(`${projectApiPrefix}/cohorts/`, spec.name);
+  const body = {
+    name: spec.name,
+    description: spec.description,
+    filters: spec.filters,
+    is_static: false,
+    cohort_type: 'behavioral',
+  };
+
+  if (existing) {
+    console.log(`Updating cohort: ${spec.name}`);
+    return ph(`${projectApiPrefix}/cohorts/${existing.id}/`, {
+      method: 'PATCH',
+      body,
+    });
+  }
+
+  console.log(`Creating cohort: ${spec.name}`);
+  return ph(`${projectApiPrefix}/cohorts/`, {
+    method: 'POST',
+    body,
+  });
+}
+
+async function upsertAlert(spec) {
+  const existing = await findByExactName(`${apiPrefix}/alerts/`, spec.name);
+  const body = {
+    insight: spec.insightId,
+    name: spec.name,
+    subscribed_users: [],
+    threshold: {
+      name: spec.thresholdName,
+      configuration: {
+        bounds: {
+          lower: spec.lowerBound,
+        },
+        type: 'absolute',
+      },
+    },
+    condition: {
+      type: 'absolute_value',
+    },
+    config: {
+      check_ongoing_interval: null,
+      series_index: spec.seriesIndex,
+      type: 'TrendsAlertConfig',
+    },
+    calculation_interval: 'hourly',
+    enabled: true,
+    skip_weekend: false,
+  };
+
+  if (existing) {
+    console.log(`Updating alert: ${spec.name}`);
+    return ph(`${apiPrefix}/alerts/${existing.id}/`, {
+      method: 'PATCH',
+      body,
+    });
+  }
+
+  console.log(`Creating alert: ${spec.name}`);
+  return ph(`${apiPrefix}/alerts/`, {
+    method: 'POST',
+    body,
+  });
+}
+
+async function runOptionalSetup(label, scopes, fn) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (error instanceof PostHogApiError && error.status === 403) {
+      console.warn(
+        `Skipping ${label}: PostHog personal API key needs ${scopes.join(', ')} scopes.`,
+      );
+      return [];
+    }
+    throw error;
+  }
+}
+
 async function findByExactName(path, name) {
   const url = new URL(`${host}${path}`);
   url.searchParams.set('search', name);
@@ -238,7 +461,10 @@ async function findByExactName(path, name) {
 async function ph(path, options = {}) {
   if (dryRun) {
     if (!options.method || options.method === 'GET') return { results: [] };
-    return { id: `dry-run-${Math.random().toString(16).slice(2)}` };
+    return {
+      id: `dry-run-${Math.random().toString(16).slice(2)}`,
+      ...(options.body ?? {}),
+    };
   }
 
   const response = await fetch(`${host}${path}`, {
@@ -258,7 +484,7 @@ async function ph(path, options = {}) {
       typeof parsed === 'object' && parsed !== null
         ? JSON.stringify(parsed)
         : text.slice(0, 600);
-    throw new Error(`PostHog API ${response.status} ${response.statusText}: ${message}`);
+    throw new PostHogApiError(response.status, `PostHog API ${response.status} ${response.statusText}: ${message}`);
   }
 
   return parsed;
@@ -317,6 +543,28 @@ function failureProperty(key) {
     operator: 'exact',
     type: 'event',
     value: false,
+  };
+}
+
+function cohortFilters(type, values) {
+  return {
+    properties: {
+      type,
+      values,
+    },
+  };
+}
+
+function performedEvent(event, count = 1) {
+  return {
+    event_type: 'events',
+    key: event,
+    operator: 'gte',
+    operator_value: count,
+    time_interval: 'day',
+    time_value: 30,
+    type: 'behavioral',
+    value: 'performed_event',
   };
 }
 

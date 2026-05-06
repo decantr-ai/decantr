@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { CommandPalette } from '@/components/command-palette';
 import type { Metadata } from 'next';
+import { RegistryWebTelemetryIdentity } from '@/components/registry-web-telemetry';
 import { WorkspaceStateProvider } from '@/components/workspace-state-provider';
 import { getWorkspaceState, toClientWorkspaceState } from '@/lib/workspace-state';
 
@@ -30,6 +31,11 @@ export default async function AdminLayout({
 
   return (
     <WorkspaceStateProvider value={workspaceSnapshot}>
+      <RegistryWebTelemetryIdentity
+        orgId={workspace.activeOrganization?.id ?? null}
+        plan={workspace.tier}
+        userId={workspace.authUser.id}
+      />
       <div className="registry-shell-root">
         <Sidebar workspace={workspaceSnapshot} />
 

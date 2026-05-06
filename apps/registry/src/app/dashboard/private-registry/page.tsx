@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { api, type DashboardContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { RegistryWebEventTracker } from '@/components/registry-web-telemetry';
 import { getWorkspaceState } from '@/lib/workspace-state';
 
 interface PrivateRegistryPageProps {
@@ -29,6 +30,15 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
   if (!workspace?.capabilities.canAccessPrivateRegistry || !activeOrg) {
     return (
       <div className="registry-page-stack">
+        <RegistryWebEventTracker
+          eventKey="private-registry-gate"
+          name="registry_web.organization_viewed"
+          properties={{
+            orgScoped: false,
+            plan: workspace?.tier ?? 'unknown',
+            surface: 'dashboard_private_registry_gate',
+          }}
+        />
         <div className="registry-page-intro">
           <h3 className="text-lg font-semibold">Private Registry</h3>
           <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
@@ -72,6 +82,16 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
 
   return (
     <div className="registry-page-stack">
+      <RegistryWebEventTracker
+        eventKey={`private-registry:${activeOrg.id}:${items.length}`}
+        name="registry_web.organization_viewed"
+        properties={{
+          itemCount: items.length,
+          orgScoped: true,
+          plan: workspace.tier,
+          surface: 'dashboard_private_registry',
+        }}
+      />
       <div className="registry-page-intro">
         <h3 className="text-lg font-semibold">Private Registry</h3>
         <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
