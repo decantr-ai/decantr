@@ -403,6 +403,15 @@ function parseTelemetrySnapshotRunRequest(value: unknown): TelemetryUsageSnapsho
   }
 
   const input = value as Record<string, unknown>;
+  const hasSnapshotFilter =
+    Object.hasOwn(input, 'actor_type') ||
+    Object.hasOwn(input, 'actorType') ||
+    Object.hasOwn(input, 'days') ||
+    Object.hasOwn(input, 'source');
+  if (!hasSnapshotFilter) {
+    return null;
+  }
+
   const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((option) =>
     option === (input.actor_type ?? input.actorType)
   );

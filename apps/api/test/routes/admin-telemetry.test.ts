@@ -668,6 +668,77 @@ describe('Admin telemetry routes', () => {
     });
   });
 
+  it('persists the default service-token telemetry snapshot batch for empty bodies', async () => {
+    process.env.POSTHOG_QUERY_HOST = 'https://us.posthog.com';
+    process.env.POSTHOG_ENVIRONMENT_ID = '411435';
+    process.env.POSTHOG_PERSONAL_API_KEY = 'test-personal-key';
+    process.env.DECANTR_TELEMETRY_SNAPSHOT_TOKEN = 'snapshot-token';
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}'));
+      const query = String(body.query?.query ?? '');
+      const previousPeriod = /timestamp < now\(\) - interval (7|30) day/.test(query);
+      let results: unknown[] = [];
+
+      if (query.includes('group by event, actor_type')) {
+        results = previousPeriod
+          ? [['cli.command.completed', 'customer', 1]]
+          : [['cli.command.completed', 'customer', 3]];
+      } else if (query.includes('group by source')) {
+        results = [['cli', 3]];
+      } else if (query.includes('group by actor_type, source')) {
+        results = [['customer', 'cli', 3]];
+      } else if (query.includes('and (properties.success = false or properties.valid = false)')) {
+        results = [];
+      } else if (query.includes('group by distinct_id, actor_type, source')) {
+        results = previousPeriod
+          ? []
+          : [
+              [
+                'install_unknown',
+                'customer',
+                'cli',
+                'install_unknown',
+                'project_customer',
+                null,
+                'org-2',
+                3,
+                '2026-05-06T00:00:00Z',
+              ],
+            ];
+      }
+
+      return new Response(JSON.stringify({ results }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const app = createTestApp();
+    const res = await app.request('/v1/admin/telemetry-snapshots/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Telemetry-Snapshot-Token': 'snapshot-token',
+      },
+      body: JSON.stringify({}),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(fetchMock).toHaveBeenCalledTimes(24);
+    expect(json.snapshots).toHaveLength(3);
+    expect(json.snapshots.map((snapshot: { actor_type: string; range_days: number; source: string }) => ({
+      actor_type: snapshot.actor_type,
+      range_days: snapshot.range_days,
+      source: snapshot.source,
+    }))).toEqual([
+      { actor_type: 'all', range_days: 7, source: 'all' },
+      { actor_type: 'all', range_days: 30, source: 'all' },
+      { actor_type: 'customer', range_days: 30, source: 'all' },
+    ]);
+  });
+
   it('lists stored telemetry usage snapshots', async () => {
     const app = createTestApp();
 
