@@ -71,6 +71,24 @@ PostHog is the fast product analytics lane. The `createPostHogTelemetrySink` ada
 
 The first-party Decantr dashboard should not depend on PostHog exports. It should consume the same `@decantr/telemetry` contract through a Decantr-controlled ingestion endpoint.
 
+## PostHog Operating Dashboard
+
+The first operator dashboard can be created or updated through:
+
+```bash
+pnpm telemetry:posthog-dashboard
+```
+
+The script reads PostHog credentials from the shell, `.env.posthog.local`, `.env.local`, or `apps/api/.env.local`:
+
+```env
+POSTHOG_HOST=https://us.posthog.com
+POSTHOG_ENVIRONMENT_ID=
+POSTHOG_PERSONAL_API_KEY=
+```
+
+`POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
+
 ## API Wiring
 
 `apps/api` emits fire-and-forget telemetry when configured with:

@@ -46,6 +46,7 @@
     "smoke:registry-test-users": "node scripts/seed-registry-test-users.mjs --verify",
     "audit:blueprint-matrix": "pnpm --filter @decantr/essence-spec --filter @decantr/registry --filter @decantr/core --filter @decantr/cli build && node scripts/audit-blueprint-matrix.mjs",
     "audit:content-contract": "node scripts/audit-content-contract-quality.mjs",
+    "telemetry:posthog-dashboard": "node scripts/create-posthog-operating-dashboard.mjs",
     "showcase:build": "node scripts/build-showcases.mjs",
     "showcase:build:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/build-showcases.mjs",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
