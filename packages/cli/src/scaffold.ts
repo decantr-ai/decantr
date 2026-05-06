@@ -752,6 +752,18 @@ export function generateTokensCSS(
 
   const seed = themeData.seed || {};
   const palette = themeData.palette || {};
+  const CORE_PALETTE_KEYS = new Set([
+    'background',
+    'surface',
+    'surface-raised',
+    'border',
+    'text',
+    'text-muted',
+    'primary',
+    'primary-hover',
+    'secondary',
+    'accent',
+  ]);
 
   // When mode is 'auto', use 'dark' as the :root default
   const resolvedMode = mode === 'auto' ? 'dark' : mode;
@@ -780,12 +792,24 @@ export function generateTokensCSS(
       if (!fallbacks) return tokenModeKey === 'light' ? '#ffffff' : '#18181b';
       return fallbacks[tokenModeKey];
     };
+    const pickPalette = (key: string): string | undefined => {
+      const entry = palette[key];
+      return entry?.[tokenMode] || entry?.[tokenModeKey] || entry?.dark || entry?.light;
+    };
+
+    const extendedPaletteTokens = Object.fromEntries(
+      Object.keys(palette)
+        .filter((key) => !CORE_PALETTE_KEYS.has(key))
+        .map((key) => [`--d-${key.replace(/[^a-zA-Z0-9-]/g, '-')}`, pickPalette(key)])
+        .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].length > 0),
+    );
 
     return {
       // Seed colors
-      '--d-primary': seed.primary || '#6366f1',
-      '--d-secondary': palette.secondary?.[tokenMode] || pickFb('secondary'),
-      '--d-accent': seed.accent || '#f59e0b',
+      '--d-primary': pickPalette('primary') || seed.primary || '#6366f1',
+      '--d-secondary': pickPalette('secondary') || seed.secondary || pickFb('secondary'),
+      '--d-accent': pickPalette('accent') || seed.accent || '#f59e0b',
+      ...extendedPaletteTokens,
 
       // Palette colors (mode-aware with mode-aware fallbacks)
       '--d-bg': palette.background?.[tokenMode] || pickFb('bg'),
@@ -871,6 +895,10 @@ export function generateTokensCSS(
       '--d-motion-ease-out': 'cubic-bezier(0, 0, 0.2, 1)',
       '--d-motion-ease-in': 'cubic-bezier(0.4, 0, 1, 1)',
       '--d-motion-ease-spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      '--d-duration-hover': 'var(--d-motion-fast)',
+      '--d-duration-entrance': 'var(--d-motion-base)',
+      '--d-easing': 'var(--d-motion-ease-out)',
+      '--d-accent-glow': 'color-mix(in srgb, var(--d-accent) 24%, transparent)',
 
       // Typography scale (v2.1 Tier B2). Canonical sizes + weights +
       // tracking + leading. d-display, d-headline, d-title, d-prose,
@@ -878,6 +906,7 @@ export function generateTokensCSS(
       // theme.typography.* below.
       '--d-font-body': 'ui-sans-serif, system-ui, -apple-system, sans-serif',
       '--d-font-display': 'ui-sans-serif, system-ui, -apple-system, sans-serif',
+      '--d-font-mono': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
       '--d-weight-regular': '400',
       '--d-weight-medium': '500',
       '--d-weight-semibold': '600',
@@ -1012,6 +1041,9 @@ ${lines}${spatialLines}
     '--d-elevation-3',
     '--d-elevation-4',
     '--d-elevation-5',
+    ...Object.keys(palette)
+      .filter((key) => !CORE_PALETTE_KEYS.has(key))
+      .map((key) => `--d-${key.replace(/[^a-zA-Z0-9-]/g, '-')}`),
   ];
 
   // When mode is 'auto', add a light-mode media query block (OS-preference

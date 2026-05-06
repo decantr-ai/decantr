@@ -2,7 +2,7 @@
 
 **Objective:** Implement the admin-moderation section using the compiled sidebar-main shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=moderation-queue, moderation-detail | patterns=search-filter-bar, moderation-queue-item, content-detail-hero, json-viewer
+**Scope:** pages=moderation-queue, commercial-reports, organizations, organization-detail | patterns=search-filter-bar, moderation-queue-item, kpi-grid, activity-feed, content-card-grid, detail-header
 
 ## Section Contract
 - Section: admin-moderation
@@ -13,8 +13,14 @@
 - Description: Admin moderation queue for reviewing, approving, and rejecting community-submitted registry content.
 
 ## Section Routes
-- /moderation-queue -> moderation-queue [search-filter-bar, moderation-queue-item]
-- /moderation-detail/:id -> moderation-detail [content-detail-hero, json-viewer, moderation-queue-item]
+- /admin/moderation -> admin-moderation/moderation-queue @ sidebar-main [search-filter-bar, moderation-queue-item]
+- /admin/reports -> admin-moderation/commercial-reports @ sidebar-main [kpi-grid, activity-feed]
+- /admin/organizations -> admin-moderation/organizations @ sidebar-main [search-filter-bar, content-card-grid, activity-feed]
+- /admin/organizations/:slug -> admin-moderation/organization-detail @ sidebar-main [detail-header, kpi-grid, activity-feed, content-card-grid]
+
+## Theme Decorators
+
+Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Required Theme Decorators". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md "Decorator Quick Reference" for the same table.
 
 ## Required Setup
 - Use the declared section routes as the source of truth for this slice of the app.
@@ -30,8 +36,10 @@
 - admin
 - search-filter-bar
 - moderation-queue-item
-- content-detail-hero
-- json-viewer
+- kpi-grid
+- activity-feed
+- content-card-grid
+- detail-header
 
 ## Success Checks
 - Section pages and routes remain coherent with the compiled topology. [error]

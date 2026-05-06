@@ -2,7 +2,7 @@
   "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
   "packVersion": "1.0.0",
   "packType": "page",
-  "objective": "Implement the profile route using the compiled page contract.",
+  "objective": "Implement the organizations route using the compiled page contract.",
   "target": {
     "platform": "web",
     "framework": "nextjs",
@@ -13,10 +13,10 @@
   "scope": {
     "appId": "app",
     "pageIds": [
-      "profile"
+      "organizations"
     ],
     "patternIds": [
-      "detail-header",
+      "search-filter-bar",
       "content-card-grid",
       "activity-feed"
     ]
@@ -26,16 +26,16 @@
     "Treat the listed page patterns as the primary structure for this route."
   ],
   "allowedVocabulary": [
-    "profile",
-    "top-nav-main",
-    "registry-browser",
-    "primary",
+    "organizations",
+    "sidebar-main",
+    "admin-moderation",
+    "auxiliary",
     "luminarum",
     "dark",
-    "search",
-    "pagination",
-    "detail-header",
-    "row",
+    "auth",
+    "admin",
+    "search-filter-bar",
+    "stack",
     "content-card-grid",
     "grid",
     "activity-feed",
@@ -70,14 +70,14 @@
     ]
   },
   "data": {
-    "pageId": "profile",
-    "path": "/profile/:username",
-    "shell": "top-nav-main",
-    "sectionId": "registry-browser",
-    "sectionRole": "primary",
+    "pageId": "organizations",
+    "path": "/admin/organizations",
+    "shell": "sidebar-main",
+    "sectionId": "admin-moderation",
+    "sectionRole": "auxiliary",
     "features": [
-      "search",
-      "pagination"
+      "auth",
+      "admin"
     ],
     "surface": "_flex _col _gap4",
     "theme": {
@@ -88,16 +88,16 @@
     "wiringSignals": [],
     "patterns": [
       {
-        "id": "detail-header",
-        "alias": "detail-header",
+        "id": "search-filter-bar",
+        "alias": "search-filter-bar",
         "preset": "standard",
-        "layout": "row",
-        "presetDescription": "Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.",
+        "layout": "stack",
+        "presetDescription": "Full public registry filter bar with search, type tabs, source filter, sort, and result count.",
         "interactions": [
-          "hover-reveal",
-          "keyboard-navigation",
+          "inline-edit",
           "animate-on-mount",
-          "click-select"
+          "keyboard-navigation",
+          "hover-reveal"
         ]
       },
       {
@@ -130,5 +130,5 @@
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the profile route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=profile | patterns=detail-header, content-card-grid, activity-feed\n\n## Page Contract\n- Page: profile\n- Path: /profile/:username\n- Shell: top-nav-main\n- Section: registry-browser (primary)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- detail-header -> detail-header [row | standard]\n  > Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n  - [ ] click-select\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the organizations route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=organizations | patterns=search-filter-bar, content-card-grid, activity-feed\n\n## Page Contract\n- Page: organizations\n- Path: /admin/organizations\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

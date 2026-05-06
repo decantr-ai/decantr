@@ -2,7 +2,7 @@
 
 **Objective:** Implement the auth-flow section using the compiled centered shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=login, register, forgot-password | patterns=auth-form
+**Scope:** pages=login | patterns=auth-form
 
 ## Section Contract
 - Section: auth-flow
@@ -13,9 +13,11 @@
 - Description: Login, registration, and password recovery with OAuth support
 
 ## Section Routes
-- /login -> login [auth-form]
-- /register -> register [auth-form]
-- /forgot-password -> forgot-password [auth-form]
+- /login -> auth-flow/login @ centered [auth-form]
+
+## Theme Decorators
+
+Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Required Theme Decorators". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md "Decorator Quick Reference" for the same table.
 
 ## Required Setup
 - Use the declared section routes as the source of truth for this slice of the app.

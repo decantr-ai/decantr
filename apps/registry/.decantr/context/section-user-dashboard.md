@@ -5,10 +5,10 @@
 
 ## Quick Start
 
-**Shell:** Collapsible sidebar with header bar and scrollable main content area. Used by saas-dashboard, financial-dashboard, workbench, ecommerce (account pages). (nav: 240px, header: 52px)
-**Pages:** 7 (overview, content, content-new, api-keys, settings, billing, team)
-**Key patterns:** kpi-grid, reputation-badge, activity-feed, content-card-grid [moderate], form [complex], json-viewer, api-key-row, account-settings [moderate], tier-upgrade-card [moderate], team-member-row [moderate]
-**CSS classes:** `.lum-orbs`, `.lum-brand`, `.lum-glass`
+**Shell:** Responsive sidebar shell with a desktop split layout, a compact sticky header, and an overlay drawer below the md breakpoint. Used by dashboards, account workspaces, and admin operations surfaces. (nav: 240px, header: 52px)
+**Pages:** 9 (overview, content, content-new, api-keys, settings, billing, team, governance, private-registry)
+**Key patterns:** kpi-grid, reputation-badge, activity-feed, content-card-grid [moderate], form [complex], json-viewer, api-key-row, account-settings [moderate], tier-upgrade-card [moderate], team-member-row [moderate], search-filter-bar [moderate]
+**Theme decorators:** 11 classes — see `section-user-dashboard-pack.md` for the Class | Intent | Apply-to contract
 **Density:** comfortable
 **Voice:** Welcoming and developer-friendly.
 
@@ -17,14 +17,14 @@
 ### body
 
 - **flex:** 1
-- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet.
-- **atoms:** _flex1 _overflow[auto] _p6
-- **padding:** 1.5rem
+- **note:** Sole scroll container. Page content renders directly here. No wrapper div around outlet. Inner sections should inherit the shell rhythm rather than redefining page padding.
+- **atoms:** _flex1 _minh0 _overauto _p6
+- **padding:** clamp(1rem, 2vw, 1.5rem)
 - **overflow_y:** auto
 
 ### root
 
-- **atoms:** _flex _h[100vh]
+- **atoms:** _flex _h[100vh] _overhidden
 - **height:** 100vh
 - **display:** flex
 - **direction:** row
@@ -36,15 +36,16 @@
 - **height:** 52px
 - **display:** flex
 - **justify:** space-between
-- **padding:** 0 1.5rem
+- **padding:** 0 clamp(1rem, 2vw, 1.5rem)
 - **left_content:** Breadcrumb — omit segment when it equals page title
 - **button_sizing:** Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar — default d-interactive padding is too large here.
-- **right_content:** Theme toggle (sun/moon icon) + Search/command trigger. Theme toggle toggles light/dark class on html element.
+- **right_content:** Theme toggle (sun/moon icon) + Search/command trigger + mobile navigation toggle when the sidebar is in drawer mode. Theme toggle toggles light/dark class on html element.
 
 ### sidebar
 
 - **nav:**
   - flex: 1
+  - note: This is the sidebar's only scroll region. The footer remains pinned below it.
   - padding: 0.5rem
   - item_gap: 2px
   - group_gap: 0.5rem
@@ -53,31 +54,32 @@
   - item_padding: 0.375rem 0.75rem
   - item_treatment: d-interactive[ghost]
   - group_header_treatment: d-label
-- **atoms:** _flex _col _borderR
+- **atoms:** _flex _col _br[1px_solid_var(--d-border)] _minh0
 - **brand:**
   - align: center
   - border: bottom
   - height: 52px
-  - content: Logo/brand + collapse toggle
+  - content: Logo/brand + collapse toggle. Collapsed rail: center the toggle and omit extra brand copy if it no longer fits cleanly.
   - display: flex
   - padding: 0 1rem
 - **width:** 240px
 - **border:** right
 - **footer:**
   - border: top
-  - content: User avatar + settings link
+  - content: Workspace identity summary + sign-out control. The label should reuse the shared workspace identity and tier presentation rather than recomputing a separate fallback string inside the sidebar.
   - padding: 0.5rem
   - position_within: bottom (mt-auto)
 - **position:** left
 - **direction:** column
 - **background:** var(--d-surface)
 - **collapsed_width:** 64px
+- **mobile_behavior:** Overlay drawer below md. Closed state occupies no layout width. Open state uses a fixed panel + scrim.
 - **collapse_breakpoint:** md
 
 ### main_wrapper
 
 - **flex:** 1
-- **atoms:** _flex _col _flex1 _overflow[hidden]
+- **atoms:** _flex _col _flex1 _minh0 _overhidden
 - **overflow:** hidden
 - **direction:** column
 
@@ -87,83 +89,48 @@
 - Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
 - Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
 
+## Section Label Treatment
+
+Apply `d-label[data-anchor]` to section headers in this shell.
+- Uppercase monospace label typography (d-label base treatment)
+- Left accent border anchor (data-anchor variant)
+- Density-responsive bottom gap via `--d-label-mb` x `--d-density-scale`
+
+Section density: compact (--d-density-scale: 0.65)
+
 ## Shell Notes (sidebar-main)
 
 - **Hotkeys:** Navigation hotkeys defined in the essence are keyboard shortcuts. Implement as useEffect keydown event listeners — do NOT render hotkey text in the sidebar UI.
 - **Collapse:** Sidebar collapse toggle should be integrated into the sidebar header area (next to the brand/logo), not floating at the bottom of the sidebar.
-- **Breadcrumbs:** For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area.
+- **Breadcrumbs:** For nested routes (e.g., /resource/:id), show a breadcrumb trail above the page heading inside the main content area. On narrow widths, truncate gracefully rather than wrapping into a second shell row.
 - **Empty States:** When a section has zero data, show a centered empty state: 48px muted icon + descriptive message + optional CTA button.
-- **Section Labels:** Dashboard section labels should use the d-label class. Anchor with a left accent border: border-left: 2px solid var(--d-accent); padding-left: 0.5rem.
+- **Mobile Drawer:** Below the md breakpoint, the sidebar leaves the permanent split layout and becomes an overlay drawer. Use a scrim, Escape handling, and a header toggle. The closed drawer must not consume layout width.
+- **Shell Spacing:** Header, body, sidebar, and footer all share one inset rhythm. Use a tighter shell inset on mobile and the full comfortable inset on tablet/desktop instead of page-local padding overrides.
+- **Viewport Lock:** The authenticated shell should stay locked to the viewport height. The main body region owns page scrolling, while the sidebar keeps its footer and account controls pinned within the shell instead of letting them drift to the bottom of the full document.
+- **Nav Visibility:** Sidebar navigation visibility should reflect actual capabilities, not generic route presence. Team, governance, private-registry, and admin groups appear only when the active workspace state says the user can reach them.
+- **Section Labels:** Dashboard section labels use d-label[data-anchor] for accent-bordered headers with density-responsive spacing.
+- **Collapsed Brand:** When the sidebar collapses to a rail, the header should behave like a compact rail control state, not like a cramped mini brand lockup. Prefer centering the collapse/expand control and omitting extra brand copy or stray decorative marks if they do not fit cleanly.
+- **Workspace State:** Authenticated shells should derive identity, tier, entitlements, active organization, and admin capability from one shared workspace state. Do not let sidebar navigation, footer identity, billing state, and page-level access drift through separate fetches or local fallbacks.
 - **Page Transitions:** Apply the entrance-fade class (if generated) to the main content area for smooth page transitions.
 
-## Spacing Guide
+## Theme Reference
 
-| Context | Token | Value | Usage |
-|---------|-------|-------|-------|
-| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
-| Section padding | `--d-section-py` | `7.5rem` | Vertical padding on d-section |
-| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
-| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
-| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
-| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
-| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
-| Label gap | `--d-label-mb` | `0.75rem` | Gap below d-label section headers |
-| Label indent | `--d-label-px` | `0.75rem` | Anchor indent for d-label[data-anchor] |
-| Section gap | `--d-section-gap` | `1.5rem` | Gap between adjacent d-sections |
-| Annotation gap | `--d-annotation-mt` | `0.5rem` | Top margin on d-annotation |
+**Theme:** luminarum (dark) · **Density:** comfortable
+
+Full palette tokens, spacing-guide table, and decorator reference live in `DECANTR.md` (project root). These values are identical across sections in this scaffold unless a DNA override above changes density.
 
 ---
 
 **Guard:** strict mode | DNA violations = error | Blueprint violations = warn
 
-**Key palette tokens:**
-
-| Token | Value | Role |
-|-------|-------|------|
-| `--d-cyan` | `#0AF3EB` |  |
-| `--d-pink` | `#FE4474` |  |
-| `--d-text` | `#FAFAFA` | Body text, headings, primary content |
-| `--d-amber` | `#FDA303` |  |
-| `--d-coral` | `#F58882` |  |
-| `--d-green` | `#00E0AB` |  |
-| `--d-border` | `#2E2E2E` | Dividers, card borders, separators |
-| `--d-orange` | `#FC8D0D` |  |
-| `--d-purple` | `#6500C6` |  |
-| `--d-yellow` | `#FCD021` |  |
-| `--d-crimson` | `#D80F4A` |  |
-| `--d-primary` | `#FE4474` | Brand color, key interactive, selected states |
-| `--d-surface` | `#1E1E1E` | Cards, panels, containers |
-| `--d-bg` | `#141414` | Page canvas / base layer |
-| `--d-text-muted` | `#A1A1AA` | Secondary text, placeholders, labels |
-| `--d-primary-hover` | `#FF5C8A` | Hover state for primary elements |
-| `--d-surface-raised` | `#262626` | Elevated containers, modals, popovers |
-| `--d-accent` | `#FDA303` | CTAs, links, active states, glow effects |
-
-Full token set: `src/styles/tokens.css`
-
-**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
-**Theme decorators:**
-
-| Class | Usage |
-|-------|-------|
-| `.lum-orbs` | Breathing gradient orbs behind hero/feature sections. Large radial gradients in primary/secondary/accent at 15-22% opacity, slowly pulsing and drifting. |
-| `.lum-brand` | Brand text with accent color on punctuation (e.g. 'decantr.ai' with coral period and 'i'). |
-| `.lum-glass` | Subtle glass panel (dark: rgba(255,255,255,0.03), light: rgba(0,0,0,0.02)) with soft border. No heavy blur — clean transparency. |
-| `.lum-canvas` | Particle network background (dark: #141414, light: #FAFAF9). Scattered small dots and thin connecting lines in brand colors at low opacity. Apply to page root. |
-| `.lum-divider` | Section divider: thin horizontal line with centered colored dot. Dot color matches the next section's accent. |
-| `.lum-fade-up` | Scroll-reveal animation: fade in + translate up 24px over 0.6s. |
-| `.lum-particles` | Fixed-position small dots (2-8px) in brand colors scattered across the viewport at 15% opacity with subtle pulse animation. |
-| `.lum-stat-glow` | Number badge with filled circle in accent color, contrasting text inside. |
-| `.lum-code-block` | Code block (dark: #111113, light: #F5F5F4) with colored top border (2px) matching section accent. Monospace font, syntax highlighting. |
-| `.lum-card-vibrant` | Filled card with vibrant gradient background, white text, corner accent brackets. |
-| `.lum-card-outlined` | Outlined card with colored border stroke, transparent bg, colored heading. The stroke color comes from the section's accent. |
+**Theme decorators:** 11 `luminarum-*` classes — full Class/Intent/Apply-to table in `section-user-dashboard-pack.md` (preferred) and DECANTR.md "Decorator Quick Reference". MUST apply.
 
 **Preferred:** kpi-grid
 **Compositions:** **hero:** Split hero with large logo (1/3) and content (2/3). Canvas bg with breathing gradient orbs behind. Logo floats gently.
 **pipeline:** Grid of outlined cards showing process steps. Each card has a different accent color stroke with numbered badge.
 **tool-list:** Two-column list with colored dot bullets and colored left border stripes on hover.
 **feature-grid:** Grid of vibrant filled cards with corner brackets. Each card a different brand color.
-**Spatial hints:** Density bias: none. Section padding: 120px. Card wrapping: minimal.
+**Spatial hints:** Density bias: none. Section padding: 7.5rem. Card wrapping: minimal.
 
 
 Usage: `className={css('_flex _col _gap4') + ' d-surface luminarum-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
@@ -189,18 +156,21 @@ auth, api-keys
 
 ## Pattern Reference
 
+Scaffold-tier rule: implement the core visual structure, states, and required slots first.
+Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simulated live streaming as optional unless the slot guidance or section contract makes them explicitly required.
+
 ### kpi-grid
 
 A grid of key performance indicator cards showing metrics with labels, values, and trend indicators
 
-**Visual brief:** Row of four KPI cards in a responsive grid. Each card is a compact surface with an icon in a rounded muted-background circle at top-left, a small muted label below describing the metric, the primary value in large heading2-scale bold text, and a trend badge showing percentage change — green with an up-arrow for positive, red with a down-arrow for negative. Cards have equal height and consistent internal padding (p4). The compact preset removes icons and replaces the trend badge with an inline sparkline chart placeholder. Cards use subtle border or shadow to delineate from the background.
+**Visual brief:** Row of KPI cards in a responsive grid. Each card is a compact surface with an icon in a rounded muted-background circle at top-left, a small muted label below describing the metric, the primary value in large heading2-scale bold text, and a trend badge showing percentage change — green with an up-arrow for positive, red with a down-arrow for negative. Cards have equal height and consistent internal padding. The compact preset removes icons and replaces the trend badge with an inline sparkline chart placeholder. Cards use subtle border or shadow to delineate from the background. The grid itself should sit inside a parent workspace region stack rather than pretending to be a full section.
 
 **Components:** Card, icon, Badge
 
 **Composition:**
 ```
 KPICard = Card(d-surface, padding) > [Icon(d-annotation, rounded-bg) + Label(text-muted, text-sm) + Value(heading2, mono-data) + TrendBadge(d-annotation, variant: positive|negative)]
-KPIGrid = Grid(d-section, responsive: 2/4-col) > KPICard[]
+KPIGrid = Grid(d-data, responsive: 2/4-col) > KPICard[]
 ```
 
 **Layout slots:**
@@ -209,13 +179,27 @@ KPIGrid = Grid(d-section, responsive: 2/4-col) > KPICard[]
 - `value`: Primary metric value with _heading2 styling
 - `kpi-card`: Repeated Card with icon, label, value, and trend Badge
   **Layout guidance:**
-  - grid: 4 columns desktop, 2 tablet, 1 mobile. Cards should breathe — generous padding.
+  - grid: 4 columns desktop, 2 tablet, 1 mobile. Cards should breathe, but the parent workspace layout owns any gap before or after the KPI grid.
   - animation: Counter animation on mount — numbers count from 0 to value over 500ms.
   - stat_treatment: Each KPI uses lum-stat-glow: filled circle in accent/primary color with number inside (dark text). Label below in text-muted. Sparkline trend to the right.
+  - semantic_direction: Each KPI has both a delta (numeric change) AND a semantic direction. Lower-is-better metrics (latency, error-rate, MTTR, SLO-budget-burn) should color the trend badge GREEN when value drops, RED when it rises. Higher-is-better metrics (throughput, requests/sec, uptime%, SLO-budget-remaining) get the inverse mapping. Direction-only coloring is wrong: latency dropping is a WIN, not a neutral change. Pass `lower_is_better: true` per KPI in the data shape and route the trend badge color from that flag, not from the delta sign alone.
+  - kpi_value_unit_spacing: Value + unit pair (e.g., "82ms", "31.2k", "0.42%") should use `gap: 0.25em` between number and unit — NOT the inherited container content_gap. Larger gaps make the value read as detached from its unit.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Cards may softly elevate on hover, and trend indicators may brighten or pulse subtly when values improve. |
+| transitions | Counter animations and KPI entry reveals should remain short and restrained so the grid still reads like instrumentation, not spectacle. |
+
 **Responsive:**
 - **Mobile (<640px):** Two columns (2x2 grid). Card padding reduces to p3. Value text drops to heading3 scale. Icons shrink to 20px. Sparklines in compact preset maintain aspect ratio.
 - **Tablet (640-1024px):** Two columns at default, four columns if space allows. Standard padding. Full heading2 values.
 - **Desktop (>1024px):** Four-column single row. Full layout with icons, values, and trend badges. Comfortable gap4 spacing between cards.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab moves through interactive KPI cards and any embedded actions in reading order.
+- Announcements: Metric label, value, and trend should be conveyed semantically and not rely on color alone.
+- Focus: If KPI cards are actionable, focused cards should receive a clear outline or selected treatment equivalent to hover.
 
 
 ### reputation-badge
@@ -233,15 +217,27 @@ User reputation score display with numeric score, trust level indicator, and pro
   **Layout guidance:**
   - levels: Level names: Newcomer (0-10), Contributor (11-50), Trusted (51-200), Expert (201+). Color intensifies with level.
   - badge_layout: Inline pill: star icon + score number (font-semibold) + level text (text-muted). Background: subtle primary tint. Tooltip on hover shows breakdown.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Level indicators and progress cues may brighten or animate softly on hover, but the badge should remain calm and compact. |
+| transitions | Score and level updates should cross-fade or count smoothly over 150-220ms without causing layout shift. |
+
 **Responsive:**
 - **Mobile (<640px):** Compact preset preferred. Badge renders inline at standard body text size.
 - **Tablet (640-1024px):** Standard badge with icon, score, and label visible.
 - **Desktop (>1024px):** Full badge with progress indicator. Large preset with tooltip on hover.
 
+**Accessibility:**
+- Role: `status`
+- Keyboard: If the badge exposes a tooltip or breakdown, keyboard users should be able to reveal it via focus and dismiss it via Escape.
+- Announcements: Score and trust level should be announced together rather than relying on color or iconography alone.
+- Focus: If the badge is interactive, preserve focus on the badge trigger when tooltips or detail popovers close.
+
 
 ### activity-feed
 
-Chronological list of activity events with avatars, timestamps, and action descriptions
+Chronological list of activity events with avatars, timestamps, and action descriptions. The feed owns its rows and grouping, not the outer section spacing around it.
 
 **Visual brief:** Vertical timeline of activity events grouped by date. Each date group starts with a muted, small-text date header. Individual feed items are horizontal rows: a circular avatar (with fallback initials) on the left, then a content block with the user name in medium-weight text followed by the action description in normal weight, and a relative timestamp (e.g. '2h ago') in small muted text right-aligned or below. Items are separated by subtle dividers or spacing. The compact preset drops avatars and uses small type-indicator icons instead. The detailed preset wraps each item in a bordered card with attachment previews and action buttons (reply, like).
 
@@ -250,7 +246,7 @@ Chronological list of activity events with avatars, timestamps, and action descr
 **Composition:**
 ```
 FeedItem = Row(d-data-row, hoverable) > [Avatar(fallback-initials) + Content(flex-col) > [UserName(font-medium) + ActionText] + Timestamp(mono-data, text-xs, text-muted)]
-DateGroup = Section > [DateHeader(d-annotation, text-muted) + FeedItem[]]
+DateGroup = Group(d-data) > [DateHeader(d-annotation, text-muted) + FeedItem[]]
 ActivityFeed = Container(d-data, flex-col, full-width) > [DateGroup[] + LoadMore?(d-interactive)]
 ```
 
@@ -276,36 +272,54 @@ ActivityFeed = Container(d-data, flex-col, full-width) > [DateGroup[] + LoadMore
 - **Tablet (640-1024px):** Standard layout with avatars at 36px. Timestamp stays inline right-aligned. Comfortable spacing with gap3.
 - **Desktop (>1024px):** Full layout with 40px avatars. Generous spacing. Detailed preset shows attachment previews inline. Actions row is fully horizontal.
 
+**Accessibility:**
+- Role: `feed`
+- Keyboard: Tab moves through feed items and inline actions in chronological order.; Load-more controls remain reachable after the newest visible group.
+- Announcements: New activity items should be announced without rereading the full feed.; Date group headers should remain semantically distinct from entries.
+- Focus: Do not steal focus when new events arrive. Preserve the reader's current position unless they explicitly choose to jump to the latest item.
+
 
 ### content-card-grid
 
-Responsive grid of registry content cards with type badges, namespace indicators, version info, and quick-action buttons. Used for browsing patterns, themes, blueprints, and other registry items.
+Responsive grid of registry content cards with optional thumbnail media, strong type identity, builder-friendly descriptions, and a clean source/version/date footer. Used for browsing patterns, themes, blueprints, archetypes, and shells. This pattern owns the card grid, not outer section spacing.
 
-**Visual brief:** Responsive grid of bordered cards, each representing a registry content item. Card header shows a color-coded type badge (pattern in blue, theme in purple, blueprint in green) and a namespace badge (@official, @community). Card body displays the content name as a clickable link heading, a two-line description in muted text, and a meta row with version number, download count icon, and last-updated date. Card footer contains quick-action buttons (copy JSON, use in project). Compact preset reduces card height by hiding description. Editable preset adds edit and delete actions.
+**Visual brief:** Responsive grid of bordered cards that feel editorial, calm, and app-forward. Each card can open with an optional 16:9 screenshot-style thumbnail. The title and description should dominate, with one distinct type chip acting as the only browse-card chip. The footer should feel like a clean authored source line rather than a metadata bucket: source first, then version, then date. If a showcase exists, its CTA should feel obvious and inviting. The overall impression should be curated and useful, not operator-heavy or diagnostic.
 
 **Components:** Card, CardHeader, CardBody, CardFooter, Badge, Button, icon
 
 **Composition:**
 ```
-ContentCard = Card(d-surface, hoverable) > [CardHeader > [TypeBadge(d-annotation, color-coded) + NamespaceBadge(d-annotation)] + CardBody > [Title(heading4, clickable) + Description(text-muted, line-clamp-2)] + CardFooter > [Version(mono-data) + DownloadCount + UpdatedAt(text-muted)]]
-EditableCard = ContentCard > CardFooter > [EditButton(d-interactive) + DeleteButton(d-interactive, variant: destructive)]
-ContentCardGrid = Grid(d-section, responsive: 1/2/3-col) > ContentCard[]
+ContentCard = Card(d-surface, hoverable) > [Thumbnail(optional, 16:9) + TitleRow > [Title(heading4, clickable) + TypeChip(d-annotation, color-coded)] + Description(text-muted, line-clamp-3) + Footer > [SourceLine(mono-data) + Version + PublishDate + ShowcaseAction(optional)]]
+EditableCard = ContentCard > FooterSecondary > [StatusBadge + EditButton(d-interactive) + DeleteButton(d-interactive, variant: destructive)]
+ContentCardGrid = Grid(d-data, responsive: 1/2/3-col) > ContentCard[]
 ```
 
 **Layout slots:**
-- `card-meta`: Version number, download count, and updated-at in CardFooter
-- `card-title`: Content name with _heading4 styling, clickable link to detail
-- `card-namespace`: Namespace badge (@official/@community/@org) inline with type
-- `card-type-badge`: Type badge (pattern/theme/blueprint) with color-coded variant in CardHeader
-- `card-description`: Short description with _bodysm _fgmuted, max 2 lines
+- `card-cta`: One optional showcase CTA with external-link affordance
+- `card-meta`: Friendly source line, version, and publish date
+- `card-media`: Optional full-width 16:9 thumbnail image. Only render when the content item has an uploaded registry thumbnail.
+- `card-title-row`: Title on the left with one color-coded type chip on the right
+- `card-description`: Short description with _bodysm _fgmuted, max 3 lines
   **Layout guidance:**
-  - grid_layout: Responsive grid: 3 columns desktop, 2 tablet, 1 mobile. Gap: 1rem. Equal height cards per row.
-  - card_content: Card shows: type badge (d-annotation) top-left, title (font-semibold), namespace-badge, one-line description, bottom row: version + download count + compatibility badge. Clean vertical stack with gap-2.
-  - card_treatment: Each card uses lum-card-outlined: transparent bg, colored border-left (3px) by content type — coral for patterns, amber for themes, cyan for blueprints, green for shells. Hover: border-color intensifies + translateY(-2px) + subtle shadow.
+  - grid_layout: Responsive grid: 3 columns desktop, 2 tablet, 1 mobile. Gap: 1rem. Equal-height cards per row. Avoid visual density spikes between cards with thumbnails and cards without thumbnails. Parent workspace layout owns any spacing between this grid and sibling filters, intros, or empty-state lead surfaces.
+  - card_content: Do not use browse-card trust chips. Keep only the type chip. The footer should carry the source line first, then version, then date. Showcase CTA should sit clearly below that row when present.
+  - card_treatment: Each card uses lum-card-outlined with a type-linked accent and optional media frame. Hover should feel subtle but premium: border intensifies, card lifts slightly, and shadows deepen without turning noisy.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Cards may lift slightly and intensify their border treatment on hover. Showcase CTAs should respond clearly on hover and focus without overwhelming the card. |
+| transitions | Filter and sort changes should cross-fade or stagger cards in gently over 180-260ms. Thumbnail appearance should feel polished but restrained. |
+
 **Responsive:**
-- **Mobile (<640px):** Single-column card stack. Cards take full width. Quick actions use icon-only buttons. Description limited to one line.
-- **Tablet (640-1024px):** Two-column grid. Standard card sizes with full descriptions visible.
-- **Desktop (>1024px):** Three or four column grid depending on container width. Cards show all metadata and actions.
+- **Mobile (<640px):** Single-column card stack. Cards take full width, thumbnails remain 16:9, descriptions show up to three lines, and the footer/source line wraps naturally without overflow.
+- **Tablet (640-1024px):** Two-column grid. Thumbnails, title, description, and footer all remain readable without crowded chip rows.
+- **Desktop (>1024px):** Three or four column grid depending on container width. Cards feel airy and selective, with one type chip, generous description room, and a clear showcase CTA when present.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab should move through cards and showcase CTAs in reading order.; If the whole card is clickable, expose one clear primary interaction target.
+- Announcements: Card title, source line, and showcase availability should be available to assistive technology without depending on hover.
+- Focus: Focused cards should receive an obvious treatment equivalent to hover, and nested CTAs should remain distinct from the card container.
 
 
 ### form
@@ -361,30 +375,54 @@ ActionButtons = Row(d-interactive, gap-2) > [SaveButton(variant: primary) + Canc
 
 ### json-viewer
 
-Collapsible JSON viewer with syntax highlighting, line numbers, copy-to-clipboard, and expandable/collapsible nodes. Used for inspecting registry content data on detail pages.
+Artifact viewer for registry contracts with syntax highlighting, line numbers, copy actions, summary metrics, and optional tabs for JSON, commands, and evidence.
 
-**Visual brief:** Code viewer panel with a header toolbar containing a title and a copy-to-clipboard button. The body displays syntax-highlighted JSON with color-coded keys (accent color), string values (green), numbers (blue), booleans (orange), and null (muted). Collapsible nodes show expand/collapse chevron icons next to objects and arrays, with an item count badge when collapsed (e.g., '{3}' or '[5]'). Line numbers appear in a left gutter column. The inline preset removes the header and renders JSON inline with reduced formatting. The diff preset highlights additions in green background and removals in red background.
+**Visual brief:** A premium contract viewer panel with the feel of a polished shadcn-style code surface, but expressed through Decantr treatments and decorators. The header is compact and editorial: title on the left, a small metadata strip in the middle, and copy actions on the right. Every section inside the frame shares a consistent horizontal inset so the title, tabs, cards, and footer read as one curated artifact surface instead of touching the border. Below the header, a segmented tab control can switch between JSON, Commands, and Evidence views. The JSON body uses a stronger `lum-code-block` treatment with an accent top border, subdued line-number gutter, and vivid but restrained syntax colors. The whole panel should feel like a trustworthy artifact explorer, not just a raw textarea dump.
 
 **Components:** Button, icon
 
+**Composition:**
+```
+Tabs = SegmentedControl(d-interactive) > [JsonTab + CommandsTab + EvidenceTab]
+Toolbar = Row(d-data, compact) > [Title + SummaryBadges + ActionButtons]
+JsonPane = CodeRegion(mono, syntax-highlighted) > [LineNumbers + JsonTree]
+SummaryStrip = Row(d-annotation, compact) > [Lines + Bytes + Schema + RootKeys]
+ArtifactViewer = Panel(lum-code-block, stack, padded-frame) > [Toolbar + Tabs + SummaryStrip + JsonPane + Footer]
+```
+
 **Layout slots:**
-- `footer`: Optional footer with byte size and node count
-- `header`: Toolbar row with title, expand/collapse all toggle, and copy-to-clipboard Button
-- `json-content`: Syntax-highlighted JSON with collapsible nodes. Keys in _fgprimary, strings in _fgsuccess, numbers in _fgwarning, booleans in _fgdestructive
+- `tabs`: Segmented tab strip for JSON, Commands, and Evidence views with the same horizontal inset as the toolbar
+- `footer`: Optional footer with copy confirmation, notes, or schema guidance
+- `header`: Toolbar row with artifact title, summary badges, and copy-to-clipboard Button. Maintain a shared horizontal inset so title and actions never sit flush against the frame.
+- `json-content`: Syntax-highlighted JSON with collapsible nodes. Keys in _fgprimary, strings in _fgwarning, numbers in _fgsuccess, booleans in _fgaccent
 - `line-numbers`: Gutter column with line numbers, _fgmuted _textxs _mono
+- `summary-strip`: Compact metadata row with line count, byte size, schema id, or root key count
   **Layout guidance:**
-  - syntax: Syntax highlighting using theme accent colors: strings=amber, numbers=cyan, keys=coral, booleans=green.
-  - toolbar: Header bar: title (filename or 'Preview') left, Copy button (ghost) right. Language badge if applicable.
-  - viewer_treatment: Use lum-code-block: dark bg (#111113 or var(--d-surface)) with colored top border (2px, accent). Monospace font. Line numbers in text-muted.
+  - syntax: Syntax highlighting uses theme-accented colors: keys=coral, strings=amber, numbers=cyan, booleans=green, null=muted.
+  - toolbar: Header bar: title on the left, summary metrics in the middle, and copy/secondary actions on the right. A small segmented tab strip may sit directly beneath or inside the toolbar. Keep a shared x-axis inset across toolbar, tabs, content, and footer.
+  - artifact_summary: Always surface a few useful stats before the raw JSON: line count, byte size, schema id, root key count, or command availability. Summary chips should feel tucked into the frame, not pressed against the edge.
+  - viewer_treatment: Use lum-code-block or an equivalent artifact treatment with a dark body, an accent top border, and a compact toolbar. The code panel should feel purposeful and premium, not like a default developer console. The outer frame owns the inset rhythm for every inner band.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Copy actions, tab switches, and collapsible node toggles may animate subtly over 120-180ms. Avoid flashy motion inside code surfaces. |
+| transitions | Tab and artifact-state changes should cross-fade or slide minimally so the viewer remains trustworthy and stable. |
+
 **Responsive:**
-- **Mobile (<640px):** Full-width viewer with horizontal scroll for deeply nested content. Nodes default to collapsed beyond depth 2. Copy button prominently placed.
-- **Tablet (640-1024px):** Standard viewer width. Nodes expand to depth 3 by default.
-- **Desktop (>1024px):** Full viewer with comfortable width. All nodes expandable. Horizontal space accommodates deep nesting without scroll.
+- **Mobile (<640px):** Full-width viewer with horizontal scroll for deeply nested content. Tabs collapse into a compact segmented control, but the frame still keeps a small internal gutter. Nodes default to collapsed beyond depth 2 and summary metrics wrap into two rows.
+- **Tablet (640-1024px):** Standard viewer width with a compact tab strip. Nodes expand to depth 3 by default and summary metrics stay visible without overwhelming the header.
+- **Desktop (>1024px):** Full viewer with comfortable width. Tabs, summary metrics, and copy actions all remain visible. Horizontal space accommodates deep nesting without crowding.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab moves through tabs, copy actions, and expandable nodes.; Arrow keys may navigate tree nodes when the JSON body is rendered as an interactive tree.
+- Announcements: Copy success and tab changes should be announced clearly.; Artifact summary metrics should be available before the raw JSON body.
+- Focus: Keep focus stable when switching tabs or copying values, and do not drop keyboard users into the middle of a deep JSON tree unexpectedly.
 
 
 ### api-key-row
 
-API key display row with masked key value, name, scopes, creation date, last-used timestamp, copy-to-clipboard, and revoke actions.
+API key management surface with responsive key rows/cards, masked key metadata, create-key workflow, copy/revoke actions, and a save-once creation banner.
 
 **Visual brief:** Single horizontal row with a key icon on the far left, followed by the key name in medium-weight text and a masked key value (e.g. 'sk-****...3f2a') in monospace below it. Scope badges (read, write) appear as small colored pills in the middle. Created and last-used dates render in muted small text. Copy and revoke action buttons sit on the far right, with revoke styled as a destructive variant. Rows are separated by bottom borders. The card preset stacks everything vertically inside a bordered card for mobile use.
 
@@ -396,6 +434,8 @@ Actions = Row(d-interactive) > [CopyButton(variant: ghost) + RevokeButton(varian
 KeyInfo = Stack(flex-col) > [KeyName(font-medium) + MaskedKey(mono-data, text-muted)]
 ApiKeyRow = Row(d-data-row, hoverable) > [KeyIcon + KeyInfo + ScopeBadges + DateInfo + Actions]
 ScopeBadges = Row(gap-2) > Badge(d-annotation)[]
+CreationBanner = AlertCard(d-surface, success-tint) > [BannerTitle + FullKey(mono-data) + CopyAction + DismissAction]
+ApiKeyWorkspace = Stack > [WorkspaceHeader + CreatePanel? + CreationBanner? + ApiKeyRow[]]
 ```
 
 **Layout slots:**
@@ -406,41 +446,74 @@ ScopeBadges = Row(gap-2) > Badge(d-annotation)[]
 - `key-info`: Key name (_textsm _fontmedium) and masked key value (_textxs _mono _fgmuted) stacked vertically
   **Layout guidance:**
   - reveal: Click masked value to reveal for 5 seconds, then re-mask. Copy button copies full key.
-  - row_layout: Key icon (16px, muted) + key name (font-semibold) + masked value (mono-data, ••••••••) + copy button (ghost) + delete button (ghost, danger on hover). Last used timestamp on far right.
-  - create_form: Inline form at top: text input for key name + Create button (primary). Appears on 'New API Key' click.
+  - row_layout: Key icon (16px, muted) + key name + masked value + scope badges + date metadata + actions. On narrow widths, collapse into stacked cards before the metadata starts crowding.
+  - create_form: Inline form at top: text input for key name + scope controls + Create button (primary). Appears on 'New API Key' click.
+  - creation_banner: After key creation, surface a prominent one-time reveal banner with copy action and dismissal control. This banner should feel like a temporary alert card, not just a paragraph.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Copy and revoke controls may brighten or lift subtly on hover and focus, but the row itself should remain operational and stable. |
+| transitions | Reveal, creation-banner, and revoked-state changes should animate softly over 150-220ms without shifting the table rhythm. |
+
 **Responsive:**
-- **Mobile (<640px):** Switches to card preset — stacked vertical layout with full-width copy/revoke buttons. Scope badges wrap to a second line. Dates appear below key info.
-- **Tablet (640-1024px):** Standard row layout maintained. Action buttons use icon-only mode to save horizontal space.
-- **Desktop (>1024px):** Full row layout with all elements visible inline. Generous horizontal spacing between key info, scopes, dates, and actions.
+- **Mobile (<640px):** Prefer the card preset — stacked vertical layout with wrapped scope badges and actions that sit beneath the key metadata instead of forcing a rigid table.
+- **Tablet (640-1024px):** Standard row or card-list layout is acceptable, but metadata should wrap before the key row overflows.
+- **Desktop (>1024px):** Full row layout with clear separation between key info, scopes, dates, and actions.
+
+**Accessibility:**
+- Role: `row`
+- Keyboard: Tab moves through reveal, copy, revoke, and scope controls in row order.; Keyboard users should be able to reveal and copy keys without relying on hover-only UI.
+- Announcements: One-time key creation and reveal states should be announced clearly.; Revocation outcomes should be announced explicitly.
+- Focus: Keep focus on the row or invoked action after copy or reveal events so the user does not lose context.
 
 
 ### account-settings
 
-Account management forms with presets for profile, security, preferences, and danger zone (account deletion).
+Account management workspace with responsive settings navigation, grouped forms, and stable save/action zones for profile, security, preferences, and danger-zone flows.
 
-**Visual brief:** Settings page with vertical navigation tabs on the left (Profile, Security, Notifications, Danger Zone) and form content on the right. Active tab highlighted with primary left-border. Each settings section is a d-surface card with grouped form fields, section heading, and Save button at bottom-right.
+**Visual brief:** Settings page with vertical navigation tabs on the left (Profile, Security, Notifications, Danger Zone) and form content on the right. Active tab highlighted with an accent border. On small screens, the nav becomes a horizontal scrollable strip while the forms keep the same comfortable shell spacing. Each settings section is a d-surface card with grouped form fields, section heading, and a stable save action zone.
 
 **Components:** Button, Avatar, Badge, icon
 
 **Composition:**
 ```
-SettingsNav = TabList(d-control) > Tab(active?: accent-border)[]
-AccountSettings = Container(d-section, flex-col) > [SettingsNav(vertical-tabs, d-interactive) + SettingsContent]
-SettingsContent = Panel(d-surface, flex-col, gap-8) > [AvatarUpload? + FormFields + SaveButton(d-interactive, variant: primary)]
+SettingsNav = SettingsNavPattern(vertical-tabs, responsive)
+AccountSettings = Container(d-section, split) > [SettingsNav + SettingsContent]
+SettingsContent = Panel(d-surface, flex-col, gap-8) > [SectionHeading + AvatarUpload? + FormFields + ActionZone]
 ```
 
 **Layout slots:**
-- `form`: Name, email, bio inputs with inline edit
-- `save`: Save changes button
+- `nav`: Responsive settings navigation using vertical tabs on larger widths and horizontal tabs on small screens
+- `form`: Name, email, bio inputs grouped in a content panel
+- `save`: Save changes button in a stable action zone
 - `avatar`: Avatar with upload/change button
   **Layout guidance:**
-  - spacing: Nav items have consistent padding. Active item stands out but doesn't shift layout.
+  - spacing: Nav items have consistent padding. Active item stands out but doesn't shift layout. Content cards should share the same shell inset rhythm as the rest of the dashboard.
   - active_state: Active nav/tab item should have a visible indicator: accent-colored left border (for vertical nav) or bottom border (for horizontal tabs), plus accent text color.
-  - nav_position: For settings pages, vertical tab nav on the left. Content area scrolls independently.
+  - nav_position: For settings pages, use a vertical tab nav on the left at larger widths. On small screens, switch to a horizontal scrollable tab strip or segmented control without changing the content spacing rhythm.
+  - cta_treatment: Primary save/update actions should sit in a stable action zone and feel distinct from secondary utility buttons such as avatar change, sign out, or cancel.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Active nav indicators, save confirmations, and destructive warning states may animate softly over 150-200ms. |
+| transitions | Switching between settings sections should cross-fade or slide minimally so the workspace still feels stable and operational. |
+| ambient | Avoid decorative ambient motion in settings surfaces. Keep movement functional and low-noise. |
+
+**Responsive:**
+- **Mobile (<640px):** Collapse the workspace to a single column with a horizontal scrollable tab strip or segmented control above the active section. Keep the content max-width comfortable and place save or destructive actions close to the relevant field group.
+- **Tablet (640-1024px):** Allow either a narrow left settings rail or a horizontal tab strip depending on width. Preserve stable action zones and avoid overly wide form rows.
+- **Desktop (>1024px):** Use a clear split between navigation and content with enough gap to keep settings work readable. Do not let profile or preferences forms stretch edge-to-edge.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab moves through settings navigation, fields, and actions in source order.; Arrow keys may move between tab-style navigation items when rendered as a tab list.; Enter or Space activates save, cancel, and destructive confirmation actions.
+- Announcements: Announce settings section changes such as 'Security settings selected'.; Announce save success, validation errors, and destructive confirmations clearly.
+- Focus: When changing settings sections, move focus to the section heading or first field. Keep destructive actions visually separated and reachable without trapping focus.
+
 
 ### tier-upgrade-card
 
-Pricing tier card with plan name, price, feature list, and upgrade CTA button. Used in billing portal and landing page pricing sections.
+Pricing tier card with plan name, price, feature list, upgrade CTA, and current-plan/recommended emphasis. Used in billing portal and landing page pricing sections.
 
 **Visual brief:** Pricing card for upgrade flows with a header showing the plan name and an optional 'Current Plan' or 'Recommended' badge. Price displayed prominently with monthly billing amount. A short plan description below the price. A feature checklist with checkmark icons lists included features. The CTA button reads 'Upgrade' (or 'Current Plan' in disabled state for the current plan). The highlighted preset adds a primary-color border and a 'Most Popular' ribbon. The horizontal preset arranges plans side by side in a comparison table layout instead of separate cards.
 
@@ -448,7 +521,7 @@ Pricing tier card with plan name, price, feature list, and upgrade CTA button. U
 
 **Composition:**
 ```
-CTAButton = Button(d-interactive, full-width, variant: highlighted ? primary : ghost)
+CTAButton = Button(d-interactive, full-width, variant: highlighted ? primary : secondary-strong)
 FeatureList = List > FeatureItem(d-data-row) > [CheckIcon(color: success) + FeatureText][]
 HighlightedCard = TierUpgradeCard(border-primary, accent-bar-top) > PopularBadge(d-annotation)
 TierUpgradeCard = Card(d-surface, bordered) > [CardHeader > [PlanName(heading4) + PopularBadge?(d-annotation)] + Price(mono-data, heading2) + Description(text-muted) + FeatureList + CTAButton]
@@ -461,17 +534,30 @@ TierUpgradeCard = Card(d-surface, bordered) > [CardHeader > [PlanName(heading4) 
 - `features`: Checklist of included features, each with check icon
 - `description`: One-line plan description with _bodysm _fgmuted
   **Layout guidance:**
-  - comparison: Feature comparison as checklist — checkmarks for included, dashes for excluded. Premium features in accent color.
-  - card_treatment: Current plan highlighted with primary border + 'Current' badge. Upgrade options show price, feature list, and Upgrade CTA (primary).
+  - comparison: Feature comparison as checklist — checkmarks for included, dashes for excluded. Premium features in accent color. Use staged or auto-fit columns, never a rigid four-up grid.
+  - cta_treatment: The upgrade/manage action should always read as a decisive billing action. Current-plan state should still preserve a stable button/action slot so the card rhythm does not collapse.
+  - card_treatment: Current plan highlighted with a distinct active treatment and a clear 'Current' badge. Recommended upgrade options should feel stronger than generic cards and should not rely on generic ghost-button treatment for their main CTA.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Highlighted or recommended plans may use subtle border and shadow emphasis on hover, while current-plan states remain calm and stable. |
+| transitions | Billing-state and current-plan changes should animate softly over 150-220ms without causing the comparison grid to shift. |
+
 **Responsive:**
-- **Mobile (<640px):** Cards stack vertically. CTA buttons full-width. Feature lists fully visible.
-- **Tablet (640-1024px):** Two or three column card comparison. Standard card sizes.
-- **Desktop (>1024px):** Three-column comparison layout. Highlighted plan slightly elevated. Generous feature list spacing.
+- **Mobile (<640px):** Cards stack vertically with full-width CTAs and intact feature lists.
+- **Tablet (640-1024px):** Two-column or auto-fit comparison. Cards should never shrink below comfortable reading width.
+- **Desktop (>1024px):** Auto-fit comparison layout with generous feature spacing. Avoid hardcoded column counts when more plans are present.
+
+**Accessibility:**
+- Role: `article`
+- Keyboard: Tab moves through the plan CTA and any supporting links in card order.
+- Announcements: Current plan and recommended-plan states should be announced semantically rather than through color alone.; Feature availability should be conveyed in text, not only in checkmark icons.
+- Focus: Keep focus on the active plan CTA or selected comparison state when billing controls update.
 
 
 ### team-member-row
 
-Team member display row with avatar, name, email, role badge, join date, and management actions (change role, remove).
+Team collaboration surface row with member identity, role controls, join date, responsive management actions, and an invite flow that can collapse cleanly on narrower widths.
 
 **Visual brief:** Horizontal row displaying a team member with a circular avatar on the left, followed by name (medium weight) and email (muted, smaller text) stacked vertically, a role badge (Owner, Admin, Member) color-coded in the middle, join date in muted text, and action controls on the right (role change dropdown, remove button). Rows are separated by bottom borders. The card preset wraps each member in a bordered card with a vertical layout. The invite preset shows a pending invite row with email, role, and resend/cancel actions.
 
@@ -482,6 +568,7 @@ Team member display row with avatar, name, email, role badge, join date, and man
 Actions = Row(d-interactive) > [RoleSelect(d-control) + RemoveButton(variant: destructive, icon-only)]
 MemberInfo = Stack(flex-col) > [Name(font-medium) + Email(text-muted, text-sm)]
 TeamMemberRow = Row(d-data-row, hoverable) > [Avatar + MemberInfo + RoleBadge(d-annotation) + JoinDate(text-muted) + Actions]
+InviteMemberForm = ResponsiveRow > [InviteeField + RoleSelect + InviteButton]
 ```
 
 **Layout slots:**
@@ -491,12 +578,67 @@ TeamMemberRow = Row(d-data-row, hoverable) > [Avatar + MemberInfo + RoleBadge(d-
 - `actions`: Role Select dropdown and Remove Button
 - `identity`: Name (_textsm _fontmedium) and email (_textxs _fgmuted) stacked
   **Layout guidance:**
-  - row_layout: Avatar (32px circle) + name (font-semibold) + email (text-muted) + role badge (d-annotation: owner/admin/member) + actions dropdown (ghost). Hover: subtle bg.
-  - invite_form: Inline invite form: email input + role dropdown + Invite button. Appears above member list.
+  - row_layout: Avatar (32px circle) + identity block + role/date/actions trail. On narrow widths, let the trail wrap below the identity instead of squeezing the email or control cluster.
+  - invite_form: Invite form uses a responsive row: email input + role dropdown + Invite button. Collapse to a stacked form on small screens.
+  - cta_treatment: Supporting workspace navigation such as governance links should appear as contextual action bands or compact cards, not as detached button rows.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Role pills and row actions may animate subtly on hover and focus, but the row should still read like calm administrative data. |
+| transitions | Invite, resend, and member-update states should fade or expand gently over 150-220ms without disrupting the list rhythm. |
+
 **Responsive:**
-- **Mobile (<640px):** Card preset used — members as stacked cards. Avatar, name, role badge, and actions visible. Join date hidden. Actions as icon buttons.
-- **Tablet (640-1024px):** Standard row layout. All fields visible. Actions as text buttons.
-- **Desktop (>1024px):** Full row with generous spacing. All information and actions visible inline.
+- **Mobile (<640px):** Use a stacked card or wrapped row composition. Avatar and identity stay together, role/date/actions drop beneath, and invite/member controls stack instead of compressing.
+- **Tablet (640-1024px):** Standard row layout with wrapped secondary metadata when needed. Actions can remain inline, but should break onto a second line before overflowing.
+- **Desktop (>1024px):** Full row with generous spacing. All information and actions visible inline without relying on a single non-wrapping strip.
+
+**Accessibility:**
+- Role: `row`
+- Keyboard: Tab moves through role controls, invite actions, and remove controls in row order.
+- Announcements: Role changes, invite sends, and removals should be announced clearly.; Pending-invite state should be distinguishable from active-member state semantically, not just visually.
+- Focus: After member actions, preserve focus on the affected row or the next logical row-level action.
+
+
+### search-filter-bar
+
+Search-first public registry filter bar with type tabs, a source filter, sort controls, and result count. Designed for builders browsing Decantr content, not for exposing internal registry-intelligence taxonomy.
+
+**Visual brief:** Public registry filter bar with one clear purpose: help builders find the right Decantr starting point quickly. Search is the hero. Type tabs are distinct and color-coded. Source filtering is understandable to humans: Official, Community, Organizations. Sort remains available but visually secondary. The bar should feel premium, breathable, and unambiguous, not like an operator console.
+
+**Components:** Input, Select, Button, Badge, Chip, icon
+
+**Composition:**
+```
+MobileFilters = Surface(d-surface) > [SourceFilter + SortSelect]
+SearchFilterBar = Stack > [SearchRow > SearchInput(d-control, icon: search) + TypeRow > TypeTabs(d-interactive)[] + MetaRow > [ResultCount + SourceFilter + SortSelect(d-control)]]
+```
+
+**Layout slots:**
+- `meta-row`: Result count on the left, source filter and sort on the right
+- `type-row`: Scrollable row of type tabs (All, Patterns, Themes, Blueprints, Archetypes, Shells)
+- `search-row`: Search input with icon prefix
+- `mobile-filters`: Collapsible mobile filter surface for source and sort
+  **Layout guidance:**
+  - filter_tabs: Type tabs should use distinct type-linked treatments so all-type browsing is easy to parse at a glance. The patterns icon should read like a puzzle-piece rather than a generic component glyph.
+  - search_input: Full-width search input with magnifying glass icon. Placeholder should explicitly mention Decantr content types and app-starting intent.
+  - sort_dropdown: Right-aligned sort with a restrained visual footprint. Keep sort available, but subordinate to search and content-type/source selection.
+  - source_filter: Use human-facing source language: Official, Community, Organizations. Do not expose authored/benchmark/hybrid intelligence taxonomy here.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Tabs, chips, and filter controls may animate lightly on hover and selection, but search remains the dominant visual action. |
+| transitions | Filter-surface expansion, chip removal, and result-state updates should animate over 150-240ms without making the bar feel operator-heavy. |
+
+**Responsive:**
+- **Mobile (<640px):** Search input full-width on its own row. Type tabs become a horizontal scrollable strip. Source and sort move into a collapsible filter surface instead of squeezing the main bar.
+- **Tablet (640-1024px):** Search and filters fit comfortably in stacked rows. Type tabs remain visible. Source filter can stay inline if space allows.
+- **Desktop (>1024px):** Search, type tabs, source filter, and sort remain visible without feeling like one dense toolbar. Result count stays readable but subdued.
+
+**Accessibility:**
+- Role: `search`
+- Keyboard: Tab moves from search input to tabs to source and sort controls in logical order.; Arrow keys may move between tab-style filters when implemented as a tab list.
+- Announcements: Active filters, source selection, and sort changes should be announced clearly.; Result count updates should remain available without depending on purely visual placement.
+- Focus: Opening mobile filter surfaces should move focus into the filter panel and return it to the invoking control on close.
 
 
 ---
@@ -530,3 +672,11 @@ Layout: tier-upgrade-card → kpi-grid
 ### team (/dashboard/team)
 
 Layout: kpi-grid → team-member-row
+
+### governance (/dashboard/governance)
+
+Layout: kpi-grid → activity-feed → content-card-grid
+
+### private-registry (/dashboard/private-registry)
+
+Layout: search-filter-bar → content-card-grid

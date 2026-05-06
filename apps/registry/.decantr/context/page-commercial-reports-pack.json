@@ -2,7 +2,7 @@
   "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
   "packVersion": "1.0.0",
   "packType": "page",
-  "objective": "Implement the overview route using the compiled page contract.",
+  "objective": "Implement the commercial-reports route using the compiled page contract.",
   "target": {
     "platform": "web",
     "framework": "nextjs",
@@ -13,11 +13,10 @@
   "scope": {
     "appId": "app",
     "pageIds": [
-      "overview"
+      "commercial-reports"
     ],
     "patternIds": [
       "kpi-grid",
-      "reputation-badge",
       "activity-feed"
     ]
   },
@@ -26,18 +25,16 @@
     "Treat the listed page patterns as the primary structure for this route."
   ],
   "allowedVocabulary": [
-    "overview",
+    "commercial-reports",
     "sidebar-main",
-    "user-dashboard",
-    "primary",
+    "admin-moderation",
+    "auxiliary",
     "luminarum",
     "dark",
     "auth",
-    "api-keys",
+    "admin",
     "kpi-grid",
     "grid",
-    "reputation-badge",
-    "inline",
     "activity-feed",
     "column"
   ],
@@ -70,14 +67,14 @@
     ]
   },
   "data": {
-    "pageId": "overview",
-    "path": "/dashboard",
+    "pageId": "commercial-reports",
+    "path": "/admin/reports",
     "shell": "sidebar-main",
-    "sectionId": "user-dashboard",
-    "sectionRole": "primary",
+    "sectionId": "admin-moderation",
+    "sectionRole": "auxiliary",
     "features": [
       "auth",
-      "api-keys"
+      "admin"
     ],
     "surface": "_flex _col _gap4",
     "theme": {
@@ -103,16 +100,6 @@
         ]
       },
       {
-        "id": "reputation-badge",
-        "alias": "reputation-badge",
-        "preset": "standard",
-        "layout": "inline",
-        "presetDescription": "Inline reputation display with score number and trust level icon. Color-coded by trust threshold.",
-        "interactions": [
-          "animate-on-mount"
-        ]
-      },
-      {
         "id": "activity-feed",
         "alias": "activity-feed",
         "preset": "standard",
@@ -128,5 +115,5 @@
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the overview route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=overview | patterns=kpi-grid, reputation-badge, activity-feed\n\n## Page Contract\n- Page: overview\n- Path: /dashboard\n- Shell: sidebar-main\n- Section: user-dashboard (primary)\n- Theme: luminarum (dark)\n- Features: auth, api-keys\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n- reputation-badge -> reputation-badge [inline | standard]\n  > Inline reputation display with score number and trust level icon. Color-coded by trust threshold.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the commercial-reports route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=commercial-reports | patterns=kpi-grid, activity-feed\n\n## Page Contract\n- Page: commercial-reports\n- Path: /admin/reports\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

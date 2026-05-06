@@ -1,12 +1,12 @@
 # Page Pack
 
-**Objective:** Implement the content route using the compiled page contract.
+**Objective:** Implement the private-registry route using the compiled page contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=content | patterns=content-card-grid
+**Scope:** pages=private-registry | patterns=search-filter-bar, content-card-grid
 
 ## Page Contract
-- Page: content
-- Path: /dashboard/content
+- Page: private-registry
+- Path: /dashboard/private-registry
 - Shell: sidebar-main
 - Section: user-dashboard (primary)
 - Theme: luminarum (dark)
@@ -14,6 +14,13 @@
 - Surface: _flex _col _gap4
 
 ## Page Patterns
+- search-filter-bar -> search-filter-bar [stack | standard]
+  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] inline-edit
+  - [ ] animate-on-mount
+  - [ ] keyboard-navigation
+  - [ ] hover-reveal
 - content-card-grid -> content-card-grid [grid | standard]
   > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**

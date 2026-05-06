@@ -61,8 +61,8 @@ For local development and showcases, wire all zone transitions with mock data:
 | Section | Role | Shell | Pages | Features |
 |---------|------|-------|-------|----------|
 | registry-browser | primary | top-nav-main | homepage, browse, browse-type, detail, profile | search, pagination |
-| user-dashboard | primary | sidebar-main | overview, content, content-new, api-keys, settings, billing, team | auth, api-keys |
-| admin-moderation | auxiliary | sidebar-main | moderation-queue, moderation-detail | auth, admin |
+| user-dashboard | primary | sidebar-main | overview, content, content-new, api-keys, settings, billing, team, governance, private-registry | auth, api-keys |
+| admin-moderation | auxiliary | sidebar-main | moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail | auth, admin |
 | auth-flow | gateway | centered | login, register, forgot-password | auth |
 
 ## Route Map
@@ -75,7 +75,12 @@ For local development and showcases, wire all zone transitions with mock data:
 | /dashboard | user-dashboard | overview |
 | /browse/:type | registry-browser | browse-type |
 | /dashboard/team | user-dashboard | team |
+| /dashboard/governance | user-dashboard | governance |
+| /dashboard/private-registry | user-dashboard | private-registry |
 | /admin/moderation | admin-moderation | moderation-queue |
+| /admin/reports | admin-moderation | commercial-reports |
+| /admin/organizations | admin-moderation | organizations |
+| /admin/organizations/:slug | admin-moderation | organization-detail |
 | /dashboard/billing | user-dashboard | billing |
 | /dashboard/content | user-dashboard | content |
 | /profile/:username | registry-browser | profile |
@@ -98,12 +103,13 @@ These patterns appear on multiple pages. Consider creating shared components:
 
 | Pattern | Used by |
 |---------|---------|
-| search-filter-bar | registry-browser/homepage, registry-browser/browse, registry-browser/browse-type, admin-moderation/moderation-queue |
-| content-card-grid | registry-browser/homepage, registry-browser/browse, registry-browser/browse-type, registry-browser/profile, user-dashboard/content |
-| kpi-grid | registry-browser/homepage, user-dashboard/overview, user-dashboard/billing, user-dashboard/team |
-| content-detail-hero | registry-browser/detail, admin-moderation/moderation-detail |
+| blueprint-launch-hero | registry-browser/homepage, registry-browser/detail |
+| search-filter-bar | registry-browser/homepage, registry-browser/browse, registry-browser/browse-type, user-dashboard/private-registry, admin-moderation/moderation-queue, admin-moderation/organizations |
+| content-card-grid | registry-browser/browse, registry-browser/browse-type, registry-browser/profile, user-dashboard/content, user-dashboard/governance, user-dashboard/private-registry, admin-moderation/organizations, admin-moderation/organization-detail |
 | json-viewer | registry-browser/detail, user-dashboard/content-new, admin-moderation/moderation-detail |
-| activity-feed | registry-browser/profile, user-dashboard/overview |
+| detail-header | registry-browser/profile, admin-moderation/organization-detail |
+| activity-feed | registry-browser/profile, user-dashboard/overview, user-dashboard/governance, admin-moderation/commercial-reports, admin-moderation/organizations, admin-moderation/organization-detail |
+| kpi-grid | user-dashboard/overview, user-dashboard/billing, user-dashboard/team, user-dashboard/governance, admin-moderation/commercial-reports, admin-moderation/organization-detail |
 | moderation-queue-item | admin-moderation/moderation-queue, admin-moderation/moderation-detail |
 | auth-form | auth-flow/login, auth-flow/register, auth-flow/forgot-password |
 
@@ -115,4 +121,10 @@ These patterns appear on multiple pages. Consider creating shared components:
 ## Navigation
 
 - Command palette: enabled
+- Requirement: implement a real keyboard-triggered command palette, not just placeholder UI text.
 - Hotkeys: 3 configured
+  - `g b`: Browse Registry — /browse
+  - `g d`: Dashboard — /dashboard
+  - `g s`: Settings — /dashboard/settings
+- Requirement: implement these bindings as real keyboard shortcuts, not as decorative text.
+- Presentation rule: do not append hotkey text to persistent nav labels, breadcrumbs, or page titles unless the shell or route contract explicitly requests visible shortcut hints.

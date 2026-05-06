@@ -1,26 +1,26 @@
 # Page Pack
 
-**Objective:** Implement the profile route using the compiled page contract.
+**Objective:** Implement the organizations route using the compiled page contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=profile | patterns=detail-header, content-card-grid, activity-feed
+**Scope:** pages=organizations | patterns=search-filter-bar, content-card-grid, activity-feed
 
 ## Page Contract
-- Page: profile
-- Path: /profile/:username
-- Shell: top-nav-main
-- Section: registry-browser (primary)
+- Page: organizations
+- Path: /admin/organizations
+- Shell: sidebar-main
+- Section: admin-moderation (auxiliary)
 - Theme: luminarum (dark)
-- Features: search, pagination
+- Features: auth, admin
 - Surface: _flex _col _gap4
 
 ## Page Patterns
-- detail-header -> detail-header [row | standard]
-  > Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.
+- search-filter-bar -> search-filter-bar [stack | standard]
+  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
-  - [ ] hover-reveal
-  - [ ] keyboard-navigation
+  - [ ] inline-edit
   - [ ] animate-on-mount
-  - [ ] click-select
+  - [ ] keyboard-navigation
+  - [ ] hover-reveal
 - content-card-grid -> content-card-grid [grid | standard]
   > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**

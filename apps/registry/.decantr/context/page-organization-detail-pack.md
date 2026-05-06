@@ -1,16 +1,16 @@
 # Page Pack
 
-**Objective:** Implement the profile route using the compiled page contract.
+**Objective:** Implement the organization-detail route using the compiled page contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=profile | patterns=detail-header, content-card-grid, activity-feed
+**Scope:** pages=organization-detail | patterns=detail-header, kpi-grid, activity-feed, content-card-grid
 
 ## Page Contract
-- Page: profile
-- Path: /profile/:username
-- Shell: top-nav-main
-- Section: registry-browser (primary)
+- Page: organization-detail
+- Path: /admin/organizations/:slug
+- Shell: sidebar-main
+- Section: admin-moderation (auxiliary)
 - Theme: luminarum (dark)
-- Features: search, pagination
+- Features: auth, admin
 - Surface: _flex _col _gap4
 
 ## Page Patterns
@@ -21,14 +21,15 @@
   - [ ] keyboard-navigation
   - [ ] animate-on-mount
   - [ ] click-select
-- content-card-grid -> content-card-grid [grid | standard]
-  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.
+- kpi-grid -> kpi-grid [grid | dashboard]
+  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
   - [ ] lift-hover
-  - [ ] stagger-children
-  - [ ] animate-on-mount
   - [ ] click-select
-  - [ ] scroll-reveal
+  - [ ] animate-on-mount
+  - [ ] stagger-children
+  - [ ] real-time-updates
+  - [ ] hover-tooltip
 - activity-feed -> activity-feed [column | standard]
   > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.
   **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
@@ -36,6 +37,14 @@
   - [ ] stagger-children
   - [ ] real-time-updates
   - [ ] hover-reveal
+  - [ ] scroll-reveal
+- content-card-grid -> content-card-grid [grid | standard]
+  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] lift-hover
+  - [ ] stagger-children
+  - [ ] animate-on-mount
+  - [ ] click-select
   - [ ] scroll-reveal
 
 ## Shared Contract

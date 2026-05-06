@@ -6,42 +6,27 @@
 
 ## Page Contract
 - Page: content-new
-- Path: /content-new
+- Path: /dashboard/content/new
 - Shell: sidebar-main
 - Section: user-dashboard (primary)
 - Theme: luminarum (dark)
 - Features: auth, api-keys
-- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1
+- Surface: _flex _col _gap4
 
 ## Page Patterns
 - form -> form [stack | settings]
-- json-viewer -> json-viewer [stack | collapsible]
+  > Vertical stack of sections, each with a title/description on the left and form fields on the right (2-column layout per section). Save button at bottom.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] animate-on-mount
+  - [ ] inline-edit
+  - [ ] keyboard-navigation
+- json-viewer -> json-viewer [stack | artifact]
+  > Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] hover-reveal
+  - [ ] click-select
+  - [ ] animate-on-mount
+  - [ ] keyboard-navigation
 
-## Required Setup
-- Keep the compiled route and shell contract stable for this page.
-- Treat the listed page patterns as the primary structure for this route.
-
-## Allowed Vocabulary
-- content-new
-- sidebar-main
-- user-dashboard
-- primary
-- luminarum
-- dark
-- auth
-- api-keys
-- form
-- stack
-- json-viewer
-
-## Success Checks
-- The page keeps the compiled route, shell, and section contract intact. [error]
-- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]
-- Any declared wiring signals remain coherent with the rendered page structure. [warn]
-
-## Token Budget
-- Target: 1400
-- Max: 2200
-- Prefer route summaries over repeated prose.
-- Use compact vocabulary lists instead of large reference tables.
-- Include only task-relevant examples and checks.
+## Shared Contract
+Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.
