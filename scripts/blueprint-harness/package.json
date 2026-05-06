@@ -9,5 +9,8 @@
   },
   "dependencies": {
     "puppeteer-core": "^24.0.0"
+  },
+  "overrides": {
+    "ip-address": "10.2.0"
   }
 }
