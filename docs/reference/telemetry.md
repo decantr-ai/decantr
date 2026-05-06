@@ -141,6 +141,8 @@ POSTHOG_PERSONAL_API_KEY=
 
 The response includes total/customer/internal/failure events, source mix, actor mix, active identities, previous-period summaries, period-over-period trends, product signal buckets, operating alerts, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
 
+The companion endpoint `GET /v1/admin/telemetry/attribution` groups live PostHog usage by `decantr_org_id`, `decantr_project_id`, `decantr_source`, and `decantr_actor_type`, then enriches known organization ids from Supabase. The registry usage page shows this as the org/project attribution table, and commercial reports pull the 30-day customer slice. This is the first enterprise reporting lane for answering which orgs, projects, and sources are driving real Decantr adoption without storing raw customer application data.
+
 Signal buckets group raw telemetry events into operator-level adoption lanes:
 
 - `activation`: signups and API key creation.

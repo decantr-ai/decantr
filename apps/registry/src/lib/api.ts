@@ -425,6 +425,44 @@ export interface AdminTelemetryUsageResponse {
   };
 }
 
+export interface AdminTelemetryAttributionOrganization {
+  id: string;
+  is_internal: boolean;
+  is_test: boolean;
+  name: string;
+  slug: string;
+  tier: 'team' | 'enterprise';
+}
+
+export interface AdminTelemetryAttributionRow {
+  actor_type: string;
+  events: number;
+  last_seen: string | null;
+  org_id: string | null;
+  organization: AdminTelemetryAttributionOrganization | null;
+  project_id: string | null;
+  source: string;
+}
+
+export interface AdminTelemetryAttributionResponse {
+  actor_type: TelemetryActorType | null;
+  generated_at: string;
+  range_days: number;
+  rows: AdminTelemetryAttributionRow[];
+  source: TelemetryUsageSource | null;
+  summary: {
+    active_orgs: number;
+    active_projects: number;
+    attributed_events: number;
+    result_limit: number;
+    returned_events: number;
+    returned_rows: number;
+    scanned_rows: number;
+    total_events: number;
+    unattributed_events: number;
+  };
+}
+
 export interface AdminTelemetryUsageSnapshot {
   active_anonymous_ids: number;
   active_identities: number;
@@ -928,6 +966,27 @@ export const api = {
     if (params?.source) query.source = params.source;
     const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
     return adminFetch<AdminTelemetryUsageResponse>(`/admin/telemetry/usage${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  getAdminTelemetryAttribution: (
+    token: string,
+    adminKey: string,
+    params?: {
+      actor_type?: TelemetryActorType;
+      days?: number;
+      limit?: number;
+      source?: TelemetryUsageSource;
+    },
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.actor_type) query.actor_type = params.actor_type;
+    if (params?.days != null) query.days = String(params.days);
+    if (params?.limit != null) query.limit = String(params.limit);
+    if (params?.source) query.source = params.source;
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<AdminTelemetryAttributionResponse>(`/admin/telemetry/attribution${qs}`, {
       token,
       adminKey,
     });

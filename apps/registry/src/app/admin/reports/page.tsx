@@ -1,5 +1,6 @@
 import {
   api,
+  type AdminTelemetryAttributionRow,
   type AdminTelemetryOperatingAlert,
   type AdminTelemetryUsageTrend,
 } from '@/lib/api';
@@ -31,6 +32,13 @@ function alertStatus(level: AdminTelemetryOperatingAlert['level']) {
   return level;
 }
 
+function attributionLabel(row: AdminTelemetryAttributionRow) {
+  if (row.organization) return `${row.organization.name} (${row.organization.slug})`;
+  if (row.org_id) return `Org ${row.org_id}`;
+  if (row.project_id) return 'Project-only attribution';
+  return 'Unattributed';
+}
+
 export default async function AdminReportsPage() {
   const { token, adminKey } = await requireAdminRequestContext();
 
@@ -40,13 +48,20 @@ export default async function AdminReportsPage() {
   let telemetryUsageError: string | null = null;
   let customerSnapshots = null;
   let snapshotError: string | null = null;
-  const [summaryResult, customerUsageResult, customerSnapshotsResult] = await Promise.allSettled([
+  let customerAttribution = null;
+  let attributionError: string | null = null;
+  const [summaryResult, customerUsageResult, customerSnapshotsResult, attributionResult] = await Promise.allSettled([
     api.getCommercialSummary(token, adminKey),
     api.getAdminTelemetryUsage(token, adminKey, {
       actor_type: 'customer',
       days: 30,
     }),
     api.getAdminTelemetrySnapshots(token, adminKey, {
+      actor_type: 'customer',
+      days: 30,
+      limit: 8,
+    }),
+    api.getAdminTelemetryAttribution(token, adminKey, {
       actor_type: 'customer',
       days: 30,
       limit: 8,
@@ -75,6 +90,14 @@ export default async function AdminReportsPage() {
     snapshotError = customerSnapshotsResult.reason instanceof Error
       ? customerSnapshotsResult.reason.message
       : 'Failed to load stored telemetry snapshots';
+  }
+
+  if (attributionResult.status === 'fulfilled') {
+    customerAttribution = attributionResult.value;
+  } else {
+    attributionError = attributionResult.reason instanceof Error
+      ? attributionResult.reason.message
+      : 'Failed to load telemetry attribution';
   }
 
   return (
@@ -138,6 +161,11 @@ export default async function AdminReportsPage() {
                 {snapshotError}
               </div>
             ) : null}
+            {attributionError ? (
+              <div className="d-annotation registry-inline-error" data-status="info">
+                {attributionError}
+              </div>
+            ) : null}
             {customerUsage ? (
               <div className="registry-admin-stack">
                 <div className="registry-admin-stat-grid">
@@ -174,6 +202,41 @@ export default async function AdminReportsPage() {
                     <span className="registry-admin-row-meta">Needs attribution</span>
                   </div>
                 </div>
+                {customerAttribution ? (
+                  <div className="d-surface registry-admin-stack">
+                    <span className="registry-admin-row-title">Top customer orgs/projects</span>
+                    <div className="registry-admin-row">
+                      <span className="registry-admin-row-meta">
+                        {formatNumber(customerAttribution.summary.active_orgs)} orgs · {formatNumber(customerAttribution.summary.active_projects)} projects · {formatNumber(customerAttribution.summary.unattributed_events)} unattributed events
+                      </span>
+                      <span className="registry-admin-row-meta">
+                        {formatNumber(customerAttribution.summary.returned_events)}
+                      </span>
+                    </div>
+                    {customerAttribution.rows.map((row) => (
+                      <div key={`${row.org_id ?? 'no-org'}-${row.project_id ?? 'no-project'}-${row.source}`} className="registry-admin-row">
+                        <span className="registry-admin-row-copy">
+                          {row.organization ? (
+                            <Link
+                              href={`/admin/organizations/${row.organization.slug}`}
+                              className="registry-admin-row-title"
+                            >
+                              {attributionLabel(row)}
+                            </Link>
+                          ) : (
+                            <span className="registry-admin-row-title registry-admin-monospace">
+                              {attributionLabel(row)}
+                            </span>
+                          )}
+                          <span className="registry-admin-row-meta">
+                            {row.source} · {row.project_id ?? 'no project'}
+                          </span>
+                        </span>
+                        <span className="registry-admin-row-meta">{formatNumber(row.events)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="registry-admin-card-grid">
                   <div className="d-surface registry-admin-stack">
                     <span className="registry-admin-row-title">Top customer events</span>

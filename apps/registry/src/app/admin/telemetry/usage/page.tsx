@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
   api,
+  type AdminTelemetryAttributionRow,
   type AdminTelemetryOperatingAlert,
   type AdminTelemetryCandidateAlias,
   type AdminTelemetryUsageTrend,
@@ -87,6 +88,13 @@ function actorStatus(actorType: string) {
   return 'info';
 }
 
+function attributionLabel(row: AdminTelemetryAttributionRow) {
+  if (row.organization) return `${row.organization.name} (${row.organization.slug})`;
+  if (row.org_id) return `Org ${row.org_id}`;
+  if (row.project_id) return 'Project-only attribution';
+  return 'Unattributed';
+}
+
 function candidateLabel(identityId: string, sources: string[]) {
   return `Usage candidate ${identityId} (${sources.join(', ')})`.slice(0, 160);
 }
@@ -119,10 +127,12 @@ export default async function AdminTelemetryUsagePage({
 
   let usage = null;
   let snapshotHistory = null;
+  let attribution = null;
   let error: string | null = null;
   let snapshotError: string | null = null;
+  let attributionError: string | null = null;
   try {
-    const [usageResult, snapshotResult] = await Promise.allSettled([
+    const [usageResult, snapshotResult, attributionResult] = await Promise.allSettled([
       api.getAdminTelemetryUsage(token, adminKey, {
         actor_type: actorType,
         days,
@@ -132,6 +142,12 @@ export default async function AdminTelemetryUsagePage({
         actor_type: actorType,
         days,
         limit: 6,
+        source,
+      }),
+      api.getAdminTelemetryAttribution(token, adminKey, {
+        actor_type: actorType,
+        days,
+        limit: 20,
         source,
       }),
     ]);
@@ -150,6 +166,14 @@ export default async function AdminTelemetryUsagePage({
       snapshotError = snapshotResult.reason instanceof Error
         ? snapshotResult.reason.message
         : 'Failed to load telemetry snapshots';
+    }
+
+    if (attributionResult.status === 'fulfilled') {
+      attribution = attributionResult.value;
+    } else {
+      attributionError = attributionResult.reason instanceof Error
+        ? attributionResult.reason.message
+        : 'Failed to load telemetry attribution';
     }
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load telemetry usage';
@@ -182,6 +206,11 @@ export default async function AdminTelemetryUsagePage({
       {snapshotError ? (
         <div className="d-annotation registry-inline-error" data-status="info">
           {snapshotError}
+        </div>
+      ) : null}
+      {attributionError ? (
+        <div className="d-annotation registry-inline-error" data-status="info">
+          {attributionError}
         </div>
       ) : null}
 
@@ -253,6 +282,57 @@ export default async function AdminTelemetryUsagePage({
               </div>
             </div>
           </section>
+
+          {attribution ? (
+            <section className="d-section" data-density="compact">
+              <span className="d-label registry-anchor-label">
+                Org / Project Attribution
+              </span>
+              <div className="registry-admin-stat-grid">
+                <div className="d-surface registry-admin-stat">
+                  <span className="registry-admin-row-title">{formatNumber(attribution.summary.active_orgs)}</span>
+                  <span className="registry-admin-row-meta">Active orgs</span>
+                  <span className="registry-admin-row-meta">{formatNumber(attribution.summary.active_projects)} projects</span>
+                </div>
+                <div className="d-surface registry-admin-stat">
+                  <span className="registry-admin-row-title">{formatNumber(attribution.summary.attributed_events)}</span>
+                  <span className="registry-admin-row-meta">Attributed events</span>
+                  <span className="registry-admin-row-meta">{formatNumber(attribution.summary.unattributed_events)} unattributed</span>
+                </div>
+                <div className="d-surface registry-admin-stat">
+                  <span className="registry-admin-row-title">{formatNumber(attribution.summary.returned_rows)}</span>
+                  <span className="registry-admin-row-meta">Shown rows</span>
+                  <span className="registry-admin-row-meta">{formatNumber(attribution.summary.scanned_rows)} scanned</span>
+                </div>
+              </div>
+              <div className="d-surface registry-admin-stack">
+                {attribution.rows.length ? attribution.rows.map((row) => (
+                  <div key={`${row.org_id ?? 'no-org'}-${row.project_id ?? 'no-project'}-${row.source}-${row.actor_type}`} className="registry-admin-row">
+                    <span className="registry-admin-row-copy">
+                      {row.organization ? (
+                        <Link
+                          href={`/admin/organizations/${row.organization.slug}`}
+                          className="registry-admin-row-title"
+                        >
+                          {attributionLabel(row)}
+                        </Link>
+                      ) : (
+                        <span className="registry-admin-row-title registry-admin-monospace">
+                          {attributionLabel(row)}
+                        </span>
+                      )}
+                      <span className="registry-admin-row-meta">
+                        {row.source} · {row.actor_type} · {row.project_id ?? 'no project'} · {formatTimestamp(row.last_seen)}
+                      </span>
+                    </span>
+                    <span className="registry-admin-row-meta">{formatNumber(row.events)}</span>
+                  </div>
+                )) : (
+                  <span className="registry-admin-row-meta">No attributed usage in this range.</span>
+                )}
+              </div>
+            </section>
+          ) : null}
 
           <section className="d-section" data-density="compact">
             <span className="d-label registry-anchor-label">

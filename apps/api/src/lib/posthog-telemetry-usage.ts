@@ -90,6 +90,25 @@ export interface TelemetryUsageActiveIdentity {
   source: string;
 }
 
+export interface TelemetryAttributionOrganization {
+  id: string;
+  is_internal: boolean;
+  is_test: boolean;
+  name: string;
+  slug: string;
+  tier: 'team' | 'enterprise';
+}
+
+export interface TelemetryAttributionRow {
+  actor_type: string;
+  events: number;
+  last_seen: string | null;
+  org_id: string | null;
+  organization: TelemetryAttributionOrganization | null;
+  project_id: string | null;
+  source: string;
+}
+
 export interface TelemetryUsageCandidateAlias {
   actor_type: string;
   events: number;
@@ -161,6 +180,25 @@ export interface AdminTelemetryUsageResponse {
     failure_events: TelemetryUsageTrend;
     failure_rate: TelemetryUsageTrend;
     total_events: TelemetryUsageTrend;
+  };
+}
+
+export interface AdminTelemetryAttributionResponse {
+  actor_type: TelemetryActorType | null;
+  generated_at: string;
+  range_days: number;
+  rows: TelemetryAttributionRow[];
+  source: TelemetryUsageSource | null;
+  summary: {
+    active_orgs: number;
+    active_projects: number;
+    attributed_events: number;
+    result_limit: number;
+    returned_events: number;
+    returned_rows: number;
+    scanned_rows: number;
+    total_events: number;
+    unattributed_events: number;
   };
 }
 
@@ -317,6 +355,33 @@ export async function fetchPostHogTelemetryUsage(input: {
   };
 }
 
+export async function fetchPostHogTelemetryAttribution(input: {
+  actorType?: TelemetryActorType;
+  config: PostHogTelemetryUsageConfig;
+  days: number;
+  limit: number;
+  source?: TelemetrySource;
+}): Promise<AdminTelemetryAttributionResponse> {
+  const resultLimit = 500;
+  const filters = {
+    actorType: input.actorType,
+    days: input.days,
+    source: input.source,
+  };
+  const rawRows = await runHogQl(input.config, attributionRowsQuery(filters, resultLimit));
+  const scannedRows = rawRows.map(toAttributionRow);
+  const rows = scannedRows.slice(0, input.limit);
+
+  return {
+    actor_type: input.actorType ?? null,
+    generated_at: new Date().toISOString(),
+    range_days: input.days,
+    rows,
+    source: (input.source as TelemetryUsageSource | undefined) ?? null,
+    summary: summarizeAttribution(scannedRows, rows, resultLimit),
+  };
+}
+
 export function isPostHogTelemetryUsageError(error: unknown): error is PostHogTelemetryUsageError {
   return error instanceof PostHogTelemetryUsageError;
 }
@@ -458,6 +523,28 @@ function activeIdentitiesQuery(filters: { actorType?: TelemetryActorType; days: 
   `;
 }
 
+function attributionRowsQuery(
+  filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource },
+  limit: number,
+) {
+  return `
+    select
+      properties.decantr_org_id as org_id,
+      properties.decantr_project_id as project_id,
+      properties.decantr_source as source,
+      properties.decantr_actor_type as actor_type,
+      count() as events,
+      max(timestamp) as last_seen
+    from events
+    where ${timeRangeSql(filters)}
+      and event in (${eventListSql()})
+      ${filterSql(filters)}
+    group by org_id, project_id, source, actor_type
+    order by events desc
+    limit ${limit}
+  `;
+}
+
 function timeRangeSql(filters: { days: number; offsetDays?: number }) {
   const offsetDays = filters.offsetDays ?? 0;
   const startDays = filters.days + offsetDays;
@@ -539,6 +626,18 @@ function toActiveIdentity(row: unknown): TelemetryUsageActiveIdentity {
   };
 }
 
+function toAttributionRow(row: unknown): TelemetryAttributionRow {
+  return {
+    org_id: readCellString(row, 0, 'org_id'),
+    project_id: readCellString(row, 1, 'project_id'),
+    source: readCellString(row, 2, 'source') ?? 'unknown',
+    actor_type: normalizeActorType(readCellString(row, 3, 'actor_type')),
+    events: readCellNumber(row, 4, 'events'),
+    last_seen: readCellString(row, 5, 'last_seen'),
+    organization: null,
+  };
+}
+
 function readCell(row: unknown, index: number, key: string): unknown {
   if (Array.isArray(row)) {
     return row[index];
@@ -611,6 +710,38 @@ function summarizeUsage(input: {
 
 function sumEventRows(rows: TelemetryUsageEventCount[], actorType: TelemetryActorType) {
   return rows.reduce((total, row) => total + (row.actor_type === actorType ? row.count : 0), 0);
+}
+
+function summarizeAttribution(
+  scannedRows: TelemetryAttributionRow[],
+  returnedRows: TelemetryAttributionRow[],
+  resultLimit: number,
+): AdminTelemetryAttributionResponse['summary'] {
+  const activeOrgIds = new Set<string>();
+  const activeProjectIds = new Set<string>();
+  let attributedEvents = 0;
+  let totalEvents = 0;
+
+  for (const row of scannedRows) {
+    totalEvents += row.events;
+    if (row.org_id) activeOrgIds.add(row.org_id);
+    if (row.project_id) activeProjectIds.add(row.project_id);
+    if (row.org_id || row.project_id) {
+      attributedEvents += row.events;
+    }
+  }
+
+  return {
+    active_orgs: activeOrgIds.size,
+    active_projects: activeProjectIds.size,
+    attributed_events: attributedEvents,
+    result_limit: resultLimit,
+    returned_events: returnedRows.reduce((total, row) => total + row.events, 0),
+    returned_rows: returnedRows.length,
+    scanned_rows: scannedRows.length,
+    total_events: totalEvents,
+    unattributed_events: totalEvents - attributedEvents,
+  };
 }
 
 function buildUsageTrends(

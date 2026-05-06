@@ -15,12 +15,15 @@ import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { clearTelemetryActorCache } from '../lib/telemetry-actor.js';
 import {
+  fetchPostHogTelemetryAttribution,
   fetchPostHogTelemetryUsage,
   getPostHogTelemetryUsageConfig,
   isPostHogTelemetryUsageError,
   isTelemetryUsageSource,
   parseTelemetryUsageDays,
+  type AdminTelemetryAttributionResponse,
   type TelemetryAliasIdentityRef,
+  type TelemetryAttributionOrganization,
 } from '../lib/posthog-telemetry-usage.js';
 import {
   listTelemetryUsageSnapshots,
@@ -446,6 +449,58 @@ function parseSnapshotLimit(value: string | undefined) {
   const parsed = Number.parseInt(value ?? '12', 10);
   if (!Number.isFinite(parsed)) return 12;
   return Math.min(Math.max(parsed, 1), 60);
+}
+
+function parseTelemetryAttributionLimit(value: string | undefined): number {
+  const parsed = Number.parseInt(value ?? '50', 10);
+  if (!Number.isFinite(parsed)) return 50;
+  return Math.min(Math.max(parsed, 1), 100);
+}
+
+async function fetchTelemetryAttributionOrganizations(
+  client: ReturnType<typeof createAdminClient>,
+  orgIds: string[],
+): Promise<{ organizations: Map<string, TelemetryAttributionOrganization> } | { error: string }> {
+  if (!orgIds.length) {
+    return { organizations: new Map() };
+  }
+
+  const { data, error } = await client
+    .from('organizations')
+    .select('id, name, slug, tier, is_internal, is_test')
+    .in('id', orgIds);
+
+  if (error) {
+    return { error: 'Failed to fetch telemetry attribution organizations' };
+  }
+
+  const organizations = new Map<string, TelemetryAttributionOrganization>();
+  for (const row of (data ?? []) as Array<Partial<TelemetryAttributionOrganization>>) {
+    if (!row.id || !row.name || !row.slug || !row.tier) continue;
+    organizations.set(row.id, {
+      id: row.id,
+      is_internal: row.is_internal ?? false,
+      is_test: row.is_test ?? false,
+      name: row.name,
+      slug: row.slug,
+      tier: row.tier,
+    });
+  }
+
+  return { organizations };
+}
+
+function attachTelemetryAttributionOrganizations(
+  attribution: AdminTelemetryAttributionResponse,
+  organizations: Map<string, TelemetryAttributionOrganization>,
+): AdminTelemetryAttributionResponse {
+  return {
+    ...attribution,
+    rows: attribution.rows.map((row) => ({
+      ...row,
+      organization: row.org_id ? organizations.get(row.org_id) ?? null : null,
+    })),
+  };
 }
 
 function parseTelemetryAliasWrite(body: unknown): {
@@ -989,6 +1044,49 @@ adminRoutes.post('/admin/telemetry-snapshots/run', async (c) => {
       status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
     }, 'Failed to persist telemetry usage snapshot');
     return c.json({ error: 'Failed to persist telemetry usage snapshot' }, 502);
+  }
+});
+
+// GET /v1/admin/telemetry/attribution
+adminRoutes.get('/admin/telemetry/attribution', async (c) => {
+  const configResult = getPostHogTelemetryUsageConfig();
+  if ('error' in configResult) {
+    return c.json({
+      error: configResult.error,
+      missing: configResult.missing,
+    }, 503);
+  }
+
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
+  const sourceParam = c.req.query('source');
+  const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
+  const days = parseTelemetryUsageDays(c.req.query('days'));
+  const limit = parseTelemetryAttributionLimit(c.req.query('limit'));
+  const client = createAdminClient();
+
+  try {
+    const attribution = await fetchPostHogTelemetryAttribution({
+      actorType,
+      config: configResult.config,
+      days,
+      limit,
+      source,
+    });
+    const orgIds = [...new Set(attribution.rows.map((row) => row.org_id).filter((id): id is string => Boolean(id)))];
+    const orgResult = await fetchTelemetryAttributionOrganizations(client, orgIds);
+
+    if ('error' in orgResult) {
+      logger.warn({ error: orgResult.error }, 'Failed to enrich telemetry attribution organizations');
+      return c.json(attribution);
+    }
+
+    return c.json(attachTelemetryAttributionOrganizations(attribution, orgResult.organizations));
+  } catch (error) {
+    logger.warn({
+      error: error instanceof Error ? error.message : String(error),
+      status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
+    }, 'Failed to query PostHog telemetry attribution');
+    return c.json({ error: 'Failed to query PostHog telemetry attribution' }, 502);
   }
 });
 

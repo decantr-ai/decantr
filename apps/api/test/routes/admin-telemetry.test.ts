@@ -92,6 +92,24 @@ function createAdminTelemetryClient() {
       organizations: null,
     },
   ];
+  const organizations = [
+    {
+      id: 'org-1',
+      name: 'Decantr',
+      slug: 'decantr',
+      tier: 'enterprise',
+      is_internal: true,
+      is_test: false,
+    },
+    {
+      id: 'org-2',
+      name: 'Customer Co',
+      slug: 'customer-co',
+      tier: 'team',
+      is_internal: false,
+      is_test: false,
+    },
+  ];
   const usageSnapshots: any[] = [
     {
       id: 'snapshot-existing',
@@ -344,6 +362,13 @@ function createAdminTelemetryClient() {
             }).then(resolve, reject);
           }
 
+          if (table === 'organizations') {
+            return Promise.resolve({
+              data: applyQueryState(organizations, state),
+              error: null,
+            }).then(resolve, reject);
+          }
+
           return Promise.resolve({ data: [], error: null }).then(resolve, reject);
         },
       };
@@ -583,6 +608,71 @@ describe('Admin telemetry routes', () => {
         events: 3,
       }),
     ]);
+  });
+
+  it('returns protected PostHog telemetry attribution enriched with organizations', async () => {
+    process.env.POSTHOG_QUERY_HOST = 'https://us.posthog.com';
+    process.env.POSTHOG_ENVIRONMENT_ID = '411435';
+    process.env.POSTHOG_PERSONAL_API_KEY = 'test-personal-key';
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}'));
+      const query = String(body.query?.query ?? '');
+      let results: unknown[] = [];
+
+      if (query.includes('group by org_id, project_id, source, actor_type')) {
+        results = [
+          ['org-2', 'project_customer', 'cli', 'customer', 7, '2026-05-06T00:00:00Z'],
+          [null, 'project_unowned', 'mcp', 'customer', 2, '2026-05-05T00:00:00Z'],
+          [null, null, 'api', 'customer', 1, '2026-05-04T00:00:00Z'],
+        ];
+      }
+
+      return new Response(JSON.stringify({ results }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const app = createTestApp();
+    const res = await app.request('/v1/admin/telemetry/attribution?days=30&actor_type=customer&limit=2', {
+      headers: {
+        Authorization: 'Bearer test-token',
+        'X-Admin-Key': 'test-admin-key',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(json.summary).toMatchObject({
+      active_orgs: 1,
+      active_projects: 2,
+      attributed_events: 9,
+      returned_events: 9,
+      returned_rows: 2,
+      scanned_rows: 3,
+      total_events: 10,
+      unattributed_events: 1,
+    });
+    expect(json.rows).toHaveLength(2);
+    expect(json.rows[0]).toMatchObject({
+      actor_type: 'customer',
+      events: 7,
+      org_id: 'org-2',
+      organization: {
+        name: 'Customer Co',
+        slug: 'customer-co',
+      },
+      project_id: 'project_customer',
+      source: 'cli',
+    });
+    expect(json.rows[1]).toMatchObject({
+      org_id: null,
+      organization: null,
+      project_id: 'project_unowned',
+      source: 'mcp',
+    });
   });
 
   it('persists service-token telemetry usage snapshots', async () => {
