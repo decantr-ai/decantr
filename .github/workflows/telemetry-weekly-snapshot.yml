@@ -37,7 +37,4 @@ jobs:
             exit 0
           fi
 
-          curl -fsS -X POST "$DECANTR_API_URL/admin/telemetry-snapshots/run" \
-            -H "Content-Type: application/json" \
-            -H "X-Telemetry-Snapshot-Token: $DECANTR_TELEMETRY_SNAPSHOT_TOKEN" \
-            --data '{}'
+          node scripts/persist-telemetry-rollups.mjs

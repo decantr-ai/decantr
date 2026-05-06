@@ -107,9 +107,10 @@ The weekly operator memo runs through:
 
 ```bash
 pnpm telemetry:weekly-snapshot
+pnpm telemetry:persist-rollups
 ```
 
-It reads the same PostHog env values and requires `query:read`. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes a markdown summary to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the same markdown payload to a webhook.
+The weekly snapshot command reads the same PostHog env values and requires `query:read`. The rollup persistence command posts to the Decantr API snapshot runner with `DECANTR_API_URL` and `DECANTR_TELEMETRY_SNAPSHOT_TOKEN`, writing an operator-readable markdown summary of persisted usage snapshots, attribution snapshots, event totals, and attribution row counts. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes both summaries to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the PostHog markdown payload to a webhook.
 
 The weekly snapshot includes total/customer event movement, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
 

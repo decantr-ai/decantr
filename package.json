@@ -48,6 +48,7 @@
     "audit:content-contract": "node scripts/audit-content-contract-quality.mjs",
     "telemetry:posthog-dashboard": "node scripts/create-posthog-operating-dashboard.mjs",
     "telemetry:weekly-snapshot": "node scripts/posthog-weekly-telemetry-report.mjs",
+    "telemetry:persist-rollups": "node scripts/persist-telemetry-rollups.mjs",
     "showcase:build": "node scripts/build-showcases.mjs",
     "showcase:build:shortlist": "SHOWCASE_GOLDEN_ONLY=1 node scripts/build-showcases.mjs",
     "showcase:copy": "node scripts/copy-showcase-dist.mjs",
