@@ -152,7 +152,18 @@ Signal buckets group raw telemetry events into operator-level adoption lanes:
 
 Operating alerts are computed in the API response from the same query payload. They flag missing telemetry, elevated failure rates, customer usage drops, unaliased identities, fresh activation, and rising commercial intent. They are intentionally lightweight for now so they can later feed a Decantr-owned dashboard or private-registry operator console without changing event names.
 
-The commercial reports page also pulls a 30-day customer-filtered usage readout from the same endpoint, so operator reports can distinguish customer adoption from internal/official Decantr activity without exporting PostHog data.
+Durable Decantr-owned rollups are stored in Supabase through:
+
+```text
+POST /v1/admin/telemetry-snapshots/run
+GET /v1/admin/telemetry/snapshots
+```
+
+The write endpoint is service-token protected with `X-Telemetry-Snapshot-Token` and reads `DECANTR_TELEMETRY_SNAPSHOT_TOKEN`, falling back to `DECANTR_ADMIN_KEY` like other scoped admin automation. With an empty body it captures three baseline views: 7-day all actors, 30-day all actors, and 30-day customer-only. The weekly telemetry workflow now persists these rollups after generating the PostHog markdown report when `DECANTR_TELEMETRY_SNAPSHOT_TOKEN` or `DECANTR_ADMIN_KEY` is available as a repository secret.
+
+The storage layer is split into `telemetry_usage_snapshots`, `telemetry_signal_bucket_snapshots`, and `telemetry_operating_alert_snapshots`. It stores aggregate event, source, actor, trend, and data-quality metrics while avoiding a durable copy of raw active identity rows. PostHog remains the event explorer; Supabase becomes Decantr's business intelligence history.
+
+The commercial reports page also pulls a 30-day customer-filtered usage readout from the live endpoint and stored customer snapshot history from Supabase, so operator reports can distinguish customer adoption from internal/official Decantr activity without exporting PostHog data.
 
 ## API Wiring
 

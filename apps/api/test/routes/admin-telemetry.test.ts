@@ -92,30 +92,127 @@ function createAdminTelemetryClient() {
       organizations: null,
     },
   ];
+  const usageSnapshots: any[] = [
+    {
+      id: 'snapshot-existing',
+      snapshot_date: '2026-05-06',
+      captured_at: '2026-05-06T02:00:00.000Z',
+      range_days: 30,
+      actor_type: 'customer',
+      source: 'all',
+      total_events: 12,
+      customer_events: 12,
+      internal_events: 0,
+      official_pipeline_events: 0,
+      anonymous_events: 0,
+      service_events: 0,
+      unclassified_events: 0,
+      failure_events: 1,
+      active_identities: 3,
+      active_anonymous_ids: 0,
+      active_installs: 2,
+      active_projects: 2,
+      active_orgs: 1,
+      candidate_aliases: 1,
+      summary: { total_events: 12, customer_events: 12 },
+      previous_summary: { total_events: 8, customer_events: 8 },
+      trends: { total_events: { current: 12, previous: 8, delta: 4, change_rate: 0.5 } },
+      source_mix: [],
+      actor_mix: [],
+      event_counts: [],
+      failure_counts: [],
+      data_quality: { classification_coverage: 1 },
+      created_at: '2026-05-06T02:00:00.000Z',
+      updated_at: '2026-05-06T02:00:00.000Z',
+    },
+  ];
+  const signalBucketSnapshots: any[] = [
+    {
+      id: 'bucket-existing',
+      usage_snapshot_id: 'snapshot-existing',
+      snapshot_date: '2026-05-06',
+      range_days: 30,
+      actor_type: 'customer',
+      source: 'all',
+      bucket_key: 'cli_adoption',
+      label: 'CLI adoption',
+      current_events: 8,
+      previous_events: 4,
+      delta: 4,
+      change_rate: 1,
+      created_at: '2026-05-06T02:00:00.000Z',
+    },
+  ];
+  const operatingAlertSnapshots: any[] = [
+    {
+      id: 'alert-existing',
+      usage_snapshot_id: 'snapshot-existing',
+      snapshot_date: '2026-05-06',
+      range_days: 30,
+      actor_type: 'customer',
+      source: 'all',
+      level: 'info',
+      title: 'Unaliased identities found',
+      detail: '1 active identities need customer/internal classification review.',
+      created_at: '2026-05-06T02:00:00.000Z',
+    },
+  ];
 
   return {
     from: vi.fn((table: string) => {
       const state: {
         deleteRequested?: boolean;
         filters: Record<string, unknown>;
+        inFilters: Record<string, unknown[]>;
+        limitValue?: number;
         updateBody?: Record<string, unknown>;
         upsertBody?: Record<string, unknown>;
       } = {
         filters: {},
+        inFilters: {},
       };
 
       const chain: any = {
         select: vi.fn(() => chain),
         order: vi.fn(() => chain),
+        limit: vi.fn((value: number) => {
+          state.limitValue = value;
+          return chain;
+        }),
         eq: vi.fn((field: string, value: unknown) => {
           state.filters[field] = value;
+          return chain;
+        }),
+        in: vi.fn((field: string, values: unknown[]) => {
+          state.inFilters[field] = values;
           return chain;
         }),
         ilike: vi.fn((field: string, value: unknown) => {
           state.filters[field] = value;
           return chain;
         }),
-        insert: vi.fn(async () => ({ data: null, error: null })),
+        insert: vi.fn(async (body: Record<string, unknown> | Array<Record<string, unknown>>) => {
+          const rows = Array.isArray(body) ? body : [body];
+          if (table === 'telemetry_signal_bucket_snapshots') {
+            for (const row of rows) {
+              signalBucketSnapshots.push({
+                id: `bucket-${signalBucketSnapshots.length + 1}`,
+                created_at: '2026-05-06T03:00:00.000Z',
+                ...row,
+              });
+            }
+          }
+          if (table === 'telemetry_operating_alert_snapshots') {
+            for (const row of rows) {
+              operatingAlertSnapshots.push({
+                id: `alert-${operatingAlertSnapshots.length + 1}`,
+                created_at: '2026-05-06T03:00:00.000Z',
+                ...row,
+              });
+            }
+          }
+          return { data: rows, error: null };
+        }),
         update: vi.fn((body: Record<string, unknown>) => {
           state.updateBody = body;
           return chain;
@@ -129,6 +226,30 @@ function createAdminTelemetryClient() {
           return chain;
         }),
         single: vi.fn(async () => {
+          if (table === 'telemetry_usage_snapshots' && state.upsertBody) {
+            const existing = usageSnapshots.find((snapshot) =>
+              snapshot.snapshot_date === state.upsertBody?.snapshot_date &&
+              snapshot.range_days === state.upsertBody?.range_days &&
+              snapshot.actor_type === state.upsertBody?.actor_type &&
+              snapshot.source === state.upsertBody?.source
+            );
+            if (existing) {
+              Object.assign(existing, state.upsertBody, {
+                updated_at: '2026-05-06T03:00:00.000Z',
+              });
+              return { data: existing, error: null };
+            }
+
+            const snapshot = {
+              id: `snapshot-${usageSnapshots.length + 1}`,
+              created_at: '2026-05-06T03:00:00.000Z',
+              updated_at: '2026-05-06T03:00:00.000Z',
+              ...state.upsertBody,
+            };
+            usageSnapshots.push(snapshot);
+            return { data: snapshot, error: null };
+          }
+
           if (table !== 'telemetry_identity_aliases') {
             return { data: null, error: null };
           }
@@ -188,8 +309,39 @@ function createAdminTelemetryClient() {
             return Promise.resolve({ data: null, error: null }).then(resolve, reject);
           }
 
+          if (table === 'telemetry_signal_bucket_snapshots' && state.deleteRequested) {
+            removeMatching(signalBucketSnapshots, state.filters);
+            return Promise.resolve({ data: null, error: null }).then(resolve, reject);
+          }
+
+          if (table === 'telemetry_operating_alert_snapshots' && state.deleteRequested) {
+            removeMatching(operatingAlertSnapshots, state.filters);
+            return Promise.resolve({ data: null, error: null }).then(resolve, reject);
+          }
+
           if (table === 'telemetry_identity_aliases') {
             return Promise.resolve({ data: aliases, error: null }).then(resolve, reject);
+          }
+
+          if (table === 'telemetry_usage_snapshots') {
+            return Promise.resolve({
+              data: applyQueryState(usageSnapshots, state),
+              error: null,
+            }).then(resolve, reject);
+          }
+
+          if (table === 'telemetry_signal_bucket_snapshots') {
+            return Promise.resolve({
+              data: applyQueryState(signalBucketSnapshots, state),
+              error: null,
+            }).then(resolve, reject);
+          }
+
+          if (table === 'telemetry_operating_alert_snapshots') {
+            return Promise.resolve({
+              data: applyQueryState(operatingAlertSnapshots, state),
+              error: null,
+            }).then(resolve, reject);
           }
 
           return Promise.resolve({ data: [], error: null }).then(resolve, reject);
@@ -201,8 +353,40 @@ function createAdminTelemetryClient() {
   };
 }
 
+function applyQueryState(
+  rows: any[],
+  state: {
+    filters: Record<string, unknown>;
+    inFilters: Record<string, unknown[]>;
+    limitValue?: number;
+  },
+) {
+  let filtered = rows.filter((row) => {
+    for (const [field, value] of Object.entries(state.filters)) {
+      if (row[field] !== value) return false;
+    }
+    for (const [field, values] of Object.entries(state.inFilters)) {
+      if (!values.includes(row[field])) return false;
+    }
+    return true;
+  });
+  if (state.limitValue !== undefined) {
+    filtered = filtered.slice(0, state.limitValue);
+  }
+  return filtered;
+}
+
+function removeMatching(rows: any[], filters: Record<string, unknown>) {
+  for (let index = rows.length - 1; index >= 0; index -= 1) {
+    const row = rows[index];
+    const matches = Object.entries(filters).every(([field, value]) => row[field] === value);
+    if (matches) rows.splice(index, 1);
+  }
+}
+
 describe('Admin telemetry routes', () => {
   const originalAdminKey = process.env.DECANTR_ADMIN_KEY;
+  const originalTelemetrySnapshotToken = process.env.DECANTR_TELEMETRY_SNAPSHOT_TOKEN;
   const originalPostHogQueryHost = process.env.POSTHOG_QUERY_HOST;
   const originalPostHogAppHost = process.env.POSTHOG_APP_HOST;
   const originalPostHogHost = process.env.POSTHOG_HOST;
@@ -218,6 +402,7 @@ describe('Admin telemetry routes', () => {
 
   afterEach(() => {
     process.env.DECANTR_ADMIN_KEY = originalAdminKey;
+    restoreEnv('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', originalTelemetrySnapshotToken);
     restoreEnv('POSTHOG_QUERY_HOST', originalPostHogQueryHost);
     restoreEnv('POSTHOG_APP_HOST', originalPostHogAppHost);
     restoreEnv('POSTHOG_HOST', originalPostHogHost);
@@ -398,6 +583,116 @@ describe('Admin telemetry routes', () => {
         events: 3,
       }),
     ]);
+  });
+
+  it('persists service-token telemetry usage snapshots', async () => {
+    process.env.POSTHOG_QUERY_HOST = 'https://us.posthog.com';
+    process.env.POSTHOG_ENVIRONMENT_ID = '411435';
+    process.env.POSTHOG_PERSONAL_API_KEY = 'test-personal-key';
+    process.env.DECANTR_TELEMETRY_SNAPSHOT_TOKEN = 'snapshot-token';
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body ?? '{}'));
+      const query = String(body.query?.query ?? '');
+      const previousPeriod = query.includes('timestamp < now() - interval 7 day');
+      let results: unknown[] = [];
+
+      if (query.includes('group by event, actor_type')) {
+        results = previousPeriod
+          ? [['cli.command.completed', 'customer', 1]]
+          : [['cli.command.completed', 'customer', 3]];
+      } else if (query.includes('group by source')) {
+        results = [['cli', 3]];
+      } else if (query.includes('group by actor_type, source')) {
+        results = [['customer', 'cli', 3]];
+      } else if (query.includes('and (properties.success = false or properties.valid = false)')) {
+        results = [];
+      } else if (query.includes('group by distinct_id, actor_type, source')) {
+        results = previousPeriod
+          ? []
+          : [
+              [
+                'install_unknown',
+                'customer',
+                'cli',
+                'install_unknown',
+                'project_customer',
+                null,
+                'org-2',
+                3,
+                '2026-05-06T00:00:00Z',
+              ],
+            ];
+      }
+
+      return new Response(JSON.stringify({ results }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const app = createTestApp();
+    const res = await app.request('/v1/admin/telemetry-snapshots/run', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Telemetry-Snapshot-Token': 'snapshot-token',
+      },
+      body: JSON.stringify({
+        actor_type: 'customer',
+        days: 7,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(fetchMock).toHaveBeenCalledTimes(8);
+    expect(json.snapshots).toHaveLength(1);
+    expect(json.snapshots[0]).toMatchObject({
+      actor_type: 'customer',
+      range_days: 7,
+      source: 'all',
+      total_events: 3,
+      customer_events: 3,
+    });
+    expect(json.snapshots[0].signal_buckets).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        bucket_key: 'cli_adoption',
+        current_events: 3,
+        previous_events: 1,
+      }),
+    ]));
+    expect(json.snapshots[0].data_quality).toMatchObject({
+      candidate_aliases: 1,
+      unclassified_events: 0,
+    });
+  });
+
+  it('lists stored telemetry usage snapshots', async () => {
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry/snapshots?actor_type=customer&days=30', {
+      headers: {
+        Authorization: 'Bearer test-token',
+        'X-Admin-Key': 'test-admin-key',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items[0]).toMatchObject({
+      actor_type: 'customer',
+      range_days: 30,
+      total_events: 12,
+    });
+    expect(json.items[0].signal_buckets[0]).toMatchObject({
+      bucket_key: 'cli_adoption',
+      current_events: 8,
+    });
+    expect(json.items[0].operating_alerts[0]).toMatchObject({
+      title: 'Unaliased identities found',
+    });
   });
 
   it('reports missing PostHog query configuration for telemetry usage', async () => {

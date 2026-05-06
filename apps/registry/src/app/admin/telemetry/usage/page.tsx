@@ -106,13 +106,39 @@ export default async function AdminTelemetryUsagePage({
   const { token, adminKey } = await requireAdminRequestContext();
 
   let usage = null;
+  let snapshotHistory = null;
   let error: string | null = null;
+  let snapshotError: string | null = null;
   try {
-    usage = await api.getAdminTelemetryUsage(token, adminKey, {
-      actor_type: actorType,
-      days,
-      source,
-    });
+    const [usageResult, snapshotResult] = await Promise.allSettled([
+      api.getAdminTelemetryUsage(token, adminKey, {
+        actor_type: actorType,
+        days,
+        source,
+      }),
+      api.getAdminTelemetrySnapshots(token, adminKey, {
+        actor_type: actorType,
+        days,
+        limit: 6,
+        source,
+      }),
+    ]);
+
+    if (usageResult.status === 'fulfilled') {
+      usage = usageResult.value;
+    } else {
+      error = usageResult.reason instanceof Error
+        ? usageResult.reason.message
+        : 'Failed to load telemetry usage';
+    }
+
+    if (snapshotResult.status === 'fulfilled') {
+      snapshotHistory = snapshotResult.value;
+    } else {
+      snapshotError = snapshotResult.reason instanceof Error
+        ? snapshotResult.reason.message
+        : 'Failed to load telemetry snapshots';
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load telemetry usage';
   }
@@ -139,6 +165,11 @@ export default async function AdminTelemetryUsagePage({
       {error ? (
         <div className="d-annotation registry-inline-error" data-status="error">
           {error}
+        </div>
+      ) : null}
+      {snapshotError ? (
+        <div className="d-annotation registry-inline-error" data-status="info">
+          {snapshotError}
         </div>
       ) : null}
 
@@ -250,6 +281,29 @@ export default async function AdminTelemetryUsagePage({
               ))}
             </div>
           </section>
+
+          {snapshotHistory?.items.length ? (
+            <section className="d-section" data-density="compact">
+              <span className="d-label registry-anchor-label">
+                Stored Snapshots
+              </span>
+              <div className="d-surface registry-admin-stack">
+                {snapshotHistory.items.map((snapshot) => (
+                  <div key={snapshot.id} className="registry-admin-row">
+                    <span className="registry-admin-row-copy">
+                      <span className="registry-admin-row-title">
+                        {snapshot.snapshot_date} · {snapshot.actor_type} · {snapshot.source}
+                      </span>
+                      <span className="registry-admin-row-meta">
+                        {formatNumber(snapshot.active_installs)} installs · {formatNumber(snapshot.active_projects)} projects · {formatNumber(snapshot.failure_events)} failures
+                      </span>
+                    </span>
+                    <span className="registry-admin-row-meta">{formatNumber(snapshot.total_events)}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="d-section" data-density="compact">
             <div className="registry-admin-card-grid">

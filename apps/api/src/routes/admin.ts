@@ -22,6 +22,11 @@ import {
   parseTelemetryUsageDays,
   type TelemetryAliasIdentityRef,
 } from '../lib/posthog-telemetry-usage.js';
+import {
+  listTelemetryUsageSnapshots,
+  persistTelemetryUsageSnapshot,
+  type TelemetryUsageSnapshotRunRequest,
+} from '../lib/telemetry-usage-snapshots.js';
 
 export const adminRoutes = new Hono<Env>();
 const ORG_TIERS = ['team', 'enterprise'] as const;
@@ -41,6 +46,11 @@ const TELEMETRY_ALIAS_SELECT = `
   users(email, display_name, username, is_internal, is_test),
   organizations(name, slug, is_internal, is_test)
 `;
+const DEFAULT_TELEMETRY_SNAPSHOT_REQUESTS: TelemetryUsageSnapshotRunRequest[] = [
+  { days: 7 },
+  { days: 30 },
+  { actorType: 'customer', days: 30 },
+];
 
 /** Timing-safe string comparison to prevent timing attacks on admin key */
 function safeCompare(a: string, b: string): boolean {
@@ -71,7 +81,10 @@ function requireAdmin() {
 }
 
 // Scoped service-token middleware — for CI/CD sync/prune paths (no user auth required).
-function requireServiceToken(envVar: 'DECANTR_CONTENT_SYNC_TOKEN' | 'DECANTR_CONTENT_PRUNE_TOKEN', headerName: string) {
+function requireServiceToken(
+  envVar: 'DECANTR_CONTENT_SYNC_TOKEN' | 'DECANTR_CONTENT_PRUNE_TOKEN' | 'DECANTR_TELEMETRY_SNAPSHOT_TOKEN',
+  headerName: string,
+) {
   return async (c: any, next: any) => {
     const supplied =
       c.req.header(headerName) ??
@@ -94,6 +107,7 @@ function requireServiceToken(envVar: 'DECANTR_CONTENT_SYNC_TOKEN' | 'DECANTR_CON
 // Admin sync/prune endpoints use scoped service tokens (no user required, for CI/CD).
 adminRoutes.use('/admin/sync', requireServiceToken('DECANTR_CONTENT_SYNC_TOKEN', 'X-Content-Sync-Token'));
 adminRoutes.use('/admin/content/*', requireServiceToken('DECANTR_CONTENT_PRUNE_TOKEN', 'X-Content-Prune-Token'));
+adminRoutes.use('/admin/telemetry-snapshots/run', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
 
 // All other admin endpoints require both user auth + admin key
 adminRoutes.use('/admin/moderation/*', requireAuth());
@@ -347,6 +361,82 @@ function readOptionalString(value: unknown, maxLength = 256): string | null {
     return null;
   }
   return trimmed;
+}
+
+async function fetchTelemetryAliasRefs(
+  client: ReturnType<typeof createAdminClient>,
+): Promise<{ aliases: TelemetryAliasIdentityRef[] } | { error: string }> {
+  const { data, error } = await client
+    .from('telemetry_identity_aliases')
+    .select('identity_type, identity_id');
+
+  if (error) {
+    return { error: 'Failed to fetch telemetry identity aliases' };
+  }
+
+  return {
+    aliases: ((data ?? []) as TelemetryAliasIdentityRef[]).filter((alias) =>
+      isTelemetryIdentityType(alias.identity_type) &&
+      typeof alias.identity_id === 'string' &&
+      alias.identity_id.length > 0
+    ),
+  };
+}
+
+function parseTelemetrySnapshotRunRequests(body: unknown): TelemetryUsageSnapshotRunRequest[] {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return DEFAULT_TELEMETRY_SNAPSHOT_REQUESTS;
+  }
+
+  const input = body as Record<string, unknown>;
+  const rawSnapshots = Array.isArray(input.snapshots) ? input.snapshots : [input];
+  const requests = rawSnapshots
+    .map(parseTelemetrySnapshotRunRequest)
+    .filter((request): request is TelemetryUsageSnapshotRunRequest => request !== null);
+
+  return dedupeSnapshotRequests(requests.length ? requests : DEFAULT_TELEMETRY_SNAPSHOT_REQUESTS);
+}
+
+function parseTelemetrySnapshotRunRequest(value: unknown): TelemetryUsageSnapshotRunRequest | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+
+  const input = value as Record<string, unknown>;
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((option) =>
+    option === (input.actor_type ?? input.actorType)
+  );
+  const rawSource = input.source;
+  const source = isTelemetryUsageSource(rawSource) ? rawSource : undefined;
+  const days = parseTelemetryUsageDays(
+    typeof input.days === 'number' || typeof input.days === 'string'
+      ? String(input.days)
+      : undefined,
+  );
+
+  return {
+    actorType,
+    days,
+    source,
+  };
+}
+
+function dedupeSnapshotRequests(requests: TelemetryUsageSnapshotRunRequest[]) {
+  const seen = new Set<string>();
+  const deduped: TelemetryUsageSnapshotRunRequest[] = [];
+  for (const request of requests) {
+    const key = `${request.days}:${request.actorType ?? 'all'}:${request.source ?? 'all'}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(request);
+  }
+  return deduped.slice(0, 12);
+}
+
+function parseSnapshotLimit(value: string | undefined) {
+  const parsed = Number.parseInt(value ?? '12', 10);
+  if (!Number.isFinite(parsed)) return 12;
+  return Math.min(Math.max(parsed, 1), 60);
 }
 
 function parseTelemetryAliasWrite(body: unknown): {
@@ -850,6 +940,49 @@ adminRoutes.patch('/admin/users/:id/telemetry', async (c) => {
   return c.json({ user });
 });
 
+// POST /v1/admin/telemetry-snapshots/run
+adminRoutes.post('/admin/telemetry-snapshots/run', async (c) => {
+  const configResult = getPostHogTelemetryUsageConfig();
+  if ('error' in configResult) {
+    return c.json({
+      error: configResult.error,
+      missing: configResult.missing,
+    }, 503);
+  }
+
+  const requests = parseTelemetrySnapshotRunRequests(await c.req.json().catch(() => null));
+  const client = createAdminClient();
+  const aliasesResult = await fetchTelemetryAliasRefs(client);
+  if ('error' in aliasesResult) {
+    return c.json({ error: aliasesResult.error }, 500);
+  }
+
+  try {
+    const snapshots = [];
+    for (const request of requests) {
+      const usage = await fetchPostHogTelemetryUsage({
+        actorType: request.actorType,
+        config: configResult.config,
+        days: request.days,
+        existingAliases: aliasesResult.aliases,
+        source: request.source,
+      });
+      snapshots.push(await persistTelemetryUsageSnapshot(client, usage));
+    }
+
+    return c.json({
+      generated_at: new Date().toISOString(),
+      snapshots,
+    });
+  } catch (error) {
+    logger.warn({
+      error: error instanceof Error ? error.message : String(error),
+      status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
+    }, 'Failed to persist telemetry usage snapshot');
+    return c.json({ error: 'Failed to persist telemetry usage snapshot' }, 502);
+  }
+});
+
 // GET /v1/admin/telemetry/usage
 adminRoutes.get('/admin/telemetry/usage', async (c) => {
   const configResult = getPostHogTelemetryUsageConfig();
@@ -865,13 +998,9 @@ adminRoutes.get('/admin/telemetry/usage', async (c) => {
   const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
   const days = parseTelemetryUsageDays(c.req.query('days'));
   const client = createAdminClient();
-
-  const { data: aliasRows, error: aliasError } = await client
-    .from('telemetry_identity_aliases')
-    .select('identity_type, identity_id');
-
-  if (aliasError) {
-    return c.json({ error: 'Failed to fetch telemetry identity aliases' }, 500);
+  const aliasesResult = await fetchTelemetryAliasRefs(client);
+  if ('error' in aliasesResult) {
+    return c.json({ error: aliasesResult.error }, 500);
   }
 
   try {
@@ -879,11 +1008,7 @@ adminRoutes.get('/admin/telemetry/usage', async (c) => {
       actorType,
       config: configResult.config,
       days,
-      existingAliases: ((aliasRows ?? []) as TelemetryAliasIdentityRef[]).filter((alias) =>
-        isTelemetryIdentityType(alias.identity_type) &&
-        typeof alias.identity_id === 'string' &&
-        alias.identity_id.length > 0
-      ),
+      existingAliases: aliasesResult.aliases,
       source,
     });
 
@@ -894,6 +1019,35 @@ adminRoutes.get('/admin/telemetry/usage', async (c) => {
       status: isPostHogTelemetryUsageError(error) ? error.status : undefined,
     }, 'Failed to query PostHog telemetry usage');
     return c.json({ error: 'Failed to query PostHog telemetry usage' }, 502);
+  }
+});
+
+// GET /v1/admin/telemetry/snapshots
+adminRoutes.get('/admin/telemetry/snapshots', async (c) => {
+  const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
+  const sourceParam = c.req.query('source');
+  const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
+  const daysParam = c.req.query('days');
+  const days = daysParam ? parseTelemetryUsageDays(daysParam) : undefined;
+  const limit = parseSnapshotLimit(c.req.query('limit'));
+  const client = createAdminClient();
+
+  try {
+    const items = await listTelemetryUsageSnapshots(client, {
+      actorType,
+      days,
+      limit,
+      source,
+    });
+    return c.json({
+      items,
+      total: items.length,
+    });
+  } catch (error) {
+    logger.warn({
+      error: error instanceof Error ? error.message : String(error),
+    }, 'Failed to fetch telemetry usage snapshots');
+    return c.json({ error: 'Failed to fetch telemetry usage snapshots' }, 500);
   }
 });
 

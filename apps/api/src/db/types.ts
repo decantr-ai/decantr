@@ -445,6 +445,208 @@ export interface Database {
           },
         ];
       };
+      telemetry_usage_snapshots: {
+        Row: {
+          id: string;
+          snapshot_date: string;
+          captured_at: string;
+          range_days: number;
+          actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          total_events: number;
+          customer_events: number;
+          internal_events: number;
+          official_pipeline_events: number;
+          anonymous_events: number;
+          service_events: number;
+          unclassified_events: number;
+          failure_events: number;
+          active_identities: number;
+          active_anonymous_ids: number;
+          active_installs: number;
+          active_projects: number;
+          active_orgs: number;
+          candidate_aliases: number;
+          summary: Record<string, unknown>;
+          previous_summary: Record<string, unknown>;
+          trends: Record<string, unknown>;
+          source_mix: unknown[];
+          actor_mix: unknown[];
+          event_counts: unknown[];
+          failure_counts: unknown[];
+          data_quality: Record<string, unknown>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          snapshot_date?: string;
+          captured_at?: string;
+          range_days: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          total_events?: number;
+          customer_events?: number;
+          internal_events?: number;
+          official_pipeline_events?: number;
+          anonymous_events?: number;
+          service_events?: number;
+          unclassified_events?: number;
+          failure_events?: number;
+          active_identities?: number;
+          active_anonymous_ids?: number;
+          active_installs?: number;
+          active_projects?: number;
+          active_orgs?: number;
+          candidate_aliases?: number;
+          summary?: Record<string, unknown>;
+          previous_summary?: Record<string, unknown>;
+          trends?: Record<string, unknown>;
+          source_mix?: unknown[];
+          actor_mix?: unknown[];
+          event_counts?: unknown[];
+          failure_counts?: unknown[];
+          data_quality?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          snapshot_date?: string;
+          captured_at?: string;
+          range_days?: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          total_events?: number;
+          customer_events?: number;
+          internal_events?: number;
+          official_pipeline_events?: number;
+          anonymous_events?: number;
+          service_events?: number;
+          unclassified_events?: number;
+          failure_events?: number;
+          active_identities?: number;
+          active_anonymous_ids?: number;
+          active_installs?: number;
+          active_projects?: number;
+          active_orgs?: number;
+          candidate_aliases?: number;
+          summary?: Record<string, unknown>;
+          previous_summary?: Record<string, unknown>;
+          trends?: Record<string, unknown>;
+          source_mix?: unknown[];
+          actor_mix?: unknown[];
+          event_counts?: unknown[];
+          failure_counts?: unknown[];
+          data_quality?: Record<string, unknown>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      telemetry_signal_bucket_snapshots: {
+        Row: {
+          id: string;
+          usage_snapshot_id: string;
+          snapshot_date: string;
+          range_days: number;
+          actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          bucket_key: string;
+          label: string;
+          current_events: number;
+          previous_events: number;
+          delta: number;
+          change_rate: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          usage_snapshot_id: string;
+          snapshot_date: string;
+          range_days: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          bucket_key: string;
+          label: string;
+          current_events?: number;
+          previous_events?: number;
+          delta?: number;
+          change_rate?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          usage_snapshot_id?: string;
+          snapshot_date?: string;
+          range_days?: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          bucket_key?: string;
+          label?: string;
+          current_events?: number;
+          previous_events?: number;
+          delta?: number;
+          change_rate?: number | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'telemetry_signal_bucket_snapshots_usage_snapshot_id_fkey';
+            columns: ['usage_snapshot_id'];
+            isOneToOne: false;
+            referencedRelation: 'telemetry_usage_snapshots';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      telemetry_operating_alert_snapshots: {
+        Row: {
+          id: string;
+          usage_snapshot_id: string;
+          snapshot_date: string;
+          range_days: number;
+          actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          level: 'critical' | 'info' | 'warning';
+          title: string;
+          detail: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          usage_snapshot_id: string;
+          snapshot_date: string;
+          range_days: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          level: 'critical' | 'info' | 'warning';
+          title: string;
+          detail: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          usage_snapshot_id?: string;
+          snapshot_date?: string;
+          range_days?: number;
+          actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          level?: 'critical' | 'info' | 'warning';
+          title?: string;
+          detail?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'telemetry_operating_alert_snapshots_usage_snapshot_id_fkey';
+            columns: ['usage_snapshot_id'];
+            isOneToOne: false;
+            referencedRelation: 'telemetry_usage_snapshots';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       usage_events: {
         Row: {
           id: string;

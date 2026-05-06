@@ -26,3 +26,18 @@ jobs:
           POSTHOG_DASHBOARD_ID: ${{ vars.POSTHOG_DASHBOARD_ID || '1549290' }}
           TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL: ${{ secrets.TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL }}
         run: node scripts/posthog-weekly-telemetry-report.mjs
+
+      - name: Persist Decantr telemetry rollups
+        env:
+          DECANTR_API_URL: ${{ vars.DECANTR_API_URL || 'https://api.decantr.ai/v1' }}
+          DECANTR_TELEMETRY_SNAPSHOT_TOKEN: ${{ secrets.DECANTR_TELEMETRY_SNAPSHOT_TOKEN || secrets.DECANTR_ADMIN_KEY }}
+        run: |
+          if [ -z "$DECANTR_TELEMETRY_SNAPSHOT_TOKEN" ]; then
+            echo "Skipping durable telemetry rollup: DECANTR_TELEMETRY_SNAPSHOT_TOKEN is not configured."
+            exit 0
+          fi
+
+          curl -fsS -X POST "$DECANTR_API_URL/admin/telemetry-snapshots/run" \
+            -H "Content-Type: application/json" \
+            -H "X-Telemetry-Snapshot-Token: $DECANTR_TELEMETRY_SNAPSHOT_TOKEN" \
+            --data '{}'

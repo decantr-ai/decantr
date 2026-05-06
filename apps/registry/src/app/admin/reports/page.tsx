@@ -38,11 +38,18 @@ export default async function AdminReportsPage() {
   let error: string | null = null;
   let customerUsage = null;
   let telemetryUsageError: string | null = null;
-  const [summaryResult, customerUsageResult] = await Promise.allSettled([
+  let customerSnapshots = null;
+  let snapshotError: string | null = null;
+  const [summaryResult, customerUsageResult, customerSnapshotsResult] = await Promise.allSettled([
     api.getCommercialSummary(token, adminKey),
     api.getAdminTelemetryUsage(token, adminKey, {
       actor_type: 'customer',
       days: 30,
+    }),
+    api.getAdminTelemetrySnapshots(token, adminKey, {
+      actor_type: 'customer',
+      days: 30,
+      limit: 8,
     }),
   ]);
 
@@ -60,6 +67,14 @@ export default async function AdminReportsPage() {
     telemetryUsageError = customerUsageResult.reason instanceof Error
       ? customerUsageResult.reason.message
       : 'Failed to load customer-clean telemetry';
+  }
+
+  if (customerSnapshotsResult.status === 'fulfilled') {
+    customerSnapshots = customerSnapshotsResult.value;
+  } else {
+    snapshotError = customerSnapshotsResult.reason instanceof Error
+      ? customerSnapshotsResult.reason.message
+      : 'Failed to load stored telemetry snapshots';
   }
 
   return (
@@ -116,6 +131,11 @@ export default async function AdminReportsPage() {
             {telemetryUsageError ? (
               <div className="d-annotation registry-inline-error" data-status="info">
                 {telemetryUsageError}
+              </div>
+            ) : null}
+            {snapshotError ? (
+              <div className="d-annotation registry-inline-error" data-status="info">
+                {snapshotError}
               </div>
             ) : null}
             {customerUsage ? (
@@ -195,6 +215,22 @@ export default async function AdminReportsPage() {
                     )}
                   </div>
                 </div>
+                {customerSnapshots?.items.length ? (
+                  <div className="d-surface registry-admin-stack">
+                    <span className="registry-admin-row-title">Stored customer history</span>
+                    {customerSnapshots.items.map((snapshot) => (
+                      <div key={snapshot.id} className="registry-admin-row">
+                        <span className="registry-admin-row-copy">
+                          <span className="registry-admin-row-title">{snapshot.snapshot_date}</span>
+                          <span className="registry-admin-row-meta">
+                            {formatNumber(snapshot.active_installs)} installs · {formatNumber(snapshot.active_projects)} projects · {formatNumber(snapshot.failure_events)} failures
+                          </span>
+                        </span>
+                        <span className="registry-admin-row-meta">{formatNumber(snapshot.total_events)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </section>

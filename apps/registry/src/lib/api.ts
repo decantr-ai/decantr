@@ -366,12 +366,15 @@ export interface AdminTelemetryUsageSummary {
   active_installs: number;
   active_orgs: number;
   active_projects: number;
+  anonymous_events: number;
   candidate_aliases: number;
   customer_events: number;
   failure_events: number;
   internal_events: number;
   official_pipeline_events: number;
+  service_events: number;
   total_events: number;
+  unclassified_events: number;
 }
 
 export interface AdminTelemetryUsageTrend {
@@ -420,6 +423,63 @@ export interface AdminTelemetryUsageResponse {
     failure_rate: AdminTelemetryUsageTrend;
     total_events: AdminTelemetryUsageTrend;
   };
+}
+
+export interface AdminTelemetryUsageSnapshot {
+  active_anonymous_ids: number;
+  active_identities: number;
+  active_installs: number;
+  active_orgs: number;
+  active_projects: number;
+  actor_mix: unknown[];
+  actor_type: TelemetryActorType | 'all';
+  anonymous_events: number;
+  candidate_aliases: number;
+  captured_at: string;
+  created_at: string;
+  customer_events: number;
+  data_quality: Record<string, unknown>;
+  event_counts: unknown[];
+  failure_counts: unknown[];
+  failure_events: number;
+  id: string;
+  internal_events: number;
+  official_pipeline_events: number;
+  operating_alerts: Array<{
+    created_at: string;
+    detail: string;
+    id: string;
+    level: 'critical' | 'info' | 'warning';
+    title: string;
+    usage_snapshot_id: string;
+  }>;
+  previous_summary: Record<string, unknown>;
+  range_days: number;
+  service_events: number;
+  signal_buckets: Array<{
+    bucket_key: string;
+    change_rate: number | null;
+    created_at: string;
+    current_events: number;
+    delta: number;
+    id: string;
+    label: string;
+    previous_events: number;
+    usage_snapshot_id: string;
+  }>;
+  snapshot_date: string;
+  source: TelemetryUsageSource | 'all';
+  source_mix: unknown[];
+  summary: Record<string, unknown>;
+  total_events: number;
+  trends: Record<string, unknown>;
+  unclassified_events: number;
+  updated_at: string;
+}
+
+export interface AdminTelemetrySnapshotHistoryResponse {
+  items: AdminTelemetryUsageSnapshot[];
+  total: number;
 }
 
 interface FetchOptions {
@@ -868,6 +928,27 @@ export const api = {
     if (params?.source) query.source = params.source;
     const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
     return adminFetch<AdminTelemetryUsageResponse>(`/admin/telemetry/usage${qs}`, {
+      token,
+      adminKey,
+    });
+  },
+  getAdminTelemetrySnapshots: (
+    token: string,
+    adminKey: string,
+    params?: {
+      actor_type?: TelemetryActorType;
+      days?: number;
+      limit?: number;
+      source?: TelemetryUsageSource;
+    },
+  ) => {
+    const query: Record<string, string> = {};
+    if (params?.actor_type) query.actor_type = params.actor_type;
+    if (params?.days != null) query.days = String(params.days);
+    if (params?.limit != null) query.limit = String(params.limit);
+    if (params?.source) query.source = params.source;
+    const qs = Object.keys(query).length ? `?${new URLSearchParams(query)}` : '';
+    return adminFetch<AdminTelemetrySnapshotHistoryResponse>(`/admin/telemetry/snapshots${qs}`, {
       token,
       adminKey,
     });

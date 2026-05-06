@@ -105,12 +105,15 @@ export interface TelemetryUsageSummary {
   active_installs: number;
   active_orgs: number;
   active_projects: number;
+  anonymous_events: number;
   candidate_aliases: number;
   customer_events: number;
   failure_events: number;
   internal_events: number;
   official_pipeline_events: number;
+  service_events: number;
   total_events: number;
+  unclassified_events: number;
 }
 
 export interface TelemetryUsageTrend {
@@ -594,12 +597,15 @@ function summarizeUsage(input: {
     active_installs: activeInstallIds.size,
     active_orgs: activeOrgIds.size,
     active_projects: activeProjectIds.size,
+    anonymous_events: sumEventRows(input.eventRows, 'anonymous'),
     candidate_aliases: input.candidateAliases.length,
     customer_events: sumEventRows(input.eventRows, 'customer'),
     failure_events: input.failureRows.reduce((total, row) => total + row.count, 0),
     internal_events: sumEventRows(input.eventRows, 'internal'),
     official_pipeline_events: sumEventRows(input.eventRows, 'official_pipeline'),
+    service_events: sumEventRows(input.eventRows, 'service'),
     total_events: input.eventRows.reduce((total, row) => total + row.count, 0),
+    unclassified_events: input.eventRows.reduce((total, row) => total + (row.actor_type === 'unclassified' ? row.count : 0), 0),
   };
 }
 
