@@ -110,6 +110,7 @@ const output = {
     tagOverride,
   },
   wrapperCommands: {
+    auth: createPublishPackagesCommand().replace('node scripts/publish-packages.mjs', 'pnpm audit:npm-auth'),
     preflight: createPublishPackagesCommand(['--publish-dry-run']),
     publish: createPublishPackagesCommand(),
   },
@@ -135,6 +136,7 @@ const lines = [
   '',
   '## Wrapper Commands',
   '',
+  `- auth: \`${output.wrapperCommands.auth}\``,
   `- preflight: \`${output.wrapperCommands.preflight}\``,
   `- publish: \`${output.wrapperCommands.publish}\``,
   '',

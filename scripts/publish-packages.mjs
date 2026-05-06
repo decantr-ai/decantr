@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { readArgValue } from './cli-arg-lib.mjs';
 import { getRepoRoot, loadPackageSurface, sortReleaseEntries } from './package-surface-lib.mjs';
-import { readNpmVersions } from './npm-surface-lib.mjs';
+import { assertNpmPackageWriteAccess, readNpmVersions } from './npm-surface-lib.mjs';
 
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
@@ -159,6 +159,10 @@ for (const entry of selected) {
   console.log(`${prefix}${action} ${entry.name} from ${entry.path}${suffix} (wave ${entry.releaseWave}, order ${entry.publishOrder})`);
 
   if (dryRun) continue;
+
+  if (!publishDryRun) {
+    assertNpmPackageWriteAccess(entry.name);
+  }
 
   auditPackedManifest(entry, cwd, packageVersion);
 

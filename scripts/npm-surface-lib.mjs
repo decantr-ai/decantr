@@ -33,6 +33,93 @@ export function readNpmAuthState() {
   }
 }
 
+export function readNpmRegistry() {
+  try {
+    return execFileSync('npm', ['config', 'get', 'registry'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  } catch (error) {
+    return normalizeNpmCliOutput(error.stdout?.toString?.() ?? '')
+      || normalizeNpmCliOutput(error.stderr?.toString?.() ?? '')
+      || null;
+  }
+}
+
+function getPackageScope(packageName) {
+  const match = /^(@[^/]+)\//.exec(packageName);
+  return match?.[1] ?? null;
+}
+
+function parseAccessValue(value) {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object') {
+    for (const key of ['access', 'permission', 'permissions']) {
+      if (typeof value[key] === 'string') return value[key];
+    }
+  }
+  return null;
+}
+
+export function readNpmPackageAccess(packageName) {
+  const scope = getPackageScope(packageName);
+  if (!scope) {
+    return {
+      packageName,
+      scope: null,
+      canPublish: true,
+      access: 'unscoped',
+      error: null,
+    };
+  }
+
+  try {
+    const stdout = execFileSync('npm', ['access', 'list', 'packages', scope, packageName, '--json'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+    const parsed = stdout ? JSON.parse(stdout) : {};
+    const access = parseAccessValue(parsed[packageName] ?? parsed);
+    const canPublish = typeof access === 'string' && /\b(write|read-write)\b/i.test(access);
+
+    return {
+      packageName,
+      scope,
+      canPublish,
+      access,
+      error: canPublish ? null : `current npm identity has ${access ?? 'no'} write access to ${packageName}`,
+    };
+  } catch (error) {
+    const stdout = normalizeNpmCliOutput(error.stdout?.toString?.() ?? '');
+    const stderr = normalizeNpmCliOutput(error.stderr?.toString?.() ?? '');
+    const combined = stdout || stderr || error.message || 'unknown npm access failure';
+
+    return {
+      packageName,
+      scope,
+      canPublish: false,
+      access: null,
+      error: combined,
+    };
+  }
+}
+
+export function assertNpmPackageWriteAccess(packageName) {
+  const access = readNpmPackageAccess(packageName);
+
+  if (!access.canPublish) {
+    throw new Error(
+      [
+        `The current npm identity cannot publish ${packageName}.`,
+        `npm returned: ${access.error ?? 'no write access'}`,
+        'Ask an npm org owner to grant this account or automation token read-write access for the @decantr scope/package, then rerun the publish wrapper.',
+      ].join('\n'),
+    );
+  }
+
+  return access;
+}
+
 export function readNpmDistTags(packageName) {
   try {
     const stdout = execFileSync('npm', ['view', packageName, 'dist-tags', '--json'], {

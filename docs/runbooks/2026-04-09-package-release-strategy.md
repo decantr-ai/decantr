@@ -131,6 +131,8 @@ The workflow:
 
 Packages must be published with `pnpm publish` through `scripts/publish-packages.mjs`. Direct `npm publish` does not rewrite pnpm workspace dependency ranges and is blocked by each public package's `prepublishOnly` guard.
 
+If npm returns `E404 Not Found - PUT https://registry.npmjs.org/@decantr%2f...`, treat it as an authorization failure when the package already exists publicly. Run `pnpm audit:npm-auth --wave=<wave>` to confirm the active npm account or automation token has write access before retrying the wrapper publish.
+
 Retired package handling now uses `config/package-retirements.json` plus:
 
 - `pnpm package:retire:dry-run`
