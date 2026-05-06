@@ -113,6 +113,7 @@ function requireServiceToken(
 // Admin sync/prune endpoints use scoped service tokens (no user required, for CI/CD).
 adminRoutes.use('/admin/sync', requireServiceToken('DECANTR_CONTENT_SYNC_TOKEN', 'X-Content-Sync-Token'));
 adminRoutes.use('/admin/content/*', requireServiceToken('DECANTR_CONTENT_PRUNE_TOKEN', 'X-Content-Prune-Token'));
+adminRoutes.use('/admin/telemetry-snapshots/health', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
 adminRoutes.use('/admin/telemetry-snapshots/run', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
 
 // All other admin endpoints require both user auth + admin key
@@ -1195,8 +1196,7 @@ adminRoutes.get('/admin/telemetry/usage', async (c) => {
   }
 });
 
-// GET /v1/admin/telemetry/snapshots/health
-adminRoutes.get('/admin/telemetry/snapshots/health', async (c) => {
+async function getTelemetrySnapshotHealth(c: any) {
   const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
   const sourceParam = c.req.query('source');
   const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
@@ -1233,7 +1233,13 @@ adminRoutes.get('/admin/telemetry/snapshots/health', async (c) => {
     }, 'Failed to fetch telemetry snapshot health');
     return c.json({ error: 'Failed to fetch telemetry snapshot health' }, 500);
   }
-});
+}
+
+// GET /v1/admin/telemetry-snapshots/health
+adminRoutes.get('/admin/telemetry-snapshots/health', getTelemetrySnapshotHealth);
+
+// GET /v1/admin/telemetry/snapshots/health
+adminRoutes.get('/admin/telemetry/snapshots/health', getTelemetrySnapshotHealth);
 
 // GET /v1/admin/telemetry/snapshots
 adminRoutes.get('/admin/telemetry/snapshots', async (c) => {

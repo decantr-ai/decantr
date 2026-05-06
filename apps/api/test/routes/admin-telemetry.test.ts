@@ -989,6 +989,35 @@ describe('Admin telemetry routes', () => {
     expect(json.latest_snapshot_age_days).toBeCloseTo(1 / 24);
   });
 
+  it('reports service-token telemetry snapshot health', async () => {
+    process.env.DECANTR_TELEMETRY_SNAPSHOT_TOKEN = 'snapshot-token';
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-06T03:00:00.000Z'));
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry-snapshots/health?actor_type=customer&days=30', {
+      headers: {
+        'X-Telemetry-Snapshot-Token': 'snapshot-token',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json).toMatchObject({
+      actor_type: 'customer',
+      attribution_snapshot: {
+        rows: 1,
+        total_events: 9,
+      },
+      latest_captured_at: '2026-05-06T02:00:00.000Z',
+      status: 'success',
+      usage_snapshot: {
+        rows: 1,
+        total_events: 12,
+      },
+    });
+  });
+
   it('reports missing PostHog query configuration for telemetry usage', async () => {
     delete process.env.POSTHOG_QUERY_HOST;
     delete process.env.POSTHOG_APP_HOST;

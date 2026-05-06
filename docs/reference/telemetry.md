@@ -159,6 +159,7 @@ Durable Decantr-owned rollups are stored in Supabase through:
 
 ```text
 POST /v1/admin/telemetry-snapshots/run
+GET /v1/admin/telemetry-snapshots/health
 GET /v1/admin/telemetry/snapshots/health
 GET /v1/admin/telemetry/snapshots
 GET /v1/admin/telemetry/attribution/snapshots
@@ -168,7 +169,7 @@ The write endpoint is service-token protected with `X-Telemetry-Snapshot-Token` 
 
 The storage layer is split into `telemetry_usage_snapshots`, `telemetry_signal_bucket_snapshots`, `telemetry_operating_alert_snapshots`, and `telemetry_attribution_snapshots`. It stores aggregate event, source, actor, trend, data-quality, and org/project attribution metrics while avoiding a durable copy of raw active identity rows. PostHog remains the event explorer; Supabase becomes Decantr's business intelligence history.
 
-`GET /v1/admin/telemetry/snapshots/health` returns a machine-readable freshness summary for the stored rollups, including `success`, `warning`, `error`, or `info` status, the latest captured timestamp, usage and attribution row counts, and total events for the latest matching snapshot. This is the API-level health signal for future alerting, external ops dashboards, or a private-registry operator console.
+`GET /v1/admin/telemetry-snapshots/health` returns a service-token protected, machine-readable freshness summary for the stored rollups. `GET /v1/admin/telemetry/snapshots/health` exposes the same payload to authenticated admins. The response includes `success`, `warning`, `error`, or `info` status, the latest captured timestamp, usage and attribution row counts, and total events for the latest matching snapshot. This is the API-level health signal for future alerting, external ops dashboards, or a private-registry operator console.
 
 The commercial reports page also pulls a 30-day customer-filtered usage readout from the live endpoint plus stored customer usage and attribution history from Supabase, so operator reports can distinguish customer adoption from internal/official Decantr activity without exporting PostHog data. The reports and telemetry usage pages surface snapshot freshness from the stored usage and attribution rows, making a missed weekly snapshot visible before stale metrics get mistaken for real adoption movement. Individual organization detail pages read the same stored attribution endpoint with an `org_id` filter, giving admins a customer-level view of attributed Decantr events, active project ids, source mix, and last-seen activity.
 
