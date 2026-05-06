@@ -190,7 +190,7 @@ export function createBrownfieldInitSeed(
     shell: inferSuggestedShell(layout),
     guard: 'guided',
     density: 'comfortable',
-    theme: 'luminarum',
+    theme: 'existing',
     mode: styling.darkMode ? 'dark' : 'auto',
     existing: true,
     notes: [

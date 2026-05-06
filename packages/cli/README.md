@@ -18,7 +18,7 @@ npx @decantr/cli new my-app --blueprint=agent-marketplace
 ```
 
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
-Use `decantr analyze` first when you already have an app and want Decantr governance without adopting a blueprint.
+Use `decantr analyze` first when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, and only applies it when you explicitly accept or merge it.
 Use `decantr init` to attach Decantr contract/context files to an existing project or to create a contract-only workspace.
 
 Current starter adapter availability:
@@ -31,11 +31,14 @@ Explicit workflow/adoption flags:
 
 ```bash
 decantr init --workflow=greenfield --adoption=contract-only
-decantr init --existing --adoption=contract-only
+decantr analyze
+decantr init --existing --accept-proposal
+decantr init --existing --merge-proposal
 decantr init --existing --adoption=style-bridge
 decantr init --existing --adoption=decantr-css
 decantr init --project=apps/web --yes
 decantr init --assistant-bridge=preview
+decantr rules preview
 decantr rules apply
 ```
 
@@ -47,7 +50,9 @@ Adoption modes:
 
 Monorepos store both `workspaceRoot` and `appRoot`. In non-interactive workspace-root runs with multiple app candidates, pass `--project=<path>` so Decantr attaches to the intended app.
 
-Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, while `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
+Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
+
+Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. `decantr check --brownfield` uses the doctrine map to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, and unsafe defaults without treating current database migrations as stale docs.
 
 ## What It Does
 
@@ -63,9 +68,11 @@ Assistant rule integration is preview-first: `--assistant-bridge=preview` writes
 ```bash
 decantr new my-app --blueprint=agent-marketplace
 decantr analyze
-decantr init --existing --yes --adoption=contract-only
+decantr init --existing --accept-proposal
+decantr check --brownfield
 decantr init --existing --blueprint=agent-marketplace
 decantr init --workflow=greenfield --adoption=contract-only
+decantr rules preview
 decantr rules apply
 decantr magic "AI-native analytics workspace"
 decantr audit
@@ -115,8 +122,10 @@ It covers:
 
 - greenfield blueprint bootstrap
 - greenfield contract-only
-- brownfield `analyze -> init --existing`
-- direct brownfield init
+- brownfield `analyze -> init --existing --accept-proposal -> check --brownfield`
+- brownfield doctrine maps and contract coverage checks
+- brownfield semantic route-domain sectioning
+- direct brownfield compatibility init
 - adoption modes (`contract-only`, `style-bridge`, `decantr-css`)
 - offline contract-only and offline blueprint flows
 - unsupported target contract-only fallback

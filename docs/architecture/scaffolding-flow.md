@@ -18,6 +18,7 @@
 │  • Tailwind presence                                                │
 │  • Existing decantr.essence.json                                    │
 │  • Existing AI rule files (CLAUDE.md, .cursorrules, AGENTS.md, etc.)│
+│  • Ambient doctrine docs (.claude/, docs/, CI, schema, design system)│
 │  • Workspace/app roots (pnpm workspaces, turbo, nx, apps/*)         │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
@@ -37,6 +38,8 @@
 │  projectScope: single-app | workspace-app                           │
 │                                                                     │
 │  --existing is a compatibility alias for brownfield-attach.         │
+│  --accept-proposal / --merge-proposal / --replace-essence control   │
+│  deterministic brownfield proposal acceptance.                      │
 │  --project=<path> pins appRoot when a workspace has multiple apps.  │
 └──────────────────────────┬──────────────────────────────────────────┘
                            │
@@ -46,7 +49,7 @@
 │                                                                     │
 │  greenfield-scaffold      → adapter bootstrap + optional registry   │
 │  greenfield-contract-only → local contract/context files only       │
-│  brownfield-attach        → analyze seed or direct attach inventory │
+│  brownfield-attach        → inventory → proposal → acceptance        │
 │  hybrid-compose           → mutate existing essence/context         │
 │                                                                     │
 │  Offline contract-only exits without hosted registry access.        │
@@ -120,6 +123,34 @@
 └─────────┼───────────────────┼───────────────────┼──────────────────┘
           │                   │                   │
           ▼                   ▼                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                 BROWNFIELD PROPOSAL PATH                            │
+│                                                                     │
+│  decantr analyze writes:                                            │
+│    .decantr/analysis.json                                           │
+│    .decantr/init-seed.json                                          │
+│    .decantr/ambient-context.json                                    │
+│    .decantr/doctrine-map.json                                       │
+│    .decantr/observed-essence.proposal.json                          │
+│    .decantr/brownfield-report.md                                    │
+│                                                                     │
+│  doctrine-map ranks security/data, architecture, design-system,      │
+│  workflow/CI, feature/business, assistant-specific, and stale        │
+│  sources before the proposal is accepted.                           │
+│  Observed routes are grouped into semantic product domains such as   │
+│  auth, RBAC, billing, reporting, facilities, settings, and public.   │
+│  Route/style scanners cover mixed Next App/Pages Router, React       │
+│  Router, Angular, SvelteKit, Vue, Nuxt, Bootstrap, MUI, and Chakra.  │
+│                                                                     │
+│  decantr init --existing --accept-proposal writes the proposal       │
+│  only when no essence exists. Existing essences require              │
+│  --merge-proposal or the explicit destructive --replace-essence.     │
+│                                                                     │
+│  Brownfield contract-only uses existing-app authority: no Decantr    │
+│  theme default, no CSS runtime, no rule-file mutation, no registry   │
+│  content unless explicitly requested.                               │
+└─────────────────────────────────────────────────────────────────────┘
+
 ┌─────────────────────────────────────────────────────────────────────┐
 │     composeArchetypes() + resolvePatternAlias() + buildEssenceV3()  │
 │                                                                     │

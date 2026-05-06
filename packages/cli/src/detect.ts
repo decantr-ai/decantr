@@ -28,11 +28,14 @@ interface PackageJson {
 
 const RULE_FILES = [
   'CLAUDE.md',
+  '.claude/rules',
   '.cursorrules',
   '.cursor/rules',
   'AGENTS.md',
   'GEMINI.md',
   'copilot-instructions.md',
+  '.github/copilot-instructions.md',
+  '.windsurfrules',
 ];
 
 /**

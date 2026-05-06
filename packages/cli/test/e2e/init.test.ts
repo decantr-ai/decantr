@@ -269,7 +269,7 @@ describe('init command', () => {
         stdio: 'pipe',
       });
 
-      const output = execSync(`node ${cliPath} init --existing --yes --offline`, {
+      const output = execSync(`node ${cliPath} init --existing --accept-proposal --offline`, {
         cwd: testDir,
         env: {
           ...process.env,
@@ -285,20 +285,124 @@ describe('init command', () => {
       };
 
       expect(output).toContain('Found .decantr/init-seed.json brownfield guidance.');
-      expect(output).toContain(
-        'Attach Decantr to this existing application without rebuilding it from scratch.',
-      );
-      expect(output).toContain(
-        'Treat .decantr/analysis.json as the factual inventory of the current app.',
-      );
+      expect(output).toContain('Brownfield proposal accepted.');
       expect(content).toContain('This project is using Decantr in **brownfield attach** mode.');
       expect(content).toContain(
         'Read `.decantr/analysis.json` first for the detected framework, routes, styling, layout, and dependency facts.',
       );
+      expect(content).toContain('`.decantr/doctrine-map.json`');
       expect(content).toContain(
         'Registry content is optional in this workflow unless the task explicitly asks for it.',
       );
       expect(essence.meta?.target).toBe('angular');
+      expect((essence as { dna?: { theme?: { id?: string } } }).dna?.theme?.id).toBe('existing');
+      expect(existsSync(join(testDir, '.decantr', 'doctrine-map.json'))).toBe(true);
+    },
+    INIT_TIMEOUT_MS,
+  );
+
+  it(
+    'refuses to accept a brownfield proposal over an existing essence and merges safely',
+    () => {
+      writeFileSync(
+        join(testDir, 'package.json'),
+        JSON.stringify(
+          {
+            name: 'existing-decantr-app',
+            private: true,
+            dependencies: {
+              react: '^19.0.0',
+              'react-dom': '^19.0.0',
+              'react-router-dom': '^7.0.0',
+            },
+          },
+          null,
+          2,
+        ) + '\n',
+      );
+      mkdirSync(join(testDir, 'src'), { recursive: true });
+      writeFileSync(
+        join(testDir, 'src', 'App.tsx'),
+        'import { Routes, Route } from "react-router-dom";\nexport function App() { return <Routes><Route path="/dashboard" element={<main />} /></Routes>; }\n',
+      );
+      writeFileSync(
+        join(testDir, 'decantr.essence.json'),
+        JSON.stringify(
+          {
+            version: '3.1.0',
+            dna: {
+              theme: { id: 'custom:legacy-brand', mode: 'dark', shape: 'rounded' },
+              spacing: {
+                base_unit: 4,
+                scale: 'linear',
+                density: 'comfortable',
+                content_gap: '_gap4',
+              },
+              typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+              color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+              radius: { philosophy: 'rounded', base: 8 },
+              elevation: { system: 'layered', max_levels: 3 },
+              motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+              accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+              personality: ['legacy'],
+            },
+            blueprint: {
+              sections: [
+                {
+                  id: 'legacy',
+                  role: 'primary',
+                  shell: 'top-nav-main',
+                  features: ['auth'],
+                  description: 'Legacy app',
+                  pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+                },
+              ],
+              features: ['auth'],
+              routes: { '/': { section: 'legacy', page: 'home' } },
+            },
+            meta: {
+              archetype: 'legacy',
+              target: 'react',
+              platform: { type: 'spa', routing: 'history' },
+              guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+            },
+          },
+          null,
+          2,
+        ) + '\n',
+      );
+
+      execSync(`node ${cliPath} analyze`, { cwd: testDir, stdio: 'pipe' });
+
+      try {
+        execSync(`node ${cliPath} init --existing --accept-proposal`, {
+          cwd: testDir,
+          stdio: 'pipe',
+        });
+        throw new Error('Expected accept-proposal to refuse existing essence.');
+      } catch (error) {
+        const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
+          (error as { stderr?: Buffer }).stderr?.toString() ?? ''
+        }`;
+        expect(output).toContain('Refusing to accept proposal over an existing decantr.essence.json');
+      }
+
+      execSync(`node ${cliPath} init --existing --merge-proposal`, {
+        cwd: testDir,
+        stdio: 'pipe',
+      });
+
+      const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8')) as {
+        dna?: { theme?: { id?: string } };
+        blueprint?: { routes?: Record<string, unknown>; sections?: Array<{ id: string }> };
+      };
+
+      expect(essence.dna?.theme?.id).toBe('custom:legacy-brand');
+      expect(essence.blueprint?.routes?.['/dashboard']).toBeTruthy();
+      expect(essence.blueprint?.sections?.some((section) => section.id === 'legacy')).toBe(true);
+      expect(
+        existsSync(join(testDir, '.decantr', 'observed-essence.proposal.json')),
+      ).toBe(true);
     },
     INIT_TIMEOUT_MS,
   );
@@ -351,7 +455,11 @@ describe('init command', () => {
     () => {
       writeFileSync(join(testDir, 'package.json'), JSON.stringify({ name: 'rules-app' }));
       writeFileSync(join(testDir, 'CLAUDE.md'), '# Existing rules\n');
+      mkdirSync(join(testDir, '.claude', 'rules'), { recursive: true });
+      mkdirSync(join(testDir, '.github'), { recursive: true });
       mkdirSync(join(testDir, '.cursor', 'rules'), { recursive: true });
+      writeFileSync(join(testDir, '.claude', 'rules', 'product.md'), '# Product rules\n');
+      writeFileSync(join(testDir, '.github', 'copilot-instructions.md'), '# Copilot rules\n');
 
       execSync(`node ${cliPath} init --existing --yes --offline --assistant-bridge=preview`, {
         cwd: testDir,
@@ -369,8 +477,12 @@ describe('init command', () => {
 
       const claude = readFileSync(join(testDir, 'CLAUDE.md'), 'utf-8');
       const cursor = readFileSync(join(testDir, '.cursor', 'rules', 'decantr.mdc'), 'utf-8');
+      const claudeRule = readFileSync(join(testDir, '.claude', 'rules', 'decantr.md'), 'utf-8');
+      const copilot = readFileSync(join(testDir, '.github', 'copilot-instructions.md'), 'utf-8');
       expect((claude.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
       expect(cursor).toContain('alwaysApply: true');
+      expect((claudeRule.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
+      expect((copilot.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
     },
     INIT_TIMEOUT_MS,
   );

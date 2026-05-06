@@ -6,6 +6,7 @@ import type {
   ContentSource,
   WorkflowMode,
 } from './workflow-model.js';
+import { hasExistingProjectFootprint } from './workflow-model.js';
 import type { ProjectScope } from './workspace.js';
 
 // ANSI color codes
@@ -194,6 +195,10 @@ export async function runInteractivePrompts(
   workflowSeed?: InitWorkflowSeed,
 ): Promise<InitOptions> {
   showDetection(detected);
+  const existingProject =
+    Boolean(workflowSeed?.existing) ||
+    detected.existingEssence ||
+    hasExistingProjectFootprint(detected);
 
   // Blueprint selection (includes "none" for blank canvas)
   const blueprintOptions = [
@@ -209,12 +214,23 @@ export async function runInteractivePrompts(
   const isBlank = blueprint === 'none';
 
   // Theme selection
-  const themeOptions = themes.map((t) => ({
-    value: t.id,
-    label: t.id,
-    description: t.description,
-  }));
-  const desiredTheme = workflowSeed?.theme || 'luminarum';
+  const themeOptions = [
+    ...(existingProject
+      ? [
+          {
+            value: 'existing',
+            label: 'existing',
+            description: 'Preserve the existing styling system',
+          },
+        ]
+      : []),
+    ...themes.map((t) => ({
+      value: t.id,
+      label: t.id,
+      description: t.description,
+    })),
+  ];
+  const desiredTheme = workflowSeed?.theme || (existingProject ? 'existing' : 'luminarum');
   const defaultThemeIdx = Math.max(
     0,
     themeOptions.findIndex((t) => t.value === desiredTheme),
@@ -229,7 +245,11 @@ export async function runInteractivePrompts(
       { value: 'light', label: 'light', description: 'Light background' },
       { value: 'auto', label: 'auto', description: 'Follow system preference' },
     ],
-    workflowSeed?.mode === 'light' ? 1 : workflowSeed?.mode === 'auto' ? 2 : 0,
+    workflowSeed?.mode === 'light'
+      ? 1
+      : workflowSeed?.mode === 'auto' || existingProject
+        ? 2
+        : 0,
   );
 
   // Shape
@@ -414,11 +434,16 @@ export function mergeWithDefaults(
   detected: DetectedProject,
   workflowSeed?: InitWorkflowSeed,
 ): InitOptions {
+  const existingProject =
+    flags.existing ||
+    workflowSeed?.existing ||
+    detected.existingEssence ||
+    hasExistingProjectFootprint(detected);
   return {
     blueprint: flags.blueprint,
     archetype: flags.archetype,
-    theme: flags.theme || workflowSeed?.theme || 'luminarum',
-    mode: flags.mode || workflowSeed?.mode || 'dark',
+    theme: flags.theme || workflowSeed?.theme || (existingProject ? 'existing' : 'luminarum'),
+    mode: flags.mode || workflowSeed?.mode || (existingProject ? 'auto' : 'dark'),
     shape: flags.shape || 'rounded',
     target:
       flags.target ||
@@ -426,8 +451,9 @@ export function mergeWithDefaults(
       (detected.framework !== 'unknown' ? detected.framework : 'react'),
     guard: flags.guard || workflowSeed?.guard || (detected.existingEssence ? 'guided' : 'strict'),
     density: flags.density || workflowSeed?.density || 'comfortable',
-    shell: flags.shell || workflowSeed?.shell || 'sidebar-main',
-    personality: flags.personality || ['professional'],
+    shell:
+      flags.shell || workflowSeed?.shell || (existingProject ? 'observed-existing-shell' : 'sidebar-main'),
+    personality: flags.personality || (existingProject ? ['observed brownfield product'] : ['professional']),
     features: flags.features || [],
     existing: flags.existing || workflowSeed?.existing || detected.existingEssence,
     workflowMode: flags.workflowMode || workflowSeed?.workflowMode,

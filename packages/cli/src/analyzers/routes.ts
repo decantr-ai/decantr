@@ -8,7 +8,16 @@ export interface RouteInfo {
 }
 
 export interface RoutesAnalysis {
-  strategy: 'app-router' | 'pages-router' | 'react-router' | 'none';
+  strategy:
+    | 'app-router'
+    | 'pages-router'
+    | 'mixed-next-router'
+    | 'react-router'
+    | 'angular-router'
+    | 'sveltekit-router'
+    | 'vue-router'
+    | 'nuxt-router'
+    | 'none';
   routes: RouteInfo[];
 }
 
@@ -87,7 +96,12 @@ function walkAppDir(dir: string, baseDir: string, segments: string[]): RouteInfo
   return routes;
 }
 
-function walkPagesDir(dir: string, baseDir: string, segments: string[]): RouteInfo[] {
+function walkPagesDir(
+  dir: string,
+  baseDir: string,
+  segments: string[],
+  extensions = new Set(['ts', 'tsx', 'js', 'jsx', 'md', 'mdx']),
+): RouteInfo[] {
   const routes: RouteInfo[] = [];
 
   let entries: string[];
@@ -106,12 +120,14 @@ function walkPagesDir(dir: string, baseDir: string, segments: string[]): RouteIn
       if (stat.isDirectory()) {
         const routeSegment = segmentToRoute(entry);
         const nextSegments = routeSegment === null ? [...segments] : [...segments, routeSegment];
-        routes.push(...walkPagesDir(fullPath, baseDir, nextSegments));
+        routes.push(...walkPagesDir(fullPath, baseDir, nextSegments, extensions));
       } else if (stat.isFile()) {
         // Check page extensions
-        const match = entry.match(/^(.+)\.(tsx?|jsx?|mdx?)$/);
+        const match = entry.match(/^(.+)\.([^.]+)$/);
         if (!match) continue;
         const name = match[1];
+        const extension = match[2];
+        if (!extensions.has(extension)) continue;
         // Skip _app, _document, _error, api files
         if (name.startsWith('_')) continue;
 
@@ -124,6 +140,44 @@ function walkPagesDir(dir: string, baseDir: string, segments: string[]): RouteIn
         });
       }
     } catch {}
+  }
+
+  return routes;
+}
+
+function walkSvelteKitRoutes(dir: string, baseDir: string, segments: string[]): RouteInfo[] {
+  const routes: RouteInfo[] = [];
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return routes;
+  }
+
+  const pageFile = entries.find((entry) => /^\+page\.(svelte|ts|js)$/.test(entry));
+  const hasLayout = entries.some((entry) => /^\+layout\.(svelte|ts|js)$/.test(entry));
+  if (pageFile) {
+    const routePath = '/' + segments.filter((segment) => segment !== '').join('/');
+    routes.push({
+      path: routePath || '/',
+      file: relative(baseDir, join(dir, pageFile)),
+      hasLayout,
+    });
+  }
+
+  for (const entry of entries) {
+    if (shouldSkipDir(entry)) continue;
+    const fullPath = join(dir, entry);
+    try {
+      if (!statSync(fullPath).isDirectory()) continue;
+    } catch {
+      continue;
+    }
+
+    const routeSegment = segmentToRoute(entry);
+    const nextSegments = routeSegment === null ? [...segments] : [...segments, routeSegment];
+    routes.push(...walkSvelteKitRoutes(fullPath, baseDir, nextSegments));
   }
 
   return routes;
@@ -220,36 +274,193 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
   return [...routeMap.values()];
 }
 
-/**
- * Scan for routes in an existing project.
- * Detects App Router, Pages Router, and React Router style route declarations.
- */
-export function scanRoutes(projectRoot: string): RoutesAnalysis {
-  // Try App Router first
-  const appDirs = [join(projectRoot, 'src', 'app'), join(projectRoot, 'app')];
+function hasReactRouterDependency(projectRoot: string): boolean {
+  return hasDependency(projectRoot, ['react-router', 'react-router-dom']);
+}
 
-  for (const appDir of appDirs) {
-    if (existsSync(appDir)) {
-      const routes = walkAppDir(appDir, projectRoot, []);
-      if (routes.length > 0) {
-        return { strategy: 'app-router', routes };
-      }
+function hasDependency(projectRoot: string, names: string[]): boolean {
+  const packageJsonPath = join(projectRoot, 'package.json');
+  if (!existsSync(packageJsonPath)) return false;
+  try {
+    const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+    return names.some((name) => Boolean(deps[name]));
+  } catch {
+    return false;
+  }
+}
+
+function hasAnyFile(projectRoot: string, relPaths: string[]): boolean {
+  return relPaths.some((relPath) => existsSync(join(projectRoot, relPath)));
+}
+
+function normalizeRoutePath(path: string): string | null {
+  const cleaned = path.trim();
+  if (!cleaned || cleaned === '/') return '/';
+  if (cleaned === '**' || cleaned.startsWith('#')) return null;
+  return cleaned.startsWith('/') ? cleaned : `/${cleaned}`;
+}
+
+function scanAngularRouter(projectRoot: string): RouteInfo[] {
+  const candidateDirs = [join(projectRoot, 'src', 'app'), join(projectRoot, 'src')];
+  const candidateFiles: string[] = [];
+  for (const dir of candidateDirs) {
+    if (existsSync(dir)) collectRouteCandidateFiles(dir, candidateFiles);
+  }
+
+  const routeMap = new Map<string, RouteInfo>();
+  for (const absolutePath of candidateFiles) {
+    let content: string;
+    try {
+      content = readFileSync(absolutePath, 'utf-8');
+    } catch {
+      continue;
+    }
+
+    const isRouterFile =
+      content.includes('@angular/router') ||
+      content.includes('RouterModule.forRoot') ||
+      content.includes('provideRouter') ||
+      content.includes('Routes =');
+    if (!isRouterFile) continue;
+
+    const relativePath = relative(projectRoot, absolutePath);
+    for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]*)["'`]/g)) {
+      const routePath = normalizeRoutePath(match[1]);
+      if (!routePath || routeMap.has(routePath)) continue;
+      routeMap.set(routePath, {
+        path: routePath,
+        file: relativePath,
+        hasLayout: false,
+      });
     }
   }
 
-  // Try Pages Router
-  const pagesDirs = [join(projectRoot, 'src', 'pages'), join(projectRoot, 'pages')];
+  return [...routeMap.values()];
+}
 
-  for (const pagesDir of pagesDirs) {
-    if (existsSync(pagesDir)) {
-      const routes = walkPagesDir(pagesDir, projectRoot, []);
-      if (routes.length > 0) {
-        return { strategy: 'pages-router', routes };
-      }
+function scanVueRouter(projectRoot: string): RouteInfo[] {
+  const candidateDirs = [join(projectRoot, 'src'), projectRoot];
+  const candidateFiles: string[] = [];
+  for (const dir of candidateDirs) {
+    if (existsSync(dir)) collectRouteCandidateFiles(dir, candidateFiles);
+  }
+
+  const routeMap = new Map<string, RouteInfo>();
+  for (const absolutePath of candidateFiles) {
+    let content: string;
+    try {
+      content = readFileSync(absolutePath, 'utf-8');
+    } catch {
+      continue;
     }
+
+    const isRouterFile =
+      content.includes('vue-router') ||
+      content.includes('createRouter') ||
+      content.includes('createWebHistory') ||
+      content.includes('createWebHashHistory');
+    if (!isRouterFile) continue;
+
+    const relativePath = relative(projectRoot, absolutePath);
+    for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]+)["'`]/g)) {
+      const routePath = normalizeRoutePath(match[1]);
+      if (!routePath || routeMap.has(routePath)) continue;
+      routeMap.set(routePath, {
+        path: routePath,
+        file: relativePath,
+        hasLayout: false,
+      });
+    }
+  }
+
+  return [...routeMap.values()];
+}
+
+/**
+ * Scan for routes in an existing project.
+ * Detects Next App/Pages Router, React Router, Angular Router, SvelteKit,
+ * Vue Router, and Nuxt file-system route declarations.
+ */
+export function scanRoutes(projectRoot: string): RoutesAnalysis {
+  const hasNext =
+    hasDependency(projectRoot, ['next']) ||
+    hasAnyFile(projectRoot, ['next.config.js', 'next.config.ts', 'next.config.mjs']);
+  const hasSvelteKit =
+    hasDependency(projectRoot, ['@sveltejs/kit', 'svelte']) ||
+    hasAnyFile(projectRoot, ['svelte.config.js', 'svelte.config.ts']);
+  const hasNuxt =
+    hasDependency(projectRoot, ['nuxt']) ||
+    hasAnyFile(projectRoot, ['nuxt.config.js', 'nuxt.config.ts']);
+  const hasAngular =
+    hasDependency(projectRoot, ['@angular/core', '@angular/router']) ||
+    hasAnyFile(projectRoot, ['angular.json']);
+  const hasVue =
+    hasDependency(projectRoot, ['vue', 'vue-router']) ||
+    hasAnyFile(projectRoot, ['vite.config.js', 'vite.config.ts']);
+
+  const appDirs = [join(projectRoot, 'src', 'app'), join(projectRoot, 'app')];
+  const appRoutes = appDirs.flatMap((appDir) =>
+    existsSync(appDir) ? walkAppDir(appDir, projectRoot, []) : [],
+  );
+
+  const pagesDirs = [join(projectRoot, 'src', 'pages'), join(projectRoot, 'pages')];
+  const pagesRoutes = pagesDirs.flatMap((pagesDir) =>
+    existsSync(pagesDir) ? walkPagesDir(pagesDir, projectRoot, []) : [],
+  );
+
+  if (hasNext) {
+    if (appRoutes.length > 0 && pagesRoutes.length > 0) {
+      return { strategy: 'mixed-next-router', routes: [...appRoutes, ...pagesRoutes] };
+    }
+    if (appRoutes.length > 0) return { strategy: 'app-router', routes: appRoutes };
+    if (pagesRoutes.length > 0) return { strategy: 'pages-router', routes: pagesRoutes };
+  } else if (appRoutes.length > 0) {
+    return { strategy: 'app-router', routes: appRoutes };
+  }
+
+  if (hasSvelteKit) {
+    const svelteRoutesDir = join(projectRoot, 'src', 'routes');
+    if (existsSync(svelteRoutesDir)) {
+      const routes = walkSvelteKitRoutes(svelteRoutesDir, projectRoot, []);
+      if (routes.length > 0) return { strategy: 'sveltekit-router', routes };
+    }
+  }
+
+  if (hasNuxt) {
+    const nuxtPagesDirs = [join(projectRoot, 'pages'), join(projectRoot, 'app', 'pages')];
+    const routes = nuxtPagesDirs.flatMap((pagesDir) =>
+      existsSync(pagesDir) ? walkPagesDir(pagesDir, projectRoot, [], new Set(['vue'])) : [],
+    );
+    if (routes.length > 0) return { strategy: 'nuxt-router', routes };
   }
 
   const reactRouterRoutes = scanReactRouter(projectRoot);
+
+  // React Router apps often keep presentational components under src/pages.
+  // When the dependency and explicit <Route>/router declarations are present,
+  // prefer those declarations over inferring file-system pages.
+  if (reactRouterRoutes.length > 0 && hasReactRouterDependency(projectRoot)) {
+    return { strategy: 'react-router', routes: reactRouterRoutes };
+  }
+
+  if (hasAngular) {
+    const routes = scanAngularRouter(projectRoot);
+    if (routes.length > 0) return { strategy: 'angular-router', routes };
+  }
+
+  if (hasVue) {
+    const routes = scanVueRouter(projectRoot);
+    if (routes.length > 0) return { strategy: 'vue-router', routes };
+  }
+
+  if (pagesRoutes.length > 0) {
+    return { strategy: 'pages-router', routes: pagesRoutes };
+  }
+
   if (reactRouterRoutes.length > 0) {
     return { strategy: 'react-router', routes: reactRouterRoutes };
   }

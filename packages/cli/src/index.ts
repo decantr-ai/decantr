@@ -37,7 +37,16 @@ import {
 } from '@decantr/verifier';
 import { clearCredentials, getCredentials, saveCredentials } from './auth.js';
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
-import { applyAssistantBridge, writeAssistantBridgePreview } from './assistant-bridge.js';
+import {
+  applyAssistantBridge,
+  buildAssistantBridgeContent,
+  writeAssistantBridgePreview,
+} from './assistant-bridge.js';
+import {
+  mergeEssenceWithProposal,
+  proposalPath,
+  readBrownfieldProposal,
+} from './brownfield-proposal.js';
 import { cmdAnalyze } from './commands/analyze.js';
 import { cmdCreate } from './commands/create.js';
 import type { ExportTarget } from './commands/export.js';
@@ -100,6 +109,7 @@ import {
   readBrownfieldInitSeed,
   resolveWorkflowPolicy,
   type AdoptionMode,
+  type AssistantBridgeMode,
   type WorkflowMode,
 } from './workflow-model.js';
 import { resolveWorkspaceInfo } from './workspace.js';
@@ -504,7 +514,8 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   if (ctx.analysisArtifacts) {
     lines.push('Treat .decantr/analysis.json as the factual inventory of the current app.');
-    lines.push('Treat .decantr/init-seed.json as the recommended Decantr attach defaults.');
+    lines.push('Treat .decantr/doctrine-map.json, .decantr/ambient-context.json, and .decantr/brownfield-report.md as the ranked doctrine inventory and conflict report.');
+    lines.push('Treat the accepted observed proposal as the source of Decantr route/section coverage.');
   } else {
     lines.push(
       'No Decantr analysis seed is present. Start by inventorying the app before changing runtime files.',
@@ -522,16 +533,18 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
     lines.push(
       '1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.',
     );
-    lines.push('2. .decantr/init-seed.json for the intended attach defaults and workflow lane.');
-    lines.push('3. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
+    lines.push('2. .decantr/doctrine-map.json for ranked source precedence across security/data, architecture, design-system, workflow, feature, and assistant evidence.');
+    lines.push('3. .decantr/ambient-context.json for assistant rules, docs, design-system, CI, schema, and workflow evidence.');
+    lines.push('4. .decantr/brownfield-report.md for conflicts, stale risks, and acceptance context.');
+    lines.push('5. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
     lines.push(
-      '4. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
+      '6. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
     );
     lines.push(
-      '5. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.',
+      '7. .decantr/context/scaffold.md for broader topology, route map, and voice guidance.',
     );
     lines.push(
-      '6. The matching section and page pack files only when you are working on those specific surfaces.',
+      '8. The matching section and page pack files only when you are working on those specific surfaces.',
     );
   } else {
     lines.push('1. Inventory existing framework, routes, styling, layout, rule files, and dependencies.');
@@ -608,7 +621,7 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
   );
   lines.push('- Then attach or refine section pages using the matching section and page packs.');
   lines.push(
-    '- After implementation, run decantr check and decantr audit and fix contract or drift issues.',
+    '- After implementation, run decantr check --brownfield and decantr audit and fix contract or drift issues.',
   );
   lines.push(
     '- If a required context file or runtime anchor is missing, stop and report exactly what is missing before continuing.',
@@ -1557,6 +1570,207 @@ interface InitArgs {
   adoption?: string;
   'assistant-bridge'?: string;
   project?: string;
+  'accept-proposal'?: boolean;
+  'merge-proposal'?: boolean;
+  'replace-essence'?: boolean;
+}
+
+function readCliPackageVersion(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const candidates = [join(here, '..', 'package.json'), join(here, '..', '..', 'package.json')];
+  for (const candidate of candidates) {
+    try {
+      const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: string };
+      if (pkg.version) return pkg.version;
+    } catch {
+      /* try next */
+    }
+  }
+  return '0.0.0';
+}
+
+function timestampForFile(): string {
+  return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+function backupExistingEssence(projectRoot: string, label: string): string | null {
+  const essencePath = join(projectRoot, 'decantr.essence.json');
+  if (!existsSync(essencePath)) return null;
+  const backupPath = join(projectRoot, `decantr.essence.${label}.${timestampForFile()}.backup.json`);
+  writeFileSync(backupPath, readFileSync(essencePath, 'utf-8'), 'utf-8');
+  return backupPath;
+}
+
+function writeBrownfieldProjectJson(input: {
+  projectRoot: string;
+  detected: ReturnType<typeof detectProject>;
+  workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>;
+  assistantBridge: AssistantBridgeMode;
+  mode: 'accept' | 'merge' | 'replace';
+}): void {
+  const decantrDir = join(input.projectRoot, '.decantr');
+  mkdirSync(join(decantrDir, 'context'), { recursive: true });
+  mkdirSync(join(decantrDir, 'cache'), { recursive: true });
+  const now = new Date().toISOString();
+  const projectJson = {
+    detected: {
+      framework: input.detected.framework,
+      version: input.detected.version || null,
+      packageManager: input.detected.packageManager,
+      hasTypeScript: input.detected.hasTypeScript,
+      hasTailwind: input.detected.hasTailwind,
+      existingRuleFiles: input.detected.existingRuleFiles,
+      workspaceRoot: input.workspaceInfo.workspaceRoot,
+      appRoot: input.workspaceInfo.appRoot,
+    },
+    sync: {
+      status: 'needs-sync',
+      lastSync: now,
+      registrySource: 'cache',
+      cachedContent: {
+        archetypes: [],
+        patterns: [],
+        themes: [],
+      },
+    },
+    initialized: {
+      at: now,
+      via: 'cli',
+      version: readCliPackageVersion(),
+      flags: `--existing --${input.mode === 'replace' ? 'replace-essence' : input.mode === 'merge' ? 'merge-proposal' : 'accept-proposal'}`,
+      workflowMode: 'brownfield-attach',
+      adoptionMode: 'contract-only',
+      contentSource: 'none',
+      assistantBridge: input.assistantBridge,
+      projectScope: input.workspaceInfo.projectScope,
+      adapterId: null,
+      analysisArtifacts: true,
+      acceptedProposal: {
+        mode: input.mode,
+        path: '.decantr/observed-essence.proposal.json',
+      },
+    },
+  };
+  writeFileSync(join(decantrDir, 'project.json'), JSON.stringify(projectJson, null, 2) + '\n');
+}
+
+async function applyAcceptedBrownfieldProposal(input: {
+  projectRoot: string;
+  detected: ReturnType<typeof detectProject>;
+  workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>;
+  mode: 'accept' | 'merge' | 'replace';
+  assistantBridge: AssistantBridgeMode;
+}): Promise<void> {
+  const proposal = readBrownfieldProposal(input.projectRoot);
+  if (!proposal) {
+    console.log(error(`No observed brownfield proposal found at ${proposalPath(input.projectRoot)}.`));
+    console.log(dim('Run `decantr analyze` first, review `.decantr/brownfield-report.md`, then accept or merge the proposal.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  const essencePath = join(input.projectRoot, 'decantr.essence.json');
+  const hasEssence = existsSync(essencePath);
+  let essence: EssenceV3;
+  let backupPath: string | null = null;
+
+  if (input.mode === 'accept' && hasEssence) {
+    console.log(error('Refusing to accept proposal over an existing decantr.essence.json.'));
+    console.log(dim('Use `--merge-proposal` to preserve the existing contract or `--replace-essence` for an explicit destructive replacement.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  if (input.mode === 'merge' && hasEssence) {
+    const existing = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+    if (!isV3(existing)) {
+      console.log(error('Existing essence is not v3. Run `decantr migrate` before merging a brownfield proposal.'));
+      process.exitCode = 1;
+      return;
+    }
+    essence = mergeEssenceWithProposal(existing, proposal);
+  } else {
+    essence = proposal.essence;
+  }
+
+  const validation = validateEssence(essence);
+  if (!validation.valid) {
+    console.log(error('Brownfield proposal produced an invalid Decantr essence. No files were changed.'));
+    for (const validationError of validation.errors) {
+      console.log(`  ${RED}${validationError}${RESET}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
+
+  if (input.mode === 'merge' && hasEssence) {
+    backupPath = backupExistingEssence(input.projectRoot, 'merge');
+  } else if (input.mode === 'replace' && hasEssence) {
+    backupPath = backupExistingEssence(input.projectRoot, 'replace');
+  }
+
+  writeBrownfieldProjectJson({
+    projectRoot: input.projectRoot,
+    detected: input.detected,
+    workspaceInfo: input.workspaceInfo,
+    assistantBridge: input.assistantBridge,
+    mode: input.mode,
+  });
+  writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n', 'utf-8');
+
+  const registryClient = new RegistryClient({
+    cacheDir: join(input.projectRoot, '.decantr', 'cache'),
+    offline: true,
+    projectRoot: input.projectRoot,
+  });
+  const refreshResult = await refreshDerivedFiles(input.projectRoot, essence, registryClient, undefined, {
+    isInitialScaffold: true,
+    workflowMode: 'brownfield-attach',
+    adoptionMode: 'contract-only',
+    analysisArtifacts: true,
+  });
+
+  let assistantBridgePath: string | null = null;
+  if (input.assistantBridge === 'preview' || input.assistantBridge === 'apply') {
+    assistantBridgePath = writeAssistantBridgePreview({
+      projectRoot: input.projectRoot,
+      detected: input.detected,
+      workflowMode: 'brownfield-attach',
+      assistantBridge: input.assistantBridge,
+    });
+  }
+  const appliedRuleFiles =
+    input.assistantBridge === 'apply' ? applyAssistantBridge(input.projectRoot, input.detected) : [];
+
+  console.log(success('\nBrownfield proposal accepted.\n'));
+  console.log('  Files created/updated:');
+  console.log(`    ${cyan('decantr.essence.json')}    Observed brownfield contract`);
+  console.log(`    ${cyan('DECANTR.md')}              Reconciled assistant guidance`);
+  console.log(`    ${cyan('.decantr/project.json')}  Brownfield attach metadata`);
+  console.log(`    ${cyan('.decantr/context/')}      Generated contract context`);
+  if (assistantBridgePath) {
+    console.log(`    ${cyan('.decantr/context/assistant-bridge.md')} Assistant bridge preview`);
+  }
+  if (appliedRuleFiles.length > 0) {
+    console.log(`    ${dim(`Rule bridge applied: ${appliedRuleFiles.join(', ')}`)}`);
+  }
+  if (backupPath) {
+    console.log(`    ${dim(`Backup: ${backupPath}`)}`);
+  }
+  console.log('');
+  console.log('  Generated context:');
+  for (const contextFile of refreshResult.contextFiles.slice(0, 8)) {
+    console.log(`    ${dim(contextFile.replace(`${input.projectRoot}/`, ''))}`);
+  }
+  if (refreshResult.contextFiles.length > 8) {
+    console.log(`    ${dim(`(+${refreshResult.contextFiles.length - 8} more)`)}`);
+  }
+  console.log('');
+  console.log('  Next steps:');
+  console.log(`    1. Run ${cyan('decantr check --brownfield')} to verify contract coverage`);
+  console.log(`    2. Read ${cyan('.decantr/brownfield-report.md')} for unresolved doctrine risks`);
+  console.log(`    3. Use ${cyan('decantr rules preview')} before mutating assistant rule files`);
+  console.log('');
 }
 
 async function cmdInit(args: InitArgs) {
@@ -1606,6 +1820,47 @@ async function cmdInit(args: InitArgs) {
     offline: args.offline,
     projectScope: workspaceInfo.projectScope,
   });
+
+  const proposalMode: 'accept' | 'merge' | 'replace' | null = args['replace-essence']
+    ? 'replace'
+    : args['merge-proposal']
+      ? 'merge'
+      : args['accept-proposal']
+        ? 'accept'
+        : null;
+
+  if (proposalMode) {
+    await applyAcceptedBrownfieldProposal({
+      projectRoot,
+      detected,
+      workspaceInfo,
+      mode: proposalMode,
+      assistantBridge: policy.assistantBridge,
+    });
+    return;
+  }
+
+  if (policy.workflowMode === 'brownfield-attach' && detected.existingEssence) {
+    console.log(error('Refusing to overwrite existing decantr.essence.json in brownfield attach mode.'));
+    console.log(
+      dim(
+        'Run `decantr analyze`, then use `decantr init --existing --merge-proposal` or the explicit destructive `--replace-essence`.',
+      ),
+    );
+    process.exitCode = 1;
+    return;
+  }
+
+  if (policy.workflowMode === 'brownfield-attach' && readBrownfieldProposal(projectRoot)) {
+    console.log(error('Observed brownfield proposal found, but it was not accepted.'));
+    console.log(
+      dim(
+        'Review `.decantr/brownfield-report.md`, then run `decantr init --existing --accept-proposal`.',
+      ),
+    );
+    process.exitCode = 1;
+    return;
+  }
 
   const preferContractOnly =
     policy.contentSource === 'none' &&
@@ -2598,6 +2853,7 @@ ${BOLD}Usage:${RESET}
   decantr audit [file]
   decantr migrate
   decantr check
+  decantr check --brownfield
   decantr sync-drift
   decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr suggest <query> [--type <type>]
@@ -2609,6 +2865,7 @@ ${BOLD}Usage:${RESET}
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+  decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
   decantr theme <subcommand>
@@ -2624,13 +2881,16 @@ ${BOLD}Init Options:${RESET}
   --theme            Theme ID
   --mode             Color mode: dark | light | auto
   --shape            Border shape: pill | rounded | sharp
-  --target           Framework: react | vue | svelte | nextjs | html
+  --target           Framework: react | vue | svelte | angular | nextjs | nuxt | astro | html
   --guard            Guard mode: creative | guided | strict
   --density          Spacing: compact | comfortable | spacious
   --shell            Default shell layout
   --workflow         Workflow: greenfield | brownfield | hybrid
   --adoption         Adoption: contract-only | style-bridge | decantr-css
   --assistant-bridge Assistant rules: none | preview | apply
+  --accept-proposal  Brownfield: accept observed proposal when no essence exists
+  --merge-proposal   Brownfield: merge observed proposal into an existing essence
+  --replace-essence  Brownfield: explicit destructive proposal replacement with backup
   --project          App path inside a workspace/monorepo
   --existing         Initialize in existing project
   --offline          Force offline mode
@@ -2645,7 +2905,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
   ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
-  ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry]
+  ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry] [--brownfield]
   ${cyan('sync-drift')}  Review and resolve drift log entries
   ${cyan('search')}      Search the registry
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
@@ -2669,16 +2929,19 @@ ${BOLD}Examples:${RESET}
   decantr new my-app --blueprint=carbon-ai-portal
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
   decantr init
-  decantr init --existing --adoption=contract-only --yes
+  decantr analyze
+  decantr init --existing --accept-proposal
+  decantr init --existing --merge-proposal
   decantr init --existing --adoption=style-bridge --assistant-bridge=preview
   decantr init --workflow=greenfield --adoption=contract-only
   decantr init --project=apps/web --yes
+  decantr rules preview
   decantr rules apply
   decantr status
   decantr audit
   decantr audit src/pages/HomePage.tsx
   decantr migrate
-  decantr check
+  decantr check --brownfield
   decantr sync-drift
   decantr search dashboard
   decantr suggest leaderboard
@@ -2698,12 +2961,31 @@ ${BOLD}Examples:${RESET}
 ${BOLD}Workflow Model:${RESET}
   ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
   ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
-  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing --adoption=contract-only
+  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing --accept-proposal -> decantr check --brownfield
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
   Runnable starter adapters: ${cyan('react-vite')}, ${cyan('next-app')}
   Unsupported targets resolve through ${cyan('generic-web')} contract-only mode until their starter adapters land.
+`);
+}
+
+function cmdRulesHelp() {
+  console.log(`
+${BOLD}decantr rules${RESET} — Preview or apply assistant bridge snippets
+
+${BOLD}Usage:${RESET}
+  decantr rules preview [--project=<path>]
+  decantr rules apply [--project=<path>]
+
+${BOLD}Subcommands:${RESET}
+  ${cyan('preview')}  Print target-specific Decantr bridge guidance without mutating rule files
+  ${cyan('apply')}    Idempotently write Decantr bridge blocks to supported assistant rule files
+
+${BOLD}Examples:${RESET}
+  decantr rules preview
+  decantr rules preview --project=apps/web
+  decantr rules apply --project=apps/web
 `);
 }
 
@@ -2799,6 +3081,12 @@ async function main() {
           initArgs.offline = true;
         } else if (arg === '--existing') {
           initArgs.existing = true;
+        } else if (arg === '--accept-proposal') {
+          initArgs['accept-proposal'] = true;
+        } else if (arg === '--merge-proposal') {
+          initArgs['merge-proposal'] = true;
+        } else if (arg === '--replace-essence') {
+          initArgs['replace-essence'] = true;
         } else if (arg.startsWith('--')) {
           const [key, value] = arg.slice(2).split('=');
           if (value) {
@@ -2843,7 +3131,8 @@ async function main() {
       }
       const { cmdHeal } = await import('./commands/heal.js');
       const telemetryFlag = args.includes('--telemetry');
-      await cmdHeal(process.cwd(), { telemetry: telemetryFlag });
+      const brownfieldFlag = args.includes('--brownfield');
+      await cmdHeal(process.cwd(), { telemetry: telemetryFlag, brownfield: brownfieldFlag });
       break;
     }
 
@@ -3275,8 +3564,12 @@ async function main() {
 
     case 'rules': {
       const subcommand = args[1];
-      if (subcommand !== 'apply') {
-        console.error(error('Usage: decantr rules apply [--project=<path>]'));
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || subcommand === 'help') {
+        cmdRulesHelp();
+        break;
+      }
+      if (subcommand !== 'apply' && subcommand !== 'preview') {
+        console.error(error('Usage: decantr rules <preview|apply> [--project=<path>]'));
         process.exitCode = 1;
         break;
       }
@@ -3290,6 +3583,16 @@ async function main() {
       }
       const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
       const detected = detectProject(workspaceInfo.appRoot);
+      if (subcommand === 'preview') {
+        console.log(
+          buildAssistantBridgeContent({
+            detected,
+            workflowMode: 'brownfield-attach',
+            assistantBridge: 'preview',
+          }),
+        );
+        break;
+      }
       const updated = applyAssistantBridge(workspaceInfo.appRoot, detected);
       if (updated.length === 0) {
         console.log(dim('Assistant bridge rule files are already up to date.'));

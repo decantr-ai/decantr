@@ -134,6 +134,8 @@ const CATEGORIES: Record<string, string[]> = {
     '@emotion/react',
     '@emotion/styled',
     'styled-jsx',
+    'bootstrap',
+    'react-bootstrap',
     'linaria',
     'vanilla-extract',
     'clsx',

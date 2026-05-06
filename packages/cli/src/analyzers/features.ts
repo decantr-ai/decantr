@@ -101,8 +101,10 @@ export function scanFeatures(projectRoot: string): FeaturesAnalysis {
   const scanDirs = [
     join(projectRoot, 'src', 'app'),
     join(projectRoot, 'app'),
+    join(projectRoot, 'src', 'routes'),
     join(projectRoot, 'src', 'pages'),
     join(projectRoot, 'pages'),
+    join(projectRoot, 'src', 'views'),
     join(projectRoot, 'src', 'components'),
     join(projectRoot, 'components'),
   ];

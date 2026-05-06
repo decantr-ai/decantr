@@ -177,6 +177,10 @@ function checkPatternExistence(essence: EssenceFile, context: GuardContext): Gua
 
   // Check each pattern exists
   for (const patternId of referencedPatterns) {
+    // Brownfield observed contracts use this placeholder to satisfy the
+    // layout schema without pretending an existing app route is a registry
+    // pattern. It is intentionally not resolved through the registry.
+    if (patternId === 'existing-surface') continue;
     if (!context.patternRegistry.has(patternId)) {
       // Find similar patterns for suggestion
       const similar = findSimilarPatterns(patternId, context.patternRegistry);

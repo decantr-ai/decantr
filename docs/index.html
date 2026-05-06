@@ -2440,7 +2440,7 @@
         </div>
         <h3 class="path-tile-name">Brownfield adoption</h3>
         <p class="path-tile-desc">Attach Decantr to an existing app as a contract layer first. No rewrite, no CSS takeover.</p>
-        <div class="path-tile-cmd"><span class="k">$</span> decantr analyze <span class="path-tile-flag">&& decantr init --existing --adoption=contract-only</span></div>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr analyze <span class="path-tile-flag">&& decantr init --existing --accept-proposal</span></div>
       </a>
       <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
         <div class="path-tile-head">
@@ -3217,7 +3217,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="brownfield">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="layers" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Already have a project? Adopt Decantr without a rewrite.</h2>
-    <p class="section-sub reveal">Brownfield adoption is a first-class path. Decantr reads what you have, drafts a contract, and leaves your code untouched until you ask it to guard something.</p>
+    <p class="section-sub reveal">Brownfield adoption is a first-class path. Decantr inventories what you have, drafts an observed contract proposal, and leaves existing code, docs, rules, and styling untouched until you accept or merge it.</p>
 
     <div class="lane-steps">
       <div class="lane-step reveal reveal-d1">
@@ -3225,23 +3225,23 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="lane-step-body">
           <h3>Analyze</h3>
           <div class="showcase-code"><span class="k">$</span> <span class="s">decantr analyze</span></div>
-          <p class="lane-step-desc">Scans the repo for framework, router, theme system, and existing conventions. Writes <code>analysis.json</code>.</p>
+          <p class="lane-step-desc">Scans the repo for framework, router, semantic route domains, theme system, existing conventions, and ranked doctrine evidence. Writes <code>analysis.json</code> and <code>doctrine-map.json</code>.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d2">
         <div class="lane-step-num" style="--accent:var(--amber)">2</div>
         <div class="lane-step-body">
           <h3>Attach</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr init --existing --yes --adoption=contract-only</span></div>
-          <p class="lane-step-desc">Drops in <code>decantr.essence.json</code>, <code>DECANTR.md</code>, and scoped context files that describe what you <em>already</em> built without requiring Decantr CSS.</p>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr init --existing --accept-proposal</span></div>
+          <p class="lane-step-desc">Drops in <code>decantr.essence.json</code>, <code>DECANTR.md</code>, and scoped context files from the observed proposal, preserving what you <em>already</em> built without requiring Decantr CSS.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d3">
         <div class="lane-step-num" style="--accent:var(--cyan)">3</div>
         <div class="lane-step-body">
           <h3>Guard</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr check</span></div>
-          <p class="lane-step-desc">From now on, every AI-generated change is scored against the contract you just captured.</p>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr check --brownfield</span></div>
+          <p class="lane-step-desc">From now on, route coverage, unsafe defaults, style drift, doctrine coverage, conflict resolution gaps, and assistant bridge gaps are scored against the contract you just captured.</p>
         </div>
       </div>
     </div>

@@ -2,7 +2,15 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface StylingAnalysis {
-  approach: 'tailwind' | 'css-modules' | 'css' | 'decantr-css' | 'unknown';
+  approach:
+    | 'tailwind'
+    | 'css-modules'
+    | 'css'
+    | 'decantr-css'
+    | 'bootstrap'
+    | 'mui'
+    | 'chakra'
+    | 'unknown';
   configFile?: string;
   colors: Record<string, string>;
   darkMode: boolean;
@@ -21,8 +29,13 @@ const GLOBALS_CSS_PATHS = [
   'app/globals.css',
   'src/styles/global.css',
   'src/styles/globals.css',
+  'src/styles/main.css',
+  'src/styles.css',
   'styles/globals.css',
+  'styles.css',
+  'assets/css/main.css',
   'src/index.css',
+  'src/app.css',
   'src/global.css',
 ];
 
@@ -159,6 +172,17 @@ function detectDarkMode(projectRoot: string, cssContents: string[]): boolean {
 export function scanStyling(projectRoot: string): StylingAnalysis {
   let approach: StylingAnalysis['approach'] = 'unknown';
   let configFile: string | undefined;
+  let packageDeps: Record<string, string> = {};
+
+  const pkgPath = join(projectRoot, 'package.json');
+  if (existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+      packageDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+    } catch {
+      packageDeps = {};
+    }
+  }
 
   // Detect Tailwind
   for (const cfg of TAILWIND_CONFIGS) {
@@ -171,25 +195,38 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
 
   // If no config file, check if tailwindcss is a dependency (v4 uses CSS-based config)
   if (approach === 'unknown') {
-    const pkgPath = join(projectRoot, 'package.json');
-    if (existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-        const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
-        if (allDeps['@decantr/css']) {
-          approach = 'decantr-css';
-          configFile = 'src/styles/tokens.css';
-        }
-        if (
-          allDeps.tailwindcss ||
-          allDeps['@tailwindcss/postcss'] ||
-          allDeps['@tailwindcss/vite']
-        ) {
-          approach = 'tailwind';
-        }
-      } catch {
-        // Ignore
-      }
+    if (packageDeps['@decantr/css']) {
+      approach = 'decantr-css';
+      configFile = 'src/styles/tokens.css';
+    }
+    if (
+      packageDeps.tailwindcss ||
+      packageDeps['@tailwindcss/postcss'] ||
+      packageDeps['@tailwindcss/vite']
+    ) {
+      approach = 'tailwind';
+      configFile = configFile ?? 'package.json';
+    }
+  }
+
+  if (approach === 'unknown') {
+    if (packageDeps.bootstrap || packageDeps['react-bootstrap']) {
+      approach = 'bootstrap';
+      configFile = 'package.json';
+    } else if (
+      packageDeps['@mui/material'] ||
+      packageDeps['@mui/system'] ||
+      packageDeps['@mui/joy']
+    ) {
+      approach = 'mui';
+      configFile = 'package.json';
+    } else if (
+      packageDeps['@chakra-ui/react'] ||
+      packageDeps['@chakra-ui/vue-next'] ||
+      packageDeps['@chakra-ui/system']
+    ) {
+      approach = 'chakra';
+      configFile = 'package.json';
     }
   }
 

@@ -104,4 +104,225 @@ describe('check command (e2e)', () => {
     expect(output).not.toContain('[pattern-exists]');
     expect(output).toContain('No issues found. Project is healthy.');
   });
+
+  it('fails brownfield check when observed routes are missing from the essence', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'route-drift-app',
+          dependencies: {
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            'react-router-dom': '^7.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    mkdirSync(join(testDir, 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'App.tsx'),
+      'import { Routes, Route } from "react-router-dom";\nexport function App() { return <Routes><Route path="/dashboard" element={<main />} /><Route path="/settings" element={<main />} /></Routes>; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'decantr.essence.json'),
+      JSON.stringify(
+        {
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['observed'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'observed-primary',
+                role: 'primary',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Observed app',
+                pages: [{ id: 'home', route: '/', layout: ['existing-surface'] }],
+              },
+            ],
+            features: [],
+            routes: { '/': { section: 'observed-primary', page: 'home' } },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    try {
+      execSync(`node ${cliPath} check --brownfield`, {
+        cwd: testDir,
+        encoding: 'utf-8',
+        timeout: 15000,
+      });
+      throw new Error('Expected brownfield check to fail.');
+    } catch (error) {
+      const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
+        (error as { stderr?: Buffer }).stderr?.toString() ?? ''
+      }`;
+      expect(output).toContain('[brownfield-route-drift]');
+      expect(output).toContain('/dashboard');
+      expect(output).toContain('/settings');
+    }
+  });
+
+  it('reports unsafe brownfield defaults and doctrine conflicts for style-heavy apps', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'style-heavy-brownfield',
+          dependencies: {
+            react: '^19.0.0',
+            tailwindcss: '^4.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(join(testDir, 'tailwind.config.ts'), 'export default {};\n');
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    mkdirSync(join(testDir, 'docs'), { recursive: true });
+    writeFileSync(
+      join(testDir, '.decantr', 'project.json'),
+      JSON.stringify(
+        {
+          initialized: {
+            workflowMode: 'brownfield-attach',
+            adoptionMode: 'contract-only',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(join(testDir, 'CLAUDE.md'), 'Tailwind classes are canonical.\n');
+    writeFileSync(join(testDir, 'docs', 'design-system.md'), 'Do not use Tailwind for app surfaces.\n');
+    writeFileSync(
+      join(testDir, 'decantr.essence.json'),
+      JSON.stringify(
+        {
+          version: '3.1.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['legacy'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'legacy',
+                role: 'primary',
+                shell: 'top-nav-main',
+                features: [],
+                description: 'Legacy surface',
+                pages: [{ id: 'home', route: '/', layout: ['existing-surface'] }],
+              },
+            ],
+            features: [],
+            routes: { '/': { section: 'legacy', page: 'home' } },
+          },
+          meta: {
+            archetype: 'legacy',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const output = execSync(`node ${cliPath} check --brownfield`, {
+      cwd: testDir,
+      encoding: 'utf-8',
+      timeout: 15000,
+    });
+
+    expect(output).toContain('[brownfield-theme-default]');
+    expect(output).toContain('[brownfield-doctrine-conflict]');
+    expect(output).toContain('[brownfield-doctrine-map-missing]');
+    expect(output).toContain('[brownfield-doctrine-coverage]');
+    expect(output).toContain('[brownfield-assistant-bridge-missing]');
+  });
+
+  it('does not treat current database migrations as stale doctrine noise', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'migration-backed-brownfield',
+          dependencies: {
+            next: '^15.0.0',
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            '@supabase/supabase-js': '^2.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(join(testDir, 'next.config.ts'), 'export default {};\n');
+    mkdirSync(join(testDir, 'src', 'app', 'dashboard'), { recursive: true });
+    mkdirSync(join(testDir, 'supabase', 'migrations'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'supabase', 'migrations', '0001_profiles.sql'),
+      'create table profiles(id uuid primary key);\n',
+    );
+
+    execSync(`node ${cliPath} analyze`, { cwd: testDir, stdio: 'pipe' });
+    execSync(`node ${cliPath} init --existing --accept-proposal`, { cwd: testDir, stdio: 'pipe' });
+
+    const output = execSync(`node ${cliPath} check --brownfield`, {
+      cwd: testDir,
+      encoding: 'utf-8',
+      timeout: 15000,
+    });
+
+    expect(output).toContain('No issues found. Project is healthy.');
+    expect(output).not.toContain('stale');
+    expect(output).not.toContain('historical');
+  });
 });

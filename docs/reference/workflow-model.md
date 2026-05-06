@@ -8,7 +8,7 @@ Decantr resolves an explicit workflow and adoption policy before registry, adapt
 | --- | --- | --- | --- | --- |
 | `greenfield-scaffold` | New app from a blueprint/archetype | `decantr new my-app --blueprint=<id>` | `decantr-css` | primary or cached |
 | `greenfield-contract-only` | New repo wants Decantr governance without blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` | `contract-only` | none |
-| `brownfield-attach` | Existing app wants Decantr context and checks | `decantr analyze`, then `decantr init --existing` | `contract-only` | optional |
+| `brownfield-attach` | Existing app wants Decantr context and checks | `decantr analyze`, then `decantr init --existing --accept-proposal` | `contract-only` | optional |
 | `hybrid-compose` | Attached app selectively adds/removes features, sections, themes, or packs | `decantr add/remove`, `decantr theme switch`, `decantr registry` | existing project setting | opt-in |
 
 Adoption modes:
@@ -40,24 +40,28 @@ Brownfield starts with:
 
 ```bash
 decantr analyze
-decantr init --existing --yes --adoption=contract-only
+decantr init --existing --accept-proposal
+decantr check --brownfield
 ```
 
-`analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, and a retrofit plan covering routes, styling, dependencies, rule files, workspace/app roots, and recommended adoption mode.
+`analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, `.decantr/ambient-context.json`, `.decantr/doctrine-map.json`, `.decantr/observed-essence.proposal.json`, and `.decantr/brownfield-report.md`. The proposal is observed from routes, styling, dependencies, layout signals, features, semantic route domains, ranked doctrine sources, and ambient project context. Route observation covers Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Styling observation preserves existing systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS. It is not a Decantr scaffold.
 
-Direct brownfield init is allowed:
+Proposal acceptance is deterministic:
 
 ```bash
-decantr init --existing --yes
+decantr init --existing --accept-proposal # only when no essence exists
+decantr init --existing --merge-proposal  # preserve existing essence and add observed coverage
+decantr init --existing --replace-essence # explicit destructive replacement with backup
 ```
 
-When analysis artifacts are absent, generated guidance tells the LLM to inventory the project first instead of referencing files that do not exist.
+Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
 
 ## Assistant Rule Bridge
 
 Existing rule files are detected during project analysis and init. Bridge behavior is preview-first:
 
 - `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`.
+- `decantr rules preview` prints the bridge without mutating files.
 - `decantr rules apply` injects idempotent marked blocks into supported rule files.
 - Cursor uses `.cursor/rules/decantr.mdc`.
 - Brownfield init never mutates rule files unless `--assistant-bridge=apply` is explicit.
@@ -81,4 +85,4 @@ pnpm --filter @decantr/cli certify:workflows
 pnpm --filter @decantr/cli certify:blueprints
 ```
 
-The workflow matrix covers greenfield blueprint, greenfield contract-only, brownfield analyze/init, direct brownfield init, adoption modes, offline flows, unsupported target fallback, monorepo `--project`, Next.js adapter, and hybrid composition.
+The workflow matrix covers greenfield blueprint, greenfield contract-only, brownfield analyze/proposal/acceptance, direct brownfield compatibility init, adoption modes, offline flows, unsupported target fallback, monorepo `--project`, Next.js adapter, and hybrid composition.

@@ -6,7 +6,14 @@ import { scanFeatures } from '../analyzers/features.js';
 import { scanLayout } from '../analyzers/layout.js';
 import { scanRoutes } from '../analyzers/routes.js';
 import { scanStyling } from '../analyzers/styling.js';
+import { scanAmbientContext } from '../ambient-context.js';
+import {
+  createBrownfieldProposal,
+  generateBrownfieldReport,
+  writeBrownfieldProposal,
+} from '../brownfield-proposal.js';
 import { detectProject, formatDetection } from '../detect.js';
+import { createDoctrineMap, writeDoctrineMap } from '../doctrine-map.js';
 import { createBrownfieldInitSeed } from '../workflow-model.js';
 import type { WorkspaceInfo } from '../workspace.js';
 
@@ -42,8 +49,23 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
 
   console.log(`${DIM}Scanning dependencies...${RESET}`);
   const dependencies = scanDependencies(projectRoot);
+
+  console.log(`${DIM}Scanning ambient project context...${RESET}`);
+  const ambient = scanAmbientContext(projectRoot);
+  const doctrine = createDoctrineMap(ambient);
+
   const initSeed = createBrownfieldInitSeed(project, layout, styling);
   initSeed.projectScope = workspace?.projectScope ?? 'single-app';
+  const proposal = createBrownfieldProposal({
+    project,
+    routes,
+    components,
+    styling,
+    layout,
+    features,
+    dependencies,
+    ambient,
+  });
 
   // 3. Combine into analysis object
   const analysis = {
@@ -74,7 +96,8 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
         contractOnly: true,
         adoptionMode: 'contract-only',
         initSeedPath: '.decantr/init-seed.json',
-        recommendedCommand: 'decantr init --existing --yes --adoption=contract-only',
+        proposalPath: '.decantr/observed-essence.proposal.json',
+        recommendedCommand: 'decantr init --existing --accept-proposal',
       },
       hybrid: {
         ownerCommands: [
@@ -96,6 +119,9 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
       routeAnchors: routes.routes.map((route) => route.path),
       stylingAnchors: [styling.configFile].filter(Boolean),
       ruleFiles: project.existingRuleFiles,
+      ambientContextPath: '.decantr/ambient-context.json',
+      doctrineMapPath: '.decantr/doctrine-map.json',
+      proposalPath: '.decantr/observed-essence.proposal.json',
       preserve: [
         'framework',
         'package manager',
@@ -113,8 +139,15 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
   }
   const outputPath = join(decantrDir, 'analysis.json');
   const initSeedPath = join(decantrDir, 'init-seed.json');
+  const ambientPath = join(decantrDir, 'ambient-context.json');
+  const doctrinePath = join(decantrDir, 'doctrine-map.json');
+  const reportPath = join(decantrDir, 'brownfield-report.md');
   writeFileSync(outputPath, JSON.stringify(analysis, null, 2) + '\n', 'utf-8');
   writeFileSync(initSeedPath, JSON.stringify(initSeed, null, 2) + '\n', 'utf-8');
+  writeFileSync(ambientPath, JSON.stringify(ambient, null, 2) + '\n', 'utf-8');
+  writeDoctrineMap(projectRoot, doctrine);
+  writeBrownfieldProposal(projectRoot, proposal);
+  writeFileSync(reportPath, generateBrownfieldReport(proposal, ambient, doctrine), 'utf-8');
 
   // 5. Print summary
   console.log(`\n${GREEN}Analysis complete.${RESET}\n`);
@@ -136,6 +169,8 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
   console.log(
     `  Features:     ${features.detected.length > 0 ? features.detected.join(', ') : 'none detected'}`,
   );
+  console.log(`  Context:      ${ambient.items.length} ambient item(s)`);
+  console.log(`  Doctrine:     ${doctrine.sources.length} ranked source(s)`);
 
   const depCounts = [
     dependencies.ui.length && `${dependencies.ui.length} ui`,
@@ -150,7 +185,11 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
 
   console.log(`\n${DIM}Written to:${RESET} ${outputPath}`);
   console.log(`${DIM}Init seed:${RESET} ${initSeedPath}`);
+  console.log(`${DIM}Ambient context:${RESET} ${ambientPath}`);
+  console.log(`${DIM}Doctrine map:${RESET} ${doctrinePath}`);
+  console.log(`${DIM}Observed proposal:${RESET} ${join(decantrDir, 'observed-essence.proposal.json')}`);
+  console.log(`${DIM}Brownfield report:${RESET} ${reportPath}`);
   console.log(
-    `\n${YELLOW}Next step:${RESET} Run ${BOLD}decantr init --existing --yes --adoption=contract-only${RESET} to attach Decantr using the generated brownfield seed.\n`,
+    `\n${YELLOW}Next step:${RESET} Review ${BOLD}.decantr/brownfield-report.md${RESET}, then run ${BOLD}decantr init --existing --accept-proposal${RESET} to attach Decantr using the observed proposal.\n`,
   );
 }

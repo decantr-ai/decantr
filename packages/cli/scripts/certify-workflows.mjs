@@ -117,6 +117,81 @@ function seedAngularProject(projectDir) {
   );
   mkdirSync(join(projectDir, 'src', 'app'), { recursive: true });
   writeFileSync(join(projectDir, 'src', 'main.ts'), 'console.log("angular");\n');
+  writeFileSync(
+    join(projectDir, 'src', 'app', 'app.routes.ts'),
+    "import type { Routes } from '@angular/router';\nexport const routes: Routes = [{ path: '', component: null }, { path: 'admin/users', component: null }];\n",
+  );
+}
+
+function seedSvelteProject(projectDir) {
+  writeFileSync(
+    join(projectDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'brownfield-svelte',
+        private: true,
+        version: '0.0.0',
+        dependencies: {
+          '@sveltejs/kit': '^2.0.0',
+          svelte: '^5.0.0',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeFileSync(join(projectDir, 'svelte.config.js'), 'export default {};\n');
+  mkdirSync(join(projectDir, 'src', 'routes', 'dashboard'), { recursive: true });
+  writeFileSync(join(projectDir, 'src', 'routes', '+page.svelte'), '<main>home</main>\n');
+  writeFileSync(join(projectDir, 'src', 'routes', 'dashboard', '+page.svelte'), '<main>dashboard</main>\n');
+}
+
+function seedVueProject(projectDir) {
+  writeFileSync(
+    join(projectDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'brownfield-vue',
+        private: true,
+        version: '0.0.0',
+        dependencies: {
+          vue: '^3.5.0',
+          'vue-router': '^4.4.0',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeFileSync(join(projectDir, 'vite.config.ts'), 'export default {};\n');
+  mkdirSync(join(projectDir, 'src', 'router'), { recursive: true });
+  writeFileSync(
+    join(projectDir, 'src', 'router', 'index.ts'),
+    "import { createRouter, createWebHistory } from 'vue-router';\nexport const router = createRouter({ history: createWebHistory(), routes: [{ path: '/', component: {} }, { path: '/dashboard', component: {} }] });\n",
+  );
+}
+
+function seedNuxtProject(projectDir) {
+  writeFileSync(
+    join(projectDir, 'package.json'),
+    JSON.stringify(
+      {
+        name: 'brownfield-nuxt',
+        private: true,
+        version: '0.0.0',
+        dependencies: {
+          nuxt: '^3.15.0',
+          vue: '^3.5.0',
+        },
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  writeFileSync(join(projectDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({});\n');
+  mkdirSync(join(projectDir, 'pages'), { recursive: true });
+  writeFileSync(join(projectDir, 'pages', 'index.vue'), '<template><main /></template>\n');
+  writeFileSync(join(projectDir, 'pages', 'dashboard.vue'), '<template><main /></template>\n');
 }
 
 function certifyGreenfield(tmpRoot, cliPath, contentRoot) {
@@ -177,27 +252,40 @@ function certifyBrownfield(tmpRoot, cliPath, contentRoot, framework) {
 
   if (framework === 'react') {
     seedReactProject(projectDir);
-  } else {
+  } else if (framework === 'angular') {
     seedAngularProject(projectDir);
+  } else if (framework === 'svelte') {
+    seedSvelteProject(projectDir);
+  } else if (framework === 'vue') {
+    seedVueProject(projectDir);
+  } else if (framework === 'nuxt') {
+    seedNuxtProject(projectDir);
+  } else {
+    throw new Error(`unsupported brownfield certification framework: ${framework}`);
   }
 
   runCli(cliPath, projectDir, ['analyze'], contentRoot);
   runCli(
     cliPath,
     projectDir,
-    ['init', '--existing', '--yes', '--offline', '--adoption=contract-only'],
+    ['init', '--existing', '--accept-proposal', '--offline'],
     contentRoot,
   );
 
   const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf8'));
+  const analysis = JSON.parse(readFileSync(join(projectDir, '.decantr', 'analysis.json'), 'utf8'));
   if (
     !existsSync(join(projectDir, '.decantr', 'analysis.json')) ||
-    !existsSync(join(projectDir, '.decantr', 'init-seed.json'))
+    !existsSync(join(projectDir, '.decantr', 'init-seed.json')) ||
+    !existsSync(join(projectDir, '.decantr', 'observed-essence.proposal.json'))
   ) {
     throw new Error(`${framework} brownfield workflow did not emit analyze artifacts`);
   }
   if (essence.meta?.target !== framework) {
     throw new Error(`${framework} brownfield attach did not preserve the detected target`);
+  }
+  if (framework !== 'react' && analysis.routes?.routes?.length < 1) {
+    throw new Error(`${framework} brownfield analysis did not observe framework routes`);
   }
 
   return { workflow: 'brownfield-adoption', framework, status: 'passed' };
@@ -321,7 +409,7 @@ function certifyHybrid(tmpRoot, cliPath, contentRoot) {
   seedReactProject(projectDir);
 
   runCli(cliPath, projectDir, ['analyze'], contentRoot);
-  runCli(cliPath, projectDir, ['init', '--existing', '--yes', '--offline'], contentRoot);
+  runCli(cliPath, projectDir, ['init', '--existing', '--accept-proposal', '--offline'], contentRoot);
   runCli(cliPath, projectDir, ['add', 'feature', 'live-updates'], contentRoot);
 
   const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf8'));
@@ -359,6 +447,9 @@ function main() {
       () => certifyGreenfieldContractOnly(tmpRoot, cliPath, contentRoot),
       () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'react'),
       () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'angular'),
+      () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'svelte'),
+      () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'vue'),
+      () => certifyBrownfield(tmpRoot, cliPath, contentRoot, 'nuxt'),
       () => certifyBrownfieldDirect(tmpRoot, cliPath, contentRoot),
       () => certifyAdoptionMode(tmpRoot, cliPath, contentRoot, 'style-bridge'),
       () => certifyAdoptionMode(tmpRoot, cliPath, contentRoot, 'decantr-css'),

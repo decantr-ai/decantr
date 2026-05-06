@@ -43,7 +43,8 @@ describe('magic command in existing projects', () => {
     }).toString();
 
     expect(output).toContain('Existing project detected.');
-    expect(output).toContain('decantr init --existing --yes');
+    expect(output).toContain('decantr init --existing --accept-proposal');
+    expect(existsSync(join(testDir, '.decantr', 'observed-essence.proposal.json'))).toBe(true);
     expect(existsSync(join(testDir, '.decantr', 'analysis.json'))).toBe(true);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
     expect(readFileSync(join(testDir, '.decantr', 'analysis.json'), 'utf-8')).toContain(

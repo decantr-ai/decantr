@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { evaluateGuard, validateEssence } from '@decantr/essence-spec';
+import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
 import { buildGuardRegistryContext } from '../guard-context.js';
+import { scanBrownfieldIssues } from '../brownfield-check.js';
 // v2.1 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from '../lib/scan-interactions.js';
 import { collectMetrics, isOptedIn, optIn, sendGuardMetrics } from '../telemetry.js';
@@ -22,6 +23,7 @@ interface Issue {
 
 export interface CheckOptions {
   telemetry?: boolean;
+  brownfield?: boolean;
 }
 
 export async function cmdHeal(
@@ -82,6 +84,27 @@ export async function cmdHeal(
     }
   } catch {
     /* guard evaluation optional */
+  }
+
+  if (options.brownfield) {
+    try {
+      if (isV3(essence)) {
+        const brownfieldIssues = scanBrownfieldIssues(projectRoot, essence);
+        issues.push(...brownfieldIssues);
+      } else {
+        issues.push({
+          type: 'warning',
+          rule: 'brownfield-check',
+          message: 'Brownfield checks require a v3 Decantr essence.',
+        });
+      }
+    } catch (e) {
+      issues.push({
+        type: 'warning',
+        rule: 'brownfield-check',
+        message: `Brownfield check could not complete: ${(e as Error).message}`,
+      });
+    }
   }
 
   if (issues.length === 0) {

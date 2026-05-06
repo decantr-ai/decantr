@@ -15,7 +15,7 @@ export function buildAssistantBridgeContent(input: {
   lines.push('# Decantr Assistant Bridge');
   lines.push('');
   lines.push(
-    'Use this bridge when an AI assistant works in a repository that already has local rules.',
+    'Use this bridge when an AI assistant works in a repository that already has local rules and Decantr has compiled them into a brownfield contract.',
   );
   lines.push('');
   lines.push(`- Workflow mode: ${input.workflowMode}`);
@@ -30,13 +30,13 @@ export function buildAssistantBridgeContent(input: {
   lines.push('');
   lines.push(START);
   lines.push(
-    'Before implementing Decantr-scoped work, read `DECANTR.md`, `decantr.essence.json`, and the compiled packs in `.decantr/context/`.',
+    'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/brownfield-report.md`, `.decantr/doctrine-map.json`, `.decantr/ambient-context.json`, and the compiled packs in `.decantr/context/`.',
   );
   lines.push(
-    'For brownfield adoption, preserve existing framework, routing, styling, package manager, and build conventions unless the Decantr contract explicitly requires a reviewed change.',
+    'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if they conflict, stop and report the conflict instead of guessing.',
   );
   lines.push(
-    'Use `.decantr/context/scaffold-pack.md` as the primary compact contract, then read matching section/page packs for the surface being changed.',
+    'For brownfield adoption, preserve existing framework, routing, styling, package manager, data boundaries, and build conventions unless the Decantr contract explicitly records a reviewed change.',
   );
   lines.push(
     'Do not install `@decantr/css` or rewrite styling unless the project adoption mode says `decantr-css` or the task explicitly asks for it.',
@@ -62,8 +62,9 @@ export function writeAssistantBridgePreview(input: {
 function bridgeBlock(): string {
   return [
     START,
-    'Before implementing Decantr-scoped work, read `DECANTR.md`, `decantr.essence.json`, and `.decantr/context/scaffold-pack.md` first.',
-    'For brownfield adoption, preserve existing framework, routing, styling, package manager, and build conventions unless the Decantr contract explicitly requires a reviewed change.',
+    'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/brownfield-report.md`, `.decantr/doctrine-map.json`, `.decantr/ambient-context.json`, and `.decantr/context/scaffold-pack.md` first.',
+    'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if they conflict, stop and report the conflict instead of guessing.',
+    'For brownfield adoption, preserve existing framework, routing, styling, package manager, data boundaries, and build conventions unless the Decantr contract explicitly records a reviewed change.',
     'Do not install `@decantr/css` or rewrite styling unless the project adoption mode says `decantr-css` or the task explicitly asks for it.',
     END,
     '',
@@ -99,9 +100,24 @@ ${bridgeBlock()}`;
   return true;
 }
 
+function writeClaudeRule(projectRoot: string): boolean {
+  const path = join(projectRoot, '.claude', 'rules', 'decantr.md');
+  const content = `# Decantr Brownfield Bridge\n\n${bridgeBlock()}`;
+  if (existsSync(path) && readFileSync(path, 'utf-8') === content) return false;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, content);
+  return true;
+}
+
 export function applyAssistantBridge(projectRoot: string, detected: DetectedProject): string[] {
   const updated: string[] = [];
-  const markdownTargets = ['CLAUDE.md', 'AGENTS.md', 'GEMINI.md', 'copilot-instructions.md'];
+  const markdownTargets = [
+    'CLAUDE.md',
+    'AGENTS.md',
+    'GEMINI.md',
+    'copilot-instructions.md',
+    '.github/copilot-instructions.md',
+  ];
 
   for (const target of markdownTargets) {
     if (detected.existingRuleFiles.includes(target) && upsertMarkdownBlock(join(projectRoot, target))) {
@@ -111,6 +127,14 @@ export function applyAssistantBridge(projectRoot: string, detected: DetectedProj
 
   if (detected.existingRuleFiles.includes('.cursorrules')) {
     if (upsertMarkdownBlock(join(projectRoot, '.cursorrules'))) updated.push('.cursorrules');
+  }
+
+  if (detected.existingRuleFiles.includes('.windsurfrules')) {
+    if (upsertMarkdownBlock(join(projectRoot, '.windsurfrules'))) updated.push('.windsurfrules');
+  }
+
+  if (detected.existingRuleFiles.includes('.claude/rules')) {
+    if (writeClaudeRule(projectRoot)) updated.push('.claude/rules/decantr.md');
   }
 
   if (detected.existingRuleFiles.includes('.cursor/rules')) {
