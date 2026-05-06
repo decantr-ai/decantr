@@ -173,19 +173,16 @@
       {
         "id": "marketing-esports",
         "role": "public",
-        "shell": "top-nav-footer",
+        "shell": "immersive-stage",
         "features": [
           "marketing"
         ],
-        "description": "Public marketing landing surface for an esports team operations platform with image-overlay hero, feature grid, testimonials, and final call to action.",
+        "description": "Public esports homepage surface for a live matchday command product with a full-bleed broadcast hero, roster proof, telemetry, and cinematic conversion path.",
         "pages": [
           {
             "id": "home",
             "layout": [
-              "hero",
-              "features",
-              "testimonials",
-              "cta-section"
+              "esports-matchday-command"
             ],
             "route": "/"
           }

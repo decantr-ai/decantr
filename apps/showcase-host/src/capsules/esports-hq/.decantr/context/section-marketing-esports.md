@@ -1,278 +1,116 @@
 # Section: marketing-esports
 
-**Role:** public | **Shell:** top-nav-footer | **Archetype:** marketing-esports
-**Description:** Public marketing landing surface for an esports team operations platform with image-overlay hero, feature grid, testimonials, and final call to action.
+**Role:** public | **Shell:** immersive-stage | **Archetype:** marketing-esports
+**Description:** Public esports homepage surface for a live matchday command product with a full-bleed broadcast hero, roster proof, telemetry, and cinematic conversion path.
 
 ## Quick Start
 
-**Shell:** Horizontal nav with main content and a persistent footer. Used for marketing sites, documentation with ToC footer. (header: 52px)
-**Pages:** 1 (home)
-**Key patterns:** hero, features, testimonials [moderate], cta-section
-**CSS classes:** `.gg-dark`, `.gg-hero`, `.gg-sidebar`, `.neon-glow`
-**Density:** comfortable
-**Voice:** Competitive and operational.
+**Shell:** `immersive-stage`
+**Pages:** 1 (`/`)
+**Key pattern:** `esports-matchday-command`
+**Density:** cinematic, above-the-fold first
+**Voice:** Live broadcast command, competitive, professional.
 
-## Shell Implementation (top-nav-footer)
+Use this section as a greenfield alternative to the standard marketing landing page. It should not read as a centered hero followed by card sections. The first viewport is the product: live match state, team-versus-team tension, roster proof, rolling updates, and angular watch actions.
 
-### body
-
-- **flex:** 1
-- **note:** Full-width sections stack vertically. Each section uses d-section with --d-section-py. Body has NO padding — sections own their spacing. Natural document scroll.
-- **padding:** none
+## Shell Implementation (immersive-stage)
 
 ### root
 
-- **atoms:** _flex _col _minh[100vh]
-- **display:** flex
-- **direction:** column
-- **min_height:** 100vh
-
-### footer
-
-- **note:** Multi-column footer with link groups and legal.
-- **border:** top
-- **padding:** 2rem 1.5rem
-- **position_within:** bottom (mt-auto for short pages)
+- Full-bleed dark stage with `min-height: 100dvh`.
+- No page-level content card, no centered shell container around the home route.
+- Horizontal overflow must be clipped at the stage/root level.
 
 ### header
 
-- **align:** center
-- **border:** bottom
-- **height:** 52px
-- **sticky:** true
-- **display:** flex
-- **justify:** space-between
-- **padding:** 0 1.5rem
-- **z_index:** 10
-- **background:** var(--d-bg)
-- **left_content:** Brand/logo
-- **button_sizing:** Buttons in the header use compact sizing: py-1.5 px-3 text-sm (~32px tall). The header is a tight 52px bar — default d-interactive padding is too large here.
-- **right_content:** CTA button + mobile hamburger. Hamburger ONLY below md breakpoint.
-- **center_content:** Nav links — flex with gap 1.5rem. Hidden below md, visible above.
+- Fixed flush header, full viewport width.
+- Bottom accent line spans the full header width, fading from cyan on the left to neutral center to red on the right.
+- Brand uses a controller/gamepad icon mark with no decorative left stroke.
+- Header links are compact anchors into the home page: `#war-room`, `#roster`, `#access`.
+- CTA remains compact and angular.
+
+### body
+
+- The home route owns its own spatial system.
+- Top padding only accounts for the fixed header.
+- Hero, roster panel, command layers, and access teaser are full-bleed stage regions, not cards inside cards.
 
 ### Anti-patterns
 
-- Do NOT nest `overflow-y-auto` inside another `overflow-y-auto` — one scroll container per region.
-- Do NOT apply `d-surface` to shell frame regions (sidebar, header). Use `var(--d-surface)` or `var(--d-bg)` directly.
-- Do NOT add wrapper `<div>` elements around shell regions — the grid areas handle placement.
+- Do not use the default `hero`, `features`, `testimonials`, or `cta-section` stack for this page.
+- Do not wrap the hero in `d-surface` or generic card grids.
+- Do not center all content in one column on desktop.
+- Do not use pill-heavy badges as visual proof.
+- Do not use decorative shapes that compete with the match story.
 
-## Shell Notes (top-nav-footer)
-
-- **Cta Sections:** CTA sections at the bottom of marketing pages should stand out visually — subtle background gradient or glass effect, not just a plain card.
-- **Section Labels:** Section overline labels (CAPABILITIES, HOW IT WORKS) should be uppercase, small, accent-colored, center-aligned, with letter-spacing: 0.1em. Use d-label class with text-align: center.
-- **Section Spacing:** Marketing sections use spacious density. Each d-section uses full --d-section-py padding.
-
-## Spacing Guide
-
-| Context | Token | Value | Usage |
-|---------|-------|-------|-------|
-| Content gap | `--d-content-gap` | `1rem` | Gap between sibling elements |
-| Section padding | `--d-section-py` | `5rem` | Vertical padding on d-section |
-| Surface padding | `--d-surface-p` | `1.25rem` | Inner padding for d-surface |
-| Interactive V | `--d-interactive-py` | `0.5rem` | Vertical padding on buttons |
-| Interactive H | `--d-interactive-px` | `1rem` | Horizontal padding on buttons |
-| Control | `--d-control-py` | `0.5rem` | Vertical padding on inputs |
-| Data row | `--d-data-py` | `0.625rem` | Vertical padding on table rows |
-
----
+## Guard Context
 
 **Guard:** strict mode | DNA violations = error | Blueprint violations = warn
 
-**Key palette tokens:**
-
-| Token | Value | Role |
-|-------|-------|------|
-| `--d-text` | `#E8EDF5` | Body text, headings, primary content |
-| `--d-border` | `#2A2A40` | Dividers, card borders, separators |
-| `--d-primary` | `#60A5FA` | Brand color, key interactive, selected states |
-| `--d-surface` | `#111118` | Cards, panels, containers |
-| `--d-bg` | `#0A0A0F` | Page canvas / base layer |
-| `--d-text-muted` | `#8888AA` | Secondary text, placeholders, labels |
-| `--d-primary-hover` | `#93C5FD` | Hover state for primary elements |
-| `--d-surface-raised` | `#1A1A25` | Elevated containers, modals, popovers |
-| `--d-accent` | `#a855f7` | CTAs, links, active states, glow effects |
-
-Full token set: `src/styles/tokens.css`
-
-**Visual Treatments:** All 6 base treatments available (see DECANTR.md for usage).
-**Theme decorators:**
-
-| Class | Usage |
-|-------|-------|
-| `.gg-dark` | Near-black background (#0A0A0F) with subtle grid pattern. |
-| `.gg-hero` | Hero with animated gradient background. |
-| `.gg-sidebar` | Dark sidebar with accent-colored active states. |
-| `.gg-slide-in` | Entrance: slide from left with slight bounce. |
-| `.gg-neon-glow` | Neon glow effect behind hero elements. |
-| `.gg-rank-badge` | Rank position with metallic gradient (gold/silver/bronze). |
-| `.gg-stat-pulse` | Stats with subtle pulse animation. |
-| `.gg-achievement-shine` | Achievement cards with shine animation on hover. |
-
-**Spatial hints:** Density bias: -1. Section padding: 64px. Card wrapping: minimal.
-
-
-Usage: `className={css('_flex _col _gap4') + ' d-surface gaming-glass'}` — atoms via css(), treatments and theme decorators as plain class strings.
-
----
-
-**Zone:** Public (public) — top-nav-footer shell
-Anonymous visitors. CTAs lead to Gateway (/login, /register).
-For full app topology, see `.decantr/context/scaffold.md`
-
-## Features
-
-marketing
-
----
+This section intentionally stretches the usual public-page pattern grammar. The contract still needs predictable regions, accessible actions, reduced-motion support, and responsive reflow, but visual composition can be cinematic and free-form.
 
 ## Visual Direction
 
-**Personality:** Professional esports team operations hub with vibrant neon-accented rosters and live scoreboards. Player form trackers show sparklines of K/D ratios, win rates, and self-reported mood indicators. Scrim calendars map team availability to opponent windows. VOD review interface with frame-by-frame annotations and drawing tools. Sponsor dashboards track activation metrics. Think Overwatch League backstage. Lucide icons. Competitive.
+**Personality:** Production esports matchday command surface. Think broadcast truck, coach room, and arena telemetry fused into one polished home page. The hero should make a real match feel live: Team Vitality versus r3Fraction, score state, map context, momentum, player form, and rolling match updates. Use aggressive but controlled typography, angular CTAs, glow accents, dark glass, and motion that supports urgency without becoming noisy.
 
-**Personality utilities available in treatments.css:**
-- `neon-glow`, `neon-glow-hover`, `neon-text-glow`, `neon-border-glow` — Apply to elements needing accent emphasis
+**Theme direction:**
+
+| Token | Role |
+|-------|------|
+| `--hq-cyan` | Live systems, header accent, controls |
+| `--hq-green` | Positive status, primary CTA, live confirmation |
+| `--hq-red` | Opponent tension, warning, match volatility |
+| `--hq-violet` | Broadcast depth and arena energy |
+| `--hq-bg` | Near-black stage canvas |
+| `--hq-ink` | High-contrast headline and primary text |
 
 ## Pattern Reference
 
-### hero
+### esports-matchday-command
 
-Full-width hero with headline, subtext, CTA buttons, and optional media. Entry point for landing pages, recipe detail headers, and marketing sections.
+Full-bleed esports matchday homepage with a live match hero, compact broadcast telemetry, angular animated CTAs, a right-side roster panel, vertical rolling update reel, command layers, and a secure team access teaser.
 
-**Visual brief:** Full-width section dominating the viewport with a bold, large-scale headline centered or left-aligned depending on preset. Generous vertical padding (4-6rem top/bottom) creates breathing room. Subtext sits beneath the headline in muted, lighter-weight type with relaxed line-height. One or two CTA buttons are arranged horizontally with equal height — the primary filled, the secondary ghost-outlined. Optional media (illustration, screenshot, or ambient gradient) appears below or beside the content. Brand preset fills the entire viewport height with decorative floating orbs in the background. Split preset uses a two-column grid with content on one side and media on the other.
-
-**Components:** Button, icon
+**Visual brief:** The page should feel like a live broadcast control surface rather than a SaaS landing page. The first viewport uses an oversized italic match headline, a real score strip, and a glass roster panel that proves the product is actively tracking a match. Motion appears as title gleam, beacon pulse, radar drift, hover sweeps, and a vertical update reel.
 
 **Layout slots:**
-- `media`: Optional image, illustration, or chart component
-- `headline`: Primary heading, typically h1 with _heading1
-- `cta-group`: Horizontal Button group with _flex _gap3
-- `description`: Supporting paragraph with _body _muted
-  **Layout guidance:**
-  - note: Hero sections should NOT wrap content in d-surface cards. The hero IS the section. Use d-section for spacing.
-  - subtitle: Subtitle line-height should be 1.6-1.8. Use text-muted color, smaller font than heading.
-  - container: none
-  - background: Hero sections should have a subtle radial or mesh gradient background using the theme palette — not a flat color. Use the primary and accent colors at very low opacity (5-10%) to create depth. Example: radial-gradient(ellipse at top center, rgba(var(--d-accent-rgb), 0.08) 0%, transparent 60%), or a soft gradient from primary to transparent. The gradient should fade to var(--d-bg) at the edges so it blends seamlessly with the page.
-  - cta_sizing: Primary and secondary CTAs should have equal padding and height. Primary is filled (d-interactive[data-variant=primary]), secondary is ghost (d-interactive[data-variant=ghost]).
-  - ambient_glow: For themes with neon/glow personality, add a soft ambient glow behind the hero heading or CTA area. Use a blurred pseudo-element or box-shadow with the accent color at 10-15% opacity, radius 200-400px. This creates a focal point without overwhelming the content.
-  - announcement: If showing an announcement badge above the heading, use d-annotation with prominent styling — not a tiny muted pill. Accent border or accent background at 15% opacity.
-  - visual_proof: The visual element below CTAs should be an ambient visualization (animated gradient, particle effect, blurred screenshot) — NOT a data widget wrapped in a card. If showing product data (agents, metrics), render as floating elements without card containment. Omit entirely if no meaningful visual is available.
+
+| Slot | Purpose |
+|------|---------|
+| `match-eyebrow` | Live venue or broadcast source label |
+| `match-title` | Team-versus-team headline with integrated `vs` marker |
+| `supporting-copy` | Practical match operations copy, not generic value props |
+| `telemetry-strip` | Inline score and live match metrics |
+| `primary-actions` | Angular `Watch Live` and replay actions |
+| `roster-panel` | Compact team matchup roster with circular avatars |
+| `update-reel` | Vertical live match event feed inside the roster panel |
+| `command-layers` | Free-form lower section describing operational layers |
+| `access-teaser` | Secure team portal preview and login CTA |
+
 **Motion:**
+
 | Interaction | Animation |
 |-------------|-----------|
-| micro | CTA buttons scale subtly on hover (scale 1.02). Badge shimmer on announcement pill. |
-| transitions | Hero entrance: headline fades up from 20px below with 600ms ease-out. Subtext follows 150ms later. CTAs follow 300ms after subtext. Decorative orbs drift slowly with infinite CSS animation. Brand preset media floats with gentle vertical oscillation. |
+| title | White headline stays readable while a bright gleam sweeps across on load and repeats every 4s |
+| live CTA | Beacon pulse and hover shine |
+| update reel | Vertical rolling feed with top/bottom fade mask |
+| radar | Slow ambient rotation, desktop biased left |
+| reduced motion | Disable continuous motion and keep static states readable |
 
 **Responsive:**
-- **Mobile (<640px):** Single column, stacked vertically. Headline drops to heading2 scale. CTAs stack full-width. Padding reduces to py8 px4. Media goes below content at full width. Min-height removed on brand/vision presets.
-- **Tablet (640-1024px):** Content remains centered or stacked. Headline at heading1 scale. CTAs stay horizontal. Split preset still single-column. Padding at py12 px6.
-- **Desktop (>1024px):** Full layout as designed — centered or split two-column. Headline at display scale for brand/vision. Generous py16-py24 padding. Split preset activates side-by-side grid. Decorative elements visible.
+
+- Desktop: hero text begins at the left edge of the content frame, roster panel occupies roughly the right third, radar sits top-left, header is flush full-width.
+- Tablet: hero stacks above roster panel, telemetry remains compact, command layers become shallower.
+- Mobile: title size reduces, `vs` stays integrated without clipping, telemetry becomes two columns or one column on narrow screens, roster rows stack, CTAs become full-width.
 
 **Accessibility:**
-- Role: `banner`
-- Keyboard: Tab to CTA button; Enter activates CTA
-- Announcements: Page title announced on load
-- Focus: CTA button is the primary focus target
 
-
-### features
-
-Feature showcase grid with icon, heading, and description for each feature
-
-**Visual brief:** Grid of feature cards showcasing product capabilities. Each card contains a rounded background circle (48px) holding a feature icon in primary or accent color, a feature heading in medium-weight heading4 text below the icon, and a 2-3 line description in smaller muted text. Cards are evenly distributed in a 3-column grid with consistent gap6 spacing. Cards can be contained surfaces with padding and border, or borderless blocks that rely on spacing alone. An optional centered section heading and subtext sit above the grid. The alternating preset uses wide two-column rows instead — text on one side with a heading, description paragraph, and optional 'Learn more' link, and an image or illustration on the other, with the sides alternating each row. The icon-list preset is a compact single-column list with inline icons.
-
-**Components:** Card, icon
-
-**Layout slots:**
-- `heading`: Optional section heading with _heading2 _textCenter and subtext
-- `feature-card`: Card or borderless block: icon + heading + description
-- `feature-icon`: Icon in a rounded background circle (48px) with muted primary fill
-- `feature-title`: Feature name with _heading4 _fontmedium
-- `feature-description`: Short explanation with _bodysm _fgmuted, 2-3 lines
-  **Layout guidance:**
-  - card_treatment: Feature cards should use a subtle border (1px solid var(--d-border)) with a soft hover effect: translateY(-2px) + border-color transitions to primary on hover. Do NOT use heavy shadows — keep it flat and clean with border-based elevation.
-  - icon_treatment: Feature icons should sit inside a rounded-lg container with a tinted background: background: color-mix(in srgb, var(--d-accent) 10%, transparent). The icon itself uses var(--d-accent) color. This creates a subtle brand-tinted icon well.
-  - section_background: Alternate section background from the hero — if hero fades to var(--d-bg), features should have a slightly elevated background: var(--d-surface) or a 2% lighter shade, creating visual rhythm between sections.
-**Motion:**
-| Interaction | Animation |
-|-------------|-----------|
-| micro | Feature cards lift on hover with translateY(-2px) and subtle shadow increase over 200ms ease. |
-| transitions | Cards stagger in on section enter with fade-up (translateY(12px) to 0) at 300ms ease, 80ms stagger delay per card. |
-
-**Responsive:**
-- **Mobile (<640px):** Single column. Feature cards stack vertically full-width. Icons center above text or align left in a row layout. Alternating preset stacks to single column with image above text. Gap reduces to gap4.
-- **Tablet (640-1024px):** Two-column grid. Alternating preset activates side-by-side layout. Icon-list stays single column. Comfortable spacing.
-- **Desktop (>1024px):** Three-column grid for standard. Alternating preset at full two-column width with generous gap8. Icon-list centered at 640px max-width.
-
-**Accessibility:**
-- Role: `region`
-- Keyboard: Tab navigates between feature cards; Shift+Tab navigates backwards between feature cards
-- Announcements: Feature section with {count} items; Feature: {title}
-
-
-### testimonials
-
-Customer testimonial quotes with avatars, names, roles, and optional company logos
-
-**Visual brief:** Section displaying customer testimonials in a grid of cards. Each card has a large decorative open-quote icon (in muted primary color) at the top-left, followed by the testimonial text in italic body-size type with relaxed line-height. At the bottom of each card, an author row shows a circular avatar (40px), the person's name in medium-weight small text, and their role/company in muted small text. Cards have consistent padding (p6), rounded corners, and subtle border or shadow. The carousel preset shows one testimonial at a time with large centered text, prev/next arrow buttons on either side, and dot navigation indicators below. The featured preset centers a single prominent testimonial with the company logo above the quote.
-
-**Components:** Card, Avatar, Image, icon
-
-**Composition:**
-```
-Testimonials = Grid(d-section, responsive: 1/2/3-col) > TestimonialCard[]
-TestimonialCard = Card(d-surface) > [QuoteIcon(d-annotation) + QuoteText(italic) + AuthorRow > [Avatar + AuthorInfo > [Name(font-medium) + Role(text-muted)] + CompanyLogo?]]
-```
-
-**Layout slots:**
-- `author`: Row: Avatar (40px) + name (_textsm _fontmedium) + role/company (_textsm _fgmuted)
-- `heading`: Optional section heading with _heading2 _textCenter
-- `quote-icon`: Large decorative open-quote icon in muted primary color at top
-- `quote-text`: Testimonial paragraph with _body _italic _leading[relaxed]
-- `testimonial-card`: Card with quote icon, testimonial text, and author row
-  **Layout guidance:**
-  - card_treatment: Testimonial cards should use d-surface with a thin left border (3px solid) that rotates through accent/primary colors per card. This creates visual variety without inconsistency. Include a large decorative open-quote mark in low-opacity accent color.
-  - avatar_treatment: Avatars should have a subtle ring: 2px solid var(--d-primary) with 2px gap (outline-offset). This frames the person and adds polish.
-  - section_background: Use a very subtle gradient background: linear-gradient(180deg, var(--d-bg), color-mix(in srgb, var(--d-surface) 30%, var(--d-bg))). This creates visual separation from pricing above without being heavy.
-**Motion:**
-| Interaction | Animation |
-|-------------|-----------|
-| micro | Carousel slides transition with 400ms ease translateX. Auto-play advances every 5s. |
-| transitions | Testimonial cards fade in on section enter with 300ms ease. Carousel dot indicators pulse on active transition. |
-
-**Responsive:**
-- **Mobile (<640px):** Grid collapses to single column. Cards go full-width. Carousel shows one testimonial with swipe gesture support and dot indicators. Featured preset reduces quote text size. Padding to px4 py8.
-- **Tablet (640-1024px):** Two-column grid. Carousel controls visible. Featured preset centered with comfortable max-width.
-- **Desktop (>1024px):** Three-column grid with gap6. Carousel shows prev/next buttons on hover. Featured preset at 720px max-width centered.
-
-**Accessibility:**
-- Role: `region`
-- Keyboard: Tab moves to next/previous carousel controls; Enter or Space activates carousel navigation buttons; Arrow Left/Right navigates between slides in carousel preset
-- Announcements: Testimonial {number} of {total}; Slide changed to testimonial by {author}
-- Focus: Carousel pauses auto-play when any element within receives focus. Resumes on blur after 3s delay.
-
-
-### cta-section
-
-Full-width call-to-action section with headline, description, and action buttons
-
-**Visual brief:** Full-width call-to-action section with generous vertical padding (py12) and centered content. A bold heading2-scale headline sits at top, followed by a supporting paragraph in muted text constrained to 640px max-width for readability. Two CTA buttons arranged horizontally below — the primary button filled with brand color, the secondary as a ghost/outlined variant. The section background can carry a subtle gradient, pattern, or elevated surface treatment to stand out from adjacent content sections. The split preset places text and CTA on the left with an illustration or image on the right. The banner preset is a compact horizontal bar with accent background tint, text on the left and a single button on the right.
-
-**Components:** Button
-
-**Layout slots:**
-- `headline`: Section heading with _heading2, centered
-- `cta-group`: Horizontal Button group with _flex _gap3, primary + secondary
-- `description`: Supporting paragraph with _body _fgmuted _mw[640px]
-**Responsive:**
-- **Mobile (<640px):** Standard preset: content stacks vertically, full-width. CTA buttons stack vertically at full width. Split preset becomes single column with image below text. Banner preset wraps text and button vertically.
-- **Tablet (640-1024px):** Standard stays centered. Split preset activates two-column grid. Banner remains horizontal. Padding adjusts to py8.
-- **Desktop (>1024px):** Full layout as designed. Standard centered with generous spacing. Split shows two-column with image. Banner compact and horizontal with accent background.
-
-
----
+- Home section uses `aria-labelledby` for the match title.
+- Roster and update reel have descriptive `aria-label` values.
+- Buttons are real buttons and keep visible focus states from the base runtime.
+- Motion must respect `prefers-reduced-motion`.
 
 ## Pages
 
-### home (/)
-
-Layout: hero → features → testimonials → cta-section
+| Page | Route | Layout |
+|------|-------|--------|
+| home | `/` | `esports-matchday-command` |

@@ -1,132 +1,234 @@
 import { useNavigate } from 'react-router-dom';
-import { Hero } from '@/components/Hero';
-import { Users, Calendar, Video, BarChart3, Handshake, Shield } from 'lucide-react';
-import { testimonials, marketingFeatures } from '@/data/mock';
+import { ArrowUpRight, Lock, Play, Radio } from 'lucide-react';
 
-const iconMap: Record<string, typeof Users> = {
-  users: Users,
-  calendar: Calendar,
-  video: Video,
-  'bar-chart': BarChart3,
-  handshake: Handshake,
-  shield: Shield,
-};
+const rosterRows = [
+  {
+    home: { avatar: 'PX', name: 'PhantomX', role: 'Entry' },
+    away: { avatar: 'VX', name: 'VexRift', role: 'Duelist' },
+  },
+  {
+    home: { avatar: 'CN', name: 'CyberNova', role: 'Support' },
+    away: { avatar: 'RK', name: 'RiftKade', role: 'Sentinel' },
+  },
+  {
+    home: { avatar: 'BF', name: 'BlazeFury', role: 'AWPer' },
+    away: { avatar: 'NR', name: 'NullRaze', role: 'Anchor' },
+  },
+  {
+    home: { avatar: 'IW', name: 'IronWolf', role: 'IGL' },
+    away: { avatar: 'HM', name: 'HexMotive', role: 'Controller' },
+  },
+  {
+    home: { avatar: 'PS', name: 'PixelStorm', role: 'Lurker' },
+    away: { avatar: 'SK', name: 'SilicaK', role: 'Flex' },
+  },
+];
+
+const updates = [
+  ['12:44', 'Vitality converts a broken buy on B split'],
+  ['12:02', 'r3F burns both flashes before the retake call'],
+  ['11:37', 'PixelStorm opens mid with a clean triple entry'],
+  ['10:58', 'IronWolf sells the fake and empties A site'],
+  ['10:21', 'CyberNova denies Baron setup with late vision'],
+  ['09:46', 'NullRaze clutches the 1v3 post-plant retake'],
+];
+
+const telemetry = [
+  { label: 'Map ban closes', value: '04:12' },
+  { label: 'Comms', value: '94' },
+  { label: 'Form', value: '91' },
+  { label: 'Momentum', value: '+18' },
+];
+
+const commandLayers = [
+  {
+    label: '01',
+    title: 'Live Pressure',
+    copy: 'Opponent tempo, player fatigue, economy risk, and round pressure pulse together.',
+  },
+  {
+    label: '02',
+    title: 'Replay Evidence',
+    copy: 'Every clip lands as a timestamped coaching decision, not a forgotten VOD note.',
+  },
+  {
+    label: '03',
+    title: 'Partner Control',
+    copy: 'Sponsor reads, broadcast windows, and activation promises stay inside match flow.',
+  },
+];
 
 export function HomePage() {
   const navigate = useNavigate();
+  const reelItems = [...updates, ...updates];
 
   return (
-    <div>
-      {/* Hero */}
-      <Hero
-        badge="Esports Operations Platform"
-        headline="Run Your Team Like a Pro Org"
-        description="Player form tracking, scrim scheduling, VOD review with annotations, and sponsor dashboards. Everything your coaching staff needs in one place."
-      >
-        <button className="d-interactive" data-variant="primary" onClick={() => navigate('/register')} style={{ fontSize: '0.9rem' }}>
-          Get Started Free
-        </button>
-        <button className="d-interactive" onClick={() => navigate('/login')} style={{ fontSize: '0.9rem' }}>
-          Sign In
-        </button>
-      </Hero>
+    <div className="matchday-page">
+      <section className="matchday" aria-labelledby="matchday-title">
+        <div className="matchday-field" aria-hidden="true">
+          <span className="matchday-grid" />
+          <span className="matchday-light light-cyan" />
+          <span className="matchday-light light-violet" />
+          <span className="matchday-light light-red" />
+          <span className="matchday-radar">
+            <span />
+            <span />
+            <span />
+          </span>
+        </div>
 
-      {/* Features grid */}
-      <section className="d-section" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 2rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.5rem' }}>Everything Your Team Needs</h2>
-          <p style={{ color: 'var(--d-text-muted)', fontSize: '1rem', maxWidth: 480, margin: '0 auto' }}>
-            Built by coaches, for coaches. Every tool designed for competitive esports.
+        <div className="hero-copy">
+          <p className="match-eyebrow">
+            <span />
+            Live from Metro Gaming Coliseum
           </p>
-        </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 'var(--d-gap-6)',
-        }}>
-          {marketingFeatures.map((feature, i) => {
-            const Icon = iconMap[feature.icon] || Shield;
-            return (
-              <div
-                key={feature.title}
-                className="d-surface neon-glow-hover"
-                data-interactive
-                style={{
-                  padding: '1.5rem',
-                  animationDelay: `${i * 80}ms`,
-                }}
-              >
-                <div style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 'var(--d-radius)',
-                  background: 'color-mix(in srgb, var(--d-primary) 12%, transparent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: '1rem',
-                }}>
-                  <Icon size={22} style={{ color: 'var(--d-primary)' }} />
-                </div>
-                <h3 style={{ fontWeight: 600, marginBottom: '0.375rem' }}>{feature.title}</h3>
-                <p style={{ fontSize: '0.875rem', color: 'var(--d-text-muted)', lineHeight: 1.6 }}>
-                  {feature.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+          <h1 id="matchday-title">
+            <span data-text="Team Vitality">Team Vitality</span>
+            <em>vs.</em>
+            <span data-text="r3Fraction">r3Fraction</span>
+          </h1>
+          <p className="lede">
+            Live score, map control, player form, and coaching cues update in one broadcast view
+            built for the next call before the round resets.
+          </p>
 
-      {/* Testimonials */}
-      <section className="d-section" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 2rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Trusted by Teams</h2>
+          <div className="match-telemetry" aria-label="Broadcast telemetry">
+            <div className="telemetry-score">
+              <span>Team Vitality</span>
+              <strong>8</strong>
+              <em>Ascent</em>
+              <strong>6</strong>
+              <span>R3F</span>
+            </div>
+            {telemetry.map((item) => (
+              <div key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="hero-actions" aria-label="Primary actions">
+            <button className="cut-button primary live-watch" type="button" onClick={() => navigate('/team')}>
+              <span className="live-beacon" aria-hidden="true" />
+              <span>Watch Live</span>
+            </button>
+            <button className="cut-button secondary" type="button" onClick={() => navigate('/vods')}>
+              <Play size={17} />
+              <span>Watch Replay</span>
+            </button>
+          </div>
         </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 'var(--d-gap-4)',
-        }}>
-          {testimonials.map(t => (
-            <div key={t.id} className="d-surface" style={{ padding: '1.25rem' }}>
-              <p style={{ fontSize: '0.9rem', lineHeight: 1.7, marginBottom: '1rem', fontStyle: 'italic', color: 'var(--d-text-muted)' }}>
-                &ldquo;{t.quote}&rdquo;
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 'var(--d-radius-full)',
-                  background: 'linear-gradient(135deg, var(--d-primary), var(--d-accent))',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.6rem',
-                  fontWeight: 700,
-                }}>
-                  {t.avatar}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: '0.85rem' }}>{t.author}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--d-text-muted)' }}>{t.role}</div>
-                </div>
+
+        <aside className="roster-panel" id="roster" aria-label="Team Vitality versus r3Fraction roster">
+          <div className="roster-panel__score">
+            <span>Team Vitality</span>
+            <strong>8</strong>
+            <em>Ascent</em>
+            <strong>6</strong>
+            <span>r3Fraction</span>
+          </div>
+          <div className="roster-grid" aria-label="Starting five matchup">
+            <div className="roster-head">
+              <span>Vitality</span>
+              <span>r3F</span>
+            </div>
+            {rosterRows.map((row) => (
+              <article key={`${row.home.name}-${row.away.name}`}>
+                <PlayerCard player={row.home} tint="cyan" />
+                <PlayerCard player={row.away} tint="pink" rival />
+              </article>
+            ))}
+          </div>
+
+          <div className="roster-feed" aria-label="Live match updates">
+            <div className="roster-feed__head">
+              <span>Live updates</span>
+              <strong>rolling</strong>
+            </div>
+            <div className="roster-reel">
+              <div className="reel-track">
+                {reelItems.map(([time, text], index) => (
+                  <span key={`${time}-${index}`}>
+                    <em>{time}</em>
+                    {text}
+                  </span>
+                ))}
               </div>
             </div>
+          </div>
+        </aside>
+      </section>
+
+      <section className="war-room" id="war-room" aria-labelledby="war-room-title">
+        <div className="section-heading">
+          <p>
+            <Radio size={15} />
+            Command layers
+          </p>
+          <h2 id="war-room-title">Built like a broadcast truck, tuned like a coaching room.</h2>
+        </div>
+
+        <div className="war-lanes">
+          {commandLayers.map((layer) => (
+            <article className="lane" key={layer.label}>
+              <span>{layer.label}</span>
+              <h3>{layer.title}</h3>
+              <p>{layer.copy}</p>
+              <ArrowUpRight size={20} />
+            </article>
           ))}
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="d-section" style={{ textAlign: 'center', padding: '2rem' }}>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 600, marginBottom: '0.75rem' }}>Ready to Level Up?</h2>
-        <p style={{ color: 'var(--d-text-muted)', marginBottom: '1.5rem', maxWidth: 420, margin: '0 auto 1.5rem' }}>
-          Join teams already using Esports HQ to dominate their competition.
-        </p>
-        <button className="d-interactive neon-glow" data-variant="primary" onClick={() => navigate('/register')} style={{ fontSize: '1rem', padding: '0.625rem 2rem' }}>
-          Start Free Trial
-        </button>
+      <section className="access" id="access" aria-labelledby="access-title">
+        <div className="access-art" aria-hidden="true">
+          <span className="portal-ring ring-a" />
+          <span className="portal-ring ring-b" />
+          <span className="portal-core" />
+          <span className="portal-blade blade-a" />
+          <span className="portal-blade blade-b" />
+        </div>
+
+        <form className="access-form">
+          <p>
+            <Lock size={15} />
+            Secure team portal
+          </p>
+          <h2 id="access-title">Enter the command room</h2>
+          <label>
+            <span>Operator</span>
+            <input type="text" defaultValue="coach@shadowlegion.gg" />
+          </label>
+          <label>
+            <span>Access key</span>
+            <input type="password" defaultValue="matchday" />
+          </label>
+          <button className="cut-button primary" type="button" onClick={() => navigate('/login')}>
+            <span>Authorize</span>
+          </button>
+        </form>
       </section>
+    </div>
+  );
+}
+
+function PlayerCard({
+  player,
+  rival = false,
+  tint,
+}: {
+  player: { avatar: string; name: string; role: string };
+  rival?: boolean;
+  tint: 'cyan' | 'pink';
+}) {
+  return (
+    <div className={`player-card${rival ? ' rival' : ''}`}>
+      <span className={`avatar avatar-${tint}`}>{player.avatar}</span>
+      <div>
+        <strong>{player.name}</strong>
+        <em>{player.role}</em>
+      </div>
     </div>
   );
 }

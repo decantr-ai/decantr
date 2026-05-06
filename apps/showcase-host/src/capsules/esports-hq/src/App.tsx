@@ -2,7 +2,8 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext, useAuthProvider } from '@/hooks/useAuth';
 import { SidebarMain } from '@/shells/SidebarMain';
 import { Centered } from '@/shells/Centered';
-import { TopNavFooter } from '@/shells/TopNavFooter';
+import { AuthSplitScene } from '@/shells/AuthSplitScene';
+import { ImmersiveStage } from '@/shells/ImmersiveStage';
 
 /* team-operations (primary) */
 import { TeamOverviewPage } from '@/pages/TeamOverviewPage';
@@ -43,15 +44,19 @@ import { SettingsDangerPage } from '@/pages/SettingsDangerPage';
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public zone — top-nav-footer shell */}
-      <Route element={<TopNavFooter />}>
+      {/* Public zone - immersive-stage shell */}
+      <Route element={<ImmersiveStage />}>
         <Route path="/" element={<HomePage />} />
       </Route>
 
-      {/* Gateway zone — centered shell */}
-      <Route element={<Centered />}>
+      {/* Gateway zone - auth-split-scene shell */}
+      <Route element={<AuthSplitScene />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+      </Route>
+
+      {/* Supporting auth flows - centered shell */}
+      <Route element={<Centered />}>
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />

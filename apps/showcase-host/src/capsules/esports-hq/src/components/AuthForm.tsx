@@ -25,7 +25,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+    <form className="esx-auth-form" onSubmit={handleSubmit}>
       <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
         <div style={{
           width: 48,
@@ -87,7 +87,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
 
-      <button className="d-interactive" data-variant="primary" type="submit" style={{ width: '100%', justifyContent: 'center' }}>
+      <button className="d-interactive esx-auth-submit" data-variant="primary" type="submit">
         {mode === 'login' ? 'Sign In' : 'Create Account'}
       </button>
 
