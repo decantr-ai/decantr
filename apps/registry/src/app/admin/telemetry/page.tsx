@@ -2,7 +2,9 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import {
   api,
+  type AdminTelemetryCandidateAlias,
   type AdminTelemetryIdentityAlias,
+  type AdminTelemetryUsageResponse,
   type TelemetryActorType,
   type TelemetryIdentityType,
 } from '@/lib/api';
@@ -30,6 +32,9 @@ const actorOptions: Array<{ label: string; value: TelemetryActorType }> = [
   { label: 'Anonymous', value: 'anonymous' },
   { label: 'Service', value: 'service' },
 ];
+const triageActorOptions = actorOptions.filter((option) =>
+  ['customer', 'internal', 'official_pipeline'].includes(option.value)
+);
 
 function isIdentityType(value: unknown): value is TelemetryIdentityType {
   return identityOptions.some((option) => option.value === value);
@@ -39,13 +44,39 @@ function isActorType(value: unknown): value is TelemetryActorType {
   return actorOptions.some((option) => option.value === value);
 }
 
-function formatTimestamp(value: string) {
+function formatNumber(value: number) {
+  return new Intl.NumberFormat('en-US').format(value);
+}
+
+function formatTimestamp(value: string | null) {
+  if (!value) return 'Unknown';
   return new Date(value).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+function actorStatus(actorType: string) {
+  if (actorType === 'customer') return 'success';
+  if (actorType === 'internal' || actorType === 'official_pipeline') return 'info';
+  return 'warning';
+}
+
+function candidateLabel(candidate: AdminTelemetryCandidateAlias) {
+  return `Usage candidate ${candidate.identity_id} (${candidate.sources.join(', ')})`.slice(0, 160);
+}
+
+function candidateReviewHref(candidate: AdminTelemetryCandidateAlias) {
+  const params = new URLSearchParams({
+    q: candidate.identity_id,
+    new_identity_type: candidate.identity_type,
+    new_identity_id: candidate.identity_id,
+    new_actor_type: isActorType(candidate.actor_type) ? candidate.actor_type : 'customer',
+    new_label: candidateLabel(candidate),
+  });
+  return `/admin/telemetry?${params}`;
 }
 
 function postHogEventsUrl(alias: AdminTelemetryIdentityAlias) {
@@ -65,6 +96,10 @@ export default async function AdminTelemetryPage({
   searchParams: Promise<{
     actor_type?: string;
     identity_type?: string;
+    new_actor_type?: string;
+    new_identity_id?: string;
+    new_identity_type?: string;
+    new_label?: string;
     org_id?: string;
     q?: string;
     user_id?: string;
@@ -74,22 +109,49 @@ export default async function AdminTelemetryPage({
   const query = typeof params.q === 'string' ? params.q : '';
   const identityType = isIdentityType(params.identity_type) ? params.identity_type : '';
   const actorType = isActorType(params.actor_type) ? params.actor_type : '';
+  const newIdentityType = isIdentityType(params.new_identity_type) ? params.new_identity_type : 'install';
+  const newActorType = isActorType(params.new_actor_type) ? params.new_actor_type : 'internal';
+  const newIdentityId = typeof params.new_identity_id === 'string' ? params.new_identity_id : '';
+  const newLabel = typeof params.new_label === 'string' ? params.new_label : '';
   const orgId = typeof params.org_id === 'string' ? params.org_id : '';
   const userId = typeof params.user_id === 'string' ? params.user_id : '';
   const { token, adminKey } = await requireAdminRequestContext();
 
   let aliases = null;
+  let candidateUsage: AdminTelemetryUsageResponse | null = null;
   let error: string | null = null;
+  let candidateError: string | null = null;
   try {
-    aliases = await api.getAdminTelemetryAliases(token, adminKey, {
-      q: query || undefined,
-      identity_type: identityType || undefined,
-      actor_type: actorType || undefined,
-      org_id: orgId || undefined,
-      user_id: userId || undefined,
-      limit: 100,
-      offset: 0,
-    });
+    const [aliasResult, candidateResult] = await Promise.allSettled([
+      api.getAdminTelemetryAliases(token, adminKey, {
+        q: query || undefined,
+        identity_type: identityType || undefined,
+        actor_type: actorType || undefined,
+        org_id: orgId || undefined,
+        user_id: userId || undefined,
+        limit: 100,
+        offset: 0,
+      }),
+      api.getAdminTelemetryUsage(token, adminKey, {
+        days: 30,
+      }),
+    ]);
+
+    if (aliasResult.status === 'fulfilled') {
+      aliases = aliasResult.value;
+    } else {
+      error = aliasResult.reason instanceof Error
+        ? aliasResult.reason.message
+        : 'Failed to load telemetry aliases';
+    }
+
+    if (candidateResult.status === 'fulfilled') {
+      candidateUsage = candidateResult.value;
+    } else {
+      candidateError = candidateResult.reason instanceof Error
+        ? candidateResult.reason.message
+        : 'Failed to load active identity candidates';
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load telemetry aliases';
   }
@@ -149,6 +211,82 @@ export default async function AdminTelemetryPage({
       ) : null}
 
       <section className="d-section" data-density="compact">
+        <span className="d-label registry-anchor-label">
+          Candidate Review Queue
+        </span>
+        <div className="registry-admin-stack">
+          {candidateUsage ? (
+            <div className="registry-admin-stat-grid">
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(candidateUsage.summary.candidate_aliases)}</span>
+                <span className="registry-admin-row-meta">Unaliased identities</span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(candidateUsage.summary.unclassified_events)}</span>
+                <span className="registry-admin-row-meta">Unclassified events</span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(candidateUsage.summary.customer_events)}</span>
+                <span className="registry-admin-row-meta">Customer events</span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(candidateUsage.summary.internal_events + candidateUsage.summary.official_pipeline_events)}</span>
+                <span className="registry-admin-row-meta">Decantr-owned events</span>
+              </div>
+            </div>
+          ) : null}
+
+          {candidateError ? (
+            <div className="d-annotation registry-inline-error" data-status="info">
+              {candidateError}
+            </div>
+          ) : null}
+
+          {candidateUsage ? (
+            <div className="d-surface registry-admin-stack">
+              {candidateUsage.candidate_aliases.length ? (
+                candidateUsage.candidate_aliases.slice(0, 12).map((candidate) => (
+                  <div key={`${candidate.identity_type}:${candidate.identity_id}`} className="registry-admin-alias-row">
+                    <div className="registry-admin-alias-row-head">
+                      <span className="registry-admin-row-copy">
+                        <span className="registry-admin-row-title registry-admin-monospace">
+                          {candidate.identity_type}:{candidate.identity_id}
+                        </span>
+                        <span className="registry-admin-row-meta">
+                          {candidate.sources.join(', ')} · {formatNumber(candidate.events)} events · {formatTimestamp(candidate.last_seen)}
+                        </span>
+                      </span>
+                      <span className="d-annotation" data-status={actorStatus(candidate.actor_type)}>
+                        {candidate.actor_type}
+                      </span>
+                    </div>
+                    <div className="registry-inline-actions">
+                      {triageActorOptions.map((option) => (
+                        <form key={option.value} action={upsertTelemetryAlias}>
+                          <input type="hidden" name="identity_type" value={candidate.identity_type} />
+                          <input type="hidden" name="identity_id" value={candidate.identity_id} />
+                          <input type="hidden" name="actor_type" value={option.value} />
+                          <input type="hidden" name="label" value={candidateLabel(candidate)} />
+                          <button type="submit" className="d-interactive" data-variant="ghost">
+                            Mark {option.label.toLowerCase()}
+                          </button>
+                        </form>
+                      ))}
+                      <Link href={candidateReviewHref(candidate)} className="d-interactive" data-variant="ghost">
+                        Review details
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <span className="registry-admin-row-meta">No active unaliased identities in the 30-day window.</span>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="d-section" data-density="compact">
         <form method="get" action="/admin/telemetry" className="d-surface registry-surface-stack">
           <div className="registry-admin-telemetry-filter-grid">
             {orgId ? <input type="hidden" name="org_id" value={orgId} /> : null}
@@ -194,10 +332,20 @@ export default async function AdminTelemetryPage({
           Add or Update Alias
         </span>
         <form action={upsertTelemetryAlias} className="d-surface registry-admin-stack">
+          {newIdentityId ? (
+            <div className="registry-inline-actions">
+              <span className="d-annotation" data-status="info">
+                Candidate prefilled
+              </span>
+              <Link href="/admin/telemetry" className="d-interactive" data-variant="ghost">
+                Clear prefill
+              </Link>
+            </div>
+          ) : null}
           <div className="registry-admin-alias-grid">
             <label className="registry-field-stack">
               <span className="registry-admin-row-title">Identity type</span>
-              <select className="d-control" name="identity_type" defaultValue="install" required>
+              <select className="d-control" name="identity_type" defaultValue={newIdentityType} required>
                 {identityOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
@@ -205,11 +353,11 @@ export default async function AdminTelemetryPage({
             </label>
             <label className="registry-field-stack">
               <span className="registry-admin-row-title">Identity ID</span>
-              <input className="d-control" name="identity_id" maxLength={256} placeholder="install_..." required />
+              <input className="d-control" name="identity_id" maxLength={256} defaultValue={newIdentityId} placeholder="install_..." required />
             </label>
             <label className="registry-field-stack">
               <span className="registry-admin-row-title">Actor</span>
-              <select className="d-control" name="actor_type" defaultValue="internal" required>
+              <select className="d-control" name="actor_type" defaultValue={newActorType} required>
                 {actorOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
@@ -217,7 +365,7 @@ export default async function AdminTelemetryPage({
             </label>
             <label className="registry-field-stack">
               <span className="registry-admin-row-title">Label</span>
-              <input className="d-control" name="label" maxLength={160} placeholder="Local founder install" />
+              <input className="d-control" name="label" maxLength={160} defaultValue={newLabel} placeholder="Local founder install" />
             </label>
             <label className="registry-field-stack">
               <span className="registry-admin-row-title">User</span>

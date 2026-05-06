@@ -229,6 +229,9 @@ Admins can manage durable identity overrides from the registry portal:
 
 The page supports the first operational loop for attribution hygiene:
 
+- review active 30-day candidate aliases pulled from live PostHog usage
+- one-click classify candidates as `customer`, `internal`, or `official_pipeline`
+- open a prefilled alias editor when the identity needs a user, org, or custom label
 - add or update an `anonymous`, `install`, or `project` alias
 - classify it as `customer`, `internal`, `official_pipeline`, `anonymous`, or `service`
 - optionally attach the alias to a Supabase user by email or id, and an organization by slug or id

@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import {
   api,
   type AdminTelemetryOperatingAlert,
+  type AdminTelemetryCandidateAlias,
   type AdminTelemetryUsageTrend,
   type TelemetryActorType,
   type TelemetryUsageSource,
@@ -88,6 +89,17 @@ function actorStatus(actorType: string) {
 
 function candidateLabel(identityId: string, sources: string[]) {
   return `Usage candidate ${identityId} (${sources.join(', ')})`.slice(0, 160);
+}
+
+function candidateAliasHref(candidate: AdminTelemetryCandidateAlias) {
+  const params = new URLSearchParams({
+    q: candidate.identity_id,
+    new_identity_type: candidate.identity_type,
+    new_identity_id: candidate.identity_id,
+    new_actor_type: isActorType(candidate.actor_type) ? candidate.actor_type : 'customer',
+    new_label: candidateLabel(candidate.identity_id, candidate.sources),
+  });
+  return `/admin/telemetry?${params}`;
 }
 
 export default async function AdminTelemetryUsagePage({
@@ -387,11 +399,11 @@ export default async function AdminTelemetryUsagePage({
                       </form>
                     ))}
                     <Link
-                      href={`/admin/telemetry?q=${encodeURIComponent(candidate.identity_id)}`}
+                      href={candidateAliasHref(candidate)}
                       className="d-interactive"
                       data-variant="ghost"
                     >
-                      Alias
+                      Review
                     </Link>
                   </div>
                 </div>
