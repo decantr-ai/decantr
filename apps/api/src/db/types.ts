@@ -11,6 +11,8 @@ export interface Database {
           stripe_customer_id: string | null;
           reputation_score: number;
           trusted: boolean;
+          is_internal: boolean;
+          is_test: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -23,6 +25,8 @@ export interface Database {
           stripe_customer_id?: string | null;
           reputation_score?: number;
           trusted?: boolean;
+          is_internal?: boolean;
+          is_test?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -35,6 +39,8 @@ export interface Database {
           stripe_customer_id?: string | null;
           reputation_score?: number;
           trusted?: boolean;
+          is_internal?: boolean;
+          is_test?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -49,6 +55,8 @@ export interface Database {
           tier: 'team' | 'enterprise';
           stripe_subscription_id: string | null;
           seat_limit: number;
+          is_internal: boolean;
+          is_test: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -60,6 +68,8 @@ export interface Database {
           tier: 'team' | 'enterprise';
           stripe_subscription_id?: string | null;
           seat_limit?: number;
+          is_internal?: boolean;
+          is_test?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -71,6 +81,8 @@ export interface Database {
           tier?: 'team' | 'enterprise';
           stripe_subscription_id?: string | null;
           seat_limit?: number;
+          is_internal?: boolean;
+          is_test?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -375,6 +387,57 @@ export interface Database {
           },
           {
             foreignKeyName: 'audit_logs_org_id_fkey';
+            columns: ['org_id'];
+            isOneToOne: false;
+            referencedRelation: 'organizations';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      telemetry_identity_aliases: {
+        Row: {
+          id: string;
+          identity_type: 'anonymous' | 'install' | 'project';
+          identity_id: string;
+          actor_type: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          user_id: string | null;
+          org_id: string | null;
+          label: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          identity_type: 'anonymous' | 'install' | 'project';
+          identity_id: string;
+          actor_type: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          user_id?: string | null;
+          org_id?: string | null;
+          label?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          identity_type?: 'anonymous' | 'install' | 'project';
+          identity_id?: string;
+          actor_type?: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
+          user_id?: string | null;
+          org_id?: string | null;
+          label?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'telemetry_identity_aliases_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'telemetry_identity_aliases_org_id_fkey';
             columns: ['org_id'];
             isOneToOne: false;
             referencedRelation: 'organizations';

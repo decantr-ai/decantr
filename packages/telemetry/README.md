@@ -41,11 +41,11 @@ Every event can carry `context.actorType` so Decantr can distinguish founder/int
 
 - `anonymous`: unauthenticated registry/API browsing or resolution with only an anonymous id.
 - `customer`: authenticated hosted usage, org/project usage, or opted-in CLI install/project usage.
-- `internal`: Decantr team traffic identified by server-side opaque id allowlists or explicit internal CLI env.
+- `internal`: Decantr team, QA, and synthetic traffic identified by server-side identity flags or opaque id allowlists.
 - `official_pipeline`: Decantr-owned content validation/publish automation.
 - `service`: backend service events that are not attributable to a user, org, install, project, or anonymous visitor.
 
-If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API also normalizes public ingest events and can override known Decantr-owned IDs through `DECANTR_INTERNAL_USER_IDS`, `DECANTR_INTERNAL_ORG_IDS`, `DECANTR_INTERNAL_INSTALL_IDS`, `DECANTR_INTERNAL_PROJECT_IDS`, and `DECANTR_INTERNAL_ANONYMOUS_IDS`.
+If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API normalizes public ingest events with server-authoritative attribution from Supabase identity flags, `telemetry_identity_aliases`, and fallback overrides through `DECANTR_INTERNAL_USER_IDS`, `DECANTR_INTERNAL_ORG_IDS`, `DECANTR_INTERNAL_INSTALL_IDS`, `DECANTR_INTERNAL_PROJECT_IDS`, and `DECANTR_INTERNAL_ANONYMOUS_IDS`.
 
 ## PostHog
 

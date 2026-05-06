@@ -145,7 +145,15 @@ All telemetry should classify the actor behind the event through `context.actorT
 - `official_pipeline`: Decantr-owned content CI validation/publish automation.
 - `service`: unattributed backend service work.
 
-The hosted API normalizes public telemetry ingest before forwarding to PostHog. Configure server-side internal allowlists with comma-separated opaque ids:
+The hosted API normalizes public telemetry ingest before forwarding to PostHog. Actor attribution is server-authoritative: public clients may send a hint, but production classification is resolved from the hosted source, Supabase identity flags, opaque identity aliases, and finally env allowlists.
+
+The durable source of truth lives in Supabase:
+
+- `users.is_internal` / `organizations.is_internal` mark Decantr-owned accounts.
+- `users.is_test` / `organizations.is_test` mark QA or synthetic accounts; these are reported as `internal` so customer dashboards stay clean.
+- `telemetry_identity_aliases` maps opaque `anonymous`, `install`, and `project` ids to an actor type for CLI/project attribution without storing customer code, prompts, paths, or emails.
+
+Env allowlists remain as operational overrides and bootstrapping fallback. Configure them with comma-separated opaque ids:
 
 ```env
 DECANTR_INTERNAL_USER_IDS=
@@ -155,7 +163,7 @@ DECANTR_INTERNAL_PROJECT_IDS=
 DECANTR_INTERNAL_ANONYMOUS_IDS=
 ```
 
-The CLI can explicitly mark Decantr-owned local runs with `DECANTR_TELEMETRY_ACTOR_TYPE=internal`. External opted-in CLI usage defaults to `customer`.
+External opted-in CLI usage defaults to `customer`. Decantr-owned local CLI runs should be marked by adding their opaque install/project id to `telemetry_identity_aliases` or the env allowlists above.
 
 ## Registry Web Wiring
 

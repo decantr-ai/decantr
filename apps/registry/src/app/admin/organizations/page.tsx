@@ -86,6 +86,16 @@ export default async function AdminOrganizationsPage({
                   <span className="d-annotation" data-status={org.tier === 'enterprise' ? 'warning' : 'info'}>
                     {org.tier}
                   </span>
+                  {org.is_internal ? (
+                    <span className="d-annotation" data-status="success">
+                      internal
+                    </span>
+                  ) : null}
+                  {org.is_test ? (
+                    <span className="d-annotation" data-status="info">
+                      test
+                    </span>
+                  ) : null}
                 </div>
 
                 <div className="registry-admin-card-list">

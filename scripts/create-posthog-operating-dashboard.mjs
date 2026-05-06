@@ -95,15 +95,18 @@ const insightSpecs = [
   {
     name: 'Core product usage',
     description:
-      'Daily volume for the primary Decantr usage events across registry resolution, execution packs, audits, critiques, CLI, and MCP/API surfaces.',
-    query: trendLine([
-      [events.registryItemResolved, 'Registry item resolved'],
-      [events.executionPackCompiled, 'Execution pack compiled'],
-      [events.executionPackSelected, 'Execution pack selected'],
-      [events.auditCompleted, 'Audit completed'],
-      [events.critiqueCompleted, 'Critique completed'],
-      [events.cliCommandCompleted, 'CLI command completed'],
-    ]),
+      'Daily customer-attributed volume for the primary Decantr usage events across registry resolution, execution packs, audits, critiques, CLI, and MCP/API surfaces.',
+    query: trendLine(
+      [
+        [events.registryItemResolved, 'Registry item resolved'],
+        [events.executionPackCompiled, 'Execution pack compiled'],
+        [events.executionPackSelected, 'Execution pack selected'],
+        [events.auditCompleted, 'Audit completed'],
+        [events.critiqueCompleted, 'Critique completed'],
+        [events.cliCommandCompleted, 'CLI command completed'],
+      ],
+      { properties: [actorProperty('customer')] },
+    ),
   },
   {
     name: 'Customer product usage',

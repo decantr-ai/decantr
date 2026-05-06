@@ -3,6 +3,10 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { api } from '@/lib/api';
 import { requireAdminRequestContext } from '@/lib/admin-workspace';
+import {
+  updateOrganizationTelemetryClassification,
+  updateUserTelemetryClassification,
+} from '../actions';
 
 export const metadata: Metadata = {
   title: 'Organization Detail',
@@ -65,6 +69,16 @@ export default async function AdminOrganizationDetailPage({
                 <span className="d-annotation" data-status={detail.organization.tier === 'enterprise' ? 'warning' : 'info'}>
                   {detail.organization.tier}
                 </span>
+                {detail.organization.is_internal ? (
+                  <span className="d-annotation" data-status="success">
+                    internal
+                  </span>
+                ) : null}
+                {detail.organization.is_test ? (
+                  <span className="d-annotation" data-status="info">
+                    test
+                  </span>
+                ) : null}
               </div>
 
               <div className="registry-admin-card-list">
@@ -78,6 +92,45 @@ export default async function AdminOrganizationDetailPage({
                 <div>Private package review: {detail.policy.require_private_content_approval ? 'Required' : 'Direct private publish'}</div>
               </div>
             </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Telemetry Classification
+            </span>
+
+            <form
+              action={updateOrganizationTelemetryClassification.bind(null, detail.organization.slug)}
+              className="d-surface registry-admin-stack"
+            >
+              <label className="registry-admin-row">
+                <span className="registry-admin-row-copy">
+                  <span className="registry-admin-row-title">Internal Decantr organization</span>
+                  <span className="registry-admin-row-meta">Exclude this org from customer product metrics.</span>
+                </span>
+                <input
+                  name="is_internal"
+                  type="checkbox"
+                  defaultChecked={detail.organization.is_internal}
+                />
+              </label>
+              <label className="registry-admin-row">
+                <span className="registry-admin-row-copy">
+                  <span className="registry-admin-row-title">Synthetic or QA organization</span>
+                  <span className="registry-admin-row-meta">Treat this org as diagnostic/test telemetry.</span>
+                </span>
+                <input
+                  name="is_test"
+                  type="checkbox"
+                  defaultChecked={detail.organization.is_test}
+                />
+              </label>
+              <div className="registry-inline-actions">
+                <button type="submit" className="d-interactive" data-variant="primary">
+                  Save classification
+                </button>
+              </div>
+            </form>
           </section>
 
           <section className="d-section" data-density="compact">
@@ -97,6 +150,40 @@ export default async function AdminOrganizationDetailPage({
                     </span>
                   </div>
                   <span className="d-annotation">{member.role}</span>
+                  {member.is_internal ? (
+                    <span className="d-annotation" data-status="success">
+                      internal
+                    </span>
+                  ) : null}
+                  {member.is_test ? (
+                    <span className="d-annotation" data-status="info">
+                      test
+                    </span>
+                  ) : null}
+                  <form
+                    action={updateUserTelemetryClassification.bind(null, detail.organization.slug, member.user_id)}
+                    className="registry-inline-actions"
+                  >
+                    <label className="d-annotation">
+                      <input
+                        name="is_internal"
+                        type="checkbox"
+                        defaultChecked={member.is_internal}
+                      />{' '}
+                      Internal
+                    </label>
+                    <label className="d-annotation">
+                      <input
+                        name="is_test"
+                        type="checkbox"
+                        defaultChecked={member.is_test}
+                      />{' '}
+                      Test
+                    </label>
+                    <button type="submit" className="d-interactive" data-variant="ghost">
+                      Save
+                    </button>
+                  </form>
                 </div>
               ))}
             </div>

@@ -7,6 +7,7 @@ import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
 import { logger } from '../lib/logger.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
+import { recordAuditEvent } from '../lib/audit-log.js';
 
 export const adminRoutes = new Hono<Env>();
 const ORG_TIERS = ['team', 'enterprise'] as const;
@@ -69,8 +70,12 @@ adminRoutes.use('/admin/moderation/*', requireAuth());
 adminRoutes.use('/admin/moderation/*', requireAdmin());
 adminRoutes.use('/admin/commercial/*', requireAuth());
 adminRoutes.use('/admin/commercial/*', requireAdmin());
+adminRoutes.use('/admin/organizations', requireAuth());
+adminRoutes.use('/admin/organizations', requireAdmin());
 adminRoutes.use('/admin/organizations/*', requireAuth());
 adminRoutes.use('/admin/organizations/*', requireAdmin());
+adminRoutes.use('/admin/users/*', requireAuth());
+adminRoutes.use('/admin/users/*', requireAdmin());
 
 // GET /v1/admin/moderation/queue
 adminRoutes.get('/admin/moderation/queue', async (c) => {
@@ -271,6 +276,22 @@ function aggregateUsageTotals(rows: Array<{ metric?: string | null; quantity?: n
   }, {});
 }
 
+function parseTelemetryClassificationPatch(body: unknown): { is_internal: boolean; is_test: boolean } | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null;
+  }
+
+  const input = body as Record<string, unknown>;
+  if (typeof input.is_internal !== 'boolean' || typeof input.is_test !== 'boolean') {
+    return null;
+  }
+
+  return {
+    is_internal: input.is_internal,
+    is_test: input.is_test,
+  };
+}
+
 // GET /v1/admin/organizations
 adminRoutes.get('/admin/organizations', async (c) => {
   const client = createAdminClient();
@@ -281,7 +302,7 @@ adminRoutes.get('/admin/organizations', async (c) => {
 
   const { data: organizations, error } = await client
     .from('organizations')
-    .select('id, name, slug, tier, seat_limit, stripe_subscription_id')
+    .select('id, name, slug, tier, seat_limit, stripe_subscription_id, is_internal, is_test')
     .order('name', { ascending: true });
 
   if (error) {
@@ -330,6 +351,8 @@ adminRoutes.get('/admin/organizations', async (c) => {
         tier: org.tier,
         seat_limit: org.seat_limit ?? 0,
         stripe_subscription_id: org.stripe_subscription_id ?? null,
+        is_internal: org.is_internal ?? false,
+        is_test: org.is_test ?? false,
         member_count: memberCountResult.count ?? 0,
         package_count: publicPackages + privatePackages,
         public_packages: publicPackages,
@@ -359,7 +382,7 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
 
   const { data: org, error } = await client
     .from('organizations')
-    .select('id, name, slug, tier, seat_limit, stripe_subscription_id, created_at')
+    .select('id, name, slug, tier, seat_limit, stripe_subscription_id, is_internal, is_test, created_at')
     .eq('slug', slug)
     .single();
 
@@ -379,7 +402,7 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
   ] = await Promise.all([
     client
       .from('org_members')
-      .select('user_id, role, created_at, users(email, display_name, username)')
+      .select('user_id, role, created_at, users(email, display_name, username, is_internal, is_test)')
       .eq('org_id', org.id)
       .order('created_at', { ascending: true }),
     client.from('content').select('*', { count: 'exact', head: true }).eq('org_id', org.id).eq('visibility', 'private'),
@@ -407,6 +430,8 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
     email: member.users?.email ?? '',
     display_name: member.users?.display_name ?? null,
     username: member.users?.username ?? null,
+    is_internal: member.users?.is_internal ?? false,
+    is_test: member.users?.is_test ?? false,
     role: member.role,
     created_at: member.created_at,
   }));
@@ -437,6 +462,8 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
       tier: org.tier,
       seat_limit: org.seat_limit ?? 0,
       stripe_subscription_id: org.stripe_subscription_id ?? null,
+      is_internal: org.is_internal ?? false,
+      is_test: org.is_test ?? false,
       created_at: org.created_at,
     },
     usage: {
@@ -457,6 +484,81 @@ adminRoutes.get('/admin/organizations/:slug', async (c) => {
     recent_audit: auditResult.data ?? [],
     recent_content: recentContent,
   });
+});
+
+// PATCH /v1/admin/organizations/:slug/telemetry
+adminRoutes.patch('/admin/organizations/:slug/telemetry', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const client = createAdminClient();
+  const slug = c.req.param('slug');
+  const patch = parseTelemetryClassificationPatch(await c.req.json().catch(() => null));
+
+  if (!patch) {
+    return c.json({ error: 'is_internal and is_test boolean fields are required' }, 400);
+  }
+
+  const { data: org, error } = await client
+    .from('organizations')
+    .update(patch)
+    .eq('slug', slug)
+    .select('id, slug, is_internal, is_test')
+    .single();
+
+  if (error || !org) {
+    return c.json({ error: 'Organization not found' }, 404);
+  }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: org.id,
+    scope: 'organization',
+    action: 'telemetry_identity.updated',
+    target_type: 'organization',
+    target_id: org.id,
+    details: {
+      is_internal: org.is_internal,
+      is_test: org.is_test,
+    },
+  });
+
+  return c.json({ organization: org });
+});
+
+// PATCH /v1/admin/users/:id/telemetry
+adminRoutes.patch('/admin/users/:id/telemetry', async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const client = createAdminClient();
+  const userId = c.req.param('id');
+  const patch = parseTelemetryClassificationPatch(await c.req.json().catch(() => null));
+
+  if (!patch) {
+    return c.json({ error: 'is_internal and is_test boolean fields are required' }, 400);
+  }
+
+  const { data: user, error } = await client
+    .from('users')
+    .update(patch)
+    .eq('id', userId)
+    .select('id, is_internal, is_test')
+    .single();
+
+  if (error || !user) {
+    return c.json({ error: 'User not found' }, 404);
+  }
+
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    scope: 'user',
+    action: 'telemetry_identity.updated',
+    target_type: 'user',
+    target_id: user.id,
+    details: {
+      is_internal: user.is_internal,
+      is_test: user.is_test,
+    },
+  });
+
+  return c.json({ user });
 });
 
 // GET /v1/admin/commercial/summary

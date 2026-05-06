@@ -53,6 +53,8 @@ function createAdminOrganizationsClient() {
       tier: 'team',
       seat_limit: 5,
       stripe_subscription_id: 'sub_team',
+      is_internal: false,
+      is_test: false,
       created_at: '2026-04-01T00:00:00.000Z',
     },
     {
@@ -62,6 +64,8 @@ function createAdminOrganizationsClient() {
       tier: 'enterprise',
       seat_limit: 20,
       stripe_subscription_id: 'sub_ent',
+      is_internal: false,
+      is_test: false,
       created_at: '2026-04-02T00:00:00.000Z',
     },
   ];
@@ -72,13 +76,13 @@ function createAdminOrganizationsClient() {
         user_id: 'user-1',
         role: 'owner',
         created_at: '2026-04-01T00:00:00.000Z',
-        users: { email: 'owner@acme.com', display_name: 'Owner', username: 'owner' },
+        users: { email: 'owner@acme.com', display_name: 'Owner', username: 'owner', is_internal: false, is_test: false },
       },
       {
         user_id: 'user-2',
         role: 'member',
         created_at: '2026-04-02T00:00:00.000Z',
-        users: { email: 'member@acme.com', display_name: 'Member', username: 'member' },
+        users: { email: 'member@acme.com', display_name: 'Member', username: 'member', is_internal: false, is_test: false },
       },
     ],
     'org-2': [
@@ -86,7 +90,7 @@ function createAdminOrganizationsClient() {
         user_id: 'user-3',
         role: 'owner',
         created_at: '2026-04-02T00:00:00.000Z',
-        users: { email: 'owner@bright.com', display_name: 'Bright Owner', username: 'bright-owner' },
+        users: { email: 'owner@bright.com', display_name: 'Bright Owner', username: 'bright-owner', is_internal: false, is_test: false },
       },
     ],
   };
@@ -171,6 +175,7 @@ function createAdminOrganizationsClient() {
       const state: {
         filters: Record<string, unknown>;
         selectArgs: unknown[];
+        updateBody?: Record<string, unknown>;
       } = {
         filters: {},
         selectArgs: [],
@@ -183,6 +188,11 @@ function createAdminOrganizationsClient() {
           state.selectArgs = args;
           return chain;
         }),
+        update: vi.fn((body: Record<string, unknown>) => {
+          state.updateBody = body;
+          return chain;
+        }),
+        insert: vi.fn(async () => ({ data: null, error: null })),
         eq: vi.fn((field: string, value: unknown) => {
           state.filters[field] = value;
           return chain;
@@ -201,7 +211,20 @@ function createAdminOrganizationsClient() {
         single: vi.fn(async () => {
           if (table === 'organizations') {
             const org = organizations.find((row) => row.slug === state.filters.slug);
+            if (org && state.updateBody) {
+              Object.assign(org, state.updateBody);
+            }
             return org ? { data: org, error: null } : { data: null, error: { message: 'not found' } };
+          }
+          if (table === 'users') {
+            return {
+              data: {
+                id: state.filters.id,
+                is_internal: state.updateBody?.is_internal ?? false,
+                is_test: state.updateBody?.is_test ?? false,
+              },
+              error: null,
+            };
           }
           if (table === 'organization_policies') {
             return {
@@ -289,6 +312,8 @@ describe('Admin organization routes', () => {
       pending_approvals: 1,
       require_public_content_approval: true,
       api_requests_30d: 250,
+      is_internal: false,
+      is_test: false,
     });
   });
 
@@ -324,5 +349,49 @@ describe('Admin organization routes', () => {
     expect(json.members).toHaveLength(2);
     expect(json.recent_audit).toHaveLength(1);
     expect(json.recent_content).toHaveLength(2);
+  });
+
+  it('updates organization telemetry classification flags', async () => {
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/organizations/acme/telemetry', {
+      method: 'PATCH',
+      headers: {
+        Authorization: 'Bearer test-token',
+        'Content-Type': 'application/json',
+        'X-Admin-Key': 'test-admin-key',
+      },
+      body: JSON.stringify({ is_internal: true, is_test: false }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.organization).toMatchObject({
+      slug: 'acme',
+      is_internal: true,
+      is_test: false,
+    });
+  });
+
+  it('updates user telemetry classification flags', async () => {
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/users/user-1/telemetry', {
+      method: 'PATCH',
+      headers: {
+        Authorization: 'Bearer test-token',
+        'Content-Type': 'application/json',
+        'X-Admin-Key': 'test-admin-key',
+      },
+      body: JSON.stringify({ is_internal: false, is_test: true }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.user).toMatchObject({
+      id: 'user-1',
+      is_internal: false,
+      is_test: true,
+    });
   });
 });

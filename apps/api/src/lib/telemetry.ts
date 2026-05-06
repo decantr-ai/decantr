@@ -3,7 +3,6 @@ import {
   createNoopTelemetrySink,
   createPostHogTelemetrySink,
   createTelemetryClient,
-  resolveTelemetryActorType,
   type DecantrTelemetryEvent,
   type TelemetryActorResolutionOptions,
   type TelemetryContext,
@@ -13,6 +12,7 @@ import {
 import type { Context } from 'hono';
 import type { Env } from '../types.js';
 import { logger } from './logger.js';
+import { resolveApiTelemetryActorType } from './telemetry-actor.js';
 
 const TELEMETRY_TIMEOUT_MS = 3000;
 
@@ -26,66 +26,65 @@ export function emitApiTelemetry(
   c: Context<Env>,
   event: ApiTelemetryEventInput,
 ): void {
-  const telemetry = getApiTelemetryClient();
   const auth = c.get('auth');
 
-  void telemetry.capture({
+  enqueueTelemetryCapture({
     ...event,
-    context: createApiTelemetryContext({
+    context: {
+      source: 'api',
+      environment: getTelemetryEnvironment(),
+      serviceName: 'decantr-api',
+      serviceVersion: process.env.DECANTR_API_VERSION,
       anonymousId: auth?.user?.id ? undefined : 'api:anonymous',
       userId: auth?.user?.id,
       orgId: auth?.apiKeyOrgId ?? undefined,
       registrySource: c.req.query('namespace') === '@official' ? 'official' : undefined,
       ...event.context,
-    }),
+    },
   } as DecantrTelemetryEvent);
 }
 
 export function emitApiServiceTelemetry(event: ApiTelemetryEventInput): void {
-  const telemetry = getApiTelemetryClient();
-  void telemetry.capture({
+  enqueueTelemetryCapture({
     ...event,
-    context: createApiTelemetryContext({
+    context: {
+      source: 'api',
+      environment: getTelemetryEnvironment(),
+      serviceName: 'decantr-api',
+      serviceVersion: process.env.DECANTR_API_VERSION,
       anonymousId: event.context?.userId ? undefined : 'api:anonymous',
       ...event.context,
-    }),
+    },
   } as DecantrTelemetryEvent);
 }
 
 export function captureTelemetryEvent(event: DecantrTelemetryEvent): void {
-  const telemetry = getApiTelemetryClient();
-  void telemetry.capture({
-    ...event,
-    context: normalizeTelemetryContext(event.context),
-  } as DecantrTelemetryEvent);
+  enqueueTelemetryCapture(event);
 }
 
-function createApiTelemetryContext(context: Partial<TelemetryContext>): TelemetryContext {
-  return normalizeTelemetryContext({
-    source: 'api',
-    environment: getTelemetryEnvironment(),
-    serviceName: 'decantr-api',
-    serviceVersion: process.env.DECANTR_API_VERSION,
-    ...context,
+function enqueueTelemetryCapture(event: DecantrTelemetryEvent): void {
+  void captureTelemetryEventAsync(event).catch((error) => {
+    logger.debug({ err: error, event: event.name }, 'Telemetry event dropped');
   });
 }
 
-function normalizeTelemetryContext(context: TelemetryContext): TelemetryContext {
+async function captureTelemetryEventAsync(event: DecantrTelemetryEvent): Promise<void> {
+  const telemetry = getApiTelemetryClient();
+  await telemetry.capture({
+    ...event,
+    context: await normalizeTelemetryContext(event.context),
+  } as DecantrTelemetryEvent);
+}
+
+async function normalizeTelemetryContext(context: TelemetryContext): Promise<TelemetryContext> {
   const normalized: TelemetryContext = {
     environment: getTelemetryEnvironment(),
     ...context,
   };
-  const serverResolvedActorType = resolveTelemetryActorType(
-    { ...normalized, actorType: undefined },
-    getInternalActorOptions(),
-  );
 
   return {
     ...normalized,
-    actorType:
-      serverResolvedActorType === 'internal' || serverResolvedActorType === 'official_pipeline'
-        ? serverResolvedActorType
-        : resolveTelemetryActorType(normalized, getInternalActorOptions()),
+    actorType: await resolveApiTelemetryActorType(normalized, getInternalActorOptions()),
   };
 }
 

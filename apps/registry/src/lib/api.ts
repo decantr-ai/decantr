@@ -35,6 +35,8 @@ export interface OrgMember {
   email: string;
   display_name?: string | null;
   username?: string | null;
+  is_internal: boolean;
+  is_test: boolean;
   role: string;
   created_at: string;
 }
@@ -185,6 +187,8 @@ export interface AdminOrganizationSummary {
   tier: 'team' | 'enterprise';
   seat_limit: number;
   stripe_subscription_id: string | null;
+  is_internal: boolean;
+  is_test: boolean;
   member_count: number;
   package_count: number;
   public_packages: number;
@@ -211,6 +215,8 @@ export interface AdminOrganizationDetail {
     tier: 'team' | 'enterprise';
     seat_limit: number;
     stripe_subscription_id: string | null;
+    is_internal: boolean;
+    is_test: boolean;
     created_at: string;
   };
   usage: {
@@ -256,6 +262,11 @@ export interface ModerationQueueResponse {
   limit: number;
   offset: number;
   items: ModerationQueueItem[];
+}
+
+export interface TelemetryClassificationPatch {
+  is_internal: boolean;
+  is_test: boolean;
 }
 
 interface FetchOptions {
@@ -662,6 +673,36 @@ export const api = {
       token,
       adminKey,
     }),
+  updateAdminOrganizationTelemetry: (
+    token: string,
+    adminKey: string,
+    slug: string,
+    patch: TelemetryClassificationPatch,
+  ) =>
+    adminFetch<{ organization: { id: string; slug: string; is_internal: boolean; is_test: boolean } }>(
+      `/admin/organizations/${slug}/telemetry`,
+      {
+        token,
+        adminKey,
+        method: 'PATCH',
+        body: JSON.stringify(patch),
+      },
+    ),
+  updateAdminUserTelemetry: (
+    token: string,
+    adminKey: string,
+    userId: string,
+    patch: TelemetryClassificationPatch,
+  ) =>
+    adminFetch<{ user: { id: string; is_internal: boolean; is_test: boolean } }>(
+      `/admin/users/${userId}/telemetry`,
+      {
+        token,
+        adminKey,
+        method: 'PATCH',
+        body: JSON.stringify(patch),
+      },
+    ),
 };
 
 // Standalone exports for server components
