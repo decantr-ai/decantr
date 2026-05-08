@@ -122,7 +122,7 @@ Use these options to tune the generated workflow:
 ```bash
 decantr health init-ci --force
 decantr health init-ci --fail-on warn
-decantr health init-ci --cli-version 1.11.0
+decantr health init-ci --cli-version 2.0.0
 decantr health init-ci --workflow-path .github/workflows/project-health.yml
 decantr health init-ci --project apps/registry
 ```

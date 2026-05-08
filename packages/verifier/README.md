@@ -51,7 +51,7 @@ function isBlocking(report: ProjectHealthReport) {
 
 ## Compatibility
 
-`@decantr/verifier` is stable in the `1.x` line for the documented verifier APIs and published report-schema exports.
+`@decantr/verifier` is stable in the `2.x` line for the documented verifier APIs and published report-schema exports.
 
 - new checks and additive report fields may appear in compatible releases
 - breaking report-shape or exported API changes require a major version

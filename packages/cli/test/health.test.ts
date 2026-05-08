@@ -232,24 +232,24 @@ describe('Project Health report', () => {
   it('renders a GitHub Actions Project Health workflow', () => {
     const workflow = renderProjectHealthCiWorkflow({
       failOn: 'warn',
-      cliVersion: '1.11.0',
+      cliVersion: '2.0.0',
       reportPath: 'reports/decantr-health.md',
       jsonPath: 'reports/decantr-health.json',
     });
 
     expect(workflow).toContain('name: Decantr Project Health');
     expect(workflow).toContain(
-      'npx --yes @decantr/cli@1.11.0 health --json --output reports/decantr-health.json',
+      'npx --yes @decantr/cli@2.0.0 health --json --output reports/decantr-health.json',
     );
     expect(workflow).toContain(
-      'npx --yes @decantr/cli@1.11.0 health --ci --fail-on warn --markdown --output reports/decantr-health.md',
+      'npx --yes @decantr/cli@2.0.0 health --ci --fail-on warn --markdown --output reports/decantr-health.md',
     );
     expect(workflow).toContain('actions/upload-artifact@v6');
   });
 
   it('renders a monorepo-aware Project Health workflow', () => {
     const workflow = renderProjectHealthCiWorkflow({
-      cliVersion: '1.11.0',
+      cliVersion: '2.0.0',
       projectPath: 'apps/registry',
       reportPath: 'reports/decantr-health.md',
       jsonPath: 'reports/decantr-health.json',
@@ -257,7 +257,7 @@ describe('Project Health report', () => {
 
     expect(workflow).toContain('working-directory: apps/registry');
     expect(workflow).toContain(
-      'npx --yes @decantr/cli@1.11.0 health --json --output reports/decantr-health.json',
+      'npx --yes @decantr/cli@2.0.0 health --json --output reports/decantr-health.json',
     );
     expect(workflow).toContain('apps/registry/reports/decantr-health.json');
     expect(workflow).toContain('apps/registry/reports/decantr-health.md');
@@ -285,7 +285,7 @@ describe('Project Health report', () => {
       '--force',
       '--fail-on=warn',
       '--cli-version',
-      '1.11.0',
+      '2.0.0',
       '--workflow-path',
       '.github/workflows/custom-health.yml',
       '--report-path=reports/health.md',
@@ -297,7 +297,7 @@ describe('Project Health report', () => {
     expect(parsed.initCi).toEqual({
       force: true,
       failOn: 'warn',
-      cliVersion: '1.11.0',
+      cliVersion: '2.0.0',
       workflowPath: '.github/workflows/custom-health.yml',
       reportPath: 'reports/health.md',
       jsonPath: 'reports/health.json',

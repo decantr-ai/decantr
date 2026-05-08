@@ -46,7 +46,7 @@ This package owns the canonical registry schemas published under `@decantr/regis
 
 ## Compatibility
 
-`@decantr/registry` is part of the stable public Decantr package surface in the `1.x` line.
+`@decantr/registry` is part of the stable public Decantr package surface in the `2.x` line.
 
 - exported schema paths and documented client entrypoints are expected to remain stable across `1.x`
 - additive response fields may be introduced without breaking the stable contract
