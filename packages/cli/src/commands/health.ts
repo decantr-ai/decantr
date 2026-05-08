@@ -47,6 +47,7 @@ export interface HealthCiOptions {
   workflowPath?: string;
   reportPath?: string;
   jsonPath?: string;
+  projectPath?: string;
 }
 
 export interface HealthCiWriteResult {
@@ -54,6 +55,7 @@ export interface HealthCiWriteResult {
   created: boolean;
   cliPackage: string;
   failOn: HealthFailOn;
+  projectPath?: string;
 }
 
 interface ProjectMetadata {
@@ -161,17 +163,56 @@ function validateArtifactPath(value: string, flag: string): string {
   return normalized;
 }
 
+function validateProjectPath(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  const raw = value.trim();
+  if (!raw || raw === '.') return undefined;
+  const normalized = raw.replace(/^\.\/+/, '').replace(/\/+$/, '');
+  if (
+    !normalized ||
+    normalized.startsWith('/') ||
+    normalized.startsWith('-') ||
+    normalized.includes('..') ||
+    normalized.includes('\\') ||
+    /\s/.test(normalized) ||
+    !/^[A-Za-z0-9._@/-]+$/.test(normalized)
+  ) {
+    throw new Error(
+      'Invalid --project value. Use a relative project path without spaces or parent-directory segments.',
+    );
+  }
+
+  const segments = normalized.split('/');
+  if (segments.some((segment) => !segment || segment === '.' || segment === '..')) {
+    throw new Error(
+      'Invalid --project value. Use a relative project path without empty or parent-directory segments.',
+    );
+  }
+
+  return normalized;
+}
+
+function prefixArtifactPath(projectPath: string | undefined, artifactPath: string): string {
+  return projectPath ? `${projectPath}/${artifactPath}` : artifactPath;
+}
+
 export function renderProjectHealthCiWorkflow(options: HealthCiOptions = {}): string {
   const failOn = normalizeHealthFailOn(options.failOn);
+  const projectPath = validateProjectPath(options.projectPath);
+  const reportPath = validateArtifactPath(
+    options.reportPath || DEFAULT_HEALTH_CI_REPORT_PATH,
+    '--report-path',
+  );
+  const jsonPath = validateArtifactPath(options.jsonPath || DEFAULT_HEALTH_CI_JSON_PATH, '--json-path');
   const template = loadHealthTemplate('decantr-health.workflow.yml.template');
   return renderTemplate(template, {
     CLI_PACKAGE: normalizeCliPackageSpecifier(options.cliVersion),
     FAIL_ON: failOn,
-    REPORT_PATH: validateArtifactPath(
-      options.reportPath || DEFAULT_HEALTH_CI_REPORT_PATH,
-      '--report-path',
-    ),
-    JSON_PATH: validateArtifactPath(options.jsonPath || DEFAULT_HEALTH_CI_JSON_PATH, '--json-path'),
+    PROJECT_WORKING_DIRECTORY: projectPath ? `        working-directory: ${projectPath}\n` : '',
+    REPORT_PATH: reportPath,
+    JSON_PATH: jsonPath,
+    REPORT_ARTIFACT_PATH: prefixArtifactPath(projectPath, reportPath),
+    JSON_ARTIFACT_PATH: prefixArtifactPath(projectPath, jsonPath),
   });
 }
 
@@ -192,13 +233,16 @@ export function writeProjectHealthCiWorkflow(
 
   mkdirSync(dirname(workflowPath), { recursive: true });
   writeFileSync(workflowPath, renderProjectHealthCiWorkflow(options), 'utf-8');
+  const projectPath = validateProjectPath(options.projectPath);
 
-  return {
+  const result: HealthCiWriteResult = {
     path: workflowRelativePath,
     created: !alreadyExists,
     cliPackage: normalizeCliPackageSpecifier(options.cliVersion),
     failOn: normalizeHealthFailOn(options.failOn),
   };
+  if (projectPath) result.projectPath = projectPath;
+  return result;
 }
 
 function collectDeclaredRoutes(essence: unknown): string[] {
@@ -646,6 +690,9 @@ export async function cmdHealth(
       const action = result.created ? 'Created' : 'Updated';
       console.log(`${GREEN}${action} Decantr Project Health workflow:${RESET} ${result.path}`);
       console.log(`${DIM}CLI package: ${result.cliPackage}${RESET}`);
+      if (result.projectPath) {
+        console.log(`${DIM}Project: ${result.projectPath}${RESET}`);
+      }
       console.log(`${DIM}CI gate: decantr health --ci --fail-on ${result.failOn}${RESET}`);
     } catch (e) {
       console.error(`${RED}${(e as Error).message}${RESET}`);
@@ -720,10 +767,15 @@ export function parseHealthArgs(args: string[]): HealthCommandOptions {
         options.initCi.jsonPath = args[++index];
       } else if (arg.startsWith('--json-path=')) {
         options.initCi.jsonPath = arg.split('=')[1];
+      } else if (arg === '--project' && args[index + 1]) {
+        options.initCi.projectPath = args[++index];
+      } else if (arg.startsWith('--project=')) {
+        options.initCi.projectPath = arg.split('=')[1];
       }
     }
 
     normalizeHealthFailOn(options.initCi.failOn);
+    validateProjectPath(options.initCi.projectPath);
     return options;
   }
 

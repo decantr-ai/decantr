@@ -99,11 +99,12 @@ decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
 decantr health init-ci
 decantr health init-ci --fail-on warn --cli-version latest --force
+decantr health init-ci --project apps/registry
 ```
 
 Use `--json` for machines and schema validation, `--markdown` for CI summaries, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
 
-`decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes `decantr-health.json`, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI.
+`decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes `decantr-health.json`, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path.
 
 `decantr studio` starts a local-only dashboard powered by the same report. It uses Node built-ins only and serves `GET /`, `GET /api/health`, and `POST /api/refresh`.
 

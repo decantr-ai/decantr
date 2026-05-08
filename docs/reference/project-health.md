@@ -122,9 +122,12 @@ Use these options to tune the generated workflow:
 ```bash
 decantr health init-ci --force
 decantr health init-ci --fail-on warn
-decantr health init-ci --cli-version 1.10.0
+decantr health init-ci --cli-version 1.11.0
 decantr health init-ci --workflow-path .github/workflows/project-health.yml
+decantr health init-ci --project apps/registry
 ```
+
+For monorepos, run `init-ci` from the repository root and pass the app contract path with `--project <path>`. The generated workflow installs dependencies at the root, runs both health commands with `working-directory: <path>`, appends the project-local markdown report to the GitHub step summary, and uploads artifacts using root-relative paths such as `apps/registry/decantr-health.json`.
 
 The generated pull request gate runs:
 
