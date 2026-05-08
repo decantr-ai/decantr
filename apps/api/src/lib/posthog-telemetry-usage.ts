@@ -45,6 +45,7 @@ const TELEMETRY_SIGNAL_BUCKETS = [
       'cli.command.completed',
       'decantr.check.completed',
       'decantr.init.completed',
+      'decantr.new.completed',
       'decantr.refresh.completed',
       'registry.sync.completed',
     ],
@@ -56,6 +57,7 @@ const TELEMETRY_SIGNAL_BUCKETS = [
       'decantr.check.completed',
       'decantr.health.healthy',
       'decantr.init.completed',
+      'decantr.new.completed',
       'decantr.refresh.completed',
       'health.report.generated',
       'studio.started',
@@ -253,6 +255,7 @@ export interface TelemetryProductActivationSummary {
   health_report_events: number;
   healthy_project_events: number;
   init_completed_events: number;
+  new_completed_events: number;
   refresh_completed_events: number;
   remediation_prompt_events: number;
   studio_refresh_events: number;
@@ -1047,6 +1050,7 @@ function buildProductActivationSummary(
     health_report_events: healthReportEvents,
     healthy_project_events: healthyProjectEvents,
     init_completed_events: totals.get('decantr.init.completed') ?? 0,
+    new_completed_events: totals.get('decantr.new.completed') ?? 0,
     refresh_completed_events: totals.get('decantr.refresh.completed') ?? 0,
     remediation_prompt_events: totals.get('health.finding.prompt_requested') ?? 0,
     studio_refresh_events: totals.get('studio.health_refreshed') ?? 0,

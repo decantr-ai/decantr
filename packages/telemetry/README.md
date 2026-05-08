@@ -20,6 +20,7 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `audit.completed`
 - `critique.completed`
 - `decantr.init.completed`
+- `decantr.new.completed`
 - `decantr.refresh.completed`
 - `decantr.check.completed`
 - `decantr.health.healthy`

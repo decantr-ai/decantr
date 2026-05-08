@@ -5,6 +5,7 @@
 New events:
 
 - `decantr.init.completed`
+- `decantr.new.completed`
 - `decantr.refresh.completed`
 - `decantr.check.completed`
 - `decantr.health.healthy`
@@ -14,6 +15,6 @@ New events:
 - `studio.started`
 - `studio.health_refreshed`
 
-Project Health remains local project observability. Opted-in telemetry includes only aggregate outcome metadata such as status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. It does not upload reports, prompts, evidence, routes, source code, local paths, or environment values.
+Project Health remains local project observability. First-run setup can opt in explicitly with `decantr new --telemetry` or `decantr init --telemetry`. Opted-in telemetry includes only aggregate outcome metadata such as lifecycle command outcome, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. It does not upload reports, prompts, evidence, routes, source code, local paths, or environment values.
 
 The admin telemetry usage view now includes a Product Activation section, the PostHog operating dashboard creates Project Activation and Project Health outcome insights, and the weekly telemetry snapshot reports lifecycle, health, Studio, and CI activation movement.

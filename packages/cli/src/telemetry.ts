@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type AdoptionMode,
@@ -121,7 +121,10 @@ export interface CliTelemetryEventInput {
 }
 
 export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): Promise<void> {
-  const projectRoot = input.projectRoot ?? process.cwd();
+  const projectRoot = resolveCliTelemetryProjectRoot(
+    input.projectRoot ?? process.cwd(),
+    input.args ?? [],
+  );
   if (!isOptedIn(projectRoot)) {
     return;
   }
@@ -163,7 +166,7 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
 }
 
 export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): Promise<void> {
-  const projectRoot = input.projectRoot ?? process.cwd();
+  const projectRoot = resolveCliTelemetryProjectRoot(input.projectRoot ?? process.cwd(), input.args);
   const command = normalizeCommand(input.args[0]);
   if (!isOptedIn(projectRoot) || !command || command === 'help' || command === 'version') {
     return;
@@ -226,6 +229,39 @@ export async function sendProjectHealthReportTelemetry(
       properties,
     });
   }
+}
+
+export interface NewProjectCompletedTelemetryInput {
+  args?: string[];
+  durationMs: number;
+  projectRoot?: string;
+  success: boolean;
+}
+
+export async function sendNewProjectCompletedTelemetry(
+  input: NewProjectCompletedTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const args = input.args ?? ['new'];
+  const base = buildCliLifecycleProperties({
+    args,
+    command: 'new',
+    durationMs: input.durationMs,
+    projectRoot,
+    success: input.success,
+  });
+  const properties = {
+    ...base,
+    command: 'new',
+  } satisfies DecantrLifecycleCompletedProperties;
+
+  await captureCliTelemetryEvent({
+    args,
+    name: 'decantr.new.completed',
+    projectRoot,
+    properties,
+    registrySource: properties.registrySource,
+  });
 }
 
 export interface ProjectHealthPromptTelemetryInput {
@@ -343,7 +379,7 @@ function buildCliLifecycleProperties(input: BuildCliLifecyclePropertiesInput) {
     adoptionMode: inferAdoptionMode(input.args) ?? metadata.adoptionMode,
     errorCode: input.success ? undefined : 'cli_command_failed',
     offline: input.args.includes('--offline'),
-    projectScope: inferProjectScope(input.projectRoot),
+    projectScope: metadata.projectScope ?? inferProjectScope(input.projectRoot),
     registrySource,
     targetFramework: inferFlagValue(input.args, '--target'),
     workflowMode: inferWorkflowMode(input.args) ?? metadata.workflowMode,
@@ -511,14 +547,24 @@ function getRegistrySourceProperty(properties: TelemetryProperties): RegistrySou
 
 function readProjectTelemetryMetadata(projectRoot: string): {
   adoptionMode?: AdoptionMode;
+  projectScope?: ProjectScope;
   workflowMode?: WorkflowMode;
 } {
   const data = readProjectJson(projectRoot);
   const initialized = isRecord(data?.initialized) ? data.initialized : undefined;
   return {
     adoptionMode: normalizeAdoptionMode(initialized?.adoptionMode),
+    projectScope: normalizeProjectScope(initialized?.projectScope),
     workflowMode: normalizeWorkflowMode(initialized?.workflowMode),
   };
+}
+
+function resolveCliTelemetryProjectRoot(projectRoot: string, args: string[]): string {
+  const projectFlag = inferFlagValue(args, '--project');
+  if (!projectFlag) return projectRoot;
+
+  const candidate = resolve(projectRoot, projectFlag);
+  return existsSync(join(candidate, '.decantr', 'project.json')) ? candidate : projectRoot;
 }
 
 function readProjectJson(projectRoot: string): Record<string, unknown> | null {
@@ -587,6 +633,11 @@ function normalizeWorkflowMode(value: unknown): WorkflowMode | undefined {
   if (value === 'hybrid' || value === 'hybrid-compose') {
     return 'hybrid-compose';
   }
+  return undefined;
+}
+
+function normalizeProjectScope(value: unknown): ProjectScope | undefined {
+  if (value === 'single-app' || value === 'workspace-app') return value;
   return undefined;
 }
 

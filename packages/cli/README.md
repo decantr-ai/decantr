@@ -115,7 +115,7 @@ decantr studio --port 4319 --host 127.0.0.1
 
 Studio is for local triage, not Decantr admin telemetry. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
 
-If the project has explicitly enabled Decantr CLI telemetry, `health` and `studio` emit only aggregate product-activation metadata such as status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, or prompt text.
+If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, `init --telemetry`, `check --telemetry`, `health`, and `studio` emit only aggregate product-activation metadata such as lifecycle command outcome, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, or prompt text.
 
 ## Content Health
 

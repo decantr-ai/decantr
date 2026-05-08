@@ -241,6 +241,7 @@ function eventListSql() {
     'decantr.check.completed',
     'decantr.health.healthy',
     'decantr.init.completed',
+    'decantr.new.completed',
     'decantr.refresh.completed',
     'execution_pack.compiled',
     'execution_pack.selected',
@@ -407,6 +408,7 @@ function renderMarkdown({
     '',
     '| Lifecycle | Last 7d | Customer |',
     '| --- | ---: | ---: |',
+    `| New completed | ${formatNumber(projectActivation.newCompleted)} | ${formatNumber(customerProjectActivation.newCompleted)} |`,
     `| Init completed | ${formatNumber(projectActivation.initCompleted)} | ${formatNumber(customerProjectActivation.initCompleted)} |`,
     `| Refresh completed | ${formatNumber(projectActivation.refreshCompleted)} | ${formatNumber(customerProjectActivation.refreshCompleted)} |`,
     `| Check completed | ${formatNumber(projectActivation.checkCompleted)} | ${formatNumber(customerProjectActivation.checkCompleted)} |`,
@@ -496,6 +498,7 @@ function summarizeProjectActivation(map) {
   const healthyMilestones = map.get('decantr.health.healthy') ?? 0;
   const ciFailures = map.get('health.ci.failed') ?? 0;
   const initCompleted = map.get('decantr.init.completed') ?? 0;
+  const newCompleted = map.get('decantr.new.completed') ?? 0;
   const refreshCompleted = map.get('decantr.refresh.completed') ?? 0;
   const checkCompleted = map.get('decantr.check.completed') ?? 0;
   const studioStarts = map.get('studio.started') ?? 0;
@@ -507,7 +510,9 @@ function summarizeProjectActivation(map) {
     healthReports,
     healthyMilestones,
     initCompleted,
+    newCompleted,
     productSignals:
+      newCompleted +
       initCompleted +
       refreshCompleted +
       checkCompleted +
@@ -595,6 +600,7 @@ function sampleRows(query) {
     ['marketing_web.outbound_clicked', 1],
     ['registry.item.resolved', 25],
     ['execution_pack.compiled', 9],
+    ['decantr.new.completed', 2],
     ['decantr.init.completed', 3],
     ['decantr.refresh.completed', 4],
     ['decantr.check.completed', 4],

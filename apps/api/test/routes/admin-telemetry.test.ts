@@ -534,6 +534,7 @@ describe('Admin telemetry routes', () => {
               ['cli.command.completed', 'customer', 3],
               ['decantr.health.healthy', 'customer', 1],
               ['decantr.init.completed', 'customer', 1],
+              ['decantr.new.completed', 'customer', 1],
               ['health.ci.failed', 'customer', 1],
               ['health.finding.prompt_requested', 'customer', 1],
               ['health.report.generated', 'customer', 2],
@@ -618,8 +619,8 @@ describe('Admin telemetry routes', () => {
     const json = await res.json();
     expect(fetchMock).toHaveBeenCalledTimes(9);
     expect(json.summary).toMatchObject({
-      total_events: 12,
-      customer_events: 10,
+      total_events: 13,
+      customer_events: 11,
       internal_events: 2,
       failure_events: 2,
       active_identities: 2,
@@ -640,8 +641,8 @@ describe('Admin telemetry routes', () => {
       candidate_aliases: 0,
     });
     expect(json.trends).toMatchObject({
-      total_events: { current: 12, previous: 4, delta: 8 },
-      customer_events: { current: 10, previous: 2, delta: 8 },
+      total_events: { current: 13, previous: 4, delta: 9 },
+      customer_events: { current: 11, previous: 2, delta: 9 },
       failure_events: { current: 2, previous: 0, delta: 2 },
     });
     expect(json.marketing_attribution).toMatchObject({
@@ -669,9 +670,9 @@ describe('Admin telemetry routes', () => {
     expect(json.signal_buckets).toEqual(expect.arrayContaining([
       expect.objectContaining({
         key: 'cli_adoption',
-        current_events: 4,
+        current_events: 5,
         previous_events: 1,
-        delta: 3,
+        delta: 4,
       }),
       expect.objectContaining({
         key: 'project_health',
@@ -686,6 +687,7 @@ describe('Admin telemetry routes', () => {
       health_report_events: 2,
       healthy_project_events: 1,
       init_completed_events: 1,
+      new_completed_events: 1,
       remediation_prompt_events: 1,
       studio_started_events: 1,
     });

@@ -57,6 +57,7 @@ const events = {
   decantrCheckCompleted: 'decantr.check.completed',
   decantrHealthHealthy: 'decantr.health.healthy',
   decantrInitCompleted: 'decantr.init.completed',
+  decantrNewCompleted: 'decantr.new.completed',
   decantrRefreshCompleted: 'decantr.refresh.completed',
   executionPackCompiled: 'execution_pack.compiled',
   executionPackSelected: 'execution_pack.selected',
@@ -129,9 +130,23 @@ const insightSpecs = [
     }),
   },
   {
+    name: 'Project entrypoints',
+    description:
+      'Daily opted-in greenfield and brownfield entrypoint volume for project creation, attach/init, refresh, and checks.',
+    query: trendLine(
+      [
+        [events.decantrNewCompleted, 'New project completed'],
+        [events.decantrInitCompleted, 'Init completed'],
+        [events.decantrRefreshCompleted, 'Refresh completed'],
+        [events.decantrCheckCompleted, 'Check completed'],
+      ],
+      { properties: [actorProperty('customer')] },
+    ),
+  },
+  {
     name: 'Project activation funnel',
     description:
-      'Tracks opted-in CLI activation from project attach/init through refresh, checks, Project Health reports, healthy milestones, and Studio usage.',
+      'Tracks opted-in CLI activation from project attach/init through refresh, checks, Project Health reports, healthy milestones, and Studio usage; greenfield new volume is tracked in Project entrypoints.',
     query: insightViz({
       kind: 'FunnelsQuery',
       dateRange: last30Days(),
@@ -410,6 +425,7 @@ const cohortSpecs = [
       performedEvent(events.userSignupCompleted),
       performedEvent(events.apiKeyCreated),
       performedEvent(events.executionPackCompiled),
+      performedEvent(events.decantrNewCompleted),
       performedEvent(events.decantrHealthHealthy),
       performedEvent(events.studioStarted),
     ]),

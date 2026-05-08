@@ -4,7 +4,7 @@ Project Health is the end-user observability surface for a Decantr project. It a
 
 It is local-only by default. `decantr health` reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. Neither command uploads source code, prompts, raw file paths, environment variables, or customer project data.
 
-Projects that explicitly opt into Decantr CLI telemetry may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
+Projects that explicitly opt into Decantr CLI telemetry, including through `decantr new --telemetry`, `decantr init --telemetry`, or `decantr check --telemetry`, may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
 
 For registry content repositories such as `decantr-content`, use [Content Health](content-health.md) instead. Content Health checks content schemas, references, and generation guidance coverage; Project Health checks an application against its Decantr contract.
 

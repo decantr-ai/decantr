@@ -49,6 +49,7 @@ export const DECANTR_TELEMETRY_EVENT_NAMES = [
   'decantr.check.completed',
   'decantr.health.healthy',
   'decantr.init.completed',
+  'decantr.new.completed',
   'decantr.refresh.completed',
   'execution_pack.compiled',
   'execution_pack.selected',
@@ -192,7 +193,7 @@ export interface CliCommandCompletedProperties extends TelemetryProperties {
 }
 
 export interface DecantrLifecycleCompletedProperties extends TelemetryProperties {
-  command: 'check' | 'init' | 'refresh';
+  command: 'check' | 'init' | 'new' | 'refresh';
   success: boolean;
   durationMs: number;
   adoptionMode?: AdoptionMode;
@@ -442,6 +443,7 @@ export type DecantrTelemetryEvent =
   | TelemetryEventBase<'decantr.check.completed', DecantrLifecycleCompletedProperties>
   | TelemetryEventBase<'decantr.health.healthy', ProjectHealthTelemetryProperties>
   | TelemetryEventBase<'decantr.init.completed', DecantrLifecycleCompletedProperties>
+  | TelemetryEventBase<'decantr.new.completed', DecantrLifecycleCompletedProperties>
   | TelemetryEventBase<'decantr.refresh.completed', DecantrLifecycleCompletedProperties>
   | TelemetryEventBase<'execution_pack.compiled', ExecutionPackCompiledProperties>
   | TelemetryEventBase<'execution_pack.selected', ExecutionPackSelectedProperties>

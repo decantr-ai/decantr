@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendCliCommandTelemetry } from '../src/telemetry.js';
+import { sendCliCommandTelemetry, sendNewProjectCompletedTelemetry } from '../src/telemetry.js';
 
 let projectRoot = '';
 let configDir = '';
@@ -20,7 +20,11 @@ function restoreEnv(name: string, value: string | undefined): void {
 }
 
 function writeProjectConfig(data: Record<string, unknown>): void {
-  const decantrDir = join(projectRoot, '.decantr');
+  writeProjectConfigAt(projectRoot, data);
+}
+
+function writeProjectConfigAt(root: string, data: Record<string, unknown>): void {
+  const decantrDir = join(root, '.decantr');
   mkdirSync(decantrDir, { recursive: true });
   writeFileSync(join(decantrDir, 'project.json'), `${JSON.stringify(data, null, 2)}\n`);
 }
@@ -163,6 +167,84 @@ describe('CLI command telemetry', () => {
       errorCode: 'cli_command_failed',
       success: false,
     });
+  });
+
+  it('captures explicit greenfield new activation milestones from the created project', async () => {
+    writeProjectConfig({
+      telemetry: true,
+      initialized: { workflowMode: 'greenfield-scaffold', adoptionMode: 'decantr-css' },
+    });
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendNewProjectCompletedTelemetry({
+      args: ['new', 'customer-app', '--blueprint=agent-marketplace', '--target=next'],
+      durationMs: 120,
+      projectRoot,
+      success: true,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body)) as {
+      event: {
+        name: string;
+        properties: Record<string, unknown>;
+      };
+    };
+
+    expect(body.event.name).toBe('decantr.new.completed');
+    expect(body.event.properties).toMatchObject({
+      command: 'new',
+      adoptionMode: 'decantr-css',
+      durationMs: 120,
+      projectScope: 'single-app',
+      registrySource: 'official',
+      success: true,
+      targetFramework: 'next',
+      workflowMode: 'greenfield-scaffold',
+    });
+    expect(JSON.stringify(body)).not.toContain(projectRoot);
+    expect(JSON.stringify(body)).not.toContain('customer-app');
+    expect(JSON.stringify(body)).not.toContain('agent-marketplace');
+  });
+
+  it('attributes workspace --project commands to the selected app root', async () => {
+    const appRoot = join(projectRoot, 'apps', 'web');
+    mkdirSync(appRoot, { recursive: true });
+    writeProjectConfigAt(appRoot, {
+      telemetry: true,
+      initialized: {
+        workflowMode: 'brownfield-attach',
+        adoptionMode: 'contract-only',
+        projectScope: 'workspace-app',
+      },
+    });
+
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendCliCommandTelemetry({
+      args: ['init', '--project', 'apps/web', '--telemetry'],
+      durationMs: 75,
+      projectRoot,
+      success: true,
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const bodies = fetchMock.mock.calls.map(([, init]) =>
+      JSON.parse(String((init as RequestInit).body)),
+    ) as Array<{ event: { context: Record<string, unknown>; properties: Record<string, unknown> } }>;
+
+    expect(bodies[0].event.context.projectId).toMatch(/^project_/);
+    expect(bodies[0].event.properties).toMatchObject({
+      command: 'init',
+      adoptionMode: 'contract-only',
+      projectScope: 'workspace-app',
+      success: true,
+      workflowMode: 'brownfield-attach',
+    });
+    expect(bodies[1].event.properties.projectScope).toBe('workspace-app');
   });
 
   it('allows Decantr-owned CLI runs to opt into internal actor attribution', async () => {

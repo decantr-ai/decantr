@@ -444,6 +444,7 @@ export interface AdminTelemetryProductActivation {
   health_report_events: number;
   healthy_project_events: number;
   init_completed_events: number;
+  new_completed_events: number;
   refresh_completed_events: number;
   remediation_prompt_events: number;
   studio_refresh_events: number;
