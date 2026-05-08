@@ -148,6 +148,12 @@ export function SearchFilterBar({
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
           placeholder="Search Decantr registry..."
           className="d-control registry-search-input"
           aria-label="Search registry content"
