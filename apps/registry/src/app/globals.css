@@ -3699,6 +3699,16 @@
     overflow: hidden;
   }
 
+  .content-card-grid[data-revealed='false'] > .registry-card {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  .content-card-grid[data-revealed='true'] > .registry-card {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .registry-card-media {
     position: relative;
     aspect-ratio: 16 / 9;

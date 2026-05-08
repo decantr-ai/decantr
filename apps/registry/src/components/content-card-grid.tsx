@@ -1,5 +1,6 @@
 import type { ContentItem } from '@/lib/api';
 import { ContentCard } from '@/components/content-card';
+import { ScrollReveal } from '@/components/scroll-reveal';
 import { getShowcaseMetadataMap } from '@/lib/showcase';
 
 interface ContentCardGridProps {
@@ -41,7 +42,7 @@ export async function ContentCardGrid({ items, emptyMessage, editable }: Content
   );
 
   return (
-    <div className="content-card-grid d-stagger-children">
+    <ScrollReveal className="content-card-grid d-stagger-children">
       {items.map((item, index) => (
         <ContentCard
           key={item.id}
@@ -51,6 +52,6 @@ export async function ContentCardGrid({ items, emptyMessage, editable }: Content
           staggerIndex={index}
         />
       ))}
-    </div>
+    </ScrollReveal>
   );
 }

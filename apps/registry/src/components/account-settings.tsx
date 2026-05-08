@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateProfile } from '@/app/dashboard/settings/actions';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
@@ -148,6 +148,7 @@ function ProfileTab() {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+  const [isEditing, setIsEditing] = useState<string | null>(null);
   const [isSaving, startSave] = useTransition();
 
   useEffect(() => {
@@ -173,6 +174,12 @@ function ProfileTab() {
         router.refresh();
       }
     });
+  }
+
+  function handleInlineKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    event.currentTarget.blur();
   }
 
   const initials = workspace.identity.initials || 'YO';
@@ -208,6 +215,10 @@ function ProfileTab() {
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
+          onFocus={() => setIsEditing('displayName')}
+          onBlur={() => setIsEditing(null)}
+          onKeyDown={handleInlineKeyDown}
+          data-editing={isEditing === 'displayName'}
           placeholder="Your display name"
         />
       </FieldGroup>
@@ -217,6 +228,10 @@ function ProfileTab() {
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          onFocus={() => setIsEditing('username')}
+          onBlur={() => setIsEditing(null)}
+          onKeyDown={handleInlineKeyDown}
+          data-editing={isEditing === 'username'}
           placeholder="your-username"
         />
       </FieldGroup>

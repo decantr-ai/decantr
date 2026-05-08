@@ -23,6 +23,13 @@ function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
+function formatLiveTime(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
+}
+
 function AnimatedValue({ value }: { value: number }) {
   const [display, setDisplay] = useState(0);
   const rafRef = useRef<number>(0);
@@ -50,14 +57,31 @@ function AnimatedValue({ value }: { value: number }) {
 }
 
 export function KPIGrid({ items }: KPIGridProps) {
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setLastUpdatedAt(new Date());
+    }, 30_000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  const liveLabel = formatLiveTime(lastUpdatedAt);
+
   return (
-    <div className="registry-kpi-grid">
+    <div className="registry-kpi-grid" aria-label={`Live metrics updated ${liveLabel}`}>
       {items.map((item) => {
         const trend = item.trend;
         const positive = trend !== undefined && trend >= 0;
 
         return (
-          <div key={item.label} className="d-surface registry-kpi-card">
+          <div
+            key={item.label}
+            className="d-surface registry-kpi-card"
+            data-tooltip={`Updated ${liveLabel}`}
+            title={`Updated ${liveLabel}`}
+          >
             <div className="registry-kpi-content">
               {item.icon ? <div className="registry-kpi-icon">{item.icon}</div> : null}
               <div className="registry-kpi-meta">
