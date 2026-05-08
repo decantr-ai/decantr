@@ -176,7 +176,12 @@ export function NavHeader({ user }: NavHeaderProps) {
       ) : null}
 
       {user ? (
-        <div ref={dropdownRef} className="relative registry-nav-desktop-auth">
+        <div
+          ref={dropdownRef}
+          className="relative registry-nav-desktop-auth"
+          onMouseEnter={() => setMenuOpen(true)}
+          onMouseLeave={closeMenu}
+        >
           <button
             onClick={() => setMenuOpen((open) => !open)}
             className="registry-nav-avatar"

@@ -10,6 +10,7 @@ import { parsePagination, CONTENT_TYPES } from '../types.js';
 import { requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import type { Database } from '../db/types.js';
 import { logger } from '../lib/logger.js';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
@@ -35,6 +36,8 @@ import {
 } from '../lib/telemetry-usage-snapshots.js';
 
 export const adminRoutes = new Hono<Env>();
+
+type UserUpdate = Database['public']['Tables']['users']['Update'];
 const ORG_TIERS = ['team', 'enterprise'] as const;
 const TELEMETRY_IDENTITY_TYPES = ['anonymous', 'install', 'project'] as const;
 type TelemetryIdentityType = (typeof TELEMETRY_IDENTITY_TYPES)[number];
@@ -307,7 +310,7 @@ adminRoutes.post('/admin/moderation/:id/reject', async (c) => {
     .single();
 
   if (submitter) {
-    const updates: Record<string, unknown> = {
+    const updates: UserUpdate = {
       reputation_score: Math.max(0, submitter.reputation_score - 5),
     };
 

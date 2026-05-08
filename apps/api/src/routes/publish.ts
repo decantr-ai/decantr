@@ -5,6 +5,7 @@ import type { ContentType } from '../types.js';
 import { requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import type { Database } from '../db/types.js';
 import { validateEssence } from '@decantr/essence-spec';
 import { validateRegistryContent } from '../lib/content-validation.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
@@ -17,6 +18,8 @@ import {
 } from '../lib/content-presentation.js';
 
 export const publishRoutes = new Hono<Env>();
+
+type ContentUpdate = Database['public']['Tables']['content']['Update'];
 
 // All publish routes require auth
 publishRoutes.use('/*', requireAuth());
@@ -468,16 +471,17 @@ publishRoutes.patch('/content/:id', requireApiKeyScope('content:write'), async (
     return c.json({ error: 'Not authorized to update this content' }, 403);
   }
 
-  const updates: Record<string, unknown> = {};
+  const updates: ContentUpdate = {};
   if (body.data && typeof body.data === 'object') {
-    const contentValidation = validateRegistryContent(existing.type as ContentType, body.data);
+    const contentData = body.data as Record<string, unknown>;
+    const contentValidation = validateRegistryContent(existing.type as ContentType, contentData);
     if (!contentValidation.valid) {
       return c.json({
         error: 'Content data failed registry schema validation',
         validationErrors: contentValidation.errors,
       }, 400);
     }
-    updates.data = body.data;
+    updates.data = contentData;
   }
   if (body.version && typeof body.version === 'string') updates.version = body.version;
   if (body.visibility === 'public' || body.visibility === 'private') updates.visibility = body.visibility;

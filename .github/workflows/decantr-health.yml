@@ -38,17 +38,20 @@ jobs:
           fi
 
       - name: Generate Decantr health JSON
-{{PROJECT_WORKING_DIRECTORY}}        run: npx --yes {{CLI_PACKAGE}} health --json --output {{JSON_PATH}}
+        working-directory: apps/registry
+        run: npx --yes @decantr/cli@latest health --json --output decantr-health.json
 
       - name: Audit Decantr health
-{{PROJECT_WORKING_DIRECTORY}}        run: npx --yes {{CLI_PACKAGE}} health --ci --fail-on {{FAIL_ON}} --markdown --output {{REPORT_PATH}}
+        working-directory: apps/registry
+        run: npx --yes @decantr/cli@latest health --ci --fail-on error --markdown --output decantr-health.md
 
       - name: Publish health summary
         if: always()
-{{PROJECT_WORKING_DIRECTORY}}        shell: bash
+        working-directory: apps/registry
+        shell: bash
         run: |
-          if [ -f {{REPORT_PATH}} ]; then
-            cat {{REPORT_PATH}} >> "$GITHUB_STEP_SUMMARY"
+          if [ -f decantr-health.md ]; then
+            cat decantr-health.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload health artifacts
@@ -57,6 +60,6 @@ jobs:
         with:
           name: decantr-project-health
           path: |
-            {{JSON_ARTIFACT_PATH}}
-            {{REPORT_ARTIFACT_PATH}}
+            apps/registry/decantr-health.json
+            apps/registry/decantr-health.md
           if-no-files-found: ignore

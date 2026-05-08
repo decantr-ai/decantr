@@ -2868,7 +2868,7 @@ ${BOLD}Usage:${RESET}
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
-  decantr health init-ci [--force] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
+  decantr health init-ci [--force] [--project <path>] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr content-health [--json] [--markdown] [--ci]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
@@ -2948,6 +2948,7 @@ ${BOLD}Examples:${RESET}
   decantr status
   decantr health
   decantr health init-ci
+  decantr health init-ci --project apps/web
   decantr health --ci --fail-on error
   decantr content-health --ci --fail-on error
   decantr studio
