@@ -11,6 +11,7 @@
     "puppeteer-core": "^24.0.0"
   },
   "overrides": {
+    "basic-ftp": "5.3.1",
     "ip-address": "10.2.0"
   }
 }
