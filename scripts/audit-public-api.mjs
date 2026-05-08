@@ -79,33 +79,41 @@ async function fetchJson(path, init) {
 }
 
 const SAMPLE_ESSENCE = {
-  version: '2.0.0',
-  archetype: 'dashboard',
-  theme: {
-    id: 'clean',
-    mode: 'light',
+  version: '4.0.0',
+  dna: {
+    theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
+    spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+    typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+    color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+    radius: { philosophy: 'rounded', base: 8 },
+    elevation: { system: 'layered', max_levels: 3 },
+    motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+    accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+    personality: ['professional'],
   },
-  personality: ['professional'],
-  platform: {
-    type: 'spa',
-    routing: 'history',
-  },
-  structure: [
-    {
-      id: 'home',
-      shell: 'sidebar-main',
-      layout: ['hero'],
+  blueprint: {
+    shell: 'sidebar-main',
+    sections: [
+      {
+        id: 'dashboard',
+        role: 'primary',
+        shell: 'sidebar-main',
+        features: ['auth'],
+        description: 'Dashboard section',
+        pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+      },
+    ],
+    features: ['auth'],
+    routes: {
+      '/': { section: 'dashboard', page: 'home' },
     },
-  ],
-  features: ['auth'],
-  density: {
-    level: 'comfortable',
-    content_gap: '1.5rem',
   },
-  guard: {
-    mode: 'guided',
+  meta: {
+    archetype: 'dashboard',
+    target: 'react',
+    platform: { type: 'spa', routing: 'history' },
+    guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
   },
-  target: 'react',
 };
 
 function summarizeResult(check, response, passed, details) {
