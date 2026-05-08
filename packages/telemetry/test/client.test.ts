@@ -49,7 +49,7 @@ describe('telemetry client', () => {
     );
 
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
-    expect(body.schemaVersion).toBe('0.1.0');
+    expect(body.schemaVersion).toBe('0.2.0');
     expect(body.event.context).toEqual({
       source: 'api',
       environment: 'production',

@@ -1,4 +1,4 @@
-export const DECANTR_TELEMETRY_SCHEMA_VERSION = '0.1.0';
+export const DECANTR_TELEMETRY_SCHEMA_VERSION = '0.2.0';
 
 export type TelemetrySource =
   | 'api'
@@ -27,6 +27,17 @@ export type ProjectScope = 'single-app' | 'workspace-app';
 export type TelemetryContentType = 'archetype' | 'blueprint' | 'pattern' | 'shell' | 'theme';
 export type TelemetryVisibility = 'private' | 'public' | 'team';
 export type TelemetryAnalysisScope = 'hosted' | 'local';
+export type ProjectHealthTelemetryStatus = 'error' | 'healthy' | 'warning';
+export type ProjectHealthFindingSeverity = 'error' | 'info' | 'warn';
+export type ProjectHealthFindingSource =
+  | 'audit'
+  | 'brownfield'
+  | 'check'
+  | 'interaction'
+  | 'pack'
+  | 'runtime';
+export type ProjectHealthOutputFormat = 'json' | 'markdown' | 'text';
+export type ProjectHealthFailOn = 'error' | 'none' | 'warn';
 
 export const DECANTR_TELEMETRY_EVENT_NAMES = [
   'api_key.created',
@@ -35,8 +46,15 @@ export const DECANTR_TELEMETRY_EVENT_NAMES = [
   'content.publish.completed',
   'content.validation.completed',
   'critique.completed',
+  'decantr.check.completed',
+  'decantr.health.healthy',
+  'decantr.init.completed',
+  'decantr.refresh.completed',
   'execution_pack.compiled',
   'execution_pack.selected',
+  'health.ci.failed',
+  'health.finding.prompt_requested',
+  'health.report.generated',
   'marketing_web.command_clicked',
   'marketing_web.cta_clicked',
   'marketing_web.outbound_clicked',
@@ -52,6 +70,8 @@ export const DECANTR_TELEMETRY_EVENT_NAMES = [
   'registry_web.signup_clicked',
   'registry.item.resolved',
   'registry.sync.completed',
+  'studio.health_refreshed',
+  'studio.started',
   'user.signup.completed',
 ] as const;
 
@@ -169,6 +189,75 @@ export interface CliCommandCompletedProperties extends TelemetryProperties {
   registrySource?: RegistrySource;
   targetFramework?: string;
   workflowMode?: WorkflowMode;
+}
+
+export interface DecantrLifecycleCompletedProperties extends TelemetryProperties {
+  command: 'check' | 'init' | 'refresh';
+  success: boolean;
+  durationMs: number;
+  adoptionMode?: AdoptionMode;
+  errorCode?: string;
+  offline?: boolean;
+  projectScope?: ProjectScope;
+  registrySource?: RegistrySource;
+  targetFramework?: string;
+  workflowMode?: WorkflowMode;
+}
+
+export interface ProjectHealthTelemetryProperties extends TelemetryProperties {
+  success: boolean;
+  status: ProjectHealthTelemetryStatus;
+  score: number;
+  durationMs?: number;
+  adoptionMode?: AdoptionMode;
+  ci?: boolean;
+  errorCode?: string;
+  errorCount: number;
+  failOn?: ProjectHealthFailOn;
+  findingCount: number;
+  format?: ProjectHealthOutputFormat;
+  infoCount: number;
+  outputWritten?: boolean;
+  packManifestPresent?: boolean;
+  pageCount?: number;
+  projectScope?: ProjectScope;
+  reviewPackPresent?: boolean;
+  routeCount?: number;
+  runtimeAuditChecked?: boolean;
+  runtimeMatchedCount?: number;
+  runtimePassed?: boolean | null;
+  runtimeRouteCheckedCount?: number;
+  warnCount: number;
+  workflowMode?: WorkflowMode;
+}
+
+export interface HealthFindingPromptRequestedProperties extends TelemetryProperties {
+  success: boolean;
+  findingFound: boolean;
+  adoptionMode?: AdoptionMode;
+  ci?: boolean;
+  findingSeverity?: ProjectHealthFindingSeverity;
+  findingSource?: ProjectHealthFindingSource;
+  projectScope?: ProjectScope;
+  workflowMode?: WorkflowMode;
+}
+
+export interface HealthCiFailedProperties extends ProjectHealthTelemetryProperties {
+  failOn: 'error' | 'warn';
+}
+
+export interface StudioStartedProperties extends TelemetryProperties {
+  success: boolean;
+  hostMode: 'custom' | 'loopback';
+  port: number;
+  adoptionMode?: AdoptionMode;
+  errorCode?: string;
+  projectScope?: ProjectScope;
+  workflowMode?: WorkflowMode;
+}
+
+export interface StudioHealthRefreshedProperties extends ProjectHealthTelemetryProperties {
+  trigger: 'api-refresh';
 }
 
 export interface RegistryItemResolvedProperties extends TelemetryProperties {
@@ -350,8 +439,15 @@ export type DecantrTelemetryEvent =
   | TelemetryEventBase<'content.publish.completed', ContentPublishCompletedProperties>
   | TelemetryEventBase<'content.validation.completed', ContentValidationCompletedProperties>
   | TelemetryEventBase<'critique.completed', CritiqueCompletedProperties>
+  | TelemetryEventBase<'decantr.check.completed', DecantrLifecycleCompletedProperties>
+  | TelemetryEventBase<'decantr.health.healthy', ProjectHealthTelemetryProperties>
+  | TelemetryEventBase<'decantr.init.completed', DecantrLifecycleCompletedProperties>
+  | TelemetryEventBase<'decantr.refresh.completed', DecantrLifecycleCompletedProperties>
   | TelemetryEventBase<'execution_pack.compiled', ExecutionPackCompiledProperties>
   | TelemetryEventBase<'execution_pack.selected', ExecutionPackSelectedProperties>
+  | TelemetryEventBase<'health.ci.failed', HealthCiFailedProperties>
+  | TelemetryEventBase<'health.finding.prompt_requested', HealthFindingPromptRequestedProperties>
+  | TelemetryEventBase<'health.report.generated', ProjectHealthTelemetryProperties>
   | TelemetryEventBase<'marketing_web.command_clicked', MarketingWebCommandClickedProperties>
   | TelemetryEventBase<'marketing_web.cta_clicked', MarketingWebCtaClickedProperties>
   | TelemetryEventBase<'marketing_web.outbound_clicked', MarketingWebOutboundClickedProperties>
@@ -367,6 +463,8 @@ export type DecantrTelemetryEvent =
   | TelemetryEventBase<'registry_web.signup_clicked', RegistryWebCommercialPageViewedProperties>
   | TelemetryEventBase<'registry.item.resolved', RegistryItemResolvedProperties>
   | TelemetryEventBase<'registry.sync.completed', RegistrySyncCompletedProperties>
+  | TelemetryEventBase<'studio.health_refreshed', StudioHealthRefreshedProperties>
+  | TelemetryEventBase<'studio.started', StudioStartedProperties>
   | TelemetryEventBase<'user.signup.completed', ProductEventProperties>;
 
 export function isDecantrTelemetryEventName(value: string): value is DecantrTelemetryEventName {

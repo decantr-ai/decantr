@@ -369,6 +369,60 @@ export default async function AdminTelemetryUsagePage({
 
           <section className="d-section" data-density="compact">
             <span className="d-label registry-anchor-label">
+              Product Activation
+            </span>
+            <div className="registry-admin-stat-grid">
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.product_activation.health_report_events)}</span>
+                <span className="registry-admin-row-meta">Health reports</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(usage.product_activation.healthy_project_events)} healthy milestones
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatPercent(usage.product_activation.activation_rate)}</span>
+                <span className="registry-admin-row-meta">Healthy report rate</span>
+                <span className="registry-admin-row-meta">
+                  {formatPercent(usage.product_activation.ci_failure_rate)} CI failure rate
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.product_activation.studio_started_events)}</span>
+                <span className="registry-admin-row-meta">Studio starts</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(usage.product_activation.studio_refresh_events)} refreshes
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.product_activation.remediation_prompt_events)}</span>
+                <span className="registry-admin-row-meta">Remediation prompts</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(usage.product_activation.ci_failure_events)} CI failures
+                </span>
+              </div>
+            </div>
+            <div className="d-surface registry-admin-stack">
+              <div className="registry-admin-row">
+                <span className="registry-admin-row-copy">
+                  <span className="registry-admin-row-title">Lifecycle commands</span>
+                  <span className="registry-admin-row-meta">
+                    Init {formatNumber(usage.product_activation.init_completed_events)} · refresh {formatNumber(usage.product_activation.refresh_completed_events)} · check {formatNumber(usage.product_activation.check_completed_events)}
+                  </span>
+                </span>
+              </div>
+              {usage.product_activation.warnings.length ? usage.product_activation.warnings.map((warning) => (
+                <div key={warning} className="registry-admin-row">
+                  <span className="registry-admin-row-title">{warning}</span>
+                  <span className="d-annotation" data-status="warning">warning</span>
+                </div>
+              )) : (
+                <span className="registry-admin-row-meta">No Project Health activation warnings in this range.</span>
+              )}
+            </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
               Marketing Attribution
             </span>
             <div className="registry-admin-stat-grid">

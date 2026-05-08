@@ -11,6 +11,11 @@ import {
   type VerificationSeverity,
 } from '@decantr/verifier';
 import { collectCheckIssues, type CheckIssue } from './heal.js';
+import {
+  sendProjectHealthCiFailedTelemetry,
+  sendProjectHealthPromptTelemetry,
+  sendProjectHealthReportTelemetry,
+} from '../telemetry.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -701,10 +706,23 @@ export async function cmdHealth(
     return;
   }
 
+  const startedAt = Date.now();
   const report = await createProjectHealthReport(projectRoot);
 
   if (options.promptId) {
     const finding = report.findings.find((entry) => entry.id === options.promptId);
+    await sendProjectHealthReportTelemetry({
+      ci: options.ci ?? false,
+      durationMs: Date.now() - startedAt,
+      projectRoot,
+      report,
+    });
+    await sendProjectHealthPromptTelemetry({
+      ci: options.ci ?? false,
+      finding,
+      projectRoot,
+      report,
+    });
     if (!finding) {
       console.error(`${RED}No health finding found for id: ${options.promptId}${RESET}`);
       process.exitCode = 1;
@@ -715,6 +733,7 @@ export async function cmdHealth(
   }
 
   const format = resolveFormat(options);
+  const failOn = options.failOn ?? 'error';
   const payload =
     format === 'json'
       ? formatProjectHealthJson(report)
@@ -731,7 +750,28 @@ export async function cmdHealth(
     process.stdout.write(payload);
   }
 
-  if (options.ci && shouldFailHealth(report, options.failOn ?? 'error')) {
+  await sendProjectHealthReportTelemetry({
+    ci: options.ci ?? false,
+    durationMs: Date.now() - startedAt,
+    failOn,
+    format,
+    outputWritten: Boolean(options.output),
+    projectRoot,
+    report,
+  });
+
+  if (options.ci && shouldFailHealth(report, failOn)) {
+    if (failOn !== 'none') {
+      await sendProjectHealthCiFailedTelemetry({
+        ci: true,
+        durationMs: Date.now() - startedAt,
+        failOn,
+        format,
+        outputWritten: Boolean(options.output),
+        projectRoot,
+        report,
+      });
+    }
     process.exitCode = 1;
   }
 }

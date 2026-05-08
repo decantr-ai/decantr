@@ -436,6 +436,21 @@ export interface AdminTelemetryMarketingAttribution {
   warnings: string[];
 }
 
+export interface AdminTelemetryProductActivation {
+  activation_rate: number;
+  check_completed_events: number;
+  ci_failure_events: number;
+  ci_failure_rate: number;
+  health_report_events: number;
+  healthy_project_events: number;
+  init_completed_events: number;
+  refresh_completed_events: number;
+  remediation_prompt_events: number;
+  studio_refresh_events: number;
+  studio_started_events: number;
+  warnings: string[];
+}
+
 export interface AdminTelemetryUsageResponse {
   actor_type: TelemetryActorType | null;
   active_identities: AdminTelemetryActiveIdentity[];
@@ -449,6 +464,7 @@ export interface AdminTelemetryUsageResponse {
   marketing_landing_paths: AdminTelemetryMarketingLandingPath[];
   operating_alerts: AdminTelemetryOperatingAlert[];
   previous_summary: AdminTelemetryUsageSummary;
+  product_activation: AdminTelemetryProductActivation;
   range_days: number;
   signal_buckets: AdminTelemetrySignalBucket[];
   source: TelemetryUsageSource | null;

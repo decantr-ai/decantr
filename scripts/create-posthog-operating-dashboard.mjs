@@ -54,8 +54,15 @@ const events = {
   contentPublishCompleted: 'content.publish.completed',
   contentValidationCompleted: 'content.validation.completed',
   critiqueCompleted: 'critique.completed',
+  decantrCheckCompleted: 'decantr.check.completed',
+  decantrHealthHealthy: 'decantr.health.healthy',
+  decantrInitCompleted: 'decantr.init.completed',
+  decantrRefreshCompleted: 'decantr.refresh.completed',
   executionPackCompiled: 'execution_pack.compiled',
   executionPackSelected: 'execution_pack.selected',
+  healthCiFailed: 'health.ci.failed',
+  healthFindingPromptRequested: 'health.finding.prompt_requested',
+  healthReportGenerated: 'health.report.generated',
   marketingWebCommandClicked: 'marketing_web.command_clicked',
   marketingWebCtaClicked: 'marketing_web.cta_clicked',
   marketingWebOutboundClicked: 'marketing_web.outbound_clicked',
@@ -71,6 +78,8 @@ const events = {
   registryWebSignupClicked: 'registry_web.signup_clicked',
   registryItemResolved: 'registry.item.resolved',
   registrySyncCompleted: 'registry.sync.completed',
+  studioHealthRefreshed: 'studio.health_refreshed',
+  studioStarted: 'studio.started',
   userSignupCompleted: 'user.signup.completed',
 };
 
@@ -120,6 +129,44 @@ const insightSpecs = [
     }),
   },
   {
+    name: 'Project activation funnel',
+    description:
+      'Tracks opted-in CLI activation from project attach/init through refresh, checks, Project Health reports, healthy milestones, and Studio usage.',
+    query: insightViz({
+      kind: 'FunnelsQuery',
+      dateRange: last30Days(),
+      filterTestAccounts: false,
+      funnelsFilter: {
+        funnelVizType: 'steps',
+        layout: 'horizontal',
+      },
+      series: [
+        eventNode(events.decantrInitCompleted, 'Init completed'),
+        eventNode(events.decantrRefreshCompleted, 'Refresh completed'),
+        eventNode(events.decantrCheckCompleted, 'Check completed'),
+        eventNode(events.healthReportGenerated, 'Health report generated'),
+        eventNode(events.decantrHealthHealthy, 'Healthy milestone'),
+        eventNode(events.studioStarted, 'Studio started'),
+      ],
+    }),
+  },
+  {
+    name: 'Project Health outcomes',
+    description:
+      'Daily opted-in Project Health outcomes across reports, healthy milestones, remediation prompts, CI failures, and Studio refreshes.',
+    query: trendLine(
+      [
+        [events.healthReportGenerated, 'Health report generated'],
+        [events.decantrHealthHealthy, 'Healthy milestone'],
+        [events.healthFindingPromptRequested, 'Remediation prompt requested'],
+        [events.healthCiFailed, 'Health CI failed'],
+        [events.studioStarted, 'Studio started'],
+        [events.studioHealthRefreshed, 'Studio refreshed'],
+      ],
+      { properties: [actorProperty('customer')] },
+    ),
+  },
+  {
     name: 'Core product usage',
     description:
       'Daily customer-attributed volume for the primary Decantr usage events across registry resolution, execution packs, audits, critiques, CLI, and MCP/API surfaces.',
@@ -131,6 +178,8 @@ const insightSpecs = [
         [events.auditCompleted, 'Audit completed'],
         [events.critiqueCompleted, 'Critique completed'],
         [events.cliCommandCompleted, 'CLI command completed'],
+        [events.healthReportGenerated, 'Health report generated'],
+        [events.decantrHealthHealthy, 'Healthy milestone'],
       ],
       { properties: [actorProperty('customer')] },
     ),
@@ -147,6 +196,8 @@ const insightSpecs = [
         [events.auditCompleted, 'Audit completed'],
         [events.critiqueCompleted, 'Critique completed'],
         [events.cliCommandCompleted, 'CLI command completed'],
+        [events.healthReportGenerated, 'Health report generated'],
+        [events.decantrHealthHealthy, 'Healthy milestone'],
       ],
       { properties: [actorProperty('customer')] },
     ),
@@ -291,6 +342,7 @@ const insightSpecs = [
     query: trendBar([
       [events.marketingWebPageViewed, 'Marketing web'],
       [events.cliCommandCompleted, 'CLI'],
+      [events.healthReportGenerated, 'Project Health'],
       [events.registryItemResolved, 'Registry/API/MCP'],
       [events.executionPackCompiled, 'Execution packs'],
       [events.contentValidationCompleted, 'Content CI'],
@@ -306,6 +358,7 @@ const insightSpecs = [
       [
         [events.marketingWebPageViewed, 'Marketing web'],
         [events.cliCommandCompleted, 'CLI'],
+        [events.healthReportGenerated, 'Project Health'],
         [events.registryItemResolved, 'Registry/API/MCP'],
         [events.executionPackCompiled, 'Execution packs'],
         [events.contentValidationCompleted, 'Content CI'],
@@ -330,6 +383,7 @@ const insightSpecs = [
       [events.executionPackCompiled, 'Execution-pack compilation failed', [failureProperty('success')]],
       [events.auditCompleted, 'Audit failed', [failureProperty('success')]],
       [events.critiqueCompleted, 'Critique failed', [failureProperty('success')]],
+      [events.healthCiFailed, 'Project Health CI failed', [failureProperty('success')]],
       [events.contentValidationCompleted, 'Content validation failed', [failureProperty('valid')]],
       [events.contentPublishCompleted, 'Content publish failed', [failureProperty('success')]],
     ]),
@@ -356,6 +410,8 @@ const cohortSpecs = [
       performedEvent(events.userSignupCompleted),
       performedEvent(events.apiKeyCreated),
       performedEvent(events.executionPackCompiled),
+      performedEvent(events.decantrHealthHealthy),
+      performedEvent(events.studioStarted),
     ]),
   },
   {

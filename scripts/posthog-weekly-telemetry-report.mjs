@@ -238,8 +238,15 @@ function eventListSql() {
     'content.publish.completed',
     'content.validation.completed',
     'critique.completed',
+    'decantr.check.completed',
+    'decantr.health.healthy',
+    'decantr.init.completed',
+    'decantr.refresh.completed',
     'execution_pack.compiled',
     'execution_pack.selected',
+    'health.ci.failed',
+    'health.finding.prompt_requested',
+    'health.report.generated',
     'marketing_web.command_clicked',
     'marketing_web.cta_clicked',
     'marketing_web.outbound_clicked',
@@ -255,6 +262,8 @@ function eventListSql() {
     'registry_web.page_viewed',
     'registry_web.search_performed',
     'registry_web.signup_clicked',
+    'studio.health_refreshed',
+    'studio.started',
     'user.signup.completed',
   ]
     .map((event) => `'${event}'`)
@@ -305,6 +314,8 @@ function renderMarkdown({
   const failureRate = totalCurrent > 0 ? failureTotal / totalCurrent : 0;
   const customerIdentities = normalizeCustomerIdentityRows(customerIdentityRows);
   const marketingAttribution = summarizeMarketingAttribution(marketingAttributionRows);
+  const projectActivation = summarizeProjectActivation(current);
+  const customerProjectActivation = summarizeProjectActivation(customer);
   const alerts = buildOperatingAlerts({
     alertThresholds,
     customerDelta,
@@ -383,6 +394,24 @@ function renderMarkdown({
     }
   }
 
+  lines.push(
+    '',
+    '## Product Activation',
+    '',
+    `- Project Health reports: ${formatNumber(projectActivation.healthReports)}`,
+    `- Healthy project milestones: ${formatNumber(projectActivation.healthyMilestones)} (${formatPercent(projectActivation.activationRate)} healthy-report rate)`,
+    `- Studio starts: ${formatNumber(projectActivation.studioStarts)} (${formatNumber(projectActivation.studioRefreshes)} refreshes)`,
+    `- Remediation prompts requested: ${formatNumber(projectActivation.remediationPrompts)}`,
+    `- Project Health CI failures: ${formatNumber(projectActivation.ciFailures)} (${formatPercent(projectActivation.ciFailureRate)} of reports)`,
+    `- Customer Project Health reports: ${formatNumber(customerProjectActivation.healthReports)}`,
+    '',
+    '| Lifecycle | Last 7d | Customer |',
+    '| --- | ---: | ---: |',
+    `| Init completed | ${formatNumber(projectActivation.initCompleted)} | ${formatNumber(customerProjectActivation.initCompleted)} |`,
+    `| Refresh completed | ${formatNumber(projectActivation.refreshCompleted)} | ${formatNumber(customerProjectActivation.refreshCompleted)} |`,
+    `| Check completed | ${formatNumber(projectActivation.checkCompleted)} | ${formatNumber(customerProjectActivation.checkCompleted)} |`,
+  );
+
   lines.push('', '## Source Mix', '', '| Source | Last 7d |', '| --- | ---: |');
   for (const [source, count] of sourceRows) {
     lines.push(`| ${source || 'unknown'} | ${formatNumber(Number(count) || 0)} |`);
@@ -439,6 +468,8 @@ function renderMarkdown({
     `- Paid acquisition signals: ${formatNumber((current.get('marketing_web.page_viewed') ?? 0) + (current.get('marketing_web.cta_clicked') ?? 0) + (current.get('marketing_web.outbound_clicked') ?? 0) + (current.get('marketing_web.command_clicked') ?? 0))}`,
     `- Activation signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('user.signup.completed') ?? 0) + (current.get('api_key.created') ?? 0))}`,
     `- Customer activation signals: ${formatNumber((customer.get('marketing_web.cta_clicked') ?? 0) + (customer.get('user.signup.completed') ?? 0) + (customer.get('api_key.created') ?? 0))}`,
+    `- Product activation signals: ${formatNumber(projectActivation.productSignals)}`,
+    `- Customer product activation signals: ${formatNumber(customerProjectActivation.productSignals)}`,
     `- Registry discovery signals: ${formatNumber((current.get('registry_web.search_performed') ?? 0) + (current.get('registry_web.content_opened') ?? 0) + (current.get('registry.item.resolved') ?? 0))}`,
     `- Customer registry discovery signals: ${formatNumber((customer.get('registry_web.search_performed') ?? 0) + (customer.get('registry_web.content_opened') ?? 0) + (customer.get('registry.item.resolved') ?? 0))}`,
     `- Commercial-intent signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
@@ -458,6 +489,36 @@ function sumMap(map) {
   let total = 0;
   for (const value of map.values()) total += value;
   return total;
+}
+
+function summarizeProjectActivation(map) {
+  const healthReports = map.get('health.report.generated') ?? 0;
+  const healthyMilestones = map.get('decantr.health.healthy') ?? 0;
+  const ciFailures = map.get('health.ci.failed') ?? 0;
+  const initCompleted = map.get('decantr.init.completed') ?? 0;
+  const refreshCompleted = map.get('decantr.refresh.completed') ?? 0;
+  const checkCompleted = map.get('decantr.check.completed') ?? 0;
+  const studioStarts = map.get('studio.started') ?? 0;
+  return {
+    activationRate: healthReports > 0 ? healthyMilestones / healthReports : 0,
+    checkCompleted,
+    ciFailureRate: healthReports > 0 ? ciFailures / healthReports : 0,
+    ciFailures,
+    healthReports,
+    healthyMilestones,
+    initCompleted,
+    productSignals:
+      initCompleted +
+      refreshCompleted +
+      checkCompleted +
+      healthReports +
+      healthyMilestones +
+      studioStarts,
+    refreshCompleted,
+    remediationPrompts: map.get('health.finding.prompt_requested') ?? 0,
+    studioRefreshes: map.get('studio.health_refreshed') ?? 0,
+    studioStarts,
+  };
 }
 
 function sampleRows(query) {
@@ -497,6 +558,9 @@ function sampleRows(query) {
     return [
       ['registry.item.resolved', 25],
       ['execution_pack.compiled', 9],
+      ['health.report.generated', 4],
+      ['decantr.health.healthy', 2],
+      ['studio.started', 1],
       ['api_key.created', 2],
     ];
   }
@@ -509,7 +573,10 @@ function sampleRows(query) {
     ];
   }
   if (query.includes('properties.success = false')) {
-    return [['registry.item.resolved', 1]];
+    return [
+      ['registry.item.resolved', 1],
+      ['health.ci.failed', 1],
+    ];
   }
   if (query.includes('interval 14 day')) {
     return [
@@ -517,6 +584,8 @@ function sampleRows(query) {
       ['marketing_web.cta_clicked', 4],
       ['registry.item.resolved', 18],
       ['execution_pack.compiled', 8],
+      ['health.report.generated', 2],
+      ['decantr.health.healthy', 1],
       ['registry_web.page_viewed', 11],
     ];
   }
@@ -526,6 +595,15 @@ function sampleRows(query) {
     ['marketing_web.outbound_clicked', 1],
     ['registry.item.resolved', 25],
     ['execution_pack.compiled', 9],
+    ['decantr.init.completed', 3],
+    ['decantr.refresh.completed', 4],
+    ['decantr.check.completed', 4],
+    ['health.report.generated', 4],
+    ['decantr.health.healthy', 2],
+    ['health.finding.prompt_requested', 2],
+    ['health.ci.failed', 1],
+    ['studio.started', 1],
+    ['studio.health_refreshed', 2],
     ['registry_web.page_viewed', 42],
     ['registry_web.content_opened', 10],
     ['api_key.created', 2],

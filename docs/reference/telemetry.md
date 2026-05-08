@@ -20,6 +20,8 @@ Telemetry must not answer those questions by collecting prompts, source code, ge
 
 Project Health is separate from Decantr product telemetry. `decantr health` and `decantr studio` help an end user understand their own repository's contract health, route drift, pack state, runtime evidence, and remediation plan. They are local-only by default and do not send health reports, source code, prompts, raw paths, or project data to Decantr.
 
+If a project explicitly opts into CLI telemetry, Decantr may record privacy-filtered Project Health usage metadata: report status, score, aggregate finding counts, CI mode/fail-on settings, Studio start/refresh counts, and whether a remediation prompt was requested. It does not send finding messages, evidence, report JSON, prompts, file paths, route names, source snapshots, or environment values.
+
 Telemetry is for Decantr operators to understand privacy-filtered product adoption. Project Health is for customer and developer workflows. A future private registry or enterprise dashboard may accept a customer-controlled `ProjectHealthReport`, but the local health command does not require telemetry opt-in.
 
 `decantr content-health` follows the same privacy stance for registry content repositories. It emits a local `ContentHealthReport` for schema, reference, and quality coverage checks; it does not upload content files or health reports to Decantr. If a repository has opted into CLI telemetry, only the command-completed event is eligible for telemetry, not the report payload.
@@ -48,6 +50,15 @@ The first event vocabulary is intentionally small:
 - `registry.sync.completed`
 - `execution_pack.compiled`
 - `execution_pack.selected`
+- `decantr.init.completed`
+- `decantr.refresh.completed`
+- `decantr.check.completed`
+- `decantr.health.healthy`
+- `health.report.generated`
+- `health.finding.prompt_requested`
+- `health.ci.failed`
+- `studio.started`
+- `studio.health_refreshed`
 - `audit.completed`
 - `critique.completed`
 - `content.validation.completed`
@@ -81,6 +92,8 @@ These events support the first board-level and operator-level metrics:
 - registry content adoption
 - version skew
 - audit score distribution
+- Project Health adoption, healthy-project rate, CI failures, and remediation prompt usage
+- Studio usage for local drift triage
 - critique and audit failure modes
 - content validation health
 - authenticated org and API key creation
@@ -112,7 +125,7 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. To also provision cohorts and alerts, add `cohort:read`, `cohort:write`, `alert:read`, and `alert:write`. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
 
-The dashboard automation creates saved insights for activation, paid acquisition, core usage, customer-only usage, commercial intent, registry-web adoption, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
+The dashboard automation creates saved insights for activation, paid acquisition, project activation, Project Health outcomes, core usage, customer-only usage, commercial intent, registry-web adoption, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
 
 ## Weekly Snapshot Reporting
 
@@ -125,7 +138,7 @@ pnpm telemetry:persist-rollups
 
 The weekly snapshot command reads the same PostHog env values and requires `query:read`. The rollup persistence command posts to the Decantr API snapshot runner with `DECANTR_API_URL` and `DECANTR_TELEMETRY_SNAPSHOT_TOKEN`, writing an operator-readable markdown summary of persisted usage snapshots, attribution snapshots, event totals, and attribution row counts. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes both summaries to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the PostHog markdown payload to a webhook.
 
-The weekly snapshot includes total/customer event movement, paid-acquisition movement, marketing attribution health, top campaigns, top landing paths, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
+The weekly snapshot includes total/customer event movement, paid-acquisition movement, marketing attribution health, Product Activation, top campaigns, top landing paths, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
 
 ```env
 TELEMETRY_FAILURE_ALERT_THRESHOLD=3
@@ -155,7 +168,7 @@ POSTHOG_PERSONAL_API_KEY=
 
 The response includes total/customer/internal/failure events, source mix, actor mix, active identities, previous-period summaries, period-over-period trends, product signal buckets, operating alerts, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
 
-The usage response also includes lightweight marketing attribution summaries: campaign coverage, landing-path coverage, registry follow-through, top UTM campaigns, and top landing paths. Campaign naming and launch-link hygiene live in [Decantr UTM Taxonomy](./telemetry-utm-taxonomy.md).
+The usage response also includes lightweight Product Activation and marketing attribution summaries. Product Activation tracks opted-in CLI lifecycle events, Project Health report volume, healthy-project milestones, CI failure events, Studio usage, and remediation prompt requests. Marketing attribution tracks campaign coverage, landing-path coverage, registry follow-through, top UTM campaigns, and top landing paths. Campaign naming and launch-link hygiene live in [Decantr UTM Taxonomy](./telemetry-utm-taxonomy.md).
 
 The companion endpoint `GET /v1/admin/telemetry/attribution` groups live PostHog usage by `decantr_org_id`, `decantr_project_id`, `decantr_source`, and `decantr_actor_type`, then enriches known organization ids from Supabase. The registry usage page shows this as the org/project attribution table, and commercial reports pull the 30-day customer slice. This is the first enterprise reporting lane for answering which orgs, projects, and sources are driving real Decantr adoption without storing raw customer application data.
 
@@ -164,7 +177,9 @@ Signal buckets group raw telemetry events into operator-level adoption lanes:
 - `activation`: marketing CTA clicks, signups, and API key creation.
 - `paid_acquisition`: marketing page views, CTA clicks, outbound clicks, and command clicks.
 - `registry_discovery`: registry search, content opens, and hosted item resolution.
-- `cli_adoption`: CLI command completion and registry sync activity.
+- `cli_adoption`: CLI command completion, lifecycle milestones, and registry sync activity.
+- `product_activation`: Decantr init/refresh/check milestones, Project Health report generation, healthy project milestones, and Studio starts.
+- `project_health`: Project Health reports, healthy milestones, remediation prompts, CI failures, and Studio usage.
 - `hosted_intelligence`: execution-pack, critique, and audit usage.
 - `content_pipeline`: content validation and publish automation.
 - `commercial_intent`: marketing CTA, billing, API key, organization, and org creation signals.

@@ -8,7 +8,7 @@ This package is the first layer of Decantr's usage intelligence system. It defin
 
 Decantr telemetry measures Decantr usage, not customer application data.
 
-Allowed signals include command names, registry sources, registry content IDs, package versions, workflow modes, success/failure, duration, audit scores, aggregate counts, marketing route labels, campaign tags, and referrer domains. Do not send prompts, source code, generated files, raw file paths, environment variables, secrets, API keys, email addresses, IP addresses, raw referrer URLs, click IDs, or user agents.
+Allowed signals include command names, registry sources, registry content IDs, package versions, workflow modes, success/failure, duration, audit scores, Project Health status/score/counts, aggregate counts, marketing route labels, campaign tags, and referrer domains. Do not send prompts, source code, generated files, health reports, finding evidence, raw file paths, environment variables, secrets, API keys, email addresses, IP addresses, raw referrer URLs, click IDs, or user agents.
 
 ## MVP Events
 
@@ -19,6 +19,15 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `execution_pack.selected`
 - `audit.completed`
 - `critique.completed`
+- `decantr.init.completed`
+- `decantr.refresh.completed`
+- `decantr.check.completed`
+- `decantr.health.healthy`
+- `health.report.generated`
+- `health.finding.prompt_requested`
+- `health.ci.failed`
+- `studio.started`
+- `studio.health_refreshed`
 - `content.validation.completed`
 - `content.publish.completed`
 - `user.signup.completed`
