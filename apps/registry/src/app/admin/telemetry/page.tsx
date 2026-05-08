@@ -297,14 +297,25 @@ export default async function AdminTelemetryPage({
               type="search"
               defaultValue={query}
               placeholder="Search identity, label, user, or org"
+              aria-label="Search telemetry aliases"
             />
-            <select className="d-control" name="identity_type" defaultValue={identityType}>
+            <select
+              className="d-control"
+              name="identity_type"
+              defaultValue={identityType}
+              aria-label="Filter by identity type"
+            >
               <option value="">All identities</option>
               {identityOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
-            <select className="d-control" name="actor_type" defaultValue={actorType}>
+            <select
+              className="d-control"
+              name="actor_type"
+              defaultValue={actorType}
+              aria-label="Filter by actor type"
+            >
               <option value="">All actors</option>
               {actorOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -446,7 +457,13 @@ export default async function AdminTelemetryPage({
                           Save
                         </button>
                         {eventsUrl ? (
-                          <Link href={eventsUrl} className="d-interactive" data-variant="ghost" target="_blank">
+                          <Link
+                            href={eventsUrl}
+                            className="d-interactive"
+                            data-variant="ghost"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             PostHog
                           </Link>
                         ) : null}

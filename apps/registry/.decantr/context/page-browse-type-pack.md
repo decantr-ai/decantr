@@ -8,7 +8,7 @@
 - Page: browse-type
 - Path: /browse/:type
 - Shell: top-nav-main
-- Section: registry-browser (primary)
+- Section: registry-browser (public)
 - Theme: luminarum (dark)
 - Features: search, pagination
 - Surface: _flex _col _gap4

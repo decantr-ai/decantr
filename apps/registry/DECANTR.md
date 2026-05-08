@@ -5,7 +5,7 @@
 - **Workflow:** greenfield-scaffold
 - **Adoption mode:** decantr-css
 - **Personality:** Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry.
-- **Sections:** 4 (registry-browser [primary], user-dashboard [primary], admin-moderation [auxiliary], auth-flow [gateway])
+- **Sections:** 4 (registry-browser [public], user-dashboard [primary], admin-moderation [auxiliary], auth-flow [gateway])
 - **Features:** search, pagination, auth, api-keys, admin
 - **Guard mode:** strict
 
@@ -175,12 +175,16 @@ Read `.decantr/context/page-{name}-pack.md` for the most local compiled route co
 ### Validation
 
 Run `decantr check` to detect drift violations while editing and `decantr audit` to audit the whole project contract after implementation.
+Run `decantr health` for the broader Project Health view before handoff, pull requests, or CI. Use `decantr health init-ci` to install the default GitHub Actions health gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` to inspect local drift, routes, findings, remediation, CI, and pack state in a localhost dashboard.
 Declared command palettes and hotkeys must be implemented, not merely acknowledged.
 
 ### Quick Commands
 
 ```bash
-decantr status          # Project health
+decantr status          # Project status overview
+decantr health          # Local contract health report
+decantr health init-ci  # Install GitHub Actions health gate
+decantr studio          # Local health dashboard
 decantr check           # Detect drift violations
 decantr get pattern X   # Fetch a pattern spec from registry
 decantr get theme X     # Fetch theme details and decorators

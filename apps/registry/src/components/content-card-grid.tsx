@@ -49,7 +49,6 @@ export async function ContentCardGrid({ items, emptyMessage, editable }: Content
           item={item}
           editable={editable}
           showcaseMetadata={showcaseMetadataBySlug[item.slug] ?? null}
-          staggerIndex={index}
         />
       ))}
     </ScrollReveal>

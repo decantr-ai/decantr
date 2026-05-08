@@ -29,8 +29,11 @@ export default async function PublicLayout({
   return (
     <div className="registry-public-frame">
       <RegistryWebTelemetryIdentity userId={user?.id ?? null} />
+      <a href="#main-content" className="registry-skip-link">
+        Skip to content
+      </a>
       <header className="registry-public-header">
-        <Link href="/" className="registry-brand-link">
+        <Link href="/" className="registry-brand-link" aria-label="Decantr home">
           <svg
             className="registry-brand-icon"
             width="20"
@@ -49,7 +52,12 @@ export default async function PublicLayout({
 
         <nav className="registry-header-nav" aria-label="Public registry navigation">
           {PUBLIC_NAV_LINKS.map((item) => (
-            <Link key={item.href} href={item.href} className="registry-header-link">
+            <Link
+              key={item.href}
+              href={item.href}
+              className="registry-header-link"
+              aria-label={item.label}
+            >
               {item.label}
             </Link>
           ))}
@@ -61,7 +69,9 @@ export default async function PublicLayout({
         </div>
       </header>
 
-      <main className="registry-public-main lum-canvas">{children}</main>
+      <main id="main-content" className="registry-public-main lum-canvas">
+        {children}
+      </main>
 
       <footer className="registry-public-footer">
         <div className="registry-public-footer-inner">
@@ -125,7 +135,7 @@ export default async function PublicLayout({
               <a
                 href="https://decantr.ai"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 className="registry-footer-link"
               >
                 Documentation
@@ -133,7 +143,7 @@ export default async function PublicLayout({
               <a
                 href="https://decantr.ai/reference/registry-public-api.html"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 className="registry-footer-link"
               >
                 API Reference
@@ -141,7 +151,7 @@ export default async function PublicLayout({
               <a
                 href="https://decantr.ai/schemas/"
                 target="_blank"
-                rel="noopener"
+                rel="noopener noreferrer"
                 className="registry-footer-link"
               >
                 Schemas

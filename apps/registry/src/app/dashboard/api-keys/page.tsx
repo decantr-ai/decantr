@@ -1,9 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createApiKeyAction, revokeApiKeyAction } from './actions';
-import { api } from '@/lib/api';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { createApiKeyAction, listApiKeysAction, revokeApiKeyAction } from './actions';
 import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
 
@@ -16,8 +14,6 @@ interface ApiKeyDisplay {
   last_used_at: string | null;
   revoked_at: string | null;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.decantr.ai/v1';
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return 'Never';
@@ -126,13 +122,25 @@ function TrashIcon({ size = 14 }: { size?: number }) {
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleCopy = useCallback(() => {
     if (!navigator.clipboard) return;
     navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
+    }
+    resetTimerRef.current = setTimeout(() => setCopied(false), 2000);
   }, [text]);
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <button
@@ -171,25 +179,19 @@ export default function ApiKeysPage() {
 
   const loadKeys = useCallback(async () => {
     try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token ?? '';
-
-      const res = await fetch(`${API_URL}/api-keys`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setKeys(Array.isArray(data) ? data : data?.items ?? []);
-      }
-
       const firstOrganizationId = workspace.activeOrganization?.id ?? me?.organizations?.[0]?.id;
       if (firstOrganizationId) {
         setOrgId((current) => current || firstOrganizationId);
       }
+
+      const result = await listApiKeysAction();
+      if ('error' in result && result.error) {
+        setKeys([]);
+        setError(result.error);
+        return;
+      }
+
+      setKeys(result.keys ?? []);
     } catch {
       // ignore load failures in the empty-state flow
     } finally {

@@ -29,15 +29,20 @@ For local development and showcases, wire all zone transitions with mock data:
 
 ### Zones
 
+**Public** — top-nav-main shell
+  Archetypes: registry-browser
+  Purpose: Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.
+  Features: search, pagination
+
 **Gateway** — centered shell
   Archetypes: auth-flow
   Purpose: Login, registration, and password recovery with OAuth support
   Features: auth
 
-**App** — top-nav-main shell
-  Archetypes: registry-browser, user-dashboard
-  Purpose: Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells. Authenticated user area with content management, API key management, account settings, and activity overview.
-  Features: search, pagination, auth, api-keys
+**App** — sidebar-main shell
+  Archetypes: user-dashboard
+  Purpose: Authenticated user area with content management, API key management, account settings, and activity overview.
+  Features: auth, api-keys
 
 **App (auxiliary)** — sidebar-main shell
   Archetypes: admin-moderation
@@ -46,12 +51,14 @@ For local development and showcases, wire all zone transitions with mock data:
 
 ### Zone Transitions
 
+  Public → Gateway: conversion (authentication)
   Gateway → App: gate-pass (authentication)
   App → Gateway: gate-return (authentication)
+  App → Public: navigation (external)
 
 ### Default Entry Points
 
-  Anonymous users enter: gateway
+  Anonymous users enter: public zone
   Authenticated users enter: primary zone
   Auth redirect target: primary zone
 
@@ -60,7 +67,7 @@ For local development and showcases, wire all zone transitions with mock data:
 
 | Section | Role | Shell | Pages | Features |
 |---------|------|-------|-------|----------|
-| registry-browser | primary | top-nav-main | homepage, browse, browse-type, detail, profile | search, pagination |
+| registry-browser | public | top-nav-main | homepage, browse, browse-type, detail, profile | search, pagination |
 | user-dashboard | primary | sidebar-main | overview, content, content-new, api-keys, settings, billing, team, governance, private-registry | auth, api-keys |
 | admin-moderation | auxiliary | sidebar-main | moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail | auth, admin |
 | auth-flow | gateway | centered | login, register, forgot-password | auth |

@@ -67,6 +67,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const { capture } = useRegistryWebTelemetry();
+  const successMessage = message;
 
   const authConfigured = Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -234,7 +235,7 @@ export default function LoginPage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+        <form method="post" onSubmit={handleSubmit} className="flex flex-col gap-3.5">
           {mode === 'register' && (
             <div>
               <label
@@ -245,6 +246,7 @@ export default function LoginPage() {
               </label>
               <input
                 id="username"
+                name="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -265,6 +267,7 @@ export default function LoginPage() {
             </label>
             <input
               id="email"
+              name="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -275,7 +278,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {mode !== 'forgot-password' && (
+          {mode === 'login' && (
             <div>
               <label
                 htmlFor="password"
@@ -285,6 +288,7 @@ export default function LoginPage() {
               </label>
               <input
                 id="password"
+                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -292,9 +296,30 @@ export default function LoginPage() {
                 className="d-control w-full text-sm rounded-md"
                 required
                 minLength={6}
-                autoComplete={
-                  mode === 'login' ? 'current-password' : 'new-password'
-                }
+                autoComplete="current-password"
+              />
+            </div>
+          )}
+
+          {mode === 'register' && (
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-xs text-d-muted mb-1.5"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="d-control w-full text-sm rounded-md"
+                required
+                minLength={6}
+                autoComplete="new-password"
               />
             </div>
           )}
@@ -320,9 +345,9 @@ export default function LoginPage() {
           )}
 
           {/* Success message */}
-          {message && (
+          {successMessage && (
             <p className="text-sm text-d-green" role="status">
-              {message}
+              {successMessage}
             </p>
           )}
 
@@ -338,6 +363,7 @@ export default function LoginPage() {
             className="d-interactive w-full text-sm py-2.5 mt-1 flex items-center justify-center gap-2"
             data-variant="primary"
             disabled={loading || !authConfigured}
+            aria-label={submitLabels[mode]}
           >
             {loading && <Spinner />}
             {submitLabels[mode]}

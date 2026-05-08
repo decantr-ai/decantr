@@ -48,7 +48,7 @@
     "sections": [
       {
         "id": "registry-browser",
-        "role": "primary",
+        "role": "public",
         "shell": "top-nav-main",
         "features": [
           "search",

@@ -1,6 +1,13 @@
 'use client';
 
-import { useEffect, useState, useTransition, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useState,
+  useTransition,
+  type FormEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { updateProfile } from '@/app/dashboard/settings/actions';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
@@ -104,6 +111,8 @@ export function AccountSettings() {
               onClick={() => setActiveTab(tab.id)}
               className="registry-settings-tab"
               data-active={active}
+              aria-pressed={active}
+              aria-label={tab.label}
             >
               <Icon size={16} />
               {tab.label}
@@ -123,15 +132,19 @@ export function AccountSettings() {
 }
 
 function FieldGroup({
+  htmlFor,
   label,
   children,
 }: {
+  htmlFor: string;
   label: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="registry-settings-field">
-      <label className="d-label">{label}</label>
+      <label className="d-label" htmlFor={htmlFor}>
+        {label}
+      </label>
       {children}
     </div>
   );
@@ -158,7 +171,7 @@ function ProfileTab() {
     setBio(workspace.identity.bio ?? '');
   }, [workspace.identity]);
 
-  function handleSave(e: React.FormEvent) {
+  function handleSave(e: FormEvent) {
     e.preventDefault();
     setMessage(null);
     const formData = new FormData();
@@ -177,15 +190,16 @@ function ProfileTab() {
   }
 
   function handleInlineKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== 'Enter') return;
-    event.preventDefault();
-    event.currentTarget.blur();
+    if (event.key === 'Enter' || event.key === 'Escape') {
+      event.preventDefault();
+      event.currentTarget.blur();
+    }
   }
 
   const initials = workspace.identity.initials || 'YO';
 
   return (
-    <form onSubmit={handleSave} className="registry-settings-form">
+    <form method="post" onSubmit={handleSave} className="registry-settings-form">
       <h3 className="registry-settings-section-title">Profile</h3>
 
       {message && (
@@ -204,13 +218,16 @@ function ProfileTab() {
           type="button"
           className="d-interactive"
           data-variant="ghost"
+          aria-label="Change avatar"
         >
           Change avatar
         </button>
       </div>
 
-      <FieldGroup label="Name">
+      <FieldGroup htmlFor="profile-display-name" label="Name">
         <input
+          id="profile-display-name"
+          name="display_name"
           className="d-control"
           type="text"
           value={displayName}
@@ -220,10 +237,14 @@ function ProfileTab() {
           onKeyDown={handleInlineKeyDown}
           data-editing={isEditing === 'displayName'}
           placeholder="Your display name"
+          autoComplete="name"
+          aria-label="Name"
         />
       </FieldGroup>
-      <FieldGroup label="Username">
+      <FieldGroup htmlFor="profile-username" label="Username">
         <input
+          id="profile-username"
+          name="username"
           className="d-control"
           type="text"
           value={username}
@@ -233,23 +254,32 @@ function ProfileTab() {
           onKeyDown={handleInlineKeyDown}
           data-editing={isEditing === 'username'}
           placeholder="your-username"
+          autoComplete="username"
+          aria-label="Username"
         />
       </FieldGroup>
-      <FieldGroup label="Email">
+      <FieldGroup htmlFor="profile-email" label="Email">
         <input
+          id="profile-email"
+          name="email"
           className="d-control registry-settings-disabled"
           type="email"
           value={email}
           disabled
+          autoComplete="email"
+          aria-label="Email"
         />
       </FieldGroup>
-      <FieldGroup label="Bio">
+      <FieldGroup htmlFor="profile-bio" label="Bio">
         <textarea
+          id="profile-bio"
+          name="bio"
           className="d-control registry-settings-textarea"
           rows={3}
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           placeholder="Building with Decantr."
+          aria-label="Bio"
         />
       </FieldGroup>
 
@@ -270,25 +300,37 @@ function SecurityTab() {
     <div className="registry-settings-form">
       <h3 className="registry-settings-section-title">Security</h3>
 
-      <FieldGroup label="Current Password">
+      <FieldGroup htmlFor="security-current-password" label="Current Password">
         <input
+          id="security-current-password"
+          name="current_password"
           className="d-control"
           type="password"
           placeholder="Enter current password"
+          autoComplete="current-password"
+          aria-label="Current Password"
         />
       </FieldGroup>
-      <FieldGroup label="New Password">
+      <FieldGroup htmlFor="security-new-password" label="New Password">
         <input
+          id="security-new-password"
+          name="new_password"
           className="d-control"
           type="password"
           placeholder="Enter new password"
+          autoComplete="new-password"
+          aria-label="New Password"
         />
       </FieldGroup>
-      <FieldGroup label="Confirm New Password">
+      <FieldGroup htmlFor="security-confirm-password" label="Confirm New Password">
         <input
+          id="security-confirm-password"
+          name="confirm_password"
           className="d-control"
           type="password"
           placeholder="Confirm new password"
+          autoComplete="new-password"
+          aria-label="Confirm New Password"
         />
       </FieldGroup>
 
@@ -314,18 +356,25 @@ function NotificationsTab() {
           'Review requests',
           'Newsletter',
         ] as const
-      ).map((label) => (
-        <div
-          key={label}
-          className="registry-settings-toggle-row"
-        >
-          <span className="text-sm">{label}</span>
-          <input
-            type="checkbox"
-            defaultChecked
-          />
-        </div>
-      ))}
+      ).map((label) => {
+        const id = `notification-${label.toLowerCase().replace(/\s+/g, '-')}`;
+        return (
+          <label
+            key={label}
+            className="registry-settings-toggle-row"
+            htmlFor={id}
+          >
+            <span className="text-sm">{label}</span>
+            <input
+              id={id}
+              name={id}
+              type="checkbox"
+              defaultChecked
+              aria-label={label}
+            />
+          </label>
+        );
+      })}
     </div>
   );
 }

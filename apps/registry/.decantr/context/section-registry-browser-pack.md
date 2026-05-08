@@ -6,7 +6,7 @@
 
 ## Section Contract
 - Section: registry-browser
-- Role: primary
+- Role: public
 - Shell: top-nav-main
 - Theme: luminarum (dark)
 - Features: search, pagination
@@ -29,7 +29,7 @@ Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Re
 
 ## Allowed Vocabulary
 - registry-browser
-- primary
+- public
 - top-nav-main
 - luminarum
 - dark

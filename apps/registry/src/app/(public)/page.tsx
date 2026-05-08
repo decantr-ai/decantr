@@ -175,7 +175,7 @@ async function BlueprintLaunchHero() {
             Browse blueprints
             <ArrowIcon />
           </Link>
-          <Link href={href} className="registry-home-section-link">
+          <Link href={href} className="registry-home-section-link" aria-label="Open featured launchpad">
             Open featured launchpad
             <ArrowIcon />
           </Link>
@@ -239,7 +239,7 @@ async function BlueprintLaunchHero() {
                 <ArrowIcon />
               </Link>
               {showcaseUrl ? (
-                <a href={showcaseUrl} target="_blank" rel="noreferrer" className="d-interactive" data-variant="ghost">
+                <a href={showcaseUrl} target="_blank" rel="noopener noreferrer" className="d-interactive" data-variant="ghost">
                   Showcase
                   <ShowcaseIcon />
                 </a>
@@ -327,7 +327,12 @@ function RegistryHomeSecondaryLinks() {
   return (
     <div className="registry-home-secondary-links">
       {links.map((link, index) => (
-        <Link key={link.label} href={link.href} className="registry-home-secondary-link">
+        <Link
+          key={link.label}
+          href={link.href}
+          className="registry-home-secondary-link"
+          aria-label={`${link.label}: ${link.role}`}
+        >
           <span className="registry-home-secondary-index">{String(index + 1).padStart(2, '0')}</span>
           <span className="registry-home-secondary-name">
             <strong>{link.label}</strong>
@@ -394,7 +399,12 @@ async function FeaturedBlueprintLaunchpads() {
         <div className="registry-home-feature-copy">
           <span className="d-label registry-home-feature-eyebrow">Featured blueprint</span>
           <h3>
-            <Link href={getContentHref(primary)}>{primary.name || primary.slug}</Link>
+            <Link
+              href={getContentHref(primary)}
+              aria-label={`Open ${primary.name || primary.slug}`}
+            >
+              {primary.name || primary.slug}
+            </Link>
           </h3>
           {primary.description ? <p>{primary.description}</p> : null}
           <span className="registry-home-feature-meta">{getBlueprintMeta(primary)}</span>
@@ -419,7 +429,7 @@ async function FeaturedBlueprintLaunchpads() {
             <a
               href={primaryShowcaseUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="d-interactive"
               data-variant="ghost"
             >
@@ -443,7 +453,12 @@ async function FeaturedBlueprintLaunchpads() {
                 ) : null}
                 <div className="registry-home-feature-row-copy">
                   <h3>
-                    <Link href={getContentHref(item)}>{item.name || item.slug}</Link>
+                    <Link
+                      href={getContentHref(item)}
+                      aria-label={`Open ${item.name || item.slug}`}
+                    >
+                      {item.name || item.slug}
+                    </Link>
                   </h3>
                   {item.description ? <p>{item.description}</p> : null}
                   <span>{getBlueprintMeta(item)}</span>
@@ -458,7 +473,7 @@ async function FeaturedBlueprintLaunchpads() {
                     Open
                   </Link>
                   {showcaseUrl ? (
-                    <a href={showcaseUrl} target="_blank" rel="noreferrer" className="registry-home-text-link">
+                    <a href={showcaseUrl} target="_blank" rel="noopener noreferrer" className="registry-home-text-link">
                       Showcase
                     </a>
                   ) : null}
@@ -502,7 +517,11 @@ export default function HomePage() {
           </div>
           <div className="registry-home-search-hints" aria-label="Suggested searches">
             {searchHints.map((hint) => (
-              <Link key={hint} href={`/browse/blueprints?source=official&q=${encodeURIComponent(hint)}`}>
+              <Link
+                key={hint}
+                href={`/browse/blueprints?source=official&q=${encodeURIComponent(hint)}`}
+                aria-label={`Browse ${hint} blueprints`}
+              >
                 {hint}
               </Link>
             ))}

@@ -11,6 +11,16 @@ async function getToken() {
   return session.access_token;
 }
 
+export async function listApiKeysAction() {
+  const token = await getToken();
+  try {
+    const data = await api.getApiKeys(token);
+    return { keys: Array.isArray(data) ? data : data?.items ?? [] };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to load API keys' };
+  }
+}
+
 export async function createApiKeyAction(name: string, scopes: string[], orgId?: string | null) {
   const token = await getToken();
   try {

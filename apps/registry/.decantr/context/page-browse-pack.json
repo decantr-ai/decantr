@@ -28,7 +28,7 @@
     "browse",
     "top-nav-main",
     "registry-browser",
-    "primary",
+    "public",
     "luminarum",
     "dark",
     "search",
@@ -71,7 +71,7 @@
     "path": "/browse",
     "shell": "top-nav-main",
     "sectionId": "registry-browser",
-    "sectionRole": "primary",
+    "sectionRole": "public",
     "features": [
       "search",
       "pagination"
@@ -113,5 +113,5 @@
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the browse route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=browse | patterns=search-filter-bar, content-card-grid\n\n## Page Contract\n- Page: browse\n- Path: /browse\n- Shell: top-nav-main\n- Section: registry-browser (primary)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the browse route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=browse | patterns=search-filter-bar, content-card-grid\n\n## Page Contract\n- Page: browse\n- Path: /browse\n- Shell: top-nav-main\n- Section: registry-browser (public)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

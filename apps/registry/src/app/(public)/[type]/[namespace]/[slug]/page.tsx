@@ -507,7 +507,7 @@ function BlueprintPreview({
       <div className={styles.previewFooter}>
         <span>{formatCompactNumber(model.routes.length)} routes mapped</span>
         {showcaseUrl ? (
-          <a href={showcaseUrl} target="_blank" rel="noreferrer" className={styles.previewShowcaseLink}>
+          <a href={showcaseUrl} target="_blank" rel="noopener noreferrer" className={styles.previewShowcaseLink}>
             Open live preview
           </a>
         ) : null}
@@ -712,11 +712,19 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
             Registry
           </Link>
           <span className="opacity-40">/</span>
-          <Link href={`/browse/${type}`} className={`no-underline transition-colors hover:text-d-primary capitalize ${styles.mutedLink}`}>
+          <Link
+            href={`/browse/${type}`}
+            className={`no-underline transition-colors hover:text-d-primary capitalize ${styles.mutedLink}`}
+            aria-label={`Browse ${type}`}
+          >
             {type.charAt(0).toUpperCase() + type.slice(1)}
           </Link>
           <span className="opacity-40">/</span>
-          <Link href={`/browse?namespace=${encodeURIComponent(namespace)}`} className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}>
+          <Link
+            href={`/browse?namespace=${encodeURIComponent(namespace)}`}
+            className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}
+            aria-label={`Browse ${namespace}`}
+          >
             {namespace}
           </Link>
           <span className="opacity-40">/</span>
@@ -791,7 +799,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
                       <a
                         href={showcaseUrl}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className={`d-interactive ${styles.actionLink}`}
                         data-variant="showcase"
                       >

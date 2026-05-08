@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/admin';
 
@@ -15,7 +15,7 @@ export async function requireAdminRequestContext(): Promise<AdminRequestContext>
   } = await supabase.auth.getSession();
 
   if (!session?.user?.email || !isAdmin(session.user.email)) {
-    redirect('/dashboard');
+    notFound();
   }
 
   const adminKey = process.env.DECANTR_ADMIN_KEY ?? '';

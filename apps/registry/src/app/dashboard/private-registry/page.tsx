@@ -41,14 +41,14 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
         />
         <div className="registry-page-intro">
           <h3 className="text-lg font-semibold">Private Registry</h3>
-          <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+          <p className="registry-muted-copy text-sm">
             Private registry workspaces are available on Enterprise for organizations that need a dedicated internal catalog.
           </p>
         </div>
 
         <section className="d-section" data-density="compact">
           <div className="d-surface flex flex-col gap-3">
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <p className="registry-muted-copy text-sm">
               Upgrade to Enterprise to browse an internal org registry with dedicated discovery and governance controls.
             </p>
             <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
       />
       <div className="registry-page-intro">
         <h3 className="text-lg font-semibold">Private Registry</h3>
-        <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+        <p className="registry-muted-copy text-sm">
           Browse the internal package catalog for your enterprise organization, including private packages and governed public releases.
         </p>
       </div>
@@ -105,7 +105,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
           action="/dashboard/private-registry"
           className="d-surface registry-surface-stack"
         >
-          <div className="registry-form-grid-split" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+          <div className="registry-form-grid-split registry-form-grid-split-fluid">
             <div className="registry-form-grid">
               <label className="text-sm font-semibold" htmlFor="org">
                 Organization
@@ -191,7 +191,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
           <ContentCardGrid items={items} editable />
         ) : (
           <div className="d-surface">
-            <p className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <p className="registry-muted-copy text-sm">
               No packages matched the current internal registry filters.
             </p>
           </div>

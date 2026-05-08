@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { WorkspaceSnapshot } from '@/lib/workspace-state';
@@ -300,7 +300,6 @@ export function Sidebar({ workspace }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const sidebarWidth = collapsed ? 64 : 240;
   const navGroups = buildNavGroups(workspace);
 
   useEffect(() => {
@@ -364,10 +363,6 @@ export function Sidebar({ workspace }: SidebarProps) {
   }
 
   const desktopCollapsed = !isMobile && collapsed;
-  const shellStyle = {
-    '--sidebar-width': `${sidebarWidth}px`,
-  } as CSSProperties;
-
   return (
     <>
       <button
@@ -380,7 +375,7 @@ export function Sidebar({ workspace }: SidebarProps) {
       <aside
         className="registry-shell-sidebar-spacer"
         data-mobile={isMobile}
-        style={shellStyle}
+        data-collapsed={desktopCollapsed}
       >
         <div
           className="registry-shell-sidebar-panel"

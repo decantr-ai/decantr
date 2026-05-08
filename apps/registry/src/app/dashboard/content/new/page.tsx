@@ -3,9 +3,9 @@
 import { useState, useMemo, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { JsonViewer } from '@/components/json-viewer';
-import { api } from '@/lib/api';
 import { CONTENT_TYPES } from '@/lib/content-types';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
+import { createThumbnailUploadTargetAction, publishContentAction } from './actions';
 
 type RegistryThumbnailMeta = {
   path: string;
@@ -214,25 +214,29 @@ export default function ContentNewPage() {
 
     try {
       const dimensions = await getImageDimensions(file);
+      const uploadTargetResult = await createThumbnailUploadTargetAction({
+        file_name: file.name,
+        target:
+          form.target === 'organization'
+            ? 'organization'
+            : form.target === 'personal'
+              ? 'personal'
+              : 'community',
+        org_slug: form.target === 'organization' ? form.org_slug : undefined,
+      });
+      if ('error' in uploadTargetResult && uploadTargetResult.error) {
+        throw new Error(uploadTargetResult.error);
+      }
+      if (!('uploadTarget' in uploadTargetResult) || !uploadTargetResult.uploadTarget) {
+        throw new Error('Failed to create thumbnail upload target');
+      }
+
       const { createBrowserClient } = await import('@supabase/ssr');
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       );
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token ?? '';
-
-      if (!token) {
-        throw new Error('You must be signed in to upload a thumbnail.');
-      }
-
-      const uploadTarget = await api.createThumbnailUploadTarget(token, {
-        file_name: file.name,
-        target: form.target === 'organization' ? 'organization' : form.target === 'personal' ? 'personal' : 'community',
-        org_slug: form.target === 'organization' ? form.org_slug : undefined,
-      });
+      const uploadTarget = uploadTargetResult.uploadTarget;
 
       const { error } = await supabase.storage
         .from(uploadTarget.bucket)
@@ -308,16 +312,6 @@ export default function ContentNewPage() {
     );
     startTransition(async () => {
       try {
-        const { createBrowserClient } = await import('@supabase/ssr');
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        const token = session?.access_token ?? '';
-
         const payload = {
           type: form.type,
           slug: form.slug,
@@ -326,16 +320,22 @@ export default function ContentNewPage() {
           data: mergedData,
         };
 
-        if (form.target === 'organization') {
-          await api.publishOrgContent(token, form.org_slug, payload);
-        } else {
-          await api.publishContent(token, {
-            ...payload,
-            namespace:
-              form.target === 'personal' && me?.username
-                ? `@${me.username}`
-                : '@community',
-          });
+        const result = await publishContentAction({
+          target: form.target as 'community' | 'organization' | 'personal',
+          orgSlug: form.target === 'organization' ? form.org_slug : undefined,
+          payload:
+            form.target === 'organization'
+              ? payload
+              : {
+                  ...payload,
+                  namespace:
+                    form.target === 'personal' && me?.username
+                      ? `@${me.username}`
+                      : '@community',
+                },
+        });
+        if ('error' in result && result.error) {
+          throw new Error(result.error);
         }
 
         router.push('/dashboard/content');

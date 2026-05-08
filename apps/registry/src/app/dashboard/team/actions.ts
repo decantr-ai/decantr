@@ -7,7 +7,43 @@ import { api } from '@/lib/api';
 async function getToken() {
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
-  return session!.access_token;
+  if (!session) {
+    throw new Error('Not authenticated');
+  }
+  return session.access_token;
+}
+
+export async function loadOrgTeamStateAction(orgSlug: string) {
+  if (!orgSlug) {
+    return {
+      state: {
+        members: [],
+        seatLimit: 0,
+        auditEntries: [],
+        usageSummary: null,
+      },
+    };
+  }
+
+  const token = await getToken();
+  try {
+    const [memberData, auditData, usageData] = await Promise.all([
+      api.getOrgMembers(token, orgSlug),
+      api.getOrgAuditLog(token, orgSlug, { limit: 10, offset: 0 }).catch(() => null),
+      api.getOrgUsage(token, orgSlug).catch(() => null),
+    ]);
+
+    return {
+      state: {
+        members: memberData?.members ?? [],
+        seatLimit: memberData?.organization?.seat_limit ?? 0,
+        auditEntries: auditData?.items ?? [],
+        usageSummary: usageData?.usage ?? null,
+      },
+    };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to load organization state' };
+  }
 }
 
 export async function inviteMemberAction(orgSlug: string, identifier: string, role: string) {
