@@ -12,7 +12,7 @@ Decantr is the contract layer between product intent and AI-generated implementa
 | --- | --- | --- |
 | **[Greenfield blueprint](#greenfield-blueprint)** &nbsp;⭐ | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
 | **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
-| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr analyze`, then `decantr init --existing --adoption=contract-only` |
+| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr analyze`, then `decantr init --existing --accept-proposal` |
 | **[Hybrid composition](docs/reference/workflow-model.md#hybrid-composition)** | Layering sections, themes, or features into an attached project | `decantr add/remove`, `decantr theme switch`, `decantr registry` |
 
 ---
@@ -143,7 +143,8 @@ Brownfield adoption:
 
 ```bash
 decantr analyze
-decantr init --existing --yes --adoption=contract-only
+decantr init --existing --accept-proposal
+decantr check --brownfield
 ```
 
 Registry and verification:

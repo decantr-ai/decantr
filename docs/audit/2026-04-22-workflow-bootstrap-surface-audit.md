@@ -51,7 +51,7 @@ The corrective direction for this wave is:
 2. formalize three workflow lanes
 3. add an internal bootstrap adapter seam in the CLI
 4. keep only the current React/Vite starter wired through that seam
-5. make brownfield `analyze -> init` the explicit adoption path
+5. make brownfield `analyze -> init --existing --accept-proposal -> check --brownfield` the explicit adoption path
 6. keep registry content optional for brownfield teams
 
 ## Accepted Boundaries
