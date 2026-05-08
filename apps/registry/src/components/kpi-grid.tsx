@@ -58,6 +58,11 @@ export function KPIGrid({ items }: KPIGridProps) {
     const grid = gridRef.current;
     if (!grid) return undefined;
 
+    if (typeof IntersectionObserver === 'undefined') {
+      setRevealed(true);
+      return undefined;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
