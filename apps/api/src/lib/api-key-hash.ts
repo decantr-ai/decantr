@@ -9,6 +9,11 @@ function getApiKeyHashSecret(): string {
     process.env.DECANTR_API_KEY_HASH_SECRET ??
     process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+  if (!secret && process.env.NODE_ENV === 'test') {
+    cachedApiKeyHashSecret = 'decantr-test-api-key-hash-secret';
+    return cachedApiKeyHashSecret;
+  }
+
   if (!secret) {
     throw new Error('Missing DECANTR_API_KEY_HASH_SECRET or Supabase key for API key hashing');
   }
