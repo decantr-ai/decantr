@@ -16,7 +16,8 @@ npm install @decantr/verifier
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
 - `critiqueFile()` for file-level review against compiled review-pack contracts
-- schema-backed report types for project audits, file critiques, and showcase verification
+- schema-backed report types for project audits, Project Health, file critiques, and showcase verification
+- `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:
   - root document
@@ -30,16 +31,21 @@ npm install @decantr/verifier
 ## Example
 
 ```ts
-import { auditProject, critiqueFile } from '@decantr/verifier';
+import { auditProject, critiqueFile, type ProjectHealthReport } from '@decantr/verifier';
 
 const audit = await auditProject(process.cwd());
 const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
+
+function isBlocking(report: ProjectHealthReport) {
+  return report.status === 'error';
+}
 ```
 
 ## Schema Exports
 
 - `@decantr/verifier/schema/verification-report.common.v1.json`
 - `@decantr/verifier/schema/project-audit-report.v1.json`
+- `@decantr/verifier/schema/project-health-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 

@@ -17,6 +17,7 @@ addFormats(ajv);
 const schemaPaths = [
   new URL('../../schema/verification-report.common.v1.json', import.meta.url),
   new URL('../../schema/project-audit-report.v1.json', import.meta.url),
+  new URL('../../schema/project-health-report.v1.json', import.meta.url),
   new URL('../../schema/file-critique-report.v1.json', import.meta.url),
   new URL('../../schema/showcase-shortlist-report.v1.json', import.meta.url),
   new URL('../../../core/schema/execution-pack.common.v1.json', import.meta.url),
@@ -32,6 +33,7 @@ for (const path of schemaPaths) {
 
 const schemaMap = {
   'project-audit-report.v1.json': 'https://decantr.ai/schemas/project-audit-report.v1.json',
+  'project-health-report.v1.json': 'https://decantr.ai/schemas/project-health-report.v1.json',
   'file-critique-report.v1.json': 'https://decantr.ai/schemas/file-critique-report.v1.json',
   'showcase-shortlist-report.v1.json':
     'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',

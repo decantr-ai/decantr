@@ -1,72 +1,95 @@
 import { unstable_cache } from 'next/cache';
 import {
-  type ShowcaseManifestEntry,
+  RegistryAPIClient,
+  type ShowcaseManifestResponse,
+  type ShowcaseShortlistResponse,
   type ShowcaseShortlistSummary as ShowcaseShortlistVerificationSummary,
-  type ShowcaseVerificationEntry,
 } from '@decantr/registry/client';
-import { getPublicRegistryClient } from '@/lib/public-registry-client';
+import { getPublicRegistryApiUrl } from '@/lib/public-registry-client';
+import {
+  buildShowcaseDataset,
+  getStaticShowcaseDataset,
+  getStaticShowcaseManifestResponse,
+  getStaticShowcaseShortlistResponse,
+  type ShowcaseDataset,
+  type ShowcaseMetadata,
+} from '@/lib/showcase-dataset';
 
-export interface ShowcaseMetadata extends ShowcaseManifestEntry {
-  verification: ShowcaseVerificationEntry | null;
-}
-
-interface ShowcaseDataset {
-  apps: ShowcaseMetadata[];
-  shortlisted: ShowcaseMetadata[];
-  summary: ShowcaseShortlistVerificationSummary | null;
-  bySlug: Record<string, ShowcaseMetadata>;
-}
+export type { ShowcaseMetadata } from '@/lib/showcase-dataset';
 
 const SHOWCASE_REVALIDATE_SECONDS = 300;
-const EMPTY_SHOWCASE_DATASET: ShowcaseDataset = {
-  apps: [],
-  shortlisted: [],
-  summary: null,
-  bySlug: {},
+const SHOWCASE_API_TIMEOUT_MS = 3500;
+const SHOWCASE_CACHE_KEY = 'registry-showcase-dataset-v2';
+
+let showcaseRegistryClient: RegistryAPIClient | null = null;
+
+function getShowcaseRegistryClient(): RegistryAPIClient {
+  if (!showcaseRegistryClient) {
+    showcaseRegistryClient = new RegistryAPIClient({
+      baseUrl: getPublicRegistryApiUrl(),
+      timeoutMs: SHOWCASE_API_TIMEOUT_MS,
+    });
+  }
+  return showcaseRegistryClient;
 }
 
-function normalizeShowcaseEntry(entry: ShowcaseManifestEntry): ShowcaseMetadata {
-  return {
-    ...entry,
-    verification: entry.verification ?? null,
-  };
+function warnShowcaseFallback(source: string, error: unknown) {
+  const detail = error instanceof Error ? error.message : String(error);
+  console.warn(`[registry] ${source} unavailable; using bundled showcase metadata. ${detail}`);
+}
+
+function assertUsableManifest(manifest: ShowcaseManifestResponse): ShowcaseManifestResponse {
+  if (!Array.isArray(manifest.apps) || manifest.apps.length === 0) {
+    throw new Error('Showcase manifest returned no apps');
+  }
+  return manifest;
+}
+
+function assertUsableShortlist(shortlist: ShowcaseShortlistResponse): ShowcaseShortlistResponse {
+  if (!Array.isArray(shortlist.apps)) {
+    throw new Error('Showcase shortlist returned no apps array');
+  }
+  return shortlist;
+}
+
+async function fetchShowcaseManifest(): Promise<ShowcaseManifestResponse> {
+  try {
+    return assertUsableManifest(await getShowcaseRegistryClient().getShowcaseManifest());
+  } catch (error) {
+    warnShowcaseFallback('Showcase manifest API', error);
+    return getStaticShowcaseManifestResponse();
+  }
+}
+
+async function fetchShowcaseShortlist(): Promise<ShowcaseShortlistResponse> {
+  try {
+    return assertUsableShortlist(await getShowcaseRegistryClient().getShowcaseShortlist());
+  } catch (error) {
+    warnShowcaseFallback('Showcase shortlist API', error);
+    return getStaticShowcaseShortlistResponse();
+  }
 }
 
 const fetchShowcaseDataset = unstable_cache(
   async (): Promise<ShowcaseDataset> => {
-    try {
-      const client = getPublicRegistryClient();
-      const [manifest, shortlist] = await Promise.all([
-        client.getShowcaseManifest(),
-        client.getShowcaseShortlist(),
-      ]);
+    const [manifest, shortlist] = await Promise.all([
+      fetchShowcaseManifest(),
+      fetchShowcaseShortlist(),
+    ]);
 
-      const apps = manifest.apps
-        .filter((entry) => entry.status === 'active')
-        .map(normalizeShowcaseEntry);
-      const bySlug = Object.fromEntries(
-        apps.map((entry) => [entry.slug, entry]),
-      ) as Record<string, ShowcaseMetadata>;
-      const shortlisted = shortlist.apps
-        .filter((entry) => entry.status === 'active')
-        .map((entry) => bySlug[entry.slug] ?? normalizeShowcaseEntry(entry));
-
-      return {
-        apps,
-        shortlisted,
-        summary: shortlist.summary ?? null,
-        bySlug,
-      };
-    } catch {
-      return EMPTY_SHOWCASE_DATASET;
-    }
+    return buildShowcaseDataset(manifest, shortlist);
   },
-  ['registry-showcase-benchmarks'],
+  [SHOWCASE_CACHE_KEY],
   { revalidate: SHOWCASE_REVALIDATE_SECONDS },
 );
 
 async function getShowcaseDataset(): Promise<ShowcaseDataset> {
-  return fetchShowcaseDataset();
+  try {
+    return await fetchShowcaseDataset();
+  } catch (error) {
+    warnShowcaseFallback('Showcase dataset cache', error);
+    return getStaticShowcaseDataset();
+  }
 }
 
 export function getShowcaseUrl(blueprintSlug: string, metadata?: ShowcaseMetadata | null): string {

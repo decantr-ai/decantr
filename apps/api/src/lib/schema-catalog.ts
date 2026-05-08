@@ -59,6 +59,7 @@ const publicSchemaSpecs = {
   'selected-execution-pack.v1.json': '@decantr/core/schema/selected-execution-pack.v1.json',
   'verification-report.common.v1.json': '@decantr/verifier/schema/verification-report.common.v1.json',
   'project-audit-report.v1.json': '@decantr/verifier/schema/project-audit-report.v1.json',
+  'project-health-report.v1.json': '@decantr/verifier/schema/project-health-report.v1.json',
   'file-critique-report.v1.json': '@decantr/verifier/schema/file-critique-report.v1.json',
   'showcase-shortlist-report.v1.json': '@decantr/verifier/schema/showcase-shortlist-report.v1.json',
 } as const;

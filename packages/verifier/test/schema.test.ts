@@ -102,6 +102,69 @@ describe('verifier schema contracts', () => {
     }
   });
 
+  it('accepts project health reports matching the published schema', () => {
+    const report = {
+      $schema: 'https://decantr.ai/schemas/project-health-report.v1.json',
+      generatedAt: '2026-05-08T14:00:00.000Z',
+      projectRoot: '/workspace/app',
+      status: 'warning',
+      score: 95,
+      summary: {
+        errorCount: 0,
+        warnCount: 1,
+        infoCount: 0,
+        findingCount: 1,
+        workflowMode: 'brownfield-attach',
+        adoptionMode: 'contract-only',
+        essenceVersion: '3.1.0',
+        pageCount: 3,
+        runtimeAuditChecked: false,
+        runtimePassed: null,
+        packManifestPresent: true,
+        reviewPackPresent: true,
+      },
+      routes: {
+        declared: ['/', '/dashboard'],
+        runtimeChecked: [],
+        runtimeMatched: 0,
+        runtimeCoverageOk: null,
+        issues: ['Observed routes are missing from the Decantr contract.'],
+      },
+      packs: {
+        manifestPresent: true,
+        reviewPackPresent: true,
+        scaffoldPackPresent: true,
+        sectionPackCount: 1,
+        pagePackCount: 2,
+        mutationPackCount: 2,
+        generatedAt: '2026-05-08T14:00:00.000Z',
+      },
+      ci: {
+        recommendedCommand: 'decantr health --ci --fail-on error',
+        failOn: 'error',
+      },
+      findings: [
+        {
+          id: 'brownfield-route-drift',
+          source: 'brownfield',
+          category: 'Brownfield',
+          severity: 'warn',
+          message: 'Observed routes are missing from the Decantr contract.',
+          evidence: ['Route: /settings'],
+          rule: 'brownfield-route-drift',
+          suggestedFix: 'Regenerate a brownfield proposal.',
+          remediation: {
+            summary: 'Merge observed routes into the contract.',
+            prompt: 'Fix the Decantr route drift and rerun decantr health.',
+            commands: ['decantr analyze', 'decantr health'],
+          },
+        },
+      ],
+    };
+
+    assertMatchesVerifierSchema('project-health-report.v1.json', report);
+  });
+
   it('matches the published showcase shortlist schema for the checked-in report artifact', () => {
     const shortlistReport = JSON.parse(
       readFileSync(

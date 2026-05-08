@@ -42,6 +42,35 @@
         "null"
       ]
     },
+    "thumbnail": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "src",
+            "alt"
+          ],
+          "properties": {
+            "src": {
+              "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+            },
+            "alt": {
+              "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "url": {
       "type": [
         "string",

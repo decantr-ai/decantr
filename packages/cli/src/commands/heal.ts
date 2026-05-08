@@ -14,7 +14,7 @@ const CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
 const DIM = '\x1b[2m';
 
-interface Issue {
+export interface CheckIssue {
   type: 'error' | 'warning';
   rule: string;
   message: string;
@@ -26,25 +26,35 @@ export interface CheckOptions {
   brownfield?: boolean;
 }
 
-export async function cmdHeal(
+export interface CheckResult {
+  essence: Record<string, unknown> | null;
+  issues: CheckIssue[];
+  missingEssence: boolean;
+}
+
+export function collectCheckIssues(
   projectRoot: string = process.cwd(),
   options: CheckOptions = {},
-): Promise<void> {
+): CheckResult {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
-    console.error('No decantr.essence.json found. Run `decantr init` first.');
-    process.exitCode = 1;
-    return;
+    return {
+      essence: null,
+      issues: [
+        {
+          type: 'error',
+          rule: 'essence-missing',
+          message: 'No decantr.essence.json found. Run `decantr init` first.',
+        },
+      ],
+      missingEssence: true,
+    };
   }
 
-  const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
+  const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as Record<string, unknown>;
+  const issues: CheckIssue[] = [];
 
-  console.log('Scanning for issues...\n');
-
-  const issues: Issue[] = [];
-
-  // Validate schema
   const validation = validateEssence(essence);
   if (!validation.valid) {
     for (const err of validation.errors) {
@@ -56,10 +66,6 @@ export async function cmdHeal(
     }
   }
 
-  // v2.1 C5: scan project source for missing interaction implementations
-  // BEFORE running the guard, so the 'interactions' rule can fire on
-  // pre-computed issues. Source-scan is non-fatal — if it errors, guard
-  // still runs without interaction_issues.
   let interactionIssues: string[] = [];
   try {
     interactionIssues = scanProjectInteractions(projectRoot);
@@ -67,7 +73,6 @@ export async function cmdHeal(
     /* source scan is non-fatal */
   }
 
-  // Run guard rules
   try {
     const guardContext = buildGuardRegistryContext(projectRoot);
     const violations = evaluateGuard(essence, {
@@ -107,6 +112,26 @@ export async function cmdHeal(
     }
   }
 
+  return { essence, issues, missingEssence: false };
+}
+
+export async function cmdHeal(
+  projectRoot: string = process.cwd(),
+  options: CheckOptions = {},
+): Promise<void> {
+  const result = collectCheckIssues(projectRoot, options);
+
+  console.log('Scanning for issues...\n');
+
+  if (result.missingEssence) {
+    console.error(result.issues[0]?.message ?? 'No decantr.essence.json found.');
+    process.exitCode = 1;
+    return;
+  }
+
+  const issues = result.issues;
+  const essence = result.essence ?? {};
+
   if (issues.length === 0) {
     console.log(`${GREEN}No issues found. Project is healthy.${RESET}`);
     await maybeSendTelemetry(projectRoot, essence, issues, options);
@@ -139,7 +164,7 @@ export async function cmdHeal(
 async function maybeSendTelemetry(
   projectRoot: string,
   essence: Record<string, unknown>,
-  issues: Issue[],
+  issues: CheckIssue[],
   options: CheckOptions,
 ): Promise<void> {
   if (options.telemetry && !isOptedIn(projectRoot)) {

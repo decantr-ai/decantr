@@ -16,6 +16,12 @@ Enterprise Decantr telemetry should answer:
 
 Telemetry must not answer those questions by collecting prompts, source code, generated files, raw file paths, environment variables, secrets, email addresses, IP addresses, or user agents.
 
+## Project Health Is Local Observability
+
+Project Health is separate from Decantr product telemetry. `decantr health` and `decantr studio` help an end user understand their own repository's contract health, route drift, pack state, runtime evidence, and remediation plan. They are local-only by default and do not send health reports, source code, prompts, raw paths, or project data to Decantr.
+
+Telemetry is for Decantr operators to understand privacy-filtered product adoption. Project Health is for customer and developer workflows. A future private registry or enterprise dashboard may accept a customer-controlled `ProjectHealthReport`, but the local health command does not require telemetry opt-in.
+
 ## Architecture
 
 ```text
