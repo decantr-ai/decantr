@@ -143,7 +143,7 @@
       "releaseWave": "delivery",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, Content Health, and project governance.",
+      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health CI and Studio, Content Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

@@ -19,7 +19,7 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 | `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, Project Health, and report-schema engine. |
 | `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, Content Health, and project governance. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health CI and Studio, Content Health, and project governance. |
 | `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development. |
 
 ## Adapter Capability Matrix

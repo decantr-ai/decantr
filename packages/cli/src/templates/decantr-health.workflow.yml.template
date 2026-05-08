@@ -1,0 +1,62 @@
+name: Decantr Project Health
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            corepack enable
+            pnpm install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile
+          elif [ -f package.json ]; then
+            npm install
+          else
+            echo "No package manifest found; skipping dependency install."
+          fi
+
+      - name: Generate Decantr health JSON
+        run: npx --yes {{CLI_PACKAGE}} health --json --output {{JSON_PATH}}
+
+      - name: Audit Decantr health
+        run: npx --yes {{CLI_PACKAGE}} health --ci --fail-on {{FAIL_ON}} --markdown --output {{REPORT_PATH}}
+
+      - name: Publish health summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f {{REPORT_PATH}} ]; then
+            cat {{REPORT_PATH}} >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload health artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: decantr-project-health
+          path: |
+            {{JSON_PATH}}
+            {{REPORT_PATH}}
+          if-no-files-found: ignore

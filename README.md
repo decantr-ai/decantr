@@ -82,7 +82,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, inspect Project Health locally, and audit registry content supply-chain health |
+| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, install Project Health CI, inspect Project Health locally, and audit registry content supply-chain health |
 | MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, and audit |
 | Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
 | Verifier | Shared audit, critique, Project Health, and report-schema engine |
@@ -98,7 +98,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 | `@decantr/core` | Execution-pack compiler primitives and shared Decantr utilities |
 | `@decantr/verifier` | Shared audit, critique, and report-schema engine |
 | `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
-| `@decantr/cli` | Local scaffold, registry, audit, and maintenance workflows |
+| `@decantr/cli` | Local scaffold, registry, Project Health CI/Studio, audit, and maintenance workflows |
 | `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
 
 Full release/support status lives in [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md).

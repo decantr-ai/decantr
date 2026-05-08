@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   auditProject,
   type ProjectHealthFinding,
@@ -19,6 +20,11 @@ const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 const PROJECT_HEALTH_SCHEMA_URL = 'https://decantr.ai/schemas/project-health-report.v1.json';
+const DEFAULT_HEALTH_CI_WORKFLOW_PATH = '.github/workflows/decantr-health.yml';
+const DEFAULT_HEALTH_CI_REPORT_PATH = 'decantr-health.md';
+const DEFAULT_HEALTH_CI_JSON_PATH = 'decantr-health.json';
+const DEFAULT_HEALTH_CI_CLI_VERSION = 'latest';
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export type HealthOutputFormat = 'text' | 'json' | 'markdown';
 export type HealthFailOn = 'error' | 'warn' | 'none';
@@ -31,6 +37,23 @@ export interface HealthCommandOptions {
   ci?: boolean;
   failOn?: HealthFailOn;
   promptId?: string;
+  initCi?: HealthCiOptions;
+}
+
+export interface HealthCiOptions {
+  force?: boolean;
+  failOn?: HealthFailOn;
+  cliVersion?: string;
+  workflowPath?: string;
+  reportPath?: string;
+  jsonPath?: string;
+}
+
+export interface HealthCiWriteResult {
+  path: string;
+  created: boolean;
+  cliPackage: string;
+  failOn: HealthFailOn;
 }
 
 interface ProjectMetadata {
@@ -64,6 +87,118 @@ function readProjectMetadata(projectRoot: string): ProjectMetadata {
   } catch {
     return { workflowMode: null, adoptionMode: null, autoBrownfield: false };
   }
+}
+
+function loadHealthTemplate(name: string): string {
+  const fromDist = join(__dirname, '..', 'src', 'templates', name);
+  if (existsSync(fromDist)) return readFileSync(fromDist, 'utf-8');
+  const fromSrc = join(__dirname, '..', 'templates', name);
+  if (existsSync(fromSrc)) return readFileSync(fromSrc, 'utf-8');
+  const fromCommandSrc = join(__dirname, '..', '..', 'templates', name);
+  if (existsSync(fromCommandSrc)) return readFileSync(fromCommandSrc, 'utf-8');
+  throw new Error(`Template not found: ${name}`);
+}
+
+function renderTemplate(template: string, vars: Record<string, string>): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  return result;
+}
+
+function normalizeCliPackageSpecifier(version: string | undefined): string {
+  const value = (version || DEFAULT_HEALTH_CI_CLI_VERSION).trim();
+  if (!value) return `@decantr/cli@${DEFAULT_HEALTH_CI_CLI_VERSION}`;
+  const versionToken = value.startsWith('@decantr/cli@') ? value.slice('@decantr/cli@'.length) : value;
+  if (!/^[A-Za-z0-9._~^*-]+$/.test(versionToken)) {
+    throw new Error(
+      'Invalid --cli-version value. Use a package version or dist-tag such as latest, 1.10.0, or next.',
+    );
+  }
+  return `@decantr/cli@${versionToken}`;
+}
+
+function normalizeHealthFailOn(value: HealthFailOn | undefined): HealthFailOn {
+  const failOn = value ?? 'error';
+  if (!['error', 'warn', 'none'].includes(failOn)) {
+    throw new Error('Invalid --fail-on value. Use error, warn, or none.');
+  }
+  return failOn;
+}
+
+function validateWorkflowPath(value: string): string {
+  const normalized = value.trim();
+  if (
+    !normalized ||
+    normalized.startsWith('/') ||
+    normalized.startsWith('-') ||
+    normalized.includes('..') ||
+    normalized.includes('\\') ||
+    /\s/.test(normalized)
+  ) {
+    throw new Error(
+      'Invalid --workflow-path value. Use a relative path without spaces or parent-directory segments.',
+    );
+  }
+  return normalized;
+}
+
+function validateArtifactPath(value: string, flag: string): string {
+  const normalized = value.trim();
+  if (
+    !normalized ||
+    normalized.startsWith('/') ||
+    normalized.startsWith('-') ||
+    normalized.includes('..') ||
+    normalized.includes('\\') ||
+    /\s/.test(normalized)
+  ) {
+    throw new Error(
+      `Invalid ${flag} value. Use a relative artifact path without spaces or parent-directory segments.`,
+    );
+  }
+  return normalized;
+}
+
+export function renderProjectHealthCiWorkflow(options: HealthCiOptions = {}): string {
+  const failOn = normalizeHealthFailOn(options.failOn);
+  const template = loadHealthTemplate('decantr-health.workflow.yml.template');
+  return renderTemplate(template, {
+    CLI_PACKAGE: normalizeCliPackageSpecifier(options.cliVersion),
+    FAIL_ON: failOn,
+    REPORT_PATH: validateArtifactPath(
+      options.reportPath || DEFAULT_HEALTH_CI_REPORT_PATH,
+      '--report-path',
+    ),
+    JSON_PATH: validateArtifactPath(options.jsonPath || DEFAULT_HEALTH_CI_JSON_PATH, '--json-path'),
+  });
+}
+
+export function writeProjectHealthCiWorkflow(
+  projectRoot: string,
+  options: HealthCiOptions = {},
+): HealthCiWriteResult {
+  const workflowRelativePath = validateWorkflowPath(
+    options.workflowPath || DEFAULT_HEALTH_CI_WORKFLOW_PATH,
+  );
+  const workflowPath = join(projectRoot, workflowRelativePath);
+  const alreadyExists = existsSync(workflowPath);
+  if (alreadyExists && !options.force) {
+    throw new Error(
+      `${workflowRelativePath} already exists. Re-run with --force to replace it, or use --workflow-path <file>.`,
+    );
+  }
+
+  mkdirSync(dirname(workflowPath), { recursive: true });
+  writeFileSync(workflowPath, renderProjectHealthCiWorkflow(options), 'utf-8');
+
+  return {
+    path: workflowRelativePath,
+    created: !alreadyExists,
+    cliPackage: normalizeCliPackageSpecifier(options.cliVersion),
+    failOn: normalizeHealthFailOn(options.failOn),
+  };
 }
 
 function collectDeclaredRoutes(essence: unknown): string[] {
@@ -505,6 +640,20 @@ export async function cmdHealth(
   projectRoot: string = process.cwd(),
   options: HealthCommandOptions = {},
 ): Promise<void> {
+  if (options.initCi) {
+    try {
+      const result = writeProjectHealthCiWorkflow(projectRoot, options.initCi);
+      const action = result.created ? 'Created' : 'Updated';
+      console.log(`${GREEN}${action} Decantr Project Health workflow:${RESET} ${result.path}`);
+      console.log(`${DIM}CLI package: ${result.cliPackage}${RESET}`);
+      console.log(`${DIM}CI gate: decantr health --ci --fail-on ${result.failOn}${RESET}`);
+    } catch (e) {
+      console.error(`${RED}${(e as Error).message}${RESET}`);
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   const report = await createProjectHealthReport(projectRoot);
 
   if (options.promptId) {
@@ -542,6 +691,41 @@ export async function cmdHealth(
 
 export function parseHealthArgs(args: string[]): HealthCommandOptions {
   const options: HealthCommandOptions = {};
+
+  if (args[1] === 'init-ci') {
+    options.initCi = {};
+    for (let index = 2; index < args.length; index += 1) {
+      const arg = args[index];
+      if (arg === '--force') {
+        options.initCi.force = true;
+      } else if (arg === '--fail-on' && args[index + 1]) {
+        options.initCi.failOn = args[++index] as HealthFailOn;
+      } else if (arg.startsWith('--fail-on=')) {
+        options.initCi.failOn = arg.split('=')[1] as HealthFailOn;
+      } else if ((arg === '--cli-version' || arg === '--cli') && args[index + 1]) {
+        options.initCi.cliVersion = args[++index];
+      } else if (arg.startsWith('--cli-version=')) {
+        options.initCi.cliVersion = arg.split('=')[1];
+      } else if (arg.startsWith('--cli=')) {
+        options.initCi.cliVersion = arg.split('=')[1];
+      } else if (arg === '--workflow-path' && args[index + 1]) {
+        options.initCi.workflowPath = args[++index];
+      } else if (arg.startsWith('--workflow-path=')) {
+        options.initCi.workflowPath = arg.split('=')[1];
+      } else if (arg === '--report-path' && args[index + 1]) {
+        options.initCi.reportPath = args[++index];
+      } else if (arg.startsWith('--report-path=')) {
+        options.initCi.reportPath = arg.split('=')[1];
+      } else if (arg === '--json-path' && args[index + 1]) {
+        options.initCi.jsonPath = args[++index];
+      } else if (arg.startsWith('--json-path=')) {
+        options.initCi.jsonPath = arg.split('=')[1];
+      }
+    }
+
+    normalizeHealthFailOn(options.initCi.failOn);
+    return options;
+  }
 
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
