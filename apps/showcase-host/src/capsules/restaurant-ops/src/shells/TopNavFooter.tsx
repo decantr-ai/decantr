@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { css } from '@decantr/css';
-import { UtensilsCrossed, Instagram, Twitter } from 'lucide-react';
+import { UtensilsCrossed, Camera as Instagram, MessageCircle as Twitter } from 'lucide-react';
 
 export function TopNavFooter() {
   return (

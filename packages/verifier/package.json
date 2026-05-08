@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Shared verification, critique, Project Health, and report-schema engine for Decantr",
   "author": "Decantr AI",
   "license": "MIT",

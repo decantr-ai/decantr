@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, Github, ShieldCheck, UserRound } from 'lucide-react';
+import { Bot, GitBranch as Github, ShieldCheck, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider, AuthPanel } from '../../components/AuthPanel';
 import { useAuth } from '../../App';

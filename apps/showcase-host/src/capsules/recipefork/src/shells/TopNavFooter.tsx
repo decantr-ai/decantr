@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { css } from '@decantr/css';
-import { ChefHat, Instagram, Twitter } from 'lucide-react';
+import { Camera as Instagram, ChefHat, MessageCircle as Twitter } from 'lucide-react';
 
 export function TopNavFooter() {
   return (

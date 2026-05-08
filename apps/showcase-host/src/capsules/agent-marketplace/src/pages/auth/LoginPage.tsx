@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Github, Mail, Shield, Zap } from 'lucide-react';
+import { GitBranch as Github, Mail, Shield, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthDivider, AuthPanel } from '../../components/AuthPanel';
 import { useAuth } from '../../App';
