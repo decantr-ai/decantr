@@ -13,13 +13,13 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 | Package | Support status | Surface class | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Essence schemas, validation, migration, and TypeScript types. |
-| `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | Registry contracts, schemas, API client, and public content utilities. |
+| `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | Registry contracts, schemas, Content Health report types, API client, and public content utilities. |
 | `@decantr/css` | core-supported | `public-foundation` | stable | `foundation` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Framework-agnostic CSS atom runtime for Decantr projects. |
 | `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers. |
 | `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
 | `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared verification, critique, Project Health, and report-schema engine. |
 | `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, and verification. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, and project governance. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, Content Health, and project governance. |
 | `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development. |
 
 ## Adapter Capability Matrix

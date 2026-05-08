@@ -61,6 +61,7 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 - generates execution-pack context files for AI coding assistants
 - audits projects against Decantr contracts
 - produces local Project Health reports and a localhost Studio dashboard for end-user drift triage
+- audits local registry content repositories with Content Health reports for schema, reference, and quality coverage
 - searches the registry and showcase benchmark corpus
 - validates, refreshes, and maintains `decantr.essence.json`
 
@@ -80,6 +81,7 @@ decantr audit
 decantr check
 decantr health --ci --fail-on error
 decantr studio --port 4319 --host 127.0.0.1
+decantr content-health --ci --fail-on error
 decantr registry summary --namespace @official --json
 decantr showcase verification --json
 ```
@@ -107,6 +109,21 @@ decantr studio --port 4319 --host 127.0.0.1
 ```
 
 Studio is for local triage, not Decantr admin telemetry. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
+
+## Content Health
+
+`decantr content-health` is the local supply-chain observability command for registry content repositories such as `decantr-content`. It is separate from Project Health: Project Health checks an end-user app against its Decantr contract, while Content Health checks published content inputs before they flow into the hosted registry.
+
+```bash
+decantr content-health
+decantr content-health --json
+decantr content-health --markdown --output content-health.md
+decantr content-health --ci --fail-on error
+decantr content-health --ci --fail-on warn
+decantr content-health --prompt <finding-id>
+```
+
+The report validates local `patterns/`, `themes/`, `blueprints/`, `archetypes/`, and `shells/` against the published registry schemas, checks hard references such as blueprint themes and composed archetypes, summarizes softer generation-coverage gaps such as missing pattern coverage, and emits AI-ready remediation prompts. It does not call the hosted registry by default; use the existing registry drift audits when you need live publish parity.
 
 ## Greenfield Certification
 

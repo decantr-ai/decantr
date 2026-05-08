@@ -2335,6 +2335,7 @@ async function cmdInit(args: InitArgs) {
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);
   console.log(`    ${cyan('decantr health')}     Contract health report`);
+  console.log(`    ${cyan('decantr content-health')} Registry content health report`);
   console.log(`    ${cyan('decantr studio')}     Local health dashboard`);
   console.log(`    ${cyan('decantr search')}     Search registry`);
   console.log(`    ${cyan('decantr get')}        Fetch content details`);
@@ -2867,6 +2868,7 @@ ${BOLD}Usage:${RESET}
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+  decantr content-health [--json] [--markdown] [--ci]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
@@ -2905,6 +2907,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]
+  ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
@@ -2944,6 +2947,7 @@ ${BOLD}Examples:${RESET}
   decantr status
   decantr health
   decantr health --ci --fail-on error
+  decantr content-health --ci --fail-on error
   decantr studio
   decantr audit
   decantr audit src/pages/HomePage.tsx
@@ -3147,6 +3151,19 @@ async function main() {
       try {
         const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
         await cmdHealth(process.cwd(), parseHealthArgs(args));
+      } catch (e) {
+        console.error(error((e as Error).message));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'content-health': {
+      try {
+        const { cmdContentHealth, parseContentHealthArgs } = await import(
+          './commands/content-health.js'
+        );
+        await cmdContentHealth(process.cwd(), parseContentHealthArgs(args));
       } catch (e) {
         console.error(error((e as Error).message));
         process.exitCode = 1;

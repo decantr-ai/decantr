@@ -301,6 +301,89 @@ export interface ResolvedContent<T> {
   path: string;
 }
 
+// --- Content Health ---
+
+export type ContentHealthStatus = 'healthy' | 'warning' | 'error';
+export type ContentHealthFindingSource =
+  | 'schema'
+  | 'reference'
+  | 'quality'
+  | 'coverage'
+  | 'content';
+
+export interface ContentHealthRemediation {
+  summary: string;
+  prompt: string;
+  commands: string[];
+}
+
+export interface ContentHealthFinding {
+  id: string;
+  source: ContentHealthFindingSource;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  evidence: string[];
+  file?: string;
+  type?: ContentType;
+  itemId?: string;
+  rule?: string;
+  suggestedFix?: string;
+  remediation: ContentHealthRemediation;
+}
+
+export interface ContentHealthTypeSummary {
+  type: ContentType;
+  directory: ApiContentType;
+  itemCount: number;
+  validCount: number;
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+  ignoredCount: number;
+}
+
+export interface ContentHealthReferenceSummary {
+  checked: number;
+  missing: number;
+  missingByType: Record<ContentType, number>;
+}
+
+export interface ContentHealthQualitySummary {
+  patternVisualBriefCoverage: number;
+  patternInteractionCoverage: number;
+  themeDecoratorCoverage: number;
+  blueprintPersonalityCoverage: number;
+  blueprintVoiceCoverage: number;
+  archetypePageBriefCoverage: number;
+}
+
+export interface ContentHealthReport {
+  $schema: string;
+  generatedAt: string;
+  contentRoot: string;
+  status: ContentHealthStatus;
+  score: number;
+  summary: {
+    itemCount: number;
+    validCount: number;
+    errorCount: number;
+    warnCount: number;
+    infoCount: number;
+    findingCount: number;
+    ignoredCount: number;
+    contentDirectoryCount: number;
+  };
+  content: ContentHealthTypeSummary[];
+  references: ContentHealthReferenceSummary;
+  quality: ContentHealthQualitySummary;
+  ci: {
+    recommendedCommand: string;
+    failOn: 'error' | 'warn' | 'none';
+  };
+  findings: ContentHealthFinding[];
+}
+
 // --- Theme ---
 
 export type CvdMode = 'deuteranopia' | 'protanopia' | 'tritanopia' | 'achromatopsia';

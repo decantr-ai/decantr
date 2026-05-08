@@ -11,7 +11,7 @@ This reset branch treats only the vNext program, audits, and active implementati
 - `specs/`
   - Active implementation specs for the reset program.
 - `reference/`
-  - Human-readable references for active public/runtime contracts such as Project Health, workflow mode, telemetry, and registry API surfaces.
+  - Human-readable references for active public/runtime contracts such as Project Health, Content Health, workflow mode, telemetry, and registry API surfaces.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
 - `schemas/`

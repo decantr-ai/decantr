@@ -1,6 +1,6 @@
 {
   "name": "@decantr/registry",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
   "author": "Decantr AI",
   "license": "MIT",
@@ -31,6 +31,7 @@
     },
     "./schema/common.v1.json": "./schema/common.v1.json",
     "./schema/content-intelligence.v1.json": "./schema/content-intelligence.v1.json",
+    "./schema/content-health-report.v1.json": "./schema/content-health-report.v1.json",
     "./schema/pattern.v2.json": "./schema/pattern.v2.json",
     "./schema/theme.v1.json": "./schema/theme.v1.json",
     "./schema/blueprint.v1.json": "./schema/blueprint.v1.json",
