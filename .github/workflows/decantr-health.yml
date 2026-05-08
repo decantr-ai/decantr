@@ -37,13 +37,16 @@ jobs:
             echo "No package manifest found; skipping dependency install."
           fi
 
+      - name: Build Decantr CLI
+        run: pnpm run build:packages
+
       - name: Generate Decantr health JSON
         working-directory: apps/registry
-        run: npx --yes @decantr/cli@latest health --json --output decantr-health.json
+        run: node ../../packages/cli/dist/bin.js health --json --output decantr-health.json
 
       - name: Audit Decantr health
         working-directory: apps/registry
-        run: npx --yes @decantr/cli@latest health --ci --fail-on error --markdown --output decantr-health.md
+        run: node ../../packages/cli/dist/bin.js health --ci --fail-on error --markdown --output decantr-health.md
 
       - name: Publish health summary
         if: always()
