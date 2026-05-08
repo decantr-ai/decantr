@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { css } from '@decantr/css';
-import { Zap, Instagram, Twitter } from 'lucide-react';
+import { Zap, Camera as Instagram, MessageCircle as Twitter } from 'lucide-react';
 
 export function TopNavFooter() {
   return (

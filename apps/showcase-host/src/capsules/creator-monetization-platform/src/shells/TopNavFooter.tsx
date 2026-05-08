@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { css } from '@decantr/css';
-import { Palette, Instagram, Twitter } from 'lucide-react';
+import { Palette, Camera as Instagram, MessageCircle as Twitter } from 'lucide-react';
 
 export function TopNavFooter() {
   return (

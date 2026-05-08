@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, Github, Chrome } from 'lucide-react';
+import { Sparkles, GitBranch as Github, Globe as Chrome } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface AuthFormProps {

@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Home, Twitter, Instagram, Mail } from 'lucide-react';
+import { Home, MessageCircle as Twitter, Camera as Instagram, Mail } from 'lucide-react';
 
 export function TopNavFooter() {
   return (

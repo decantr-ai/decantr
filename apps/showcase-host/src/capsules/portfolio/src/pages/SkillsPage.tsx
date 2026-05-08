@@ -1,7 +1,7 @@
 import { css } from '@decantr/css';
 import {
   Code2, FileCode, Globe, Palette, Box, BarChart3,
-  Server, Database, GitBranch, Container, Figma,
+  Server, Database, GitBranch, Container, Frame as Figma,
   Clapperboard, Eye, Zap, PenTool,
 } from 'lucide-react';
 import { skills } from '../data/mock';
