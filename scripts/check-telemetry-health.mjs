@@ -35,7 +35,8 @@ const results = dryRun
   ? sampleHealthResponses(checks)
   : await Promise.all(checks.map((check) => runHealthCheck(check)));
 const unhealthyResults = results.filter((result) => result.status !== 'success');
-const markdown = renderMarkdown(results, { apiUrl, dryRun });
+const generatedAt = new Date().toISOString();
+const markdown = renderMarkdown(results, { apiUrl, dryRun, generatedAt });
 
 console.log(markdown);
 
@@ -44,7 +45,7 @@ if (process.env.GITHUB_STEP_SUMMARY) {
 }
 
 if (webhookUrl && (unhealthyResults.length || webhookAlways)) {
-  await postWebhook(markdown);
+  await postWebhook({ apiUrl, dryRun, generatedAt, markdown, results });
 }
 
 if (unhealthyResults.length) {
@@ -127,9 +128,8 @@ function labelForStatus(status) {
   return 'Missed snapshot';
 }
 
-function renderMarkdown(results, { apiUrl, dryRun }) {
+function renderMarkdown(results, { apiUrl, dryRun, generatedAt }) {
   const unhealthyResults = results.filter((result) => result.status !== 'success');
-  const generatedAt = new Date().toISOString();
   const lines = [
     '# Telemetry Health Check',
     '',
@@ -159,11 +159,11 @@ function renderMarkdown(results, { apiUrl, dryRun }) {
   return lines.join('\n');
 }
 
-async function postWebhook(markdown) {
+async function postWebhook(context) {
   const response = await fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(webhookPayload(markdown)),
+    body: JSON.stringify(webhookPayload(context)),
   });
 
   if (!response.ok) {
@@ -172,12 +172,90 @@ async function postWebhook(markdown) {
   }
 }
 
-function webhookPayload(markdown) {
+function webhookPayload(context) {
   if (webhookFormat === 'discord') {
-    return { content: limitDiscordContent(markdown) };
+    return discordWebhookPayload(context);
   }
 
-  return { text: markdown };
+  return { text: context.markdown };
+}
+
+function discordWebhookPayload({ apiUrl, dryRun, generatedAt, results }) {
+  const unhealthyResults = results.filter((result) => result.status !== 'success');
+  const overall = unhealthyResults.length ? 'unhealthy' : 'healthy';
+  const fields = results.map((result) => ({
+    name: result.check_label,
+    value: discordCheckValue(result),
+    inline: false,
+  }));
+
+  if (unhealthyResults.length) {
+    fields.push({
+      name: 'Action required',
+      value: 'Inspect the Telemetry Weekly Snapshot workflow, Fly API logs, PostHog query credentials, and Supabase snapshot tables.',
+      inline: false,
+    });
+  }
+
+  return {
+    username: 'Decantr Telemetry',
+    content: `Decantr telemetry health is ${overall}.`,
+    embeds: [
+      {
+        title: 'Telemetry Health Check',
+        description: [
+          `Overall: **${capitalize(overall)}**`,
+          dryRun ? 'Mode: `dry run`' : `API: \`${apiUrl}\``,
+          `Generated: \`${generatedAt}\``,
+        ].join('\n'),
+        color: discordStatusColor(results),
+        fields,
+        footer: {
+          text: unhealthyResults.length
+            ? 'Freshness alert: durable telemetry rollups need attention.'
+            : 'Durable telemetry rollups are fresh.',
+        },
+        timestamp: generatedAt,
+      },
+    ],
+  };
+}
+
+function discordCheckValue(result) {
+  const lines = [
+    `Status: **${result.status}** (${result.label})`,
+    `Latest snapshot: \`${result.latest_captured_at ?? 'none'}\``,
+    `Usage events: **${formatNumber(result.usage_snapshot.total_events)}**`,
+    `Attribution: **${formatNumber(result.attribution_snapshot.rows)} rows / ${formatNumber(result.attribution_snapshot.total_events)} events**`,
+  ];
+
+  if (result.detail) {
+    lines.push(`Detail: ${limitDiscordText(result.detail, 420)}`);
+  }
+
+  return limitDiscordText(lines.join('\n'), 1_024);
+}
+
+function discordStatusColor(results) {
+  const worstStatus = results.reduce((worst, result) => (
+    statusSeverity(result.status) > statusSeverity(worst) ? result.status : worst
+  ), 'success');
+
+  if (worstStatus === 'error') return 0xe5484d;
+  if (worstStatus === 'warning') return 0xf5a524;
+  if (worstStatus === 'info') return 0x2f80ed;
+  return 0x2fb344;
+}
+
+function statusSeverity(status) {
+  if (status === 'error') return 3;
+  if (status === 'warning') return 2;
+  if (status === 'info') return 1;
+  return 0;
+}
+
+function capitalize(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 function detectWebhookFormat(value) {
@@ -197,9 +275,9 @@ function normalizeWebhookFormat(value) {
   return value === 'discord' ? 'discord' : 'text';
 }
 
-function limitDiscordContent(value) {
-  if (value.length <= 2_000) return value;
-  return `${value.slice(0, 1_900)}\n\n[Trimmed: open the GitHub Actions step summary for the full report.]`;
+function limitDiscordText(value, maxLength) {
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, Math.max(0, maxLength - 75))}\n[Trimmed: open the GitHub Actions summary for full detail.]`;
 }
 
 function sampleHealthResponses(checks) {

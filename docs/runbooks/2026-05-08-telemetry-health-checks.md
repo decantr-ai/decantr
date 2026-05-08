@@ -19,7 +19,7 @@ The workflow checks three baseline views:
 - all actors, 30 days
 - customer actors, 30 days
 
-The workflow fails when any check is not `success`. It writes a markdown summary to the GitHub Actions step summary and posts the same markdown to `TELEMETRY_HEALTH_WEBHOOK_URL` when that secret is configured and a check is unhealthy.
+The workflow fails when any check is not `success`. It writes a markdown summary to the GitHub Actions step summary and posts an alert payload to `TELEMETRY_HEALTH_WEBHOOK_URL` when that secret is configured and a check is unhealthy. Generic webhooks receive the markdown in a `text` field; Discord webhooks receive a rich embed.
 
 Manual workflow runs include a `send_webhook_test` input. Enable it to post the current health summary even when the system is healthy, which is the safest way to validate a new Slack or Discord webhook secret.
 
@@ -63,4 +63,4 @@ To post all health summaries to the webhook, even when healthy:
 TELEMETRY_HEALTH_WEBHOOK_ALWAYS=true node scripts/check-telemetry-health.mjs
 ```
 
-Discord webhook URLs are detected automatically and use the `content` payload field. If a private relay fronts Discord, set `TELEMETRY_HEALTH_WEBHOOK_FORMAT=discord` so the script uses the Discord-compatible payload shape.
+Discord webhook URLs are detected automatically and receive a rich embed with a status color, generated timestamp, and one compact field per health check. If a private relay fronts Discord, set `TELEMETRY_HEALTH_WEBHOOK_FORMAT=discord` so the script uses the Discord-compatible payload shape.
