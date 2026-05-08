@@ -62,6 +62,56 @@ describe('verifier', () => {
     }
   });
 
+  it('recognizes Next build output when dist is absent', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, '.next', 'server', 'app'), { recursive: true });
+      mkdirSync(join(projectRoot, '.next', 'static', 'chunks'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '3.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+          features: [],
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'next', routing: 'pathname' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      writeFileSync(join(projectRoot, '.next', 'BUILD_ID'), 'next-build\n');
+      writeFileSync(join(projectRoot, '.next', 'build-manifest.json'), '{}\n');
+      writeFileSync(
+        join(projectRoot, '.next', 'server', 'app', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>Next App</title></head><body></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, '.next', 'static', 'chunks', 'app.js'), 'console.log("next");\n');
+
+      const report = await auditProject(projectRoot);
+      expect(report.summary.runtimeAuditChecked).toBe(true);
+      expect(report.runtimeAudit.distPresent).toBe(true);
+      expect(report.runtimeAudit.indexPresent).toBe(true);
+      expect(report.runtimeAudit.assetCount).toBe(1);
+      expect(report.findings.some(finding => finding.id === 'runtime-dist-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'runtime-index-missing')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports missing or invalid essence contracts during project audit', async () => {
     const missingEssenceRoot = createProjectRoot();
     const invalidJsonRoot = createProjectRoot();
@@ -804,6 +854,69 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'source-accessibility-issues-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-interaction-safety-issues-present')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'source-auth-input-hints-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not report server-only auth headers as client-side header writes', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'app', 'dashboard', 'settings'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'app', 'dashboard', 'settings', 'actions.ts'),
+        `
+          'use server';
+
+          export async function updateProfile(session: { access_token: string }) {
+            const headers: Record<string, string> = {};
+            headers.Authorization = \`Bearer \${session.access_token}\`;
+            await fetch('/api/profile', { method: 'PATCH', headers });
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-header-writes-present')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }
@@ -7821,6 +7934,114 @@ describe('verifier', () => {
       const report = await auditProject(projectRoot);
       expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(false);
       expect(report.findings.some(finding => finding.id === 'source-protected-surface-auth-checks-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not flag Next App Router surfaces covered by guarded layouts', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'app', '(public)'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'app', 'dashboard'), { recursive: true });
+      mkdirSync(join(projectRoot, 'src', 'app', 'admin', 'moderation'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify({
+          version: '3.0.0',
+          dna: {
+            theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['professional'],
+          },
+          blueprint: {
+            shell: 'sidebar-main',
+            sections: [
+              {
+                id: 'gateway',
+                role: 'gateway',
+                pages: [{ id: 'login', route: '/login', layout: ['form'] }],
+              },
+              {
+                id: 'workspace',
+                role: 'primary',
+                pages: [{ id: 'dashboard', route: '/dashboard', layout: ['hero'] }],
+              },
+            ],
+            features: ['auth'],
+          },
+          meta: {
+            archetype: 'marketing',
+            target: 'react',
+            platform: { type: 'spa', routing: 'pathname' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        }, null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'app', '(public)', 'nav-header.tsx'),
+        `
+          export function NavHeader() {
+            return <a href="/dashboard">Dashboard</a>;
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'app', 'dashboard', 'layout.tsx'),
+        `
+          export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+            const session = await getServerSession();
+            if (!session) {
+              redirect('/login');
+            }
+            return <>{children}</>;
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'app', 'dashboard', 'page.tsx'),
+        `
+          export default function DashboardPage() {
+            return <a href="/dashboard/settings">Settings</a>;
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'app', 'admin', 'layout.tsx'),
+        `
+          export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+            const session = await getServerSession();
+            if (!session) {
+              redirect('/login');
+            }
+            if (!isAdmin(session.user.email)) {
+              notFound();
+            }
+            return <>{children}</>;
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'app', 'admin', 'moderation', 'actions.ts'),
+        `
+          'use server';
+
+          export async function approveSubmission() {
+            await requireAdminRequestContext();
+            revalidatePath('/admin/moderation');
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-auth-guard-signals-missing')).toBe(false);
+      expect(report.findings.some(finding => finding.id === 'source-protected-surface-auth-checks-missing')).toBe(false);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

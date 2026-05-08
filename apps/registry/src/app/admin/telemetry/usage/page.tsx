@@ -30,6 +30,7 @@ const sourceOptions: Array<{ label: string; value: TelemetryUsageSource }> = [
   { label: 'API', value: 'api' },
   { label: 'CLI', value: 'cli' },
   { label: 'Content CI', value: 'content-ci' },
+  { label: 'Marketing web', value: 'marketing-web' },
   { label: 'MCP', value: 'mcp' },
   { label: 'Registry web', value: 'registry-web' },
 ];
@@ -252,18 +253,33 @@ export default async function AdminTelemetryUsagePage({
       <section className="d-section" data-density="compact">
         <form method="get" action="/admin/telemetry/usage" className="d-surface registry-surface-stack">
           <div className="registry-admin-telemetry-filter-grid">
-            <select className="d-control" name="days" defaultValue={String(days)}>
+            <select
+              className="d-control"
+              name="days"
+              defaultValue={String(days)}
+              aria-label="Usage lookback window"
+            >
               {dayOptions.map((option) => (
                 <option key={option} value={option}>{option} days</option>
               ))}
             </select>
-            <select className="d-control" name="actor_type" defaultValue={actorType ?? ''}>
+            <select
+              className="d-control"
+              name="actor_type"
+              defaultValue={actorType ?? ''}
+              aria-label="Filter usage by actor type"
+            >
               <option value="">All actors</option>
               {actorOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
-            <select className="d-control" name="source" defaultValue={source ?? ''}>
+            <select
+              className="d-control"
+              name="source"
+              defaultValue={source ?? ''}
+              aria-label="Filter usage by source"
+            >
               <option value="">All sources</option>
               {sourceOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -351,6 +367,77 @@ export default async function AdminTelemetryUsagePage({
             </div>
           </section>
 
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Marketing Attribution
+            </span>
+            <div className="registry-admin-stat-grid">
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.marketing_attribution.total_events)}</span>
+                <span className="registry-admin-row-meta">Marketing-web events</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(usage.marketing_attribution.campaign_attributed_events)} campaign-attributed
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatPercent(usage.marketing_attribution.campaign_attribution_rate)}</span>
+                <span className="registry-admin-row-meta">Campaign coverage</span>
+                <span className="registry-admin-row-meta">
+                  {formatPercent(usage.marketing_attribution.landing_attribution_rate)} landing coverage
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.marketing_attribution.registry_follow_through_events)}</span>
+                <span className="registry-admin-row-meta">Registry follow-through</span>
+                <span className="registry-admin-row-meta">Attributed registry events</span>
+              </div>
+            </div>
+            {usage.marketing_attribution.warnings.length ? (
+              <div className="d-surface registry-admin-stack">
+                {usage.marketing_attribution.warnings.map((warning) => (
+                  <div key={warning} className="registry-admin-row">
+                    <span className="registry-admin-row-title">{warning}</span>
+                    <span className="d-annotation" data-status="warning">warning</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div className="registry-admin-card-grid">
+              <div className="d-surface registry-admin-stack">
+                <span className="d-label registry-anchor-label">Top Campaigns</span>
+                {usage.marketing_campaigns.length ? usage.marketing_campaigns.map((row) => (
+                  <div key={`${row.campaign}-${row.source}-${row.medium}`} className="registry-admin-row">
+                    <span className="registry-admin-row-copy">
+                      <span className="registry-admin-row-title">{row.campaign}</span>
+                      <span className="registry-admin-row-meta">
+                        {row.source} · {row.medium} · {formatNumber(row.page_views)} views · {formatNumber(row.cta_clicks)} CTAs · {formatNumber(row.registry_follow_through_events)} registry
+                      </span>
+                    </span>
+                    <span className="registry-admin-row-meta">{formatNumber(row.events)}</span>
+                  </div>
+                )) : (
+                  <span className="registry-admin-row-meta">No campaign-attributed events in this range.</span>
+                )}
+              </div>
+              <div className="d-surface registry-admin-stack">
+                <span className="d-label registry-anchor-label">Top Landing Paths</span>
+                {usage.marketing_landing_paths.length ? usage.marketing_landing_paths.map((row) => (
+                  <div key={row.landing_path} className="registry-admin-row">
+                    <span className="registry-admin-row-copy">
+                      <span className="registry-admin-row-title registry-admin-monospace">{row.landing_path}</span>
+                      <span className="registry-admin-row-meta">
+                        {formatNumber(row.page_views)} views · {formatNumber(row.cta_clicks)} CTAs · {formatNumber(row.registry_follow_through_events)} registry · {formatTimestamp(row.last_seen)}
+                      </span>
+                    </span>
+                    <span className="registry-admin-row-meta">{formatNumber(row.events)}</span>
+                  </div>
+                )) : (
+                  <span className="registry-admin-row-meta">No landing-path attribution in this range.</span>
+                )}
+              </div>
+            </div>
+          </section>
+
           {attribution ? (
             <section className="d-section" data-density="compact">
               <span className="d-label registry-anchor-label">
@@ -381,6 +468,7 @@ export default async function AdminTelemetryUsagePage({
                         <Link
                           href={`/admin/organizations/${row.organization.slug}`}
                           className="registry-admin-row-title"
+                          aria-label={`Open attribution for ${attributionLabel(row)}`}
                         >
                           {attributionLabel(row)}
                         </Link>
@@ -415,6 +503,7 @@ export default async function AdminTelemetryUsagePage({
                         <Link
                           href={`/admin/organizations/${row.org_slug}`}
                           className="registry-admin-row-title"
+                          aria-label={`Open stored attribution for ${attributionSnapshotLabel(row)}`}
                         >
                           {attributionSnapshotLabel(row)}
                         </Link>

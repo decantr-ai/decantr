@@ -5,7 +5,14 @@ import {
   type TelemetrySource,
 } from '@decantr/telemetry';
 
-export const TELEMETRY_USAGE_SOURCES = ['api', 'cli', 'content-ci', 'mcp', 'registry-web'] as const;
+export const TELEMETRY_USAGE_SOURCES = [
+  'api',
+  'cli',
+  'content-ci',
+  'marketing-web',
+  'mcp',
+  'registry-web',
+] as const;
 export const TELEMETRY_USAGE_DAY_RANGES = [1, 7, 14, 30, 90] as const;
 
 const POSTHOG_QUERY_TIMEOUT_MS = 8_000;
@@ -14,7 +21,17 @@ const TELEMETRY_SIGNAL_BUCKETS = [
   {
     key: 'activation',
     label: 'Activation',
-    events: ['user.signup.completed', 'api_key.created'],
+    events: ['marketing_web.cta_clicked', 'user.signup.completed', 'api_key.created'],
+  },
+  {
+    key: 'paid_acquisition',
+    label: 'Paid acquisition',
+    events: [
+      'marketing_web.page_viewed',
+      'marketing_web.cta_clicked',
+      'marketing_web.outbound_clicked',
+      'marketing_web.command_clicked',
+    ],
   },
   {
     key: 'registry_discovery',
@@ -39,7 +56,13 @@ const TELEMETRY_SIGNAL_BUCKETS = [
   {
     key: 'commercial_intent',
     label: 'Commercial intent',
-    events: ['registry_web.billing_viewed', 'registry_web.api_key_page_viewed', 'registry_web.organization_viewed', 'org.created'],
+    events: [
+      'marketing_web.cta_clicked',
+      'registry_web.billing_viewed',
+      'registry_web.api_key_page_viewed',
+      'registry_web.organization_viewed',
+      'org.created',
+    ],
   },
 ] as const;
 
@@ -109,6 +132,16 @@ export interface TelemetryAttributionRow {
   source: string;
 }
 
+interface TelemetryMarketingAttributionRow {
+  campaign: string | null;
+  count: number;
+  event: string;
+  landing_path: string | null;
+  last_seen: string | null;
+  medium: string | null;
+  source: string | null;
+}
+
 export interface TelemetryUsageCandidateAlias {
   actor_type: string;
   events: number;
@@ -151,6 +184,37 @@ export interface TelemetryUsageSignalBucket {
   previous_events: number;
 }
 
+export interface TelemetryMarketingCampaignSummary {
+  campaign: string;
+  cta_clicks: number;
+  events: number;
+  last_seen: string | null;
+  medium: string;
+  page_views: number;
+  registry_follow_through_events: number;
+  signup_clicks: number;
+  source: string;
+}
+
+export interface TelemetryMarketingLandingSummary {
+  cta_clicks: number;
+  events: number;
+  landing_path: string;
+  last_seen: string | null;
+  page_views: number;
+  registry_follow_through_events: number;
+}
+
+export interface TelemetryMarketingAttributionSummary {
+  campaign_attributed_events: number;
+  campaign_attribution_rate: number;
+  landing_attributed_events: number;
+  landing_attribution_rate: number;
+  registry_follow_through_events: number;
+  total_events: number;
+  warnings: string[];
+}
+
 export interface TelemetryUsageOperatingAlert {
   detail: string;
   level: 'critical' | 'info' | 'warning';
@@ -165,6 +229,9 @@ export interface AdminTelemetryUsageResponse {
   event_counts: TelemetryUsageEventCount[];
   failure_counts: TelemetryUsageFailureCount[];
   generated_at: string;
+  marketing_attribution: TelemetryMarketingAttributionSummary;
+  marketing_campaigns: TelemetryMarketingCampaignSummary[];
+  marketing_landing_paths: TelemetryMarketingLandingSummary[];
   operating_alerts: TelemetryUsageOperatingAlert[];
   previous_summary: TelemetryUsageSummary;
   range_days: number;
@@ -296,6 +363,7 @@ export async function fetchPostHogTelemetryUsage(input: {
     previousFailureCounts,
     activeIdentities,
     previousActiveIdentities,
+    marketingAttributionRows,
   ] = await Promise.all([
     runHogQl(input.config, eventCountsQuery(filters)),
     runHogQl(input.config, eventCountsQuery({ ...filters, offsetDays: input.days })),
@@ -305,6 +373,7 @@ export async function fetchPostHogTelemetryUsage(input: {
     runHogQl(input.config, failureCountsQuery({ ...filters, offsetDays: input.days })),
     runHogQl(input.config, activeIdentitiesQuery(filters)),
     runHogQl(input.config, activeIdentitiesQuery({ ...filters, offsetDays: input.days })),
+    runHogQl(input.config, marketingAttributionRowsQuery(filters)),
   ]);
 
   const eventRows = eventCounts.map(toEventCount);
@@ -330,6 +399,7 @@ export async function fetchPostHogTelemetryUsage(input: {
   });
   const trends = buildUsageTrends(summary, previousSummary);
   const signalBuckets = buildSignalBuckets(eventRows, previousEventRows);
+  const marketingAttribution = buildMarketingAttribution(marketingAttributionRows.map(toMarketingAttributionRow));
 
   return {
     actor_type: input.actorType ?? null,
@@ -339,6 +409,9 @@ export async function fetchPostHogTelemetryUsage(input: {
     event_counts: eventRows,
     failure_counts: failureRows,
     generated_at: new Date().toISOString(),
+    marketing_attribution: marketingAttribution.summary,
+    marketing_campaigns: marketingAttribution.campaigns,
+    marketing_landing_paths: marketingAttribution.landingPaths,
     operating_alerts: buildOperatingAlerts({
       candidateAliases,
       signalBuckets,
@@ -523,6 +596,26 @@ function activeIdentitiesQuery(filters: { actorType?: TelemetryActorType; days: 
   `;
 }
 
+function marketingAttributionRowsQuery(filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource }) {
+  return `
+    select
+      properties.attributionUtmCampaign as campaign,
+      properties.attributionUtmSource as source,
+      properties.attributionUtmMedium as medium,
+      properties.attributionLandingPath as landing_path,
+      event,
+      count() as count,
+      max(timestamp) as last_seen
+    from events
+    where ${timeRangeSql(filters)}
+      and event in (${marketingAttributionEventListSql()})
+      ${filterSql(filters)}
+    group by campaign, source, medium, landing_path, event
+    order by count desc
+    limit 300
+  `;
+}
+
 function attributionRowsQuery(
   filters: { actorType?: TelemetryActorType; days: number; offsetDays?: number; source?: TelemetrySource },
   limit: number,
@@ -568,6 +661,19 @@ function filterSql(filters: { actorType?: TelemetryActorType; source?: Telemetry
 
 function eventListSql() {
   return DECANTR_TELEMETRY_EVENT_NAMES.map(sqlString).join(', ');
+}
+
+function marketingAttributionEventListSql() {
+  return [
+    'marketing_web.command_clicked',
+    'marketing_web.cta_clicked',
+    'marketing_web.outbound_clicked',
+    'marketing_web.page_viewed',
+    'registry_web.content_opened',
+    'registry_web.page_viewed',
+    'registry_web.search_performed',
+    'registry_web.signup_clicked',
+  ].map(sqlString).join(', ');
 }
 
 function sqlString(value: string) {
@@ -623,6 +729,18 @@ function toActiveIdentity(row: unknown): TelemetryUsageActiveIdentity {
     org_id: readCellString(row, 6, 'org_id'),
     events: readCellNumber(row, 7, 'events'),
     last_seen: readCellString(row, 8, 'last_seen'),
+  };
+}
+
+function toMarketingAttributionRow(row: unknown): TelemetryMarketingAttributionRow {
+  return {
+    campaign: readCellString(row, 0, 'campaign'),
+    source: readCellString(row, 1, 'source'),
+    medium: readCellString(row, 2, 'medium'),
+    landing_path: readCellString(row, 3, 'landing_path'),
+    event: readCellString(row, 4, 'event') ?? 'unknown',
+    count: readCellNumber(row, 5, 'count'),
+    last_seen: readCellString(row, 6, 'last_seen'),
   };
 }
 
@@ -742,6 +860,117 @@ function summarizeAttribution(
     total_events: totalEvents,
     unattributed_events: totalEvents - attributedEvents,
   };
+}
+
+function buildMarketingAttribution(rows: TelemetryMarketingAttributionRow[]): {
+  campaigns: TelemetryMarketingCampaignSummary[];
+  landingPaths: TelemetryMarketingLandingSummary[];
+  summary: TelemetryMarketingAttributionSummary;
+} {
+  const campaigns = new Map<string, TelemetryMarketingCampaignSummary>();
+  const landingPaths = new Map<string, TelemetryMarketingLandingSummary>();
+  let totalMarketingEvents = 0;
+  let campaignAttributedEvents = 0;
+  let landingAttributedEvents = 0;
+  let registryFollowThroughEvents = 0;
+  let ctaClicks = 0;
+
+  for (const row of rows) {
+    const count = row.count;
+    const isMarketingEvent = row.event.startsWith('marketing_web.');
+    const isRegistryFollowThrough = row.event.startsWith('registry_web.');
+    const hasMarketingAttribution = Boolean(row.campaign || row.landing_path);
+    if (isMarketingEvent) {
+      totalMarketingEvents += count;
+      if (row.campaign) campaignAttributedEvents += count;
+      if (row.landing_path) landingAttributedEvents += count;
+      if (row.event === 'marketing_web.cta_clicked') ctaClicks += count;
+    }
+    if (isRegistryFollowThrough && hasMarketingAttribution) registryFollowThroughEvents += count;
+
+    const campaignKey = [
+      attributionValue(row.campaign, 'uncategorized'),
+      attributionValue(row.source, 'unknown'),
+      attributionValue(row.medium, 'unknown'),
+    ].join('\u0000');
+    const campaign = campaigns.get(campaignKey) ?? {
+      campaign: attributionValue(row.campaign, 'uncategorized'),
+      cta_clicks: 0,
+      events: 0,
+      last_seen: null,
+      medium: attributionValue(row.medium, 'unknown'),
+      page_views: 0,
+      registry_follow_through_events: 0,
+      signup_clicks: 0,
+      source: attributionValue(row.source, 'unknown'),
+    };
+    campaign.events += count;
+    campaign.last_seen = newerDate(campaign.last_seen, row.last_seen);
+    if (row.event === 'marketing_web.page_viewed') campaign.page_views += count;
+    if (row.event === 'marketing_web.cta_clicked') campaign.cta_clicks += count;
+    if (isRegistryFollowThrough && hasMarketingAttribution) campaign.registry_follow_through_events += count;
+    if (row.event === 'registry_web.signup_clicked') campaign.signup_clicks += count;
+    campaigns.set(campaignKey, campaign);
+
+    const landingPath = attributionValue(row.landing_path, 'unknown');
+    const landing = landingPaths.get(landingPath) ?? {
+      cta_clicks: 0,
+      events: 0,
+      landing_path: landingPath,
+      last_seen: null,
+      page_views: 0,
+      registry_follow_through_events: 0,
+    };
+    landing.events += count;
+    landing.last_seen = newerDate(landing.last_seen, row.last_seen);
+    if (row.event === 'marketing_web.page_viewed') landing.page_views += count;
+    if (row.event === 'marketing_web.cta_clicked') landing.cta_clicks += count;
+    if (isRegistryFollowThrough && hasMarketingAttribution) landing.registry_follow_through_events += count;
+    landingPaths.set(landingPath, landing);
+  }
+
+  const campaignAttributionRate = totalMarketingEvents > 0
+    ? campaignAttributedEvents / totalMarketingEvents
+    : 0;
+  const landingAttributionRate = totalMarketingEvents > 0
+    ? landingAttributedEvents / totalMarketingEvents
+    : 0;
+  const warnings: string[] = [];
+
+  if (totalMarketingEvents === 0) {
+    warnings.push('No marketing-web events were observed for this filter and period.');
+  }
+  if (totalMarketingEvents > 0 && campaignAttributedEvents === 0) {
+    warnings.push('No marketing-web events carried UTM campaign attribution.');
+  }
+  if (totalMarketingEvents > 0 && landingAttributionRate < 0.95) {
+    warnings.push('Some marketing-web events are missing landing-path attribution.');
+  }
+  if (ctaClicks > 0 && registryFollowThroughEvents === 0) {
+    warnings.push('Marketing CTA clicks exist, but no attributed registry follow-through was observed.');
+  }
+
+  return {
+    campaigns: [...campaigns.values()]
+      .sort((a, b) => b.events - a.events || compareNullableDatesDesc(a.last_seen, b.last_seen))
+      .slice(0, 10),
+    landingPaths: [...landingPaths.values()]
+      .sort((a, b) => b.events - a.events || compareNullableDatesDesc(a.last_seen, b.last_seen))
+      .slice(0, 10),
+    summary: {
+      campaign_attributed_events: campaignAttributedEvents,
+      campaign_attribution_rate: campaignAttributionRate,
+      landing_attributed_events: landingAttributedEvents,
+      landing_attribution_rate: landingAttributionRate,
+      registry_follow_through_events: registryFollowThroughEvents,
+      total_events: totalMarketingEvents,
+      warnings,
+    },
+  };
+}
+
+function attributionValue(value: string | null, fallback: string) {
+  return value?.trim() || fallback;
 }
 
 function buildUsageTrends(

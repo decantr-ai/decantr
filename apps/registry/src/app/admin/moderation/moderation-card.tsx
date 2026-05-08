@@ -63,7 +63,7 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
 
   if (feedback?.type === 'success') {
     return (
-      <div className="registry-moderation-feedback" data-status="success">
+      <div className="registry-moderation-feedback" data-status="success" role="status">
         <span>
           <CheckIcon size={14} />
         </span>
@@ -84,9 +84,11 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
           className="d-control registry-moderation-textarea"
           rows={2}
           autoFocus
+          aria-label="Rejection reason"
         />
         <div className="registry-moderation-actions" data-align="end">
           <button
+            type="button"
             className="d-interactive registry-moderation-button"
             data-variant="ghost"
             onClick={() => { setShowReject(false); setReason(''); }}
@@ -95,6 +97,7 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
             Cancel
           </button>
           <button
+            type="button"
             className="d-interactive registry-moderation-button"
             data-variant="ghost"
             data-tone="danger"
@@ -111,12 +114,13 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
   return (
     <div className="registry-moderation-panel">
       {feedback?.type === 'error' && (
-        <p className="registry-moderation-feedback" data-status="error">
+        <p className="registry-moderation-feedback" data-status="error" role="alert">
           {feedback.message}
         </p>
       )}
       <div className="registry-moderation-actions">
         <button
+          type="button"
           className="d-interactive registry-moderation-button"
           data-variant="ghost"
           data-tone="success"
@@ -127,6 +131,7 @@ export function ModerationCard({ item }: { item: ModerationQueueItem }) {
           {isPending ? 'Approving...' : 'Approve'}
         </button>
         <button
+          type="button"
           className="d-interactive registry-moderation-button"
           data-variant="ghost"
           data-tone="danger"

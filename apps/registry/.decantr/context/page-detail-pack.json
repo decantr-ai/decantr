@@ -31,7 +31,7 @@
     "detail",
     "top-nav-main",
     "registry-browser",
-    "primary",
+    "public",
     "luminarum",
     "dark",
     "search",
@@ -77,7 +77,7 @@
     "path": "/:type/:namespace/:slug",
     "shell": "top-nav-main",
     "sectionId": "registry-browser",
-    "sectionRole": "primary",
+    "sectionRole": "public",
     "features": [
       "search",
       "pagination"
@@ -129,5 +129,5 @@
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the detail route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=detail | patterns=blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer\n\n## Page Contract\n- Page: detail\n- Path: /:type/:namespace/:slug\n- Shell: top-nav-main\n- Section: registry-browser (primary)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- blueprint-launch-hero -> blueprint-launch-hero [column | default]\n- command-rail -> command-rail [column | default]\n- blueprint-anatomy -> blueprint-anatomy [column | default]\n- contract-explorer -> contract-explorer [column | default]\n- json-viewer -> json-viewer [stack | artifact]\n  > Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the detail route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=detail | patterns=blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer\n\n## Page Contract\n- Page: detail\n- Path: /:type/:namespace/:slug\n- Shell: top-nav-main\n- Section: registry-browser (public)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- blueprint-launch-hero -> blueprint-launch-hero [column | default]\n- command-rail -> command-rail [column | default]\n- blueprint-anatomy -> blueprint-anatomy [column | default]\n- contract-explorer -> contract-explorer [column | default]\n- json-viewer -> json-viewer [stack | artifact]\n  > Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

@@ -297,6 +297,7 @@ export default async function AdminReportsPage() {
                             <Link
                               href={`/admin/organizations/${row.organization.slug}`}
                               className="registry-admin-row-title"
+                              aria-label={`Open attribution for ${attributionLabel(row)}`}
                             >
                               {attributionLabel(row)}
                             </Link>
@@ -381,6 +382,7 @@ export default async function AdminReportsPage() {
                             <Link
                               href={`/admin/organizations/${row.org_slug}`}
                               className="registry-admin-row-title"
+                              aria-label={`Open stored attribution for ${attributionSnapshotLabel(row)}`}
                             >
                               {attributionSnapshotLabel(row)}
                             </Link>

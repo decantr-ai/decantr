@@ -14,6 +14,7 @@ export const telemetryRoutes = new Hono<Env>();
 const ALLOWED_PUBLIC_SOURCES = new Set<TelemetrySource>([
   'cli',
   'content-ci',
+  'marketing-web',
   'mcp',
   'registry-web',
 ]);

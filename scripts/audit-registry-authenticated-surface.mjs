@@ -160,7 +160,7 @@ const sourceChecks = [
     file: 'src/lib/admin-workspace.ts',
     patterns: [
       'export async function requireAdminRequestContext',
-      "redirect('/dashboard')",
+      'notFound()',
       'DECANTR_ADMIN_KEY',
     ],
   },

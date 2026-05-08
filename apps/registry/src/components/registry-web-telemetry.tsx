@@ -21,6 +21,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import {
+  getCampaignAttributionProperties,
+  resolveSharedAnonymousId,
+  updateCampaignAttribution,
+} from '@/lib/campaign-attribution';
+import { captureXPixelEvent, initXPixel } from '@/lib/x-pixel';
 
 const ANONYMOUS_ID_KEY = 'decantr:registry-web:anonymous-id';
 const DEFAULT_ENDPOINT = 'https://api.decantr.ai/v1/telemetry/events';
@@ -71,6 +77,8 @@ export function RegistryWebTelemetryProvider({ children }: { children: ReactNode
   }, [identity]);
 
   useEffect(() => {
+    updateCampaignAttribution();
+    initXPixel();
     setAnonymousId(resolveAnonymousId());
   }, []);
 
@@ -91,10 +99,14 @@ export function RegistryWebTelemetryProvider({ children }: { children: ReactNode
           userId: currentIdentity.userId ?? undefined,
           orgId: currentIdentity.orgId ?? undefined,
         },
-        properties,
+        properties: {
+          ...getCampaignAttributionProperties(),
+          ...properties,
+        },
       } as DecantrTelemetryEvent;
 
       void client.capture(event);
+      captureXPixelEvent(name);
     },
     [anonymousId, client, environment],
   );
@@ -139,6 +151,8 @@ function RegistryWebRouteTracker({
 
   useEffect(() => {
     if (!pathname) return;
+
+    updateCampaignAttribution();
 
     const currentIdentity = getIdentity();
     const route = classifyRoute(pathname);
@@ -297,16 +311,7 @@ function inferRegistryWebActorType(identity: RegistryWebIdentity): TelemetryActo
 }
 
 function resolveAnonymousId(): string {
-  try {
-    const existing = window.localStorage.getItem(ANONYMOUS_ID_KEY);
-    if (existing) return existing;
-
-    const generated = `registry_web:${globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)}`;
-    window.localStorage.setItem(ANONYMOUS_ID_KEY, generated);
-    return generated;
-  } catch {
-    return `registry_web:${Math.random().toString(36).slice(2)}`;
-  }
+  return resolveSharedAnonymousId(ANONYMOUS_ID_KEY, 'registry_web');
 }
 
 function classifySurface(pathname: string): string {

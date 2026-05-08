@@ -895,6 +895,8 @@ describe('V4 tool tests', () => {
 
   describe('decantr_create_essence — V4 format', () => {
     it('should generate V4 format essence', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+
       const result = (await handleTool('decantr_create_essence', {
         description: 'SaaS dashboard with analytics',
       })) as { essence: EssenceV4; format: string };
@@ -907,6 +909,8 @@ describe('V4 tool tests', () => {
     });
 
     it('should use matched archetype in meta', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+
       const result = (await handleTool('decantr_create_essence', {
         description: 'ecommerce shop',
       })) as { essence: EssenceV4; archetype: string };

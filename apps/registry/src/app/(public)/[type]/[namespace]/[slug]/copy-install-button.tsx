@@ -37,9 +37,12 @@ export function CopyInstallButton({
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
       className={`d-interactive py-1.5 px-4 ${styles.actionButton}`}
       data-variant={variant}
+      aria-label={copied ? displaySuccess : displayLabel}
+      aria-live="polite"
     >
       {copied ? (
         <span className={styles.actionLabel}>

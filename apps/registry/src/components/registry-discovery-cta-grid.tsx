@@ -100,7 +100,12 @@ export function RegistryDiscoveryCtaGrid() {
           </div>
 
           <div className="registry-discovery-footer">
-            <Link href={path.href} className="d-interactive registry-discovery-action" data-tone={path.tone}>
+            <Link
+              href={path.href}
+              className="d-interactive registry-discovery-action"
+              data-tone={path.tone}
+              aria-label={path.cta}
+            >
               <span className="registry-discovery-action-copy">
                 <span className="registry-discovery-action-label">{path.cta}</span>
                 <span className="registry-discovery-action-hint">{path.hint}</span>

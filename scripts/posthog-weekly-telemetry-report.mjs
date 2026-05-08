@@ -41,6 +41,7 @@ const customerSourceRows = await runHogQl(customerSourceQuery(7, 0));
 const actorRows = await runHogQl(actorQuery(7, 0));
 const failureRows = await runHogQl(failureQuery(7, 0));
 const customerIdentityRows = await runHogQl(customerIdentityQuery(7, 0));
+const marketingAttributionRows = await runHogQl(marketingAttributionQuery(7, 0));
 
 const markdown = renderMarkdown({
   alertThresholds,
@@ -51,6 +52,7 @@ const markdown = renderMarkdown({
   customerSourceRows,
   dashboardUrl,
   failureRows,
+  marketingAttributionRows,
   previousCustomerRows,
   previousRows,
   sourceRows,
@@ -208,6 +210,26 @@ function failureQuery(daysFrom, daysTo) {
   `;
 }
 
+function marketingAttributionQuery(daysFrom, daysTo) {
+  return `
+    select
+      properties.attributionUtmCampaign as campaign,
+      properties.attributionUtmSource as source,
+      properties.attributionUtmMedium as medium,
+      properties.attributionLandingPath as landing_path,
+      event,
+      count() as count,
+      max(timestamp) as last_seen
+    from events
+    where timestamp >= now() - interval ${daysFrom} day
+      and timestamp < now() - interval ${daysTo} day
+      and event in (${marketingAttributionEventListSql()})
+    group by campaign, source, medium, landing_path, event
+    order by count desc
+    limit 300
+  `;
+}
+
 function eventListSql() {
   return [
     'api_key.created',
@@ -218,6 +240,10 @@ function eventListSql() {
     'critique.completed',
     'execution_pack.compiled',
     'execution_pack.selected',
+    'marketing_web.command_clicked',
+    'marketing_web.cta_clicked',
+    'marketing_web.outbound_clicked',
+    'marketing_web.page_viewed',
     'org.created',
     'registry.item.resolved',
     'registry.sync.completed',
@@ -235,6 +261,21 @@ function eventListSql() {
     .join(', ');
 }
 
+function marketingAttributionEventListSql() {
+  return [
+    'marketing_web.command_clicked',
+    'marketing_web.cta_clicked',
+    'marketing_web.outbound_clicked',
+    'marketing_web.page_viewed',
+    'registry_web.content_opened',
+    'registry_web.page_viewed',
+    'registry_web.search_performed',
+    'registry_web.signup_clicked',
+  ]
+    .map((event) => `'${event}'`)
+    .join(', ');
+}
+
 function renderMarkdown({
   alertThresholds,
   actorRows,
@@ -244,6 +285,7 @@ function renderMarkdown({
   customerSourceRows,
   dashboardUrl,
   failureRows,
+  marketingAttributionRows,
   previousCustomerRows,
   previousRows,
   sourceRows,
@@ -262,6 +304,7 @@ function renderMarkdown({
   const failureTotal = failureRows.reduce((total, [, count]) => total + (Number(count) || 0), 0);
   const failureRate = totalCurrent > 0 ? failureTotal / totalCurrent : 0;
   const customerIdentities = normalizeCustomerIdentityRows(customerIdentityRows);
+  const marketingAttribution = summarizeMarketingAttribution(marketingAttributionRows);
   const alerts = buildOperatingAlerts({
     alertThresholds,
     customerDelta,
@@ -299,6 +342,45 @@ function renderMarkdown({
     lines.push(
       `| \`${event}\` | ${formatNumber(currentCount)} | ${formatNumber(previousCount)} | ${formatDelta(currentCount - previousCount)} |`,
     );
+  }
+
+  lines.push(
+    '',
+    '## Marketing Attribution Health',
+    '',
+    `- Marketing-web events: ${formatNumber(marketingAttribution.summary.totalEvents)}`,
+    `- Campaign-attributed events: ${formatNumber(marketingAttribution.summary.campaignAttributedEvents)} (${formatPercent(marketingAttribution.summary.campaignAttributionRate)})`,
+    `- Landing-attributed events: ${formatNumber(marketingAttribution.summary.landingAttributedEvents)} (${formatPercent(marketingAttribution.summary.landingAttributionRate)})`,
+    `- Attributed registry follow-through events: ${formatNumber(marketingAttribution.summary.registryFollowThroughEvents)}`,
+    '',
+    ...(marketingAttribution.summary.warnings.length
+      ? marketingAttribution.summary.warnings.map((warning) => `- Warning: ${warning}`)
+      : ['- No marketing attribution warnings.']),
+    '',
+    '### Top Campaigns',
+    '',
+  );
+  if (marketingAttribution.campaigns.length === 0) {
+    lines.push('No campaign-attributed events were recorded in the last 7 days.');
+  } else {
+    lines.push('| Campaign | Source | Medium | Events | Views | CTAs | Registry |', '| --- | --- | --- | ---: | ---: | ---: | ---: |');
+    for (const row of marketingAttribution.campaigns) {
+      lines.push(
+        `| ${row.campaign} | ${row.source} | ${row.medium} | ${formatNumber(row.events)} | ${formatNumber(row.pageViews)} | ${formatNumber(row.ctaClicks)} | ${formatNumber(row.registryFollowThroughEvents)} |`,
+      );
+    }
+  }
+
+  lines.push('', '### Top Landing Paths', '');
+  if (marketingAttribution.landingPaths.length === 0) {
+    lines.push('No landing-path-attributed events were recorded in the last 7 days.');
+  } else {
+    lines.push('| Landing path | Events | Views | CTAs | Registry |', '| --- | ---: | ---: | ---: | ---: |');
+    for (const row of marketingAttribution.landingPaths) {
+      lines.push(
+        `| \`${row.landingPath}\` | ${formatNumber(row.events)} | ${formatNumber(row.pageViews)} | ${formatNumber(row.ctaClicks)} | ${formatNumber(row.registryFollowThroughEvents)} |`,
+      );
+    }
   }
 
   lines.push('', '## Source Mix', '', '| Source | Last 7d |', '| --- | ---: |');
@@ -354,12 +436,13 @@ function renderMarkdown({
     '',
     '## CEO Readout',
     '',
-    `- Activation signals: ${formatNumber((current.get('user.signup.completed') ?? 0) + (current.get('api_key.created') ?? 0))}`,
-    `- Customer activation signals: ${formatNumber((customer.get('user.signup.completed') ?? 0) + (customer.get('api_key.created') ?? 0))}`,
+    `- Paid acquisition signals: ${formatNumber((current.get('marketing_web.page_viewed') ?? 0) + (current.get('marketing_web.cta_clicked') ?? 0) + (current.get('marketing_web.outbound_clicked') ?? 0) + (current.get('marketing_web.command_clicked') ?? 0))}`,
+    `- Activation signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('user.signup.completed') ?? 0) + (current.get('api_key.created') ?? 0))}`,
+    `- Customer activation signals: ${formatNumber((customer.get('marketing_web.cta_clicked') ?? 0) + (customer.get('user.signup.completed') ?? 0) + (customer.get('api_key.created') ?? 0))}`,
     `- Registry discovery signals: ${formatNumber((current.get('registry_web.search_performed') ?? 0) + (current.get('registry_web.content_opened') ?? 0) + (current.get('registry.item.resolved') ?? 0))}`,
     `- Customer registry discovery signals: ${formatNumber((customer.get('registry_web.search_performed') ?? 0) + (customer.get('registry_web.content_opened') ?? 0) + (customer.get('registry.item.resolved') ?? 0))}`,
-    `- Commercial-intent signals: ${formatNumber((current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
-    `- Customer commercial-intent signals: ${formatNumber((customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
+    `- Commercial-intent signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
+    `- Customer commercial-intent signals: ${formatNumber((customer.get('marketing_web.cta_clicked') ?? 0) + (customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
     `- Active customer identities: ${formatNumber(customerIdentities.length)}`,
     `- Failure rate: ${formatPercent(failureRate)}`,
   );
@@ -384,6 +467,15 @@ function sampleRows(query) {
       ['user_customer_2', null, 'project_beta', 'api', 7],
     ];
   }
+  if (query.includes('properties.attributionUtmCampaign as campaign')) {
+    return [
+      ['launch-project-health', 'x', 'organic-social', '/', 'marketing_web.page_viewed', 31, '2026-05-08T12:00:00Z'],
+      ['launch-project-health', 'x', 'organic-social', '/', 'marketing_web.cta_clicked', 5, '2026-05-08T12:04:00Z'],
+      ['launch-project-health', 'x', 'organic-social', '/', 'registry_web.page_viewed', 4, '2026-05-08T12:05:00Z'],
+      ['v2-essence4', 'npm', 'package-registry', '/', 'marketing_web.page_viewed', 17, '2026-05-07T12:00:00Z'],
+      [null, null, null, '/', 'marketing_web.outbound_clicked', 1, '2026-05-07T12:01:00Z'],
+    ];
+  }
   if (
     query.includes('properties.decantr_source as source') &&
     query.includes("properties.decantr_actor_type = 'customer'")
@@ -395,6 +487,7 @@ function sampleRows(query) {
   }
   if (query.includes('properties.decantr_actor_type as actor_type')) {
     return [
+      ['anonymous', 'marketing-web', 54],
       ['anonymous', 'registry-web', 42],
       ['customer', 'api', 25],
       ['official_pipeline', 'content-ci', 12],
@@ -409,6 +502,7 @@ function sampleRows(query) {
   }
   if (query.includes('properties.decantr_source')) {
     return [
+      ['marketing-web', 54],
       ['registry-web', 42],
       ['api', 25],
       ['cli', 7],
@@ -419,12 +513,17 @@ function sampleRows(query) {
   }
   if (query.includes('interval 14 day')) {
     return [
+      ['marketing_web.page_viewed', 31],
+      ['marketing_web.cta_clicked', 4],
       ['registry.item.resolved', 18],
       ['execution_pack.compiled', 8],
       ['registry_web.page_viewed', 11],
     ];
   }
   return [
+    ['marketing_web.page_viewed', 48],
+    ['marketing_web.cta_clicked', 5],
+    ['marketing_web.outbound_clicked', 1],
     ['registry.item.resolved', 25],
     ['execution_pack.compiled', 9],
     ['registry_web.page_viewed', 42],
@@ -460,6 +559,123 @@ function normalizeCustomerIdentityRows(rows) {
     projectId: projectId ? String(projectId) : '',
     source: source ? String(source) : '',
   }));
+}
+
+function summarizeMarketingAttribution(rows) {
+  const campaigns = new Map();
+  const landingPaths = new Map();
+  let totalEvents = 0;
+  let campaignAttributedEvents = 0;
+  let landingAttributedEvents = 0;
+  let registryFollowThroughEvents = 0;
+  let ctaClicks = 0;
+
+  for (const [campaignValue, sourceValue, mediumValue, landingValue, eventValue, countValue, lastSeenValue] of rows) {
+    const campaignName = stringOrFallback(campaignValue, 'uncategorized');
+    const source = stringOrFallback(sourceValue, 'unknown');
+    const medium = stringOrFallback(mediumValue, 'unknown');
+    const landingPath = stringOrFallback(landingValue, 'unknown');
+    const event = String(eventValue || 'unknown');
+    const count = Number(countValue) || 0;
+    const lastSeen = lastSeenValue ? String(lastSeenValue) : null;
+    const isMarketingEvent = event.startsWith('marketing_web.');
+    const isRegistryFollowThrough = event.startsWith('registry_web.');
+    const hasMarketingAttribution = Boolean(campaignValue || landingValue);
+
+    if (isMarketingEvent) {
+      totalEvents += count;
+      if (campaignValue) campaignAttributedEvents += count;
+      if (landingValue) landingAttributedEvents += count;
+      if (event === 'marketing_web.cta_clicked') ctaClicks += count;
+    }
+    if (isRegistryFollowThrough && hasMarketingAttribution) registryFollowThroughEvents += count;
+
+    const campaignKey = `${campaignName}\u0000${source}\u0000${medium}`;
+    const campaign = campaigns.get(campaignKey) ?? {
+      campaign: campaignName,
+      ctaClicks: 0,
+      events: 0,
+      lastSeen: null,
+      medium,
+      pageViews: 0,
+      registryFollowThroughEvents: 0,
+      source,
+    };
+    campaign.events += count;
+    campaign.lastSeen = newerDate(campaign.lastSeen, lastSeen);
+    if (event === 'marketing_web.page_viewed') campaign.pageViews += count;
+    if (event === 'marketing_web.cta_clicked') campaign.ctaClicks += count;
+    if (isRegistryFollowThrough && hasMarketingAttribution) campaign.registryFollowThroughEvents += count;
+    campaigns.set(campaignKey, campaign);
+
+    const landing = landingPaths.get(landingPath) ?? {
+      ctaClicks: 0,
+      events: 0,
+      landingPath,
+      lastSeen: null,
+      pageViews: 0,
+      registryFollowThroughEvents: 0,
+    };
+    landing.events += count;
+    landing.lastSeen = newerDate(landing.lastSeen, lastSeen);
+    if (event === 'marketing_web.page_viewed') landing.pageViews += count;
+    if (event === 'marketing_web.cta_clicked') landing.ctaClicks += count;
+    if (isRegistryFollowThrough && hasMarketingAttribution) landing.registryFollowThroughEvents += count;
+    landingPaths.set(landingPath, landing);
+  }
+
+  const campaignAttributionRate = totalEvents > 0 ? campaignAttributedEvents / totalEvents : 0;
+  const landingAttributionRate = totalEvents > 0 ? landingAttributedEvents / totalEvents : 0;
+  const warnings = [];
+
+  if (totalEvents === 0) {
+    warnings.push('No marketing-web events were observed.');
+  }
+  if (totalEvents > 0 && campaignAttributedEvents === 0) {
+    warnings.push('No marketing-web events carried UTM campaign attribution.');
+  }
+  if (totalEvents > 0 && landingAttributionRate < 0.95) {
+    warnings.push('Some marketing-web events are missing landing-path attribution.');
+  }
+  if (ctaClicks > 0 && registryFollowThroughEvents === 0) {
+    warnings.push('Marketing CTA clicks exist, but no attributed registry follow-through was observed.');
+  }
+
+  return {
+    campaigns: [...campaigns.values()]
+      .sort((a, b) => b.events - a.events || compareDatesDesc(a.lastSeen, b.lastSeen))
+      .slice(0, 8),
+    landingPaths: [...landingPaths.values()]
+      .sort((a, b) => b.events - a.events || compareDatesDesc(a.lastSeen, b.lastSeen))
+      .slice(0, 8),
+    summary: {
+      campaignAttributedEvents,
+      campaignAttributionRate,
+      landingAttributedEvents,
+      landingAttributionRate,
+      registryFollowThroughEvents,
+      totalEvents,
+      warnings,
+    },
+  };
+}
+
+function stringOrFallback(value, fallback) {
+  const text = value == null ? '' : String(value).trim();
+  return text || fallback;
+}
+
+function newerDate(current, next) {
+  if (!current) return next;
+  if (!next) return current;
+  return Date.parse(next) > Date.parse(current) ? next : current;
+}
+
+function compareDatesDesc(left, right) {
+  if (!left && !right) return 0;
+  if (!left) return 1;
+  if (!right) return -1;
+  return Date.parse(right) - Date.parse(left);
 }
 
 function buildOperatingAlerts({

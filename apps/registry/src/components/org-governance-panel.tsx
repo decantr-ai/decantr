@@ -4,13 +4,16 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { KPIGrid } from '@/components/kpi-grid';
 import {
-  api,
   type DashboardContentItem,
   type OrgAuditEntry,
   type OrgPolicy,
   type OrgUsageSummary,
 } from '@/lib/api';
-import { createClient } from '@/lib/supabase/client';
+import {
+  loadOrgGovernanceStateAction,
+  reviewOrgContentAction,
+  updateOrgPolicyAction,
+} from '@/app/dashboard/governance/actions';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 const AUDIT_SCOPE_OPTIONS = [
@@ -31,14 +34,6 @@ const AUDIT_ACTION_OPTIONS = [
   { value: 'org_content.approved', label: 'Org package approved' },
   { value: 'org_content.rejected', label: 'Org package rejected' },
 ] as const;
-
-async function getAccessToken() {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session?.access_token ?? '';
-}
 
 function formatTimestamp(value: string) {
   return new Date(value).toLocaleString('en-US', {
@@ -97,29 +92,24 @@ export function OrgGovernancePanel() {
 
     try {
       setError(null);
-      const token = await getAccessToken();
-      if (!token) {
+      const result = await loadOrgGovernanceStateAction(nextOrgSlug, {
+        scope: auditScope || undefined,
+        action: auditAction || undefined,
+      });
+      if ('error' in result && result.error) {
+        setError(result.error);
+        return;
+      }
+      if (!('state' in result) || !result.state) {
+        setError('Failed to load organization governance');
         return;
       }
 
-      const [orgPolicy, approvalsResult, auditResult, usageResult] = await Promise.all([
-        api.getOrgPolicy(token, nextOrgSlug).catch(() => null),
-        api.getOrgApprovals(token, nextOrgSlug, { limit: 12, offset: 0 }).catch(() => null),
-        api
-          .getOrgAuditLog(token, nextOrgSlug, {
-            limit: 12,
-            offset: 0,
-            scope: auditScope || undefined,
-            action: auditAction || undefined,
-          })
-          .catch(() => null),
-        api.getOrgUsage(token, nextOrgSlug).catch(() => null),
-      ]);
-
-      setPolicy(orgPolicy);
-      setApprovals(Array.isArray(approvalsResult) ? approvalsResult : approvalsResult?.items ?? []);
-      setAuditEntries(auditResult?.items ?? []);
-      setUsage(usageResult?.usage ?? null);
+      const { state } = result;
+      setPolicy(state.policy);
+      setApprovals(state.approvals);
+      setAuditEntries(state.auditEntries);
+      setUsage(state.usage);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load organization governance');
     }
@@ -154,16 +144,26 @@ export function OrgGovernancePanel() {
 
     startTransition(async () => {
       try {
-        const token = await getAccessToken();
-        const updated = await api.updateOrgPolicy(token, activeOrg.slug, {
+        const nextPolicy = {
+          org_id: policy?.org_id ?? activeOrg.id,
           require_public_content_approval:
             updates.require_public_content_approval ?? policy?.require_public_content_approval ?? false,
           allow_member_submissions:
             updates.allow_member_submissions ?? policy?.allow_member_submissions ?? false,
           require_private_content_approval:
             updates.require_private_content_approval ?? policy?.require_private_content_approval ?? false,
-        });
-        setPolicy(updated);
+        };
+        const result = await updateOrgPolicyAction(activeOrg.slug, nextPolicy);
+        if ('error' in result && result.error) {
+          setError(result.error);
+          return;
+        }
+        if (!('policy' in result) || !result.policy) {
+          setError('Failed to update organization policy');
+          return;
+        }
+
+        setPolicy(result.policy);
         await loadOrgState(activeOrg.slug);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to update organization policy');
@@ -177,11 +177,10 @@ export function OrgGovernancePanel() {
 
     startTransition(async () => {
       try {
-        const token = await getAccessToken();
-        if (decision === 'approve') {
-          await api.approveOrgContent(token, activeOrg.slug, contentId);
-        } else {
-          await api.rejectOrgContent(token, activeOrg.slug, contentId);
+        const result = await reviewOrgContentAction(activeOrg.slug, contentId, decision);
+        if ('error' in result && result.error) {
+          setError(result.error);
+          return;
         }
         await loadOrgState(activeOrg.slug);
       } catch (err) {
@@ -242,6 +241,7 @@ export function OrgGovernancePanel() {
               className="d-control"
               value={activeOrg?.slug ?? ''}
               onChange={(event) => setOrgSlug(event.target.value)}
+              aria-label="Active organization"
             >
               {organizations.map((org) => (
                 <option key={org.id} value={org.slug}>
@@ -304,6 +304,7 @@ export function OrgGovernancePanel() {
               type="checkbox"
               checked={policy?.require_public_content_approval === true}
               disabled={!canManage || isPending}
+              aria-label="Require approval for public org packages"
               onChange={(event) =>
                 handlePolicyChange({
                   require_public_content_approval: event.target.checked,
@@ -327,6 +328,7 @@ export function OrgGovernancePanel() {
                   type="checkbox"
                   checked={policy?.allow_member_submissions === true}
                   disabled={!canManage || isPending}
+                  aria-label="Allow member submissions"
                   onChange={(event) =>
                     handlePolicyChange({
                       allow_member_submissions: event.target.checked,
@@ -348,6 +350,7 @@ export function OrgGovernancePanel() {
                   type="checkbox"
                   checked={policy?.require_private_content_approval === true}
                   disabled={!canManage || isPending}
+                  aria-label="Require approval for private org packages"
                   onChange={(event) =>
                     handlePolicyChange({
                       require_private_content_approval: event.target.checked,
@@ -440,6 +443,7 @@ export function OrgGovernancePanel() {
                 className="d-control registry-inline-select"
                 value={auditScope}
                 onChange={(event) => setAuditScope(event.target.value)}
+                aria-label="Filter audit trail by scope"
               >
                 {AUDIT_SCOPE_OPTIONS.map((option) => (
                   <option key={option.value || 'all'} value={option.value}>
@@ -452,6 +456,7 @@ export function OrgGovernancePanel() {
                 className="d-control registry-inline-select"
                 value={auditAction}
                 onChange={(event) => setAuditAction(event.target.value)}
+                aria-label="Filter audit trail by action"
               >
                 {AUDIT_ACTION_OPTIONS.map((option) => (
                   <option key={option.value || 'all'} value={option.value}>

@@ -1,6 +1,6 @@
 # Section: registry-browser
 
-**Role:** primary | **Shell:** top-nav-main | **Archetype:** registry-browser
+**Role:** public | **Shell:** top-nav-main | **Archetype:** registry-browser
 **Description:** Public content browsing for a design registry. Search, filter, and explore patterns, themes, blueprints, archetypes, and shells.
 
 ## Quick Start
@@ -90,8 +90,8 @@ Usage: `className={css('_flex _col _gap4') + ' d-surface luminarum-glass'}` — 
 
 ---
 
-**Zone:** App (primary) — top-nav-main shell
-Authenticated users land here. Sign out → Gateway (/login).
+**Zone:** Public (public) — top-nav-main shell
+Anonymous visitors. CTAs lead to Gateway (/login, /register).
 For full app topology, see `.decantr/context/scaffold.md`
 
 ## Features

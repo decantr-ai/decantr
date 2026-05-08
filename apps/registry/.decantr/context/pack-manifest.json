@@ -1,7 +1,7 @@
 {
   "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
   "version": "1.0.0",
-  "generatedAt": "2026-05-06T00:41:58.421Z",
+  "generatedAt": "2026-05-08T17:53:12.041Z",
   "scaffold": {
     "id": "scaffold",
     "markdown": "scaffold-pack.md",
@@ -67,35 +67,35 @@
       "markdown": "page-homepage-pack.md",
       "json": "page-homepage-pack.json",
       "sectionId": "registry-browser",
-      "sectionRole": "primary"
+      "sectionRole": "public"
     },
     {
       "id": "browse",
       "markdown": "page-browse-pack.md",
       "json": "page-browse-pack.json",
       "sectionId": "registry-browser",
-      "sectionRole": "primary"
+      "sectionRole": "public"
     },
     {
       "id": "browse-type",
       "markdown": "page-browse-type-pack.md",
       "json": "page-browse-type-pack.json",
       "sectionId": "registry-browser",
-      "sectionRole": "primary"
+      "sectionRole": "public"
     },
     {
       "id": "detail",
       "markdown": "page-detail-pack.md",
       "json": "page-detail-pack.json",
       "sectionId": "registry-browser",
-      "sectionRole": "primary"
+      "sectionRole": "public"
     },
     {
       "id": "profile",
       "markdown": "page-profile-pack.md",
       "json": "page-profile-pack.json",
       "sectionId": "registry-browser",
-      "sectionRole": "primary"
+      "sectionRole": "public"
     },
     {
       "id": "overview",

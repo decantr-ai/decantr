@@ -281,7 +281,13 @@ export type TelemetryActorType =
   | 'internal'
   | 'official_pipeline'
   | 'service';
-export type TelemetryUsageSource = 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+export type TelemetryUsageSource =
+  | 'api'
+  | 'cli'
+  | 'content-ci'
+  | 'marketing-web'
+  | 'mcp'
+  | 'registry-web';
 
 export interface AdminTelemetryIdentityAlias {
   id: string;
@@ -399,6 +405,37 @@ export interface AdminTelemetryOperatingAlert {
   title: string;
 }
 
+export interface AdminTelemetryMarketingCampaign {
+  campaign: string;
+  cta_clicks: number;
+  events: number;
+  last_seen: string | null;
+  medium: string;
+  page_views: number;
+  registry_follow_through_events: number;
+  signup_clicks: number;
+  source: string;
+}
+
+export interface AdminTelemetryMarketingLandingPath {
+  cta_clicks: number;
+  events: number;
+  landing_path: string;
+  last_seen: string | null;
+  page_views: number;
+  registry_follow_through_events: number;
+}
+
+export interface AdminTelemetryMarketingAttribution {
+  campaign_attributed_events: number;
+  campaign_attribution_rate: number;
+  landing_attributed_events: number;
+  landing_attribution_rate: number;
+  registry_follow_through_events: number;
+  total_events: number;
+  warnings: string[];
+}
+
 export interface AdminTelemetryUsageResponse {
   actor_type: TelemetryActorType | null;
   active_identities: AdminTelemetryActiveIdentity[];
@@ -407,6 +444,9 @@ export interface AdminTelemetryUsageResponse {
   event_counts: Array<{ actor_type: string; count: number; event: string }>;
   failure_counts: Array<{ count: number; event: string }>;
   generated_at: string;
+  marketing_attribution: AdminTelemetryMarketingAttribution;
+  marketing_campaigns: AdminTelemetryMarketingCampaign[];
+  marketing_landing_paths: AdminTelemetryMarketingLandingPath[];
   operating_alerts: AdminTelemetryOperatingAlert[];
   previous_summary: AdminTelemetryUsageSummary;
   range_days: number;
@@ -554,6 +594,15 @@ interface FetchOptions {
   apiKey?: string;
 }
 
+function setBearerHeader(headers: Record<string, string>, token?: string | null) {
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+    return;
+  }
+
+  delete headers.Authorization;
+}
+
 export function deriveCommercialEntitlements(
   tier: 'free' | 'pro' | 'team' | 'enterprise',
 ): CommercialEntitlements {
@@ -656,9 +705,7 @@ async function apiFetch<T>(path: string, options?: FetchOptions & RequestInit): 
     'Content-Type': 'application/json',
   };
 
-  if (options?.token) {
-    headers['Authorization'] = `Bearer ${options.token}`;
-  }
+  setBearerHeader(headers, options?.token);
   if (options?.apiKey) {
     headers['X-API-Key'] = options.apiKey;
   }
@@ -686,9 +733,7 @@ async function adminFetch<T>(
     'X-Admin-Key': adminKey,
   };
 
-  if (rest.token) {
-    headers['Authorization'] = `Bearer ${rest.token}`;
-  }
+  setBearerHeader(headers, rest.token);
 
   const res = await fetch(`${API_URL}${path}`, {
     ...rest,

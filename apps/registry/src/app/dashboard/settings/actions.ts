@@ -26,12 +26,18 @@ export async function updateProfile(formData: FormData) {
     return { error: 'No changes to save' };
   }
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (session.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  } else {
+    delete headers.Authorization;
+  }
+
   const res = await fetch(`${API_URL}/me`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
-    },
+    headers,
     body: JSON.stringify(body),
   });
 

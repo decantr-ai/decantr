@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { isAdmin } from '@/lib/admin';
 import { Sidebar } from '@/components/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
@@ -25,7 +25,7 @@ export default async function AdminLayout({
     redirect('/login');
   }
   if (!isAdmin(workspace.authUser.email ?? '')) {
-    redirect('/dashboard');
+    notFound();
   }
   const workspaceSnapshot = toClientWorkspaceState(workspace);
 
@@ -37,12 +37,15 @@ export default async function AdminLayout({
         userId={workspace.authUser.id}
       />
       <div className="registry-shell-root">
+        <a href="#main-content" className="registry-skip-link">
+          Skip to content
+        </a>
         <Sidebar workspace={workspaceSnapshot} />
 
         <div className="registry-shell-main">
           <DashboardHeader />
           <CommandPalette workspace={workspaceSnapshot} />
-          <main className="registry-shell-body entrance-fade">
+          <main id="main-content" className="registry-shell-body entrance-fade">
             {children}
           </main>
         </div>

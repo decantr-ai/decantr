@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { extname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { ReviewExecutionPack } from '@decantr/core';
 import type { EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
@@ -360,6 +360,70 @@ function sourceAuditBucketsOverlap(a: SourceAuditBucket, b: SourceAuditBucket): 
   return a.files.some((file) => b.files.includes(file));
 }
 
+function normalizeSourceAuditPath(filePath: string): string {
+  return filePath.replace(/\\/g, '/');
+}
+
+function getNextAppLayoutGuardRoot(filePath: string): string | null {
+  const normalized = normalizeSourceAuditPath(filePath);
+  const match = normalized.match(
+    /^(?:src\/)?app\/(?:\([^/]+\)\/)*([^/.()[\]]+)\/layout\.[cm]?[jt]sx?$/i,
+  );
+  return match?.[1] ?? null;
+}
+
+function getNextAppRouteRoot(filePath: string): string | null {
+  const normalized = normalizeSourceAuditPath(filePath);
+  const match = normalized.match(/^(?:src\/)?app\/(?:\([^/]+\)\/)*([^/.()[\]]+)(?:\/|$)/i);
+  return match?.[1] ?? null;
+}
+
+function getRouteRoot(route: string): string | null {
+  const firstSegment = route.replace(/^\/+/, '').split('/')[0];
+  if (!firstSegment || firstSegment.startsWith(':') || firstSegment.startsWith('[')) {
+    return null;
+  }
+  return firstSegment;
+}
+
+function isNextAppPublicChromeFile(filePath: string): boolean {
+  const normalized = normalizeSourceAuditPath(filePath);
+  return /^(?:src\/)?app\/(?:\([^/]+\)\/)*(?:layout|nav|nav-header|navigation|header|footer|sidebar)\.[cm]?[jt]sx?$/i.test(
+    normalized,
+  );
+}
+
+function sourceAuditProtectedSurfacesCoveredByGuardedNextLayouts(
+  protectedSurfaces: SourceAuditBucket,
+  authGuards: SourceAuditBucket,
+  topology: TopologySummary,
+): boolean {
+  const guardedRoots = new Set<string>();
+  for (const file of authGuards.files) {
+    const root = getNextAppLayoutGuardRoot(file);
+    if (root) {
+      guardedRoots.add(root);
+    }
+  }
+
+  if (guardedRoots.size === 0 || protectedSurfaces.files.length === 0) {
+    return false;
+  }
+
+  const guardedPrimaryRouteRoots = topology.primaryRoutes
+    .map(getRouteRoot)
+    .filter((root): root is string => Boolean(root))
+    .filter((root) => guardedRoots.has(root));
+
+  return protectedSurfaces.files.every((file) => {
+    const appRoot = getNextAppRouteRoot(file);
+    if (appRoot && guardedRoots.has(appRoot)) {
+      return true;
+    }
+    return isNextAppPublicChromeFile(file) && guardedPrimaryRouteRoots.length > 0;
+  });
+}
+
 function isAuditableSourceFile(filePath: string): boolean {
   if (/\.d\.ts$/i.test(filePath)) return false;
   return /\.(?:[cm]?[jt]sx?)$/i.test(filePath);
@@ -499,8 +563,175 @@ function countReducedMotionSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
+interface SourceAuditEntry {
+  absolutePath: string;
+  relativePath: string;
+  code: string;
+}
+
+function hasModuleDirective(filePath: string, code: string, directive: 'use client' | 'use server'): boolean {
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    code,
+    ts.ScriptTarget.Latest,
+    true,
+    getScriptKind(filePath),
+  );
+
+  for (const statement of sourceFile.statements) {
+    if (
+      ts.isExpressionStatement(statement) &&
+      ts.isStringLiteralLike(statement.expression)
+    ) {
+      if (statement.expression.text === directive) {
+        return true;
+      }
+      continue;
+    }
+    break;
+  }
+
+  return false;
+}
+
+function importDeclarationHasRuntimeBinding(statement: ts.ImportDeclaration): boolean {
+  const clause = statement.importClause;
+  if (!clause) return true;
+  if (clause.isTypeOnly) return false;
+  if (clause.name) return true;
+  if (!clause.namedBindings) return true;
+  if (ts.isNamespaceImport(clause.namedBindings)) return true;
+  return clause.namedBindings.elements.some((element) => !element.isTypeOnly);
+}
+
+function collectRuntimeImportSpecifiers(entry: SourceAuditEntry): string[] {
+  const sourceFile = ts.createSourceFile(
+    entry.relativePath,
+    entry.code,
+    ts.ScriptTarget.Latest,
+    true,
+    getScriptKind(entry.relativePath),
+  );
+  const specifiers: string[] = [];
+
+  for (const statement of sourceFile.statements) {
+    if (
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteralLike(statement.moduleSpecifier) &&
+      importDeclarationHasRuntimeBinding(statement)
+    ) {
+      specifiers.push(statement.moduleSpecifier.text);
+    }
+  }
+
+  return specifiers;
+}
+
+function resolveSourceImportTarget(
+  projectRoot: string,
+  sourceAbsolutePath: string,
+  specifier: string,
+): string | null {
+  let basePath: string | null = null;
+  if (specifier.startsWith('@/')) {
+    basePath = join(projectRoot, 'src', specifier.slice(2));
+  } else if (specifier.startsWith('./') || specifier.startsWith('../')) {
+    basePath = resolve(dirname(sourceAbsolutePath), specifier);
+  }
+
+  if (!basePath) return null;
+
+  const candidates = [
+    basePath,
+    `${basePath}.ts`,
+    `${basePath}.tsx`,
+    `${basePath}.js`,
+    `${basePath}.jsx`,
+    `${basePath}.mts`,
+    `${basePath}.cts`,
+    join(basePath, 'index.ts'),
+    join(basePath, 'index.tsx'),
+    join(basePath, 'index.js'),
+    join(basePath, 'index.jsx'),
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate) && isAuditableSourceFile(candidate)) {
+      return relative(projectRoot, candidate) || candidate;
+    }
+  }
+
+  return null;
+}
+
+function collectClientReachableSourceFiles(
+  projectRoot: string,
+  entries: SourceAuditEntry[],
+): Set<string> {
+  const entriesByRelativePath = new Map(entries.map((entry) => [entry.relativePath, entry]));
+  const runtimeImportGraph = new Map<string, string[]>();
+
+  for (const entry of entries) {
+    const targets = collectRuntimeImportSpecifiers(entry)
+      .map((specifier) => resolveSourceImportTarget(projectRoot, entry.absolutePath, specifier))
+      .filter((target): target is string => Boolean(target));
+    runtimeImportGraph.set(entry.relativePath, targets);
+  }
+
+  const reachable = new Set<string>();
+  const queue = entries
+    .filter((entry) => hasModuleDirective(entry.relativePath, entry.code, 'use client'))
+    .map((entry) => entry.relativePath);
+
+  for (const root of queue) {
+    reachable.add(root);
+  }
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const target of runtimeImportGraph.get(current) ?? []) {
+      const targetEntry = entriesByRelativePath.get(target);
+      if (targetEntry && hasModuleDirective(target, targetEntry.code, 'use server')) {
+        continue;
+      }
+      if (!reachable.has(target)) {
+        reachable.add(target);
+        queue.push(target);
+      }
+    }
+  }
+
+  return reachable;
+}
+
+function isClientAuthHeaderSource(
+  relativePath: string,
+  code: string,
+  clientReachableFiles: Set<string>,
+): boolean {
+  if (hasModuleDirective(relativePath, code, 'use server')) {
+    return false;
+  }
+  if (clientReachableFiles.has(relativePath)) {
+    return true;
+  }
+
+  const normalized = normalizeSourceAuditPath(relativePath);
+  if (/^(?:src\/)?app\//i.test(normalized)) {
+    return false;
+  }
+
+  return /(?:^|\/)(?:components|routes|pages|hooks|providers)\//i.test(normalized);
+}
+
 function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
   const sourceFiles = collectProjectSourceFiles(projectRoot);
+  const sourceEntries = sourceFiles.map((sourceFile) => ({
+    absolutePath: sourceFile,
+    relativePath: relative(projectRoot, sourceFile) || sourceFile,
+    code: readFileSync(sourceFile, 'utf-8'),
+  }));
+  const clientReachableFiles = collectClientReachableSourceFiles(projectRoot, sourceEntries);
   const summary: SourceAuditSummary = {
     filesChecked: sourceFiles.length,
     inlineStyles: createSourceAuditBucket(),
@@ -570,10 +801,13 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     authInputHintIssues: createSourceAuditBucket(),
   };
 
-  for (const sourceFile of sourceFiles) {
-    const relativePath = relative(projectRoot, sourceFile) || sourceFile;
-    const code = readFileSync(sourceFile, 'utf-8');
+  for (const { relativePath, code } of sourceEntries) {
     const signals = analyzeAstSignals(relativePath, code);
+    const isClientAuthHeaderSourceFile = isClientAuthHeaderSource(
+      relativePath,
+      code,
+      clientReachableFiles,
+    );
     const accessibilityIssueCount =
       signals.iconOnlyButtonWithoutLabelCount +
       signals.iconOnlyLinkWithoutLabelCount +
@@ -787,8 +1021,16 @@ function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
     recordSourceAudit(summary.authStorageClears, relativePath, signals.authStorageClearCount);
     recordSourceAudit(summary.authCookieWrites, relativePath, signals.authCookieWriteCount);
     recordSourceAudit(summary.authCookieClears, relativePath, signals.authCookieClearCount);
-    recordSourceAudit(summary.authHeaderWrites, relativePath, signals.authHeaderWriteCount);
-    recordSourceAudit(summary.authHeaderClears, relativePath, signals.authHeaderClearCount);
+    recordSourceAudit(
+      summary.authHeaderWrites,
+      relativePath,
+      isClientAuthHeaderSourceFile ? signals.authHeaderWriteCount : 0,
+    );
+    recordSourceAudit(
+      summary.authHeaderClears,
+      relativePath,
+      isClientAuthHeaderSourceFile ? signals.authHeaderClearCount : 0,
+    );
     recordSourceAudit(summary.authCacheClients, relativePath, signals.authCacheClientCount);
     recordSourceAudit(summary.authCacheClears, relativePath, signals.authCacheClearCount);
     recordSourceAudit(summary.authRefreshSignals, relativePath, signals.authRefreshSignalCount);
@@ -1403,6 +1645,7 @@ function appendRuntimeAuditFindings(
 ): void {
   const distPath = join(projectRoot, 'dist');
   const indexPath = join(distPath, 'index.html');
+  const isFrameworkBuildOutput = runtimeAudit.failures.includes('next-build-output');
 
   if (!runtimeAudit.distPresent) {
     findings.push(
@@ -2011,8 +2254,10 @@ function appendRuntimeAuditFindings(
     typeof runtimeAudit.largestAssetPath === 'string' &&
     runtimeAudit.largestAssetPath.endsWith('.js');
   if (
-    (largestIsJs && runtimeAudit.largestAssetBytes > PERFORMANCE_BUDGETS.largestJsAssetWarnBytes) ||
-    runtimeAudit.jsAssetBytes > PERFORMANCE_BUDGETS.totalJsWarnBytes
+    !isFrameworkBuildOutput &&
+    ((largestIsJs &&
+      runtimeAudit.largestAssetBytes > PERFORMANCE_BUDGETS.largestJsAssetWarnBytes) ||
+      runtimeAudit.jsAssetBytes > PERFORMANCE_BUDGETS.totalJsWarnBytes)
   ) {
     findings.push(
       makeFinding({
@@ -2031,7 +2276,7 @@ function appendRuntimeAuditFindings(
     );
   }
 
-  if (runtimeAudit.cssAssetBytes > PERFORMANCE_BUDGETS.totalCssWarnBytes) {
+  if (!isFrameworkBuildOutput && runtimeAudit.cssAssetBytes > PERFORMANCE_BUDGETS.totalCssWarnBytes) {
     findings.push(
       makeFinding({
         id: 'runtime-css-bundle-large',
@@ -2048,7 +2293,7 @@ function appendRuntimeAuditFindings(
     );
   }
 
-  if (runtimeAudit.totalAssetBytes > PERFORMANCE_BUDGETS.totalAssetsWarnBytes) {
+  if (!isFrameworkBuildOutput && runtimeAudit.totalAssetBytes > PERFORMANCE_BUDGETS.totalAssetsWarnBytes) {
     findings.push(
       makeFinding({
         id: 'runtime-total-assets-large',
@@ -2502,7 +2747,12 @@ function appendSourceAuditFindings(
     sourceAudit.protectedSurfaceSignals.count > 0 &&
     sourceAudit.authGuardSignals.count > 0 &&
     !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authGuardSignals) &&
-    !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authSessionSignals)
+    !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authSessionSignals) &&
+    !sourceAuditProtectedSurfacesCoveredByGuardedNextLayouts(
+      sourceAudit.protectedSurfaceSignals,
+      sourceAudit.authGuardSignals,
+      topology,
+    )
   ) {
     findings.push(
       makeFinding({
@@ -5548,7 +5798,7 @@ function isHeaderClearValue(node: ts.Expression | undefined): boolean {
 
 function countAuthGuardSignals(code: string): number {
   const patterns = [
-    /\b(?:ProtectedRoute|AuthGuard|RequireAuth|withAuth|requireAuth|ensureAuth|useRequireAuth)\b/,
+    /\b(?:ProtectedRoute|AuthGuard|RequireAuth|withAuth|requireAuth|requireAdmin|ensureAuth|ensureAdmin|useRequireAuth)\b/,
     /\b(?:useAuth|useSession|getServerSession|authGuard|isAuthenticated|isSignedIn)\b/,
     /\b(?:redirect|navigate|push|replace)\s*\(\s*['"`]\/(?:auth|login|log-?in|sign-?in|sign-?up|register|forgot-password|reset-password)[^'"`]*['"`]/i,
     /\bNextResponse\.redirect\s*\(/,

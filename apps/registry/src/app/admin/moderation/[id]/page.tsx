@@ -11,18 +11,11 @@ export const metadata: Metadata = {
 };
 
 function TypeBadge({ type }: { type: string }) {
-  const colors: Record<string, string> = {
-    pattern: 'var(--d-cyan)',
-    theme: 'var(--d-amber)',
-    blueprint: 'var(--d-coral)',
-    shell: 'var(--d-green)',
-    archetype: 'var(--d-purple)',
-  };
   return (
     <span
-      className="d-annotation text-xs"
+      className="d-annotation text-xs registry-moderation-type-chip"
       data-status="info"
-      style={{ borderColor: colors[type] ?? 'var(--d-border)' }}
+      data-type={type}
     >
       {type}
     </span>
@@ -125,9 +118,8 @@ export default async function ModerationDetailPage({
 
       {/* Hero section */}
       <div
-        className="d-section border-b border-d-border pb-6 mb-6"
+        className="d-section border-b border-d-border pb-6 mb-6 registry-section-flush-top"
         data-density="compact"
-        style={{ paddingTop: 0 }}
       >
         {/* Badges */}
         <div className="flex items-center gap-2 mb-3">

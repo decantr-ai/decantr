@@ -543,6 +543,12 @@ describe('Admin telemetry routes', () => {
           ['customer', 'cli', 3],
           ['internal', 'api', 2],
         ];
+      } else if (query.includes('properties.attributionUtmCampaign as campaign')) {
+        results = [
+          ['launch-project-health', 'x', 'organic-social', '/', 'marketing_web.page_viewed', 4, '2026-05-06T02:00:00Z'],
+          ['launch-project-health', 'x', 'organic-social', '/', 'marketing_web.cta_clicked', 1, '2026-05-06T02:01:00Z'],
+          ['launch-project-health', 'x', 'organic-social', '/', 'registry_web.page_viewed', 1, '2026-05-06T02:02:00Z'],
+        ];
       } else if (query.includes('and (properties.success = false or properties.valid = false)')) {
         results = previousPeriod ? [] : [['audit.completed', 1]];
       } else if (query.includes('group by distinct_id, actor_type, source')) {
@@ -603,7 +609,7 @@ describe('Admin telemetry routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(fetchMock).toHaveBeenCalledTimes(8);
+    expect(fetchMock).toHaveBeenCalledTimes(9);
     expect(json.summary).toMatchObject({
       total_events: 5,
       customer_events: 3,
@@ -630,6 +636,28 @@ describe('Admin telemetry routes', () => {
       total_events: { current: 5, previous: 3, delta: 2 },
       customer_events: { current: 3, previous: 1, delta: 2 },
       failure_events: { current: 1, previous: 0, delta: 1 },
+    });
+    expect(json.marketing_attribution).toMatchObject({
+      total_events: 5,
+      campaign_attributed_events: 5,
+      landing_attributed_events: 5,
+      registry_follow_through_events: 1,
+    });
+    expect(json.marketing_campaigns[0]).toMatchObject({
+      campaign: 'launch-project-health',
+      source: 'x',
+      medium: 'organic-social',
+      events: 6,
+      page_views: 4,
+      cta_clicks: 1,
+      registry_follow_through_events: 1,
+    });
+    expect(json.marketing_landing_paths[0]).toMatchObject({
+      landing_path: '/',
+      events: 6,
+      page_views: 4,
+      cta_clicks: 1,
+      registry_follow_through_events: 1,
     });
     expect(json.signal_buckets).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -792,7 +820,7 @@ describe('Admin telemetry routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(fetchMock).toHaveBeenCalledTimes(9);
+    expect(fetchMock).toHaveBeenCalledTimes(10);
     expect(json.snapshots).toHaveLength(1);
     expect(json.attribution_snapshots).toEqual([
       expect.objectContaining({
@@ -885,7 +913,7 @@ describe('Admin telemetry routes', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(fetchMock).toHaveBeenCalledTimes(27);
+    expect(fetchMock).toHaveBeenCalledTimes(30);
     expect(json.snapshots).toHaveLength(3);
     expect(json.attribution_snapshots).toHaveLength(3);
     expect(json.snapshots.map((snapshot: { actor_type: string; range_days: number; source: string }) => ({

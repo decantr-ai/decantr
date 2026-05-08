@@ -122,6 +122,7 @@ export function NavHeader({ user }: NavHeaderProps) {
                 onClick={() => setMobileMenuOpen(false)}
                 className="d-interactive no-underline registry-mobile-menu-link"
                 data-variant="ghost"
+                aria-label={item.label}
               >
                 {item.label}
               </Link>

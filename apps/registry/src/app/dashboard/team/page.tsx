@@ -4,13 +4,12 @@ import Link from 'next/link';
 import { useEffect, useState, useTransition } from 'react';
 import {
   inviteMemberAction,
+  loadOrgTeamStateAction,
   removeMemberAction,
   updateRoleAction,
 } from './actions';
 import { KPIGrid } from '@/components/kpi-grid';
 import { useRegistryWebTelemetry } from '@/components/registry-web-telemetry';
-import { api } from '@/lib/api';
-import { createClient } from '@/lib/supabase/client';
 import { useWorkspaceState } from '@/components/workspace-state-provider';
 
 interface Member {
@@ -249,6 +248,7 @@ function TeamMemberRow({
             defaultValue={member.role}
             disabled={member.role === 'owner'}
             onChange={(event) => onRoleChange(member.user_id, event.target.value)}
+            aria-label={`Role for ${member.display_name || member.email}`}
           >
             <option value="admin">Admin</option>
             <option value="member">Member</option>
@@ -273,14 +273,6 @@ function TeamMemberRow({
   );
 }
 
-async function getSessionToken() {
-  const supabase = createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session?.access_token ?? '';
-}
-
 export default function TeamPage() {
   const workspace = useWorkspaceState();
   const [members, setMembers] = useState<Member[]>([]);
@@ -296,30 +288,35 @@ export default function TeamPage() {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const { capture } = useRegistryWebTelemetry();
 
-  async function reloadOrgState(token: string, slug: string) {
-    if (!token || !slug) {
+  async function reloadOrgState(slug: string) {
+    if (!slug) {
       setMembers([]);
       setAuditEntries([]);
       setUsageSummary(null);
       return;
     }
 
-    try {
-      const [memberData, auditData, usageData] = await Promise.all([
-        api.getOrgMembers(token, slug),
-        api.getOrgAuditLog(token, slug, { limit: 10, offset: 0 }).catch(() => null),
-        api.getOrgUsage(token, slug).catch(() => null),
-      ]);
-
-      setMembers(memberData?.members ?? []);
-      setSeatLimit(memberData?.organization?.seat_limit ?? 0);
-      setAuditEntries(auditData?.items ?? []);
-      setUsageSummary(usageData?.usage ?? null);
-    } catch {
+    const result = await loadOrgTeamStateAction(slug);
+    if ('error' in result && result.error) {
       setMembers([]);
       setAuditEntries([]);
       setUsageSummary(null);
+      setError(result.error);
+      return;
     }
+    if (!('state' in result) || !result.state) {
+      setMembers([]);
+      setAuditEntries([]);
+      setUsageSummary(null);
+      setError('Failed to load organization state');
+      return;
+    }
+
+    const { state } = result;
+    setMembers(state.members);
+    setSeatLimit(state.seatLimit);
+    setAuditEntries(state.auditEntries);
+    setUsageSummary(state.usageSummary);
   }
 
   useEffect(() => {
@@ -335,8 +332,7 @@ export default function TeamPage() {
     async function syncOrgState() {
       const slug = orgSlug || workspace.activeOrganization?.slug || '';
       if (!slug) return;
-      const token = await getSessionToken();
-      await reloadOrgState(token, slug);
+      await reloadOrgState(slug);
     }
 
     void syncOrgState();
@@ -369,8 +365,7 @@ export default function TeamPage() {
       }
 
       setInviteEmail('');
-      const token = await getSessionToken();
-      await reloadOrgState(token, orgSlug);
+      await reloadOrgState(orgSlug);
     });
   }
 
@@ -381,8 +376,7 @@ export default function TeamPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      const token = await getSessionToken();
-      await reloadOrgState(token, orgSlug);
+      await reloadOrgState(orgSlug);
     }
 
     setRemovingId(null);
@@ -393,8 +387,7 @@ export default function TeamPage() {
     if (result?.error) {
       setError(result.error);
     } else {
-      const token = await getSessionToken();
-      await reloadOrgState(token, orgSlug);
+      await reloadOrgState(orgSlug);
     }
   }
 
@@ -522,9 +515,9 @@ export default function TeamPage() {
                   onChange={async (event) => {
                     const nextSlug = event.target.value;
                     setOrgSlug(nextSlug);
-                    const token = await getSessionToken();
-                    await reloadOrgState(token, nextSlug);
+                    await reloadOrgState(nextSlug);
                   }}
+                  aria-label="Organization"
                 >
                   {organizations.map((org) => (
                     <option key={org.id} value={org.slug}>
@@ -543,11 +536,13 @@ export default function TeamPage() {
                   placeholder="colleague@company.com or @username"
                   value={inviteEmail}
                   onChange={(event) => setInviteEmail(event.target.value)}
+                  aria-label="Invitee email or username"
                 />
                 <select
                   className="d-control registry-team-select"
                   value={inviteRole}
                   onChange={(event) => setInviteRole(event.target.value)}
+                  aria-label="Invite role"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
