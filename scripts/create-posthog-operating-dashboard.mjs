@@ -196,6 +196,44 @@ const insightSpecs = [
     ),
   },
   {
+    name: 'Marketing acquisition by landing path',
+    description:
+      'Marketing-site acquisition events broken down by first-touch landing path so campaign links can be checked against routed intent.',
+    query: trendBar(
+      [
+        [events.marketingWebPageViewed, 'Page viewed'],
+        [events.marketingWebCtaClicked, 'CTA clicked'],
+        [events.marketingWebOutboundClicked, 'Outbound clicked'],
+        [events.marketingWebCommandClicked, 'Command clicked'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'attributionLandingPath',
+          breakdown_type: 'event',
+        },
+      },
+    ),
+  },
+  {
+    name: 'Campaign registry follow-through',
+    description:
+      'Registry exploration and signup intent broken down by original UTM campaign after marketing-site handoff.',
+    query: trendBar(
+      [
+        [events.registryWebPageViewed, 'Registry page viewed'],
+        [events.registryWebSearchPerformed, 'Search performed'],
+        [events.registryWebContentOpened, 'Content opened'],
+        [events.registryWebSignupClicked, 'Signup clicked'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'attributionUtmCampaign',
+          breakdown_type: 'event',
+        },
+      },
+    ),
+  },
+  {
     name: 'Registry web discovery funnel',
     description:
       'Tracks browser discovery from page view to search to content detail opens and signup intent.',
