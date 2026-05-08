@@ -62,7 +62,12 @@ function EmptyContentState({
       </span>
       <p className="registry-empty-state-copy">{copy}</p>
       {actionHref && actionLabel ? (
-        <Link href={actionHref} className="d-interactive no-underline" data-variant="primary">
+        <Link
+          href={actionHref}
+          className="d-interactive no-underline"
+          data-variant="primary"
+          aria-label={actionLabel}
+        >
           {actionLabel}
         </Link>
       ) : null}

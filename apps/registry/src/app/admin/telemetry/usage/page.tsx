@@ -252,18 +252,33 @@ export default async function AdminTelemetryUsagePage({
       <section className="d-section" data-density="compact">
         <form method="get" action="/admin/telemetry/usage" className="d-surface registry-surface-stack">
           <div className="registry-admin-telemetry-filter-grid">
-            <select className="d-control" name="days" defaultValue={String(days)}>
+            <select
+              className="d-control"
+              name="days"
+              defaultValue={String(days)}
+              aria-label="Usage lookback window"
+            >
               {dayOptions.map((option) => (
                 <option key={option} value={option}>{option} days</option>
               ))}
             </select>
-            <select className="d-control" name="actor_type" defaultValue={actorType ?? ''}>
+            <select
+              className="d-control"
+              name="actor_type"
+              defaultValue={actorType ?? ''}
+              aria-label="Filter usage by actor type"
+            >
               <option value="">All actors</option>
               {actorOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
-            <select className="d-control" name="source" defaultValue={source ?? ''}>
+            <select
+              className="d-control"
+              name="source"
+              defaultValue={source ?? ''}
+              aria-label="Filter usage by source"
+            >
               <option value="">All sources</option>
               {sourceOptions.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -381,6 +396,7 @@ export default async function AdminTelemetryUsagePage({
                         <Link
                           href={`/admin/organizations/${row.organization.slug}`}
                           className="registry-admin-row-title"
+                          aria-label={`Open attribution for ${attributionLabel(row)}`}
                         >
                           {attributionLabel(row)}
                         </Link>
@@ -415,6 +431,7 @@ export default async function AdminTelemetryUsagePage({
                         <Link
                           href={`/admin/organizations/${row.org_slug}`}
                           className="registry-admin-row-title"
+                          aria-label={`Open stored attribution for ${attributionSnapshotLabel(row)}`}
                         >
                           {attributionSnapshotLabel(row)}
                         </Link>

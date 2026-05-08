@@ -121,6 +121,7 @@ export function SearchFilterBar({
             data-variant={currentSource === option.value ? 'primary' : 'ghost'}
             data-source={option.value}
             onClick={() => handleSourceChange(option.value)}
+            aria-label={`Show ${option.label.toLowerCase()} content`}
           >
             {option.label}
           </button>
@@ -189,6 +190,7 @@ export function SearchFilterBar({
               onClick={() => handleTypeChange(type)}
               onMouseEnter={() => setHoveredTypeLabel(label)}
               onMouseLeave={() => setHoveredTypeLabel(null)}
+              aria-label={`Browse ${label}`}
             >
               {icon}
               <span>{label}</span>
@@ -217,6 +219,7 @@ export function SearchFilterBar({
             data-variant="ghost"
             onClick={() => setMobileFiltersOpen((open) => !open)}
             aria-expanded={mobileFiltersOpen}
+            aria-label="Toggle registry filters"
           >
             Filters
           </button>
@@ -228,6 +231,7 @@ export function SearchFilterBar({
                 value={currentSort}
                 onChange={handleSortChange}
                 className="d-control registry-search-select"
+                aria-label="Sort registry results"
               >
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -250,6 +254,7 @@ export function SearchFilterBar({
                 value={currentSort}
                 onChange={handleSortChange}
                 className="d-control registry-search-select"
+                aria-label="Sort registry results"
               >
                 {SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>

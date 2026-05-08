@@ -554,6 +554,15 @@ interface FetchOptions {
   apiKey?: string;
 }
 
+function setBearerHeader(headers: Record<string, string>, token?: string | null) {
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+    return;
+  }
+
+  delete headers.Authorization;
+}
+
 export function deriveCommercialEntitlements(
   tier: 'free' | 'pro' | 'team' | 'enterprise',
 ): CommercialEntitlements {
@@ -656,9 +665,7 @@ async function apiFetch<T>(path: string, options?: FetchOptions & RequestInit): 
     'Content-Type': 'application/json',
   };
 
-  if (options?.token) {
-    headers['Authorization'] = `Bearer ${options.token}`;
-  }
+  setBearerHeader(headers, options?.token);
   if (options?.apiKey) {
     headers['X-API-Key'] = options.apiKey;
   }
@@ -686,9 +693,7 @@ async function adminFetch<T>(
     'X-Admin-Key': adminKey,
   };
 
-  if (rest.token) {
-    headers['Authorization'] = `Bearer ${rest.token}`;
-  }
+  setBearerHeader(headers, rest.token);
 
   const res = await fetch(`${API_URL}${path}`, {
     ...rest,

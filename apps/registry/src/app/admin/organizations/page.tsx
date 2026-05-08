@@ -50,8 +50,14 @@ export default async function AdminOrganizationsPage({
               type="search"
               defaultValue={query}
               placeholder="Search organization name or slug"
+              aria-label="Search organizations"
             />
-            <select className="d-control" name="tier" defaultValue={tier}>
+            <select
+              className="d-control"
+              name="tier"
+              defaultValue={tier}
+              aria-label="Filter organizations by tier"
+            >
               <option value="">All tiers</option>
               <option value="team">Team</option>
               <option value="enterprise">Enterprise</option>
@@ -107,7 +113,12 @@ export default async function AdminOrganizationsPage({
                 </div>
 
                 <div className="registry-inline-actions">
-                  <Link href={`/admin/organizations/${org.slug}`} className="d-interactive" data-variant="primary">
+                  <Link
+                    href={`/admin/organizations/${org.slug}`}
+                    className="d-interactive"
+                    data-variant="primary"
+                    aria-label={`Open details for ${org.name}`}
+                  >
                     Open details
                   </Link>
                   <Link href="/admin/reports" className="d-interactive" data-variant="ghost">

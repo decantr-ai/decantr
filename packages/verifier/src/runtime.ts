@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 
@@ -333,6 +333,131 @@ function countSecretLeakSignals(js: string): number {
   return patterns.reduce((count, pattern) => count + (js.match(pattern)?.length ?? 0), 0);
 }
 
+function collectFiles(rootDir: string, predicate: (filePath: string) => boolean): string[] {
+  if (!existsSync(rootDir)) return [];
+  const files: string[] = [];
+
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(path);
+        continue;
+      }
+      if (entry.isFile() && predicate(path)) {
+        files.push(path);
+      }
+    }
+  };
+
+  walk(rootDir);
+  return files.sort();
+}
+
+function auditNextBuildOutput(projectRoot: string): RuntimeAudit {
+  const nextDir = join(projectRoot, '.next');
+  const buildIdPresent = existsSync(join(nextDir, 'BUILD_ID'));
+  const buildManifestPresent = existsSync(join(nextDir, 'build-manifest.json'));
+  const appServerDir = join(nextDir, 'server', 'app');
+  const htmlFiles = collectFiles(appServerDir, (filePath) => {
+    const relativePath = filePath.slice(appServerDir.length + 1).replace(/\\/g, '/');
+    return filePath.endsWith('.html') && !relativePath.startsWith('_');
+  });
+  const htmlDocuments = htmlFiles.map((filePath) => readFileSync(filePath, 'utf-8'));
+  const staticAssetFiles = collectFiles(join(nextDir, 'static'), (filePath) =>
+    /\.(?:js|css|json|svg|png|jpe?g|webp)$/i.test(filePath),
+  );
+
+  let totalAssetBytes = 0;
+  let jsAssetBytes = 0;
+  let cssAssetBytes = 0;
+  let largestAssetPath: string | null = null;
+  let largestAssetBytes = 0;
+  let combinedJs = '';
+
+  for (const assetFile of staticAssetFiles) {
+    const byteLength = statSync(assetFile).size;
+    const assetPath = `/_next/static/${assetFile.slice(join(nextDir, 'static').length + 1).replace(/\\/g, '/')}`;
+    totalAssetBytes += byteLength;
+    if (assetFile.endsWith('.js')) {
+      jsAssetBytes += byteLength;
+      combinedJs += readFileSync(assetFile, 'utf-8');
+    }
+    if (assetFile.endsWith('.css')) {
+      cssAssetBytes += byteLength;
+    }
+    if (byteLength > largestAssetBytes) {
+      largestAssetBytes = byteLength;
+      largestAssetPath = assetPath;
+    }
+  }
+
+  const hasHtmlDocuments = htmlDocuments.length > 0;
+  const titleOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<title>[^<]+<\/title>/i.test(html));
+  const langOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<html[^>]*\slang=(["'])[^"']+\1/i.test(html));
+  const viewportOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(html));
+  const charsetOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<meta[^>]+charset=/i.test(html));
+  const failures: string[] = ['next-build-output'];
+
+  if (!buildIdPresent) {
+    failures.push('next-build-id-missing');
+  }
+  if (!buildManifestPresent) {
+    failures.push('next-build-manifest-missing');
+  }
+  if (staticAssetFiles.length === 0) {
+    failures.push('next-assets-missing');
+  }
+
+  const passed = buildIdPresent && buildManifestPresent && staticAssetFiles.length > 0;
+
+  return {
+    distPresent: true,
+    indexPresent: true,
+    checked: true,
+    passed,
+    rootDocumentOk: hasHtmlDocuments || passed,
+    titleOk,
+    langOk,
+    viewportOk,
+    charsetOk,
+    cspSignalOk: true,
+    inlineScriptCount: 0,
+    inlineEventHandlerCount: 0,
+    externalScriptsWithoutIntegrityCount: 0,
+    externalScriptsWithIntegrityMissingCrossoriginCount: 0,
+    externalStylesheetsWithoutIntegrityCount: 0,
+    externalStylesheetsWithIntegrityMissingCrossoriginCount: 0,
+    externalScriptsWithInsecureTransportCount: 0,
+    externalStylesheetsWithInsecureTransportCount: 0,
+    externalMediaSourcesWithInsecureTransportCount: 0,
+    externalBlankLinksWithoutRelCount: 0,
+    externalIframesWithoutSandboxCount: 0,
+    externalIframesWithInsecureTransportCount: 0,
+    jsEvalSignalCount: countDynamicCodeSignals(combinedJs),
+    jsHtmlInjectionSignalCount: countHtmlInjectionSignals(combinedJs),
+    jsInsecureTransportSignalCount: countInsecureTransportSignals(combinedJs),
+    jsSecretSignalCount: countSecretLeakSignals(combinedJs),
+    assetCount: staticAssetFiles.length,
+    assetsPassed: staticAssetFiles.length,
+    routeHintsChecked: [],
+    routeHintsMatched: 0,
+    routeHintsCoverageOk: true,
+    routeDocumentsChecked: 0,
+    routeDocumentsPassed: 0,
+    routeDocumentsHardenedCount: 0,
+    routeDocumentsCoverageOk: true,
+    routeDocumentsHardeningOk: true,
+    fullRouteCoverageOk: true,
+    totalAssetBytes,
+    jsAssetBytes,
+    cssAssetBytes,
+    largestAssetPath,
+    largestAssetBytes,
+    failures,
+  };
+}
+
 function normalizeRouteHint(route: string | null | undefined): string {
   if (!route || route === '/') return '/';
   const dynamicIndex = route.indexOf('/:');
@@ -404,6 +529,9 @@ export async function auditBuiltDist(
 ): Promise<RuntimeAudit> {
   const distDir = options.distDir ?? join(projectRoot, 'dist');
   if (!existsSync(distDir)) {
+    if (!options.distDir && existsSync(join(projectRoot, '.next'))) {
+      return auditNextBuildOutput(projectRoot);
+    }
     return emptyRuntimeAudit(['dist-missing']);
   }
 

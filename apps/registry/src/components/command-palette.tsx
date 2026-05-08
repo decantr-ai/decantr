@@ -102,7 +102,13 @@ export function CommandPalette(props: CommandPaletteProps) {
   if (!open) return null;
 
   return (
-    <div className="registry-command-overlay" onClick={() => setOpen(false)}>
+    <div
+      className="registry-command-overlay"
+      onClick={() => setOpen(false)}
+      role="button"
+      tabIndex={-1}
+      aria-label="Close command palette"
+    >
       <div
         className="registry-command-panel d-surface"
         role="dialog"
@@ -117,6 +123,7 @@ export function CommandPalette(props: CommandPaletteProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search dashboard routes..."
+            aria-label="Search dashboard routes"
           />
         </div>
 
@@ -130,6 +137,7 @@ export function CommandPalette(props: CommandPaletteProps) {
                 type="button"
                 className="registry-command-item"
                 onClick={() => navigate(item.href)}
+                aria-label={`Open ${item.label}`}
               >
                 <span className="registry-command-item-label">{item.label}</span>
                 <span className="registry-command-item-path">{item.href}</span>

@@ -49,15 +49,6 @@ function SearchIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-// Type colors match showcase mock.ts TYPE_COLORS (singular names)
-const TYPE_COLORS: Record<string, string> = {
-  pattern: 'var(--d-coral)',
-  theme: 'var(--d-amber)',
-  blueprint: 'var(--d-cyan)',
-  shell: 'var(--d-green)',
-  archetype: 'var(--d-purple)',
-};
-
 function singularType(type: string): string {
   return type.endsWith('s') ? type.slice(0, -1) : type;
 }
@@ -88,14 +79,9 @@ function StatusTabs({ current, query }: { current: string; query: string }) {
           <a
             key={tab.value}
             href={href}
-            className="d-interactive"
+            className="d-interactive registry-moderation-status-tab"
             data-variant={isActive ? 'primary' : 'ghost'}
-            style={{
-              borderRadius: 'var(--d-radius-full)',
-              fontSize: '0.8125rem',
-              padding: '0.25rem 0.75rem',
-              textDecoration: 'none',
-            }}
+            aria-label={`Show ${tab.label.toLowerCase()} moderation items`}
           >
             {tab.label}
           </a>
@@ -148,13 +134,10 @@ export default async function ModerationQueuePage({
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <span style={{ color: 'var(--d-accent)' }}>
+            <span className="registry-page-icon-accent">
               <ShieldIcon size={20} />
             </span>
-            <h1
-              className="font-bold"
-              style={{ margin: 0, fontSize: '1.25rem', color: 'var(--d-text)' }}
-            >
+            <h1 className="registry-moderation-heading">
               Moderation Queue
             </h1>
           </div>
@@ -171,30 +154,23 @@ export default async function ModerationQueuePage({
           <form method="get" action="/admin/moderation" className="relative">
             <input type="hidden" name="status" value={status} />
             <span
-              className="pointer-events-none"
-              style={{
-                position: 'absolute',
-                left: '0.75rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: 'var(--d-text-muted)',
-              }}
+              className="pointer-events-none registry-search-leading-icon"
             >
               <SearchIcon size={16} />
             </span>
             <input
-              className="d-control w-full"
               name="q"
               type="search"
               defaultValue={query}
               placeholder="Search patterns, themes, blueprints..."
-              style={{ paddingLeft: '2.25rem' }}
+              className="d-control w-full registry-search-control-with-icon"
+              aria-label="Search moderation queue"
             />
           </form>
 
           <div className="flex items-center justify-between flex-wrap gap-3">
             <StatusTabs current={status} query={query} />
-            <span className="text-sm" style={{ color: 'var(--d-text-muted)' }}>
+            <span className="text-sm registry-muted-copy">
               {filtered.length} results
             </span>
           </div>
@@ -202,7 +178,7 @@ export default async function ModerationQueuePage({
 
         {/* Error */}
         {error && (
-          <div className="d-annotation" data-status="error" style={{ display: 'block' }}>
+          <div className="d-annotation registry-block-annotation" data-status="error">
             {error}
           </div>
         )}
@@ -210,14 +186,7 @@ export default async function ModerationQueuePage({
         {/* Queue items */}
         <div className="flex flex-col gap-3">
           {filtered.length === 0 && !error ? (
-            <div
-              className="d-surface"
-              style={{
-                textAlign: 'center',
-                padding: '2rem',
-                color: 'var(--d-text-muted)',
-              }}
-            >
+            <div className="d-surface registry-empty-panel">
               No items in the moderation queue.
             </div>
           ) : (

@@ -28,12 +28,15 @@ export default async function DashboardLayout({
         userId={workspace.authUser.id}
       />
       <div className="registry-shell-root">
+        <a href="#main-content" className="registry-skip-link">
+          Skip to content
+        </a>
         <Sidebar workspace={workspaceSnapshot} />
 
         <div className="registry-shell-main">
           <DashboardHeader />
           <CommandPalette workspace={workspaceSnapshot} />
-          <main className="registry-shell-body entrance-fade">
+          <main id="main-content" className="registry-shell-body entrance-fade">
             {children}
           </main>
         </div>
