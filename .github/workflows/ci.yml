@@ -29,6 +29,16 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Decantr Project Health
+        if: matrix.node-version == 20
+        run: |
+          cd docs
+          node ../packages/cli/dist/bin.js health --ci --fail-on error --markdown --output ../decantr-health.md
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() && matrix.node-version == 20 }}
+        with:
+          name: decantr-project-health
+          path: decantr-health.md
       - run: pnpm test
       - run: pnpm audit:docs-marketing
       - run: pnpm audit:package-surface
