@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 interface KPIItem {
   label: string;
@@ -21,13 +21,6 @@ function formatNumber(n: number): string {
     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
   }
   return n.toLocaleString();
-}
-
-function formatLiveTime(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(date);
 }
 
 function AnimatedValue({ value }: { value: number }) {
@@ -57,30 +50,53 @@ function AnimatedValue({ value }: { value: number }) {
 }
 
 export function KPIGrid({ items }: KPIGridProps) {
-  const [lastUpdatedAt, setLastUpdatedAt] = useState(() => new Date());
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [liveTick, setLiveTick] = useState(0);
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setLastUpdatedAt(new Date());
-    }, 30_000);
+    const grid = gridRef.current;
+    if (!grid) return undefined;
 
-    return () => window.clearInterval(intervalId);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setRevealed(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.18 },
+    );
+    observer.observe(grid);
+
+    return () => observer.disconnect();
   }, []);
 
-  const liveLabel = formatLiveTime(lastUpdatedAt);
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setLiveTick((tick) => tick + 1);
+    }, 30000);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
-    <div className="registry-kpi-grid" aria-label={`Live metrics updated ${liveLabel}`}>
-      {items.map((item) => {
+    <div
+      ref={gridRef}
+      className={`registry-kpi-grid d-stagger-children ${revealed ? 'd-enter-fade' : ''}`}
+      data-live-tick={liveTick}
+      aria-live="polite"
+    >
+      {items.map((item, index) => {
         const trend = item.trend;
         const positive = trend !== undefined && trend >= 0;
 
         return (
           <div
             key={item.label}
-            className="d-surface registry-kpi-card"
-            data-tooltip={`Updated ${liveLabel}`}
-            title={`Updated ${liveLabel}`}
+            className="d-surface registry-kpi-card d-lift-hover"
+            data-tooltip={`${item.label}: ${formatNumber(item.value)}`}
+            style={{ '--d-stagger-index': index } as CSSProperties}
           >
             <div className="registry-kpi-content">
               {item.icon ? <div className="registry-kpi-icon">{item.icon}</div> : null}
