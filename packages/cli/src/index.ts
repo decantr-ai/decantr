@@ -2868,6 +2868,7 @@ ${BOLD}Usage:${RESET}
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+  decantr health init-ci [--force] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr content-health [--json] [--markdown] [--ci]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
@@ -2906,7 +2907,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
-  ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]
+  ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]; use health init-ci to install a GitHub Actions gate
   ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
@@ -2946,6 +2947,7 @@ ${BOLD}Examples:${RESET}
   decantr rules apply
   decantr status
   decantr health
+  decantr health init-ci
   decantr health --ci --fail-on error
   decantr content-health --ci --fail-on error
   decantr studio

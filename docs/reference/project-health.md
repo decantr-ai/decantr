@@ -109,7 +109,24 @@ Project Health is useful immediately after a composition change because it check
 
 ## CI
 
-Recommended pull request gate:
+Install the default GitHub Actions gate:
+
+```bash
+decantr health init-ci
+```
+
+This writes `.github/workflows/decantr-health.yml`. The workflow installs project dependencies, generates `decantr-health.json`, gates with markdown output, appends the report to the GitHub step summary, and uploads both report files as artifacts.
+
+Use these options to tune the generated workflow:
+
+```bash
+decantr health init-ci --force
+decantr health init-ci --fail-on warn
+decantr health init-ci --cli-version 1.10.0
+decantr health init-ci --workflow-path .github/workflows/project-health.yml
+```
+
+The generated pull request gate runs:
 
 ```bash
 decantr health --ci --fail-on error --markdown --output decantr-health.md
@@ -117,11 +134,11 @@ decantr health --ci --fail-on error --markdown --output decantr-health.md
 
 Use `--fail-on error` for the default enterprise-friendly gate: block only invalid audits and blocking findings. Use `--fail-on warn` for stricter repositories that want any warning to fail CI.
 
-Example GitHub Actions step:
+Minimal GitHub Actions step:
 
 ```yaml
 - name: Decantr health
-  run: npx @decantr/cli health --ci --fail-on error --markdown --output decantr-health.md
+  run: npx --yes @decantr/cli@latest health --ci --fail-on error --markdown --output decantr-health.md
 ```
 
 The JSON form can be validated against the published schema and consumed by future DevOps dashboards:
