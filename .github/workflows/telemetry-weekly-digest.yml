@@ -1,0 +1,32 @@
+name: Telemetry Weekly Digest
+
+on:
+  schedule:
+    - cron: '45 14 * * 1'
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+
+      - name: Send executive telemetry digest
+        env:
+          DECANTR_API_URL: ${{ vars.DECANTR_API_URL || 'https://api.decantr.ai/v1' }}
+          DECANTR_TELEMETRY_SNAPSHOT_TOKEN: ${{ secrets.DECANTR_TELEMETRY_SNAPSHOT_TOKEN || secrets.DECANTR_ADMIN_KEY }}
+          TELEMETRY_DIGEST_WEBHOOK_URL: ${{ secrets.TELEMETRY_DIGEST_WEBHOOK_URL || secrets.TELEMETRY_HEALTH_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DECANTR_TELEMETRY_SNAPSHOT_TOKEN" ]; then
+            echo "Missing DECANTR_TELEMETRY_SNAPSHOT_TOKEN. DECANTR_ADMIN_KEY is accepted as a fallback."
+            exit 1
+          fi
+
+          node scripts/report-telemetry-digest.mjs

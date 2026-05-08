@@ -115,6 +115,8 @@ adminRoutes.use('/admin/sync', requireServiceToken('DECANTR_CONTENT_SYNC_TOKEN',
 adminRoutes.use('/admin/content/*', requireServiceToken('DECANTR_CONTENT_PRUNE_TOKEN', 'X-Content-Prune-Token'));
 adminRoutes.use('/admin/telemetry-snapshots/health', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
 adminRoutes.use('/admin/telemetry-snapshots/run', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
+adminRoutes.use('/admin/telemetry-snapshots/usage', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
+adminRoutes.use('/admin/telemetry-snapshots/attribution', requireServiceToken('DECANTR_TELEMETRY_SNAPSHOT_TOKEN', 'X-Telemetry-Snapshot-Token'));
 
 // All other admin endpoints require both user auth + admin key
 adminRoutes.use('/admin/moderation/*', requireAuth());
@@ -1082,7 +1084,7 @@ adminRoutes.post('/admin/telemetry-snapshots/run', async (c) => {
 });
 
 // GET /v1/admin/telemetry/attribution/snapshots
-adminRoutes.get('/admin/telemetry/attribution/snapshots', async (c) => {
+async function listStoredTelemetryAttributionSnapshots(c: any) {
   const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
   const sourceParam = c.req.query('source');
   const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
@@ -1112,7 +1114,12 @@ adminRoutes.get('/admin/telemetry/attribution/snapshots', async (c) => {
     }, 'Failed to fetch telemetry attribution snapshots');
     return c.json({ error: 'Failed to fetch telemetry attribution snapshots' }, 500);
   }
-});
+}
+
+adminRoutes.get('/admin/telemetry/attribution/snapshots', listStoredTelemetryAttributionSnapshots);
+
+// GET /v1/admin/telemetry-snapshots/attribution
+adminRoutes.get('/admin/telemetry-snapshots/attribution', listStoredTelemetryAttributionSnapshots);
 
 // GET /v1/admin/telemetry/attribution
 adminRoutes.get('/admin/telemetry/attribution', async (c) => {
@@ -1242,7 +1249,7 @@ adminRoutes.get('/admin/telemetry-snapshots/health', getTelemetrySnapshotHealth)
 adminRoutes.get('/admin/telemetry/snapshots/health', getTelemetrySnapshotHealth);
 
 // GET /v1/admin/telemetry/snapshots
-adminRoutes.get('/admin/telemetry/snapshots', async (c) => {
+async function listStoredTelemetryUsageSnapshots(c: any) {
   const actorType = DECANTR_TELEMETRY_ACTOR_TYPES.find((value) => value === c.req.query('actor_type'));
   const sourceParam = c.req.query('source');
   const source = isTelemetryUsageSource(sourceParam) ? sourceParam : undefined;
@@ -1268,7 +1275,12 @@ adminRoutes.get('/admin/telemetry/snapshots', async (c) => {
     }, 'Failed to fetch telemetry usage snapshots');
     return c.json({ error: 'Failed to fetch telemetry usage snapshots' }, 500);
   }
-});
+}
+
+adminRoutes.get('/admin/telemetry/snapshots', listStoredTelemetryUsageSnapshots);
+
+// GET /v1/admin/telemetry-snapshots/usage
+adminRoutes.get('/admin/telemetry-snapshots/usage', listStoredTelemetryUsageSnapshots);
 
 // GET /v1/admin/telemetry/aliases
 adminRoutes.get('/admin/telemetry/aliases', async (c) => {

@@ -926,6 +926,26 @@ describe('Admin telemetry routes', () => {
     });
   });
 
+  it('lists stored telemetry usage snapshots with service token auth', async () => {
+    process.env.DECANTR_TELEMETRY_SNAPSHOT_TOKEN = 'snapshot-token';
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry-snapshots/usage?actor_type=customer&days=30', {
+      headers: {
+        'X-Telemetry-Snapshot-Token': 'snapshot-token',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items[0]).toMatchObject({
+      actor_type: 'customer',
+      range_days: 30,
+      total_events: 12,
+    });
+  });
+
   it('lists stored telemetry attribution snapshots', async () => {
     const app = createTestApp();
 
@@ -948,6 +968,28 @@ describe('Admin telemetry routes', () => {
       range_days: 30,
       row_actor_type: 'customer',
       row_source: 'cli',
+    });
+  });
+
+  it('lists stored telemetry attribution snapshots with service token auth', async () => {
+    process.env.DECANTR_TELEMETRY_SNAPSHOT_TOKEN = 'snapshot-token';
+    const app = createTestApp();
+
+    const res = await app.request('/v1/admin/telemetry-snapshots/attribution?actor_type=customer&days=30', {
+      headers: {
+        'X-Telemetry-Snapshot-Token': 'snapshot-token',
+      },
+    });
+
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.total).toBe(1);
+    expect(json.items[0]).toMatchObject({
+      actor_type: 'customer',
+      events: 9,
+      org_slug: 'customer-co',
+      project_id: 'project_customer',
+      range_days: 30,
     });
   });
 
