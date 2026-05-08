@@ -1,6 +1,6 @@
 # Product Activation Telemetry
 
-`@decantr/telemetry@0.3.0` expands the public telemetry event contract with Project Health and CLI lifecycle signals. `@decantr/cli@1.12.0` emits those signals only for projects that explicitly opt into CLI telemetry. `@decantr/essence-spec@1.0.9` carries the export-map ordering fix needed for downstream DTS builds to resolve its public types cleanly.
+`@decantr/telemetry@2.1.0` expands the public telemetry event contract with Project Health and CLI lifecycle signals. `@decantr/cli@2.1.0` emits those signals only for projects that explicitly opt into CLI telemetry. `@decantr/essence-spec@2.0.1` carries the export-map ordering fix needed for downstream DTS builds to resolve its public types cleanly.
 
 New events:
 
