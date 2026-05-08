@@ -160,8 +160,10 @@ for (const entry of selected) {
 
   if (dryRun) continue;
 
-  if (!publishDryRun) {
+  if (!publishDryRun && !ciProvenance) {
     assertNpmPackageWriteAccess(entry.name);
+  } else if (!publishDryRun && ciProvenance) {
+    console.log('Skipping npm write-access precheck; GitHub OIDC publishing obtains npm credentials at publish time.');
   }
 
   auditPackedManifest(entry, cwd, packageVersion);
