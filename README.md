@@ -82,7 +82,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, and inspect Project Health locally |
+| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, inspect Project Health locally, and audit registry content supply-chain health |
 | MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, and audit |
 | Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
 | Verifier | Shared audit, critique, Project Health, and report-schema engine |
@@ -169,12 +169,22 @@ decantr health --prompt <finding-id>
 decantr studio --port 4319 --host 127.0.0.1
 ```
 
+Official content supply chain:
+
+```bash
+decantr content-health
+decantr content-health --markdown --output content-health.md
+decantr content-health --ci --fail-on error
+decantr content-health --prompt <finding-id>
+```
+
 ## Links
 
 - Registry — [registry.decantr.ai](https://registry.decantr.ai)
 - Discord — [discord.gg/WeDpBd4xFU](https://discord.gg/WeDpBd4xFU)
 - Published schemas — [decantr.ai/schemas](https://decantr.ai/schemas/)
 - Project Health — [docs/reference/project-health.md](docs/reference/project-health.md)
+- Content Health — [docs/reference/content-health.md](docs/reference/content-health.md)
 - Workflow model — [docs/reference/workflow-model.md](docs/reference/workflow-model.md)
 - Public API reference — [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)
 - Package support matrix — [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)

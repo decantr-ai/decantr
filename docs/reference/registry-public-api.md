@@ -97,6 +97,7 @@ Purpose:
 ```http
 GET /schema/search-response.v1.json
 GET /schema/registry-intelligence-summary.v1.json
+GET /schema/content-health-report.v1.json
 ```
 
 Purpose:

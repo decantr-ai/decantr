@@ -13,7 +13,7 @@ For quick setup help, showcase feedback, and live community discussion, join the
 - `specs/`
   - Active implementation specs for the reset program.
 - `reference/`
-  - Human-readable references for active public/runtime contracts such as Project Health, workflow mode, telemetry, and registry API surfaces.
+  - Human-readable references for active public/runtime contracts such as Project Health, Content Health, workflow mode, telemetry, and registry API surfaces.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
 - `schemas/`

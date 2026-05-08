@@ -33,6 +33,7 @@ const registrySchemaSpecs: Record<ContentType, string> = {
 const publicSchemaSpecs = {
   'common.v1.json': '@decantr/registry/schema/common.v1.json',
   'content-intelligence.v1.json': '@decantr/registry/schema/content-intelligence.v1.json',
+  'content-health-report.v1.json': '@decantr/registry/schema/content-health-report.v1.json',
   'pattern.v2.json': '@decantr/registry/schema/pattern.v2.json',
   'theme.v1.json': '@decantr/registry/schema/theme.v1.json',
   'blueprint.v1.json': '@decantr/registry/schema/blueprint.v1.json',

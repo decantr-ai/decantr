@@ -22,6 +22,8 @@ Project Health is separate from Decantr product telemetry. `decantr health` and 
 
 Telemetry is for Decantr operators to understand privacy-filtered product adoption. Project Health is for customer and developer workflows. A future private registry or enterprise dashboard may accept a customer-controlled `ProjectHealthReport`, but the local health command does not require telemetry opt-in.
 
+`decantr content-health` follows the same privacy stance for registry content repositories. It emits a local `ContentHealthReport` for schema, reference, and quality coverage checks; it does not upload content files or health reports to Decantr. If a repository has opted into CLI telemetry, only the command-completed event is eligible for telemetry, not the report payload.
+
 ## Architecture
 
 ```text

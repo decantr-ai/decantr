@@ -29,7 +29,7 @@
       "releaseWave": "foundation",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "Registry contracts, schemas, API client, and public content utilities.",
+      "summary": "Registry contracts, schemas, Content Health report types, API client, and public content utilities.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -143,7 +143,7 @@
       "releaseWave": "delivery",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, and project governance.",
+      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, Content Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

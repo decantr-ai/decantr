@@ -14,9 +14,10 @@ npm install @decantr/registry
 ## What It Exports
 
 - strong types for patterns, themes, blueprints, archetypes, shells, and intelligence metadata
+- `ContentHealthReport` types for registry content supply-chain health artifacts
 - `RegistryAPIClient` for server-side and tool-side registry access
 - `@decantr/registry/client` for web-safe API usage
-- public schema exports for registry content and summary responses
+- public schema exports for registry content, content health, and summary responses
 - ranking and sorting helpers for public registry content
 
 ## Example
@@ -41,7 +42,7 @@ const summary = await client.getIntelligenceSummary();
 
 ## Related Schemas
 
-This package owns the canonical registry schemas published under `@decantr/registry/schema/*`.
+This package owns the canonical registry schemas published under `@decantr/registry/schema/*`, including `content-health-report.v1.json` for local content repository health reports emitted by `decantr content-health`.
 
 ## Compatibility
 

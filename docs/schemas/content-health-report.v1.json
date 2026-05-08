@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/content-health-report.v1.json",
+  "title": "Decantr Content Health Report",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "contentRoot",
+    "status",
+    "score",
+    "summary",
+    "content",
+    "references",
+    "quality",
+    "ci",
+    "findings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/content-health-report.v1.json"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "contentRoot": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "healthy",
+        "warning",
+        "error"
+      ]
+    },
+    "score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "itemCount",
+        "validCount",
+        "errorCount",
+        "warnCount",
+        "infoCount",
+        "findingCount",
+        "ignoredCount",
+        "contentDirectoryCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "itemCount": { "type": "integer", "minimum": 0 },
+        "validCount": { "type": "integer", "minimum": 0 },
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "warnCount": { "type": "integer", "minimum": 0 },
+        "infoCount": { "type": "integer", "minimum": 0 },
+        "findingCount": { "type": "integer", "minimum": 0 },
+        "ignoredCount": { "type": "integer", "minimum": 0 },
+        "contentDirectoryCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "content": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "directory",
+          "itemCount",
+          "validCount",
+          "errorCount",
+          "warnCount",
+          "infoCount",
+          "ignoredCount"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "type": { "$ref": "#/$defs/contentType" },
+          "directory": { "$ref": "#/$defs/apiContentType" },
+          "itemCount": { "type": "integer", "minimum": 0 },
+          "validCount": { "type": "integer", "minimum": 0 },
+          "errorCount": { "type": "integer", "minimum": 0 },
+          "warnCount": { "type": "integer", "minimum": 0 },
+          "infoCount": { "type": "integer", "minimum": 0 },
+          "ignoredCount": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "references": {
+      "type": "object",
+      "required": [
+        "checked",
+        "missing",
+        "missingByType"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "checked": { "type": "integer", "minimum": 0 },
+        "missing": { "type": "integer", "minimum": 0 },
+        "missingByType": {
+          "type": "object",
+          "required": [
+            "pattern",
+            "theme",
+            "blueprint",
+            "archetype",
+            "shell"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "pattern": { "type": "integer", "minimum": 0 },
+            "theme": { "type": "integer", "minimum": 0 },
+            "blueprint": { "type": "integer", "minimum": 0 },
+            "archetype": { "type": "integer", "minimum": 0 },
+            "shell": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "required": [
+        "patternVisualBriefCoverage",
+        "patternInteractionCoverage",
+        "themeDecoratorCoverage",
+        "blueprintPersonalityCoverage",
+        "blueprintVoiceCoverage",
+        "archetypePageBriefCoverage"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "patternVisualBriefCoverage": { "$ref": "#/$defs/percentage" },
+        "patternInteractionCoverage": { "$ref": "#/$defs/percentage" },
+        "themeDecoratorCoverage": { "$ref": "#/$defs/percentage" },
+        "blueprintPersonalityCoverage": { "$ref": "#/$defs/percentage" },
+        "blueprintVoiceCoverage": { "$ref": "#/$defs/percentage" },
+        "archetypePageBriefCoverage": { "$ref": "#/$defs/percentage" }
+      }
+    },
+    "ci": {
+      "type": "object",
+      "required": [
+        "recommendedCommand",
+        "failOn"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "recommendedCommand": { "type": "string", "minLength": 1 },
+        "failOn": {
+          "enum": [
+            "error",
+            "warn",
+            "none"
+          ]
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "contentType": {
+      "enum": [
+        "pattern",
+        "theme",
+        "blueprint",
+        "archetype",
+        "shell"
+      ]
+    },
+    "apiContentType": {
+      "enum": [
+        "patterns",
+        "themes",
+        "blueprints",
+        "archetypes",
+        "shells"
+      ]
+    },
+    "percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "severity": {
+      "enum": [
+        "error",
+        "warn",
+        "info"
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "source",
+        "category",
+        "severity",
+        "message",
+        "evidence",
+        "remediation"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": {
+          "enum": [
+            "schema",
+            "reference",
+            "quality",
+            "coverage",
+            "content"
+          ]
+        },
+        "category": { "type": "string", "minLength": 1 },
+        "severity": { "$ref": "#/$defs/severity" },
+        "message": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "file": { "type": "string" },
+        "type": { "$ref": "#/$defs/contentType" },
+        "itemId": { "type": "string" },
+        "rule": { "type": "string" },
+        "suggestedFix": { "type": "string" },
+        "remediation": {
+          "type": "object",
+          "required": [
+            "summary",
+            "prompt",
+            "commands"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "summary": { "type": "string", "minLength": 1 },
+            "prompt": { "type": "string", "minLength": 1 },
+            "commands": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
