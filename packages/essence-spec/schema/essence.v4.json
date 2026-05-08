@@ -1,0 +1,430 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/essence.v4.json",
+  "title": "Decantr Essence v4",
+  "description": "Decantr V2 active sectioned design contract",
+  "type": "object",
+  "required": ["version", "dna", "blueprint", "meta"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "enum": ["4.0.0"] },
+    "dna": { "$ref": "#/$defs/DNA" },
+    "blueprint": { "$ref": "#/$defs/Blueprint" },
+    "meta": { "$ref": "#/$defs/Meta" },
+    "_impression": { "$ref": "#/$defs/Impression" }
+  },
+  "$defs": {
+    "DNA": {
+      "type": "object",
+      "required": ["theme", "spacing", "typography", "color", "radius", "elevation", "motion", "accessibility", "personality"],
+      "additionalProperties": false,
+      "properties": {
+        "theme": { "$ref": "#/$defs/Theme" },
+        "spacing": { "$ref": "#/$defs/Spacing" },
+        "typography": { "$ref": "#/$defs/Typography" },
+        "color": { "$ref": "#/$defs/Color" },
+        "radius": { "$ref": "#/$defs/Radius" },
+        "elevation": { "$ref": "#/$defs/Elevation" },
+        "motion": { "$ref": "#/$defs/Motion" },
+        "accessibility": { "$ref": "#/$defs/AccessibilityV4" },
+        "personality": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "constraints": { "$ref": "#/$defs/Constraints" }
+      }
+    },
+    "Theme": {
+      "type": "object",
+      "required": ["id", "mode"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "mode": { "type": "string", "enum": ["light", "dark", "auto"] },
+        "shape": { "type": "string", "enum": ["sharp", "rounded", "pill"] }
+      }
+    },
+    "Spacing": {
+      "type": "object",
+      "required": ["base_unit", "scale", "density", "content_gap"],
+      "additionalProperties": false,
+      "properties": {
+        "base_unit": { "type": "number", "minimum": 1 },
+        "scale": { "type": "string", "minLength": 1 },
+        "density": { "type": "string", "enum": ["compact", "comfortable", "spacious"] },
+        "content_gap": { "type": "string", "minLength": 1 }
+      }
+    },
+    "Typography": {
+      "type": "object",
+      "required": ["scale", "heading_weight", "body_weight"],
+      "additionalProperties": false,
+      "properties": {
+        "scale": { "type": "string", "minLength": 1 },
+        "heading_weight": { "type": "number", "minimum": 100, "maximum": 900 },
+        "body_weight": { "type": "number", "minimum": 100, "maximum": 900 }
+      }
+    },
+    "Color": {
+      "type": "object",
+      "required": ["palette", "accent_count", "cvd_preference"],
+      "additionalProperties": false,
+      "properties": {
+        "palette": { "type": "string", "minLength": 1 },
+        "accent_count": { "type": "number", "minimum": 0 },
+        "cvd_preference": { "type": "string" }
+      }
+    },
+    "Radius": {
+      "type": "object",
+      "required": ["philosophy", "base"],
+      "additionalProperties": false,
+      "properties": {
+        "philosophy": { "type": "string", "minLength": 1 },
+        "base": { "type": "number", "minimum": 0 }
+      }
+    },
+    "Elevation": {
+      "type": "object",
+      "required": ["system", "max_levels"],
+      "additionalProperties": false,
+      "properties": {
+        "system": { "type": "string", "minLength": 1 },
+        "max_levels": { "type": "number", "minimum": 0 }
+      }
+    },
+    "Motion": {
+      "type": "object",
+      "required": ["preference", "duration_scale", "reduce_motion"],
+      "additionalProperties": false,
+      "properties": {
+        "preference": { "type": "string", "minLength": 1 },
+        "duration_scale": { "type": "number", "minimum": 0 },
+        "reduce_motion": { "type": "boolean" }
+      }
+    },
+    "AccessibilityV4": {
+      "type": "object",
+      "required": ["wcag_level", "focus_visible", "skip_nav"],
+      "additionalProperties": false,
+      "properties": {
+        "wcag_level": { "type": "string", "enum": ["none", "A", "AA", "AAA"] },
+        "focus_visible": { "type": "boolean" },
+        "skip_nav": { "type": "boolean" }
+      }
+    },
+    "Constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "minLength": 1 },
+        "typography": { "type": "string", "minLength": 1 },
+        "borders": { "type": "string", "minLength": 1 },
+        "corners": { "type": "string", "minLength": 1 },
+        "shadows": { "type": "string", "minLength": 1 },
+        "effects": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "Blueprint": {
+      "type": "object",
+      "required": ["sections", "features"],
+      "additionalProperties": false,
+      "properties": {
+        "shell": { "type": "string", "minLength": 1 },
+        "sections": { "type": "array", "items": { "$ref": "#/$defs/BlueprintSection" }, "minItems": 1 },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "routes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/RouteEntry" }
+        },
+        "icon_style": { "type": "string" },
+        "avatar_style": { "type": "string" }
+      }
+    },
+    "BlueprintPage": {
+      "type": "object",
+      "required": ["id", "layout"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "route": { "type": "string", "minLength": 1 },
+        "shell_override": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+        "layout": { "type": "array", "items": { "$ref": "#/$defs/LayoutItem" }, "minItems": 1 },
+        "default_layout": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LayoutItem" },
+          "description": "Legacy / archetype-derived layout field. Carries through from archetype.pages[].default_layout and is retained on the essence for traceability. Runtime uses `layout` as the effective composition."
+        },
+        "dna_overrides": { "$ref": "#/$defs/DNAOverrides" },
+        "surface": { "type": "string" },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives for this page — short imperative guidance that belongs in the pack contract (not the narrative doc). Each entry is one actionable rule the cold LLM should obey when implementing this route. Examples: '3-step checkout flow (Shipping → Payment → Review)', 'Auth bypass: accept any credentials and redirect to /shop', 'Skeleton placeholders render with d-annotation[data-loading]'.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "BlueprintSection": {
+      "type": "object",
+      "required": ["id", "role", "shell", "features", "description", "pages"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "role": { "type": "string", "enum": ["primary", "gateway", "public", "auxiliary"] },
+        "shell": { "type": "string", "minLength": 1 },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string", "minLength": 1 },
+        "pages": { "type": "array", "items": { "$ref": "#/$defs/BlueprintPage" }, "minItems": 1 },
+        "dna_overrides": { "$ref": "#/$defs/DNAOverrides" },
+        "navigation_items": {
+          "type": "array",
+          "description": "Items to render in the shell's primary navigation for this section. Provides the contract so LLMs don't have to improvise sidebar/top-nav lists.",
+          "items": { "$ref": "#/$defs/SectionNavigationItem" }
+        },
+        "directives": {
+          "type": "array",
+          "description": "Execution-level directives for this section — short imperative rules the cold LLM should obey when implementing any page in this section. Belongs in the pack contract (not the narrative doc). Examples: 'Header is 52px, use d-interactive[data-size=sm] for all action buttons', 'Dev mode: localStorage flag `decantr_authenticated` gates protected routes', 'Hotkey chords bind keyboard only — never render them as visible nav labels'.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "SectionNavigationItem": {
+      "type": "object",
+      "required": ["label", "route"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "route": { "type": "string", "minLength": 1, "description": "Route path (e.g., '/agents')." },
+        "icon": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Icon identifier. Typically a Lucide icon name in kebab-case."
+        },
+        "hotkey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Keyboard shortcut used to invoke this item (matches a hotkey key string)."
+        },
+        "active_match": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Regex or path prefix the shell uses to decide if this item is 'active' for the current route. Defaults to exact match of `route`."
+        },
+        "badge": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional short badge label (e.g., 'beta', '3') rendered on the item."
+        }
+      }
+    },
+    "RouteEntry": {
+      "type": "object",
+      "required": ["section", "page"],
+      "additionalProperties": false,
+      "properties": {
+        "section": { "type": "string", "minLength": 1 },
+        "page": { "type": "string", "minLength": 1 }
+      }
+    },
+    "DNAOverrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "density": { "type": "string", "enum": ["compact", "comfortable", "spacious"] },
+        "mode": { "type": "string", "enum": ["light", "dark", "auto"] }
+      }
+    },
+    "LayoutItem": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "$ref": "#/$defs/PatternRef" },
+        { "$ref": "#/$defs/ColumnLayout" }
+      ]
+    },
+    "PatternRef": {
+      "type": "object",
+      "required": ["pattern"],
+      "additionalProperties": false,
+      "properties": {
+        "pattern": { "type": "string", "minLength": 1 },
+        "preset": { "type": "string" },
+        "as": { "type": "string" }
+      }
+    },
+    "ColumnLayout": {
+      "type": "object",
+      "required": ["cols"],
+      "additionalProperties": false,
+      "properties": {
+        "cols": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              { "$ref": "#/$defs/PatternRef" }
+            ]
+          },
+          "minItems": 2
+        },
+        "at": { "type": "string", "enum": ["sm", "md", "lg", "xl", "2xl"] },
+        "span": { "type": "object", "additionalProperties": { "type": "number", "minimum": 1 } },
+        "breakpoints": { "type": "array", "items": { "type": "object", "required": ["at", "cols"], "properties": { "at": { "type": "string" }, "cols": { "type": "number" } } } },
+        "responsive": { "type": "string", "enum": ["viewport", "container"] }
+      }
+    },
+    "Meta": {
+      "type": "object",
+      "required": ["archetype", "target", "platform", "guard"],
+      "additionalProperties": false,
+      "properties": {
+        "archetype": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "platform": { "$ref": "#/$defs/Platform" },
+        "guard": { "$ref": "#/$defs/GuardV4" },
+        "seo": { "$ref": "#/$defs/SeoHints" },
+        "navigation": { "$ref": "#/$defs/NavigationHints" }
+      }
+    },
+    "Platform": {
+      "type": "object",
+      "required": ["type", "routing"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "enum": ["spa", "ssr", "static"] },
+        "routing": { "type": "string", "enum": ["hash", "history", "pathname"] }
+      }
+    },
+    "GuardV4": {
+      "type": "object",
+      "required": ["mode", "dna_enforcement", "blueprint_enforcement"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["creative", "guided", "strict"] },
+        "dna_enforcement": { "type": "string", "enum": ["error", "warn", "off"] },
+        "blueprint_enforcement": { "type": "string", "enum": ["warn", "off"] },
+        "interactions_enforcement": {
+          "type": "string",
+          "enum": ["error", "warn", "off"],
+          "description": "Severity for the experiential interactions guard rule. Defaults: creative -> off, guided -> warn, strict -> error."
+        }
+      }
+    },
+    "SeoHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_org": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "meta_priorities": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "NavigationHints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hotkeys": { "type": "array", "items": { "$ref": "#/$defs/NavigationHotkey" } },
+        "command_palette": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "$ref": "#/$defs/CommandPaletteContract" }
+          ]
+        },
+        "hotkey_semantics": { "$ref": "#/$defs/HotkeySemantics" }
+      }
+    },
+    "NavigationHotkey": {
+      "type": "object",
+      "required": ["key", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "route": { "type": "string", "minLength": 1 },
+        "action": { "type": "string", "minLength": 1 },
+        "semantics": { "$ref": "#/$defs/HotkeySemantics" }
+      }
+    },
+    "CommandPaletteContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Structured contract for the command palette. When present, LLMs should match exactly instead of improvising trigger/styling.",
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Keyboard shortcut that opens the palette. Platform-neutral form (e.g., 'Cmd+K' implies Cmd on Mac and Ctrl elsewhere)."
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Placeholder text shown in the palette's search input."
+        },
+        "width": {
+          "type": "string",
+          "description": "Preferred width (CSS length, e.g., '640px' or '40rem')."
+        },
+        "styling": {
+          "type": "string",
+          "enum": ["modal", "sheet", "inline", "fullscreen"],
+          "description": "Visual presentation mode. 'modal' = centered dialog, 'sheet' = slide-over, 'inline' = inline dropdown, 'fullscreen' = full-viewport (typical mobile default)."
+        },
+        "commands": {
+          "type": "array",
+          "description": "Command vocabulary. If omitted, LLMs may seed a minimal default from declared routes.",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "label": { "type": "string", "minLength": 1 },
+              "section": { "type": "string", "minLength": 1 },
+              "hotkey": { "type": "string", "minLength": 1 },
+              "action": { "type": "string", "minLength": 1 },
+              "route": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "HotkeySemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Behavioral directives for hotkey handlers. Declared once globally in NavigationHints.hotkey_semantics OR per-hotkey on NavigationHotkey.semantics (per-key wins).",
+      "properties": {
+        "chord_window_ms": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 5000,
+          "description": "For chord hotkeys (e.g., 'g a'), the max ms between keystrokes before the chord resets. Typical value: 900."
+        },
+        "input_guard": {
+          "type": "boolean",
+          "description": "If true (default): hotkeys do NOT fire while focus is inside an editable element (input, textarea, contenteditable). Avoids keyboard-conflict with user typing."
+        },
+        "modifier_suppression": {
+          "type": "boolean",
+          "description": "If true (default): hotkeys do NOT fire when a modifier (Meta/Ctrl/Alt) is held unless the hotkey itself declares the modifier in its key string."
+        },
+        "match_case": {
+          "type": "boolean",
+          "description": "If true: hotkey key matching is case-sensitive (distinguishes 'g' from 'G'). Default: false — uppercase letter implies Shift modifier."
+        },
+        "show_chord_indicator": {
+          "type": "boolean",
+          "description": "If true (default): render the .d-hotkey-indicator corner badge when a chord hotkey prefix is armed. If false: silent chord tracking (no visual feedback)."
+        }
+      }
+    },
+    "Impression": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vibe": { "type": "array", "items": { "type": "string" } },
+        "references": { "type": "array", "items": { "type": "string" } },
+        "density_intent": { "type": "string" },
+        "layout_intent": { "type": "string" },
+        "novel_elements": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

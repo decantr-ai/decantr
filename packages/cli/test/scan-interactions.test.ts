@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { scanProjectInteractions } from '../src/lib/scan-interactions.js';
 
-describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
+describe('scanProjectInteractions', () => {
   let projectRoot: string;
 
   beforeEach(() => {
@@ -62,9 +62,7 @@ describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
 
   it('flags missing status-pulse when source lacks d-pulse', () => {
     setupProject({
-      manifestPages: [
-        { id: 'overview', pack: [{ interactions: ['status-pulse'] }] },
-      ],
+      manifestPages: [{ id: 'overview', pack: [{ interactions: ['status-pulse'] }] }],
       sourceFiles: {
         'App.tsx': 'export default function App() { return <div>hello</div>; }',
       },
@@ -78,9 +76,7 @@ describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
 
   it('passes when source uses d-pulse for status-pulse', () => {
     setupProject({
-      manifestPages: [
-        { id: 'overview', pack: [{ interactions: ['status-pulse'] }] },
-      ],
+      manifestPages: [{ id: 'overview', pack: [{ interactions: ['status-pulse'] }] }],
       sourceFiles: {
         'Indicator.tsx': '<span className="d-pulse" data-status="active" />',
       },
@@ -108,9 +104,7 @@ describe('scanProjectInteractions (v2.1 C5 wiring)', () => {
 
   it('skips node_modules and dist when walking', () => {
     setupProject({
-      manifestPages: [
-        { id: 'home', pack: [{ interactions: ['status-pulse'] }] },
-      ],
+      manifestPages: [{ id: 'home', pack: [{ interactions: ['status-pulse'] }] }],
       sourceFiles: {
         // src has at least one file but it does NOT contain d-pulse
         'App.tsx': 'export default function App() { return null; }',

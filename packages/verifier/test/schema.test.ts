@@ -18,7 +18,7 @@ describe('verifier schema contracts', () => {
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify(
           {
-            version: '3.0.0',
+            version: '4.0.0',
             dna: {
               theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
               spacing: {
@@ -37,8 +37,18 @@ describe('verifier schema contracts', () => {
             },
             blueprint: {
               shell: 'sidebar-main',
-              pages: [{ id: 'home', layout: ['hero'] }],
               features: [],
+              sections: [
+                {
+                  id: 'marketing',
+                  role: 'public',
+                  shell: 'sidebar-main',
+                  features: [],
+                  description: 'Marketing surface',
+                  pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+                },
+              ],
+              routes: { '/': { section: 'marketing', page: 'home' } },
             },
             meta: {
               archetype: 'marketing',
@@ -116,7 +126,7 @@ describe('verifier schema contracts', () => {
         findingCount: 1,
         workflowMode: 'brownfield-attach',
         adoptionMode: 'contract-only',
-        essenceVersion: '3.1.0',
+        essenceVersion: '4.0.0',
         pageCount: 3,
         runtimeAuditChecked: false,
         runtimePassed: null,

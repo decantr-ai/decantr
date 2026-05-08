@@ -1,104 +1,178 @@
 import type {
+  BlueprintPage,
   DensityLevel,
   Essence,
   EssenceBlueprint,
   EssenceDNA,
-  EssenceFile,
   EssenceMeta,
-  EssenceV3,
-  EssenceV31Section,
+  EssenceSection,
+  EssenceV4,
   GuardMode,
+  LegacyEssenceV3,
   SectionedEssence,
   ThemeShape,
 } from './types.js';
-import { isSectioned, isSimple, isV3 } from './types.js';
+import { isLegacyV3, isSectioned, isSimple, isV4 } from './types.js';
 
 /**
- * Migrate a v2 EssenceFile to v3 format (DNA/Blueprint/Meta split).
- * If already v3, returns unchanged. SectionedEssence uses first section's theme.
+ * Explicit legacy-to-v4 migration path used by `decantr migrate --to v4`.
+ * Active Decantr V2 commands do not call this implicitly.
  */
-export function migrateV2ToV3(essence: EssenceFile): EssenceV3 {
-  if (isV3(essence)) return essence;
+export function migrateToV4(input: unknown): EssenceV4 {
+  if (isV4(input)) return normalizeV4(input);
+  if (isLegacyV3(input)) return migrateLegacyV3ToV4(input);
+  if (isSectioned(input)) return migrateSectionedToV4(input);
+  if (isSimple(input)) return migrateSimpleToV4(input);
 
-  if (isSectioned(essence)) {
-    return migrateSectionedToV3(essence);
-  }
-
-  if (isSimple(essence)) {
-    return migrateSimpleToV3(essence);
-  }
-
-  throw new Error('Unknown EssenceFile type — cannot migrate');
+  throw new Error('Unknown essence format. Only Essence v2, v3.0, v3.1, and v4 can migrate to v4.');
 }
 
-function migrateSimpleToV3(essence: Essence): EssenceV3 {
+function migrateSimpleToV4(essence: Essence): EssenceV4 {
   const dna = buildDNA(essence);
-  const blueprint = buildBlueprintFromSimple(essence);
-  const meta = buildMeta(essence);
+  const defaultShell = essence.structure[0]?.shell ?? 'top-nav-main';
+  const pages = essence.structure.map((page, index) => ({
+    id: page.id,
+    route: page.id === 'home' || index === 0 ? '/' : `/${page.id}`,
+    ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
+    layout: page.layout,
+    ...(page.surface ? { surface: page.surface } : {}),
+  }));
+  const section: EssenceSection = {
+    id: essence.archetype,
+    role: 'primary',
+    shell: defaultShell,
+    features: essence.features ?? [],
+    description: `${essence.archetype} primary section`,
+    pages,
+  };
 
   return {
-    version: '3.0.0',
+    version: '4.0.0',
     dna,
-    blueprint,
-    meta,
+    blueprint: buildSectionedBlueprint([section], essence.features ?? []),
+    meta: buildMeta(essence),
     ...(essence._impression ? { _impression: essence._impression } : {}),
   };
 }
 
-function migrateSectionedToV3(essence: SectionedEssence): EssenceV3 {
-  // Use first section's theme as the DNA theme (sectioned essences have per-section themes)
+function migrateSectionedToV4(essence: SectionedEssence): EssenceV4 {
   const firstSection = essence.sections[0];
+  if (!firstSection) {
+    throw new Error('Cannot migrate a sectioned essence with no sections.');
+  }
+
   const syntheticSimple: Partial<Essence> = {
     theme: firstSection.theme,
     density: essence.density,
     guard: essence.guard,
     accessibility: essence.accessibility,
+    personality: essence.personality,
   };
 
-  const dna = buildDNA(syntheticSimple as Essence);
-  // Override personality from the sectioned root
-  dna.personality = essence.personality;
+  const sections: EssenceSection[] = essence.sections.map((section) => {
+    const defaultShell = section.structure[0]?.shell ?? 'top-nav-main';
+    return {
+      id: section.id,
+      role: 'primary',
+      shell: defaultShell,
+      features: section.features ?? [],
+      description: `${section.archetype} section`,
+      pages: section.structure.map((page, index) => ({
+        id: page.id,
+        route:
+          index === 0 && section.path
+            ? section.path
+            : `${section.path}/${page.id}`.replace(/\/+/g, '/'),
+        ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
+        layout: page.layout,
+        ...(page.surface ? { surface: page.surface } : {}),
+      })),
+    };
+  });
 
-  // Flatten all sections' pages into the blueprint
-  const pages = essence.sections.flatMap((section) =>
-    section.structure.map((page) => ({
-      id: page.id,
-      shell_override: page.shell as string | null,
-      layout: page.layout,
-      ...(page.surface ? { surface: page.surface } : {}),
-    })),
-  );
-
-  const allFeatures = [
+  const features = [
     ...(essence.shared_features ?? []),
-    ...essence.sections.flatMap((s) => s.features ?? []),
+    ...essence.sections.flatMap((section) => section.features ?? []),
   ];
 
-  const blueprint: EssenceBlueprint = {
-    shell: firstSection.structure[0]?.shell ?? 'top-nav-main',
-    pages,
-    features: [...new Set(allFeatures)],
+  return {
+    version: '4.0.0',
+    dna: buildDNA(syntheticSimple as Essence),
+    blueprint: buildSectionedBlueprint(sections, [...new Set(features)]),
+    meta: {
+      archetype: firstSection.archetype,
+      target: essence.target,
+      platform: essence.platform,
+      guard: migrateGuard(essence.guard.mode),
+    },
+    ...(essence._impression ? { _impression: essence._impression } : {}),
   };
+}
 
-  const meta: EssenceMeta = {
-    archetype: firstSection.archetype,
-    target: essence.target,
-    platform: essence.platform,
-    guard: migrateGuard(essence.guard.mode),
+function migrateLegacyV3ToV4(essence: LegacyEssenceV3): EssenceV4 {
+  const sections =
+    essence.blueprint.sections && essence.blueprint.sections.length > 0
+      ? essence.blueprint.sections
+      : [
+          {
+            id: essence.meta.archetype,
+            role: 'primary' as const,
+            shell: essence.blueprint.shell ?? 'top-nav-main',
+            features: essence.blueprint.features,
+            description: `${essence.meta.archetype} primary section`,
+            pages: essence.blueprint.pages ?? [],
+          },
+        ];
+
+  return normalizeV4({
+    ...essence,
+    version: '4.0.0',
+    blueprint: buildSectionedBlueprint(
+      sections,
+      essence.blueprint.features,
+      essence.blueprint.routes,
+    ),
+  });
+}
+
+function normalizeV4(essence: EssenceV4): EssenceV4 {
+  return {
+    ...essence,
+    version: '4.0.0',
+    blueprint: buildSectionedBlueprint(
+      essence.blueprint.sections,
+      essence.blueprint.features,
+      essence.blueprint.routes,
+      essence.blueprint.shell,
+    ),
   };
+}
+
+function buildSectionedBlueprint(
+  sections: EssenceSection[],
+  features: string[],
+  existingRoutes?: EssenceBlueprint['routes'],
+  shell?: string,
+): EssenceBlueprint {
+  const routes: NonNullable<EssenceBlueprint['routes']> = { ...(existingRoutes ?? {}) };
+
+  for (const section of sections) {
+    for (const page of section.pages) {
+      if (!page.route || routes[page.route]) continue;
+      routes[page.route] = { section: section.id, page: page.id };
+    }
+  }
 
   return {
-    version: '3.0.0',
-    dna,
-    blueprint,
-    meta,
-    ...(essence._impression ? { _impression: essence._impression } : {}),
+    ...(shell ? { shell } : {}),
+    sections,
+    features: [...new Set(features)],
+    routes,
   };
 }
 
 function buildDNA(essence: Essence): EssenceDNA {
   const shape = essence.theme.shape ?? 'rounded';
-  const radiusBase = inferRadiusBase(shape);
 
   return {
     theme: {
@@ -110,7 +184,7 @@ function buildDNA(essence: Essence): EssenceDNA {
       base_unit: 4,
       scale: 'linear',
       density: (essence.density?.level ?? 'comfortable') as DensityLevel,
-      content_gap: essence.density?.content_gap ?? '4',
+      content_gap: essence.density?.content_gap ?? '_gap4',
     },
     typography: {
       scale: 'modular',
@@ -124,7 +198,7 @@ function buildDNA(essence: Essence): EssenceDNA {
     },
     radius: {
       philosophy: shape,
-      base: radiusBase,
+      base: inferRadiusBase(shape),
     },
     elevation: {
       system: 'layered',
@@ -132,7 +206,7 @@ function buildDNA(essence: Essence): EssenceDNA {
     },
     motion: {
       preference: 'subtle',
-      duration_scale: 1.0,
+      duration_scale: 1,
       reduce_motion: true,
     },
     accessibility: {
@@ -141,21 +215,6 @@ function buildDNA(essence: Essence): EssenceDNA {
       skip_nav: true,
     },
     personality: essence.personality ?? ['professional'],
-  };
-}
-
-function buildBlueprintFromSimple(essence: Essence): EssenceBlueprint {
-  const defaultShell = essence.structure[0]?.shell ?? 'top-nav-main';
-
-  return {
-    shell: defaultShell,
-    pages: essence.structure.map((page) => ({
-      id: page.id,
-      ...(page.shell !== defaultShell ? { shell_override: page.shell } : {}),
-      layout: page.layout,
-      ...(page.surface ? { surface: page.surface } : {}),
-    })),
-    features: essence.features ?? [],
   };
 }
 
@@ -191,34 +250,4 @@ function inferRadiusBase(shape: ThemeShape | string): number {
     default:
       return 8;
   }
-}
-
-/**
- * Migrate a v3.0 flat-page EssenceV3 to v3.1 sectioned format.
- * If already v3.1 or has blueprint.sections, returns unchanged.
- */
-export function migrateV30ToV31(essence: EssenceV3): EssenceV3 {
-  if (essence.version === '3.1.0' || essence.blueprint.sections) {
-    return essence;
-  }
-
-  const section: EssenceV31Section = {
-    id: essence.meta.archetype,
-    role: 'primary',
-    shell: essence.blueprint.shell ?? 'top-nav-main',
-    features: essence.blueprint.features,
-    description: `${essence.meta.archetype} primary section`,
-    pages: essence.blueprint.pages ?? [],
-  };
-
-  return {
-    ...essence,
-    version: '3.1.0',
-    blueprint: {
-      ...essence.blueprint,
-      sections: [section],
-      pages: undefined,
-      routes: {},
-    },
-  };
 }

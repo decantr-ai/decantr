@@ -23,8 +23,7 @@ const schemaPaths = [
   new URL('../../../core/schema/execution-pack.common.v1.json', import.meta.url),
   new URL('../../../core/schema/pack-manifest.v1.json', import.meta.url),
   new URL('../../../core/schema/review-pack.v1.json', import.meta.url),
-  new URL('../../../essence-spec/schema/essence.v2.json', import.meta.url),
-  new URL('../../../essence-spec/schema/essence.v3.json', import.meta.url),
+  new URL('../../../essence-spec/schema/essence.v4.json', import.meta.url),
 ];
 
 for (const path of schemaPaths) {

@@ -1,4 +1,4 @@
-import type { EssenceV31Section } from '@decantr/essence-spec';
+import type { EssenceSection } from '@decantr/essence-spec';
 import { describe, expect, it } from 'vitest';
 import type {
   PatternSpecSummary,
@@ -7,7 +7,7 @@ import type {
 } from '../src/scaffold.js';
 import { generateScaffoldContext, generateSectionContext } from '../src/scaffold.js';
 
-function makeSection(overrides?: Partial<EssenceV31Section>): EssenceV31Section {
+function makeSection(overrides?: Partial<EssenceSection>): EssenceSection {
   return {
     id: 'dashboard',
     role: 'primary',
@@ -169,7 +169,7 @@ describe('generateSectionContext', () => {
 
 describe('generateScaffoldContext', () => {
   it('produces overview with sections table and route map', () => {
-    const sections: EssenceV31Section[] = [
+    const sections: EssenceSection[] = [
       {
         id: 'landing',
         role: 'public',

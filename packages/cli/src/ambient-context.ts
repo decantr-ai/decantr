@@ -132,7 +132,9 @@ function isPotentialContextFile(relPath: string, name: string): boolean {
   return ext === '.md' || ext === '.mdx' || ext === '.sql' || ext === '.yml' || ext === '.yaml';
 }
 
-function classifyContext(relPath: string): Pick<AmbientContextItem, 'role' | 'confidence' | 'reason'> {
+function classifyContext(
+  relPath: string,
+): Pick<AmbientContextItem, 'role' | 'confidence' | 'reason'> {
   const normalized = normalizedPath(relPath);
   const lower = normalized.toLowerCase();
   const name = basename(normalized);
@@ -332,9 +334,7 @@ function walk(projectRoot: string, dir: string, items: AmbientContextItem[], dep
     }
 
     if (stats.isDirectory()) {
-      if (
-        CONTEXT_DIRECTORIES.has(relPath)
-      ) {
+      if (CONTEXT_DIRECTORIES.has(relPath)) {
         addDirectoryContext(items, projectRoot, relPath);
       }
       walk(projectRoot, fullPath, items, depth + 1);
@@ -383,7 +383,12 @@ function readSmallText(projectRoot: string, relPath: string): string {
 
 function detectConflicts(projectRoot: string, items: AmbientContextItem[]): string[] {
   const text = items
-    .filter((item) => item.type === 'file' && item.safeToCite && item.path.match(/\.(md|mdx|json|ts|js|yml|yaml)$/))
+    .filter(
+      (item) =>
+        item.type === 'file' &&
+        item.safeToCite &&
+        item.path.match(/\.(md|mdx|json|ts|js|yml|yaml)$/),
+    )
     .slice(0, 80)
     .map((item) => readSmallText(projectRoot, item.path))
     .join('\n')
@@ -403,11 +408,10 @@ function detectConflicts(projectRoot: string, items: AmbientContextItem[]): stri
     );
   }
 
-  const forbidsTailwind = /\b(do not|don't|avoid|forbid|forbidden)\s+use\s+tailwind\b|\bno\s+tailwind\b/.test(text);
+  const forbidsTailwind =
+    /\b(do not|don't|avoid|forbid|forbidden)\s+use\s+tailwind\b|\bno\s+tailwind\b/.test(text);
   const endorsesTailwind =
-    /\btailwind\.config\b|\btailwindcss\b|\b@tailwind\b|\btailwind\s+classes\b/.test(
-      text,
-    );
+    /\btailwind\.config\b|\btailwindcss\b|\b@tailwind\b|\btailwind\s+classes\b/.test(text);
   if (forbidsTailwind && endorsesTailwind) {
     conflicts.push('Ambient docs contain both Tailwind usage and anti-Tailwind language.');
   }
@@ -432,9 +436,9 @@ function detectDecantrEssenceStaleRisk(projectRoot: string, items: AmbientContex
       structure?: unknown;
     };
     const risks: string[] = [];
-    if (essence.version !== '3.1.0') {
+    if (essence.version !== '4.0.0') {
       risks.push(
-        `decantr.essence.json uses Decantr essence version ${essence.version ?? 'unknown'}; migrate or review before treating it as current brownfield doctrine.`,
+        `decantr.essence.json uses Decantr essence version ${essence.version ?? 'unknown'}; run decantr migrate --to v4 or review before treating it as current brownfield doctrine.`,
       );
     }
     if (essence.dna?.theme?.id === 'luminarum' && essence.structure) {
@@ -458,7 +462,9 @@ function detectStaleRisks(projectRoot: string, items: AmbientContextItem[]): str
         /complete|summary|legacy|deprecated/i.test(item.path),
     )
     .slice(0, 12)
-    .map((item) => `${item.path} may be historical; verify before treating it as current doctrine.`);
+    .map(
+      (item) => `${item.path} may be historical; verify before treating it as current doctrine.`,
+    );
   return [...pathRisks, ...detectDecantrEssenceStaleRisk(projectRoot, items)];
 }
 

@@ -14,12 +14,12 @@ import type {
   EssenceBlueprint,
   EssenceDNA,
   EssenceMeta,
-  EssenceV3,
-  EssenceV31Section,
+  EssenceSection,
+  EssenceV4,
   RouteEntry,
   SpatialTokenHints,
 } from '@decantr/essence-spec';
-import { computeSpatialTokens, isV3 } from '@decantr/essence-spec';
+import { computeSpatialTokens, isV4 } from '@decantr/essence-spec';
 import type {
   ArchetypeRole,
   ComposeEntry,
@@ -37,7 +37,12 @@ import type { DetectedProject } from './detect.js';
 import type { InitOptions } from './prompts.js';
 import type { RegistryClient } from './registry.js';
 import { generatePersonalityCSS, generateTreatmentCSS } from './treatments.js';
-import type { AdoptionMode, AssistantBridgeMode, ContentSource, WorkflowMode } from './workflow-model.js';
+import type {
+  AdoptionMode,
+  AssistantBridgeMode,
+  ContentSource,
+  WorkflowMode,
+} from './workflow-model.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -107,11 +112,11 @@ function getPlatformMeta(target: string) {
   };
 }
 
-type LegacyMetaCompat = EssenceV3['meta'] & {
+type LegacyMetaCompat = EssenceV4['meta'] & {
   blueprint?: string;
 };
 
-function getLegacyBlueprintId(meta: EssenceV3['meta']): string | undefined {
+function getLegacyBlueprintId(meta: EssenceV4['meta']): string | undefined {
   return (meta as LegacyMetaCompat).blueprint;
 }
 
@@ -276,13 +281,13 @@ export interface BlueprintOverrides {
 }
 
 export interface ComposeSectionsResult {
-  sections: EssenceV31Section[];
+  sections: EssenceSection[];
   features: string[];
   defaultShell: string;
 }
 
 /**
- * Compose archetypes into section-based grouping (v3.1 style).
+ * Compose archetypes into Essence v4 section-based grouping.
  *
  * Unlike `composeArchetypes` which flattens all pages into one array with
  * prefixed IDs, this keeps pages grouped within their archetype's section,
@@ -318,7 +323,7 @@ export function composeSections(
     };
   }
 
-  const sections: EssenceV31Section[] = [];
+  const sections: EssenceSection[] = [];
   const allFeatures: string[] = [];
   let defaultShell = 'sidebar-main';
   const pagesRemoveSet = new Set(overrides?.pages_remove ?? []);
@@ -605,7 +610,10 @@ export interface ScaffoldResult {
 }
 
 function readCliVersion(): string {
-  for (const candidate of [join(__dirname, '..', 'package.json'), join(__dirname, '..', '..', 'package.json')]) {
+  for (const candidate of [
+    join(__dirname, '..', 'package.json'),
+    join(__dirname, '..', '..', 'package.json'),
+  ]) {
     try {
       const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: string };
       if (pkg.version) return pkg.version;
@@ -634,9 +642,9 @@ export interface ThemeData {
     heading_weight?: number;
     body_weight?: number;
     mono?: string;
-    /** v2.1 B2: font stack for display type (headlines, hero). */
+    /** Font stack for display type (headlines, hero). */
     display?: string;
-    /** v2.1 B2: font stack for body text. */
+    /** Font stack for body text. */
     body?: string;
   };
   // Motion
@@ -646,11 +654,11 @@ export interface ThemeData {
     entrance?: string;
     timing?: string;
     durations?: Record<string, string>;
-    /** v2.1 B1: easings keyed by semantic intent (ease, easeOut, easeIn, spring). */
+    /** Easings keyed by semantic intent (ease, easeOut, easeIn, spring). */
     easings?: Record<string, string>;
   };
   /**
-   * v2.1 B3: Elevation scale. Each level is either a single CSS shadow value
+   * Elevation scale. Each level is either a single CSS shadow value
    * or a mode-split object { light, dark }. Overrides the token defaults.
    */
   elevation?: Record<string, string | { light?: string; dark?: string }>;
@@ -801,7 +809,9 @@ export function generateTokensCSS(
       Object.keys(palette)
         .filter((key) => !CORE_PALETTE_KEYS.has(key))
         .map((key) => [`--d-${key.replace(/[^a-zA-Z0-9-]/g, '-')}`, pickPalette(key)])
-        .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].length > 0),
+        .filter(
+          (entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1].length > 0,
+        ),
     );
 
     return {
@@ -858,7 +868,7 @@ export function generateTokensCSS(
       '--d-shadow-lg':
         tokenMode === 'light' ? '0 10px 15px rgba(0,0,0,0.1)' : '0 10px 15px rgba(0,0,0,0.4)',
 
-      // Elevation scale (v2.1 Tier B3). Formal cross-theme depth system.
+      // Formal cross-theme depth system.
       // .d-elevate[data-level="N"] reads these. Dark themes need stronger
       // alpha to register on dark backgrounds.
       '--d-elevation-0': 'none',
@@ -881,7 +891,7 @@ export function generateTokensCSS(
       '--d-danger': 'var(--d-error)',
       '--d-destructive': 'var(--d-error)',
 
-      // Motion scale (v2.1 Tier B1). Canonical durations + easings.
+      // Canonical motion durations + easings.
       // d-enter-fade, d-pulse, d-glow-hover, etc. all read these.
       // Themes can override via theme.motion.* and this picks them up
       // below. Defaults here ensure treatments work even without theme.
@@ -900,7 +910,7 @@ export function generateTokensCSS(
       '--d-easing': 'var(--d-motion-ease-out)',
       '--d-accent-glow': 'color-mix(in srgb, var(--d-accent) 24%, transparent)',
 
-      // Typography scale (v2.1 Tier B2). Canonical sizes + weights +
+      // Canonical typography sizes + weights +
       // tracking + leading. d-display, d-headline, d-title, d-prose,
       // d-caption, d-eyebrow read these. Themes override via
       // theme.typography.* below.
@@ -951,7 +961,7 @@ export function generateTokensCSS(
     tokens['--d-easing'] = themeData.motion.timing;
   }
 
-  // v2.1 Tier B — theme-provided motion / typography / elevation extensions.
+  // Theme-provided motion / typography / elevation extensions.
   // Themes can override the token defaults emitted above by declaring these
   // in their JSON. All optional; missing fields keep the defaults.
   if (themeData?.typography?.display) {
@@ -1121,7 +1131,7 @@ export function generateDecoratorsCSS(themeData: ThemeData | undefined, themeNam
  * Generate a global.css with reset, body styles, and utility classes.
  * Uses personality array to extract font family hints.
  */
-export function generateGlobalCSS(personality: string[], essence?: EssenceV3): string {
+export function generateGlobalCSS(personality: string[], essence?: EssenceV4): string {
   const personalityText = personality.join(' ').toLowerCase();
   let fontBody = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
   if (personalityText.includes('inter')) {
@@ -1344,16 +1354,16 @@ function resolvePatternAlias(
 }
 
 /**
- * Build a v3 essence from options, producing DNA/Blueprint/Meta structure.
+ * Build an Essence v4 document from options, producing DNA/Blueprint/Meta structure.
  */
-export function buildEssenceV3(
+export function buildEssenceV4(
   options: InitOptions,
   archetypeData?: ArchetypeData,
   themeHints?: ThemeData,
-): EssenceV3 {
+): EssenceV4 {
   // Resolve structure from archetype or defaults
   const isBrownfieldAttach = options.workflowMode === 'brownfield-attach';
-  let pages: EssenceBlueprint['pages'] = isBrownfieldAttach
+  let pages: BlueprintPage[] = isBrownfieldAttach
     ? [{ id: 'observed-app', layout: ['existing-surface'] }]
     : [{ id: 'home', layout: ['hero'] }];
   let features: string[] = options.features;
@@ -1421,13 +1431,11 @@ export function buildEssenceV3(
     },
     typography: {
       // Coerce: 5 historical themes stored typography.scale as a numeric
-      // ratio (e.g., 1.15) instead of a string enum, which fails the v3
+      // ratio (e.g., 1.15) instead of a string enum, which fails the v4
       // essence schema (`/dna/typography/scale: must be string`). Treat
       // any non-string as missing and fall back to the canonical 'modular'.
       scale:
-        typeof themeHints?.typography?.scale === 'string'
-          ? themeHints.typography.scale
-          : 'modular',
+        typeof themeHints?.typography?.scale === 'string' ? themeHints.typography.scale : 'modular',
       heading_weight:
         typeof themeHints?.typography?.heading_weight === 'number'
           ? themeHints.typography.heading_weight
@@ -1463,10 +1471,35 @@ export function buildEssenceV3(
     personality: options.personality,
   };
 
+  const sectionId = options.archetype || archetypeData?.id || 'custom';
+  const sectionPages = pages.map((page, index) => ({
+    ...page,
+    route: page.route ?? (page.id === 'home' || index === 0 ? '/' : `/${page.id}`),
+  }));
+  const section: EssenceSection = {
+    id: sectionId,
+    role: archetypeData?.role || 'primary',
+    shell: defaultShell,
+    features,
+    description: archetypeData?.description || `${sectionId} primary section`,
+    pages: sectionPages,
+    ...(archetypeData?.navigation_items?.length
+      ? { navigation_items: archetypeData.navigation_items }
+      : {}),
+    ...(archetypeData?.directives?.length ? { directives: archetypeData.directives } : {}),
+  };
+  const routes: Record<string, RouteEntry> = {};
+  for (const page of sectionPages) {
+    if (page.route) {
+      routes[page.route] = { section: section.id, page: page.id };
+    }
+  }
+
   const blueprint: EssenceBlueprint = {
     shell: defaultShell,
-    pages,
+    sections: [section],
     features,
+    routes,
   };
 
   const meta: EssenceMeta = {
@@ -1477,7 +1510,7 @@ export function buildEssenceV3(
   };
 
   return {
-    version: '3.0.0',
+    version: '4.0.0',
     dna,
     blueprint,
     meta,
@@ -1485,8 +1518,8 @@ export function buildEssenceV3(
 }
 
 /**
- * CSS methodology section for DECANTR.md (extracted from the v3.0 template).
- * This content is passed as {{CSS_APPROACH}} in the v3.1 simplified template.
+ * CSS methodology section for DECANTR.md.
+ * This content is passed as {{CSS_APPROACH}} in the Essence v4 template.
  */
 const CSS_APPROACH_CONTENT = `## CSS Implementation
 
@@ -2219,12 +2252,12 @@ function getCssApproachContent(adoptionMode?: AdoptionMode): string {
 }
 
 /**
- * Generate DECANTR.md for v3.1 essences.
+ * Generate DECANTR.md for Essence v4 documents.
  *
  * Prepends a project brief section with key design identity,
  * then appends the methodology primer from the template.
  */
-function generateDecantrMdV31(params: {
+function generateDecantrMdV4(params: {
   guardMode: string;
   cssApproach: string;
   workflowMode?: WorkflowMode;
@@ -2281,9 +2314,7 @@ function generateDecantrMdV31(params: {
   briefLines.push(`- **Blueprint:** ${params.blueprintId || 'custom'}`);
   const themeDesc = `${params.themeName || 'default'} (${params.themeMode || 'dark'} mode${params.themeShape ? `, ${params.themeShape} shape` : ''})`;
   briefLines.push(`- **Theme:** ${themeDesc}`);
-  briefLines.push(
-    `- **Workflow:** ${params.workflowMode || 'greenfield-scaffold'}`,
-  );
+  briefLines.push(`- **Workflow:** ${params.workflowMode || 'greenfield-scaffold'}`);
   briefLines.push(`- **Adoption mode:** ${params.adoptionMode || 'decantr-css'}`);
   if (params.personality && params.personality.length > 0) {
     briefLines.push(`- **Personality:** ${params.personality.join('. ')}`);
@@ -2459,18 +2490,13 @@ function buildFlagsString(options: InitOptions): string {
 }
 
 /**
- * Generate task context from a V3 essence (used by refreshDerivedFiles).
- * Extracts the same template variables as the v2 version.
+ * Generate task context from an Essence v4 document (used by refreshDerivedFiles).
  */
-function generateTaskContextV3(templateName: string, essence: EssenceV3): string {
+function generateTaskContextV4(templateName: string, essence: EssenceV4): string {
   const template = loadTemplate(templateName);
 
-  const sections =
-    essence.blueprint.sections && essence.blueprint.sections.length > 0
-      ? essence.blueprint.sections
-      : [];
-  const pages =
-    sections.length > 0 ? sections.flatMap((s) => s.pages) : essence.blueprint.pages || [];
+  const sections = essence.blueprint.sections;
+  const pages = sections.flatMap((s) => s.pages);
   const defaultShell = sections[0]?.shell || essence.blueprint.shell || 'sidebar-main';
   const layout = pages[0]?.layout?.map(serializeLayoutItem).join(', ') || 'none';
 
@@ -2529,12 +2555,12 @@ function renderPackReferenceList(
 }
 
 function generateScaffoldTaskContext(
-  essence: EssenceV3,
+  essence: EssenceV4,
   scaffoldPack: ScaffoldExecutionPack | null,
   manifest: PackManifest | null,
 ): string {
   if (!scaffoldPack) {
-    return generateTaskContextV3('task-scaffold.md.template', essence);
+    return generateTaskContextV4('task-scaffold.md.template', essence);
   }
 
   const themeShape = scaffoldPack.data.theme.shape || 'default';
@@ -2607,12 +2633,12 @@ Post-scaffold enforcement mode: **${essence.meta.guard.mode.toUpperCase()}**.
 }
 
 function generateAddPageTaskContext(
-  essence: EssenceV3,
+  essence: EssenceV4,
   scaffoldPack: ScaffoldExecutionPack | null,
   manifest: PackManifest | null,
 ): string {
   if (!scaffoldPack) {
-    return generateTaskContextV3('task-add-page.md.template', essence);
+    return generateTaskContextV4('task-add-page.md.template', essence);
   }
 
   const routePlan =
@@ -2680,12 +2706,12 @@ ${renderPackReferenceList('Page Packs', pageRefs, 'No page packs were generated 
 }
 
 function generateModifyTaskContext(
-  essence: EssenceV3,
+  essence: EssenceV4,
   scaffoldPack: ScaffoldExecutionPack | null,
   manifest: PackManifest | null,
 ): string {
   if (!scaffoldPack) {
-    return generateTaskContextV3('task-modify.md.template', essence);
+    return generateTaskContextV4('task-modify.md.template', essence);
   }
 
   const routePlan =
@@ -2743,33 +2769,23 @@ ${successChecks}
 }
 
 /**
- * Generate essence summary markdown from a V3 essence.
+ * Generate essence summary markdown from an Essence v4 document.
  * Used by refreshDerivedFiles to keep the summary in sync.
  */
-function generateEssenceSummaryV3(essence: EssenceV3): string {
+function generateEssenceSummaryV4(essence: EssenceV4): string {
   const template = loadTemplate('essence-summary.md.template');
 
   const blueprint = essence.blueprint;
-  const sections = blueprint.sections || [];
-  const flatPages = blueprint.pages || [];
+  const sections = blueprint.sections;
 
   // Build pages table
   let pagesTable: string;
-  if (sections.length > 0) {
-    const rows = sections.flatMap((s) =>
-      s.pages.map(
-        (p) =>
-          `| ${p.id} | ${s.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`,
-      ),
-    );
-    pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
-  } else {
-    const shell = (blueprint.shell ?? 'sidebar-main') as string;
-    const rows = flatPages.map(
-      (p) => `| ${p.id} | ${shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`,
-    );
-    pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
-  }
+  const rows = sections.flatMap((s) =>
+    s.pages.map(
+      (p) => `| ${p.id} | ${s.shell} | ${p.layout.map(serializeLayoutItem).join(', ') || 'none'} |`,
+    ),
+  );
+  pagesTable = `| Page | Shell | Layout |\n|------|-------|--------|\n${rows.join('\n')}`;
 
   // Build features list
   const features = blueprint.features || [];
@@ -2840,8 +2856,7 @@ export async function scaffoldProject(
   patternSpecs?: Record<string, PatternSpecSummary>,
   blueprintData?: RegistryBlueprint,
 ): Promise<ScaffoldResult> {
-  // Build v3 essence (v2 build removed — Spec 5.9)
-  const essenceV3 = buildEssenceV3(options, archetypeData, themeData);
+  const essenceV4 = buildEssenceV4(options, archetypeData, themeData);
 
   // Create directories
   const decantrDir = join(projectRoot, '.decantr');
@@ -2851,9 +2866,9 @@ export async function scaffoldProject(
   mkdirSync(contextDir, { recursive: true });
   mkdirSync(cacheDir, { recursive: true });
 
-  // Write v3 essence file
+  // Write Essence v4 file
   const essencePath = join(projectRoot, 'decantr.essence.json');
-  writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
+  writeFileSync(essencePath, JSON.stringify(essenceV4, null, 2) + '\n');
 
   // Write project.json
   const projectJsonPath = join(decantrDir, 'project.json');
@@ -2869,37 +2884,35 @@ export async function scaffoldProject(
   // scaffold task can incorporate compiled execution packs after blueprint upgrades.
   const contextFiles: string[] = [];
 
-  // V3.1 upgrade: if composedSections is provided, upgrade the essence
   if (composedSections) {
-    essenceV3.version = '3.1.0';
-    essenceV3.blueprint = {
+    essenceV4.version = '4.0.0';
+    essenceV4.blueprint = {
       sections: composedSections.sections,
       features: composedSections.features,
       routes: routeMap || {},
     };
     if (blueprintData?.personality?.length) {
-      essenceV3.dna.personality =
+      essenceV4.dna.personality =
         typeof blueprintData.personality === 'string'
           ? [blueprintData.personality]
           : blueprintData.personality;
     }
     if (blueprintData?.design_constraints) {
-      essenceV3.dna.constraints = blueprintData.design_constraints;
+      essenceV4.dna.constraints = blueprintData.design_constraints;
     }
     if (blueprintData?.seo_hints) {
-      essenceV3.meta.seo = blueprintData.seo_hints;
+      essenceV4.meta.seo = blueprintData.seo_hints;
     }
     if (blueprintData?.navigation) {
-      essenceV3.meta.navigation = blueprintData.navigation;
+      essenceV4.meta.navigation = blueprintData.navigation;
     }
 
-    // Re-write the essence file with V3.1 data
-    writeFileSync(essencePath, JSON.stringify(essenceV3, null, 2) + '\n');
+    writeFileSync(essencePath, JSON.stringify(essenceV4, null, 2) + '\n');
   }
 
   // Delegate derived file generation to refreshDerivedFiles
   // Pass patternSpecs through to avoid double-fetching from registry (Spec 1.8)
-  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV3, registry, themeData, {
+  const refreshResult = await refreshDerivedFiles(projectRoot, essenceV4, registry, themeData, {
     isInitialScaffold: true,
     patternSpecs,
     workflowMode: options.workflowMode,
@@ -2945,9 +2958,9 @@ export function scaffoldMinimal(
     mkdirSync(join(customDir, type), { recursive: true });
   }
 
-  // Create minimal v3 decantr.essence.json
-  const essence: EssenceV3 = {
-    version: '3.0.0',
+  // Create minimal Essence v4 decantr.essence.json
+  const essence: EssenceV4 = {
+    version: '4.0.0',
     dna: {
       theme: {
         id: 'default',
@@ -2992,8 +3005,18 @@ export function scaffoldMinimal(
     },
     blueprint: {
       shell: 'sidebar-main',
-      pages: [{ id: 'home', layout: ['hero'] }],
+      sections: [
+        {
+          id: 'custom',
+          role: 'primary',
+          shell: 'sidebar-main',
+          features: [],
+          description: 'custom primary section',
+          pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+        },
+      ],
       features: [],
+      routes: { '/': { section: 'custom', page: 'home' } },
     },
     meta: {
       archetype: 'custom',
@@ -3060,7 +3083,7 @@ export function scaffoldMinimal(
 
 ## Two-Layer Model
 
-This project uses the v3 Essence format with two layers:
+This project uses the Essence v4 format with two layers:
 
 ### DNA (Immutable Design Axioms)
 DNA defines the foundational design rules that must never be violated. DNA violations are **errors**.
@@ -3104,7 +3127,7 @@ When available, use these tools:
 - \`decantr status\` — Project health and DNA/Blueprint overview
 - \`decantr sync\` — Sync registry content
 - \`decantr audit\` — Audit project for issues
-- \`decantr migrate\` — Migrate v2 essence to v3
+- \`decantr migrate --to v4\` — Migrate older essence files to v4
 - \`decantr check\` — Detect drift issues
 - \`decantr sync-drift\` — Review and resolve drift entries
 - \`decantr validate\` — Validate essence file
@@ -3196,10 +3219,7 @@ export function writeExecutionPackBundleArtifacts(
     const pageBaseName = manifestPage?.markdown?.endsWith('.md')
       ? manifestPage.markdown.slice(0, -'.md'.length)
       : `page-${pagePack.data.pageId}-pack`;
-    const pagePackPath = writeExecutionPackArtifacts(
-      join(contextDir, pageBaseName),
-      pagePack,
-    );
+    const pagePackPath = writeExecutionPackArtifacts(join(contextDir, pageBaseName), pagePack);
     outputPaths.push(pagePackPath);
   }
 
@@ -3232,7 +3252,7 @@ interface GeneratedPackContexts {
 async function generatePackContexts(
   projectRoot: string,
   contextDir: string,
-  essence: EssenceV3,
+  essence: EssenceV4,
 ): Promise<GeneratedPackContexts> {
   const emptyResult: GeneratedPackContexts = {
     paths: [],
@@ -3363,11 +3383,11 @@ async function resolvePatternSpec(
  * blueprint.sections, etc.) and fetches theme/pattern data
  * from the RegistryClient.
  *
- * Works with both V3.0 (flat pages, no sections) and V3.1 (sectioned).
+ * Works with the active Essence v4 sectioned contract.
  */
 export async function refreshDerivedFiles(
   projectRoot: string,
-  essence: EssenceV3,
+  essence: EssenceV4,
   registry: RegistryClient,
   prefetchedThemeData?: ThemeData,
   options?: {
@@ -3417,10 +3437,10 @@ export async function refreshDerivedFiles(
     }
   }
 
-  const effectiveWorkflowMode = options?.workflowMode || storedWorkflowMode || 'greenfield-scaffold';
+  const effectiveWorkflowMode =
+    options?.workflowMode || storedWorkflowMode || 'greenfield-scaffold';
   const effectiveAdoptionMode = options?.adoptionMode || storedAdoptionMode || 'decantr-css';
-  const effectiveAnalysisArtifacts =
-    options?.analysisArtifacts ?? storedAnalysisArtifacts ?? false;
+  const effectiveAnalysisArtifacts = options?.analysisArtifacts ?? storedAnalysisArtifacts ?? false;
 
   // If voice is missing but blueprintId is available, fetch from blueprint
   if (!storedVoice && storedBlueprintId) {
@@ -3466,8 +3486,7 @@ export async function refreshDerivedFiles(
     }
 
   // Fallback: direct API fetch if registry client returned incomplete data
-  const registryIsOffline =
-    typeof registry.isOffline === 'function' ? registry.isOffline() : false;
+  const registryIsOffline = typeof registry.isOffline === 'function' ? registry.isOffline() : false;
   if (shouldResolveThemeData && !themeData?.seed?.primary && !registryIsOffline) {
     try {
       const apiUrl = registry.getApiUrl();
@@ -3573,7 +3592,10 @@ export async function refreshDerivedFiles(
     // data-mode on <html> and nothing responds.
     const features = essence.blueprint?.features ?? [];
     const hasThemeToggle = features.includes('theme-toggle') || features.includes('theme_toggle');
-    writeFileSync(tokensPath, generateTokensCSS(themeData, mode, spatialTokens, { hasThemeToggle }));
+    writeFileSync(
+      tokensPath,
+      generateTokensCSS(themeData, mode, spatialTokens, { hasThemeToggle }),
+    );
   }
 
   const treatmentsPath = join(stylesDir, 'treatments.css');
@@ -3639,7 +3661,7 @@ export async function refreshDerivedFiles(
   const decantrMdPath = join(projectRoot, 'DECANTR.md');
   writeFileSync(
     decantrMdPath,
-    generateDecantrMdV31({
+    generateDecantrMdV4({
       guardMode,
       cssApproach: getCssApproachContent(effectiveAdoptionMode),
       workflowMode: effectiveWorkflowMode,
@@ -3662,16 +3684,7 @@ export async function refreshDerivedFiles(
     }),
   );
 
-  // ── Generate essence-summary.md only for V3.0 flat projects ──
-  // For V3.1 (sectioned), scaffold.md covers the same overview — skip to save tokens.
-  const hasSections = essence.blueprint.sections && essence.blueprint.sections.length > 0;
   const contextFiles: string[] = [];
-
-  if (!hasSections) {
-    const summaryPath = join(contextDir, 'essence-summary.md');
-    writeFileSync(summaryPath, generateEssenceSummaryV3(essence));
-    contextFiles.push(summaryPath);
-  }
 
   const packContexts = await generatePackContexts(projectRoot, contextDir, essence);
 
@@ -3701,251 +3714,133 @@ export async function refreshDerivedFiles(
 
   const blueprint = essence.blueprint;
 
-  // V3.1: has sections array
-  const sections: EssenceV31Section[] =
-    blueprint.sections && blueprint.sections.length > 0 ? blueprint.sections : [];
+  const sections: EssenceSection[] = blueprint.sections;
+  if (sections.length === 0) {
+    throw new Error(
+      'Essence v4 requires blueprint.sections. Run `decantr migrate --to v4` for older essence files.',
+    );
+  }
 
-  if (sections.length > 0) {
-    // ── Resolve "inherit" shell to actual primary shell ──
-    const primarySectionShell = sections.find((s) => s.role === 'primary')?.shell || 'sidebar-main';
-    for (const section of sections) {
-      if (section.shell === 'inherit') {
-        section.shell = primarySectionShell;
-      }
+  // ── Resolve "inherit" shell to actual primary shell ──
+  const primarySectionShell = sections.find((s) => s.role === 'primary')?.shell || 'sidebar-main';
+  for (const section of sections) {
+    if (section.shell === 'inherit') {
+      section.shell = primarySectionShell;
     }
+  }
 
-    // ── Resolve pattern specs for all patterns in all sections ──
-    // Uses prefetched specs from cmdInit when available (Spec 1.8),
-    // enriching with extended fields from registry as needed.
-    const prefetchedSpecs = options?.patternSpecs;
-    const patternSpecs: Record<string, PatternSpecSummary> = {};
-    const seenPatterns = new Set<string>();
+  // ── Resolve pattern specs for all patterns in all sections ──
+  // Uses prefetched specs from cmdInit when available (Spec 1.8),
+  // enriching with extended fields from registry as needed.
+  const prefetchedSpecs = options?.patternSpecs;
+  const patternSpecs: Record<string, PatternSpecSummary> = {};
+  const seenPatterns = new Set<string>();
 
-    for (const section of sections) {
-      for (const page of section.pages) {
-        for (const item of page.layout) {
-          const names = extractPatternNames(item);
-          for (const name of names) {
-            if (!seenPatterns.has(name)) {
-              seenPatterns.add(name);
-              const spec = await resolvePatternSpec(name, registry, prefetchedSpecs?.[name], true);
-              if (spec) patternSpecs[name] = spec;
-            }
-          }
-        }
-      }
-    }
-
-    // ── Derive topology ──
-    const zoneInputs: ZoneInput[] = sections.map((s) => ({
-      archetypeId: s.id,
-      role: s.role,
-      shell: s.shell as string,
-      features: s.features,
-      description: s.description,
-    }));
-
-    const zones = deriveZones(zoneInputs);
-    const transitions = deriveTransitions(zones);
-
-    const hasPublic = zones.some((z) => z.role === 'public');
-    const hasPrimary = zones.some((z) => z.role === 'primary');
-
-    const topologyData: TopologyData = {
-      intent: sections.map((s) => s.id).join(' + '),
-      zones,
-      transitions,
-      entryPoints: {
-        anonymous: hasPublic ? 'public zone' : 'gateway',
-        authenticated: hasPrimary ? 'primary zone' : 'first section',
-      },
-    };
-
-    const topologyMarkdown = generateTopologySection(topologyData, personality);
-
-    // ── Read generated tokens.css for inlining in section contexts ──
-    const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
-
-    // ── Build decorator list from theme data or existing CSS ──
-    const decoratorList: Array<{ name: string; description: string }> = [];
-    if (themeData?.decorators) {
-      for (const [name, desc] of Object.entries(themeData.decorators)) {
-        decoratorList.push({ name, description: desc as string });
-      }
-    }
-    // Decorator data comes from themeData.decorators; no file fallback needed
-
-    // ── Fetch shell specs for structural info ──
-    const shellInfoCache: Record<string, ShellInfo> = {};
-    const seenShells = new Set<string>();
-    for (const section of sections) {
-      const shellId = section.shell as string;
-      if (!seenShells.has(shellId)) {
-        seenShells.add(shellId);
-        try {
-          const shellResult = await registry.fetchShell(shellId);
-          if (shellResult?.data) {
-            shellInfoCache[shellId] = mapRegistryShellToShellInfo(shellResult.data);
-          }
-        } catch {
-          /* continue without shell info */
-        }
-      }
-    }
-
-    // ── Generate section context files ──
-    for (const section of sections) {
-      const zoneLabel =
-        section.role === 'primary' || section.role === 'auxiliary'
-          ? 'App'
-          : section.role === 'gateway'
-            ? 'Gateway'
-            : 'Public';
-      let zoneContext = `**Zone:** ${zoneLabel} (${section.role}) — ${section.shell} shell`;
-      if (section.role === 'gateway') {
-        zoneContext += '\nAuth success → enters App zone. Sign out returns here.';
-      } else if (section.role === 'primary') {
-        zoneContext += '\nAuthenticated users land here. Sign out → Gateway (/login).';
-      } else if (section.role === 'public') {
-        zoneContext += '\nAnonymous visitors. CTAs lead to Gateway (/login, /register).';
-      } else if (section.role === 'auxiliary') {
-        zoneContext += '\nSupporting section within App zone. Shares navigation with primary.';
-      }
-
-      // Collect pattern specs for this section
-      const sectionPatterns: Record<string, PatternSpecSummary> = {};
-      for (const page of section.pages) {
-        for (const item of page.layout) {
-          const names = extractPatternNames(item);
-          for (const name of names) {
-            if (patternSpecs[name]) {
-              sectionPatterns[name] = patternSpecs[name];
-            }
-          }
-        }
-      }
-
-      const sectionSpatialHints = themeData?.spatial
-        ? {
-            section_padding: themeData.spatial.section_padding ?? undefined,
-            density_bias:
-              typeof themeData.spatial.density_bias === 'number'
-                ? themeData.spatial.density_bias
-                : undefined,
-            content_gap_shift: themeData.spatial.content_gap_shift,
-            label_content_gap: themeData.spatial.label_content_gap ?? undefined,
-          }
-        : undefined;
-
-      const contextContent = generateSectionContext({
-        section,
-        themeTokens: themeTokensCss,
-        decorators: decoratorList,
-        guardConfig,
-        personality,
-        themeName,
-        zoneContext,
-        patternSpecs: sectionPatterns,
-        themeHints: themeData
-          ? {
-              preferred: themeData.pattern_preferences?.prefer,
-              compositions: themeData.compositions
-                ? Object.entries(themeData.compositions)
-                    .map(([k, v]: [string, any]) => `**${k}:** ${v.description || v}`)
-                    .join('\n')
-                : undefined,
-              spatialHints: themeData.spatial
-                ? `Density bias: ${themeData.spatial.density_bias || 'none'}. Section padding: ${themeData.spatial.section_padding || 'default'}. Card wrapping: ${themeData.spatial.card_wrapping || 'default'}.`
-                : undefined,
-            }
-          : undefined,
-        constraints: essence.dna.constraints as Record<string, unknown> | undefined,
-        shellInfo: shellInfoCache[section.shell as string],
-        themeData,
-        themeMode: mode,
-        voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
-        spatialHints: sectionSpatialHints,
-      });
-
-      const sectionContextPath = join(contextDir, `section-${section.id}.md`);
-      writeFileSync(sectionContextPath, contextContent);
-      contextFiles.push(sectionContextPath);
-    }
-
-    // ── Generate scaffold.md ──
-    const routes = blueprint.routes || {};
-    const scaffoldContent = generateScaffoldContext({
-      appName: essence.meta.archetype || 'Application',
-      blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || '',
-      themeName,
-      personality,
-      topologyMarkdown,
-      sections,
-      routes,
-      constraints: essence.dna.constraints as Record<string, unknown> | undefined,
-      seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
-      navigation: essence.meta.navigation as
-        | { hotkeys?: unknown[]; command_palette?: boolean }
-        | undefined,
-      voice: storedVoice,
-    });
-
-    const scaffoldMdPath = join(contextDir, 'scaffold.md');
-    writeFileSync(scaffoldMdPath, scaffoldContent);
-    contextFiles.push(scaffoldMdPath);
-  } else {
-    // ── V3.0 flat pages: generate a single section context ──
-    const pages = blueprint.pages || [{ id: 'home', layout: ['hero'] }];
-    const shell = (blueprint.shell ?? 'sidebar-main') as string;
-
-    // Build a synthetic section from the flat pages
-    const syntheticSection: EssenceV31Section = {
-      id: essence.meta.archetype || 'default',
-      role: 'primary',
-      shell,
-      features: blueprint.features || [],
-      description: `${essence.meta.archetype || 'Application'} section`,
-      pages,
-    };
-
-    // Resolve pattern specs (uses prefetched when available — Spec 1.8)
-    const prefetchedSpecs = options?.patternSpecs;
-    const patternSpecs: Record<string, PatternSpecSummary> = {};
-    const seenPatterns = new Set<string>();
-    for (const page of pages) {
+  for (const section of sections) {
+    for (const page of section.pages) {
       for (const item of page.layout) {
         const names = extractPatternNames(item);
         for (const name of names) {
           if (!seenPatterns.has(name)) {
             seenPatterns.add(name);
-            const spec = await resolvePatternSpec(name, registry, prefetchedSpecs?.[name], false);
+            const spec = await resolvePatternSpec(name, registry, prefetchedSpecs?.[name], true);
             if (spec) patternSpecs[name] = spec;
           }
         }
       }
     }
+  }
 
-    const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
-    const decoratorList: Array<{ name: string; description: string }> = [];
-    if (themeData?.decorators) {
-      for (const [name, desc] of Object.entries(themeData.decorators)) {
-        decoratorList.push({ name, description: desc as string });
+  // ── Derive topology ──
+  const zoneInputs: ZoneInput[] = sections.map((s) => ({
+    archetypeId: s.id,
+    role: s.role,
+    shell: s.shell as string,
+    features: s.features,
+    description: s.description,
+  }));
+
+  const zones = deriveZones(zoneInputs);
+  const transitions = deriveTransitions(zones);
+
+  const hasPublic = zones.some((z) => z.role === 'public');
+  const hasPrimary = zones.some((z) => z.role === 'primary');
+
+  const topologyData: TopologyData = {
+    intent: sections.map((s) => s.id).join(' + '),
+    zones,
+    transitions,
+    entryPoints: {
+      anonymous: hasPublic ? 'public zone' : 'gateway',
+      authenticated: hasPrimary ? 'primary zone' : 'first section',
+    },
+  };
+
+  const topologyMarkdown = generateTopologySection(topologyData, personality);
+
+  // ── Read generated tokens.css for inlining in section contexts ──
+  const themeTokensCss = existsSync(tokensPath) ? readFileSync(tokensPath, 'utf-8') : '';
+
+  // ── Build decorator list from theme data or existing CSS ──
+  const decoratorList: Array<{ name: string; description: string }> = [];
+  if (themeData?.decorators) {
+    for (const [name, desc] of Object.entries(themeData.decorators)) {
+      decoratorList.push({ name, description: desc as string });
+    }
+  }
+  // Decorator data comes from themeData.decorators; no file fallback needed
+
+  // ── Fetch shell specs for structural info ──
+  const shellInfoCache: Record<string, ShellInfo> = {};
+  const seenShells = new Set<string>();
+  for (const section of sections) {
+    const shellId = section.shell as string;
+    if (!seenShells.has(shellId)) {
+      seenShells.add(shellId);
+      try {
+        const shellResult = await registry.fetchShell(shellId);
+        if (shellResult?.data) {
+          shellInfoCache[shellId] = mapRegistryShellToShellInfo(shellResult.data);
+        }
+      } catch {
+        /* continue without shell info */
       }
     }
-    // Decorator data comes from themeData.decorators; no file fallback needed
+  }
 
-    // Fetch shell info for V3.0 flat pages
-    let v30ShellInfo: ShellInfo | undefined;
-    try {
-      const shellResult = await registry.fetchShell(shell);
-      if (shellResult?.data) {
-        v30ShellInfo = mapRegistryShellToShellInfo(shellResult.data);
-      }
-    } catch {
-      /* continue without shell info */
+  // ── Generate section context files ──
+  for (const section of sections) {
+    const zoneLabel =
+      section.role === 'primary' || section.role === 'auxiliary'
+        ? 'App'
+        : section.role === 'gateway'
+          ? 'Gateway'
+          : 'Public';
+    let zoneContext = `**Zone:** ${zoneLabel} (${section.role}) — ${section.shell} shell`;
+    if (section.role === 'gateway') {
+      zoneContext += '\nAuth success → enters App zone. Sign out returns here.';
+    } else if (section.role === 'primary') {
+      zoneContext += '\nAuthenticated users land here. Sign out → Gateway (/login).';
+    } else if (section.role === 'public') {
+      zoneContext += '\nAnonymous visitors. CTAs lead to Gateway (/login, /register).';
+    } else if (section.role === 'auxiliary') {
+      zoneContext += '\nSupporting section within App zone. Shares navigation with primary.';
     }
 
-    const v30SpatialHints = themeData?.spatial
+    // Collect pattern specs for this section
+    const sectionPatterns: Record<string, PatternSpecSummary> = {};
+    for (const page of section.pages) {
+      for (const item of page.layout) {
+        const names = extractPatternNames(item);
+        for (const name of names) {
+          if (patternSpecs[name]) {
+            sectionPatterns[name] = patternSpecs[name];
+          }
+        }
+      }
+    }
+
+    const sectionSpatialHints = themeData?.spatial
       ? {
           section_padding: themeData.spatial.section_padding ?? undefined,
           density_bias:
@@ -3958,14 +3853,14 @@ export async function refreshDerivedFiles(
       : undefined;
 
     const contextContent = generateSectionContext({
-      section: syntheticSection,
+      section,
       themeTokens: themeTokensCss,
       decorators: decoratorList,
       guardConfig,
       personality,
       themeName,
-      zoneContext: `This is the primary section (${shell} shell).`,
-      patternSpecs,
+      zoneContext,
+      patternSpecs: sectionPatterns,
       themeHints: themeData
         ? {
             preferred: themeData.pattern_preferences?.prefer,
@@ -3980,18 +3875,39 @@ export async function refreshDerivedFiles(
           }
         : undefined,
       constraints: essence.dna.constraints as Record<string, unknown> | undefined,
-      shellInfo: v30ShellInfo,
+      shellInfo: shellInfoCache[section.shell as string],
       themeData,
       themeMode: mode,
       voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
-      spatialHints: v30SpatialHints,
+      spatialHints: sectionSpatialHints,
     });
 
-    const sectionContextPath = join(contextDir, `section-${syntheticSection.id}.md`);
+    const sectionContextPath = join(contextDir, `section-${section.id}.md`);
     writeFileSync(sectionContextPath, contextContent);
     contextFiles.push(sectionContextPath);
   }
 
+  // ── Generate scaffold.md ──
+  const routes = blueprint.routes || {};
+  const scaffoldContent = generateScaffoldContext({
+    appName: essence.meta.archetype || 'Application',
+    blueprintId: storedBlueprintId || getLegacyBlueprintId(essence.meta) || '',
+    themeName,
+    personality,
+    topologyMarkdown,
+    sections,
+    routes,
+    constraints: essence.dna.constraints as Record<string, unknown> | undefined,
+    seo: essence.meta.seo as { schema_org?: string[]; meta_priorities?: string[] } | undefined,
+    navigation: essence.meta.navigation as
+      | { hotkeys?: unknown[]; command_palette?: boolean }
+      | undefined,
+    voice: storedVoice,
+  });
+
+  const scaffoldMdPath = join(contextDir, 'scaffold.md');
+  writeFileSync(scaffoldMdPath, scaffoldContent);
+  contextFiles.push(scaffoldMdPath);
   if (packContexts.paths.length > 0) {
     contextFiles.push(...packContexts.paths);
   }
@@ -4237,7 +4153,7 @@ export function mapRegistryShellToShellInfo(shell: RegistryShell): ShellInfo {
 }
 
 export interface SectionContextInput {
-  section: EssenceV31Section;
+  section: EssenceSection;
   themeTokens: string;
   decorators: Array<{ name: string; description: string }>;
   guardConfig: { mode: string; dna_enforcement: string; blueprint_enforcement: string };
@@ -4260,7 +4176,7 @@ export interface ScaffoldContextInput {
   themeName: string;
   personality: string[];
   topologyMarkdown: string;
-  sections: EssenceV31Section[];
+  sections: EssenceSection[];
   routes: Record<string, RouteEntry>;
   constraints?: Record<string, unknown>;
   seo?: { schema_org?: string[]; meta_priorities?: string[] };
@@ -4419,9 +4335,7 @@ function generateQuickStart(input: SectionContextInput): string[] {
   if (pLower.includes('neon') || pLower.includes('glow')) personalityUtils.push('neon-glow');
   if (pLower.includes('mono') || pLower.includes('monospace')) personalityUtils.push('mono-data');
   if (personalityUtils.length > 0) {
-    lines.push(
-      `**Personality utilities:** ${personalityUtils.map((c) => `\`.${c}\``).join(', ')}`,
-    );
+    lines.push(`**Personality utilities:** ${personalityUtils.map((c) => `\`.${c}\``).join(', ')}`);
   }
 
   // Density level

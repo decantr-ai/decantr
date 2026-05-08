@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
-import { buildGuardRegistryContext } from '../guard-context.js';
+import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import { scanBrownfieldIssues } from '../brownfield-check.js';
-// v2.1 C5 wiring — scan source for missing interaction implementations.
+import { buildGuardRegistryContext } from '../guard-context.js';
+// V4 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from '../lib/scan-interactions.js';
 import { collectMetrics, isOptedIn, optIn, sendGuardMetrics } from '../telemetry.js';
 
@@ -64,6 +64,7 @@ export function collectCheckIssues(
         message: err,
       });
     }
+    return { essence, issues, missingEssence: false };
   }
 
   let interactionIssues: string[] = [];
@@ -93,14 +94,14 @@ export function collectCheckIssues(
 
   if (options.brownfield) {
     try {
-      if (isV3(essence)) {
+      if (isV4(essence)) {
         const brownfieldIssues = scanBrownfieldIssues(projectRoot, essence);
         issues.push(...brownfieldIssues);
       } else {
         issues.push({
           type: 'warning',
           rule: 'brownfield-check',
-          message: 'Brownfield checks require a v3 Decantr essence.',
+          message: 'Brownfield checks require an Essence v4.0.0 Decantr contract.',
         });
       }
     } catch (e) {
@@ -150,7 +151,7 @@ export async function cmdHeal(
 
   console.log(`\n${YELLOW}Manual fixes required. Review the issues above.${RESET}`);
 
-  // v2.1 C5: when any issue is severity='error', exit non-zero so CI gates
+  // V4 C5: when any issue is severity='error', exit non-zero so CI gates
   // and `npm run check` script wrappers see the failure. Warnings keep
   // exit code 0 (informational).
   const hasError = issues.some((i) => i.type === 'error');

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceV3 } from '@decantr/essence-spec';
-import { isV3 } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
@@ -32,6 +32,12 @@ export async function cmdUpgrade(
   }
 
   const essence = JSON.parse(readFileSync(essencePath, 'utf-8'));
+  if (!isV4(essence)) {
+    console.error('Active workflows require Essence v4.0.0. Run `decantr migrate --to v4` first.');
+    process.exitCode = 1;
+    return;
+  }
+
   const client = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
     projectRoot,
@@ -41,14 +47,13 @@ export async function cmdUpgrade(
 
   const upgrades: Upgrade[] = [];
 
-  // Check theme using the normalized theme id.
-  const themeId = essence.dna?.theme?.id || essence.theme?.id;
+  const themeId = essence.dna.theme.id;
   if (themeId) {
     const theme = await client.fetchTheme(themeId);
     if (theme) {
       const latestVersion = theme.data.version;
       if (latestVersion) {
-        const current = essence.dna?.theme?.version || essence.theme?.version || '0.0.0';
+        const current = (essence.dna.theme as { version?: string }).version || '0.0.0';
         if (latestVersion !== current) {
           upgrades.push({
             type: 'theme',
@@ -56,26 +61,6 @@ export async function cmdUpgrade(
             currentVersion: current,
             latestVersion,
             data: theme.data,
-          });
-        }
-      }
-    }
-  }
-
-  // Check blueprint (v2-only field; v3 has inline blueprint)
-  if (essence.blueprint && typeof essence.blueprint === 'string') {
-    const blueprint = await client.fetchBlueprint(essence.blueprint);
-    if (blueprint) {
-      const latestVersion = blueprint.data.version;
-      if (latestVersion) {
-        const current = essence.blueprintVersion || '0.0.0';
-        if (latestVersion !== current) {
-          upgrades.push({
-            type: 'blueprint',
-            id: essence.blueprint,
-            currentVersion: current,
-            latestVersion,
-            data: blueprint.data,
           });
         }
       }
@@ -113,15 +98,8 @@ export async function cmdUpgrade(
         await client.fetchTheme(upgrade.id);
 
         // Update version in essence if tracked
-        if (essence.dna?.theme) {
-          // v3 essence
-          essence.dna.theme.version = upgrade.latestVersion;
-          essenceModified = true;
-        } else if (essence.theme) {
-          // v2 essence
-          essence.theme.version = upgrade.latestVersion;
-          essenceModified = true;
-        }
+        (essence.dna.theme as { version?: string }).version = upgrade.latestVersion;
+        essenceModified = true;
         console.log(`    ${GREEN}Theme cache updated.${RESET}`);
         break;
       }
@@ -145,19 +123,16 @@ export async function cmdUpgrade(
     console.log(`\n  ${GREEN}Essence file updated.${RESET}`);
   }
 
-  // Regenerate context files for v3 essences
-  if (isV3(essence)) {
-    console.log(`\n  Regenerating context files...`);
-    try {
-      const result = await refreshDerivedFiles(projectRoot, essence as EssenceV3, client);
-      console.log(
-        `    ${GREEN}Updated ${result.contextFiles.length} context file(s) and ${result.cssFiles.length} CSS file(s).${RESET}`,
-      );
-    } catch (e) {
-      console.log(
-        `    ${YELLOW}Warning: Could not regenerate context files: ${(e as Error).message}${RESET}`,
-      );
-    }
+  console.log(`\n  Regenerating context files...`);
+  try {
+    const result = await refreshDerivedFiles(projectRoot, essence as EssenceV4, client);
+    console.log(
+      `    ${GREEN}Updated ${result.contextFiles.length} context file(s) and ${result.cssFiles.length} CSS file(s).${RESET}`,
+    );
+  } catch (e) {
+    console.log(
+      `    ${YELLOW}Warning: Could not regenerate context files: ${(e as Error).message}${RESET}`,
+    );
   }
 
   console.log(`\n${GREEN}All upgrades applied.${RESET}`);

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceFile, EssenceV3, EssenceV31Section } from '@decantr/essence-spec';
-import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceSection, EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
@@ -11,7 +11,7 @@ const YELLOW = '\x1b[33m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
 
-function readAndMigrate(projectRoot: string): { essence: EssenceV3; essencePath: string } | null {
+function readV4Essence(projectRoot: string): { essence: EssenceV4; essencePath: string } | null {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -29,17 +29,18 @@ function readAndMigrate(projectRoot: string): { essence: EssenceV3; essencePath:
     return null;
   }
 
-  if (!isV3(parsed)) {
-    console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
+  if (!isV4(parsed)) {
+    console.error(
+      `${RED}Active workflows require Essence v4.0.0. Run \`decantr migrate --to v4\` first.${RESET}`,
+    );
     process.exitCode = 1;
     return null;
   }
 
-  const essence = migrateV30ToV31(parsed);
-  return { essence, essencePath };
+  return { essence: parsed, essencePath };
 }
 
-function writeEssence(essencePath: string, essence: EssenceV3): void {
+function writeEssence(essencePath: string, essence: EssenceV4): void {
   writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
 }
 
@@ -57,11 +58,11 @@ export async function cmdAddSection(
     return;
   }
 
-  const loaded = readAndMigrate(projectRoot);
+  const loaded = readV4Essence(projectRoot);
   if (!loaded) return;
   const { essence, essencePath } = loaded;
 
-  const sections = essence.blueprint.sections!;
+  const sections = essence.blueprint.sections;
   if (sections.find((s) => s.id === archetypeId)) {
     console.error(`${RED}Section "${archetypeId}" already exists.${RESET}`);
     console.error(`${DIM}Existing sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
@@ -84,7 +85,7 @@ export async function cmdAddSection(
 
   const archetype = result.data;
 
-  const newSection: EssenceV31Section = {
+  const newSection: EssenceSection = {
     id: archetype.id || archetypeId,
     role: archetype.role || 'auxiliary',
     shell: archetype.pages?.[0]?.shell || essence.blueprint.shell || 'top-nav-main',
@@ -132,11 +133,11 @@ export async function cmdAddPage(
 
   const [sectionId, pageId] = path.split('/');
 
-  const loaded = readAndMigrate(projectRoot);
+  const loaded = readV4Essence(projectRoot);
   if (!loaded) return;
   const { essence, essencePath } = loaded;
 
-  const sections = essence.blueprint.sections!;
+  const sections = essence.blueprint.sections;
   const section = sections.find((s) => s.id === sectionId);
   if (!section) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
@@ -181,7 +182,7 @@ export async function cmdAddFeature(
     return;
   }
 
-  const loaded = readAndMigrate(projectRoot);
+  const loaded = readV4Essence(projectRoot);
   if (!loaded) return;
   const { essence, essencePath } = loaded;
 
@@ -193,7 +194,7 @@ export async function cmdAddFeature(
   }
 
   if (sectionId) {
-    const sections = essence.blueprint.sections!;
+    const sections = essence.blueprint.sections;
     const section = sections.find((s) => s.id === sectionId);
     if (!section) {
       console.error(`${RED}Section "${sectionId}" not found.${RESET}`);

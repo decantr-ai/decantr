@@ -1085,7 +1085,9 @@ export function generateTreatmentCSS(
   lines.push('  .d-shell[data-layout="copilot-overlay"] .d-shell-copilot {');
   lines.push('    display: none;');
   lines.push('  }');
-  lines.push('  .d-shell[data-layout="copilot-overlay"] .d-shell-copilot[data-mobile-open="true"] {');
+  lines.push(
+    '  .d-shell[data-layout="copilot-overlay"] .d-shell-copilot[data-mobile-open="true"] {',
+  );
   lines.push('    display: flex;');
   lines.push('    position: fixed;');
   lines.push('    inset: 0 0 0 auto;');
@@ -1575,7 +1577,10 @@ export function generateTreatmentCSS(
     ['border-bottom', '1px solid var(--d-border)'],
     ['background', 'color-mix(in srgb, var(--d-surface) 82%, transparent)'],
     ['color', 'var(--d-text-muted)'],
-    ['transition', 'background var(--d-motion-fast, 150ms) ease, box-shadow var(--d-motion-fast, 150ms) ease, color var(--d-motion-fast, 150ms) ease'],
+    [
+      'transition',
+      'background var(--d-motion-fast, 150ms) ease, box-shadow var(--d-motion-fast, 150ms) ease, color var(--d-motion-fast, 150ms) ease',
+    ],
   ]);
 
   emitRule('.d-palette-search:focus-within', [
@@ -1677,7 +1682,7 @@ export function generateTreatmentCSS(
   ]);
 
   // ── 15. Motion Treatments — enforce declared interactions[] ──
-  // v2.1 Tier B1. These classes provide the canonical implementations for
+  // These classes provide the canonical implementations for
   // interactions declared on patterns (e.g., `animate-on-mount`,
   // `status-pulse`, `glow-hover`). Before shipping these, cold LLMs
   // hand-rolled @keyframes on every scaffold — inconsistent, rarely tuned.
@@ -1724,10 +1729,7 @@ export function generateTreatmentCSS(
   ]);
 
   emitRule('.d-shimmer', [
-    [
-      'background',
-      'linear-gradient(90deg, transparent, var(--d-surface-raised) 50%, transparent)',
-    ],
+    ['background', 'linear-gradient(90deg, transparent, var(--d-surface-raised) 50%, transparent)'],
     ['background-size', '200% 100%'],
     ['animation', 'd-shimmer 1.5s linear infinite'],
   ]);
@@ -1779,10 +1781,7 @@ export function generateTreatmentCSS(
     ['background', 'radial-gradient(circle, currentColor 10%, transparent 10.01%)'],
     ['opacity', '0'],
     ['transform', 'scale(0)'],
-    [
-      'transition',
-      'transform var(--d-motion-slow, 400ms), opacity var(--d-motion-slow, 400ms)',
-    ],
+    ['transition', 'transform var(--d-motion-slow, 400ms), opacity var(--d-motion-slow, 400ms)'],
     ['pointer-events', 'none'],
   ]);
   emitRule('.d-ripple:active::after', [
@@ -1792,7 +1791,7 @@ export function generateTreatmentCSS(
   ]);
 
   // ── 16. Typography Treatments ──
-  // v2.1 Tier B2. Canonical type hierarchy. Before these, scaffolds
+  // Canonical type hierarchy. Before these, scaffolds
   // hand-rolled font-size/font-weight/letter-spacing on every heading.
   // Themes can override the --d-text-*, --d-weight-*, --d-tracking-*,
   // --d-leading-* tokens to tune the hierarchy globally.
@@ -1870,7 +1869,7 @@ export function generateTreatmentCSS(
     ['font-variant-numeric', 'tabular-nums'],
   ]);
 
-  // ── 17a. Composite Card — .d-card family (v2.1 Tier D1) ──
+  // Composite Card — .d-card family.
   // Structural companion to the decorator layer. Replaces hand-composed
   // flex/gap/padding on `carbon-card` etc. Pairs with a theme decorator
   // for visual polish (hover glow, gradient border).
@@ -1929,7 +1928,7 @@ export function generateTreatmentCSS(
   ]);
 
   // ── 17. Elevation Utility — .d-elevate[data-level] ──
-  // v2.1 Tier B3. Formal depth scale, cross-theme. Shadow values read
+  // Formal depth scale, cross-theme. Shadow values read
   // from --d-elevation-* tokens. Dark themes emit stronger alpha values
   // via mode-aware token defaults.
 
@@ -1950,7 +1949,7 @@ export function generateTreatmentCSS(
     ['box-shadow', 'var(--d-elevation-5, 0 16px 48px rgba(0,0,0,0.18))'],
   ]);
 
-  // ── Hotkey chord indicator (v2.1 C3) ──
+  // Hotkey chord indicator.
   // When a user presses the prefix key of a chord hotkey (e.g., `g` in
   // `g m` → /metrics), they currently get no visual feedback — they have
   // to trust a 500-900ms chord window is open. This treatment is the
@@ -1961,8 +1960,7 @@ export function generateTreatmentCSS(
   // Usage:
   //   <div className="d-hotkey-indicator" data-visible={isArmed} data-prefix="g" />
   //
-  // Enable via hotkey_semantics.show_chord_indicator (default true in
-  // essence.v3 schema — see C3 schema addition).
+  // Enable via hotkey_semantics.show_chord_indicator.
 
   emitRule('.d-hotkey-indicator', [
     ['position', 'fixed'],
@@ -1999,7 +1997,7 @@ export function generateTreatmentCSS(
     ['color', 'var(--d-accent)'],
     ['font-weight', '600'],
   ]);
-  // ── Data-viz Primitives (v2.1 D3) ──
+  // Data-viz primitives.
   // Last hand-rolled territory before this PR. Each primitive replaces
   // a category of inline SVG / CSS that scaffolds previously composed
   // ad-hoc. All read from token vars so themes can tune appearance.
@@ -2223,9 +2221,7 @@ export function generateTreatmentCSS(
   lines.push('}');
   lines.push('');
   lines.push('@keyframes d-pulse-ring {');
-  lines.push(
-    '  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--d-primary) 40%, transparent); }',
-  );
+  lines.push('  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--d-primary) 40%, transparent); }');
   lines.push('  100% { box-shadow: 0 0 0 12px transparent; }');
   lines.push('}');
   lines.push('');
@@ -2241,9 +2237,7 @@ export function generateTreatmentCSS(
   lines.push('');
   lines.push('/* Respect user motion preferences — disable all declarative motion */');
   lines.push('@media (prefers-reduced-motion: reduce) {');
-  lines.push(
-    '  .d-enter-fade, .d-enter-slide-up, .d-enter-scale, .d-stagger-children > *,',
-  );
+  lines.push('  .d-enter-fade, .d-enter-slide-up, .d-enter-scale, .d-stagger-children > *,');
   lines.push('  .d-pulse, .d-pulse-ring, .d-shimmer, .d-float {');
   lines.push('    animation: none !important;');
   lines.push('  }');
@@ -2347,7 +2341,7 @@ export function generatePersonalityCSS(
     );
   }
 
-  // Status ring utilities (v2.1 D2: size variants)
+  // Status ring utilities with size variants.
   if (text.includes('pulse') || text.includes('ring') || text.includes('status')) {
     rules.push(
       `.status-ring { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--d-border); display: flex; align-items: center; justify-content: center; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease; }`,

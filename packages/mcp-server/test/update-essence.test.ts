@@ -1,13 +1,13 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { EssenceV3 } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { handleTool } from '../src/tools.js';
 
-function makeV3Essence(): EssenceV3 {
+function makeV4Essence(): EssenceV4 {
   return {
-    version: '3.0.0',
+    version: '4.0.0',
     dna: {
       theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
@@ -21,11 +21,24 @@ function makeV3Essence(): EssenceV3 {
     },
     blueprint: {
       shell: 'sidebar-main',
-      pages: [
-        { id: 'overview', layout: ['kpi-grid', 'chart-grid'] },
-        { id: 'settings', layout: ['form-sections'] },
+      sections: [
+        {
+          id: 'dashboard',
+          role: 'primary',
+          shell: 'sidebar-main',
+          description: 'Primary dashboard section',
+          features: ['auth', 'search'],
+          pages: [
+            { id: 'overview', route: '/', layout: ['kpi-grid', 'chart-grid'] },
+            { id: 'settings', route: '/settings', layout: ['form-sections'] },
+          ],
+        },
       ],
       features: ['auth', 'search'],
+      routes: {
+        '/': { section: 'dashboard', page: 'overview' },
+        '/settings': { section: 'dashboard', page: 'settings' },
+      },
     },
     meta: {
       archetype: 'saas-dashboard',
@@ -71,7 +84,7 @@ afterEach(async () => {
 describe('decantr_update_essence', () => {
   it('should add a page', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'add_page',
@@ -82,15 +95,15 @@ describe('decantr_update_essence', () => {
     expect(result.status).toBe('updated');
     expect(result.summary).toContain('billing');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    const billing = updated.blueprint.pages.find((p) => p.id === 'billing');
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
+    const billing = updated.blueprint.sections[0].pages.find((p) => p.id === 'billing');
     expect(billing).toBeDefined();
     expect(billing?.layout).toEqual(['form-sections', 'data-table']);
   });
 
   it('should error when adding duplicate page', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'add_page',
@@ -103,7 +116,7 @@ describe('decantr_update_essence', () => {
 
   it('should remove a page', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'remove_page',
@@ -113,14 +126,14 @@ describe('decantr_update_essence', () => {
 
     expect(result.status).toBe('updated');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    expect(updated.blueprint.pages.find((p) => p.id === 'settings')).toBeUndefined();
-    expect(updated.blueprint.pages).toHaveLength(1);
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
+    expect(updated.blueprint.sections[0].pages.find((p) => p.id === 'settings')).toBeUndefined();
+    expect(updated.blueprint.sections[0].pages).toHaveLength(1);
   });
 
   it('should error when removing nonexistent page', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'remove_page',
@@ -133,7 +146,7 @@ describe('decantr_update_essence', () => {
 
   it('should update page layout', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const newLayout = ['hero', 'kpi-grid', 'activity-feed'];
     const result = (await handleTool('decantr_update_essence', {
@@ -144,14 +157,14 @@ describe('decantr_update_essence', () => {
 
     expect(result.status).toBe('updated');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    const overview = updated.blueprint.pages.find((p) => p.id === 'overview');
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
+    const overview = updated.blueprint.sections[0].pages.find((p) => p.id === 'overview');
     expect(overview?.layout).toEqual(newLayout);
   });
 
   it('should update DNA fields', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'update_dna',
@@ -161,7 +174,7 @@ describe('decantr_update_essence', () => {
 
     expect(result.status).toBe('updated');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
     expect(updated.dna.theme.id).toBe('glassmorphism');
     // Should merge, keeping other theme fields
     expect(updated.dna.theme.mode).toBe('dark');
@@ -170,7 +183,7 @@ describe('decantr_update_essence', () => {
 
   it('should add a feature', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'add_feature',
@@ -180,14 +193,14 @@ describe('decantr_update_essence', () => {
 
     expect(result.status).toBe('updated');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
     expect(updated.blueprint.features).toContain('payments');
     expect(updated.blueprint.features).toHaveLength(3);
   });
 
   it('should remove a feature', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_update_essence', {
       operation: 'remove_feature',
@@ -197,12 +210,12 @@ describe('decantr_update_essence', () => {
 
     expect(result.status).toBe('updated');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
     expect(updated.blueprint.features).not.toContain('search');
     expect(updated.blueprint.features).toHaveLength(1);
   });
 
-  it('should auto-migrate v2 to v3 on mutation', async () => {
+  it('should reject legacy essence mutation with migration guidance', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
@@ -210,14 +223,9 @@ describe('decantr_update_essence', () => {
       operation: 'add_feature',
       payload: { feature: 'payments' },
       path: essencePath,
-    })) as { status: string };
+    })) as { error: string };
 
-    expect(result.status).toBe('updated');
-
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    expect(updated.version).toBe('3.0.0');
-    expect(updated.dna).toBeDefined();
-    expect(updated.blueprint.features).toContain('payments');
+    expect(result.error).toContain('decantr migrate --to v4');
   });
 
   it('should reject invalid operation', async () => {

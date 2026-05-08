@@ -24,13 +24,13 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 
 ## Adapter Capability Matrix
 
-Adapter support is intentionally separate from npm package support. `@decantr/cli` is the supported delivery package; adapters describe which framework/project targets it can bootstrap, attach to, style, and verify today.
+Adapter support is intentionally separate from npm package support. `@decantr/cli` is the supported delivery package; adapters describe which framework/project targets it can bootstrap, realize, attach to, style, and verify today.
 
-| Adapter | Target | Bootstrap | Attach | Styling | Verify | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| `react-vite` | React + Vite | yes | yes | yes | yes | Primary runnable starter adapter. |
-| `next-app` | Next.js App Router / Pages Router | yes | yes | yes | yes | Boots App Router greenfield projects and records App/Pages Router attach metadata. |
-| `generic-web` | Unsupported or unspecified web targets | no | yes | contract-only | basic | Fallback adapter for contract-only Decantr adoption without runtime ownership. |
+| Adapter | Target | Bootstrap | Realize | Attach | Styling | Verify | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `react-vite` | React + Vite | yes | yes | yes | yes | yes | Primary runnable starter and certified first-mile realization adapter. |
+| `next-app` | Next.js App Router / Pages Router | yes | yes | yes | yes | yes | Boots App Router greenfield projects and records App/Pages Router attach metadata. |
+| `generic-web` | Unsupported or unspecified web targets | no | no | yes | contract-only | basic | Fallback adapter for contract-only Decantr adoption without runtime ownership. |
 
 Unsupported framework targets are still valid Decantr contract targets. They should resolve through `generic-web` unless and until a runnable adapter lands.
 

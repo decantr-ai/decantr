@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceFile, EssenceV3, ThemeMode, ThemeShape } from '@decantr/essence-spec';
-import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV4, ThemeMode, ThemeShape } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
@@ -47,13 +47,15 @@ export async function cmdThemeSwitch(
     return;
   }
 
-  if (!isV3(parsed)) {
-    console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
+  if (!isV4(parsed)) {
+    console.error(
+      `${RED}Active workflows require Essence v4.0.0. Run \`decantr migrate --to v4\` first.${RESET}`,
+    );
     process.exitCode = 1;
     return;
   }
 
-  const essence = migrateV30ToV31(parsed);
+  const essence = parsed;
 
   // Parse optional flags
   let shape: string | undefined;

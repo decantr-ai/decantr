@@ -1,7 +1,14 @@
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceFile } from '@decantr/essence-spec';
-import { isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
+import {
+  isV4,
+  migrateToV4,
+  validateEssence,
+  validateLegacyEssenceForMigration,
+} from '@decantr/essence-spec';
+import { RegistryClient } from '../registry.js';
+import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -13,12 +20,13 @@ export interface MigrateResult {
   success: boolean;
   backupPath?: string;
   error?: string;
-  alreadyV3?: boolean;
+  alreadyV4?: boolean;
+  essence?: EssenceV4;
 }
 
 /**
- * Migrate a v2 essence file to v3 format in-place.
- * Creates a .v2.backup.json backup before overwriting.
+ * Migrate a legacy Essence file to v4 format in-place.
+ * Creates a .pre-v4.backup.json backup before overwriting.
  */
 export function migrateEssenceFile(essencePath: string): MigrateResult {
   if (!existsSync(essencePath)) {
@@ -32,56 +40,52 @@ export function migrateEssenceFile(essencePath: string): MigrateResult {
     return { success: false, error: `Could not read ${essencePath}: ${(e as Error).message}` };
   }
 
-  let essence: EssenceFile;
+  let essence: unknown;
   try {
     essence = JSON.parse(raw);
   } catch (e) {
     return { success: false, error: `Invalid JSON: ${(e as Error).message}` };
   }
 
-  // Already v3
-  if (isV3(essence)) {
-    return { success: true, alreadyV3: true };
+  if (isV4(essence)) {
+    return { success: true, alreadyV4: true, essence };
   }
 
-  // Validate v2 before migration
-  const preValidation = validateEssence(essence);
+  const preValidation = validateLegacyEssenceForMigration(essence);
   if (!preValidation.valid) {
     return {
       success: false,
-      error: `v2 essence is invalid, fix before migrating: ${preValidation.errors.join(', ')}`,
+      error: `Legacy essence is invalid, fix before migrating: ${preValidation.errors.join(', ')}`,
     };
   }
 
   // Create backup
-  const backupPath = essencePath.replace(/\.json$/, '.v2.backup.json');
+  const backupPath = essencePath.replace(/\.json$/, '.pre-v4.backup.json');
   try {
     copyFileSync(essencePath, backupPath);
   } catch (e) {
     return { success: false, error: `Could not create backup: ${(e as Error).message}` };
   }
 
-  // Migrate
-  let v3: ReturnType<typeof migrateV2ToV3>;
+  let v4: ReturnType<typeof migrateToV4>;
   try {
-    v3 = migrateV2ToV3(essence);
+    v4 = migrateToV4(essence);
   } catch (e) {
     return { success: false, error: `Migration failed: ${(e as Error).message}` };
   }
 
-  // Validate v3 output
-  const postValidation = validateEssence(v3);
+  const postValidation = validateEssence(v4);
   if (!postValidation.valid) {
     return {
       success: false,
       backupPath,
-      error: `Migrated v3 essence is invalid: ${postValidation.errors.join(', ')}`,
+      error: `Migrated v4 essence is invalid: ${postValidation.errors.join(', ')}`,
     };
   }
 
   // Write migrated file
   try {
-    writeFileSync(essencePath, JSON.stringify(v3, null, 2) + '\n');
+    writeFileSync(essencePath, JSON.stringify(v4, null, 2) + '\n');
   } catch (e) {
     return {
       success: false,
@@ -90,13 +94,28 @@ export function migrateEssenceFile(essencePath: string): MigrateResult {
     };
   }
 
-  return { success: true, backupPath };
+  return { success: true, backupPath, essence: v4 };
 }
 
 /**
- * CLI handler for `decantr migrate`.
+ * CLI handler for `decantr migrate --to v4`.
  */
-export async function cmdMigrate(projectRoot: string = process.cwd()): Promise<void> {
+export async function cmdMigrate(
+  projectRoot: string = process.cwd(),
+  args: string[] = [],
+): Promise<void> {
+  const toIndex = args.indexOf('--to');
+  const target = toIndex >= 0 ? args[toIndex + 1] : undefined;
+  const hasInlineTarget = args.find((arg) => arg.startsWith('--to='));
+  const inlineTarget = hasInlineTarget?.split('=')[1];
+  const requestedTarget = inlineTarget ?? target;
+
+  if (requestedTarget !== 'v4') {
+    console.error(`${RED}Usage: decantr migrate --to v4${RESET}`);
+    process.exitCode = 1;
+    return;
+  }
+
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -105,12 +124,12 @@ export async function cmdMigrate(projectRoot: string = process.cwd()): Promise<v
     return;
   }
 
-  console.log('Migrating essence to v3...\n');
+  console.log('Migrating essence to v4...\n');
 
   const result = migrateEssenceFile(essencePath);
 
-  if (result.alreadyV3) {
-    console.log(`${GREEN}Already v3 — no migration needed.${RESET}`);
+  if (result.alreadyV4) {
+    console.log(`${GREEN}Already Essence v4.0.0 — no migration needed.${RESET}`);
     return;
   }
 
@@ -124,6 +143,13 @@ export async function cmdMigrate(projectRoot: string = process.cwd()): Promise<v
   if (result.backupPath) {
     console.log(`${DIM}Backup saved to: ${result.backupPath}${RESET}`);
   }
+  if (result.essence) {
+    const registryClient = new RegistryClient({
+      cacheDir: join(projectRoot, '.decantr', 'cache'),
+    });
+    await refreshDerivedFiles(projectRoot, result.essence, registryClient);
+    console.log(`${GREEN}Derived context and execution packs refreshed.${RESET}`);
+  }
   console.log('');
-  console.log(`${YELLOW}Review the migrated file and run \`decantr validate\` to verify.${RESET}`);
+  console.log(`${YELLOW}Review the migrated file and run \`decantr check\` to verify.${RESET}`);
 }

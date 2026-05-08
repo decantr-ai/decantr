@@ -375,7 +375,7 @@ export class RegistryAPIClient {
 
   // ── Schema ──
 
-  async getSchema(name: string = 'essence.v3.json'): Promise<Record<string, unknown>> {
+  async getSchema(name: string = 'essence.v4.json'): Promise<Record<string, unknown>> {
     return this.request<Record<string, unknown>>(`/schema/${name}`);
   }
 

@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { startStudioServer, type StudioServerHandle } from '../src/commands/studio.js';
+import { type StudioServerHandle, startStudioServer } from '../src/commands/studio.js';
 
 let testDir = '';
 let handle: StudioServerHandle | null = null;
@@ -25,7 +25,7 @@ function writeMinimalProject(): void {
     version: '1.0.0',
   });
   writeJson(join(testDir, 'decantr.essence.json'), {
-    version: '3.1.0',
+    version: '4.0.0',
     dna: {
       theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -79,8 +79,8 @@ describe('Decantr Studio server', () => {
 
     const html = await fetch(handle.url).then((response) => response.text());
     const health = await fetch(`${handle.url}/api/health`).then((response) => response.json());
-    const refreshed = await fetch(`${handle.url}/api/refresh`, { method: 'POST' }).then((response) =>
-      response.json(),
+    const refreshed = await fetch(`${handle.url}/api/refresh`, { method: 'POST' }).then(
+      (response) => response.json(),
     );
 
     expect(html).toContain('Decantr Project Health');

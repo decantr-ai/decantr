@@ -1,12 +1,12 @@
 import type {
   DensityLevel,
   EssenceFile,
-  EssenceV3,
-  EssenceV3Guard,
+  EssenceV4,
+  EssenceV4Guard,
   LayoutItem,
   StructurePage,
 } from './types.js';
-import { flattenPages, isSectioned, isSimple, isV3 } from './types.js';
+import { flattenPages } from './types.js';
 
 export interface AutoFix {
   type: 'add_page' | 'update_layout' | 'update_blueprint';
@@ -23,7 +23,7 @@ export interface GuardViolation {
     | 'pattern-exists'
     | 'accessibility'
     /**
-     * v2.1 C5. Experiential interactions guard rule. Fires when patterns
+     * V4 C5. Experiential interactions guard rule. Fires when patterns
      * declare `interactions: [...]` but the source tree is missing the
      * canonical implementations. Severity controlled by
      * `meta.guard.interactions_enforcement` (defaults: creative=off,
@@ -49,7 +49,7 @@ export interface GuardContext {
   patternRegistry?: Map<string, unknown>;
   a11y_issues?: string[];
   /**
-   * v2.1 C5. Pre-computed list of declared interactions whose canonical
+   * V4 C5. Pre-computed list of declared interactions whose canonical
    * implementations are missing from the source tree. Produced by
    * `verifyInteractionsInSource` from @decantr/verifier; passed in here
    * so the guard rule can emit violations without owning the source-scan
@@ -70,15 +70,8 @@ function checkThemeModeCompatibility(
 ): GuardViolation | null {
   if (!context.themeRegistry) return null;
 
-  let themeId: string | null;
-  let mode: string | null;
-  if (isV3(essence)) {
-    themeId = essence.dna.theme?.id ?? null;
-    mode = essence.dna.theme?.mode ?? null;
-  } else {
-    themeId = isSimple(essence) ? essence.theme?.id : null;
-    mode = isSimple(essence) ? essence.theme?.mode : null;
-  }
+  const themeId = essence.dna.theme?.id ?? null;
+  const mode = essence.dna.theme?.mode ?? null;
 
   if (!themeId || !mode) return null;
 
@@ -100,7 +93,8 @@ function checkThemeModeCompatibility(
       severity: 'error',
       message: `Theme "${themeId}" does not support "${mode}" mode. Supported modes: ${supportedModes}.`,
       suggestion,
-      ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
+      layer: 'dna' as const,
+      autoFixable: false,
     };
   }
 
@@ -191,10 +185,11 @@ function checkPatternExistence(essence: EssenceFile, context: GuardContext): Gua
 
       violations.push({
         rule: 'pattern-exists',
-        severity: isV3(essence) ? 'warning' : 'error',
+        severity: 'warning',
         message: `Pattern "${patternId}" is referenced but does not exist in the registry.`,
         suggestion,
-        ...(isV3(essence) ? { layer: 'blueprint' as const, autoFixable: false } : {}),
+        layer: 'blueprint' as const,
+        autoFixable: false,
       });
     }
   }
@@ -206,11 +201,7 @@ function checkPatternExistence(essence: EssenceFile, context: GuardContext): Gua
  * Check accessibility compliance based on declared WCAG level.
  */
 function checkAccessibility(essence: EssenceFile, context: GuardContext): GuardViolation | null {
-  const accessibility = isV3(essence)
-    ? essence.dna.accessibility
-    : 'accessibility' in essence
-      ? essence.accessibility
-      : undefined;
+  const accessibility = essence.dna.accessibility;
 
   if (!accessibility?.wcag_level || accessibility.wcag_level === 'none') {
     return null;
@@ -227,7 +218,8 @@ function checkAccessibility(essence: EssenceFile, context: GuardContext): GuardV
       message: `WCAG ${accessibility.wcag_level} compliance required. Issues found: ${issueList}${moreCount}`,
       suggestion:
         'Fix accessibility issues before proceeding. Run an accessibility audit for details.',
-      ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
+      layer: 'dna' as const,
+      autoFixable: false,
     };
   }
 
@@ -235,7 +227,7 @@ function checkAccessibility(essence: EssenceFile, context: GuardContext): GuardV
 }
 
 /**
- * v2.1 C5. Experiential interactions guard rule (8th rule). Patterns
+ * V4 C5. Experiential interactions guard rule (8th rule). Patterns
  * declare runtime interactions in pattern.v2.json (e.g., status-pulse,
  * drag-nodes, hover-tooltip). When the source tree doesn't implement
  * those interactions, this rule emits a violation. Source scanning
@@ -257,8 +249,7 @@ function checkInteractions(essence: EssenceFile, context: GuardContext): GuardVi
     return null;
   }
 
-  const guard = isV3(essence) ? essence.meta.guard : null;
-  if (!guard) return null; // v2 essences don't carry the field — skip silently.
+  const guard = essence.meta.guard;
 
   // Resolve enforcement: explicit field wins, otherwise mode-derived default.
   let enforcement: 'error' | 'warn' | 'off';
@@ -292,7 +283,7 @@ function checkInteractions(essence: EssenceFile, context: GuardContext): GuardVi
 }
 
 export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}): GuardViolation[] {
-  const guard = isV3(essence) ? essence.meta.guard : essence.guard;
+  const guard = essence.meta.guard;
 
   if (guard.mode === 'creative') {
     return [];
@@ -304,21 +295,14 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
   // Rule 1: Theme guard
   const requestedTheme = context.theme ?? context.style;
   if (requestedTheme) {
-    let essenceThemeId: string | null;
-    if (isV3(essence)) {
-      essenceThemeId = essence.dna.theme.id;
-    } else {
-      essenceThemeId = isSimple(essence) ? essence.theme.id : null;
-    }
-    const enforceStyle = isV3(essence)
-      ? true
-      : (guard as import('./types.js').Guard).enforce_style !== false;
-    if (essenceThemeId && requestedTheme !== essenceThemeId && enforceStyle) {
+    const essenceThemeId = essence.dna.theme.id;
+    if (essenceThemeId && requestedTheme !== essenceThemeId) {
       violations.push({
         rule: 'theme',
         severity: 'error',
         message: `Theme "${requestedTheme}" does not match essence theme "${essenceThemeId}". Change the essence theme first.`,
-        ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
+        layer: 'dna' as const,
+        autoFixable: false,
       });
     }
   }
@@ -330,15 +314,11 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
     if (!pageExists) {
       violations.push({
         rule: 'structure',
-        severity: isV3(essence) ? 'warning' : 'error',
+        severity: 'warning',
         message: `Page "${context.pageId}" does not exist in essence structure. Add it to the essence first.`,
-        ...(isV3(essence)
-          ? {
-              layer: 'blueprint' as const,
-              autoFixable: true,
-              autoFix: { type: 'add_page' as const, patch: { id: context.pageId } },
-            }
-          : {}),
+        layer: 'blueprint' as const,
+        autoFixable: true,
+        autoFix: { type: 'add_page' as const, patch: { id: context.pageId } },
       });
     }
   }
@@ -358,18 +338,14 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
       if (!matches) {
         violations.push({
           rule: 'layout',
-          severity: isV3(essence) ? 'warning' : 'error',
+          severity: 'warning',
           message: `Layout for page "${context.pageId}" deviates from essence. Expected: [${essenceLayout.join(', ')}].`,
-          ...(isV3(essence)
-            ? {
-                layer: 'blueprint' as const,
-                autoFixable: true,
-                autoFix: {
-                  type: 'update_layout' as const,
-                  patch: { page: context.pageId, layout: context.layout },
-                },
-              }
-            : {}),
+          layer: 'blueprint' as const,
+          autoFixable: true,
+          autoFix: {
+            type: 'update_layout' as const,
+            patch: { page: context.pageId, layout: context.layout },
+          },
         });
       }
     }
@@ -377,20 +353,15 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
 
   // Rule 4: Density guard (strict only)
   if (isStrict && context.density_gap) {
-    let expectedGap: string;
-    if (isV3(essence)) {
-      // Check per-page dna_overrides for density if a pageId is provided
-      const overriddenDensity = getPageDensityOverride(essence, context.pageId);
-      expectedGap = overriddenDensity ?? essence.dna.spacing.content_gap;
-    } else {
-      expectedGap = essence.density.content_gap;
-    }
+    const overriddenDensity = getPageDensityOverride(essence, context.pageId);
+    const expectedGap = overriddenDensity ?? essence.dna.spacing.content_gap;
     if (context.density_gap !== expectedGap) {
       violations.push({
         rule: 'density',
         severity: 'warning',
         message: `Content gap "${context.density_gap}" does not match essence density "${expectedGap}".`,
-        ...(isV3(essence) ? { layer: 'dna' as const, autoFixable: false } : {}),
+        layer: 'dna' as const,
+        autoFixable: false,
       });
     }
   }
@@ -411,7 +382,7 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
     violations.push(accessibilityViolation);
   }
 
-  // Rule 9: Experiential interactions (v2.1 C5). Only fires when caller
+  // Rule 9: Experiential interactions (V4 C5). Only fires when caller
   // pre-computed `interaction_issues` from the source-tree scan; severity
   // governed by `meta.guard.interactions_enforcement` with mode-derived
   // defaults. See checkInteractions for the full resolution table.
@@ -420,52 +391,43 @@ export function evaluateGuard(essence: EssenceFile, context: GuardContext = {}):
     violations.push(interactionsViolation);
   }
 
-  // Apply v3 enforcement level filtering
-  if (isV3(essence)) {
-    const v3Guard = guard as EssenceV3Guard;
+  const v4Guard = guard as EssenceV4Guard;
 
-    // DNA enforcement
-    if (v3Guard.dna_enforcement === 'off') {
-      // Remove all DNA-layer violations
-      return violations.filter((v) => v.layer !== 'dna');
-    }
-    if (v3Guard.dna_enforcement === 'warn') {
-      // Downgrade DNA-layer violations to warning severity
-      for (const v of violations) {
-        if (v.layer === 'dna') {
-          v.severity = 'warning';
-        }
+  // DNA enforcement
+  if (v4Guard.dna_enforcement === 'off') {
+    // Remove all DNA-layer violations
+    return violations.filter((v) => v.layer !== 'dna');
+  }
+  if (v4Guard.dna_enforcement === 'warn') {
+    // Downgrade DNA-layer violations to warning severity
+    for (const v of violations) {
+      if (v.layer === 'dna') {
+        v.severity = 'warning';
       }
     }
+  }
 
-    // Blueprint enforcement
-    if (v3Guard.blueprint_enforcement === 'off') {
-      // Remove all blueprint-layer violations
-      return violations.filter((v) => v.layer !== 'blueprint');
-    }
+  // Blueprint enforcement
+  if (v4Guard.blueprint_enforcement === 'off') {
+    // Remove all blueprint-layer violations
+    return violations.filter((v) => v.layer !== 'blueprint');
   }
 
   return violations;
 }
 
 function getAllPages(essence: EssenceFile): StructurePage[] {
-  if (isV3(essence)) {
-    // Map v3 BlueprintPages to StructurePage shape for guard evaluation
-    const pages = flattenPages(essence.blueprint);
-    return pages.map((page) => ({
-      id: page.id,
-      shell: page.shell_override ?? essence.blueprint.shell ?? '',
-      layout: page.layout,
-      ...(page.surface ? { surface: page.surface } : {}),
-    }));
-  }
-  if (isSimple(essence)) return essence.structure;
-  if (isSectioned(essence)) return essence.sections.flatMap((s) => s.structure);
-  throw new Error('Unknown EssenceFile type');
+  const pages = flattenPages(essence.blueprint);
+  return pages.map((page) => ({
+    id: page.id,
+    shell: page.shell_override ?? essence.blueprint.shell ?? '',
+    layout: page.layout,
+    ...(page.surface ? { surface: page.surface } : {}),
+  }));
 }
 
-/** Get per-page density override from v3 blueprint, if set. */
-function getPageDensityOverride(essence: EssenceV3, pageId?: string): string | undefined {
+/** Get per-page density override from the v4 blueprint, if set. */
+function getPageDensityOverride(essence: EssenceV4, pageId?: string): string | undefined {
   if (!pageId) return undefined;
   const pages = flattenPages(essence.blueprint);
   const page = pages.find((p) => p.id === pageId);

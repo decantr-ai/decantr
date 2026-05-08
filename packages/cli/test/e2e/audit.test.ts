@@ -58,7 +58,7 @@ describe('audit command (e2e)', () => {
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: {
@@ -77,8 +77,18 @@ describe('audit command (e2e)', () => {
           },
           blueprint: {
             shell: 'sidebar-main',
-            pages: [{ id: 'home', layout: ['hero'] }],
+            sections: [
+              {
+                id: 'marketing',
+                role: 'public',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Marketing surface',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
             features: [],
+            routes: { '/': { section: 'marketing', page: 'home' } },
           },
           meta: {
             archetype: 'marketing',
@@ -117,7 +127,7 @@ describe('audit command (e2e)', () => {
             JSON.stringify({
               $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
               generatedAt: '2026-04-09T00:00:00.000Z',
-              sourceEssenceVersion: '3.0.0',
+              sourceEssenceVersion: '4.0.0',
               manifest: {
                 $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
                 version: '1.0.0',
@@ -184,7 +194,7 @@ describe('audit command (e2e)', () => {
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: {
@@ -203,8 +213,18 @@ describe('audit command (e2e)', () => {
           },
           blueprint: {
             shell: 'sidebar-main',
-            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            sections: [
+              {
+                id: 'marketing',
+                role: 'public',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Marketing surface',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
             features: [],
+            routes: { '/': { section: 'marketing', page: 'home' } },
           },
           meta: {
             archetype: 'marketing',
@@ -315,7 +335,7 @@ describe('audit command (e2e)', () => {
             JSON.stringify({
               $schema: 'https://decantr.ai/schemas/selected-execution-pack.v1.json',
               generatedAt: '2026-04-09T00:00:00.000Z',
-              sourceEssenceVersion: '3.0.0',
+              sourceEssenceVersion: '4.0.0',
               manifest: {
                 $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
                 version: '1.0.0',
@@ -387,7 +407,7 @@ describe('audit command (e2e)', () => {
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: {
@@ -406,8 +426,18 @@ describe('audit command (e2e)', () => {
           },
           blueprint: {
             shell: 'sidebar-main',
-            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            sections: [
+              {
+                id: 'marketing',
+                role: 'public',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Marketing surface',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
             features: [],
+            routes: { '/': { section: 'marketing', page: 'home' } },
           },
           meta: {
             archetype: 'marketing',

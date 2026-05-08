@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
-import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
-import { evaluateGuard, isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
+import type { BlueprintPage, EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
+import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
   ArchetypeRole,
   ComposeEntry,
@@ -143,7 +143,8 @@ async function getHostedFileCritiquePayload(args: Record<string, unknown>) {
   const client = getAPIClient();
   const filePath = args.file_path as string;
   const resolvedFilePath = resolveWorkspacePath(filePath);
-  const snapshotFilePath = relative(process.cwd(), resolvedFilePath).replace(/\\/g, '/') || basename(resolvedFilePath);
+  const snapshotFilePath =
+    relative(process.cwd(), resolvedFilePath).replace(/\\/g, '/') || basename(resolvedFilePath);
   const code = await readFile(resolvedFilePath, 'utf-8');
   const { essence } = await readEssenceFile(args.path as string | undefined);
   const treatmentsPath =
@@ -549,7 +550,7 @@ export const TOOLS = [
     name: 'decantr_read_essence',
     title: 'Read Essence',
     description:
-      'Read and return the current decantr.essence.json file from the working directory. For v3 files, optionally filter by layer (dna, blueprint, or full).',
+      'Read and return the current Essence v4 decantr.essence.json file from the working directory. Optionally filter by layer (dna, blueprint, or full).',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -560,7 +561,7 @@ export const TOOLS = [
         layer: {
           type: 'string',
           enum: ['dna', 'blueprint', 'full'],
-          description: 'For v3 essences: return only the specified layer. Defaults to full.',
+          description: 'For Essence v4 files: return only the specified layer. Defaults to full.',
         },
       },
     },
@@ -571,7 +572,7 @@ export const TOOLS = [
     name: 'decantr_validate',
     title: 'Validate Essence',
     description:
-      'Validate a decantr.essence.json file against the schema and guard rules. For v3, reports DNA vs Blueprint violations separately.',
+      'Validate an Essence v4 decantr.essence.json file against the schema and guard rules, reporting DNA vs Blueprint violations separately.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -681,7 +682,7 @@ export const TOOLS = [
     name: 'decantr_check_drift',
     title: 'Check Drift',
     description:
-      'Check if code changes violate the design intent captured in the Essence spec. For v3, returns separate dna_violations and blueprint_drift with autoFixable flags.',
+      'Check if code changes violate the design intent captured in the Essence v4 spec. Returns separate dna_violations and blueprint_drift with autoFixable flags.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -709,7 +710,7 @@ export const TOOLS = [
     name: 'decantr_create_essence',
     title: 'Create Essence',
     description:
-      'Generate a valid v3 Essence spec skeleton from a project description. Returns a structured essence.json template based on the closest matching archetype and blueprint.',
+      'Generate a valid Essence v4 skeleton from a project description. Returns a sectioned decantr.essence.json template based on the closest matching archetype and blueprint.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -774,7 +775,7 @@ export const TOOLS = [
     name: 'decantr_update_essence',
     title: 'Update Essence',
     description:
-      'Mutate the essence file: add/remove/update pages, update DNA or blueprint fields, add/remove features. Operates on v3 format (auto-migrates v2).',
+      'Mutate an Essence v4 file: add/remove/update pages, update DNA or blueprint fields, add/remove features. Older projects must run `decantr migrate --to v4` first.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -1072,7 +1073,13 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const raw = await readFile(essencePath, 'utf-8');
         const essence = JSON.parse(raw) as EssenceFile;
         const layer = args.layer as string | undefined;
-        if (layer && isV3(essence)) {
+        if (!isV4(essence)) {
+          return {
+            error:
+              'Active Decantr V2 workflows require Essence v4.0.0. Run `decantr migrate --to v4` for older essence files.',
+          };
+        }
+        if (layer) {
           if (layer === 'dna') return essence.dna;
           if (layer === 'blueprint') return essence.blueprint;
         }
@@ -1105,19 +1112,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         }
       }
 
-      // For v3 essences, separate violations by layer
+      // For Essence v4 files, separate violations by layer
       if (
         result.valid &&
         typeof essence === 'object' &&
         essence !== null &&
-        isV3(essence as EssenceFile)
+        isV4(essence as EssenceFile)
       ) {
         const dnaViolations = guardViolations.filter((v) => v.layer === 'dna');
         const blueprintViolations = guardViolations.filter((v) => v.layer === 'blueprint');
         const otherViolations = guardViolations.filter((v) => !v.layer);
         return {
           ...result,
-          format: 'v3',
+          format: 'v4',
           dna_violations: dnaViolations,
           blueprint_violations: blueprintViolations,
           guardViolations: otherViolations,
@@ -1376,6 +1383,15 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (!validation.valid) {
         return { drifted: true, reason: 'invalid_essence', errors: validation.errors };
       }
+      if (!isV4(essence)) {
+        return {
+          drifted: true,
+          reason: 'legacy_essence',
+          errors: [
+            'Active Decantr V2 workflows require Essence v4.0.0. Run `decantr migrate --to v4` for older essence files.',
+          ],
+        };
+      }
 
       const violations: {
         rule: string;
@@ -1387,44 +1403,28 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }[] = [];
 
       if (args.theme_used && typeof args.theme_used === 'string') {
-        let expectedThemeId: string | undefined;
-        if (isV3(essence)) {
-          expectedThemeId = essence.dna.theme.id;
-        } else {
-          const expectedTheme = (essence as Record<string, unknown>).theme as
-            | Record<string, string>
-            | undefined;
-          expectedThemeId = expectedTheme?.id ?? expectedTheme?.style;
-        }
+        const expectedThemeId = essence.dna.theme.id;
         if (expectedThemeId && args.theme_used !== expectedThemeId) {
           violations.push({
             rule: 'theme-match',
             severity: 'critical',
             message: `Theme drift: code uses "${args.theme_used}" but Essence specifies "${expectedThemeId}". Do not switch themes.`,
-            ...(isV3(essence) ? { layer: 'dna', autoFixable: false } : {}),
+            layer: 'dna',
+            autoFixable: false,
           });
         }
       }
 
       if (args.page_id && typeof args.page_id === 'string') {
-        let pages: Array<{ id: string }>;
-        if (isV3(essence)) {
-          pages = essence.blueprint.pages;
-        } else {
-          pages = ((essence as Record<string, unknown>).structure as Array<{ id: string }>) || [];
-        }
+        const pages = listEssencePages(essence);
         if (!pages.find((p) => p.id === args.page_id)) {
           violations.push({
             rule: 'page-exists',
             severity: 'critical',
             message: `Page "${args.page_id}" not found in Essence structure. Add it to the Essence before generating code for it.`,
-            ...(isV3(essence)
-              ? {
-                  layer: 'blueprint',
-                  autoFixable: true,
-                  autoFix: { type: 'add_page', patch: { id: args.page_id } },
-                }
-              : {}),
+            layer: 'blueprint',
+            autoFixable: true,
+            autoFix: { type: 'add_page', patch: { id: args.page_id } },
           });
         }
       }
@@ -1436,16 +1436,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         args.page_id &&
         typeof args.page_id === 'string'
       ) {
-        let pages: Array<{ id: string; layout: unknown[] }>;
-        if (isV3(essence)) {
-          pages = essence.blueprint.pages;
-        } else {
-          pages =
-            ((essence as Record<string, unknown>).structure as Array<{
-              id: string;
-              layout: unknown[];
-            }>) || [];
-        }
+        const pages = listEssencePages(essence);
         const page = pages.find((p) => p.id === args.page_id);
         if (page && page.layout) {
           // Extract expected patterns from layout
@@ -1486,7 +1477,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
               rule: 'component-pattern-match',
               severity: 'warning',
               message: `Components [${unmatchedComponents.join(', ')}] do not match any pattern in page "${args.page_id}" layout. Expected patterns: [${[...expectedPatterns].join(', ')}].`,
-              ...(isV3(essence) ? { layer: 'blueprint', autoFixable: false } : {}),
+              layer: 'blueprint',
+              autoFixable: false,
             });
           }
         }
@@ -1510,23 +1502,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         /* guard is optional */
       }
 
-      // For v3, separate by layer
-      if (isV3(essence)) {
-        const dnaViolations = violations.filter((v) => v.layer === 'dna');
-        const blueprintDrift = violations.filter((v) => v.layer === 'blueprint');
-        const other = violations.filter((v) => !v.layer);
-        return {
-          drifted: violations.length > 0,
-          dna_violations: dnaViolations,
-          blueprint_drift: blueprintDrift,
-          other_violations: other,
-          checkedAgainst: essencePath,
-        };
-      }
-
       return {
         drifted: violations.length > 0,
-        violations,
+        dna_violations: violations.filter((v) => v.layer === 'dna'),
+        blueprint_drift: violations.filter((v) => v.layer === 'blueprint'),
+        other_violations: violations.filter((v) => !v.layer),
         checkedAgainst: essencePath,
       };
     }
@@ -1584,9 +1564,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const rawPages = pages || [{ id: 'home', shell: 'full-bleed', default_layout: ['hero'] }];
       const defaultShell = rawPages[0]?.shell || 'sidebar-main';
 
-      // Generate v3 essence
-      const essence: EssenceV3 = {
-        version: '3.0.0',
+      const sectionPages = rawPages.map((p, index) => ({
+        id: p.id,
+        route: p.id === 'home' || index === 0 ? '/' : `/${p.id}`,
+        ...(p.shell !== defaultShell ? { shell_override: p.shell } : {}),
+        layout: p.default_layout || [],
+      }));
+      const routes = Object.fromEntries(
+        sectionPages.map((page) => [page.route, { section: bestMatch, page: page.id }]),
+      );
+
+      // Generate Essence v4 skeleton
+      const essence: EssenceV4 = {
+        version: '4.0.0',
         dna: {
           theme: {
             id: 'auradecantism',
@@ -1631,12 +1621,18 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         },
         blueprint: {
           shell: defaultShell,
-          pages: rawPages.map((p) => ({
-            id: p.id,
-            ...(p.shell !== defaultShell ? { shell_override: p.shell } : {}),
-            layout: p.default_layout || [],
-          })),
+          sections: [
+            {
+              id: bestMatch,
+              role: 'primary',
+              shell: defaultShell,
+              features,
+              description: `${bestMatch} primary section`,
+              pages: sectionPages,
+            },
+          ],
           features,
+          routes,
         },
         meta: {
           archetype: bestMatch,
@@ -1649,7 +1645,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       return {
         essence,
         archetype: bestMatch,
-        format: 'v3',
+        format: 'v4',
         instructions: `Save this as decantr.essence.json in your project root. Review the dna (design tokens), blueprint (pages/features), and meta (project config) sections and adjust to match your needs. The guard rules will validate your code against this spec.`,
         _generated: {
           matched_archetype: bestMatch,
@@ -1737,11 +1733,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       // resolution === 'accept' or 'accept_scoped'
       try {
-        const { essence, path } = await mutateEssenceFile(args.path as string | undefined, (v3) => {
+        const { essence, path } = await mutateEssenceFile(args.path as string | undefined, (v4) => {
           for (const v of violations) {
-            applyDriftAcceptance(v3, v, resolution, args.scope as string | undefined);
+            applyDriftAcceptance(v4, v, resolution, args.scope as string | undefined);
           }
-          return v3;
+          return v4;
         });
 
         return {
@@ -1782,8 +1778,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       try {
-        const { essence, path } = await mutateEssenceFile(args.path as string | undefined, (v3) => {
-          return applyEssenceUpdate(v3, operation, payload);
+        const { essence, path } = await mutateEssenceFile(args.path as string | undefined, (v4) => {
+          return applyEssenceUpdate(v4, operation, payload);
         });
 
         return {
@@ -1943,8 +1939,10 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         return { error: 'No valid essence file found. Run decantr init first.' };
       }
 
-      if (!isV3(essence)) {
-        return { error: 'Section context requires a v3 essence file. Run decantr migrate first.' };
+      if (!isV4(essence)) {
+        return {
+          error: 'Section context requires Essence v4.0.0. Run `decantr migrate --to v4` first.',
+        };
       }
 
       // Find the section
@@ -2487,8 +2485,42 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
 // --- Internal helpers for accept_drift ---
 
+function listEssencePages(essence: EssenceV4): Array<BlueprintPage & { sectionId: string }> {
+  return essence.blueprint.sections.flatMap((section) =>
+    section.pages.map((page) => ({ ...page, sectionId: section.id })),
+  );
+}
+
+function getMutablePage(
+  essence: EssenceV4,
+  id: string,
+  sectionId?: string,
+): {
+  page: BlueprintPage;
+  section: EssenceV4['blueprint']['sections'][number];
+  index: number;
+} | null {
+  for (const section of essence.blueprint.sections) {
+    if (sectionId && section.id !== sectionId) continue;
+    const index = section.pages.findIndex((page) => page.id === id);
+    if (index !== -1) {
+      return { page: section.pages[index], section, index };
+    }
+  }
+  return null;
+}
+
+function getDefaultSection(essence: EssenceV4): EssenceV4['blueprint']['sections'][number] {
+  const section =
+    essence.blueprint.sections.find((s) => s.role === 'primary') ?? essence.blueprint.sections[0];
+  if (!section) {
+    throw new Error('Essence v4 requires at least one blueprint section.');
+  }
+  return section;
+}
+
 function applyDriftAcceptance(
-  essence: EssenceV3,
+  essence: EssenceV4,
   violation: { rule: string; page_id?: string; details?: string },
   resolution: string,
   scope?: string,
@@ -2507,9 +2539,10 @@ function applyDriftAcceptance(
     case 'structure': {
       // Accept a missing page: add it to the blueprint
       if (violation.page_id) {
-        const existing = essence.blueprint.pages.find((p) => p.id === violation.page_id);
+        const section = getDefaultSection(essence);
+        const existing = getMutablePage(essence, violation.page_id);
         if (!existing) {
-          essence.blueprint.pages.push({
+          section.pages.push({
             id: violation.page_id,
             layout: [],
           });
@@ -2534,19 +2567,25 @@ function applyDriftAcceptance(
 // --- Internal helpers for update_essence ---
 
 function applyEssenceUpdate(
-  essence: EssenceV3,
+  essence: EssenceV4,
   operation: string,
   payload: Record<string, unknown>,
-): EssenceV3 {
+): EssenceV4 {
   switch (operation) {
     case 'add_page': {
       const id = payload.id as string;
       if (!id) throw new Error('Payload must include "id" for add_page.');
-      const existing = essence.blueprint.pages.find((p) => p.id === id);
+      const sectionId = payload.section_id as string | undefined;
+      const section = sectionId
+        ? essence.blueprint.sections.find((candidate) => candidate.id === sectionId)
+        : getDefaultSection(essence);
+      if (!section) throw new Error(`Section "${sectionId}" not found.`);
+      const existing = getMutablePage(essence, id, section.id);
       if (existing) throw new Error(`Page "${id}" already exists.`);
-      essence.blueprint.pages.push({
+      section.pages.push({
         id,
         layout: (payload.layout as string[]) || [],
+        ...(payload.route ? { route: payload.route as string } : {}),
         ...(payload.shell_override ? { shell_override: payload.shell_override as string } : {}),
         ...(payload.surface ? { surface: payload.surface as string } : {}),
       });
@@ -2555,9 +2594,9 @@ function applyEssenceUpdate(
     case 'remove_page': {
       const id = payload.id as string;
       if (!id) throw new Error('Payload must include "id" for remove_page.');
-      const idx = essence.blueprint.pages.findIndex((p) => p.id === id);
-      if (idx === -1) throw new Error(`Page "${id}" not found.`);
-      essence.blueprint.pages.splice(idx, 1);
+      const match = getMutablePage(essence, id, payload.section_id as string | undefined);
+      if (!match) throw new Error(`Page "${id}" not found.`);
+      match.section.pages.splice(match.index, 1);
       break;
     }
     case 'update_page_layout': {
@@ -2566,9 +2605,9 @@ function applyEssenceUpdate(
       if (!id) throw new Error('Payload must include "id" for update_page_layout.');
       if (!layout || !Array.isArray(layout))
         throw new Error('Payload must include "layout" array for update_page_layout.');
-      const page = essence.blueprint.pages.find((p) => p.id === id);
-      if (!page) throw new Error(`Page "${id}" not found.`);
-      page.layout = layout as EssenceV3['blueprint']['pages'][0]['layout'];
+      const match = getMutablePage(essence, id, payload.section_id as string | undefined);
+      if (!match) throw new Error(`Page "${id}" not found.`);
+      match.page.layout = layout as BlueprintPage['layout'];
       break;
     }
     case 'update_dna': {
@@ -2592,9 +2631,9 @@ function applyEssenceUpdate(
       break;
     }
     case 'update_blueprint': {
-      // Shallow merge payload into blueprint (except pages, which is managed via add/remove/update_page)
+      // Shallow merge payload into blueprint (except sections, managed via page/section operations)
       for (const [key, value] of Object.entries(payload)) {
-        if (key === 'pages') continue; // Use add_page/remove_page/update_page_layout
+        if (key === 'pages' || key === 'sections') continue;
         (essence.blueprint as Record<string, unknown>)[key] = value;
       }
       break;

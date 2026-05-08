@@ -7,7 +7,7 @@ import {
 import type { Env } from '../types.js';
 import { API_CONTENT_TYPES, PLURAL_TO_SINGULAR, isApiContentType, parsePagination } from '../types.js';
 import { createAdminClient } from '../db/client.js';
-import { validateEssence, isV3 } from '@decantr/essence-spec';
+import { validateEssence, isV4 } from '@decantr/essence-spec';
 import { logger } from '../lib/logger.js';
 import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { applyPublicContentOrdering } from '../lib/public-content-ordering.js';
@@ -308,7 +308,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
   }
 });
 
-// POST /v1/validate - Validate essence file (supports both v2 and v3)
+// POST /v1/validate - Validate active Essence v4 files
 contentRoutes.post('/validate', async (c) => {
   let body: unknown;
   try {
@@ -321,14 +321,14 @@ contentRoutes.post('/validate', async (c) => {
   const version = typeof body === 'object' && body !== null && 'version' in body
     ? (body as Record<string, unknown>).version
     : undefined;
-  const isV3Doc = typeof body === 'object' && body !== null && 'version' in body && 'dna' in body && 'blueprint' in body
-    ? isV3(body as any)
+  const isV4Doc = typeof body === 'object' && body !== null && 'version' in body && 'dna' in body && 'blueprint' in body
+    ? isV4(body as any)
     : false;
 
   return c.json({
     valid: result.valid,
     errors: result.errors,
     version: version ?? null,
-    schemaVersion: isV3Doc ? 'v3' : 'v2',
+    schemaVersion: isV4Doc ? 'v4' : 'legacy',
   });
 });

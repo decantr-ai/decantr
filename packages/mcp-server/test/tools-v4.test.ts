@@ -1,14 +1,14 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { EssenceV3 } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetAPIClient } from '../src/helpers.js';
 import { handleTool } from '../src/tools.js';
 
-function makeV3Essence(overrides?: Partial<EssenceV3>): EssenceV3 {
+function makeV4Essence(overrides?: Partial<EssenceV4>): EssenceV4 {
   return {
-    version: '3.0.0',
+    version: '4.0.0',
     dna: {
       theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
@@ -23,11 +23,24 @@ function makeV3Essence(overrides?: Partial<EssenceV3>): EssenceV3 {
     },
     blueprint: {
       shell: 'sidebar-main',
-      pages: [
-        { id: 'overview', layout: ['kpi-grid', 'chart-grid'] },
-        { id: 'settings', layout: ['form-sections'] },
+      sections: [
+        {
+          id: 'dashboard',
+          role: 'primary',
+          shell: 'sidebar-main',
+          features: ['auth', 'search'],
+          description: 'Primary dashboard section',
+          pages: [
+            { id: 'overview', route: '/', layout: ['kpi-grid', 'chart-grid'] },
+            { id: 'settings', route: '/settings', layout: ['form-sections'] },
+          ],
+        },
       ],
       features: ['auth', 'search'],
+      routes: {
+        '/': { section: 'dashboard', page: 'overview' },
+        '/settings': { section: 'dashboard', page: 'settings' },
+      },
       ...overrides?.blueprint,
     },
     meta: {
@@ -62,7 +75,7 @@ function makeHostedPackBundle() {
   return {
     $schema: 'https://decantr.ai/schemas/execution-pack-bundle.v1.json',
     generatedAt: '2026-04-09T00:00:00.000Z',
-    sourceEssenceVersion: '3.0.0',
+    sourceEssenceVersion: '4.0.0',
     manifest: {
       $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
       version: '1.0.0',
@@ -267,7 +280,7 @@ const originalCwd = process.cwd();
 beforeEach(async () => {
   testDir = join(
     tmpdir(),
-    `decantr-mcp-test-v3-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    `decantr-mcp-test-v4-${Date.now()}-${Math.random().toString(36).slice(2)}`,
   );
   await mkdir(testDir, { recursive: true });
 });
@@ -279,10 +292,10 @@ afterEach(async () => {
   await rm(testDir, { recursive: true, force: true });
 });
 
-describe('v3-aware tool tests', () => {
+describe('V4 tool tests', () => {
   describe('verification tools', () => {
     it('returns a schema-backed project audit report', async () => {
-      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
 
       process.chdir(testDir);
@@ -301,7 +314,7 @@ describe('v3-aware tool tests', () => {
     });
 
     it('falls back to the hosted verifier for project audit when local packs are missing', async () => {
-      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       await mkdir(join(testDir, 'dist', 'assets'), { recursive: true });
       await mkdir(join(testDir, 'src', 'pages'), { recursive: true });
       await writeFile(
@@ -321,7 +334,7 @@ describe('v3-aware tool tests', () => {
               $schema: 'https://decantr.ai/schemas/project-audit-report.v1.json',
               projectRoot: '[hosted-audit]',
               valid: true,
-              essence: makeV3Essence(),
+              essence: makeV4Essence(),
               reviewPack: null,
               packManifest: null,
               runtimeAudit: {
@@ -357,7 +370,7 @@ describe('v3-aware tool tests', () => {
                 errorCount: 0,
                 warnCount: 0,
                 infoCount: 0,
-                essenceVersion: '3.0.0',
+                essenceVersion: '4.0.0',
                 reviewPackPresent: true,
                 packManifestPresent: true,
                 runtimeAuditChecked: true,
@@ -447,7 +460,7 @@ describe('v3-aware tool tests', () => {
     });
 
     it('falls back to the hosted verifier when local review packs are missing', async () => {
-      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       const filePath = join(testDir, 'Overview.tsx');
       await writeFile(filePath, '<button style={{ color: "#ff00ff" }}>Click me</button>\n');
 
@@ -498,7 +511,7 @@ describe('v3-aware tool tests', () => {
     });
 
     it('keeps file critique local unless hosted upload is explicitly allowed', async () => {
-      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
       const filePath = join(testDir, 'Overview.tsx');
       await writeFile(filePath, '<button style={{ color: "#ff00ff" }}>Click me</button>\n');
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('hosted upload should not run'));
@@ -620,7 +633,7 @@ describe('v3-aware tool tests', () => {
           JSON.stringify({
             $schema: 'https://decantr.ai/schemas/execution-pack-bundle.v1.json',
             generatedAt: '2026-04-09T00:00:00.000Z',
-            sourceEssenceVersion: '3.0.0',
+            sourceEssenceVersion: '4.0.0',
             manifest: {
               $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
               version: '1.0.0',
@@ -720,7 +733,7 @@ describe('v3-aware tool tests', () => {
         ),
       );
 
-      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV3Essence()));
+      await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
 
       process.chdir(testDir);
       const result = (await handleTool('decantr_compile_execution_packs', {
@@ -737,13 +750,13 @@ describe('v3-aware tool tests', () => {
     });
   });
 
-  describe('decantr_read_essence — v3 layer filtering', () => {
-    it('should return full v3 essence by default', async () => {
+  describe('decantr_read_essence — V4 layer filtering', () => {
+    it('should return full V4 essence by default', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_read_essence', { path: essencePath })) as EssenceV3;
-      expect(result.version).toBe('3.0.0');
+      const result = (await handleTool('decantr_read_essence', { path: essencePath })) as EssenceV4;
+      expect(result.version).toBe('4.0.0');
       expect(result.dna).toBeDefined();
       expect(result.blueprint).toBeDefined();
       expect(result.meta).toBeDefined();
@@ -751,7 +764,7 @@ describe('v3-aware tool tests', () => {
 
     it('should return only dna layer when requested', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_read_essence', {
         path: essencePath,
@@ -759,23 +772,23 @@ describe('v3-aware tool tests', () => {
       })) as Record<string, unknown>;
       expect(result.theme).toBeDefined();
       expect(result.spacing).toBeDefined();
-      expect((result as unknown as EssenceV3).blueprint).toBeUndefined();
+      expect((result as unknown as EssenceV4).blueprint).toBeUndefined();
     });
 
     it('should return only blueprint layer when requested', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_read_essence', {
         path: essencePath,
         layer: 'blueprint',
       })) as Record<string, unknown>;
-      expect(result.pages).toBeDefined();
+      expect(result.sections).toBeDefined();
       expect(result.shell).toBeDefined();
-      expect((result as unknown as EssenceV3).dna).toBeUndefined();
+      expect((result as unknown as EssenceV4).dna).toBeUndefined();
     });
 
-    it('should ignore layer param for v2 essences', async () => {
+    it('should reject pre-V4 essences with migration guidance', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
@@ -783,33 +796,32 @@ describe('v3-aware tool tests', () => {
         path: essencePath,
         layer: 'dna',
       })) as Record<string, unknown>;
-      expect(result.version).toBe('2.0.0');
-      expect(result.archetype).toBeDefined();
+      expect(result.error).toContain('decantr migrate --to v4');
     });
   });
 
-  describe('decantr_validate — v3 layer separation', () => {
-    it('should report format v3 for v3 essences', async () => {
+  describe('decantr_validate — V4 layer separation', () => {
+    it('should report format V4 for V4 essences', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_validate', { path: essencePath })) as Record<
         string,
         unknown
       >;
-      // If schema validates, check for v3 format field
+      // If schema validates, check for V4 format field
       if (result.valid) {
-        expect(result.format).toBe('v3');
+        expect(result.format).toBe('v4');
         expect(result.dna_violations).toBeDefined();
         expect(result.blueprint_violations).toBeDefined();
       }
     });
   });
 
-  describe('decantr_check_drift — v3 separated response', () => {
-    it('should return dna_violations and blueprint_drift for v3', async () => {
+  describe('decantr_check_drift — V4 separated response', () => {
+    it('should return dna_violations and blueprint_drift for V4', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_check_drift', { path: essencePath })) as Record<
         string,
@@ -820,9 +832,9 @@ describe('v3-aware tool tests', () => {
       expect(result.drifted).toBe(false);
     });
 
-    it('should detect theme drift for v3 with layer annotation', async () => {
+    it('should detect theme drift for V4 with layer annotation', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_check_drift', {
         path: essencePath,
@@ -834,9 +846,9 @@ describe('v3-aware tool tests', () => {
       expect(result.dna_violations[0].layer).toBe('dna');
     });
 
-    it('should detect missing page for v3 with autoFixable flag', async () => {
+    it('should detect missing page for V4 with autoFixable flag', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_check_drift', {
         path: essencePath,
@@ -849,7 +861,7 @@ describe('v3-aware tool tests', () => {
       expect(pageViolation?.autoFixable).toBe(true);
     });
 
-    it('should return flat violations for v2', async () => {
+    it('should reject V2 drift checks with migration guidance', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
@@ -857,13 +869,14 @@ describe('v3-aware tool tests', () => {
         string,
         unknown
       >;
-      expect(result.violations).toBeDefined();
+      expect(result.reason).toBe('invalid_essence');
+      expect(String(result.errors)).toContain('decantr migrate --to v4');
       expect(result.dna_violations).toBeUndefined();
     });
 
     it('should check components_used against page layout', async () => {
       const essencePath = join(testDir, 'decantr.essence.json');
-      await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+      await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
       const result = (await handleTool('decantr_check_drift', {
         path: essencePath,
@@ -880,16 +893,16 @@ describe('v3-aware tool tests', () => {
     });
   });
 
-  describe('decantr_create_essence — v3 format', () => {
-    it('should generate v3 format essence', async () => {
+  describe('decantr_create_essence — V4 format', () => {
+    it('should generate V4 format essence', async () => {
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
 
       const result = (await handleTool('decantr_create_essence', {
         description: 'SaaS dashboard with analytics',
-      })) as { essence: EssenceV3; format: string };
+      })) as { essence: EssenceV4; format: string };
 
-      expect(result.format).toBe('v3');
-      expect(result.essence.version).toBe('3.0.0');
+      expect(result.format).toBe('v4');
+      expect(result.essence.version).toBe('4.0.0');
       expect(result.essence.dna).toBeDefined();
       expect(result.essence.blueprint).toBeDefined();
       expect(result.essence.meta).toBeDefined();
@@ -900,7 +913,7 @@ describe('v3-aware tool tests', () => {
 
       const result = (await handleTool('decantr_create_essence', {
         description: 'ecommerce shop',
-      })) as { essence: EssenceV3; archetype: string };
+      })) as { essence: EssenceV4; archetype: string };
 
       expect(result.archetype).toContain('ecommerce');
       expect(result.essence.meta.archetype).toContain('ecommerce');
@@ -992,7 +1005,7 @@ describe('v3-aware tool tests', () => {
       await writeFile(
         join(testDir, 'decantr.essence.json'),
         JSON.stringify(
-          makeV3Essence({
+          makeV4Essence({
             blueprint: {
               sections: [
                 {
@@ -1079,7 +1092,7 @@ describe('v3-aware tool tests', () => {
       await writeFile(
         join(testDir, 'decantr.essence.json'),
         JSON.stringify(
-          makeV3Essence({
+          makeV4Essence({
             blueprint: {
               features: ['auth'],
               sections: [
@@ -1217,7 +1230,7 @@ describe('v3-aware tool tests', () => {
       await writeFile(
         join(testDir, 'decantr.essence.json'),
         JSON.stringify(
-          makeV3Essence({
+          makeV4Essence({
             blueprint: {
               features: ['auth'],
               sections: [
@@ -1409,7 +1422,7 @@ describe('v3-aware tool tests', () => {
       await writeFile(
         join(testDir, 'decantr.essence.json'),
         JSON.stringify(
-          makeV3Essence({
+          makeV4Essence({
             blueprint: {
               sections: [
                 {
@@ -1502,7 +1515,7 @@ describe('v3-aware tool tests', () => {
       await writeFile(
         essencePath,
         JSON.stringify(
-          makeV3Essence({
+          makeV4Essence({
             blueprint: {
               features: ['auth'],
               sections: [
@@ -1559,7 +1572,7 @@ describe('v3-aware tool tests', () => {
       await writeFile(
         essencePath,
         JSON.stringify(
-          makeV3Essence({
+          makeV4Essence({
             blueprint: {
               features: ['auth'],
               sections: [

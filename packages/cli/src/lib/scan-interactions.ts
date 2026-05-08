@@ -1,5 +1,5 @@
 /**
- * v2.1 Tier C — CLI wiring for the experiential interaction guard rule.
+ * CLI wiring for the experiential interaction guard rule.
  *
  * This module connects the dots:
  *   - Reads the project's pack-manifest.json (.decantr/context/)

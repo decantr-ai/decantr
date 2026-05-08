@@ -152,7 +152,7 @@
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│     composeArchetypes() + resolvePatternAlias() + buildEssenceV3()  │
+│     composeArchetypes() + resolvePatternAlias() + buildEssenceV4()  │
 │                                                                     │
 │  INPUTS:                                                            │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                │
@@ -163,7 +163,7 @@
 │         ▼                ▼                ▼                        │
 │  ┌─────────────────────────────────────────────────────────┐       │
 │  │                                                         │       │
-│  │              decantr.essence.json (v3)                   │       │
+│  │              decantr.essence.json (v4)                   │       │
 │  │                                                         │       │
 │  │  ┌─────────────────────────────────────────────────┐    │       │
 │  │  │  DNA (Guarded — design axioms)                  │    │       │
@@ -194,7 +194,7 @@
 │  │  │                                                 │    │       │
 │  │  │  shell ◄───────── Primary archetype[0].shell    │    │       │
 │  │  │                                                 │    │       │
-│  │  │  pages[] ◄──────── Composed from ALL archetypes │    │       │
+│  │  │  sections[] ◄───── Composed from archetype topology │ │       │
 │  │  │    ┌─────────────────────────────────────────┐  │    │       │
 │  │  │    │ Primary pages (no prefix):              │  │    │       │
 │  │  │    │   home      → [hero, features, cta]     │  │    │       │
@@ -225,7 +225,7 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    FILE GENERATION                                  │
 │                                                                     │
-│  decantr.essence.json ◄── v3 essence (DNA + Blueprint + Meta)       │
+│  decantr.essence.json ◄── Essence v4 (DNA + Blueprint + Meta)       │
 │                                                                     │
 │  DECANTR.md ◄──────────── Template + theme/pages/guard data         │
 │                            (AI assistant instructions)              │
@@ -252,7 +252,7 @@
 │    decantr-css   → full tokens/treatments/decorators guidance       │
 │                                                                     │
 │  .decantr/project.json ◄── Detection results + init metadata        │
-│  .decantr/context/*.md ◄── 3 task files + 1 essence summary         │
+│  .decantr/context/*.md ◄── compiled packs + task and section context │
 │  .gitignore            ◄── Adds .decantr/cache/ if not present      │
 │                                                                     │
 └──────────────────────────┬──────────────────────────────────────────┘
@@ -261,7 +261,7 @@
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    POST-SCAFFOLD                                    │
 │                                                                     │
-│  1. Validate essence against v3 schema                              │
+│  1. Validate essence against the v4 schema                          │
 │  2. Display file creation summary                                   │
 │  3. Generate curated prompt (copy to AI assistant)                  │
 │  4. Optionally preview/apply assistant rule bridge                  │
