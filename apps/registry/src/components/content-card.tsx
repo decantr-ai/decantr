@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import type { ContentItem, DashboardContentItem } from '@/lib/api';
 import { getShowcaseUrl, type ShowcaseMetadata } from '@/lib/showcase';
 import {
@@ -11,10 +12,12 @@ export function ContentCard({
   item,
   editable,
   showcaseMetadata,
+  staggerIndex,
 }: {
   item: ContentItem | DashboardContentItem;
   editable?: boolean;
   showcaseMetadata?: ShowcaseMetadata | null;
+  staggerIndex?: number;
 }) {
   const typePresentation = getTypePresentation(item.type);
   const href = `/${item.type}/${encodeURIComponent(item.namespace)}/${item.slug}`;
@@ -39,9 +42,17 @@ export function ContentCard({
     : showcaseUrl
     ? 'live'
     : 'pending';
+  const cardStyle =
+    typeof staggerIndex === 'number'
+      ? ({ '--d-stagger-index': staggerIndex } as CSSProperties)
+      : undefined;
 
   return (
-    <article className="lum-card-outlined registry-card" data-type={typePresentation.singular}>
+    <article
+      className="lum-card-outlined registry-card d-enter-fade d-lift-hover"
+      data-type={typePresentation.singular}
+      style={cardStyle}
+    >
       {previewImageUrl ? (
         <div className="registry-card-media">
           <img

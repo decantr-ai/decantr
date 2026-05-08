@@ -49,6 +49,7 @@ export function SearchFilterBar({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [hoveredTypeLabel, setHoveredTypeLabel] = useState<string | null>(null);
 
   const currentQuery = searchParams.get('q') ?? '';
   const currentSort = normalizePublicContentSort(searchParams.get('sort'));
@@ -148,6 +149,12 @@ export function SearchFilterBar({
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
           placeholder="Search Decantr registry..."
           className="d-control registry-search-input"
           aria-label="Search registry content"
@@ -159,7 +166,12 @@ export function SearchFilterBar({
         ) : null}
       </form>
 
-      <div className="registry-type-strip" role="tablist" aria-label="Filter by content type">
+      <div
+        className="registry-type-strip"
+        role="tablist"
+        aria-label="Filter by content type"
+        aria-describedby={hoveredTypeLabel ? 'registry-type-hover-reveal' : undefined}
+      >
         {TYPES.map(({ type, label, icon }) => {
           const isActive = (activeType === 'all' && !type) || activeType === type;
           const tone = type ? CONTENT_TYPE_PRESENTATION[type].tone : 'all';
@@ -171,13 +183,23 @@ export function SearchFilterBar({
               data-variant={isActive ? 'primary' : 'ghost'}
               data-type-tone={tone}
               data-active={isActive}
+              data-hovered={hoveredTypeLabel === label}
+              data-tooltip={`Browse ${label.toLowerCase()}`}
+              title={`Browse ${label}`}
               onClick={() => handleTypeChange(type)}
+              onMouseEnter={() => setHoveredTypeLabel(label)}
+              onMouseLeave={() => setHoveredTypeLabel(null)}
             >
               {icon}
               <span>{label}</span>
             </button>
           );
         })}
+        {hoveredTypeLabel ? (
+          <span id="registry-type-hover-reveal" className="sr-only">
+            Browse {hoveredTypeLabel}
+          </span>
+        ) : null}
       </div>
 
       <div className="registry-search-meta">

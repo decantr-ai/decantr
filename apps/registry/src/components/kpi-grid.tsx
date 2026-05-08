@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 interface KPIItem {
   label: string;
@@ -50,14 +50,59 @@ function AnimatedValue({ value }: { value: number }) {
 }
 
 export function KPIGrid({ items }: KPIGridProps) {
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [liveTick, setLiveTick] = useState(0);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return undefined;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setRevealed(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setRevealed(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.18 },
+    );
+    observer.observe(grid);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setLiveTick((tick) => tick + 1);
+    }, 30000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
-    <div className="registry-kpi-grid">
-      {items.map((item) => {
+    <div
+      ref={gridRef}
+      className={`registry-kpi-grid d-stagger-children ${revealed ? 'd-enter-fade' : ''}`}
+      data-live-tick={liveTick}
+      aria-live="polite"
+    >
+      {items.map((item, index) => {
         const trend = item.trend;
         const positive = trend !== undefined && trend >= 0;
 
         return (
-          <div key={item.label} className="d-surface registry-kpi-card">
+          <div
+            key={item.label}
+            className="d-surface registry-kpi-card d-lift-hover"
+            data-tooltip={`${item.label}: ${formatNumber(item.value)}`}
+            style={{ '--d-stagger-index': index } as CSSProperties}
+          >
             <div className="registry-kpi-content">
               {item.icon ? <div className="registry-kpi-icon">{item.icon}</div> : null}
               <div className="registry-kpi-meta">

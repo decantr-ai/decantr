@@ -4,6 +4,7 @@ import type { Env } from '../types.js';
 import { API_KEY_SCOPES, isApiKeyScope, requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
 import { createAdminClient } from '../db/client.js';
+import type { Database } from '../db/types.js';
 import { getStripe } from '../stripe/client.js';
 import { logger } from '../lib/logger.js';
 import {
@@ -17,6 +18,8 @@ import { ensureUserProfile } from '../lib/user-profile.js';
 import { hashApiKey } from '../lib/api-key-hash.js';
 
 export const authRoutes = new Hono<Env>();
+
+type UserUpdate = Database['public']['Tables']['users']['Update'];
 
 // Auth routes require authentication, without shadowing other /v1 route modules.
 authRoutes.use('/me', requireAuth());
@@ -111,7 +114,7 @@ authRoutes.patch('/me', requireApiKeyScope('admin:*'), async (c) => {
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
 
-  const updates: Record<string, unknown> = {};
+  const updates: UserUpdate = {};
 
   if (body.email && typeof body.email === 'string') {
     updates.email = body.email;

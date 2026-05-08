@@ -166,6 +166,8 @@ Project Health and CI:
 decantr health --format markdown
 decantr health --ci --fail-on error
 decantr health --prompt <finding-id>
+decantr health init-ci
+decantr health init-ci --project apps/registry
 decantr studio --port 4319 --host 127.0.0.1
 ```
 
