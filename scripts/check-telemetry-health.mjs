@@ -16,6 +16,9 @@ const token =
   process.env.DECANTR_ADMIN_KEY?.trim() ||
   (dryRun ? 'dry-run' : '');
 const webhookUrl = process.env.TELEMETRY_HEALTH_WEBHOOK_URL?.trim() || '';
+const webhookFormat = normalizeWebhookFormat(
+  process.env.TELEMETRY_HEALTH_WEBHOOK_FORMAT?.trim() || detectWebhookFormat(webhookUrl),
+);
 const webhookAlways = process.env.TELEMETRY_HEALTH_WEBHOOK_ALWAYS === 'true';
 
 if (!token) {
@@ -160,13 +163,43 @@ async function postWebhook(markdown) {
   const response = await fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: markdown }),
+    body: JSON.stringify(webhookPayload(markdown)),
   });
 
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Telemetry health webhook failed ${response.status} ${response.statusText}: ${text.slice(0, 600)}`);
   }
+}
+
+function webhookPayload(markdown) {
+  if (webhookFormat === 'discord') {
+    return { content: limitDiscordContent(markdown) };
+  }
+
+  return { text: markdown };
+}
+
+function detectWebhookFormat(value) {
+  try {
+    const url = new URL(value);
+    const hostname = url.hostname.toLowerCase();
+    if (hostname === 'discord.com' || hostname.endsWith('.discord.com')) return 'discord';
+    if (hostname === 'discordapp.com' || hostname.endsWith('.discordapp.com')) return 'discord';
+  } catch {
+    return 'text';
+  }
+
+  return 'text';
+}
+
+function normalizeWebhookFormat(value) {
+  return value === 'discord' ? 'discord' : 'text';
+}
+
+function limitDiscordContent(value) {
+  if (value.length <= 2_000) return value;
+  return `${value.slice(0, 1_900)}\n\n[Trimmed: open the GitHub Actions step summary for the full report.]`;
 }
 
 function sampleHealthResponses(checks) {

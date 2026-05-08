@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '30 14 * * *'
   workflow_dispatch:
+    inputs:
+      send_webhook_test:
+        description: 'Post the health summary to TELEMETRY_HEALTH_WEBHOOK_URL even when healthy'
+        required: false
+        default: false
+        type: boolean
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -23,6 +29,7 @@ jobs:
           DECANTR_API_URL: ${{ vars.DECANTR_API_URL || 'https://api.decantr.ai/v1' }}
           DECANTR_TELEMETRY_SNAPSHOT_TOKEN: ${{ secrets.DECANTR_TELEMETRY_SNAPSHOT_TOKEN || secrets.DECANTR_ADMIN_KEY }}
           TELEMETRY_HEALTH_WEBHOOK_URL: ${{ secrets.TELEMETRY_HEALTH_WEBHOOK_URL }}
+          TELEMETRY_HEALTH_WEBHOOK_ALWAYS: ${{ github.event_name == 'workflow_dispatch' && inputs.send_webhook_test && 'true' || 'false' }}
         run: |
           if [ -z "$DECANTR_TELEMETRY_SNAPSHOT_TOKEN" ]; then
             echo "Missing DECANTR_TELEMETRY_SNAPSHOT_TOKEN. DECANTR_ADMIN_KEY is accepted as a fallback."
