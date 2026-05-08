@@ -42,5 +42,13 @@ describe('telemetry actor attribution', () => {
         anonymousId: 'registry_web:visitor',
       }),
     ).toBe('anonymous');
+
+    expect(
+      resolveTelemetryActorType({
+        source: 'marketing-web',
+        environment: 'production',
+        anonymousId: 'marketing_web:visitor',
+      }),
+    ).toBe('anonymous');
   });
 });

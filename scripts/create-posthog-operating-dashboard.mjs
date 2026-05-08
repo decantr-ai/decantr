@@ -56,6 +56,10 @@ const events = {
   critiqueCompleted: 'critique.completed',
   executionPackCompiled: 'execution_pack.compiled',
   executionPackSelected: 'execution_pack.selected',
+  marketingWebCommandClicked: 'marketing_web.command_clicked',
+  marketingWebCtaClicked: 'marketing_web.cta_clicked',
+  marketingWebOutboundClicked: 'marketing_web.outbound_clicked',
+  marketingWebPageViewed: 'marketing_web.page_viewed',
   orgCreated: 'org.created',
   registryWebApiKeyPageViewed: 'registry_web.api_key_page_viewed',
   registryWebBillingViewed: 'registry_web.billing_viewed',
@@ -84,11 +88,34 @@ const insightSpecs = [
         layout: 'horizontal',
       },
       series: [
+        eventNode(events.marketingWebPageViewed, 'Marketing page viewed'),
+        eventNode(events.marketingWebCtaClicked, 'Marketing CTA clicked'),
         eventNode(events.registryWebSignupClicked, 'Signup clicked'),
         eventNode(events.userSignupCompleted, 'Signup completed'),
         eventNode(events.apiKeyCreated, 'API key created'),
         eventNode(events.registryItemResolved, 'Registry item resolved'),
         eventNode(events.executionPackCompiled, 'Execution pack compiled'),
+      ],
+    }),
+  },
+  {
+    name: 'Paid acquisition funnel',
+    description:
+      'Tracks paid/social acquisition from marketing-site visits through registry handoff, registry exploration, and hosted signup intent.',
+    query: insightViz({
+      kind: 'FunnelsQuery',
+      dateRange: last30Days(),
+      filterTestAccounts: false,
+      funnelsFilter: {
+        funnelVizType: 'steps',
+        layout: 'horizontal',
+      },
+      series: [
+        eventNode(events.marketingWebPageViewed, 'Marketing page viewed'),
+        eventNode(events.marketingWebCtaClicked, 'CTA clicked'),
+        eventNode(events.registryWebPageViewed, 'Registry page viewed'),
+        eventNode(events.registryWebContentOpened, 'Content opened'),
+        eventNode(events.registryWebSignupClicked, 'Signup clicked'),
       ],
     }),
   },
@@ -129,6 +156,7 @@ const insightSpecs = [
     description:
       'Daily commercial-intent signals: new hosted profiles, API keys, and team/org creation.',
     query: trendLine([
+      [events.marketingWebCtaClicked, 'Marketing CTA clicked'],
       [events.userSignupCompleted, 'Signup completed'],
       [events.registryWebSignupClicked, 'Signup clicked'],
       [events.registryWebApiKeyPageViewed, 'API key page viewed'],
@@ -147,6 +175,25 @@ const insightSpecs = [
       [events.registryWebContentOpened, 'Content opened'],
       [events.registryWebIdentityLinked, 'Identity linked'],
     ]),
+  },
+  {
+    name: 'Marketing acquisition by campaign',
+    description:
+      'Marketing-site acquisition events broken down by UTM campaign for lightweight paid social tests.',
+    query: trendBar(
+      [
+        [events.marketingWebPageViewed, 'Page viewed'],
+        [events.marketingWebCtaClicked, 'CTA clicked'],
+        [events.marketingWebOutboundClicked, 'Outbound clicked'],
+        [events.marketingWebCommandClicked, 'Command clicked'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'attributionUtmCampaign',
+          breakdown_type: 'event',
+        },
+      },
+    ),
   },
   {
     name: 'Registry web discovery funnel',
@@ -202,8 +249,9 @@ const insightSpecs = [
   {
     name: 'Event volume by Decantr source',
     description:
-      'All Decantr telemetry volume split by source-adjacent event streams so CLI, API, MCP, and content CI usage are easy to compare.',
+      'All Decantr telemetry volume split by source-adjacent event streams so marketing web, CLI, API, MCP, and content CI usage are easy to compare.',
     query: trendBar([
+      [events.marketingWebPageViewed, 'Marketing web'],
       [events.cliCommandCompleted, 'CLI'],
       [events.registryItemResolved, 'Registry/API/MCP'],
       [events.executionPackCompiled, 'Execution packs'],
@@ -218,6 +266,7 @@ const insightSpecs = [
       'All Decantr telemetry volume split by anonymous, customer, internal, official-pipeline, and service actor classes.',
     query: trendBar(
       [
+        [events.marketingWebPageViewed, 'Marketing web'],
         [events.cliCommandCompleted, 'CLI'],
         [events.registryItemResolved, 'Registry/API/MCP'],
         [events.executionPackCompiled, 'Execution packs'],
@@ -276,6 +325,7 @@ const cohortSpecs = [
     description:
       'Users who touched billing, API keys, organization surfaces, team creation, or signup intent in the last 30 days.',
     filters: cohortFilters('OR', [
+      performedEvent(events.marketingWebCtaClicked),
       performedEvent(events.registryWebBillingViewed),
       performedEvent(events.registryWebApiKeyPageViewed),
       performedEvent(events.registryWebOrganizationViewed),

@@ -5,7 +5,14 @@ import {
   type TelemetrySource,
 } from '@decantr/telemetry';
 
-export const TELEMETRY_USAGE_SOURCES = ['api', 'cli', 'content-ci', 'mcp', 'registry-web'] as const;
+export const TELEMETRY_USAGE_SOURCES = [
+  'api',
+  'cli',
+  'content-ci',
+  'marketing-web',
+  'mcp',
+  'registry-web',
+] as const;
 export const TELEMETRY_USAGE_DAY_RANGES = [1, 7, 14, 30, 90] as const;
 
 const POSTHOG_QUERY_TIMEOUT_MS = 8_000;
@@ -14,7 +21,17 @@ const TELEMETRY_SIGNAL_BUCKETS = [
   {
     key: 'activation',
     label: 'Activation',
-    events: ['user.signup.completed', 'api_key.created'],
+    events: ['marketing_web.cta_clicked', 'user.signup.completed', 'api_key.created'],
+  },
+  {
+    key: 'paid_acquisition',
+    label: 'Paid acquisition',
+    events: [
+      'marketing_web.page_viewed',
+      'marketing_web.cta_clicked',
+      'marketing_web.outbound_clicked',
+      'marketing_web.command_clicked',
+    ],
   },
   {
     key: 'registry_discovery',
@@ -39,7 +56,13 @@ const TELEMETRY_SIGNAL_BUCKETS = [
   {
     key: 'commercial_intent',
     label: 'Commercial intent',
-    events: ['registry_web.billing_viewed', 'registry_web.api_key_page_viewed', 'registry_web.organization_viewed', 'org.created'],
+    events: [
+      'marketing_web.cta_clicked',
+      'registry_web.billing_viewed',
+      'registry_web.api_key_page_viewed',
+      'registry_web.organization_viewed',
+      'org.created',
+    ],
   },
 ] as const;
 
