@@ -1,6 +1,12 @@
 export const DECANTR_TELEMETRY_SCHEMA_VERSION = '0.1.0';
 
-export type TelemetrySource = 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+export type TelemetrySource =
+  | 'api'
+  | 'cli'
+  | 'content-ci'
+  | 'marketing-web'
+  | 'mcp'
+  | 'registry-web';
 export type TelemetryEnvironment = 'development' | 'preview' | 'production' | 'test';
 export const DECANTR_TELEMETRY_ACTOR_TYPES = [
   'anonymous',
@@ -31,6 +37,10 @@ export const DECANTR_TELEMETRY_EVENT_NAMES = [
   'critique.completed',
   'execution_pack.compiled',
   'execution_pack.selected',
+  'marketing_web.command_clicked',
+  'marketing_web.cta_clicked',
+  'marketing_web.outbound_clicked',
+  'marketing_web.page_viewed',
   'org.created',
   'registry_web.api_key_page_viewed',
   'registry_web.billing_viewed',
@@ -248,7 +258,59 @@ export interface ProductEventProperties extends TelemetryProperties {
   plan?: string;
 }
 
-export interface RegistryWebPageViewedProperties extends TelemetryProperties {
+export interface CampaignAttributionProperties extends TelemetryProperties {
+  attributionClickIdProvider?: string | null;
+  attributionClickIdPresent?: boolean;
+  attributionFirstLandingPath?: string | null;
+  attributionFirstReferrerDomain?: string | null;
+  attributionFirstUtmCampaign?: string | null;
+  attributionFirstUtmContent?: string | null;
+  attributionFirstUtmId?: string | null;
+  attributionFirstUtmMedium?: string | null;
+  attributionFirstUtmSource?: string | null;
+  attributionFirstUtmTerm?: string | null;
+  attributionLandingPath?: string | null;
+  attributionLastLandingPath?: string | null;
+  attributionLastReferrerDomain?: string | null;
+  attributionLastUtmCampaign?: string | null;
+  attributionLastUtmContent?: string | null;
+  attributionLastUtmId?: string | null;
+  attributionLastUtmMedium?: string | null;
+  attributionLastUtmSource?: string | null;
+  attributionLastUtmTerm?: string | null;
+  attributionReferrerDomain?: string | null;
+  attributionUtmCampaign?: string | null;
+  attributionUtmContent?: string | null;
+  attributionUtmId?: string | null;
+  attributionUtmMedium?: string | null;
+  attributionUtmSource?: string | null;
+  attributionUtmTerm?: string | null;
+}
+
+export interface MarketingWebPageViewedProperties extends CampaignAttributionProperties {
+  routePath: string;
+  surface: string;
+}
+
+export interface MarketingWebCtaClickedProperties extends CampaignAttributionProperties {
+  destination: string;
+  label?: string | null;
+  surface: string;
+}
+
+export interface MarketingWebOutboundClickedProperties extends CampaignAttributionProperties {
+  destination: string;
+  label?: string | null;
+  surface: string;
+}
+
+export interface MarketingWebCommandClickedProperties extends CampaignAttributionProperties {
+  commandKind: 'cli' | 'mcp' | 'other';
+  commandLabel?: string | null;
+  surface: string;
+}
+
+export interface RegistryWebPageViewedProperties extends CampaignAttributionProperties {
   authenticated: boolean;
   orgScoped?: boolean;
   plan?: string;
@@ -258,7 +320,7 @@ export interface RegistryWebPageViewedProperties extends TelemetryProperties {
   surface: string;
 }
 
-export interface RegistryWebSearchPerformedProperties extends TelemetryProperties {
+export interface RegistryWebSearchPerformedProperties extends CampaignAttributionProperties {
   contentType?: string;
   queryLength: number;
   resultCount?: number;
@@ -267,7 +329,7 @@ export interface RegistryWebSearchPerformedProperties extends TelemetryPropertie
   surface: string;
 }
 
-export interface RegistryWebContentOpenedProperties extends TelemetryProperties {
+export interface RegistryWebContentOpenedProperties extends CampaignAttributionProperties {
   contentSource?: string;
   contentType: string;
   namespace?: string;
@@ -275,7 +337,7 @@ export interface RegistryWebContentOpenedProperties extends TelemetryProperties 
   surface: string;
 }
 
-export interface RegistryWebCommercialPageViewedProperties extends TelemetryProperties {
+export interface RegistryWebCommercialPageViewedProperties extends CampaignAttributionProperties {
   orgScoped?: boolean;
   plan?: string;
   surface: string;
@@ -290,6 +352,10 @@ export type DecantrTelemetryEvent =
   | TelemetryEventBase<'critique.completed', CritiqueCompletedProperties>
   | TelemetryEventBase<'execution_pack.compiled', ExecutionPackCompiledProperties>
   | TelemetryEventBase<'execution_pack.selected', ExecutionPackSelectedProperties>
+  | TelemetryEventBase<'marketing_web.command_clicked', MarketingWebCommandClickedProperties>
+  | TelemetryEventBase<'marketing_web.cta_clicked', MarketingWebCtaClickedProperties>
+  | TelemetryEventBase<'marketing_web.outbound_clicked', MarketingWebOutboundClickedProperties>
+  | TelemetryEventBase<'marketing_web.page_viewed', MarketingWebPageViewedProperties>
   | TelemetryEventBase<'org.created', ProductEventProperties>
   | TelemetryEventBase<'registry_web.api_key_page_viewed', RegistryWebCommercialPageViewedProperties>
   | TelemetryEventBase<'registry_web.billing_viewed', RegistryWebCommercialPageViewedProperties>

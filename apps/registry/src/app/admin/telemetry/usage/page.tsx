@@ -30,6 +30,7 @@ const sourceOptions: Array<{ label: string; value: TelemetryUsageSource }> = [
   { label: 'API', value: 'api' },
   { label: 'CLI', value: 'cli' },
   { label: 'Content CI', value: 'content-ci' },
+  { label: 'Marketing web', value: 'marketing-web' },
   { label: 'MCP', value: 'mcp' },
   { label: 'Registry web', value: 'registry-web' },
 ];

@@ -14,7 +14,7 @@ Enterprise Decantr telemetry should answer:
 - Which registry content correlates with better scaffold or audit outcomes?
 - Which usage signals can become enterprise metering later?
 
-Telemetry must not answer those questions by collecting prompts, source code, generated files, raw file paths, environment variables, secrets, email addresses, IP addresses, or user agents.
+Telemetry must not answer those questions by collecting prompts, source code, generated files, raw file paths, environment variables, secrets, email addresses, IP addresses, raw referrer URLs, raw ad click IDs, or user agents.
 
 ## Project Health Is Local Observability
 
@@ -27,7 +27,7 @@ Telemetry is for Decantr operators to understand privacy-filtered product adopti
 ## Architecture
 
 ```text
-CLI / API / MCP / registry web / content CI
+CLI / API / MCP / marketing web / registry web / content CI
         |
         v
 @decantr/telemetry
@@ -55,6 +55,10 @@ The first event vocabulary is intentionally small:
 - `user.signup.completed`
 - `org.created`
 - `api_key.created`
+- `marketing_web.page_viewed`
+- `marketing_web.cta_clicked`
+- `marketing_web.outbound_clicked`
+- `marketing_web.command_clicked`
 - `registry_web.page_viewed`
 - `registry_web.search_performed`
 - `registry_web.content_opened`
@@ -80,6 +84,7 @@ These events support the first board-level and operator-level metrics:
 - critique and audit failure modes
 - content validation health
 - authenticated org and API key creation
+- paid acquisition and public marketing CTA movement
 - registry-web discovery and commercial intent
 - anonymous-to-authenticated identity linking
 
@@ -107,7 +112,7 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. To also provision cohorts and alerts, add `cohort:read`, `cohort:write`, `alert:read`, and `alert:write`. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
 
-The dashboard automation creates saved insights for activation, core usage, customer-only usage, commercial intent, registry-web adoption, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
+The dashboard automation creates saved insights for activation, paid acquisition, core usage, customer-only usage, commercial intent, registry-web adoption, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
 
 ## Weekly Snapshot Reporting
 
@@ -120,7 +125,7 @@ pnpm telemetry:persist-rollups
 
 The weekly snapshot command reads the same PostHog env values and requires `query:read`. The rollup persistence command posts to the Decantr API snapshot runner with `DECANTR_API_URL` and `DECANTR_TELEMETRY_SNAPSHOT_TOKEN`, writing an operator-readable markdown summary of persisted usage snapshots, attribution snapshots, event totals, and attribution row counts. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes both summaries to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the PostHog markdown payload to a webhook.
 
-The weekly snapshot includes total/customer event movement, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
+The weekly snapshot includes total/customer event movement, paid-acquisition movement, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
 
 ```env
 TELEMETRY_FAILURE_ALERT_THRESHOLD=3
@@ -154,12 +159,13 @@ The companion endpoint `GET /v1/admin/telemetry/attribution` groups live PostHog
 
 Signal buckets group raw telemetry events into operator-level adoption lanes:
 
-- `activation`: signups and API key creation.
+- `activation`: marketing CTA clicks, signups, and API key creation.
+- `paid_acquisition`: marketing page views, CTA clicks, outbound clicks, and command clicks.
 - `registry_discovery`: registry search, content opens, and hosted item resolution.
 - `cli_adoption`: CLI command completion and registry sync activity.
 - `hosted_intelligence`: execution-pack, critique, and audit usage.
 - `content_pipeline`: content validation and publish automation.
-- `commercial_intent`: billing, API key, organization, and org creation signals.
+- `commercial_intent`: marketing CTA, billing, API key, organization, and org creation signals.
 
 Operating alerts are computed in the API response from the same query payload. They flag missing telemetry, elevated failure rates, customer usage drops, unaliased identities, fresh activation, and rising commercial intent. They are intentionally lightweight for now so they can later feed a Decantr-owned dashboard or private-registry operator console without changing event names.
 
@@ -269,7 +275,7 @@ POSTHOG_ENVIRONMENT_ID=
 
 ## Registry Web Wiring
 
-`apps/registry` emits public registry-web telemetry to the hosted first-party ingest endpoint. It uses a browser-local opaque anonymous id, upgrades context with authenticated user and organization ids when available, and emits:
+`apps/registry` emits public registry-web telemetry to the hosted first-party ingest endpoint. It uses an opaque first-party anonymous id, shared with `decantr.ai` when the browser accepts the `.decantr.ai` cookie, upgrades context with authenticated user and organization ids when available, and emits:
 
 - `registry_web.page_viewed` from route changes
 - `registry_web.search_performed` from public registry search submissions
@@ -280,7 +286,48 @@ POSTHOG_ENVIRONMENT_ID=
 - `registry_web.organization_viewed` from team/private-registry organization surfaces
 - `registry_web.identity_linked` when an anonymous registry session becomes authenticated
 
-The registry app can override the default endpoint with `NEXT_PUBLIC_DECANTR_TELEMETRY_ENDPOINT` and can disable client telemetry with `NEXT_PUBLIC_DECANTR_TELEMETRY_DISABLED=true`.
+Registry web events are enriched with the same campaign attribution fields as the marketing site when a user arrives with UTM parameters, supported ad click ids, or an external referrer. The registry app can override the default endpoint with `NEXT_PUBLIC_DECANTR_TELEMETRY_ENDPOINT` and can disable client telemetry with `NEXT_PUBLIC_DECANTR_TELEMETRY_DISABLED=true`.
+
+Optional X Pixel support is configured with public build-time environment variables:
+
+```env
+NEXT_PUBLIC_X_PIXEL_ID=
+NEXT_PUBLIC_X_EVENT_PAGE_VIEWED_ID=
+NEXT_PUBLIC_X_EVENT_SIGNUP_CLICKED_ID=
+NEXT_PUBLIC_X_EVENT_CONTENT_OPENED_ID=
+NEXT_PUBLIC_X_EVENT_SEARCH_PERFORMED_ID=
+NEXT_PUBLIC_X_EVENT_API_KEY_PAGE_VIEWED_ID=
+NEXT_PUBLIC_X_EVENT_BILLING_VIEWED_ID=
+```
+
+If `NEXT_PUBLIC_X_PIXEL_ID` is unset, no X script is loaded.
+
+## Marketing Web Wiring
+
+`docs/index.html` is the static `decantr.ai` marketing surface. It loads `analytics-config.js` followed by `analytics.js`, then emits marketing-web telemetry through the hosted first-party ingest endpoint using the shared opaque first-party anonymous id on Decantr deploy hosts.
+
+The marketing script emits:
+
+- `marketing_web.page_viewed` from the homepage load
+- `marketing_web.cta_clicked` from primary CTAs, path tiles, and registry handoff links
+- `marketing_web.outbound_clicked` from non-registry external links such as GitHub and npm
+- `marketing_web.command_clicked` from visible install and CLI command snippets
+
+Marketing attribution is deliberately narrow: UTM fields, landing path, first/last landing path, first/last UTM values, referrer domain, click-id provider, and whether a supported click id was present. It does not send the raw click id, raw referrer URL, user agent, email, IP address, prompts, source code, or file paths. Links from `decantr.ai` to `registry.decantr.ai` are decorated with current campaign parameters so registry page views and the X Pixel can keep attribution through the subdomain handoff.
+
+The GitHub Pages workflow writes `docs/analytics-config.js` from public repository variables before upload. The Vercel static build writes the same config into `public/analytics-config.js` from build environment variables:
+
+```env
+DECANTR_ANALYTICS_DISABLED=false
+DECANTR_TELEMETRY_ENDPOINT=https://api.decantr.ai/v1/telemetry/events
+X_PIXEL_ID=
+X_EVENT_MARKETING_PAGE_VIEWED_ID=
+X_EVENT_MARKETING_CTA_CLICKED_ID=
+X_EVENT_MARKETING_OUTBOUND_CLICKED_ID=
+X_EVENT_MARKETING_COMMAND_CLICKED_ID=
+```
+
+If `X_PIXEL_ID` is unset, no X script is loaded. The X event ids are optional per-event conversion tags from X Events Manager.
 
 ## First-Party Ingest
 
@@ -313,7 +360,7 @@ The endpoint accepts the schema-versioned `@decantr/telemetry` fetch-sink payloa
 }
 ```
 
-Public ingest intentionally only allows `cli`, `content-ci`, `mcp`, and `registry-web` sources. Internal `api` events are captured directly by the API process.
+Public ingest intentionally only allows `cli`, `content-ci`, `marketing-web`, `mcp`, and `registry-web` sources. Internal `api` events are captured directly by the API process.
 
 ## CLI Wiring
 

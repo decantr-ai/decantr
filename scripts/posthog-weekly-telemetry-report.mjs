@@ -218,6 +218,10 @@ function eventListSql() {
     'critique.completed',
     'execution_pack.compiled',
     'execution_pack.selected',
+    'marketing_web.command_clicked',
+    'marketing_web.cta_clicked',
+    'marketing_web.outbound_clicked',
+    'marketing_web.page_viewed',
     'org.created',
     'registry.item.resolved',
     'registry.sync.completed',
@@ -354,12 +358,13 @@ function renderMarkdown({
     '',
     '## CEO Readout',
     '',
-    `- Activation signals: ${formatNumber((current.get('user.signup.completed') ?? 0) + (current.get('api_key.created') ?? 0))}`,
-    `- Customer activation signals: ${formatNumber((customer.get('user.signup.completed') ?? 0) + (customer.get('api_key.created') ?? 0))}`,
+    `- Paid acquisition signals: ${formatNumber((current.get('marketing_web.page_viewed') ?? 0) + (current.get('marketing_web.cta_clicked') ?? 0) + (current.get('marketing_web.outbound_clicked') ?? 0) + (current.get('marketing_web.command_clicked') ?? 0))}`,
+    `- Activation signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('user.signup.completed') ?? 0) + (current.get('api_key.created') ?? 0))}`,
+    `- Customer activation signals: ${formatNumber((customer.get('marketing_web.cta_clicked') ?? 0) + (customer.get('user.signup.completed') ?? 0) + (customer.get('api_key.created') ?? 0))}`,
     `- Registry discovery signals: ${formatNumber((current.get('registry_web.search_performed') ?? 0) + (current.get('registry_web.content_opened') ?? 0) + (current.get('registry.item.resolved') ?? 0))}`,
     `- Customer registry discovery signals: ${formatNumber((customer.get('registry_web.search_performed') ?? 0) + (customer.get('registry_web.content_opened') ?? 0) + (customer.get('registry.item.resolved') ?? 0))}`,
-    `- Commercial-intent signals: ${formatNumber((current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
-    `- Customer commercial-intent signals: ${formatNumber((customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
+    `- Commercial-intent signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
+    `- Customer commercial-intent signals: ${formatNumber((customer.get('marketing_web.cta_clicked') ?? 0) + (customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
     `- Active customer identities: ${formatNumber(customerIdentities.length)}`,
     `- Failure rate: ${formatPercent(failureRate)}`,
   );
@@ -395,6 +400,7 @@ function sampleRows(query) {
   }
   if (query.includes('properties.decantr_actor_type as actor_type')) {
     return [
+      ['anonymous', 'marketing-web', 54],
       ['anonymous', 'registry-web', 42],
       ['customer', 'api', 25],
       ['official_pipeline', 'content-ci', 12],
@@ -409,6 +415,7 @@ function sampleRows(query) {
   }
   if (query.includes('properties.decantr_source')) {
     return [
+      ['marketing-web', 54],
       ['registry-web', 42],
       ['api', 25],
       ['cli', 7],
@@ -419,12 +426,17 @@ function sampleRows(query) {
   }
   if (query.includes('interval 14 day')) {
     return [
+      ['marketing_web.page_viewed', 31],
+      ['marketing_web.cta_clicked', 4],
       ['registry.item.resolved', 18],
       ['execution_pack.compiled', 8],
       ['registry_web.page_viewed', 11],
     ];
   }
   return [
+    ['marketing_web.page_viewed', 48],
+    ['marketing_web.cta_clicked', 5],
+    ['marketing_web.outbound_clicked', 1],
     ['registry.item.resolved', 25],
     ['execution_pack.compiled', 9],
     ['registry_web.page_viewed', 42],

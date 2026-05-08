@@ -281,7 +281,13 @@ export type TelemetryActorType =
   | 'internal'
   | 'official_pipeline'
   | 'service';
-export type TelemetryUsageSource = 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+export type TelemetryUsageSource =
+  | 'api'
+  | 'cli'
+  | 'content-ci'
+  | 'marketing-web'
+  | 'mcp'
+  | 'registry-web';
 
 export interface AdminTelemetryIdentityAlias {
   id: string;

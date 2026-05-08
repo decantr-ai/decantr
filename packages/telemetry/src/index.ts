@@ -12,6 +12,7 @@ export {
 export type {
   AdoptionMode,
   AuditCompletedProperties,
+  CampaignAttributionProperties,
   CliCommandCompletedProperties,
   ContentPublishCompletedProperties,
   ContentValidationCompletedProperties,
@@ -20,6 +21,10 @@ export type {
   DecantrTelemetryEventName,
   ExecutionPackCompiledProperties,
   ExecutionPackSelectedProperties,
+  MarketingWebCommandClickedProperties,
+  MarketingWebCtaClickedProperties,
+  MarketingWebOutboundClickedProperties,
+  MarketingWebPageViewedProperties,
   ProductEventProperties,
   ProjectScope,
   RegistryItemResolvedProperties,

@@ -8,7 +8,7 @@ This package is the first layer of Decantr's usage intelligence system. It defin
 
 Decantr telemetry measures Decantr usage, not customer application data.
 
-Allowed signals include command names, registry sources, registry content IDs, package versions, workflow modes, success/failure, duration, audit scores, and aggregate counts. Do not send prompts, source code, generated files, raw file paths, environment variables, secrets, API keys, email addresses, IP addresses, or user agents.
+Allowed signals include command names, registry sources, registry content IDs, package versions, workflow modes, success/failure, duration, audit scores, aggregate counts, marketing route labels, campaign tags, and referrer domains. Do not send prompts, source code, generated files, raw file paths, environment variables, secrets, API keys, email addresses, IP addresses, raw referrer URLs, click IDs, or user agents.
 
 ## MVP Events
 
@@ -24,6 +24,10 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `user.signup.completed`
 - `org.created`
 - `api_key.created`
+- `marketing_web.page_viewed`
+- `marketing_web.cta_clicked`
+- `marketing_web.outbound_clicked`
+- `marketing_web.command_clicked`
 - `registry_web.page_viewed`
 - `registry_web.search_performed`
 - `registry_web.content_opened`
@@ -47,7 +51,13 @@ Every event can carry `context.actorType` so Decantr can distinguish founder/int
 
 If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API normalizes public ingest events with server-authoritative attribution from Supabase identity flags, `telemetry_identity_aliases`, and fallback overrides through `DECANTR_INTERNAL_USER_IDS`, `DECANTR_INTERNAL_ORG_IDS`, `DECANTR_INTERNAL_INSTALL_IDS`, `DECANTR_INTERNAL_PROJECT_IDS`, and `DECANTR_INTERNAL_ANONYMOUS_IDS`.
 
-The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `install`, and `project` aliases without writing SQL. Aliases can be linked by user email/id or organization slug/id. Mutations are audit logged and clear the hosted API actor-resolution cache. `/admin/telemetry/usage` adds the protected PostHog query view for active identities, source/actor mix, failure signals, period-over-period trends, product signal buckets, operating alerts, stored rollup history, snapshot freshness, and unaliased identity candidates, with one-click candidate classification through the same audited alias flow. `/admin/reports` and individual organization admin pages read durable Supabase rollups written by the service-token protected snapshot runner, giving Decantr an owned business-intelligence history while PostHog remains the raw event explorer.
+The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `install`, and `project` aliases without writing SQL. Aliases can be linked by user email/id or organization slug/id. Mutations are audit logged and clear the hosted API actor-resolution cache. `/admin/telemetry/usage` adds the protected PostHog query view for active identities, source/actor mix, paid-acquisition signals, failure signals, period-over-period trends, product signal buckets, operating alerts, stored rollup history, snapshot freshness, and unaliased identity candidates, with one-click candidate classification through the same audited alias flow. `/admin/reports` and individual organization admin pages read durable Supabase rollups written by the service-token protected snapshot runner, giving Decantr an owned business-intelligence history while PostHog remains the raw event explorer.
+
+## Campaign Attribution
+
+The marketing site and registry can attach campaign attribution fields to web events: UTM source/medium/campaign/content/term/id, first and last touch variants, landing path, referrer domain, click-id provider, and whether a supported click id was present. Raw ad click ids such as `twclid`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `ttclid`, and `li_fat_id` are not included in Decantr telemetry.
+
+`decantr.ai` and `registry.decantr.ai` share one opaque first-party anonymous cookie when the browser allows it, so PostHog funnels can connect marketing CTAs to registry exploration and signup intent without collecting personal identifiers.
 
 ## PostHog
 

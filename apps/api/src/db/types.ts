@@ -452,7 +452,7 @@ export interface Database {
           captured_at: string;
           range_days: number;
           actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           total_events: number;
           customer_events: number;
           internal_events: number;
@@ -484,7 +484,7 @@ export interface Database {
           captured_at?: string;
           range_days: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           total_events?: number;
           customer_events?: number;
           internal_events?: number;
@@ -516,7 +516,7 @@ export interface Database {
           captured_at?: string;
           range_days?: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           total_events?: number;
           customer_events?: number;
           internal_events?: number;
@@ -551,7 +551,7 @@ export interface Database {
           captured_at: string;
           range_days: number;
           actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           row_rank: number;
           row_actor_type: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service' | 'unclassified';
           row_source: string;
@@ -574,7 +574,7 @@ export interface Database {
           captured_at?: string;
           range_days: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           row_rank?: number;
           row_actor_type?: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service' | 'unclassified';
           row_source?: string;
@@ -597,7 +597,7 @@ export interface Database {
           captured_at?: string;
           range_days?: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           row_rank?: number;
           row_actor_type?: 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service' | 'unclassified';
           row_source?: string;
@@ -623,7 +623,7 @@ export interface Database {
           snapshot_date: string;
           range_days: number;
           actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           bucket_key: string;
           label: string;
           current_events: number;
@@ -638,7 +638,7 @@ export interface Database {
           snapshot_date: string;
           range_days: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           bucket_key: string;
           label: string;
           current_events?: number;
@@ -653,7 +653,7 @@ export interface Database {
           snapshot_date?: string;
           range_days?: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           bucket_key?: string;
           label?: string;
           current_events?: number;
@@ -679,7 +679,7 @@ export interface Database {
           snapshot_date: string;
           range_days: number;
           actor_type: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           level: 'critical' | 'info' | 'warning';
           title: string;
           detail: string;
@@ -691,7 +691,7 @@ export interface Database {
           snapshot_date: string;
           range_days: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           level: 'critical' | 'info' | 'warning';
           title: string;
           detail: string;
@@ -703,7 +703,7 @@ export interface Database {
           snapshot_date?: string;
           range_days?: number;
           actor_type?: 'all' | 'anonymous' | 'customer' | 'internal' | 'official_pipeline' | 'service';
-          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'mcp' | 'registry-web';
+          source?: 'all' | 'api' | 'cli' | 'content-ci' | 'marketing-web' | 'mcp' | 'registry-web';
           level?: 'critical' | 'info' | 'warning';
           title?: string;
           detail?: string;

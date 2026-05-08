@@ -77,6 +77,36 @@ describe('POST /v1/telemetry/events', () => {
     expect(res.status).toBe(202);
   });
 
+  it('accepts marketing web telemetry events for the public acquisition surface', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/telemetry/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        schemaVersion: '0.1.0',
+        event: {
+          name: 'marketing_web.cta_clicked',
+          timestamp: '2026-05-06T00:00:00.000Z',
+          context: {
+            source: 'marketing-web',
+            environment: 'production',
+            anonymousId: 'marketing_web:test',
+          },
+          properties: {
+            attributionClickIdPresent: false,
+            attributionLandingPath: '/',
+            attributionUtmCampaign: 'founder-test',
+            destination: 'registry',
+            label: 'Browse the Registry',
+            surface: 'registry',
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(202);
+  });
+
   it('rejects malformed telemetry events', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/telemetry/events', {

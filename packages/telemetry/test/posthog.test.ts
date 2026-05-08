@@ -93,4 +93,49 @@ describe('PostHog telemetry sink', () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body);
     expect(body.properties.decantr_actor_type).toBe('official_pipeline');
   });
+
+  it('maps marketing web attribution properties without person profiles', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    const sink = createPostHogTelemetrySink({
+      apiKey: 'ph_test_key',
+      fetch: fetchMock,
+      host: 'https://us.i.posthog.com/',
+    });
+    const event: DecantrTelemetryEvent = {
+      name: 'marketing_web.cta_clicked',
+      timestamp: '2026-05-06T12:00:00.000Z',
+      context: {
+        source: 'marketing-web',
+        environment: 'production',
+        anonymousId: 'marketing_web:visitor',
+      },
+      properties: {
+        attributionClickIdPresent: true,
+        attributionClickIdProvider: 'google',
+        attributionLandingPath: '/',
+        attributionUtmCampaign: 'founder-test',
+        attributionUtmMedium: 'paid-social',
+        attributionUtmSource: 'x',
+        destination: 'registry',
+        label: 'Browse the Registry',
+        surface: 'registry',
+      },
+    };
+
+    await sink.capture(event);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      event: 'marketing_web.cta_clicked',
+      distinct_id: 'marketing_web:visitor',
+    });
+    expect(body.properties).toMatchObject({
+      $process_person_profile: false,
+      attributionClickIdPresent: true,
+      attributionClickIdProvider: 'google',
+      attributionUtmCampaign: 'founder-test',
+      decantr_actor_type: 'anonymous',
+      decantr_source: 'marketing-web',
+    });
+  });
 });
