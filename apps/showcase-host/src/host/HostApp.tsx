@@ -26,6 +26,10 @@ function buildRunnerSrc(slug: string, hashRoute: string): string {
   return `/showcase/${slug}/__runner?runner=1${hashRoute}`;
 }
 
+function switchShowcase(slug: string) {
+  window.location.href = `/showcase/${slug}`;
+}
+
 export function HostApp() {
   const parsed = useMemo(parseShowcasePath, []);
   const capsule = getCapsule(parsed.slug);
@@ -59,6 +63,20 @@ export function HostApp() {
             <p className="showcase-host-eyebrow">Live blueprint showcase</p>
             <h1>{capsule.title}</h1>
           </div>
+          <label className="showcase-host-switcher">
+            <span>Switch showcase</span>
+            <select
+              value={capsule.slug}
+              aria-label="Switch live blueprint showcase"
+              onChange={(event) => switchShowcase(event.currentTarget.value)}
+            >
+              {capsules.map((option) => (
+                <option key={option.slug} value={option.slug}>
+                  {option.title}
+                </option>
+              ))}
+            </select>
+          </label>
           <a className="showcase-host-link" href={`/blueprints/%40official/${capsule.slug}`}>
             View blueprint
           </a>
