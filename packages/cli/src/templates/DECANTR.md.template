@@ -115,12 +115,15 @@ Read `.decantr/context/page-{name}-pack.md` for the most local compiled route co
 ### Validation
 
 Run `decantr check` to detect drift violations while editing and `decantr audit` to audit the whole project contract after implementation.
+Run `decantr health` for the broader Project Health view before handoff, pull requests, or CI. Use `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` to inspect local drift, routes, findings, remediation, CI, and pack state in a localhost dashboard.
 Declared command palettes and hotkeys must be implemented, not merely acknowledged.
 
 ### Quick Commands
 
 ```bash
-decantr status          # Project health
+decantr status          # Project status overview
+decantr health          # Local contract health report
+decantr studio          # Local health dashboard
 decantr check           # Detect drift violations
 decantr get pattern X   # Fetch a pattern spec from registry
 decantr get theme X     # Fetch theme details and decorators

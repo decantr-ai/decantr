@@ -42,6 +42,7 @@ Brownfield starts with:
 decantr analyze
 decantr init --existing --accept-proposal
 decantr check --brownfield
+decantr health
 ```
 
 `analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, `.decantr/ambient-context.json`, `.decantr/doctrine-map.json`, `.decantr/observed-essence.proposal.json`, and `.decantr/brownfield-report.md`. The proposal is observed from routes, styling, dependencies, layout signals, features, semantic route domains, ranked doctrine sources, and ambient project context. Route observation covers Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Styling observation preserves existing systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS. It is not a Decantr scaffold.
@@ -55,6 +56,16 @@ decantr init --existing --replace-essence # explicit destructive replacement wit
 ```
 
 Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
+
+## Project Health
+
+Project Health is the local observability layer across all workflow modes:
+
+- Greenfield projects use `decantr health` after `refresh` to confirm essence, context packs, routes, and runtime evidence agree.
+- Brownfield projects automatically include route coverage and drift checks when `.decantr/project.json` declares `brownfield-attach`.
+- Hybrid projects use `decantr health` after `add`, `remove`, `theme switch`, or registry pack changes to catch contract and pack drift before implementation continues.
+
+Use `decantr health --ci --fail-on error` as the default CI gate, `decantr health --markdown` for pull request summaries, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr. See [Project Health](project-health.md) for the full reference.
 
 ## Assistant Rule Bridge
 

@@ -124,7 +124,7 @@
       "releaseWave": "delivery",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared verification, critique, and report-schema engine.",
+      "summary": "Shared verification, critique, Project Health, and report-schema engine.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -143,7 +143,7 @@
       "releaseWave": "delivery",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, and project governance.",
+      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Project Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

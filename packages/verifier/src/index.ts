@@ -20,11 +20,20 @@ export type { InteractionSignal, InteractionRequirement, InteractionMissingFindi
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
   projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
+  projectHealth: 'https://decantr.ai/schemas/project-health-report.v1.json',
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
   showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
 } as const;
 
 export type VerificationSeverity = 'error' | 'warn' | 'info';
+export type ProjectHealthStatus = 'healthy' | 'warning' | 'error';
+export type ProjectHealthFindingSource =
+  | 'audit'
+  | 'check'
+  | 'brownfield'
+  | 'runtime'
+  | 'pack'
+  | 'interaction';
 
 export interface VerificationFinding {
   id: string;
@@ -83,6 +92,73 @@ export interface ProjectAuditReport {
     runtimePassed: boolean | null;
     pageCount: number;
   };
+}
+
+export interface ProjectHealthRemediation {
+  summary: string;
+  prompt: string;
+  commands: string[];
+}
+
+export interface ProjectHealthFinding {
+  id: string;
+  source: ProjectHealthFindingSource;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  evidence: string[];
+  target?: string;
+  file?: string;
+  rule?: string;
+  suggestedFix?: string;
+  remediation: ProjectHealthRemediation;
+}
+
+export interface ProjectHealthRouteSummary {
+  declared: string[];
+  runtimeChecked: string[];
+  runtimeMatched: number;
+  runtimeCoverageOk: boolean | null;
+  issues: string[];
+}
+
+export interface ProjectHealthPackSummary {
+  manifestPresent: boolean;
+  reviewPackPresent: boolean;
+  scaffoldPackPresent: boolean;
+  sectionPackCount: number;
+  pagePackCount: number;
+  mutationPackCount: number;
+  generatedAt: string | null;
+}
+
+export interface ProjectHealthReport {
+  $schema: string;
+  generatedAt: string;
+  projectRoot: string;
+  status: ProjectHealthStatus;
+  score: number;
+  summary: {
+    errorCount: number;
+    warnCount: number;
+    infoCount: number;
+    findingCount: number;
+    workflowMode: string | null;
+    adoptionMode: string | null;
+    essenceVersion: string | null;
+    pageCount: number;
+    runtimeAuditChecked: boolean;
+    runtimePassed: boolean | null;
+    packManifestPresent: boolean;
+    reviewPackPresent: boolean;
+  };
+  routes: ProjectHealthRouteSummary;
+  packs: ProjectHealthPackSummary;
+  ci: {
+    recommendedCommand: string;
+    failOn: 'error' | 'warn' | 'none';
+  };
+  findings: ProjectHealthFinding[];
 }
 
 export interface FileCritiqueReport {

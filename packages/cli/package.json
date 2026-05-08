@@ -1,7 +1,7 @@
 {
   "name": "@decantr/cli",
-  "version": "1.7.29",
-  "description": "Decantr CLI — scaffold, audit, and maintain Decantr projects from the terminal",
+  "version": "1.8.0",
+  "description": "Decantr CLI - scaffold, audit, inspect Project Health, and maintain Decantr projects from the terminal",
   "author": "Decantr AI",
   "license": "MIT",
   "bugs": {

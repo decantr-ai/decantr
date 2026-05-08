@@ -60,6 +60,7 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 - supports explicit workflow lanes: greenfield blueprint, greenfield contract-only, brownfield adoption, and hybrid composition
 - generates execution-pack context files for AI coding assistants
 - audits projects against Decantr contracts
+- produces local Project Health reports and a localhost Studio dashboard for end-user drift triage
 - searches the registry and showcase benchmark corpus
 - validates, refreshes, and maintains `decantr.essence.json`
 
@@ -77,9 +78,35 @@ decantr rules apply
 decantr magic "AI-native analytics workspace"
 decantr audit
 decantr check
+decantr health --ci --fail-on error
+decantr studio --port 4319 --host 127.0.0.1
 decantr registry summary --namespace @official --json
 decantr showcase verification --json
 ```
+
+## Project Health And Studio
+
+`decantr health` is the local project observability command. It composes the existing verifier audit, guard checks, brownfield route drift checks, runtime evidence, and execution-pack files into a `ProjectHealthReport` with a status, score, route summary, pack summary, findings, and AI-ready remediation prompts.
+
+```bash
+decantr health
+decantr health --format json
+decantr health --markdown --output health.md
+decantr health --ci --fail-on error
+decantr health --ci --fail-on warn
+decantr health --prompt <finding-id>
+```
+
+Use `--json` for machines and schema validation, `--markdown` for CI summaries, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
+
+`decantr studio` starts a local-only dashboard powered by the same report. It uses Node built-ins only and serves `GET /`, `GET /api/health`, and `POST /api/refresh`.
+
+```bash
+decantr studio
+decantr studio --port 4319 --host 127.0.0.1
+```
+
+Studio is for local triage, not Decantr admin telemetry. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
 
 ## Greenfield Certification
 
@@ -154,6 +181,8 @@ Recommended read order for AI-assisted scaffolding:
 5. matching `page-*-pack.md` files before route work
 
 Treat the compiled execution packs as the source of truth. Use the narrative docs as secondary explanation, start with the shell and route structure first, and run `decantr check` plus `decantr audit` after implementation.
+
+For a broader health pass, run `decantr health` after `refresh`, before opening a pull request, or inside CI. Findings include remediation commands and can be turned into focused AI prompts with `decantr health --prompt <finding-id>`.
 
 For cold-start harness or certification runs, use only the scaffolded workspace files as the contract. If local scaffold files disagree, stop and report the mismatch rather than relying on repo-global Decantr assumptions.
 

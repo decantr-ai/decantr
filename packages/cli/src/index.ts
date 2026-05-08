@@ -2334,6 +2334,8 @@ async function cmdInit(args: InitArgs) {
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);
+  console.log(`    ${cyan('decantr health')}     Contract health report`);
+  console.log(`    ${cyan('decantr studio')}     Local health dashboard`);
   console.log(`    ${cyan('decantr search')}     Search registry`);
   console.log(`    ${cyan('decantr get')}        Fetch content details`);
   console.log(`    ${cyan('decantr validate')}   Check essence file`);
@@ -2902,6 +2904,8 @@ ${BOLD}Commands:${RESET}
   ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
+  ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]
+  ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
   ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
@@ -2938,6 +2942,9 @@ ${BOLD}Examples:${RESET}
   decantr rules preview
   decantr rules apply
   decantr status
+  decantr health
+  decantr health --ci --fail-on error
+  decantr studio
   decantr audit
   decantr audit src/pages/HomePage.tsx
   decantr migrate
@@ -3133,6 +3140,28 @@ async function main() {
       const telemetryFlag = args.includes('--telemetry');
       const brownfieldFlag = args.includes('--brownfield');
       await cmdHeal(process.cwd(), { telemetry: telemetryFlag, brownfield: brownfieldFlag });
+      break;
+    }
+
+    case 'health': {
+      try {
+        const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
+        await cmdHealth(process.cwd(), parseHealthArgs(args));
+      } catch (e) {
+        console.error(error((e as Error).message));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'studio': {
+      try {
+        const { cmdStudio, parseStudioArgs } = await import('./commands/studio.js');
+        await cmdStudio(process.cwd(), parseStudioArgs(args));
+      } catch (e) {
+        console.error(error((e as Error).message));
+        process.exitCode = 1;
+      }
       break;
     }
 

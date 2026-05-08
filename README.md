@@ -57,9 +57,11 @@ Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your 
 # Edit decantr.essence.json — add a section, swap the theme, etc.
 decantr refresh   # regenerate context files from the updated essence
 decantr check     # verify the code matches the new contract
+decantr health    # produce a local project health report for triage or CI
+decantr studio    # open the local-only health dashboard
 ```
 
-`refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules and tells you exactly where the code drifted from the contract. `decantr audit` is a broader pass when you want a full report.
+`refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules and tells you exactly where the code drifted from the contract. `decantr health` is the end-user observability surface: it combines audits, checks, route drift, runtime evidence, and pack health into a structured report, while `decantr studio` gives the same signal in a small localhost dashboard. `decantr audit` remains the lower-level audit pass when you want verifier evidence directly.
 
 > Starting from a different point? See the full [workflow model](docs/reference/workflow-model.md).
 
@@ -80,10 +82,10 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, and run checks/audits |
+| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, and inspect Project Health locally |
 | MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, and audit |
 | Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
-| Verifier | Shared audit and critique engine with schema-backed reports |
+| Verifier | Shared audit, critique, Project Health, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
 ## Packages
@@ -145,6 +147,7 @@ Brownfield adoption:
 decantr analyze
 decantr init --existing --accept-proposal
 decantr check --brownfield
+decantr health
 ```
 
 Registry and verification:
@@ -157,10 +160,20 @@ decantr registry audit-project --namespace @official --json
 decantr showcase verification  --json
 ```
 
+Project Health and CI:
+
+```bash
+decantr health --format markdown
+decantr health --ci --fail-on error
+decantr health --prompt <finding-id>
+decantr studio --port 4319 --host 127.0.0.1
+```
+
 ## Links
 
 - Registry — [registry.decantr.ai](https://registry.decantr.ai)
 - Published schemas — [decantr.ai/schemas](https://decantr.ai/schemas/)
+- Project Health — [docs/reference/project-health.md](docs/reference/project-health.md)
 - Workflow model — [docs/reference/workflow-model.md](docs/reference/workflow-model.md)
 - Public API reference — [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)
 - Package support matrix — [docs/reference/package-support-matrix.md](docs/reference/package-support-matrix.md)

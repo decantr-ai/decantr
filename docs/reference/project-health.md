@@ -1,0 +1,137 @@
+# Decantr Project Health
+
+Project Health is the end-user observability surface for a Decantr project. It answers: is this application still aligned with its Decantr contract, where has it drifted, what should be fixed first, and what prompt or command should the developer run next?
+
+It is local-only by default. `decantr health` reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. Neither command uploads source code, prompts, raw file paths, environment variables, or customer project data.
+
+## Commands
+
+```bash
+decantr health
+decantr health --format text
+decantr health --json
+decantr health --markdown
+decantr health --output health.md
+decantr health --ci --fail-on error
+decantr health --ci --fail-on warn
+decantr health --prompt <finding-id>
+decantr studio --port 4319 --host 127.0.0.1
+```
+
+`decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding.
+
+## What The Report Contains
+
+The report composes existing Decantr evidence instead of inventing a parallel checker:
+
+- verifier audit evidence from `auditProject()`
+- guard and interaction findings from `decantr check`
+- brownfield route drift when `.decantr/project.json` declares `brownfield-attach`
+- built runtime evidence when a `dist/` output exists
+- execution-pack and review-pack health from `.decantr/context`
+- remediation prompts and recommended commands for actionable findings
+
+Status is intentionally simple:
+
+- `error`: any error/blocking finding or invalid audit evidence exists.
+- `warning`: warnings exist and no errors exist.
+- `healthy`: no errors or warnings exist.
+
+Score uses `100 - errors*15 - warnings*5 - info*1`, clamped from `0` to `100`. The score is a triage aid; CI should use status and severity thresholds.
+
+## Studio
+
+`decantr studio` starts a small localhost dashboard powered by the same report. It uses Node built-ins only and exposes:
+
+- `GET /` for the dashboard
+- `GET /api/health` for the current report
+- `POST /api/refresh` to recompute the report
+
+Studio tabs:
+
+- Overview
+- Routes
+- Drift
+- Findings
+- Remediation
+- CI
+- Packs
+
+Use Studio while attaching Decantr to an existing project, before asking an AI assistant to remediate drift, or before opening a pull request.
+
+## Greenfield
+
+For a new Decantr scaffold:
+
+```bash
+decantr new my-app --blueprint=agent-marketplace
+cd my-app
+decantr refresh
+decantr health
+decantr studio
+```
+
+Healthy greenfield projects should have generated context packs, route coverage, and no blocking DNA drift. If a finding appears, run:
+
+```bash
+decantr health --prompt <finding-id>
+```
+
+Then give the prompt to the assistant that is implementing the app.
+
+## Brownfield
+
+For an existing app:
+
+```bash
+decantr analyze
+decantr init --existing --accept-proposal
+decantr health
+```
+
+When the project workflow is `brownfield-attach`, health automatically includes route coverage and drift checks from the observed app inventory. This helps separate "the existing app has not been mapped into the contract yet" from "the implementation drifted away from an accepted Decantr contract."
+
+Brownfield health respects existing-app authority. It reports evidence and remediation, but it does not replace the app's router, style system, docs, rules, or source files.
+
+## Hybrid Composition
+
+For attached projects that add sections, pages, features, or themes over time:
+
+```bash
+decantr add section settings-full
+decantr refresh
+decantr health --markdown --output .decantr/health.md
+```
+
+Project Health is useful immediately after a composition change because it checks whether generated packs, route contracts, and guard expectations still agree.
+
+## CI
+
+Recommended pull request gate:
+
+```bash
+decantr health --ci --fail-on error --markdown --output decantr-health.md
+```
+
+Use `--fail-on error` for the default enterprise-friendly gate: block only invalid audits and blocking findings. Use `--fail-on warn` for stricter repositories that want any warning to fail CI.
+
+Example GitHub Actions step:
+
+```yaml
+- name: Decantr health
+  run: npx @decantr/cli health --ci --fail-on error --markdown --output decantr-health.md
+```
+
+The JSON form can be validated against the published schema and consumed by future DevOps dashboards:
+
+```bash
+decantr health --json --output decantr-health.json
+```
+
+## Relationship To Telemetry
+
+Project Health is local project observability. It is for the customer or developer who owns the repository.
+
+Decantr telemetry is product intelligence for Decantr operators. It tracks adoption signals such as command usage and registry activity through privacy-filtered events. Project Health does not require telemetry opt-in and does not send its report to Decantr.
+
+Future private registry or enterprise offerings can consume `ProjectHealthReport` as an optional customer-controlled artifact, but the local command remains the baseline contract.
