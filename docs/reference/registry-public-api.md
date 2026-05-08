@@ -114,16 +114,39 @@ POST /packs/compile?namespace=@official
 Content-Type: application/json
 
 {
-  "version": "2.0.0",
-  "archetype": "dashboard",
-  "theme": { "id": "clean", "mode": "light" },
-  "personality": ["professional"],
-  "platform": { "type": "spa", "routing": "history" },
-  "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-  "features": ["auth"],
-  "density": { "level": "comfortable", "content_gap": "1.5rem" },
-  "guard": { "mode": "guided" },
-  "target": "react"
+  "version": "4.0.0",
+  "dna": {
+    "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+    "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+    "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+    "radius": { "philosophy": "rounded", "base": 8 },
+    "elevation": { "system": "layered", "max_levels": 3 },
+    "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+    "personality": ["professional"]
+  },
+  "blueprint": {
+    "shell": "sidebar-main",
+    "sections": [
+      {
+        "id": "dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "description": "Primary dashboard section",
+        "features": ["auth"],
+        "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+      }
+    ],
+    "features": ["auth"],
+    "routes": { "/": { "section": "dashboard", "page": "home" } }
+  },
+  "meta": {
+    "archetype": "saas-dashboard",
+    "target": "react",
+    "platform": { "type": "spa", "routing": "history" },
+    "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+  }
 }
 ```
 
@@ -147,16 +170,39 @@ Content-Type: application/json
 
 {
   "essence": {
-    "version": "2.0.0",
-    "archetype": "dashboard",
-    "theme": { "id": "clean", "mode": "light" },
-    "personality": ["professional"],
-    "platform": { "type": "spa", "routing": "history" },
-    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-    "features": ["auth"],
-    "density": { "level": "comfortable", "content_gap": "1.5rem" },
-    "guard": { "mode": "guided" },
-    "target": "react"
+    "version": "4.0.0",
+    "dna": {
+      "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+      "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+      "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+      "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+      "radius": { "philosophy": "rounded", "base": 8 },
+      "elevation": { "system": "layered", "max_levels": 3 },
+      "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+      "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+      "personality": ["professional"]
+    },
+    "blueprint": {
+      "shell": "sidebar-main",
+      "sections": [
+        {
+          "id": "dashboard",
+          "role": "primary",
+          "shell": "sidebar-main",
+          "description": "Primary dashboard section",
+          "features": ["auth"],
+          "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+        }
+      ],
+      "features": ["auth"],
+      "routes": { "/": { "section": "dashboard", "page": "home" } }
+    },
+    "meta": {
+      "archetype": "saas-dashboard",
+      "target": "react",
+      "platform": { "type": "spa", "routing": "history" },
+      "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+    }
   },
   "pack_type": "page",
   "id": "home"
@@ -185,16 +231,39 @@ Content-Type: application/json
 
 {
   "essence": {
-    "version": "2.0.0",
-    "archetype": "dashboard",
-    "theme": { "id": "clean", "mode": "light" },
-    "personality": ["professional"],
-    "platform": { "type": "spa", "routing": "history" },
-    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-    "features": ["auth"],
-    "density": { "level": "comfortable", "content_gap": "1.5rem" },
-    "guard": { "mode": "guided" },
-    "target": "react"
+    "version": "4.0.0",
+    "dna": {
+      "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+      "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+      "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+      "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+      "radius": { "philosophy": "rounded", "base": 8 },
+      "elevation": { "system": "layered", "max_levels": 3 },
+      "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+      "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+      "personality": ["professional"]
+    },
+    "blueprint": {
+      "shell": "sidebar-main",
+      "sections": [
+        {
+          "id": "dashboard",
+          "role": "primary",
+          "shell": "sidebar-main",
+          "description": "Primary dashboard section",
+          "features": ["auth"],
+          "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+        }
+      ],
+      "features": ["auth"],
+      "routes": { "/": { "section": "dashboard", "page": "home" } }
+    },
+    "meta": {
+      "archetype": "saas-dashboard",
+      "target": "react",
+      "platform": { "type": "spa", "routing": "history" },
+      "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+    }
   },
   "filePath": "src/pages/Home.tsx",
   "code": "<button style={{ color: \"#ff00ff\" }}>Click me</button>",
@@ -226,16 +295,39 @@ Content-Type: application/json
 
 {
   "essence": {
-    "version": "2.0.0",
-    "archetype": "dashboard",
-    "theme": { "id": "clean", "mode": "light" },
-    "personality": ["professional"],
-    "platform": { "type": "spa", "routing": "history" },
-    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-    "features": ["auth"],
-    "density": { "level": "comfortable", "content_gap": "1.5rem" },
-    "guard": { "mode": "guided" },
-    "target": "react"
+    "version": "4.0.0",
+    "dna": {
+      "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+      "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+      "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+      "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+      "radius": { "philosophy": "rounded", "base": 8 },
+      "elevation": { "system": "layered", "max_levels": 3 },
+      "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+      "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+      "personality": ["professional"]
+    },
+    "blueprint": {
+      "shell": "sidebar-main",
+      "sections": [
+        {
+          "id": "dashboard",
+          "role": "primary",
+          "shell": "sidebar-main",
+          "description": "Primary dashboard section",
+          "features": ["auth"],
+          "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+        }
+      ],
+      "features": ["auth"],
+      "routes": { "/": { "section": "dashboard", "page": "home" } }
+    },
+    "meta": {
+      "archetype": "saas-dashboard",
+      "target": "react",
+      "platform": { "type": "spa", "routing": "history" },
+      "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+    }
   },
   "dist": {
     "indexHtml": "<!doctype html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Audit</title></head><body><div id=\"root\"></div><script type=\"module\" src=\"/assets/app.js\"></script></body></html>",

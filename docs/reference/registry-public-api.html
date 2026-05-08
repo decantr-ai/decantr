@@ -220,16 +220,39 @@ GET /schema/registry-intelligence-summary.v1.json</pre>
 Content-Type: application/json
 
 {
-  "version": "2.0.0",
-  "archetype": "dashboard",
-  "theme": { "id": "clean", "mode": "light" },
-  "personality": ["professional"],
-  "platform": { "type": "spa", "routing": "history" },
-  "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-  "features": ["auth"],
-  "density": { "level": "comfortable", "content_gap": "1.5rem" },
-  "guard": { "mode": "guided" },
-  "target": "react"
+  "version": "4.0.0",
+  "dna": {
+    "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+    "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+    "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+    "radius": { "philosophy": "rounded", "base": 8 },
+    "elevation": { "system": "layered", "max_levels": 3 },
+    "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+    "personality": ["professional"]
+  },
+  "blueprint": {
+    "shell": "sidebar-main",
+    "sections": [
+      {
+        "id": "dashboard",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "description": "Primary dashboard section",
+        "features": ["auth"],
+        "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+      }
+    ],
+    "features": ["auth"],
+    "routes": { "/": { "section": "dashboard", "page": "home" } }
+  },
+  "meta": {
+    "archetype": "saas-dashboard",
+    "target": "react",
+    "platform": { "type": "spa", "routing": "history" },
+    "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+  }
 }</pre>
       <div class="meta">
         <div><strong>Purpose:</strong> Compile a schema-backed execution-pack bundle from an essence document using hosted public registry content.</div>
@@ -245,16 +268,39 @@ Content-Type: application/json
 
 {
   "essence": {
-    "version": "2.0.0",
-    "archetype": "dashboard",
-    "theme": { "id": "clean", "mode": "light" },
-    "personality": ["professional"],
-    "platform": { "type": "spa", "routing": "history" },
-    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-    "features": ["auth"],
-    "density": { "level": "comfortable", "content_gap": "1.5rem" },
-    "guard": { "mode": "guided" },
-    "target": "react"
+    "version": "4.0.0",
+    "dna": {
+      "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+      "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+      "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+      "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+      "radius": { "philosophy": "rounded", "base": 8 },
+      "elevation": { "system": "layered", "max_levels": 3 },
+      "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+      "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+      "personality": ["professional"]
+    },
+    "blueprint": {
+      "shell": "sidebar-main",
+      "sections": [
+        {
+          "id": "dashboard",
+          "role": "primary",
+          "shell": "sidebar-main",
+          "description": "Primary dashboard section",
+          "features": ["auth"],
+          "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+        }
+      ],
+      "features": ["auth"],
+      "routes": { "/": { "section": "dashboard", "page": "home" } }
+    },
+    "meta": {
+      "archetype": "saas-dashboard",
+      "target": "react",
+      "platform": { "type": "spa", "routing": "history" },
+      "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+    }
   },
   "pack_type": "page",
   "id": "home"
@@ -273,16 +319,39 @@ Content-Type: application/json
 
 {
   "essence": {
-    "version": "2.0.0",
-    "archetype": "dashboard",
-    "theme": { "id": "clean", "mode": "light" },
-    "personality": ["professional"],
-    "platform": { "type": "spa", "routing": "history" },
-    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-    "features": ["auth"],
-    "density": { "level": "comfortable", "content_gap": "1.5rem" },
-    "guard": { "mode": "guided" },
-    "target": "react"
+    "version": "4.0.0",
+    "dna": {
+      "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+      "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+      "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+      "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+      "radius": { "philosophy": "rounded", "base": 8 },
+      "elevation": { "system": "layered", "max_levels": 3 },
+      "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+      "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+      "personality": ["professional"]
+    },
+    "blueprint": {
+      "shell": "sidebar-main",
+      "sections": [
+        {
+          "id": "dashboard",
+          "role": "primary",
+          "shell": "sidebar-main",
+          "description": "Primary dashboard section",
+          "features": ["auth"],
+          "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+        }
+      ],
+      "features": ["auth"],
+      "routes": { "/": { "section": "dashboard", "page": "home" } }
+    },
+    "meta": {
+      "archetype": "saas-dashboard",
+      "target": "react",
+      "platform": { "type": "spa", "routing": "history" },
+      "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+    }
   },
   "filePath": "src/pages/Home.tsx",
   "code": "&lt;button style={{ color: &quot;#ff00ff&quot; }}&gt;Click me&lt;/button&gt;",
@@ -303,16 +372,39 @@ Content-Type: application/json
 
 {
   "essence": {
-    "version": "2.0.0",
-    "archetype": "dashboard",
-    "theme": { "id": "clean", "mode": "light" },
-    "personality": ["professional"],
-    "platform": { "type": "spa", "routing": "history" },
-    "structure": [{ "id": "home", "shell": "sidebar-main", "layout": ["hero"] }],
-    "features": ["auth"],
-    "density": { "level": "comfortable", "content_gap": "1.5rem" },
-    "guard": { "mode": "guided" },
-    "target": "react"
+    "version": "4.0.0",
+    "dna": {
+      "theme": { "id": "clean", "mode": "light", "shape": "rounded" },
+      "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+      "typography": { "scale": "modular", "heading_weight": 600, "body_weight": 400 },
+      "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+      "radius": { "philosophy": "rounded", "base": 8 },
+      "elevation": { "system": "layered", "max_levels": 3 },
+      "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+      "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+      "personality": ["professional"]
+    },
+    "blueprint": {
+      "shell": "sidebar-main",
+      "sections": [
+        {
+          "id": "dashboard",
+          "role": "primary",
+          "shell": "sidebar-main",
+          "description": "Primary dashboard section",
+          "features": ["auth"],
+          "pages": [{ "id": "home", "route": "/", "layout": ["hero"] }]
+        }
+      ],
+      "features": ["auth"],
+      "routes": { "/": { "section": "dashboard", "page": "home" } }
+    },
+    "meta": {
+      "archetype": "saas-dashboard",
+      "target": "react",
+      "platform": { "type": "spa", "routing": "history" },
+      "guard": { "mode": "guided", "dna_enforcement": "warn", "blueprint_enforcement": "warn" }
+    }
   },
   "dist": {
     "indexHtml": "&lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;head&gt;&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;&lt;title&gt;Audit&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;&lt;script type=&quot;module&quot; src=&quot;/assets/app.js&quot;&gt;&lt;/script&gt;&lt;/body&gt;&lt;/html&gt;",
