@@ -593,7 +593,7 @@ function formatDelta(value) {
 }
 
 function escapeCell(value) {
-  return String(value).replace(/\|/g, '\\|').replace(/\n/g, '<br>');
+  return String(value).replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, '<br>');
 }
 
 function capitalize(value) {

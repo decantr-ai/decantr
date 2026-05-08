@@ -15,7 +15,7 @@ export interface PostHogTelemetrySinkOptions {
 }
 
 export function createPostHogTelemetrySink(options: PostHogTelemetrySinkOptions): TelemetrySink {
-  const host = (options.host ?? 'https://us.i.posthog.com').replace(/\/+$/, '');
+  const host = trimTrailingSlashes(options.host ?? 'https://us.i.posthog.com');
   const fetchImpl = options.fetch ?? globalThis.fetch;
 
   return {
@@ -52,6 +52,14 @@ export function createPostHogTelemetrySink(options: PostHogTelemetrySinkOptions)
       }
     },
   };
+}
+
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) {
+    end -= 1;
+  }
+  return value.slice(0, end);
 }
 
 function resolveDistinctId(event: DecantrTelemetryEvent): string | undefined {

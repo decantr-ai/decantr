@@ -38,7 +38,7 @@ if (environmentId.startsWith('phc_')) {
   );
 }
 
-if (host.includes('.i.posthog.com')) {
+if (isPostHogIngestHost(host)) {
   fail(
     'POSTHOG_HOST must be the PostHog app/API host, such as https://us.posthog.com, not the ingest host.',
   );
@@ -691,6 +691,19 @@ function readArgValue(name) {
   const index = argv.indexOf(name);
   if (index === -1) return null;
   return argv[index + 1] || null;
+}
+
+function isPostHogIngestHost(value) {
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    const labels = hostname.split('.');
+    return labels.length >= 4 &&
+      labels.at(-3) === 'i' &&
+      labels.at(-2) === 'posthog' &&
+      labels.at(-1) === 'com';
+  } catch {
+    return false;
+  }
 }
 
 function parseJson(text) {
