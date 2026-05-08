@@ -55,6 +55,7 @@
   .lum-orbs {
     position: relative;
     overflow: hidden;
+    pointer-events: auto;
   }
   .lum-orbs::before,
   .lum-orbs::after {
