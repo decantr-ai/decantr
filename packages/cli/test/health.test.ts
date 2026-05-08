@@ -1,11 +1,14 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   createProjectHealthReport,
   formatProjectHealthMarkdown,
+  parseHealthArgs,
+  renderProjectHealthCiWorkflow,
   shouldFailHealth,
+  writeProjectHealthCiWorkflow,
 } from '../src/commands/health.js';
 
 let testDir = '';
@@ -208,5 +211,75 @@ describe('Project Health report', () => {
     expect(report.summary.warnCount).toBeGreaterThan(0);
     expect(shouldFailHealth(report, 'error')).toBe(false);
     expect(shouldFailHealth(report, 'warn')).toBe(true);
+  });
+
+  it('renders a GitHub Actions Project Health workflow', () => {
+    const workflow = renderProjectHealthCiWorkflow({
+      failOn: 'warn',
+      cliVersion: '1.10.0',
+      reportPath: 'reports/decantr-health.md',
+      jsonPath: 'reports/decantr-health.json',
+    });
+
+    expect(workflow).toContain('name: Decantr Project Health');
+    expect(workflow).toContain('npx --yes @decantr/cli@1.10.0 health --json --output reports/decantr-health.json');
+    expect(workflow).toContain(
+      'npx --yes @decantr/cli@1.10.0 health --ci --fail-on warn --markdown --output reports/decantr-health.md',
+    );
+    expect(workflow).toContain('actions/upload-artifact@v6');
+  });
+
+  it('writes the Project Health CI workflow without clobbering by default', () => {
+    const result = writeProjectHealthCiWorkflow(testDir, { cliVersion: 'latest' });
+    const workflowPath = join(testDir, '.github', 'workflows', 'decantr-health.yml');
+
+    expect(result.created).toBe(true);
+    expect(result.path).toBe('.github/workflows/decantr-health.yml');
+    expect(existsSync(workflowPath)).toBe(true);
+    expect(readFileSync(workflowPath, 'utf-8')).toContain('@decantr/cli@latest');
+    expect(() => writeProjectHealthCiWorkflow(testDir)).toThrow(/already exists/);
+
+    const updated = writeProjectHealthCiWorkflow(testDir, { force: true, failOn: 'warn' });
+    expect(updated.created).toBe(false);
+    expect(readFileSync(workflowPath, 'utf-8')).toContain('--fail-on warn');
+  });
+
+  it('parses health init-ci options', () => {
+    const parsed = parseHealthArgs([
+      'health',
+      'init-ci',
+      '--force',
+      '--fail-on=warn',
+      '--cli-version',
+      '1.10.0',
+      '--workflow-path',
+      '.github/workflows/custom-health.yml',
+      '--report-path=reports/health.md',
+      '--json-path=reports/health.json',
+    ]);
+
+    expect(parsed.initCi).toEqual({
+      force: true,
+      failOn: 'warn',
+      cliVersion: '1.10.0',
+      workflowPath: '.github/workflows/custom-health.yml',
+      reportPath: 'reports/health.md',
+      jsonPath: 'reports/health.json',
+    });
+  });
+
+  it('rejects unsafe Project Health CI template inputs', () => {
+    expect(() => renderProjectHealthCiWorkflow({ cliVersion: 'latest && echo bad' })).toThrow(
+      /Invalid --cli-version/,
+    );
+    expect(() => renderProjectHealthCiWorkflow({ reportPath: 'reports/health report.md' })).toThrow(
+      /Invalid --report-path/,
+    );
+    expect(() => writeProjectHealthCiWorkflow(testDir, { workflowPath: '../ci.yml' })).toThrow(
+      /Invalid --workflow-path/,
+    );
+    expect(() =>
+      renderProjectHealthCiWorkflow({ failOn: 'always' as unknown as 'error' }),
+    ).toThrow(/Invalid --fail-on/);
   });
 });

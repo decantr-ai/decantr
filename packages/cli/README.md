@@ -97,9 +97,13 @@ decantr health --markdown --output health.md
 decantr health --ci --fail-on error
 decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
+decantr health init-ci
+decantr health init-ci --fail-on warn --cli-version latest --force
 ```
 
 Use `--json` for machines and schema validation, `--markdown` for CI summaries, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
+
+`decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes `decantr-health.json`, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI.
 
 `decantr studio` starts a local-only dashboard powered by the same report. It uses Node built-ins only and serves `GET /`, `GET /api/health`, and `POST /api/refresh`.
 
@@ -199,7 +203,7 @@ Recommended read order for AI-assisted scaffolding:
 
 Treat the compiled execution packs as the source of truth. Use the narrative docs as secondary explanation, start with the shell and route structure first, and run `decantr check` plus `decantr audit` after implementation.
 
-For a broader health pass, run `decantr health` after `refresh`, before opening a pull request, or inside CI. Findings include remediation commands and can be turned into focused AI prompts with `decantr health --prompt <finding-id>`.
+For a broader health pass, run `decantr health` after `refresh`, before opening a pull request, or inside CI. Install the default GitHub Actions gate with `decantr health init-ci`. Findings include remediation commands and can be turned into focused AI prompts with `decantr health --prompt <finding-id>`.
 
 For cold-start harness or certification runs, use only the scaffolded workspace files as the contract. If local scaffold files disagree, stop and report the mismatch rather than relying on repo-global Decantr assumptions.
 

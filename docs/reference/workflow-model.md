@@ -65,7 +65,7 @@ Project Health is the local observability layer across all workflow modes:
 - Brownfield projects automatically include route coverage and drift checks when `.decantr/project.json` declares `brownfield-attach`.
 - Hybrid projects use `decantr health` after `add`, `remove`, `theme switch`, or registry pack changes to catch contract and pack drift before implementation continues.
 
-Use `decantr health --ci --fail-on error` as the default CI gate, `decantr health --markdown` for pull request summaries, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr. See [Project Health](project-health.md) for the full reference.
+Use `decantr health init-ci` to install the default GitHub Actions gate, `decantr health --ci --fail-on error` as the default CI command, `decantr health --markdown` for pull request summaries, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr. See [Project Health](project-health.md) for the full reference.
 
 ## Assistant Rule Bridge
 
