@@ -172,6 +172,7 @@ decantr studio --port 4319 --host 127.0.0.1
 ## Links
 
 - Registry — [registry.decantr.ai](https://registry.decantr.ai)
+- Discord — [discord.gg/WeDpBd4xFU](https://discord.gg/WeDpBd4xFU)
 - Published schemas — [decantr.ai/schemas](https://decantr.ai/schemas/)
 - Project Health — [docs/reference/project-health.md](docs/reference/project-health.md)
 - Workflow model — [docs/reference/workflow-model.md](docs/reference/workflow-model.md)
@@ -181,6 +182,8 @@ decantr studio --port 4319 --host 127.0.0.1
 ## Contributing
 
 Contributions are welcome. The most useful repo context lives in `docs/` — especially the architecture notes, audits, runbooks, and package support matrix.
+
+Use [Discord](https://discord.gg/WeDpBd4xFU) for quick setup help, showcase feedback, and live community discussion. Keep bugs, feature requests, and durable decisions in GitHub issues, PRs, or docs.
 
 ## License
 

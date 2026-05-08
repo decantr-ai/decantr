@@ -2,6 +2,8 @@
 
 This reset branch treats only the vNext program, audits, and active implementation specs as current source of truth.
 
+For quick setup help, showcase feedback, and live community discussion, join the [Decantr Discord](https://discord.gg/WeDpBd4xFU). GitHub issues, pull requests, and these docs remain the canonical home for bugs, feature requests, and durable decisions.
+
 ## Active Docs
 
 - `programs/`
