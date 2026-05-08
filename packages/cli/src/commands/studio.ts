@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { createProjectHealthReport } from './health.js';
+import { sendStudioHealthRefreshedTelemetry, sendStudioStartedTelemetry } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
@@ -262,7 +263,15 @@ export function createStudioRequestHandler(projectRoot: string) {
         return;
       }
       if (req.method === 'POST' && url.pathname === '/api/refresh') {
-        sendJson(res, 200, await createProjectHealthReport(projectRoot));
+        const startedAt = Date.now();
+        const report = await createProjectHealthReport(projectRoot);
+        void sendStudioHealthRefreshedTelemetry({
+          durationMs: Date.now() - startedAt,
+          projectRoot,
+          report,
+          trigger: 'api-refresh',
+        });
+        sendJson(res, 200, report);
         return;
       }
       sendNotFound(res);
@@ -298,6 +307,12 @@ export async function cmdStudio(
   options: StudioCommandOptions = {},
 ): Promise<void> {
   const handle = await startStudioServer(projectRoot, options);
+  const url = new URL(handle.url);
+  void sendStudioStartedTelemetry({
+    host: url.hostname,
+    port: Number.parseInt(url.port, 10),
+    projectRoot,
+  });
   console.log(`${GREEN}Decantr Studio is running.${RESET}`);
   console.log(`${CYAN}${handle.url}${RESET}`);
   console.log('Press Ctrl+C to stop.');

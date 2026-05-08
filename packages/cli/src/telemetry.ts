@@ -1,19 +1,30 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   type AdoptionMode,
   createFetchTelemetrySink,
   createTelemetryClient,
   type DecantrTelemetryEvent,
+  type DecantrTelemetryEventName,
+  type DecantrLifecycleCompletedProperties,
+  type HealthCiFailedProperties,
+  type HealthFindingPromptRequestedProperties,
+  type ProjectHealthFailOn,
+  type ProjectHealthOutputFormat,
+  type ProjectHealthTelemetryProperties,
   isTelemetryActorType,
   type ProjectScope,
   type RegistrySource,
+  type StudioHealthRefreshedProperties,
+  type StudioStartedProperties,
   type TelemetryActorType,
+  type TelemetryProperties,
   type WorkflowMode,
 } from '@decantr/telemetry';
+import type { ProjectHealthFinding, ProjectHealthReport } from '@decantr/verifier';
 
 export interface GuardMetrics {
   timestamp: string;
@@ -101,10 +112,20 @@ export interface CliCommandTelemetryInput {
   success: boolean;
 }
 
-export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): Promise<void> {
-  const projectRoot = input.projectRoot ?? process.cwd();
-  const command = normalizeCommand(input.args[0]);
-  if (!isOptedIn(projectRoot) || !command || command === 'help' || command === 'version') {
+export interface CliTelemetryEventInput {
+  args?: string[];
+  name: DecantrTelemetryEventName;
+  projectRoot?: string;
+  properties: TelemetryProperties;
+  registrySource?: RegistrySource;
+}
+
+export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): Promise<void> {
+  const projectRoot = resolveCliTelemetryProjectRoot(
+    input.projectRoot ?? process.cwd(),
+    input.args ?? [],
+  );
+  if (!isOptedIn(projectRoot)) {
     return;
   }
 
@@ -113,6 +134,9 @@ export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): 
     return;
   }
 
+  const registrySource =
+    input.registrySource ?? getRegistrySourceProperty(input.properties) ?? inferRegistrySource(input.args ?? []);
+
   const client = createTelemetryClient({
     sink: createFetchTelemetrySink({
       endpoint: getTelemetryEventsEndpoint(),
@@ -120,8 +144,8 @@ export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): 
     }),
   });
 
-  const event: DecantrTelemetryEvent = {
-    name: 'cli.command.completed',
+  const event = {
+    name: input.name,
     context: {
       source: 'cli',
       actorType: getTelemetryActorType(),
@@ -129,27 +153,278 @@ export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): 
       decantrVersion: getCliVersion(),
       installId: identities.installId,
       projectId: identities.projectId,
-      registrySource: inferRegistrySource(input.args),
+      registrySource,
     },
-    properties: {
-      command,
-      success: input.success,
-      durationMs: input.durationMs,
-      adoptionMode: inferAdoptionMode(input.args),
-      errorCode: input.success ? undefined : 'cli_command_failed',
-      offline: input.args.includes('--offline'),
-      projectScope: inferProjectScope(projectRoot),
-      registrySource: inferRegistrySource(input.args),
-      targetFramework: inferFlagValue(input.args, '--target'),
-      workflowMode: inferWorkflowMode(input.args),
-    },
-  };
+    properties: input.properties,
+  } as DecantrTelemetryEvent;
 
   try {
     await client.capture(event);
   } catch {
     // Fire-and-forget: silently ignore all errors.
   }
+}
+
+export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): Promise<void> {
+  const projectRoot = resolveCliTelemetryProjectRoot(input.projectRoot ?? process.cwd(), input.args);
+  const command = normalizeCommand(input.args[0]);
+  if (!isOptedIn(projectRoot) || !command || command === 'help' || command === 'version') {
+    return;
+  }
+
+  const properties = buildCliLifecycleProperties({
+    args: input.args,
+    command,
+    durationMs: input.durationMs,
+    projectRoot,
+    success: input.success,
+  });
+
+  await captureCliTelemetryEvent({
+    args: input.args,
+    name: 'cli.command.completed',
+    projectRoot,
+    properties,
+    registrySource: properties.registrySource,
+  });
+
+  const lifecycleEventName = lifecycleTelemetryEventName(command);
+  if (lifecycleEventName) {
+    await captureCliTelemetryEvent({
+      args: input.args,
+      name: lifecycleEventName,
+      projectRoot,
+      properties: properties as DecantrLifecycleCompletedProperties,
+      registrySource: properties.registrySource,
+    });
+  }
+}
+
+export interface ProjectHealthReportTelemetryInput {
+  ci?: boolean;
+  durationMs?: number;
+  failOn?: ProjectHealthFailOn;
+  format?: ProjectHealthOutputFormat;
+  outputWritten?: boolean;
+  projectRoot?: string;
+  report: ProjectHealthReport;
+}
+
+export async function sendProjectHealthReportTelemetry(
+  input: ProjectHealthReportTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const properties = buildProjectHealthTelemetryProperties(input, projectRoot);
+
+  await captureCliTelemetryEvent({
+    name: 'health.report.generated',
+    projectRoot,
+    properties,
+  });
+
+  if (input.report.status === 'healthy') {
+    await captureCliTelemetryEvent({
+      name: 'decantr.health.healthy',
+      projectRoot,
+      properties,
+    });
+  }
+}
+
+export interface NewProjectCompletedTelemetryInput {
+  args?: string[];
+  durationMs: number;
+  projectRoot?: string;
+  success: boolean;
+}
+
+export async function sendNewProjectCompletedTelemetry(
+  input: NewProjectCompletedTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const args = input.args ?? ['new'];
+  const base = buildCliLifecycleProperties({
+    args,
+    command: 'new',
+    durationMs: input.durationMs,
+    projectRoot,
+    success: input.success,
+  });
+  const properties = {
+    ...base,
+    command: 'new',
+  } satisfies DecantrLifecycleCompletedProperties;
+
+  await captureCliTelemetryEvent({
+    args,
+    name: 'decantr.new.completed',
+    projectRoot,
+    properties,
+    registrySource: properties.registrySource,
+  });
+}
+
+export interface ProjectHealthPromptTelemetryInput {
+  ci?: boolean;
+  finding?: ProjectHealthFinding;
+  projectRoot?: string;
+  report: ProjectHealthReport;
+}
+
+export async function sendProjectHealthPromptTelemetry(
+  input: ProjectHealthPromptTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const finding = input.finding;
+  const properties: HealthFindingPromptRequestedProperties = {
+    success: Boolean(finding),
+    findingFound: Boolean(finding),
+    adoptionMode: normalizeAdoptionMode(input.report.summary.adoptionMode),
+    ci: input.ci ?? false,
+    findingSeverity: normalizeFindingSeverity(finding?.severity),
+    findingSource: normalizeFindingSource(finding?.source),
+    projectScope: inferProjectScope(projectRoot),
+    workflowMode: normalizeWorkflowMode(input.report.summary.workflowMode),
+  };
+
+  await captureCliTelemetryEvent({
+    name: 'health.finding.prompt_requested',
+    projectRoot,
+    properties,
+  });
+}
+
+export interface ProjectHealthCiFailedTelemetryInput extends ProjectHealthReportTelemetryInput {
+  failOn: 'error' | 'warn';
+}
+
+export async function sendProjectHealthCiFailedTelemetry(
+  input: ProjectHealthCiFailedTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const properties = {
+    ...buildProjectHealthTelemetryProperties(input, projectRoot),
+    errorCode: 'project_health_ci_failed',
+    failOn: input.failOn,
+    success: false,
+  } satisfies HealthCiFailedProperties;
+
+  await captureCliTelemetryEvent({
+    name: 'health.ci.failed',
+    projectRoot,
+    properties,
+  });
+}
+
+export interface StudioStartedTelemetryInput {
+  host: string;
+  port: number;
+  projectRoot?: string;
+}
+
+export async function sendStudioStartedTelemetry(input: StudioStartedTelemetryInput): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const metadata = readProjectTelemetryMetadata(projectRoot);
+  const properties: StudioStartedProperties = {
+    success: true,
+    hostMode: isLoopbackHost(input.host) ? 'loopback' : 'custom',
+    port: input.port,
+    adoptionMode: metadata.adoptionMode,
+    projectScope: inferProjectScope(projectRoot),
+    workflowMode: metadata.workflowMode,
+  };
+
+  await captureCliTelemetryEvent({
+    name: 'studio.started',
+    projectRoot,
+    properties,
+  });
+}
+
+export interface StudioHealthRefreshedTelemetryInput extends ProjectHealthReportTelemetryInput {
+  trigger?: 'api-refresh';
+}
+
+export async function sendStudioHealthRefreshedTelemetry(
+  input: StudioHealthRefreshedTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const properties = {
+    ...buildProjectHealthTelemetryProperties(input, projectRoot),
+    trigger: input.trigger ?? 'api-refresh',
+  } satisfies StudioHealthRefreshedProperties;
+
+  await captureCliTelemetryEvent({
+    name: 'studio.health_refreshed',
+    projectRoot,
+    properties,
+  });
+}
+
+interface BuildCliLifecyclePropertiesInput {
+  args: string[];
+  command: string;
+  durationMs: number;
+  projectRoot: string;
+  success: boolean;
+}
+
+function buildCliLifecycleProperties(input: BuildCliLifecyclePropertiesInput) {
+  const metadata = readProjectTelemetryMetadata(input.projectRoot);
+  const registrySource = inferRegistrySource(input.args);
+  return {
+    command: input.command,
+    success: input.success,
+    durationMs: input.durationMs,
+    adoptionMode: inferAdoptionMode(input.args) ?? metadata.adoptionMode,
+    errorCode: input.success ? undefined : 'cli_command_failed',
+    offline: input.args.includes('--offline'),
+    projectScope: metadata.projectScope ?? inferProjectScope(input.projectRoot),
+    registrySource,
+    targetFramework: inferFlagValue(input.args, '--target'),
+    workflowMode: inferWorkflowMode(input.args) ?? metadata.workflowMode,
+  };
+}
+
+function lifecycleTelemetryEventName(
+  command: string,
+): 'decantr.check.completed' | 'decantr.init.completed' | 'decantr.refresh.completed' | null {
+  if (command === 'check') return 'decantr.check.completed';
+  if (command === 'init') return 'decantr.init.completed';
+  if (command === 'refresh') return 'decantr.refresh.completed';
+  return null;
+}
+
+function buildProjectHealthTelemetryProperties(
+  input: ProjectHealthReportTelemetryInput,
+  projectRoot: string,
+): ProjectHealthTelemetryProperties {
+  const { report } = input;
+  return {
+    success: true,
+    status: report.status,
+    score: report.score,
+    durationMs: input.durationMs,
+    adoptionMode: normalizeAdoptionMode(report.summary.adoptionMode),
+    ci: input.ci ?? false,
+    errorCount: report.summary.errorCount,
+    failOn: input.failOn,
+    findingCount: report.summary.findingCount,
+    format: input.format,
+    infoCount: report.summary.infoCount,
+    outputWritten: input.outputWritten ?? false,
+    packManifestPresent: report.summary.packManifestPresent,
+    pageCount: report.summary.pageCount,
+    projectScope: inferProjectScope(projectRoot),
+    reviewPackPresent: report.summary.reviewPackPresent,
+    routeCount: report.routes.declared.length,
+    runtimeAuditChecked: report.summary.runtimeAuditChecked,
+    runtimeMatchedCount: report.routes.runtimeMatched,
+    runtimePassed: report.summary.runtimePassed,
+    runtimeRouteCheckedCount: report.routes.runtimeChecked.length,
+    warnCount: report.summary.warnCount,
+    workflowMode: normalizeWorkflowMode(report.summary.workflowMode),
+  };
 }
 
 export function collectMetrics(
@@ -265,6 +540,47 @@ function getTelemetryActorType(): TelemetryActorType {
   return isTelemetryActorType(configured) ? configured : 'customer';
 }
 
+function getRegistrySourceProperty(properties: TelemetryProperties): RegistrySource | undefined {
+  const value = properties.registrySource;
+  return isRegistrySource(value) ? value : undefined;
+}
+
+function readProjectTelemetryMetadata(projectRoot: string): {
+  adoptionMode?: AdoptionMode;
+  projectScope?: ProjectScope;
+  workflowMode?: WorkflowMode;
+} {
+  const data = readProjectJson(projectRoot);
+  const initialized = isRecord(data?.initialized) ? data.initialized : undefined;
+  return {
+    adoptionMode: normalizeAdoptionMode(initialized?.adoptionMode),
+    projectScope: normalizeProjectScope(initialized?.projectScope),
+    workflowMode: normalizeWorkflowMode(initialized?.workflowMode),
+  };
+}
+
+function resolveCliTelemetryProjectRoot(projectRoot: string, args: string[]): string {
+  const projectFlag = inferFlagValue(args, '--project');
+  if (!projectFlag) return projectRoot;
+
+  const candidate = resolve(projectRoot, projectFlag);
+  return existsSync(join(candidate, '.decantr', 'project.json')) ? candidate : projectRoot;
+}
+
+function readProjectJson(projectRoot: string): Record<string, unknown> | null {
+  const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
+  if (!existsSync(projectJsonPath)) return null;
+  try {
+    return JSON.parse(readFileSync(projectJsonPath, 'utf-8')) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function normalizeCommand(command: string | undefined): string | null {
   if (!command) return null;
   if (command === '--help' || command === '-h') return 'help';
@@ -289,14 +605,22 @@ function inferFlagValue(args: string[], flag: string): string | undefined {
 
 function inferAdoptionMode(args: string[]): AdoptionMode | undefined {
   const value = inferFlagValue(args, '--adoption');
+  return normalizeAdoptionMode(value);
+}
+
+function inferWorkflowMode(args: string[]): WorkflowMode | undefined {
+  const value = inferFlagValue(args, '--workflow');
+  return normalizeWorkflowMode(value);
+}
+
+function normalizeAdoptionMode(value: unknown): AdoptionMode | undefined {
   if (value === 'contract-only' || value === 'decantr-css' || value === 'style-bridge') {
     return value;
   }
   return undefined;
 }
 
-function inferWorkflowMode(args: string[]): WorkflowMode | undefined {
-  const value = inferFlagValue(args, '--workflow');
+function normalizeWorkflowMode(value: unknown): WorkflowMode | undefined {
   if (value === 'greenfield' || value === 'greenfield-scaffold') {
     return 'greenfield-scaffold';
   }
@@ -312,6 +636,32 @@ function inferWorkflowMode(args: string[]): WorkflowMode | undefined {
   return undefined;
 }
 
+function normalizeProjectScope(value: unknown): ProjectScope | undefined {
+  if (value === 'single-app' || value === 'workspace-app') return value;
+  return undefined;
+}
+
+function normalizeFindingSeverity(value: unknown): 'error' | 'info' | 'warn' | undefined {
+  if (value === 'error' || value === 'info' || value === 'warn') return value;
+  return undefined;
+}
+
+function normalizeFindingSource(
+  value: unknown,
+): 'audit' | 'brownfield' | 'check' | 'interaction' | 'pack' | 'runtime' | undefined {
+  if (
+    value === 'audit' ||
+    value === 'brownfield' ||
+    value === 'check' ||
+    value === 'interaction' ||
+    value === 'pack' ||
+    value === 'runtime'
+  ) {
+    return value;
+  }
+  return undefined;
+}
+
 function inferRegistrySource(args: string[]): RegistrySource {
   if (args.includes('--offline')) {
     return 'cache';
@@ -320,6 +670,16 @@ function inferRegistrySource(args: string[]): RegistrySource {
     return 'custom';
   }
   return 'official';
+}
+
+function isRegistrySource(value: unknown): value is RegistrySource {
+  return (
+    value === 'cache' ||
+    value === 'custom' ||
+    value === 'none' ||
+    value === 'official' ||
+    value === 'private'
+  );
 }
 
 function inferProjectScope(projectRoot: string): ProjectScope {
@@ -346,4 +706,8 @@ function getCliVersion(): string {
     // Fall through to unknown.
   }
   return 'unknown';
+}
+
+function isLoopbackHost(host: string): boolean {
+  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
 }

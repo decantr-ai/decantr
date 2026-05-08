@@ -527,10 +527,18 @@ describe('Admin telemetry routes', () => {
         results = previousPeriod
           ? [
               ['cli.command.completed', 'customer', 1],
+              ['health.report.generated', 'customer', 1],
               ['registry.item.resolved', 'internal', 2],
             ]
           : [
               ['cli.command.completed', 'customer', 3],
+              ['decantr.health.healthy', 'customer', 1],
+              ['decantr.init.completed', 'customer', 1],
+              ['decantr.new.completed', 'customer', 1],
+              ['health.ci.failed', 'customer', 1],
+              ['health.finding.prompt_requested', 'customer', 1],
+              ['health.report.generated', 'customer', 2],
+              ['studio.started', 'customer', 1],
               ['registry.item.resolved', 'internal', 2],
             ];
       } else if (query.includes('group by source')) {
@@ -550,7 +558,7 @@ describe('Admin telemetry routes', () => {
           ['launch-project-health', 'x', 'organic-social', '/', 'registry_web.page_viewed', 1, '2026-05-06T02:02:00Z'],
         ];
       } else if (query.includes('and (properties.success = false or properties.valid = false)')) {
-        results = previousPeriod ? [] : [['audit.completed', 1]];
+        results = previousPeriod ? [] : [['audit.completed', 1], ['health.ci.failed', 1]];
       } else if (query.includes('group by distinct_id, actor_type, source')) {
         results = previousPeriod
           ? [
@@ -611,10 +619,10 @@ describe('Admin telemetry routes', () => {
     const json = await res.json();
     expect(fetchMock).toHaveBeenCalledTimes(9);
     expect(json.summary).toMatchObject({
-      total_events: 5,
-      customer_events: 3,
+      total_events: 13,
+      customer_events: 11,
       internal_events: 2,
-      failure_events: 1,
+      failure_events: 2,
       active_identities: 2,
       active_installs: 2,
       active_projects: 1,
@@ -622,8 +630,8 @@ describe('Admin telemetry routes', () => {
       candidate_aliases: 1,
     });
     expect(json.previous_summary).toMatchObject({
-      total_events: 3,
-      customer_events: 1,
+      total_events: 4,
+      customer_events: 2,
       internal_events: 2,
       failure_events: 0,
       active_identities: 1,
@@ -633,9 +641,9 @@ describe('Admin telemetry routes', () => {
       candidate_aliases: 0,
     });
     expect(json.trends).toMatchObject({
-      total_events: { current: 5, previous: 3, delta: 2 },
-      customer_events: { current: 3, previous: 1, delta: 2 },
-      failure_events: { current: 1, previous: 0, delta: 1 },
+      total_events: { current: 13, previous: 4, delta: 9 },
+      customer_events: { current: 11, previous: 2, delta: 9 },
+      failure_events: { current: 2, previous: 0, delta: 2 },
     });
     expect(json.marketing_attribution).toMatchObject({
       total_events: 5,
@@ -662,11 +670,27 @@ describe('Admin telemetry routes', () => {
     expect(json.signal_buckets).toEqual(expect.arrayContaining([
       expect.objectContaining({
         key: 'cli_adoption',
-        current_events: 3,
+        current_events: 5,
         previous_events: 1,
-        delta: 2,
+        delta: 4,
+      }),
+      expect.objectContaining({
+        key: 'project_health',
+        current_events: 6,
+        previous_events: 1,
+        delta: 5,
       }),
     ]));
+    expect(json.product_activation).toMatchObject({
+      activation_rate: 0.5,
+      ci_failure_events: 1,
+      health_report_events: 2,
+      healthy_project_events: 1,
+      init_completed_events: 1,
+      new_completed_events: 1,
+      remediation_prompt_events: 1,
+      studio_started_events: 1,
+    });
     expect(json.operating_alerts).toEqual(expect.arrayContaining([
       expect.objectContaining({
         title: 'Failure signals elevated',

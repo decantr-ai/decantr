@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { detectRoutingMode, getBootstrapAdapter, resolveBootstrapTarget } from '../bootstrap.js';
 import { seedOfflineRegistry } from '../offline-content.js';
+import { sendNewProjectCompletedTelemetry } from '../telemetry.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -41,6 +42,7 @@ export interface NewProjectOptions {
   workflow?: string;
   adoption?: string;
   assistantBridge?: string;
+  telemetry?: boolean;
 }
 
 interface ArgvCommand {
@@ -99,9 +101,33 @@ export function buildNewProjectInitArgs(
   pushPassThroughFlag(initFlags, 'shape', options.shape);
   pushPassThroughFlag(initFlags, 'target', options.target);
   if (options.offline) initFlags.push('--offline');
+  if (options.telemetry) initFlags.push('--telemetry');
   pushPassThroughFlag(initFlags, 'registry', options.registry);
   pushPassThroughFlag(initFlags, 'assistant-bridge', options.assistantBridge);
   return initFlags;
+}
+
+function buildNewProjectTelemetryArgs(projectName: string, options: NewProjectOptions): string[] {
+  const args = ['new', projectName];
+  const flagPairs: Array<[string, string | undefined]> = [
+    ['blueprint', options.blueprint],
+    ['archetype', options.archetype],
+    ['theme', options.theme],
+    ['mode', options.mode],
+    ['shape', options.shape],
+    ['target', options.target],
+    ['registry', options.registry],
+    ['workflow', options.workflow],
+    ['adoption', options.adoption],
+    ['assistant-bridge', options.assistantBridge],
+  ];
+
+  for (const [flag, value] of flagPairs) {
+    if (value) args.push(`--${flag}=${value}`);
+  }
+  if (options.offline) args.push('--offline');
+  if (options.telemetry) args.push('--telemetry');
+  return args;
 }
 
 function commandForPlatform(command: string): string {
@@ -151,6 +177,7 @@ export async function cmdNewProject(
   projectName: string,
   options: NewProjectOptions,
 ): Promise<void> {
+  const startedAt = Date.now();
   const workspaceRoot = process.cwd();
   const projectDir = resolve(workspaceRoot, projectName);
   const bootstrapTarget = resolveBootstrapTarget(options.target);
@@ -281,6 +308,15 @@ export async function cmdNewProject(
     );
   }
   console.log('');
+
+  if (options.telemetry) {
+    await sendNewProjectCompletedTelemetry({
+      args: buildNewProjectTelemetryArgs(projectName, options),
+      durationMs: Date.now() - startedAt,
+      projectRoot: projectDir,
+      success: true,
+    });
+  }
 }
 
 function detectPackageManager(): string {

@@ -171,7 +171,7 @@ async function maybeSendTelemetry(
   if (options.telemetry && !isOptedIn(projectRoot)) {
     optIn(projectRoot);
     console.log(
-      `\n${CYAN}Telemetry enabled.${RESET} Anonymous guard metrics will be sent on future checks.`,
+      `\n${CYAN}Telemetry enabled.${RESET} Decantr will send privacy-filtered CLI product telemetry for this project.`,
     );
     console.log(`${DIM}Set "telemetry": false in .decantr/project.json to opt out.${RESET}`);
   }

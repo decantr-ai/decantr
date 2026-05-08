@@ -41,7 +41,39 @@ const TELEMETRY_SIGNAL_BUCKETS = [
   {
     key: 'cli_adoption',
     label: 'CLI adoption',
-    events: ['cli.command.completed', 'registry.sync.completed'],
+    events: [
+      'cli.command.completed',
+      'decantr.check.completed',
+      'decantr.init.completed',
+      'decantr.new.completed',
+      'decantr.refresh.completed',
+      'registry.sync.completed',
+    ],
+  },
+  {
+    key: 'product_activation',
+    label: 'Product activation',
+    events: [
+      'decantr.check.completed',
+      'decantr.health.healthy',
+      'decantr.init.completed',
+      'decantr.new.completed',
+      'decantr.refresh.completed',
+      'health.report.generated',
+      'studio.started',
+    ],
+  },
+  {
+    key: 'project_health',
+    label: 'Project Health',
+    events: [
+      'decantr.health.healthy',
+      'health.ci.failed',
+      'health.finding.prompt_requested',
+      'health.report.generated',
+      'studio.health_refreshed',
+      'studio.started',
+    ],
   },
   {
     key: 'hosted_intelligence',
@@ -215,6 +247,22 @@ export interface TelemetryMarketingAttributionSummary {
   warnings: string[];
 }
 
+export interface TelemetryProductActivationSummary {
+  activation_rate: number;
+  check_completed_events: number;
+  ci_failure_events: number;
+  ci_failure_rate: number;
+  health_report_events: number;
+  healthy_project_events: number;
+  init_completed_events: number;
+  new_completed_events: number;
+  refresh_completed_events: number;
+  remediation_prompt_events: number;
+  studio_refresh_events: number;
+  studio_started_events: number;
+  warnings: string[];
+}
+
 export interface TelemetryUsageOperatingAlert {
   detail: string;
   level: 'critical' | 'info' | 'warning';
@@ -234,6 +282,7 @@ export interface AdminTelemetryUsageResponse {
   marketing_landing_paths: TelemetryMarketingLandingSummary[];
   operating_alerts: TelemetryUsageOperatingAlert[];
   previous_summary: TelemetryUsageSummary;
+  product_activation: TelemetryProductActivationSummary;
   range_days: number;
   signal_buckets: TelemetryUsageSignalBucket[];
   source: TelemetryUsageSource | null;
@@ -399,6 +448,7 @@ export async function fetchPostHogTelemetryUsage(input: {
   });
   const trends = buildUsageTrends(summary, previousSummary);
   const signalBuckets = buildSignalBuckets(eventRows, previousEventRows);
+  const productActivation = buildProductActivationSummary(eventRows);
   const marketingAttribution = buildMarketingAttribution(marketingAttributionRows.map(toMarketingAttributionRow));
 
   return {
@@ -414,11 +464,13 @@ export async function fetchPostHogTelemetryUsage(input: {
     marketing_landing_paths: marketingAttribution.landingPaths,
     operating_alerts: buildOperatingAlerts({
       candidateAliases,
+      productActivation,
       signalBuckets,
       summary,
       trends,
     }),
     previous_summary: previousSummary,
+    product_activation: productActivation,
     range_days: input.days,
     signal_buckets: signalBuckets,
     source: (input.source as TelemetryUsageSource | undefined) ?? null,
@@ -969,6 +1021,44 @@ function buildMarketingAttribution(rows: TelemetryMarketingAttributionRow[]): {
   };
 }
 
+function buildProductActivationSummary(
+  eventRows: TelemetryUsageEventCount[],
+): TelemetryProductActivationSummary {
+  const totals = rowsToEventTotals(eventRows);
+  const healthReportEvents = totals.get('health.report.generated') ?? 0;
+  const healthyProjectEvents = totals.get('decantr.health.healthy') ?? 0;
+  const ciFailureEvents = totals.get('health.ci.failed') ?? 0;
+  const activationRate = healthReportEvents > 0 ? healthyProjectEvents / healthReportEvents : 0;
+  const ciFailureRate = healthReportEvents > 0 ? ciFailureEvents / healthReportEvents : 0;
+  const warnings: string[] = [];
+
+  if (healthReportEvents === 0) {
+    warnings.push('No Project Health report events were observed for this filter and period.');
+  }
+  if (healthReportEvents > 0 && healthyProjectEvents === 0) {
+    warnings.push('Project Health reports were generated, but no healthy project milestone was observed.');
+  }
+  if (ciFailureEvents > 0) {
+    warnings.push('Project Health CI failures were observed and may need customer-success follow-up.');
+  }
+
+  return {
+    activation_rate: activationRate,
+    check_completed_events: totals.get('decantr.check.completed') ?? 0,
+    ci_failure_events: ciFailureEvents,
+    ci_failure_rate: ciFailureRate,
+    health_report_events: healthReportEvents,
+    healthy_project_events: healthyProjectEvents,
+    init_completed_events: totals.get('decantr.init.completed') ?? 0,
+    new_completed_events: totals.get('decantr.new.completed') ?? 0,
+    refresh_completed_events: totals.get('decantr.refresh.completed') ?? 0,
+    remediation_prompt_events: totals.get('health.finding.prompt_requested') ?? 0,
+    studio_refresh_events: totals.get('studio.health_refreshed') ?? 0,
+    studio_started_events: totals.get('studio.started') ?? 0,
+    warnings,
+  };
+}
+
 function attributionValue(value: string | null, fallback: string) {
   return value?.trim() || fallback;
 }
@@ -1037,6 +1127,7 @@ function sumEvents(totals: Map<string, number>, events: readonly string[]) {
 
 function buildOperatingAlerts(input: {
   candidateAliases: TelemetryUsageCandidateAlias[];
+  productActivation: TelemetryProductActivationSummary;
   signalBuckets: TelemetryUsageSignalBucket[];
   summary: TelemetryUsageSummary;
   trends: AdminTelemetryUsageResponse['trends'];
@@ -1095,6 +1186,25 @@ function buildOperatingAlerts(input: {
       level: 'info',
       title: 'Commercial intent rising',
       detail: `Commercial-intent events are ${formatSignedNumber(commercialIntent.delta)} versus the previous period.`,
+    });
+  }
+
+  if (
+    input.productActivation.health_report_events > 0 &&
+    input.productActivation.healthy_project_events === 0
+  ) {
+    alerts.push({
+      level: 'warning',
+      title: 'Project Health has no healthy milestones',
+      detail: 'Customers are generating Project Health reports, but no healthy project milestone was recorded.',
+    });
+  }
+
+  if (input.productActivation.ci_failure_events > 0) {
+    alerts.push({
+      level: 'warning',
+      title: 'Project Health CI failures detected',
+      detail: `${input.productActivation.ci_failure_events} Project Health CI failure events were recorded in this period.`,
     });
   }
 

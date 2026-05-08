@@ -1,6 +1,6 @@
 {
   "name": "@decantr/essence-spec",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Essence schemas, validation, migration, and TypeScript types for Decantr",
   "author": "Decantr AI",
   "license": "MIT",
@@ -18,8 +18,8 @@
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./schema": {
       "import": "./schema/essence.v4.json"

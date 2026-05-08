@@ -72,6 +72,7 @@ import {
   runSimplifiedInit,
 } from './prompts.js';
 import { RegistryClient, syncRegistry } from './registry.js';
+import { optIn, sendCliCommandTelemetry } from './telemetry.js';
 import {
   type BlueprintOverrides,
   type ComposeSectionsResult,
@@ -97,7 +98,6 @@ import {
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
-import { sendCliCommandTelemetry } from './telemetry.js';
 import {
   createTheme,
   deleteTheme,
@@ -1573,11 +1573,20 @@ interface InitArgs {
   registry?: string;
   workflow?: string;
   adoption?: string;
+  telemetry?: boolean;
   'assistant-bridge'?: string;
   project?: string;
   'accept-proposal'?: boolean;
   'merge-proposal'?: boolean;
   'replace-essence'?: boolean;
+}
+
+function enableCliTelemetry(projectRoot: string): void {
+  optIn(projectRoot);
+  console.log(
+    `\n${CYAN}Telemetry enabled.${RESET} Decantr will send privacy-filtered CLI product telemetry for this project.`,
+  );
+  console.log(`${DIM}Set "telemetry": false in .decantr/project.json to opt out.${RESET}`);
 }
 
 function readCliPackageVersion(): string {
@@ -1869,6 +1878,7 @@ async function cmdInit(args: InitArgs) {
       mode: proposalMode,
       assistantBridge: policy.assistantBridge,
     });
+    if (args.telemetry) enableCliTelemetry(projectRoot);
     return;
   }
 
@@ -1983,6 +1993,7 @@ async function cmdInit(args: InitArgs) {
       console.log(
         `    4. Use ${cyan('decantr create <type> <name>')} to create custom content if needed`,
       );
+      if (args.telemetry) enableCliTelemetry(projectRoot);
       return;
     }
 
@@ -2324,6 +2335,8 @@ async function cmdInit(args: InitArgs) {
   if (policy.assistantBridge === 'apply') {
     appliedRuleFiles = applyAssistantBridge(projectRoot, detected);
   }
+
+  if (args.telemetry) enableCliTelemetry(projectRoot);
 
   // Output summary
   console.log(success('\nProject scaffolded!\n'));
@@ -2866,7 +2879,7 @@ function cmdHelp() {
 ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 
 ${BOLD}Usage:${RESET}
-  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css]
+  decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css] [--telemetry]
   decantr magic <prompt> [--dry-run]
   decantr init [options]
   decantr status
@@ -2919,6 +2932,7 @@ ${BOLD}Init Options:${RESET}
   --offline          Force offline mode
   --yes, -y          Accept defaults, skip confirmations
   --registry         Custom registry URL
+  --telemetry        Opt this project into privacy-filtered CLI product telemetry
 
 ${BOLD}Commands:${RESET}
   ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
@@ -3074,6 +3088,8 @@ async function main() {
         const arg = args[i];
         if (arg === '--offline') {
           newOpts.offline = true;
+        } else if (arg === '--telemetry') {
+          newOpts.telemetry = true;
         } else if (arg.startsWith('--')) {
           const [key, value] = arg.slice(2).split('=');
           if (value) {
@@ -3095,6 +3111,7 @@ async function main() {
         workflow: newOpts.workflow as string | undefined,
         adoption: newOpts.adoption as string | undefined,
         assistantBridge: newOpts['assistant-bridge'] as string | undefined,
+        telemetry: newOpts.telemetry === true,
       });
       break;
     }
@@ -3108,6 +3125,8 @@ async function main() {
           initArgs.yes = true;
         } else if (arg === '--offline') {
           initArgs.offline = true;
+        } else if (arg === '--telemetry') {
+          initArgs.telemetry = true;
         } else if (arg === '--existing') {
           initArgs.existing = true;
         } else if (arg === '--accept-proposal') {
