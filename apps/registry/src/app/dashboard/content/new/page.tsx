@@ -40,15 +40,6 @@ async function getImageDimensions(
   }
 }
 
-function isSafeThumbnailPreviewUrl(value: string | null): value is string {
-  if (!value) return false;
-  try {
-    return new URL(value).protocol === 'blob:';
-  } catch {
-    return false;
-  }
-}
-
 function mergeRegistryPresentation(
   value: unknown,
   thumbnail: RegistryThumbnailMeta | null,
@@ -106,10 +97,6 @@ export default function ContentNewPage() {
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(null);
   const [thumbnailError, setThumbnailError] = useState<string | null>(null);
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
-  const thumbnailPreviewSrc = useMemo(
-    () => (isSafeThumbnailPreviewUrl(thumbnailPreviewUrl) ? thumbnailPreviewUrl : null),
-    [thumbnailPreviewUrl],
-  );
 
   function update(field: string, value: string) {
     setForm((prev) => {
@@ -570,15 +557,6 @@ export default function ContentNewPage() {
               ) : null}
               {thumbnailError ? (
                 <p className="registry-error-copy">{thumbnailError}</p>
-              ) : null}
-              {thumbnailPreviewSrc ? (
-                <div className="registry-thumbnail-preview">
-                  <img
-                    src={thumbnailPreviewSrc}
-                    alt="Thumbnail preview"
-                    className="registry-thumbnail-preview-image"
-                  />
-                </div>
               ) : null}
             </div>
 

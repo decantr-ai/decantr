@@ -6053,17 +6053,49 @@ function countAuthCallbackStateStorageSignals(code: string): number {
 }
 
 function countAuthCallbackStateStorageClearSignals(code: string): number {
-  const documentCookieClears =
-    code.match(
-      /\bdocument\.cookie\s*=\s*[^;\n]*(?:state|csrf)[^;\n]*(?:expires\s*=\s*Thu,\s*01 Jan 1970|max-age\s*=\s*0)/gi,
-    )?.length ?? 0;
-
   return (
     countStateLikeMemberCalls(code, ['sessionStorage', 'localStorage'], ['removeItem']) +
     countStateLikeFunctionCalls(code, ['deleteCookie', 'clearCookie', 'removeCookie']) +
     countStateLikeMemberCalls(code, ['cookies', 'cookie', 'cookieStore'], ['delete', 'remove']) +
-    documentCookieClears
+    countDocumentCookieStateClears(code)
   );
+}
+
+function countDocumentCookieStateClears(code: string): number {
+  const lowerCode = code.toLowerCase();
+  let count = 0;
+
+  for (
+    let index = lowerCode.indexOf('document.cookie');
+    index !== -1;
+    index = lowerCode.indexOf('document.cookie', index + 'document.cookie'.length)
+  ) {
+    const assignmentIndex = lowerCode.indexOf('=', index + 'document.cookie'.length);
+    if (assignmentIndex === -1 || assignmentIndex - index > 48) continue;
+
+    const endIndex = findCookieAssignmentEnd(lowerCode, assignmentIndex + 1);
+    const assignment = lowerCode.slice(assignmentIndex + 1, endIndex);
+    const mentionsStateToken = assignment.includes('state') || assignment.includes('csrf');
+    const expiresImmediately =
+      assignment.includes('max-age=0') ||
+      assignment.includes('max-age = 0') ||
+      assignment.includes('thu, 01 jan 1970');
+
+    if (mentionsStateToken && expiresImmediately) {
+      count += 1;
+    }
+  }
+
+  return count;
+}
+
+function findCookieAssignmentEnd(code: string, startIndex: number): number {
+  const maxIndex = Math.min(code.length, startIndex + 320);
+  for (let index = startIndex; index < maxIndex; index += 1) {
+    const char = code[index];
+    if (char === '\n' || char === '\r') return index;
+  }
+  return maxIndex;
 }
 
 function countAuthCallbackUrlScrubSignals(code: string): number {

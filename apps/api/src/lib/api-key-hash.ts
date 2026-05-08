@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { scryptSync } from 'crypto';
 
 let cachedApiKeyHashSecret: string | null = null;
 
@@ -23,5 +23,5 @@ function getApiKeyHashSecret(): string {
 }
 
 export function hashApiKey(key: string): string {
-  return createHmac('sha256', getApiKeyHashSecret()).update(key).digest('hex');
+  return scryptSync(key, getApiKeyHashSecret(), 32).toString('hex');
 }
