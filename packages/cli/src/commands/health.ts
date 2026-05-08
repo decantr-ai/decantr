@@ -115,7 +115,7 @@ function normalizeCliPackageSpecifier(version: string | undefined): string {
   const versionToken = value.startsWith('@decantr/cli@') ? value.slice('@decantr/cli@'.length) : value;
   if (!/^[A-Za-z0-9._~^*-]+$/.test(versionToken)) {
     throw new Error(
-      'Invalid --cli-version value. Use a package version or dist-tag such as latest, 1.10.0, or next.',
+      'Invalid --cli-version value. Use a package version or dist-tag such as latest, 2.0.0, or next.',
     );
   }
   return `@decantr/cli@${versionToken}`;

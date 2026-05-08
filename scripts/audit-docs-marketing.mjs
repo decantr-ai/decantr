@@ -12,6 +12,7 @@ const EXPECTED_PACKAGE_PATHS = {
   '@decantr/registry': 'packages/registry/package.json',
   '@decantr/core': 'packages/core/package.json',
   '@decantr/css': 'packages/css/package.json',
+  '@decantr/telemetry': 'packages/telemetry/package.json',
   '@decantr/verifier': 'packages/verifier/package.json',
 };
 

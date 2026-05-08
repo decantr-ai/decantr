@@ -15,7 +15,7 @@ npm install @decantr/core
 
 ## Stability
 
-`@decantr/core` is published for advanced package consumers that need low-level execution-pack primitives. It is stable in the `1.x` line for the documented exports in this package, but it is still not the recommended first integration surface for most Decantr adopters.
+`@decantr/core` is published for advanced package consumers that need low-level execution-pack primitives. It is stable in the `2.x` line for the documented exports in this package, but it is still not the recommended first integration surface for most Decantr adopters.
 
 ## What It Exports
 

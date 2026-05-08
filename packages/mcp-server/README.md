@@ -144,7 +144,7 @@ For the broader product surface and support policy, see the root Decantr docs an
 
 ## Compatibility
 
-`@decantr/mcp-server` is stable in the `1.x` line for the documented MCP tool surface.
+`@decantr/mcp-server` is stable in the `2.x` line for the documented MCP tool surface.
 
 - new tools may be added in compatible releases
 - existing documented tool names and envelopes should not break without a major version
