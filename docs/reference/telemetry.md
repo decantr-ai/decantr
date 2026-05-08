@@ -125,7 +125,7 @@ pnpm telemetry:persist-rollups
 
 The weekly snapshot command reads the same PostHog env values and requires `query:read`. The rollup persistence command posts to the Decantr API snapshot runner with `DECANTR_API_URL` and `DECANTR_TELEMETRY_SNAPSHOT_TOKEN`, writing an operator-readable markdown summary of persisted usage snapshots, attribution snapshots, event totals, and attribution row counts. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes both summaries to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the PostHog markdown payload to a webhook.
 
-The weekly snapshot includes total/customer event movement, paid-acquisition movement, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
+The weekly snapshot includes total/customer event movement, paid-acquisition movement, marketing attribution health, top campaigns, top landing paths, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
 
 ```env
 TELEMETRY_FAILURE_ALERT_THRESHOLD=3
@@ -154,6 +154,8 @@ POSTHOG_PERSONAL_API_KEY=
 `POSTHOG_QUERY_HOST` can be omitted when the project is in PostHog US cloud; set it explicitly for other PostHog regions or self-hosted deployments. The personal API key needs `query:read`.
 
 The response includes total/customer/internal/failure events, source mix, actor mix, active identities, previous-period summaries, period-over-period trends, product signal buckets, operating alerts, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
+
+The usage response also includes lightweight marketing attribution summaries: campaign coverage, landing-path coverage, registry follow-through, top UTM campaigns, and top landing paths. Campaign naming and launch-link hygiene live in [Decantr UTM Taxonomy](./telemetry-utm-taxonomy.md).
 
 The companion endpoint `GET /v1/admin/telemetry/attribution` groups live PostHog usage by `decantr_org_id`, `decantr_project_id`, `decantr_source`, and `decantr_actor_type`, then enriches known organization ids from Supabase. The registry usage page shows this as the org/project attribution table, and commercial reports pull the 30-day customer slice. This is the first enterprise reporting lane for answering which orgs, projects, and sources are driving real Decantr adoption without storing raw customer application data.
 
@@ -328,6 +330,15 @@ X_EVENT_MARKETING_COMMAND_CLICKED_ID=
 ```
 
 If `X_PIXEL_ID` is unset, no X script is loaded. The X event ids are optional per-event conversion tags from X Events Manager.
+
+Launch QA can be run with:
+
+```bash
+pnpm telemetry:marketing-qa
+pnpm telemetry:marketing-qa -- --send-smoke
+```
+
+The default command checks the live marketing page, analytics config, analytics runtime, privacy guard, and registry surface. The smoke variant posts a test `marketing_web.page_viewed` event to first-party ingest and expects `202`.
 
 ## First-Party Ingest
 
