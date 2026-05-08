@@ -1,6 +1,6 @@
 import { css } from '@decantr/css';
 import { useNavigate, Link } from 'react-router-dom';
-import { Layers, Github, Mail } from 'lucide-react';
+import { Layers, GitBranch as Github, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 

@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
-import { Mail, Phone, MapPin, Linkedin, Sparkles, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Mail, Phone, MapPin, BriefcaseBusiness as Linkedin, Sparkles, ExternalLink, ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { SectionLabel } from '@/components/SectionLabel';
 import { ActivityFeed } from '@/components/ActivityFeed';

@@ -1,5 +1,5 @@
 import { css } from '@decantr/css';
-import { Sparkles, Github } from 'lucide-react';
+import { Sparkles, GitBranch as Github } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';

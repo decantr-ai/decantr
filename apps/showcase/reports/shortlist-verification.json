@@ -1,15 +1,15 @@
 {
   "$schema": "https://decantr.ai/schemas/showcase-shortlist-report.v1.json",
-  "generatedAt": "2026-05-06T13:00:13.033Z",
+  "generatedAt": "2026-05-08T16:57:48.487Z",
   "dryRun": false,
   "summary": {
     "appCount": 41,
     "passedBuilds": 41,
     "failedBuilds": 0,
-    "averageDurationMs": 3285,
+    "averageDurationMs": 823,
     "passedSmokes": 41,
     "failedSmokes": 0,
-    "averageSmokeDurationMs": 6,
+    "averageSmokeDurationMs": 5,
     "appsWithTitleOkCount": 41,
     "appsWithLangOkCount": 41,
     "appsWithViewportOkCount": 41,
@@ -28,9 +28,9 @@
     "appsWithRouteCoverageCount": 41,
     "appsWithRouteDocumentHardeningCount": 41,
     "appsWithFullRouteCoverageCount": 41,
-    "averageTotalAssetBytes": 265098,
-    "averageJsAssetBytes": 262992,
-    "averageCssAssetBytes": 2106,
+    "averageTotalAssetBytes": 262268,
+    "averageJsAssetBytes": 259197,
+    "averageCssAssetBytes": 3071,
     "lowerDriftCount": 2,
     "moderateDriftCount": 5,
     "elevatedDriftCount": 34,
@@ -44,11 +44,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 48,
+        "durationMs": 45,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -91,11 +91,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -116,7 +116,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -163,11 +163,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -188,11 +188,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 7,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -235,11 +235,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -260,7 +260,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -307,11 +307,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -332,11 +332,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 9,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -379,11 +379,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -404,11 +404,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -451,11 +451,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -476,11 +476,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -523,11 +523,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -548,7 +548,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -595,11 +595,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -620,7 +620,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -667,11 +667,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -692,7 +692,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -739,11 +739,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -764,7 +764,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -811,11 +811,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -836,11 +836,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -883,11 +883,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -908,7 +908,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -955,11 +955,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -980,7 +980,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1027,11 +1027,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1052,11 +1052,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1099,11 +1099,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1124,11 +1124,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1171,11 +1171,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1196,11 +1196,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1243,20 +1243,20 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
         "signal": "elevated",
-        "penalty": 567,
-        "inlineStyleCount": 472,
-        "hardcodedColorCount": 70,
+        "penalty": 1325,
+        "inlineStyleCount": 444,
+        "hardcodedColorCount": 462,
         "utilityLeakageCount": 1,
-        "decantrTreatmentCount": 281,
+        "decantrTreatmentCount": 273,
         "hasPackManifest": false,
         "hasDist": true
       }
@@ -1268,7 +1268,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1315,11 +1315,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1340,7 +1340,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1387,11 +1387,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1412,11 +1412,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1459,11 +1459,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1484,11 +1484,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1531,11 +1531,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1556,7 +1556,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1603,11 +1603,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1628,7 +1628,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1675,11 +1675,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1700,11 +1700,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1747,11 +1747,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1772,7 +1772,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1819,11 +1819,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1844,11 +1844,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -1891,11 +1891,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1916,7 +1916,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -1963,11 +1963,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -1988,7 +1988,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2035,11 +2035,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2060,11 +2060,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2106,11 +2106,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2131,7 +2131,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2178,11 +2178,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2203,11 +2203,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 4,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2250,11 +2250,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2275,7 +2275,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2322,11 +2322,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2347,11 +2347,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 3,
+        "durationMs": 5,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2394,11 +2394,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2419,7 +2419,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2466,11 +2466,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2491,11 +2491,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2538,11 +2538,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2563,7 +2563,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2610,11 +2610,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2635,7 +2635,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2682,11 +2682,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2707,7 +2707,7 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
@@ -2754,11 +2754,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2779,11 +2779,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 6,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2826,11 +2826,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2851,11 +2851,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 4,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2898,11 +2898,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {
@@ -2923,11 +2923,11 @@
       "verificationStatus": "smoke-green",
       "build": {
         "passed": true,
-        "durationMs": 3285
+        "durationMs": 823
       },
       "smoke": {
         "passed": true,
-        "durationMs": 5,
+        "durationMs": 3,
         "rootDocumentOk": true,
         "titleOk": true,
         "langOk": true,
@@ -2970,11 +2970,11 @@
         "routeDocumentsCoverageOk": true,
         "routeDocumentsHardeningOk": true,
         "fullRouteCoverageOk": true,
-        "totalAssetBytes": 265098,
-        "jsAssetBytes": 262992,
-        "cssAssetBytes": 2106,
-        "largestAssetPath": "/assets/index-CAL3iS9F.js",
-        "largestAssetBytes": 262992,
+        "totalAssetBytes": 262268,
+        "jsAssetBytes": 259197,
+        "cssAssetBytes": 3071,
+        "largestAssetPath": "/assets/index-roAji6sC.js",
+        "largestAssetBytes": 259197,
         "failures": []
       },
       "drift": {

@@ -1,5 +1,5 @@
 import { css } from '@decantr/css';
-import { MapPin, Mail, Github, Twitter, Linkedin, Dribbble } from 'lucide-react';
+import { MapPin, Mail, GitBranch as Github, MessageCircle as Twitter, BriefcaseBusiness as Linkedin, CircleDot as Dribbble } from 'lucide-react';
 import { bio } from '../data/mock';
 
 const socialIcons: Record<string, typeof Github> = { github: Github, twitter: Twitter, linkedin: Linkedin, dribbble: Dribbble };
