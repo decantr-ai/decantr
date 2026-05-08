@@ -195,18 +195,48 @@ function resolveAtom(atomPart: string): { className: string; decl: string } | nu
  * Escape special characters in a CSS class name.
  */
 function escapeClass(cls: string): string {
-  return cls
-    .replace(/:/g, '\\:')
-    .replace(/\./g, '\\.')
-    .replace(/\//g, '\\/')
-    .replace(/\[/g, '\\[')
-    .replace(/\]/g, '\\]')
-    .replace(/#/g, '\\#')
-    .replace(/%/g, '\\%')
-    .replace(/\(/g, '\\(')
-    .replace(/\)/g, '\\)')
-    .replace(/,/g, '\\,')
-    .replace(/\+/g, '\\+');
+  const chars = Array.from(cls);
+  let escaped = '';
+
+  for (let index = 0; index < chars.length; index += 1) {
+    const char = chars[index]!;
+    const codePoint = char.codePointAt(0) ?? 0;
+    const firstChar = chars[0];
+    const isControl = (codePoint >= 1 && codePoint <= 31) || codePoint === 127;
+    const needsNumericEscape =
+      isControl ||
+      (index === 0 && isAsciiDigit(codePoint)) ||
+      (index === 1 && firstChar === '-' && isAsciiDigit(codePoint));
+
+    if (codePoint === 0) {
+      escaped += '\uFFFD';
+    } else if (needsNumericEscape) {
+      escaped += `\\${codePoint.toString(16)} `;
+    } else if (index === 0 && char === '-' && chars.length === 1) {
+      escaped += '\\-';
+    } else if (isCssNameCodePoint(codePoint)) {
+      escaped += char;
+    } else {
+      escaped += `\\${char}`;
+    }
+  }
+
+  return escaped;
+}
+
+function isAsciiDigit(codePoint: number): boolean {
+  return codePoint >= 48 && codePoint <= 57;
+}
+
+function isCssNameCodePoint(codePoint: number): boolean {
+  return (
+    codePoint >= 128 ||
+    codePoint === 45 ||
+    codePoint === 95 ||
+    isAsciiDigit(codePoint) ||
+    (codePoint >= 65 && codePoint <= 90) ||
+    (codePoint >= 97 && codePoint <= 122)
+  );
 }
 
 /**

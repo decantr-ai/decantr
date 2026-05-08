@@ -720,6 +720,16 @@ function routingImplementationHint(routing: 'hash' | 'history' | 'pathname'): st
 
 export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): string {
   const lines: string[] = [];
+  const escapeMarkdownCell = (value: string): string => {
+    let escaped = '';
+    for (const char of value) {
+      if (char === '\\') escaped += '\\\\';
+      else if (char === '|') escaped += '\\|';
+      else if (char === '\n' || char === '\r') escaped += '<br>';
+      else escaped += char;
+    }
+    return escaped;
+  };
 
   lines.push(`# ${pack.packType.charAt(0).toUpperCase()}${pack.packType.slice(1)} Pack`);
   lines.push('');
@@ -809,7 +819,6 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     // section packs. Cold prompts read scaffold-pack first, so this is the
     // earliest authoritative read of the theme's visual identity contract.
     if (scaffoldPack.data.themeDecorators && scaffoldPack.data.themeDecorators.length > 0) {
-      const escScaffoldCell = (s: string): string => s.replace(/\|/g, '\\|');
       lines.push(`## Required Theme Decorators (${scaffoldPack.data.theme.id})`);
       lines.push('');
       lines.push(
@@ -820,7 +829,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push('|-------|--------|----------|');
       for (const entry of scaffoldPack.data.themeDecorators) {
         lines.push(
-          `| \`.${entry.class}\` | ${escScaffoldCell(entry.intent)} | ${escScaffoldCell(entry.applyTo)} |`,
+          `| \`.${entry.class}\` | ${escapeMarkdownCell(entry.intent)} | ${escapeMarkdownCell(entry.applyTo)} |`,
         );
       }
       lines.push('');
@@ -892,7 +901,6 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
     if (sectionPack.data.themeDecorators && sectionPack.data.themeDecorators.length > 0) {
       // Legacy/override path — render the full table. Kept for back-compat
       // with consumers that still pass themeDecorators directly.
-      const escCell = (s: string): string => s.replace(/\|/g, '\\|');
       lines.push(`## Required Theme Decorators (${sectionPack.data.theme.id})`);
       lines.push('');
       lines.push(
@@ -903,7 +911,7 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       lines.push('|-------|--------|----------|');
       for (const entry of sectionPack.data.themeDecorators) {
         lines.push(
-          `| \`.${entry.class}\` | ${escCell(entry.intent)} | ${escCell(entry.applyTo)} |`,
+          `| \`.${entry.class}\` | ${escapeMarkdownCell(entry.intent)} | ${escapeMarkdownCell(entry.applyTo)} |`,
         );
       }
       lines.push('');

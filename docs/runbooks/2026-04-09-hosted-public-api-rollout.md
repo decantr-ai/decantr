@@ -143,6 +143,7 @@ Canonical deploy contract:
 - `apps/api/fly.toml` is the only Fly config that should exist for the hosted API
 - the old root-level `fly.toml` has been retired to avoid split deploy behavior
 - the workspace-aware root `Dockerfile` is the canonical build path used by Fly
+- API keys are stored as keyed HMAC digests. Set `DECANTR_API_KEY_HASH_SECRET` as a stable Fly secret; if it is omitted, the API falls back to `SUPABASE_SERVICE_ROLE_KEY`, which means rotating the Supabase service key also rotates the API key hash secret.
 
 ### Current portal deploy status
 

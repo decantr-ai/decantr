@@ -259,11 +259,22 @@ const lines = [
 ];
 
 for (const result of results) {
-  lines.push(`| ${result.name} | ${result.file} | ${result.passed ? 'yes' : 'no'} | ${result.details.replace(/\|/g, '\\|')} |`);
+  lines.push(`| ${result.name} | ${result.file} | ${result.passed ? 'yes' : 'no'} | ${escapeMarkdownCell(result.details)} |`);
 }
 
 console.log(lines.join('\n'));
 
 if (failures.length > 0) {
   process.exitCode = 1;
+}
+
+function escapeMarkdownCell(value) {
+  let escaped = '';
+  for (const char of String(value ?? '-')) {
+    if (char === '\\') escaped += '\\\\';
+    else if (char === '|') escaped += '\\|';
+    else if (char === '\n' || char === '\r') escaped += ' ';
+    else escaped += char;
+  }
+  return escaped;
 }

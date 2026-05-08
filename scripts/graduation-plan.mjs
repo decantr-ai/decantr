@@ -145,6 +145,17 @@ const output = {
   packages,
 };
 
+function escapeMarkdownCell(value) {
+  let escaped = '';
+  for (const char of String(value ?? '-')) {
+    if (char === '\\') escaped += '\\\\';
+    else if (char === '|') escaped += '\\|';
+    else if (char === '\n' || char === '\r') escaped += ' ';
+    else escaped += char;
+  }
+  return escaped;
+}
+
 const stableNow = packages.filter((entry) => entry.graduationStatus === 'stable-live' || entry.graduationStatus === 'stable-needs-npm-normalization');
 const internalOnly = packages.filter((entry) => entry.graduationStatus === 'internal-only');
 const blocked = packages.filter((entry) => entry.graduationStatus === 'blocked-contract' || entry.graduationStatus === 'blocked-contract-and-npm' || entry.graduationStatus === 'blocked-npm' || entry.graduationStatus === 'policy-review');
@@ -238,7 +249,7 @@ markdownLines.push('', '## Full Matrix');
 markdownLines.push('| Package | Wave | Current version | Stable target | Maturity | Graduation status | Recommended action | Next step |');
 markdownLines.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
 for (const entry of packages) {
-  markdownLines.push(`| ${entry.name} | ${entry.releaseWave} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.graduationStatus} | ${entry.recommendedAction} | ${String(entry.nextStep).replace(/\|/g, '\\|')} |`);
+  markdownLines.push(`| ${entry.name} | ${entry.releaseWave} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.graduationStatus} | ${entry.recommendedAction} | ${escapeMarkdownCell(entry.nextStep)} |`);
 }
 markdownLines.push('');
 

@@ -3734,10 +3734,47 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
 }
 
 function buildDecoratorInventory(treatmentsCss: string): string[] {
-  const decoratorMatches = treatmentsCss.match(/\.([\w-]+)\s*\{/g) || [];
-  return decoratorMatches
-    .map((match) => match.slice(1).replace(/\s*\{$/, ''))
+  const decoratorNames = new Set<string>();
+
+  for (let index = treatmentsCss.indexOf('.'); index !== -1; index = treatmentsCss.indexOf('.', index + 1)) {
+    let cursor = index + 1;
+    while (cursor < treatmentsCss.length && isCssClassNameChar(treatmentsCss[cursor]!)) {
+      cursor += 1;
+    }
+    if (cursor === index + 1) continue;
+
+    const name = treatmentsCss.slice(index + 1, cursor);
+    let whitespaceCursor = cursor;
+    while (
+      whitespaceCursor < treatmentsCss.length &&
+      whitespaceCursor - cursor <= 64 &&
+      isCssWhitespace(treatmentsCss[whitespaceCursor]!)
+    ) {
+      whitespaceCursor += 1;
+    }
+
+    if (treatmentsCss[whitespaceCursor] === '{') {
+      decoratorNames.add(name);
+    }
+  }
+
+  return [...decoratorNames]
     .filter((name) => !name.startsWith('d-') && !PERSONALITY_UTILS.includes(name));
+}
+
+function isCssClassNameChar(char: string): boolean {
+  const codePoint = char.charCodeAt(0);
+  return (
+    char === '_' ||
+    char === '-' ||
+    (codePoint >= 48 && codePoint <= 57) ||
+    (codePoint >= 65 && codePoint <= 90) ||
+    (codePoint >= 97 && codePoint <= 122)
+  );
+}
+
+function isCssWhitespace(char: string): boolean {
+  return char === ' ' || char === '\t' || char === '\n' || char === '\r' || char === '\f';
 }
 
 function resolveFocusAreas(reviewPack: ReviewExecutionPack | null): string[] {
@@ -3754,8 +3791,65 @@ function resolveSeverityFromChecks(
 }
 
 function findHardcodedColors(code: string): string[] {
-  const matches = code.match(/#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)/g) ?? [];
+  const matches = [
+    ...findHexColors(code),
+    ...findColorFunctionCalls(code, 'rgb('),
+    ...findColorFunctionCalls(code, 'rgba('),
+    ...findColorFunctionCalls(code, 'hsl('),
+    ...findColorFunctionCalls(code, 'hsla('),
+  ];
   return [...new Set(matches)];
+}
+
+function findHexColors(code: string): string[] {
+  const matches: string[] = [];
+
+  for (let index = 0; index < code.length; index += 1) {
+    if (code[index] !== '#') continue;
+
+    let cursor = index + 1;
+    while (cursor < code.length && cursor - index <= 8 && isHexDigit(code[cursor]!)) {
+      cursor += 1;
+    }
+
+    const length = cursor - index - 1;
+    if (length >= 3 && length <= 8 && !isHexDigit(code[cursor] ?? '')) {
+      matches.push(code.slice(index, cursor));
+    }
+  }
+
+  return matches;
+}
+
+function findColorFunctionCalls(code: string, functionName: string): string[] {
+  const matches: string[] = [];
+  const lowerCode = code.toLowerCase();
+
+  for (
+    let index = lowerCode.indexOf(functionName);
+    index !== -1;
+    index = lowerCode.indexOf(functionName, index + functionName.length)
+  ) {
+    let cursor = index + functionName.length;
+    const maxCursor = Math.min(code.length, cursor + 256);
+    while (cursor < maxCursor && code[cursor] !== ')' && code[cursor] !== '\n' && code[cursor] !== '\r') {
+      cursor += 1;
+    }
+    if (code[cursor] === ')') {
+      matches.push(code.slice(index, cursor + 1));
+    }
+  }
+
+  return matches;
+}
+
+function isHexDigit(char: string): boolean {
+  const codePoint = char.charCodeAt(0);
+  return (
+    (codePoint >= 48 && codePoint <= 57) ||
+    (codePoint >= 65 && codePoint <= 70) ||
+    (codePoint >= 97 && codePoint <= 102)
+  );
 }
 
 function findUtilityFrameworkSignals(code: string): string[] {
@@ -5796,25 +5890,11 @@ function countAuthCallbackStateValidationSignals(code: string): number {
     count += 1;
   }
 
-  if (
-    /\b(?:sessionStorage|localStorage)\.getItem\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(
-      code,
-    ) &&
-    /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(
-      code,
-    )
-  ) {
+  if (countStateLikeMemberCalls(code, ['sessionStorage', 'localStorage'], ['getItem']) > 0 && hasStateComparison(code)) {
     count += 1;
   }
 
-  if (
-    /\b(?:cookies?|cookieStore)\.(?:get|getAll)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/i.test(
-      code,
-    ) &&
-    /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(
-      code,
-    )
-  ) {
+  if (countStateLikeMemberCalls(code, ['cookies', 'cookie', 'cookieStore'], ['get', 'getAll']) > 0 && hasStateComparison(code)) {
     count += 1;
   }
 
@@ -5832,24 +5912,158 @@ function countAuthCallbackStateValidationSignals(code: string): number {
   return count;
 }
 
-function countAuthCallbackStateStorageSignals(code: string): number {
-  const patterns = [
-    /\b(?:sessionStorage|localStorage)\.getItem\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/gi,
-    /\b(?:cookies?|cookieStore)\.(?:get|getAll)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/gi,
-  ];
+function hasStateComparison(code: string): boolean {
+  return /(?:state|providerState|callbackState|returnedState|expectedState|storedState|sessionState|oauthState|csrfState)\s*(?:===|==|!==|!=)/i.test(
+    code,
+  );
+}
 
-  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+function countStateLikeMemberCalls(code: string, receivers: string[], methods: string[]): number {
+  const lowerCode = code.toLowerCase();
+  let count = 0;
+
+  for (const receiver of receivers) {
+    const receiverLower = receiver.toLowerCase();
+    for (
+      let index = lowerCode.indexOf(receiverLower);
+      index !== -1;
+      index = lowerCode.indexOf(receiverLower, index + receiverLower.length)
+    ) {
+      let cursor = index + receiverLower.length;
+      cursor = skipInlineWhitespace(lowerCode, cursor);
+      if (lowerCode[cursor] !== '.') continue;
+      cursor = skipInlineWhitespace(lowerCode, cursor + 1);
+
+      for (const method of methods) {
+        const methodLower = method.toLowerCase();
+        if (!lowerCode.startsWith(methodLower, cursor)) continue;
+        const afterMethod = skipInlineWhitespace(lowerCode, cursor + methodLower.length);
+        if (lowerCode[afterMethod] !== '(') continue;
+        if (callHasStateLikeStringArgument(code, afterMethod)) {
+          count += 1;
+        }
+      }
+    }
+  }
+
+  return count;
+}
+
+function countStateLikeFunctionCalls(code: string, names: string[]): number {
+  const lowerCode = code.toLowerCase();
+  let count = 0;
+
+  for (const name of names) {
+    const nameLower = name.toLowerCase();
+    for (
+      let index = lowerCode.indexOf(nameLower);
+      index !== -1;
+      index = lowerCode.indexOf(nameLower, index + nameLower.length)
+    ) {
+      const afterName = skipInlineWhitespace(lowerCode, index + nameLower.length);
+      if (lowerCode[afterName] === '(' && callHasStateLikeStringArgument(code, afterName)) {
+        count += 1;
+      }
+    }
+  }
+
+  return count;
+}
+
+function skipInlineWhitespace(value: string, index: number): number {
+  let cursor = index;
+  while (cursor < value.length) {
+    const char = value[cursor];
+    if (char !== ' ' && char !== '\t' && char !== '\n' && char !== '\r') break;
+    cursor += 1;
+  }
+  return cursor;
+}
+
+function callHasStateLikeStringArgument(code: string, openParenIndex: number): boolean {
+  const closeParenIndex = findCallCloseParen(code, openParenIndex, 240);
+  if (closeParenIndex === -1) return false;
+  return containsStateLikeStringLiteral(code.slice(openParenIndex + 1, closeParenIndex));
+}
+
+function findCallCloseParen(code: string, openParenIndex: number, maxLength: number): number {
+  const maxIndex = Math.min(code.length, openParenIndex + maxLength);
+  let quote: string | null = null;
+  let escaped = false;
+
+  for (let index = openParenIndex + 1; index < maxIndex; index += 1) {
+    const char = code[index]!;
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === '\\') {
+        escaped = true;
+      } else if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (char === '\'' || char === '"' || char === '`') {
+      quote = char;
+    } else if (char === ')') {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
+function containsStateLikeStringLiteral(value: string): boolean {
+  let quote: string | null = null;
+  let literal = '';
+  let escaped = false;
+
+  for (const char of value) {
+    if (!quote) {
+      if (char === '\'' || char === '"' || char === '`') {
+        quote = char;
+        literal = '';
+      }
+      continue;
+    }
+
+    if (escaped) {
+      literal += char;
+      escaped = false;
+    } else if (char === '\\') {
+      escaped = true;
+    } else if (char === quote) {
+      const lowerLiteral = literal.toLowerCase();
+      if (lowerLiteral.includes('state') || lowerLiteral.includes('csrf')) return true;
+      quote = null;
+    } else {
+      literal += char;
+    }
+  }
+
+  return false;
+}
+
+function countAuthCallbackStateStorageSignals(code: string): number {
+  return (
+    countStateLikeMemberCalls(code, ['sessionStorage', 'localStorage'], ['getItem']) +
+    countStateLikeMemberCalls(code, ['cookies', 'cookie', 'cookieStore'], ['get', 'getAll'])
+  );
 }
 
 function countAuthCallbackStateStorageClearSignals(code: string): number {
-  const patterns = [
-    /\b(?:sessionStorage|localStorage)\.removeItem\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/gi,
-    /\b(?:deleteCookie|clearCookie|removeCookie)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/gi,
-    /\b(?:cookies?|cookieStore)\.(?:delete|remove)\s*\(\s*['"`][^'"`]*(?:state|csrf)[^'"`]*['"`]\s*\)/gi,
-    /\bdocument\.cookie\s*=\s*[^;\n]*(?:state|csrf)[^;\n]*(?:expires\s*=\s*Thu,\s*01 Jan 1970|max-age\s*=\s*0)/gi,
-  ];
+  const documentCookieClears =
+    code.match(
+      /\bdocument\.cookie\s*=\s*[^;\n]*(?:state|csrf)[^;\n]*(?:expires\s*=\s*Thu,\s*01 Jan 1970|max-age\s*=\s*0)/gi,
+    )?.length ?? 0;
 
-  return patterns.reduce((total, pattern) => total + (code.match(pattern)?.length ?? 0), 0);
+  return (
+    countStateLikeMemberCalls(code, ['sessionStorage', 'localStorage'], ['removeItem']) +
+    countStateLikeFunctionCalls(code, ['deleteCookie', 'clearCookie', 'removeCookie']) +
+    countStateLikeMemberCalls(code, ['cookies', 'cookie', 'cookieStore'], ['delete', 'remove']) +
+    documentCookieClears
+  );
 }
 
 function countAuthCallbackUrlScrubSignals(code: string): number {
@@ -11549,19 +11763,50 @@ function countHardcodedSecretSignals(code: string): number {
 }
 
 function countClientSecretEnvReferenceSignals(code: string): number {
-  const patterns = [
-    /\bimport\.meta\.env\.[A-Z0-9_]*(?:SERVICE_ROLE|SECRET|PRIVATE_KEY)[A-Z0-9_]*\b/g,
-    /\bprocess\.env\.NEXT_PUBLIC_[A-Z0-9_]*(?:SERVICE_ROLE|SECRET|PRIVATE_KEY)[A-Z0-9_]*\b/g,
-  ];
   const useClientCount = /^\s*['"]use client['"]/m.test(code)
-    ? (code.match(/\bprocess\.env\.[A-Z0-9_]*(?:SERVICE_ROLE|SECRET|PRIVATE_KEY)[A-Z0-9_]*\b/g)
-        ?.length ?? 0)
+    ? countSensitiveEnvReferences(code, ['process.env.'])
     : 0;
 
   return (
-    patterns.reduce((count, pattern) => count + (code.match(pattern)?.length ?? 0), 0) +
+    countSensitiveEnvReferences(code, ['import.meta.env.', 'process.env.NEXT_PUBLIC_']) +
     useClientCount
   );
+}
+
+function countSensitiveEnvReferences(code: string, prefixes: string[]): number {
+  let count = 0;
+
+  for (const prefix of prefixes) {
+    for (
+      let index = code.indexOf(prefix);
+      index !== -1;
+      index = code.indexOf(prefix, index + prefix.length)
+    ) {
+      const envName = readEnvIdentifier(code, index + prefix.length);
+      if (envName && isSensitiveEnvName(envName)) {
+        count += 1;
+      }
+    }
+  }
+
+  return count;
+}
+
+function readEnvIdentifier(code: string, startIndex: number): string {
+  let cursor = startIndex;
+  while (cursor < code.length && isEnvIdentifierChar(code[cursor]!)) {
+    cursor += 1;
+  }
+  return code.slice(startIndex, cursor);
+}
+
+function isEnvIdentifierChar(char: string): boolean {
+  const codePoint = char.charCodeAt(0);
+  return char === '_' || (codePoint >= 48 && codePoint <= 57) || (codePoint >= 65 && codePoint <= 90);
+}
+
+function isSensitiveEnvName(envName: string): boolean {
+  return envName.includes('SERVICE_ROLE') || envName.includes('SECRET') || envName.includes('PRIVATE_KEY');
 }
 
 function countLocalhostEndpointSignals(code: string): number {

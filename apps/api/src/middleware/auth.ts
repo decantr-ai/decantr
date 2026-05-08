@@ -1,7 +1,7 @@
 import type { Context, Next } from 'hono';
 import { createUserClient, createAdminClient } from '../db/client.js';
-import { createHash } from 'crypto';
 import { ensureUserProfile } from '../lib/user-profile.js';
+import { hashApiKey } from '../lib/api-key-hash.js';
 
 export interface AuthUser {
   id: string;
@@ -37,10 +37,6 @@ export type ApiKeyScope = typeof API_KEY_SCOPES[number];
 
 export function isApiKeyScope(scope: unknown): scope is ApiKeyScope {
   return typeof scope === 'string' && (API_KEY_SCOPES as readonly string[]).includes(scope);
-}
-
-function hashApiKey(key: string): string {
-  return createHash('sha256').update(key).digest('hex');
 }
 
 export async function getAuthContext(c: Context): Promise<AuthContext> {

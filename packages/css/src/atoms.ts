@@ -878,6 +878,45 @@ function semanticColorDecl(
   return `${prop}:${value}`;
 }
 
+function compactSemanticColorToken(name: string, prefix: string): string | null {
+  if (!name.startsWith(prefix) || name.length === prefix.length) return null;
+  const token = name.slice(prefix.length);
+  const slashIndex = token.indexOf('/');
+
+  if (slashIndex !== -1) {
+    if (slashIndex === 0 || slashIndex === token.length - 1) return null;
+    if (token.indexOf('/', slashIndex + 1) !== -1) return null;
+    if (!isCompactColorName(token.slice(0, slashIndex))) return null;
+    if (!isAsciiDigitString(token.slice(slashIndex + 1))) return null;
+    return token;
+  }
+
+  return isCompactColorName(token) ? token : null;
+}
+
+function isCompactColorName(value: string): boolean {
+  if (!value) return false;
+  for (const char of value) {
+    const codePoint = char.charCodeAt(0);
+    const isAllowed =
+      (codePoint >= 48 && codePoint <= 57) ||
+      (codePoint >= 65 && codePoint <= 90) ||
+      (codePoint >= 97 && codePoint <= 122) ||
+      char === '-';
+    if (!isAllowed) return false;
+  }
+  return true;
+}
+
+function isAsciiDigitString(value: string): boolean {
+  if (!value) return false;
+  for (const char of value) {
+    const codePoint = char.charCodeAt(0);
+    if (codePoint < 48 || codePoint > 57) return false;
+  }
+  return true;
+}
+
 function resolveTailwindishDecl(name: string): string | null {
   if (TAILWIND_DIRECT[name]) return TAILWIND_DIRECT[name];
 
@@ -981,17 +1020,17 @@ function resolveTailwindishDecl(name: string): string | null {
     if (decl) return decl;
   }
 
-  const compactBorderColorMatch = name.match(/^border([a-zA-Z0-9-]+\/?\d*)$/);
-  if (compactBorderColorMatch) {
-    const decl = semanticColorDecl('border-color', compactBorderColorMatch[1]);
+  const compactBorderColor = compactSemanticColorToken(name, 'border');
+  if (compactBorderColor) {
+    const decl = semanticColorDecl('border-color', compactBorderColor);
     if (decl) return decl;
   }
 
-  const compactFgMatch = name.match(/^fg([a-zA-Z0-9-]+\/?\d*)$/);
-  if (compactFgMatch) return semanticColorDecl('color', compactFgMatch[1]);
+  const compactFg = compactSemanticColorToken(name, 'fg');
+  if (compactFg) return semanticColorDecl('color', compactFg);
 
-  const compactBgMatch = name.match(/^bg([a-zA-Z0-9-]+\/?\d*)$/);
-  if (compactBgMatch) return semanticColorDecl('background', compactBgMatch[1]);
+  const compactBg = compactSemanticColorToken(name, 'bg');
+  if (compactBg) return semanticColorDecl('background', compactBg);
 
   const borderSideWidthMatch = name.match(/^border-([trbl])-(\d+)$/);
   if (borderSideWidthMatch) {

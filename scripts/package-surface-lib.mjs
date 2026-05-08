@@ -331,7 +331,14 @@ export function summarizeReleaseReadiness(surface) {
 }
 
 function escapeMarkdownCell(value) {
-  return String(value ?? '-').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+  let escaped = '';
+  for (const char of String(value ?? '-')) {
+    if (char === '\\') escaped += '\\\\';
+    else if (char === '|') escaped += '\\|';
+    else if (char === '\n' || char === '\r') escaped += ' ';
+    else escaped += char;
+  }
+  return escaped;
 }
 
 export function renderPackageSupportMatrix(surface, retirements) {

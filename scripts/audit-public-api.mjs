@@ -306,6 +306,17 @@ const CHECKS = [
   },
 ];
 
+function escapeMarkdownCell(value) {
+  let escaped = '';
+  for (const char of String(value ?? '-')) {
+    if (char === '\\') escaped += '\\\\';
+    else if (char === '|') escaped += '\\|';
+    else if (char === '\n' || char === '\r') escaped += ' ';
+    else escaped += char;
+  }
+  return escaped;
+}
+
 function buildMarkdownSummary(report) {
   const lines = [
     '# Public API Audit',
@@ -319,7 +330,7 @@ function buildMarkdownSummary(report) {
   ];
 
   for (const result of report.results) {
-    lines.push(`| ${result.name} | ${result.status} | ${result.passed ? 'yes' : 'no'} | ${String(result.details).replace(/\|/g, '\\|')} |`);
+    lines.push(`| ${result.name} | ${result.status} | ${result.passed ? 'yes' : 'no'} | ${escapeMarkdownCell(result.details)} |`);
   }
 
   lines.push('');

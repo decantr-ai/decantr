@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { createAdminClient } from '../db/client.js';
 import type { Database } from '../db/types.js';
 import { emitApiServiceTelemetry } from './telemetry.js';
@@ -14,19 +15,23 @@ function getString(value: unknown): string | null {
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
-function normalizeUsername(value: string): string {
+function fallbackUsername(seed: string): string {
+  return `user-${createHash('sha256').update(seed).digest('hex').slice(0, 6)}`;
+}
+
+function normalizeUsername(value: string, fallbackSeed: string): string {
   const normalized = value
     .toLowerCase()
     .replace(/[^a-z0-9-]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .replace(/-{2,}/g, '-');
 
-  return normalized.length >= 3 ? normalized.slice(0, 30) : `user-${Math.random().toString(36).slice(2, 8)}`;
+  return normalized.length >= 3 ? normalized.slice(0, 30) : fallbackUsername(fallbackSeed);
 }
 
 async function findAvailableUsername(userId: string, desired: string): Promise<string> {
   const client = createAdminClient();
-  const base = normalizeUsername(desired);
+  const base = normalizeUsername(desired, userId);
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const suffix = attempt === 0 ? '' : `-${attempt + 1}`;

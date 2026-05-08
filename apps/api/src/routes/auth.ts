@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { createHash, randomBytes } from 'crypto';
+import { randomBytes } from 'crypto';
 import type { Env } from '../types.js';
 import { API_KEY_SCOPES, isApiKeyScope, requireApiKeyScope, requireAuth } from '../middleware/auth.js';
 import type { AuthContext } from '../middleware/auth.js';
@@ -14,6 +14,7 @@ import {
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { emitApiTelemetry } from '../lib/telemetry.js';
 import { ensureUserProfile } from '../lib/user-profile.js';
+import { hashApiKey } from '../lib/api-key-hash.js';
 
 export const authRoutes = new Hono<Env>();
 
@@ -248,7 +249,7 @@ authRoutes.post('/api-keys', requireApiKeyScope('api_keys:manage'), async (c) =>
 
   // Generate API key
   const rawKey = `dctr_${randomBytes(32).toString('hex')}`;
-  const keyHash = createHash('sha256').update(rawKey).digest('hex');
+  const keyHash = hashApiKey(rawKey);
   const { data, error } = await client
     .from('api_keys')
     .insert({

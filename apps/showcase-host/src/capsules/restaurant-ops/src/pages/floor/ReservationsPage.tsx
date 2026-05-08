@@ -31,7 +31,7 @@ export function ReservationsPage() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '0.375rem' }}>
           {['5:00','5:30','6:00','6:30','7:00','7:30','8:00','8:30','9:00','9:30'].map(t => {
-            const hasRes = today.some(r => r.time.replace(' PM','').replace(' AM','') === t.replace(':00',':00').replace(':30',':30'));
+            const hasRes = today.some(r => r.time.replace(' PM','').replace(' AM','') === t);
             return (
               <div key={t} style={{
                 padding: '0.375rem',

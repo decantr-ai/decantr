@@ -52,6 +52,17 @@ const output = {
   },
 };
 
+function escapeMarkdownCell(value) {
+  let escaped = '';
+  for (const char of String(value ?? '-')) {
+    if (char === '\\') escaped += '\\\\';
+    else if (char === '|') escaped += '\\|';
+    else if (char === '\n' || char === '\r') escaped += ' ';
+    else escaped += char;
+  }
+  return escaped;
+}
+
 const markdownLines = [
   '# Package Release Plan',
   '',
@@ -81,7 +92,7 @@ const markdownLines = [
       : entry.blockers.length > 0
         ? entry.blockers[0]
         : entry.summary;
-    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${note.replace(/\|/g, '\\|')} |`;
+    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${escapeMarkdownCell(note)} |`;
   }),
   '',
 ];

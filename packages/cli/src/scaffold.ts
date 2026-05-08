@@ -2298,9 +2298,18 @@ function generateDecantrMdV31(params: {
   briefLines.push(`- **Guard mode:** ${params.guardMode}`);
   briefLines.push('');
 
-  // Pipe-escape helper for markdown table cells (defined locally to avoid
-  // colliding with the section-context renderer's helper).
-  const escDecCell = (s: string): string => s.replace(/\|/g, '\\|');
+  // Markdown table cell escape helper (defined locally to avoid colliding with
+  // the section-context renderer's helper).
+  const escDecCell = (s: string): string => {
+    let escaped = '';
+    for (const char of s) {
+      if (char === '\\') escaped += '\\\\';
+      else if (char === '|') escaped += '\\|';
+      else if (char === '\n' || char === '\r') escaped += '<br>';
+      else escaped += char;
+    }
+    return escaped;
+  };
   if (params.decoratorDefinitions && Object.keys(params.decoratorDefinitions).length > 0) {
     briefLines.push('### Decorator Quick Reference');
     briefLines.push(
