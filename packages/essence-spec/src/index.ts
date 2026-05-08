@@ -1,7 +1,7 @@
 export { computeDensity, computeSpatialTokens } from './density.js';
 export type { AutoFix, GuardContext, GuardViolation } from './guard.js';
 export { evaluateGuard } from './guard.js';
-export { migrateV2ToV3, migrateV30ToV31 } from './migrate.js';
+export { migrateToV4 } from './migrate.js';
 export { normalizeEssence } from './normalize.js';
 export type {
   Accessibility,
@@ -18,14 +18,15 @@ export type {
   EssenceFile,
   EssenceMeta,
   EssenceSection,
-  EssenceV3,
-  EssenceV3Guard,
-  EssenceV31Section,
+  EssenceV4,
+  EssenceV4Guard,
   GeneratorTarget,
   Guard,
   GuardMode,
   Impression,
   LayoutItem,
+  LegacyEssenceFile,
+  LegacyEssenceV3,
   PatternRef,
   Platform,
   PlatformType,
@@ -48,9 +49,10 @@ export {
   getColumnAlias,
   getColumnId,
   getColumnPreset,
+  isLegacyV3,
   isSectioned,
   isSimple,
-  isV3,
+  isV4,
 } from './types.js';
 export type { ValidationResult } from './validate.js';
-export { validateEssence } from './validate.js';
+export { validateEssence, validateLegacyEssenceForMigration } from './validate.js';

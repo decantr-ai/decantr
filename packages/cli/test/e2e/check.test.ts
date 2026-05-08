@@ -49,7 +49,7 @@ describe('check command (e2e)', () => {
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: {
@@ -130,7 +130,7 @@ describe('check command (e2e)', () => {
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
             spacing: {
@@ -222,12 +222,15 @@ describe('check command (e2e)', () => {
       ),
     );
     writeFileSync(join(testDir, 'CLAUDE.md'), 'Tailwind classes are canonical.\n');
-    writeFileSync(join(testDir, 'docs', 'design-system.md'), 'Do not use Tailwind for app surfaces.\n');
+    writeFileSync(
+      join(testDir, 'docs', 'design-system.md'),
+      'Do not use Tailwind for app surfaces.\n',
+    );
     writeFileSync(
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: {

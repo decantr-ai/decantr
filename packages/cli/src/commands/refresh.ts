@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceV3 } from '@decantr/essence-spec';
-import { isV3 } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
@@ -22,12 +22,14 @@ export async function cmdRefresh(
     return;
   }
 
-  let essence: EssenceV3;
+  let essence: EssenceV4;
   try {
     const raw = readFileSync(essencePath, 'utf-8');
     const parsed = JSON.parse(raw);
-    if (!isV3(parsed)) {
-      console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
+    if (!isV4(parsed)) {
+      console.error(
+        `${RED}Active workflows require Essence v4.0.0. Run \`decantr migrate --to v4\` first.${RESET}`,
+      );
       process.exitCode = 1;
       return;
     }

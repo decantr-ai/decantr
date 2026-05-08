@@ -12,7 +12,7 @@ Current strategic program: `docs/programs/2026-04-08-decantr-vnext-master-progra
 
 | Package | Path | Description |
 |---------|------|-------------|
-| `@decantr/essence-spec` | `packages/essence-spec/` | Schema, validator, guard rules, TypeScript types (v2 + v3) |
+| `@decantr/essence-spec` | `packages/essence-spec/` | Essence v4 schema, validator, guard rules, migration, and TypeScript types |
 | `@decantr/registry` | `packages/registry/` | Content resolver, wiring rules, pattern preset resolution |
 | `@decantr/core` | `packages/core/` | Design Pipeline IR engine |
 | `@decantr/mcp-server` | `packages/mcp-server/` | MCP server exposing tools to AI assistants (20 tools) |
@@ -90,12 +90,12 @@ packages/cli/src/bundled/    # Offline fallback content (not from RegistryClient
 
 ## Essence Schemas
 
-- **v2** (`docs/schemas/essence.v2.json`) -- legacy flat schema, still supported for migration
-- **v3** (`docs/schemas/essence.v3.json`) -- current schema with DNA/Blueprint split, `dna_enforcement` / `blueprint_enforcement` fields, per-page `dna_overrides`
+- **v4** (`docs/schemas/essence.v4.json`) -- active Decantr V2 sectioned schema with DNA/Blueprint split, `dna_enforcement` / `blueprint_enforcement` fields, per-page `dna_overrides`, and section topology.
+- **v2/v3** (`docs/schemas/essence.v2.json`, `docs/schemas/essence.v3.json`) -- historical migration references only. Active workflows must run `decantr migrate --to v4` before validation, refresh, check, packs, MCP mutation, or hosted compilation.
 
 All resource schemas live in `docs/schemas/`.
 
-## Content Schema Fields (v3)
+## Content Schema Fields
 
 Patterns, blueprints, themes, and archetypes carry enriched fields for visual intelligence:
 
@@ -104,7 +104,7 @@ Patterns, blueprints, themes, and archetypes carry enriched fields for visual in
 | `visual_brief` | Pattern | 2-5 sentence visual description of the pattern |
 | `composition` | Pattern | Component composition algebra expressions |
 | `motion` | Pattern | Micro-interactions, transitions, ambient animations |
-| `interactions` | Pattern | **v2.1 C1.** Declared runtime interactions (24-value enum: `animate-on-mount`, `drag-nodes`, `status-pulse`, `glow-hover`, `pan-background`, `zoom-scroll`, `click-connect`, `inline-edit`, `hover-tooltip`, `live-simulation`, `keyboard-navigation`, `focus-trap`, etc.). Surfaced in page-pack as a checkbox checklist; enforced by 8th guard rule. |
+| `interactions` | Pattern | Declared runtime interactions (24-value enum: `animate-on-mount`, `drag-nodes`, `status-pulse`, `glow-hover`, `pan-background`, `zoom-scroll`, `click-connect`, `inline-edit`, `hover-tooltip`, `live-simulation`, `keyboard-navigation`, `focus-trap`, etc.). Surfaced in page-pack as a checkbox checklist; enforced by 8th guard rule. |
 | `responsive` | Pattern | Mobile/tablet/desktop adaptation strategies |
 | `accessibility` | Pattern | ARIA, keyboard, focus, screen reader patterns |
 | `layout_hints` | Pattern | Freeform rendering guidance key-value pairs |
@@ -116,10 +116,10 @@ Patterns, blueprints, themes, and archetypes carry enriched fields for visual in
 | `command_palette` | Blueprint navigation | Structured contract — `boolean` (legacy) OR `{ trigger, placeholder, width, styling, commands[] }` |
 | `hotkey_semantics` | Blueprint navigation | Behavioral directives: `chord_window_ms`, `input_guard`, `modifier_suppression`, `match_case`, `show_chord_indicator` |
 | `decorator_definitions` | Theme | Structured decorator data (intent, properties, usage, optional `hover_properties` / `focus_properties` / `active_properties`) |
-| `motion.durations.{instant,fast,base,slow,slower,stagger}` | Theme | **v2.1 B4.** Per-theme tuned motion durations (overrides CLI default tokens) |
-| `motion.easings.{ease,easeOut,easeIn,spring}` | Theme | **v2.1 B4.** Per-theme tuned easing curves |
-| `typography.{display,body}` | Theme | **v2.1 B4.** Display + body font stacks |
-| `elevation[1..5]` | Theme | **v2.1 B4.** Per-theme elevation scale; mode-split via `{ light, dark }` |
+| `motion.durations.{instant,fast,base,slow,slower,stagger}` | Theme | Per-theme tuned motion durations (overrides CLI default tokens) |
+| `motion.easings.{ease,easeOut,easeIn,spring}` | Theme | Per-theme tuned easing curves |
+| `typography.{display,body}` | Theme | Display + body font stacks |
+| `elevation[1..5]` | Theme | Per-theme elevation scale; mode-split via `{ light, dark }` |
 | `internal_layout` | Shell | Semantic spatial specs per region (width, height, padding, gap, scroll) |
 | `page_briefs` | Archetype | Per-page visual descriptions |
 | `role` | Archetype | Section role: primary, gateway, public, auxiliary |
@@ -171,23 +171,23 @@ The guard system (`packages/essence-spec/src/guard.ts`) enforces eight rules, or
 **DNA guards (errors):**
 
 1. **Style** -- Code must use the theme specified in the Essence.
-2. **Density** -- Content gap values must match the Essence density setting. Strict mode only (warning severity). v3 respects per-page `dna_overrides.density`.
+2. **Density** -- Content gap values must match the Essence density setting. Strict mode only (warning severity). Essence v4 respects per-page `dna_overrides.density`.
 3. **Accessibility** -- Code must meet the WCAG level specified in the Essence. Enforced in `guided` and `strict`.
 4. **Theme-mode compatibility** -- The theme/mode combination must be compatible. Checked when `themeRegistry` is provided.
 
-**Blueprint guards (warnings in v3, auto-fixable):**
+**Blueprint guards (warnings in Essence v4, auto-fixable):**
 
 5. **Structure** -- Pages referenced in code must exist in the Essence structure.
 6. **Layout** -- Pattern order in a page must match the Essence layout spec. Strict mode only.
 7. **Pattern existence** -- All patterns referenced in layouts must exist in the registry. Includes fuzzy "did you mean?" suggestions.
 
-**Experiential guard (8th rule, v2.1 C5):**
+**Experiential guard (8th rule):**
 
 8. **Interactions** -- Patterns that declare `interactions: [...]` must implement each one in source. Source is scanned by `@decantr/verifier`'s `verifyInteractionsInSource()` (regex/substring signal map for 24 canonical interactions like `drag-nodes`, `status-pulse`, `glow-hover`). Severity governed by `meta.guard.interactions_enforcement` (`'error' | 'warn' | 'off'`) with mode-derived defaults: creative=off, guided=warn, strict=error. Fed into `evaluateGuard` via `GuardContext.interaction_issues` (CLI `decantr check` runs `scanProjectInteractions(cwd)` to compute).
 
 Modes: `creative` (no enforcement), `guided` (1, 3, 4, 5, 7, 8-warn), `strict` (all).
 
-**v3 enforcement fields:** DNA violations are controlled by `dna_enforcement` (`'error'` | `'warn'` | `'off'`); Blueprint violations by `blueprint_enforcement` (`'warn'` | `'off'`); Interactions violations by `interactions_enforcement` (`'error'` | `'warn'` | `'off'`). In v3, Blueprint violations are warnings and are auto-fixable. Interactions violations are NOT auto-fixable (require code generation).
+**Essence v4 enforcement fields:** DNA violations are controlled by `dna_enforcement` (`'error'` | `'warn'` | `'off'`); Blueprint violations by `blueprint_enforcement` (`'warn'` | `'off'`); Interactions violations by `interactions_enforcement` (`'error'` | `'warn'` | `'off'`). Blueprint violations are warnings and are auto-fixable. Interactions violations are NOT auto-fixable (require code generation).
 
 ## Build and Test
 
@@ -219,15 +219,15 @@ All generated CSS uses `@layer` declarations:
   - **Shell layouts**: `d-shell` (with `data-layout="sidebar-main|centered|top-nav-footer|sidebar-aside"`), `d-shell-sidebar`, `d-shell-aside`, `d-shell-main`, `d-shell-header`, `d-shell-body`, `d-shell-footer`, `d-shell-centered-card`
   - **Modal / palette / kbd**: `d-modal`, `d-modal-backdrop`, `d-modal-panel`, `d-palette`, `d-palette-input/list/row/section`, `d-kbd`, `d-hotkey-indicator`
   - **Composite card**: `d-card`, `d-card-header`, `d-card-body`, `d-card-footer`
-  - **Motion (v2.1 B1)**: `d-enter-fade`, `d-enter-slide-up`, `d-enter-scale`, `d-stagger-children`, `d-pulse`, `d-pulse-ring`, `d-shimmer`, `d-float`, `d-glow-hover`, `d-scale-hover`, `d-lift-hover`, `d-ripple` — all respect `prefers-reduced-motion: reduce`
-  - **Typography (v2.1 B2)**: `d-display`, `d-headline`, `d-title`, `d-subtitle`, `d-prose`, `d-body`, `d-caption`, `d-eyebrow`, `d-numeric`, `d-mono-text`
-  - **Elevation (v2.1 B3)**: `d-elevate[data-level="0..5"]`
-  - **Data-viz (v2.1 D3)**: `d-timeline-rail`, `d-timeline-dot`, `d-sparkline` (+ path/area), `d-intent-radar` (+ ring/axis), `d-waveform`, `d-qr-placeholder`, `d-conic-ring`, `d-heatmap-cell`
+  - **Motion**: `d-enter-fade`, `d-enter-slide-up`, `d-enter-scale`, `d-stagger-children`, `d-pulse`, `d-pulse-ring`, `d-shimmer`, `d-float`, `d-glow-hover`, `d-scale-hover`, `d-lift-hover`, `d-ripple` — all respect `prefers-reduced-motion: reduce`
+  - **Typography**: `d-display`, `d-headline`, `d-title`, `d-subtitle`, `d-prose`, `d-body`, `d-caption`, `d-eyebrow`, `d-numeric`, `d-mono-text`
+  - **Elevation**: `d-elevate[data-level="0..5"]`
+  - **Data-viz**: `d-timeline-rail`, `d-timeline-dot`, `d-sparkline` (+ path/area), `d-intent-radar` (+ ring/axis), `d-waveform`, `d-qr-placeholder`, `d-conic-ring`, `d-heatmap-cell`
 - `decorators` -- theme-specific decorator classes (e.g., carbon-card, carbon-glass) with optional state variants (`hover_properties`, `focus_properties`, `active_properties`)
 - `utilities` -- personality-derived utility classes (e.g., neon-glow, mono-data, status-ring with size variants)
 - `app` -- application-specific overrides
 
-**Token scales (v2.1):**
+**Token scales:**
 - **Motion**: `--d-motion-{instant,fast,base,slow,slower,stagger}`, `--d-motion-{ease,ease-out,ease-in,ease-spring}` (themes override via `theme.motion.durations` / `theme.motion.easings`)
 - **Typography**: `--d-text-{xs..6xl}`, `--d-weight-{regular,medium,semibold,bold}`, `--d-tracking-{tight,normal,wide,wider}`, `--d-leading-{tight,snug,normal,relaxed}`, `--d-font-{display,body,mono}`
 - **Elevation**: `--d-elevation-{1..5}` mode-aware (themes override via `theme.elevation` with optional `{light, dark}` mode-split values)
@@ -319,7 +319,7 @@ Assistant rule-file bridge behavior is deliberately conservative:
 | `docs/architecture/` | Architecture diagrams and flow documentation |
 | `docs/audit/` | Audit reports (including `decantr-meta-alignment.md` for successor-project context) |
 | `docs/reference/` | API and support reference (`package-support-matrix.md`, `workflow-model.md`, `registry-public-api.md`) |
-| `docs/schemas/` | Canonical JSON schemas for every resource type (essence v2/v3, patterns, archetypes, blueprints, all execution-pack variants, intelligence & audit reports) |
+| `docs/schemas/` | Canonical JSON schemas for every resource type (active Essence v4, archived Essence migration references, patterns, archetypes, blueprints, all execution-pack variants, intelligence & audit reports) |
 | `docs/llms.txt` | LLM-readable documentation index |
 
 ## Development Notes

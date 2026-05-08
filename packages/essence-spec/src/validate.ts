@@ -6,6 +6,7 @@ import Ajv from 'ajv';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const v2SchemaPath = join(__dirname, '..', 'schema', 'essence.v2.json');
 const v3SchemaPath = join(__dirname, '..', 'schema', 'essence.v3.json');
+const v4SchemaPath = join(__dirname, '..', 'schema', 'essence.v4.json');
 
 let cachedAjv: Ajv | null = null;
 const validatorCache = new Map<string, ReturnType<Ajv['compile']>>();
@@ -17,10 +18,11 @@ function getAjv(): Ajv {
   return cachedAjv;
 }
 
-function getValidator(version: 'v2' | 'v3'): ReturnType<Ajv['compile']> | null {
+function getValidator(version: 'v2' | 'v3' | 'v4'): ReturnType<Ajv['compile']> | null {
   if (validatorCache.has(version)) return validatorCache.get(version)!;
 
-  const schemaPath = version === 'v3' ? v3SchemaPath : v2SchemaPath;
+  const schemaPath =
+    version === 'v4' ? v4SchemaPath : version === 'v3' ? v3SchemaPath : v2SchemaPath;
   if (!existsSync(schemaPath)) return null;
 
   const schema = JSON.parse(readFileSync(schemaPath, 'utf-8'));
@@ -30,7 +32,7 @@ function getValidator(version: 'v2' | 'v3'): ReturnType<Ajv['compile']> | null {
   return validate;
 }
 
-function detectVersion(data: unknown): 'v2' | 'v3' {
+function detectLegacyVersion(data: unknown): 'v2' | 'v3' {
   if (typeof data === 'object' && data !== null && 'version' in data) {
     const v = (data as Record<string, unknown>).version;
     if (v === '3.0.0' || v === '3.1.0') return 'v3';
@@ -44,7 +46,43 @@ export interface ValidationResult {
 }
 
 export function validateEssence(data: unknown): ValidationResult {
-  const version = detectVersion(data);
+  const version =
+    typeof data === 'object' && data !== null ? (data as { version?: unknown }).version : undefined;
+  if (version !== '4.0.0') {
+    return {
+      valid: false,
+      errors: [
+        'Active Decantr V2 workflows require Essence v4.0.0. Run `decantr migrate --to v4` for older essence files.',
+      ],
+    };
+  }
+
+  const validate = getValidator('v4');
+
+  if (!validate) {
+    return { valid: false, errors: ['No schema available for v4 documents'] };
+  }
+
+  const valid = validate(data);
+
+  if (valid) {
+    return { valid: true, errors: [] };
+  }
+
+  const errors = (validate.errors ?? []).map((err) => {
+    const path = err.instancePath || '/';
+    const msg = err.message ?? 'unknown error';
+    return `${path}: ${msg}`;
+  });
+
+  return { valid: false, errors };
+}
+
+export function validateLegacyEssenceForMigration(data: unknown): ValidationResult {
+  const version =
+    typeof data === 'object' && data !== null && (data as { version?: unknown }).version === '4.0.0'
+      ? 'v4'
+      : detectLegacyVersion(data);
   const validate = getValidator(version);
 
   if (!validate) {
@@ -52,7 +90,6 @@ export function validateEssence(data: unknown): ValidationResult {
   }
 
   const valid = validate(data);
-
   if (valid) {
     return { valid: true, errors: [] };
   }

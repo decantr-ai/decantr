@@ -1,13 +1,13 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { EssenceV3 } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { handleTool } from '../src/tools.js';
 
-function makeV3Essence(): EssenceV3 {
+function makeV4Essence(): EssenceV4 {
   return {
-    version: '3.0.0',
+    version: '4.0.0',
     dna: {
       theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
       spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
@@ -21,11 +21,24 @@ function makeV3Essence(): EssenceV3 {
     },
     blueprint: {
       shell: 'sidebar-main',
-      pages: [
-        { id: 'overview', layout: ['kpi-grid', 'chart-grid'] },
-        { id: 'settings', layout: ['form-sections'] },
+      sections: [
+        {
+          id: 'dashboard',
+          role: 'primary',
+          shell: 'sidebar-main',
+          description: 'Primary dashboard section',
+          features: ['auth', 'search'],
+          pages: [
+            { id: 'overview', route: '/', layout: ['kpi-grid', 'chart-grid'] },
+            { id: 'settings', route: '/settings', layout: ['form-sections'] },
+          ],
+        },
       ],
       features: ['auth', 'search'],
+      routes: {
+        '/': { section: 'dashboard', page: 'overview' },
+        '/settings': { section: 'dashboard', page: 'settings' },
+      },
     },
     meta: {
       archetype: 'saas-dashboard',
@@ -89,7 +102,7 @@ describe('decantr_accept_drift', () => {
 
   it('should accept blueprint violations and update essence', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'structure', page_id: 'billing' }],
@@ -100,14 +113,14 @@ describe('decantr_accept_drift', () => {
     expect(result.status).toBe('accepted');
 
     // Verify the page was added
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
-    const billingPage = updated.blueprint.pages.find((p) => p.id === 'billing');
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
+    const billingPage = updated.blueprint.sections[0].pages.find((p) => p.id === 'billing');
     expect(billingPage).toBeDefined();
   });
 
   it('should accept DNA violations with confirm_dna', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
@@ -118,13 +131,13 @@ describe('decantr_accept_drift', () => {
 
     expect(result.status).toBe('accepted');
 
-    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV3;
+    const updated = JSON.parse(await readFile(essencePath, 'utf-8')) as EssenceV4;
     expect(updated.dna.theme.id).toBe('glassmorphism');
   });
 
   it('should defer violations to drift log', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_accept_drift', {
       violations: [
@@ -149,7 +162,7 @@ describe('decantr_accept_drift', () => {
 
   it('should accept_scoped with scope parameter', async () => {
     const essencePath = join(testDir, 'decantr.essence.json');
-    await writeFile(essencePath, JSON.stringify(makeV3Essence()));
+    await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const result = (await handleTool('decantr_accept_drift', {
       violations: [{ rule: 'structure', page_id: 'billing' }],

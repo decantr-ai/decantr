@@ -22,8 +22,9 @@
       "types": "./dist/index.d.ts"
     },
     "./schema": {
-      "import": "./schema/essence.v2.json"
+      "import": "./schema/essence.v4.json"
     },
+    "./schema/essence.v4.json": "./schema/essence.v4.json",
     "./schema/essence.v2.json": "./schema/essence.v2.json",
     "./schema/essence.v3.json": "./schema/essence.v3.json"
   },

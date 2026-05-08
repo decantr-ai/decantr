@@ -57,7 +57,7 @@ export interface IRPatternMeta {
    */
   presetDescription?: string;
   /**
-   * v2.1 Tier C1. Declared runtime interactions from the pattern JSON.
+   * Declared runtime interactions from the pattern JSON.
    * Page-pack renderer surfaces these as a checkbox checklist.
    */
   interactions?: string[];
@@ -114,7 +114,7 @@ export interface IRRoute {
 
 // ─── IR Nodes ────────────────────────────────────────────────
 
-/** Which v3 essence layer sourced this node */
+/** Which Essence v4 layer sourced this node */
 export type IRLayer = 'dna' | 'blueprint' | 'meta';
 
 export interface IRNode {
@@ -123,7 +123,7 @@ export interface IRNode {
   children: IRNode[];
   spatial?: IRSpatial;
   meta?: Record<string, unknown>;
-  /** When built from a v3 essence, indicates the originating layer */
+  /** When built from an Essence v4 document, indicates the originating layer */
   layer?: IRLayer;
 }
 

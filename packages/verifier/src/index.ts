@@ -1,21 +1,25 @@
-import { existsSync, realpathSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { extname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { ReviewExecutionPack } from '@decantr/core';
-import type { EssenceFile, EssenceV3, GuardViolation } from '@decantr/essence-spec';
-import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
+import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import * as ts from 'typescript';
 import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.js';
 
-export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
-export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
-// v2.1 C4 — experiential interaction verifier.
+export type {
+  InteractionMissingFinding,
+  InteractionRequirement,
+  InteractionSignal,
+} from './interactions.js';
+// V4 C4 — experiential interaction verifier.
 export {
   INTERACTION_SIGNALS,
-  verifyInteractionsInSource,
   listKnownInteractions,
+  verifyInteractionsInSource,
 } from './interactions.js';
-export type { InteractionSignal, InteractionRequirement, InteractionMissingFinding } from './interactions.js';
+export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
+export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
@@ -935,17 +939,7 @@ function guardViolationToFinding(violation: GuardViolation): VerificationFinding
 
 function countPages(essence: EssenceFile | null): number {
   if (!essence) return 0;
-  if (isV3(essence)) {
-    const v3 = essence as EssenceV3;
-    if (v3.blueprint.sections?.length) {
-      return v3.blueprint.sections.reduce((sum, section) => sum + section.pages.length, 0);
-    }
-    return v3.blueprint.pages?.length ?? 0;
-  }
-  if ('structure' in essence && Array.isArray(essence.structure)) {
-    return essence.structure.length;
-  }
-  return 0;
+  return essence.blueprint.sections.reduce((sum, section) => sum + section.pages.length, 0);
 }
 
 interface TopologySummary {
@@ -1128,38 +1122,18 @@ export function extractRouteHintsFromEssence(essence: EssenceFile | null): strin
 
   const routes = new Set<string>(['/']);
 
-  if (isV3(essence)) {
-    const v3 = essence as EssenceV3;
-
-    for (const section of v3.blueprint.sections ?? []) {
-      for (const page of section.pages ?? []) {
+  if (isV4(essence)) {
+    for (const section of essence.blueprint.sections) {
+      for (const page of section.pages) {
         if (typeof page.route === 'string' && page.route.length > 0) {
           routes.add(normalizeRouteHint(page.route));
         }
       }
     }
 
-    for (const page of v3.blueprint.pages ?? []) {
-      if (typeof page.route === 'string' && page.route.length > 0) {
-        routes.add(normalizeRouteHint(page.route));
-      }
-    }
-
-    if (v3.blueprint.routes && typeof v3.blueprint.routes === 'object') {
-      for (const route of Object.keys(v3.blueprint.routes)) {
+    if (essence.blueprint.routes && typeof essence.blueprint.routes === 'object') {
+      for (const route of Object.keys(essence.blueprint.routes)) {
         routes.add(normalizeRouteHint(route));
-      }
-    }
-  } else if ('structure' in essence && Array.isArray(essence.structure)) {
-    for (const page of essence.structure) {
-      if (
-        page &&
-        typeof page === 'object' &&
-        'route' in page &&
-        typeof page.route === 'string' &&
-        page.route.length > 0
-      ) {
-        routes.add(normalizeRouteHint(page.route));
       }
     }
   }
@@ -1179,15 +1153,14 @@ function summarizeTopology(
   let primaryRouteCount = 0;
   let hasAnonymousEntryRoute = false;
 
-  if (essence && isV3(essence)) {
-    const v3 = essence as EssenceV3;
-    for (const feature of v3.blueprint.features ?? []) {
+  if (essence && isV4(essence)) {
+    for (const feature of essence.blueprint.features ?? []) {
       if (typeof feature === 'string' && feature.length > 0) {
         features.add(feature);
       }
     }
 
-    for (const section of v3.blueprint.sections ?? []) {
+    for (const section of essence.blueprint.sections ?? []) {
       const role =
         typeof section.role === 'string' && section.role.length > 0 ? section.role : 'unknown';
       sectionRoles.add(role);
@@ -2218,7 +2191,7 @@ function appendSourceAuditFindings(
     );
   }
 
-  const navigation = essence && isV3(essence) ? essence.meta.navigation : null;
+  const navigation = essence && isV4(essence) ? essence.meta.navigation : null;
   if (navigation?.command_palette && sourceAudit.commandPaletteSignals.count === 0) {
     findings.push(
       makeFinding({
@@ -3695,11 +3668,11 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
           }),
         );
       }
-    }
-
-    const { themeRegistry, patternRegistry } = buildRegistryContext(projectRoot);
-    for (const violation of evaluateGuard(essence, { themeRegistry, patternRegistry })) {
-      findings.push(guardViolationToFinding(violation));
+    } else {
+      const { themeRegistry, patternRegistry } = buildRegistryContext(projectRoot);
+      for (const violation of evaluateGuard(essence, { themeRegistry, patternRegistry })) {
+        findings.push(guardViolationToFinding(violation));
+      }
     }
   }
 
@@ -3812,7 +3785,11 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
 function buildDecoratorInventory(treatmentsCss: string): string[] {
   const decoratorNames = new Set<string>();
 
-  for (let index = treatmentsCss.indexOf('.'); index !== -1; index = treatmentsCss.indexOf('.', index + 1)) {
+  for (
+    let index = treatmentsCss.indexOf('.');
+    index !== -1;
+    index = treatmentsCss.indexOf('.', index + 1)
+  ) {
     let cursor = index + 1;
     while (cursor < treatmentsCss.length && isCssClassNameChar(treatmentsCss[cursor]!)) {
       cursor += 1;
@@ -3834,8 +3811,9 @@ function buildDecoratorInventory(treatmentsCss: string): string[] {
     }
   }
 
-  return [...decoratorNames]
-    .filter((name) => !name.startsWith('d-') && !PERSONALITY_UTILS.includes(name));
+  return [...decoratorNames].filter(
+    (name) => !name.startsWith('d-') && !PERSONALITY_UTILS.includes(name),
+  );
 }
 
 function isCssClassNameChar(char: string): boolean {
@@ -3908,7 +3886,12 @@ function findColorFunctionCalls(code: string, functionName: string): string[] {
   ) {
     let cursor = index + functionName.length;
     const maxCursor = Math.min(code.length, cursor + 256);
-    while (cursor < maxCursor && code[cursor] !== ')' && code[cursor] !== '\n' && code[cursor] !== '\r') {
+    while (
+      cursor < maxCursor &&
+      code[cursor] !== ')' &&
+      code[cursor] !== '\n' &&
+      code[cursor] !== '\r'
+    ) {
       cursor += 1;
     }
     if (code[cursor] === ')') {
@@ -5966,11 +5949,17 @@ function countAuthCallbackStateValidationSignals(code: string): number {
     count += 1;
   }
 
-  if (countStateLikeMemberCalls(code, ['sessionStorage', 'localStorage'], ['getItem']) > 0 && hasStateComparison(code)) {
+  if (
+    countStateLikeMemberCalls(code, ['sessionStorage', 'localStorage'], ['getItem']) > 0 &&
+    hasStateComparison(code)
+  ) {
     count += 1;
   }
 
-  if (countStateLikeMemberCalls(code, ['cookies', 'cookie', 'cookieStore'], ['get', 'getAll']) > 0 && hasStateComparison(code)) {
+  if (
+    countStateLikeMemberCalls(code, ['cookies', 'cookie', 'cookieStore'], ['get', 'getAll']) > 0 &&
+    hasStateComparison(code)
+  ) {
     count += 1;
   }
 
@@ -6080,7 +6069,7 @@ function findCallCloseParen(code: string, openParenIndex: number, maxLength: num
       continue;
     }
 
-    if (char === '\'' || char === '"' || char === '`') {
+    if (char === "'" || char === '"' || char === '`') {
       quote = char;
     } else if (char === ')') {
       return index;
@@ -6097,7 +6086,7 @@ function containsStateLikeStringLiteral(value: string): boolean {
 
   for (const char of value) {
     if (!quote) {
-      if (char === '\'' || char === '"' || char === '`') {
+      if (char === "'" || char === '"' || char === '`') {
         quote = char;
         literal = '';
       }
@@ -11910,11 +11899,17 @@ function readEnvIdentifier(code: string, startIndex: number): string {
 
 function isEnvIdentifierChar(char: string): boolean {
   const codePoint = char.charCodeAt(0);
-  return char === '_' || (codePoint >= 48 && codePoint <= 57) || (codePoint >= 65 && codePoint <= 90);
+  return (
+    char === '_' || (codePoint >= 48 && codePoint <= 57) || (codePoint >= 65 && codePoint <= 90)
+  );
 }
 
 function isSensitiveEnvName(envName: string): boolean {
-  return envName.includes('SERVICE_ROLE') || envName.includes('SECRET') || envName.includes('PRIVATE_KEY');
+  return (
+    envName.includes('SERVICE_ROLE') ||
+    envName.includes('SECRET') ||
+    envName.includes('PRIVATE_KEY')
+  );
 }
 
 function countLocalhostEndpointSignals(code: string): number {
@@ -11952,7 +11947,9 @@ const DYNAMIC_GEOMETRY_STYLE_PROPS = new Set([
   'y',
 ]);
 
-function getJsxAttributeExpression(initializer: ts.JsxAttribute['initializer']): ts.Expression | null {
+function getJsxAttributeExpression(
+  initializer: ts.JsxAttribute['initializer'],
+): ts.Expression | null {
   if (!initializer || !ts.isJsxExpression(initializer)) return null;
   return initializer.expression ?? null;
 }
@@ -15179,7 +15176,9 @@ export function critiqueSource({
 function resolveProjectFilePath(projectRoot: string, filePath: string): string {
   const root = existsSync(projectRoot) ? realpathSync.native(projectRoot) : resolve(projectRoot);
   const candidatePath = isAbsolute(filePath) ? resolve(filePath) : resolve(root, filePath);
-  const resolvedPath = existsSync(candidatePath) ? realpathSync.native(candidatePath) : candidatePath;
+  const resolvedPath = existsSync(candidatePath)
+    ? realpathSync.native(candidatePath)
+    : candidatePath;
   const relativePath = relative(root, resolvedPath);
 
   if (relativePath.startsWith('..') || isAbsolute(relativePath)) {

@@ -82,7 +82,7 @@ describe('init command', () => {
       });
 
       const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
-      // V3.1 template: methodology primer plus workflow-aware styling guidance.
+      // V4 template: methodology primer plus workflow-aware styling guidance.
       expect(content).toContain('## Guard Rules');
       expect(content).toContain('## How To Use This Project');
       expect(content).toContain('## Styling Adoption');
@@ -119,7 +119,7 @@ describe('init command', () => {
       expect(output).toContain('Prefer scaffold-pack, section-pack, and page-pack guidance');
       expect(output).toContain('Use only files present in this workspace as the source of truth.');
       expect(output).toContain(
-        // v2.1 prompt update: `decantr check` is the unified entry point;
+        // `decantr check` is the unified entry point;
         // the deprecated `decantr audit` line was replaced with the
         // 8-rule guard description that surfaces the C5 interactions guard.
         'After implementation, run `decantr check`',
@@ -199,7 +199,7 @@ describe('init command', () => {
       expect(existsSync(join(testDir, '.decantr', 'context', 'page-agent-overview-pack.md'))).toBe(
         true,
       );
-      expect(essence.version).toBe('3.1.0');
+      expect(essence.version).toBe('4.0.0');
       expect(essence.blueprint?.sections?.map((section) => section.id)).toContain(
         'agent-orchestrator',
       );
@@ -329,7 +329,7 @@ describe('init command', () => {
         join(testDir, 'decantr.essence.json'),
         JSON.stringify(
           {
-            version: '3.1.0',
+            version: '4.0.0',
             dna: {
               theme: { id: 'custom:legacy-brand', mode: 'dark', shape: 'rounded' },
               spacing: {
@@ -384,7 +384,9 @@ describe('init command', () => {
         const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
           (error as { stderr?: Buffer }).stderr?.toString() ?? ''
         }`;
-        expect(output).toContain('Refusing to accept proposal over an existing decantr.essence.json');
+        expect(output).toContain(
+          'Refusing to accept proposal over an existing decantr.essence.json',
+        );
       }
 
       execSync(`node ${cliPath} init --existing --merge-proposal`, {
@@ -400,9 +402,7 @@ describe('init command', () => {
       expect(essence.dna?.theme?.id).toBe('custom:legacy-brand');
       expect(essence.blueprint?.routes?.['/dashboard']).toBeTruthy();
       expect(essence.blueprint?.sections?.some((section) => section.id === 'legacy')).toBe(true);
-      expect(
-        existsSync(join(testDir, '.decantr', 'observed-essence.proposal.json')),
-      ).toBe(true);
+      expect(existsSync(join(testDir, '.decantr', 'observed-essence.proposal.json'))).toBe(true);
     },
     INIT_TIMEOUT_MS,
   );
@@ -437,10 +437,14 @@ describe('init command', () => {
       const content = readFileSync(join(testDir, 'DECANTR.md'), 'utf-8');
       const projectJson = JSON.parse(
         readFileSync(join(testDir, '.decantr', 'project.json'), 'utf-8'),
-      ) as { initialized?: { workflowMode?: string; adoptionMode?: string; analysisArtifacts?: boolean } };
+      ) as {
+        initialized?: { workflowMode?: string; adoptionMode?: string; analysisArtifacts?: boolean };
+      };
 
       expect(output).toContain('No Decantr analysis seed is present.');
-      expect(content).toContain('No `.decantr/analysis.json` or `.decantr/init-seed.json` was present');
+      expect(content).toContain(
+        'No `.decantr/analysis.json` or `.decantr/init-seed.json` was present',
+      );
       expect(projectJson.initialized?.workflowMode).toBe('brownfield-attach');
       expect(projectJson.initialized?.adoptionMode).toBe('contract-only');
       expect(projectJson.initialized?.analysisArtifacts).toBe(false);

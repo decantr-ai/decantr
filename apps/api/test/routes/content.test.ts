@@ -127,7 +127,7 @@ describe('POST /v1/validate', () => {
     expect(json.error).toBe('Invalid JSON body');
   });
 
-  it('should validate a minimal v2 essence document and report errors', async () => {
+  it('should validate a minimal legacy essence document and report errors', async () => {
     const res = await app.request('/v1/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -141,42 +141,53 @@ describe('POST /v1/validate', () => {
     const json = await res.json();
     expect(json.valid).toBe(false);
     expect(json.errors.length).toBeGreaterThan(0);
-    expect(json.schemaVersion).toBe('v2');
+    expect(json.schemaVersion).toBe('legacy');
     expect(json.version).toBe('2.0.0');
   });
 
-  it('should validate a valid v2 SimpleEssence document', async () => {
+  it('should validate a valid V4 essence document', async () => {
     const res = await app.request('/v1/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        version: '2.0.0',
-        archetype: 'dashboard',
-        theme: {
-          id: 'clean',
-          mode: 'light',
-        },
-        personality: ['professional'],
-        platform: {
-          type: 'spa',
-          routing: 'history',
-        },
-        structure: [
-          {
-            id: 'home',
-            shell: 'sidebar',
-            layout: ['hero'],
+        version: '4.0.0',
+        dna: {
+          theme: { id: 'clean', mode: 'light', shape: 'rounded' },
+          spacing: {
+            base_unit: 4,
+            scale: 'linear',
+            density: 'comfortable',
+            content_gap: '1.5rem',
           },
-        ],
-        features: ['auth'],
-        density: {
-          level: 'comfortable',
-          content_gap: '1.5rem',
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
         },
-        guard: {
-          mode: 'guided',
+        blueprint: {
+          shell: 'sidebar-main',
+          sections: [
+            {
+              id: 'dashboard',
+              role: 'primary',
+              shell: 'sidebar-main',
+              features: ['auth'],
+              description: 'Dashboard section',
+              pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            },
+          ],
+          features: ['auth'],
+          routes: { '/': { section: 'dashboard', page: 'home' } },
         },
-        target: 'next',
+        meta: {
+          archetype: 'dashboard',
+          target: 'next',
+          platform: { type: 'spa', routing: 'history' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
       }),
     });
 
@@ -184,27 +195,27 @@ describe('POST /v1/validate', () => {
     const json = await res.json();
     expect(json.valid).toBe(true);
     expect(json.errors).toEqual([]);
-    expect(json.schemaVersion).toBe('v2');
+    expect(json.schemaVersion).toBe('v4');
   });
 
-  it('should detect v3 documents by version field', async () => {
+  it('should report legacy schemaVersion for incomplete pre-V4 documents', async () => {
     const res = await app.request('/v1/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         version: '3.0.0',
-        // Incomplete v3 doc -- should fail validation
+        // Incomplete legacy doc -- should fail validation
       }),
     });
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    // An incomplete v3 doc should fail validation
     expect(json.valid).toBe(false);
     expect(json.version).toBe('3.0.0');
+    expect(json.schemaVersion).toBe('legacy');
   });
 
-  it('should return schemaVersion v2 for non-v3 documents', async () => {
+  it('should return schemaVersion legacy for pre-V4 documents', async () => {
     const res = await app.request('/v1/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -216,7 +227,7 @@ describe('POST /v1/validate', () => {
 
     expect(res.status).toBe(200);
     const json = await res.json();
-    expect(json.schemaVersion).toBe('v2');
+    expect(json.schemaVersion).toBe('legacy');
   });
 
   it('should handle empty object', async () => {

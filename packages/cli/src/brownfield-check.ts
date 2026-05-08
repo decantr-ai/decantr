@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceV3 } from '@decantr/essence-spec';
+import type { EssenceV4 } from '@decantr/essence-spec';
+import { scanAmbientContext } from './ambient-context.js';
 import { scanRoutes } from './analyzers/routes.js';
 import { scanStyling } from './analyzers/styling.js';
-import { scanAmbientContext } from './ambient-context.js';
 import { createDoctrineMap, readDoctrineMap } from './doctrine-map.js';
 
 export interface BrownfieldIssue {
@@ -27,7 +27,7 @@ function readProjectJson(projectRoot: string): {
   }
 }
 
-function essenceRoutes(essence: EssenceV3): Set<string> {
+function essenceRoutes(essence: EssenceV4): Set<string> {
   const fromRouteMap = Object.keys(essence.blueprint.routes ?? {});
   const fromPages =
     essence.blueprint.sections?.flatMap((section) =>
@@ -45,7 +45,7 @@ function routeLabel(routes: string[]): string {
   return `${routes.slice(0, 6).join(', ')} (+${routes.length - 6} more)`;
 }
 
-function hasDoctrineEffect(essence: EssenceV3, key: string): boolean {
+function hasDoctrineEffect(essence: EssenceV4, key: string): boolean {
   const effects = essence.dna.constraints?.effects;
   return Boolean(effects && effects[key]);
 }
@@ -91,7 +91,7 @@ function hasAssistantBridge(projectRoot: string): boolean {
   });
 }
 
-export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): BrownfieldIssue[] {
+export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV4): BrownfieldIssue[] {
   const projectJson = readProjectJson(projectRoot);
   const routes = scanRoutes(projectRoot);
   const styling = scanStyling(projectRoot);
@@ -109,7 +109,8 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
       type: 'error',
       rule: 'brownfield-route-coverage',
       message: `The app has ${routes.routes.length} observed route(s), but the Decantr essence declares no routes.`,
-      suggestion: 'Run `decantr analyze`, review the proposal, then `decantr init --existing --accept-proposal` or `--merge-proposal`.',
+      suggestion:
+        'Run `decantr analyze`, review the proposal, then `decantr init --existing --accept-proposal` or `--merge-proposal`.',
     });
   } else if (missingFromEssence.length > 0) {
     issues.push({
@@ -120,12 +121,18 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
     });
   }
 
-  if (routes.routes.length > 0 && declaredRoutes.size === 1 && declaredRoutes.has('/') && routes.routes.length > 1) {
+  if (
+    routes.routes.length > 0 &&
+    declaredRoutes.size === 1 &&
+    declaredRoutes.has('/') &&
+    routes.routes.length > 1
+  ) {
     issues.push({
       type: 'error',
       rule: 'brownfield-generic-contract',
       message: 'The essence only declares `/` while the app has multiple observed routes.',
-      suggestion: 'Accept or merge an observed brownfield proposal instead of using a generic scaffold contract.',
+      suggestion:
+        'Accept or merge an observed brownfield proposal instead of using a generic scaffold contract.',
     });
   }
 
@@ -148,8 +155,10 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
     issues.push({
       type: 'warning',
       rule: 'brownfield-theme-default',
-      message: 'Contract-only brownfield essence still uses Decantr theme `luminarum` while the app has an existing styling system.',
-      suggestion: 'Use an observed proposal with `theme.id = "existing"` unless the user explicitly opts into a Decantr theme.',
+      message:
+        'Contract-only brownfield essence still uses Decantr theme `luminarum` while the app has an existing styling system.',
+      suggestion:
+        'Use an observed proposal with `theme.id = "existing"` unless the user explicitly opts into a Decantr theme.',
     });
   }
 
@@ -158,7 +167,8 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
       type: 'warning',
       rule: 'brownfield-doctrine-conflict',
       message: conflict,
-      suggestion: 'Resolve or document precedence before treating these rules as enforceable contract.',
+      suggestion:
+        'Resolve or document precedence before treating these rules as enforceable contract.',
     });
   }
 
@@ -167,11 +177,14 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
       type: 'warning',
       rule: 'brownfield-context-missing',
       message: 'No ambient project context was detected for this brownfield check.',
-      suggestion: 'Run `decantr analyze` to create `.decantr/ambient-context.json` and a proposal-backed report.',
+      suggestion:
+        'Run `decantr analyze` to create `.decantr/ambient-context.json` and a proposal-backed report.',
     });
   }
 
-  const hasBrownfieldArtifacts = Boolean(projectJson.initialized?.workflowMode === 'brownfield-attach');
+  const hasBrownfieldArtifacts = Boolean(
+    projectJson.initialized?.workflowMode === 'brownfield-attach',
+  );
   if (hasBrownfieldArtifacts && !existsSync(join(projectRoot, '.decantr', 'doctrine-map.json'))) {
     issues.push({
       type: 'warning',
@@ -188,8 +201,10 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
     issues.push({
       type: 'warning',
       rule: 'brownfield-doctrine-coverage',
-      message: 'Security/data doctrine was detected, but the essence does not record a security/data preservation constraint.',
-      suggestion: 'Regenerate and merge a brownfield proposal so security/data doctrine is represented in `dna.constraints.effects`.',
+      message:
+        'Security/data doctrine was detected, but the essence does not record a security/data preservation constraint.',
+      suggestion:
+        'Regenerate and merge a brownfield proposal so security/data doctrine is represented in `dna.constraints.effects`.',
     });
   }
 
@@ -200,8 +215,10 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
     issues.push({
       type: 'warning',
       rule: 'brownfield-doctrine-coverage',
-      message: 'Design-system doctrine was detected, but the essence does not record a design-system preservation constraint.',
-      suggestion: 'Regenerate and merge a brownfield proposal so design-system doctrine is represented in `dna.constraints.effects`.',
+      message:
+        'Design-system doctrine was detected, but the essence does not record a design-system preservation constraint.',
+      suggestion:
+        'Regenerate and merge a brownfield proposal so design-system doctrine is represented in `dna.constraints.effects`.',
     });
   }
 
@@ -213,7 +230,8 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
         type: 'warning',
         rule: 'brownfield-style-drift',
         message: `Observed styling approach is ${styling.approach}, but the essence color palette is ${palette || 'unset'}.`,
-        suggestion: 'Regenerate and merge a brownfield proposal so the contract reflects the existing styling system.',
+        suggestion:
+          'Regenerate and merge a brownfield proposal so the contract reflects the existing styling system.',
       });
     }
   }
@@ -226,8 +244,10 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
     issues.push({
       type: 'warning',
       rule: 'brownfield-assistant-bridge-missing',
-      message: 'Assistant-specific rule files were detected, but no Decantr assistant bridge preview or applied bridge block was found.',
-      suggestion: 'Run `decantr rules preview` first, then `decantr rules apply` if the user explicitly approves rule-file mutation.',
+      message:
+        'Assistant-specific rule files were detected, but no Decantr assistant bridge preview or applied bridge block was found.',
+      suggestion:
+        'Run `decantr rules preview` first, then `decantr rules apply` if the user explicitly approves rule-file mutation.',
     });
   }
 
@@ -240,7 +260,8 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV3): B
         .slice(0, 4)
         .map((source) => source.path)
         .join(', ')}${unsafeSources.length > 4 ? ` (+${unsafeSources.length - 4} more)` : ''}.`,
-      suggestion: 'Keep unsafe source paths in the inventory, but do not paste their contents into assistant context.',
+      suggestion:
+        'Keep unsafe source paths in the inventory, but do not paste their contents into assistant context.',
     });
   }
 

@@ -707,7 +707,7 @@ export async function cmdMagic(
   );
 
   // 7. Print summary
-  console.log(`   ${success('Created')} decantr.essence.json (V3.1)`);
+  console.log(`   ${success('Created')} decantr.essence.json (Essence v4)`);
   console.log(`   ${success('Created')} DECANTR.md`);
 
   if (result.cssFiles && result.cssFiles.length > 0) {

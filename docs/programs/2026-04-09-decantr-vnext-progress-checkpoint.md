@@ -55,7 +55,7 @@ already delivered before the remaining commercialization and release-hardening w
   - route-bearing blueprint pages
   - `meta.seo`
   - `meta.navigation`
-- `migrateV30ToV31()` now emits a schema-valid section description instead of producing an invalid v3.1 artifact.
+- `migrateToV4()` now emits a schema-valid section description instead of producing an invalid v3.1 artifact.
 
 ### Execution packs
 

@@ -14,7 +14,7 @@ describe('verifier', () => {
     const projectRoot = createProjectRoot();
     try {
       writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28,8 +28,18 @@ describe('verifier', () => {
         },
         blueprint: {
           shell: 'sidebar-main',
-          pages: [{ id: 'home', layout: ['hero'] }],
           features: [],
+          sections: [
+            {
+              id: 'marketing',
+              role: 'public',
+              shell: 'sidebar-main',
+              features: [],
+              description: 'Marketing surface',
+              pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            },
+          ],
+          routes: { '/': { section: 'marketing', page: 'home' } },
         },
         meta: {
           archetype: 'marketing',
@@ -67,7 +77,7 @@ describe('verifier', () => {
       expect(invalidJsonReport.findings.some(finding => finding.id === 'essence-parse-error')).toBe(true);
 
       writeFileSync(join(invalidSchemaRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -81,8 +91,18 @@ describe('verifier', () => {
         },
         blueprint: {
           shell: 'sidebar-main',
-          pages: [{ id: 'home', layout: ['hero'] }],
           features: [],
+          sections: [
+            {
+              id: 'marketing',
+              role: 'public',
+              shell: 'sidebar-main',
+              features: [],
+              description: 'Marketing surface',
+              pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            },
+          ],
+          routes: { '/': { section: 'marketing', page: 'home' } },
         },
         meta: {
           archetype: 'marketing',
@@ -106,7 +126,7 @@ describe('verifier', () => {
     try {
       mkdirSync(join(projectRoot, '.decantr', 'context'), { recursive: true });
       writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -120,8 +140,18 @@ describe('verifier', () => {
         },
         blueprint: {
           shell: 'sidebar-main',
-          pages: [{ id: 'home', layout: ['hero'] }],
           features: [],
+          sections: [
+            {
+              id: 'marketing',
+              role: 'public',
+              shell: 'sidebar-main',
+              features: [],
+              description: 'Marketing surface',
+              pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            },
+          ],
+          routes: { '/': { section: 'marketing', page: 'home' } },
         },
         meta: {
           archetype: 'marketing',
@@ -155,7 +185,7 @@ describe('verifier', () => {
     try {
       mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
       writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -172,7 +202,7 @@ describe('verifier', () => {
           sections: [
             {
               id: 'main',
-              role: 'main',
+              role: 'primary',
               pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
             },
           ],
@@ -217,7 +247,7 @@ describe('verifier', () => {
     try {
       mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
       writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -234,7 +264,7 @@ describe('verifier', () => {
           sections: [
             {
               id: 'main',
-              role: 'main',
+              role: 'primary',
               pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
             },
           ],
@@ -262,7 +292,7 @@ describe('verifier', () => {
     try {
       mkdirSync(join(projectRoot, 'dist'), { recursive: true });
       writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -279,7 +309,7 @@ describe('verifier', () => {
           sections: [
             {
               id: 'main',
-              role: 'main',
+              role: 'primary',
               pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
             },
           ],
@@ -313,7 +343,7 @@ describe('verifier', () => {
     try {
       mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
       writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
-        version: '3.0.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -330,7 +360,7 @@ describe('verifier', () => {
           sections: [
             {
               id: 'main',
-              role: 'main',
+              role: 'primary',
               pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
             },
           ],
@@ -365,7 +395,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -382,7 +412,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/dashboard', layout: ['hero'] }],
               },
             ],
@@ -427,7 +457,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -441,8 +471,18 @@ describe('verifier', () => {
           },
           blueprint: {
             shell: 'sidebar-main',
-            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
             features: [],
+            sections: [
+              {
+                id: 'marketing',
+                role: 'public',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Marketing surface',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
+            routes: { '/': { section: 'marketing', page: 'home' } },
           },
           meta: {
             archetype: 'marketing',
@@ -511,7 +551,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'carbon-neon', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -575,7 +615,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -592,7 +632,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [
                   { id: 'home', route: '/', layout: ['hero'] },
                   { id: 'dashboard', route: '/dashboard', layout: ['hero'] },
@@ -638,7 +678,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -697,7 +737,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -714,7 +754,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -776,7 +816,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -790,8 +830,18 @@ describe('verifier', () => {
           },
           blueprint: {
             shell: 'sidebar-main',
-            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
             features: [],
+            sections: [
+              {
+                id: 'marketing',
+                role: 'public',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Marketing surface',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
+            routes: { '/': { section: 'marketing', page: 'home' } },
           },
           meta: {
             archetype: 'marketing',
@@ -827,7 +877,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'carbon-neon', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -883,7 +933,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'clean', mode: 'light', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -947,7 +997,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'clean', mode: 'light', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1006,7 +1056,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1020,8 +1070,18 @@ describe('verifier', () => {
           },
           blueprint: {
             shell: 'sidebar-main',
-            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
             features: [],
+            sections: [
+              {
+                id: 'marketing',
+                role: 'public',
+                shell: 'sidebar-main',
+                features: [],
+                description: 'Marketing surface',
+                pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+              },
+            ],
+            routes: { '/': { section: 'marketing', page: 'home' } },
           },
           meta: {
             archetype: 'marketing',
@@ -1056,7 +1116,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1116,7 +1176,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1133,7 +1193,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1170,7 +1230,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1187,7 +1247,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1229,7 +1289,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1246,7 +1306,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1289,7 +1349,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1306,7 +1366,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1348,7 +1408,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1365,7 +1425,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1407,7 +1467,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1424,7 +1484,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1466,7 +1526,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1483,7 +1543,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1513,7 +1573,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1530,7 +1590,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1563,7 +1623,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1580,7 +1640,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1613,7 +1673,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1630,7 +1690,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [{ id: 'home', route: '/', layout: ['hero'] }],
               },
             ],
@@ -1667,7 +1727,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1715,7 +1775,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1765,7 +1825,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1818,7 +1878,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1868,7 +1928,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'carbon-neon', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1927,7 +1987,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'clean', mode: 'light', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -1993,7 +2053,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2062,7 +2122,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2135,7 +2195,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2199,7 +2259,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2259,7 +2319,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2329,7 +2389,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2402,7 +2462,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2474,7 +2534,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2545,7 +2605,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2617,7 +2677,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2682,7 +2742,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2751,7 +2811,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2820,7 +2880,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2889,7 +2949,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -2958,7 +3018,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3027,7 +3087,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3096,7 +3156,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3165,7 +3225,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3234,7 +3294,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3299,7 +3359,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3368,7 +3428,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3425,7 +3485,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3486,7 +3546,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3547,7 +3607,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3612,7 +3672,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3673,7 +3733,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3738,7 +3798,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3801,7 +3861,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3868,7 +3928,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3929,7 +3989,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -3994,7 +4054,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4055,7 +4115,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4120,7 +4180,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4181,7 +4241,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4246,7 +4306,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4303,7 +4363,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4364,7 +4424,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4421,7 +4481,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4482,7 +4542,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4539,7 +4599,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4600,7 +4660,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4657,7 +4717,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4718,7 +4778,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4775,7 +4835,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4832,7 +4892,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4893,7 +4953,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -4954,7 +5014,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5013,7 +5073,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5076,7 +5136,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5135,7 +5195,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5198,7 +5258,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5255,7 +5315,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5319,7 +5379,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5383,7 +5443,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5440,7 +5500,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5501,7 +5561,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5563,7 +5623,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5620,7 +5680,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5682,7 +5742,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5739,7 +5799,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5796,7 +5856,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5853,7 +5913,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5912,7 +5972,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -5969,7 +6029,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6026,7 +6086,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6083,7 +6143,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6140,7 +6200,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6197,7 +6257,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6254,7 +6314,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6315,7 +6375,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6376,7 +6436,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6439,7 +6499,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6502,7 +6562,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6563,7 +6623,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6626,7 +6686,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6689,7 +6749,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6748,7 +6808,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6810,7 +6870,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6872,7 +6932,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -6936,7 +6996,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7000,7 +7060,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7057,7 +7117,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7118,7 +7178,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7179,7 +7239,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7244,7 +7304,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7303,7 +7363,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7366,7 +7426,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7429,7 +7489,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7496,7 +7556,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7555,7 +7615,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7622,7 +7682,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7688,7 +7748,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7773,7 +7833,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7836,7 +7896,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7895,7 +7955,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -7954,7 +8014,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8014,7 +8074,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8075,7 +8135,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8136,7 +8196,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8198,7 +8258,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8258,7 +8318,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8319,7 +8379,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8380,7 +8440,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8442,7 +8502,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8503,7 +8563,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8566,7 +8626,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8627,7 +8687,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8690,7 +8750,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8752,7 +8812,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8815,7 +8875,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8876,7 +8936,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8938,7 +8998,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -8999,7 +9059,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9061,7 +9121,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9122,7 +9182,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9184,7 +9244,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9246,7 +9306,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9308,7 +9368,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9369,7 +9429,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9429,7 +9489,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9491,7 +9551,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9553,7 +9613,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9615,7 +9675,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9676,7 +9736,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9735,7 +9795,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9794,7 +9854,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9855,7 +9915,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9914,7 +9974,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -9974,7 +10034,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10034,7 +10094,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10096,7 +10156,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10159,7 +10219,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10218,7 +10278,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10279,7 +10339,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10338,7 +10398,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10397,7 +10457,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10457,7 +10517,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10517,7 +10577,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10582,7 +10642,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10648,7 +10708,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10715,7 +10775,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10783,7 +10843,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10851,7 +10911,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10919,7 +10979,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -10987,7 +11047,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11055,7 +11115,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11119,7 +11179,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11184,7 +11244,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11248,7 +11308,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11312,7 +11372,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11377,7 +11437,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11441,7 +11501,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11506,7 +11566,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11570,7 +11630,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11634,7 +11694,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11698,7 +11758,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11762,7 +11822,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11826,7 +11886,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11890,7 +11950,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -11954,7 +12014,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12018,7 +12078,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12082,7 +12142,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12146,7 +12206,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12210,7 +12270,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12274,7 +12334,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12338,7 +12398,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12402,7 +12462,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12466,7 +12526,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12530,7 +12590,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12594,7 +12654,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12658,7 +12718,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12722,7 +12782,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12786,7 +12846,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12850,7 +12910,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12914,7 +12974,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -12978,7 +13038,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13042,7 +13102,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13106,7 +13166,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13170,7 +13230,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13234,7 +13294,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13298,7 +13358,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13362,7 +13422,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13426,7 +13486,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13490,7 +13550,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13554,7 +13614,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13618,7 +13678,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13682,7 +13742,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13746,7 +13806,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13810,7 +13870,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13874,7 +13934,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -13938,7 +13998,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14002,7 +14062,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14066,7 +14126,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14130,7 +14190,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14194,7 +14254,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14258,7 +14318,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14322,7 +14382,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14386,7 +14446,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14450,7 +14510,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14514,7 +14574,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14578,7 +14638,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14642,7 +14702,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14706,7 +14766,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14770,7 +14830,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14834,7 +14894,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14898,7 +14958,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -14962,7 +15022,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15026,7 +15086,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15090,7 +15150,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15154,7 +15214,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15218,7 +15278,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15282,7 +15342,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15346,7 +15406,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15410,7 +15470,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15474,7 +15534,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15538,7 +15598,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15602,7 +15662,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15666,7 +15726,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15730,7 +15790,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15794,7 +15854,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15858,7 +15918,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15922,7 +15982,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -15986,7 +16046,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16050,7 +16110,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16114,7 +16174,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16178,7 +16238,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16242,7 +16302,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16306,7 +16366,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16370,7 +16430,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16434,7 +16494,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16498,7 +16558,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16562,7 +16622,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16626,7 +16686,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16690,7 +16750,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16754,7 +16814,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16818,7 +16878,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16882,7 +16942,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -16946,7 +17006,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17010,7 +17070,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17074,7 +17134,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17138,7 +17198,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17202,7 +17262,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17266,7 +17326,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17330,7 +17390,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17394,7 +17454,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17458,7 +17518,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17522,7 +17582,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17586,7 +17646,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17651,7 +17711,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17715,7 +17775,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17780,7 +17840,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17844,7 +17904,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17908,7 +17968,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -17973,7 +18033,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18037,7 +18097,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18102,7 +18162,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18167,7 +18227,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18231,7 +18291,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18295,7 +18355,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18360,7 +18420,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18424,7 +18484,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18489,7 +18549,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18554,7 +18614,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18619,7 +18679,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18684,7 +18744,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18748,7 +18808,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18812,7 +18872,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18877,7 +18937,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -18942,7 +19002,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19007,7 +19067,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19072,7 +19132,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19137,7 +19197,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19201,7 +19261,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19266,7 +19326,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19330,7 +19390,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19395,7 +19455,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19460,7 +19520,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19525,7 +19585,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19590,7 +19650,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19655,7 +19715,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19719,7 +19779,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19784,7 +19844,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19849,7 +19909,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19913,7 +19973,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -19978,7 +20038,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20043,7 +20103,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20108,7 +20168,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20173,7 +20233,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20238,7 +20298,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20303,7 +20363,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20368,7 +20428,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20432,7 +20492,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20500,7 +20560,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20565,7 +20625,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20630,7 +20690,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20694,7 +20754,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20762,7 +20822,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20827,7 +20887,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20892,7 +20952,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -20956,7 +21016,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21024,7 +21084,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21089,7 +21149,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21153,7 +21213,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21217,7 +21277,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21282,7 +21342,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21346,7 +21406,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21410,7 +21470,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21475,7 +21535,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21539,7 +21599,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21604,7 +21664,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21668,7 +21728,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21732,7 +21792,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21796,7 +21856,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21860,7 +21920,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21923,7 +21983,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -21983,7 +22043,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22043,7 +22103,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22102,7 +22162,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22161,7 +22221,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22221,7 +22281,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22284,7 +22344,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22347,7 +22407,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22410,7 +22470,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22474,7 +22534,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22539,7 +22599,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22602,7 +22662,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22666,7 +22726,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22730,7 +22790,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22790,7 +22850,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22851,7 +22911,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22911,7 +22971,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -22971,7 +23031,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23031,7 +23091,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23092,7 +23152,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23152,7 +23212,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23213,7 +23273,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23275,7 +23335,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23337,7 +23397,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23399,7 +23459,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23460,7 +23520,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23521,7 +23581,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23582,7 +23642,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23643,7 +23703,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23705,7 +23765,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23765,7 +23825,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23826,7 +23886,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23887,7 +23947,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -23948,7 +24008,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24008,7 +24068,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24069,7 +24129,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24130,7 +24190,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24192,7 +24252,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24254,7 +24314,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24316,7 +24376,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24378,7 +24438,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24438,7 +24498,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24498,7 +24558,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24561,7 +24621,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24624,7 +24684,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24684,7 +24744,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24745,7 +24805,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24805,7 +24865,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24866,7 +24926,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24926,7 +24986,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -24987,7 +25047,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25047,7 +25107,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25107,7 +25167,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25168,7 +25228,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25229,7 +25289,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25289,7 +25349,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25349,7 +25409,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25409,7 +25469,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25471,7 +25531,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25531,7 +25591,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25590,7 +25650,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25649,7 +25709,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25709,7 +25769,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25770,7 +25830,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25834,7 +25894,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25898,7 +25958,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -25962,7 +26022,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26026,7 +26086,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26090,7 +26150,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26154,7 +26214,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26218,7 +26278,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26282,7 +26342,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26346,7 +26406,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26416,7 +26476,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26481,7 +26541,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26552,7 +26612,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26623,7 +26683,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26696,7 +26756,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26769,7 +26829,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26842,7 +26902,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26909,7 +26969,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -26977,7 +27037,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27045,7 +27105,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27115,7 +27175,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27184,7 +27244,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27253,7 +27313,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27318,7 +27378,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27385,7 +27445,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27453,7 +27513,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27533,7 +27593,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27594,7 +27654,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27653,7 +27713,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27718,7 +27778,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27788,7 +27848,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27862,7 +27922,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27930,7 +27990,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -27999,7 +28059,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28067,7 +28127,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28149,7 +28209,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28220,7 +28280,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28283,7 +28343,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28349,7 +28409,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28413,7 +28473,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28493,7 +28553,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28587,7 +28647,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28661,7 +28721,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28738,7 +28798,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28812,7 +28872,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -28887,7 +28947,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -29033,7 +29093,7 @@ describe('verifier', () => {
       writeFileSync(
         join(projectRoot, 'decantr.essence.json'),
         JSON.stringify({
-          version: '3.0.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -29050,7 +29110,7 @@ describe('verifier', () => {
             sections: [
               {
                 id: 'main',
-                role: 'main',
+                role: 'primary',
                 pages: [
                   { id: 'home', route: '/', layout: ['hero'] },
                   { id: 'dashboard', route: '/dashboard', layout: ['hero'] },
@@ -29093,7 +29153,7 @@ describe('verifier', () => {
 
   it('extracts normalized route hints from v3 essence files', () => {
     const hints = extractRouteHintsFromEssence({
-      version: '3.0.0',
+      version: '4.0.0',
       dna: {
         theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
         spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -29110,7 +29170,7 @@ describe('verifier', () => {
         sections: [
           {
             id: 'main',
-            role: 'main',
+            role: 'primary',
             pages: [
               { id: 'overview', route: '/overview', layout: ['hero'] },
               { id: 'record', route: '/records/:id', layout: ['hero'] },

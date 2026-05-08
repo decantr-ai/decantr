@@ -90,7 +90,7 @@ function buildPatternNode(
 
   const presetName = preset?.preset || 'default';
   const presetDescription = pattern?.presets?.[presetName]?.description;
-  // v2.1 C1: thread interactions[] from the pattern through to PagePackPattern
+  // Thread declared interactions[] from the pattern through to PagePackPattern.
   // so the page-pack renderer can surface them as a checkbox checklist.
   const interactions = Array.isArray((pattern as { interactions?: unknown })?.interactions)
     ? ((pattern as { interactions?: unknown }).interactions as string[])
@@ -159,10 +159,7 @@ export function buildPageIR(
       // exact bug in cloud-platform's scaffold-pack).
       const colEntries = item.cols.map((col) => ({
         id: typeof col === 'string' ? col : col.pattern,
-        alias:
-          typeof col === 'string'
-            ? col
-            : (col.as ?? col.pattern),
+        alias: typeof col === 'string' ? col : (col.as ?? col.pattern),
       }));
       const breakpoint = item.at || null;
       const spans = item.span || null;
@@ -180,8 +177,7 @@ export function buildPageIR(
 
       const gridChildren: IRNode[] = [];
       for (const entry of colEntries) {
-        const resolved =
-          resolvedPatterns.get(entry.alias) || resolvedPatterns.get(entry.id);
+        const resolved = resolvedPatterns.get(entry.alias) || resolvedPatterns.get(entry.id);
         gridChildren.push(
           buildPatternNode(entry.id, entry.alias, resolved, wiring, theme, density, layer),
         );
@@ -221,7 +217,7 @@ export function buildPageIR(
   // directive in DECANTR.md ("One scroll container per region", "Let shells
   // own spacing, centering, and scroll containers", "Pages should not
   // duplicate shell responsibilities"). Previous default (`_p4 _overauto
-  // _flex1`) contradicted that directive and the v3 harness flagged it as
+  // _flex1`) contradicted that directive and the V4 harness flagged it as
   // the single most expensive contract-ambiguity friction point. Pages that
   // genuinely need to claim scroll/padding can still declare it explicitly
   // via `page.surface` — the fallback just stops prescribing it.

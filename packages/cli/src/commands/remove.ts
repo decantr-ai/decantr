@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { isV3, migrateV30ToV31 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
@@ -10,7 +10,7 @@ const RED = '\x1b[31m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
 
-function readAndMigrate(projectRoot: string): { essence: EssenceV3; essencePath: string } | null {
+function readV4Essence(projectRoot: string): { essence: EssenceV4; essencePath: string } | null {
   const essencePath = join(projectRoot, 'decantr.essence.json');
 
   if (!existsSync(essencePath)) {
@@ -28,24 +28,25 @@ function readAndMigrate(projectRoot: string): { essence: EssenceV3; essencePath:
     return null;
   }
 
-  if (!isV3(parsed)) {
-    console.error(`${RED}Essence is not v3. Run \`decantr migrate\` first.${RESET}`);
+  if (!isV4(parsed)) {
+    console.error(
+      `${RED}Active workflows require Essence v4.0.0. Run \`decantr migrate --to v4\` first.${RESET}`,
+    );
     process.exitCode = 1;
     return null;
   }
 
-  const essence = migrateV30ToV31(parsed);
-  return { essence, essencePath };
+  return { essence: parsed, essencePath };
 }
 
-function writeEssence(essencePath: string, essence: EssenceV3): void {
+function writeEssence(essencePath: string, essence: EssenceV4): void {
   writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
 }
 
 /**
  * Recompute global features from all remaining sections.
  */
-function recomputeGlobalFeatures(essence: EssenceV3): void {
+function recomputeGlobalFeatures(essence: EssenceV4): void {
   const all = new Set<string>();
   for (const section of essence.blueprint.sections || []) {
     for (const f of section.features) {
@@ -58,7 +59,7 @@ function recomputeGlobalFeatures(essence: EssenceV3): void {
 /**
  * Remove routes that reference a given section (and optionally a specific page).
  */
-function removeRoutes(essence: EssenceV3, sectionId: string, pageId?: string): void {
+function removeRoutes(essence: EssenceV4, sectionId: string, pageId?: string): void {
   if (!essence.blueprint.routes) return;
   const routes = essence.blueprint.routes;
   for (const [path, entry] of Object.entries(routes)) {
@@ -84,11 +85,11 @@ export async function cmdRemoveSection(
     return;
   }
 
-  const loaded = readAndMigrate(projectRoot);
+  const loaded = readV4Essence(projectRoot);
   if (!loaded) return;
   const { essence, essencePath } = loaded;
 
-  const sections = essence.blueprint.sections!;
+  const sections = essence.blueprint.sections;
   const idx = sections.findIndex((s) => s.id === sectionId);
   if (idx === -1) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
@@ -139,11 +140,11 @@ export async function cmdRemovePage(
 
   const [sectionId, pageId] = path.split('/');
 
-  const loaded = readAndMigrate(projectRoot);
+  const loaded = readV4Essence(projectRoot);
   if (!loaded) return;
   const { essence, essencePath } = loaded;
 
-  const sections = essence.blueprint.sections!;
+  const sections = essence.blueprint.sections;
   const section = sections.find((s) => s.id === sectionId);
   if (!section) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
@@ -190,7 +191,7 @@ export async function cmdRemoveFeature(
     return;
   }
 
-  const loaded = readAndMigrate(projectRoot);
+  const loaded = readV4Essence(projectRoot);
   if (!loaded) return;
   const { essence, essencePath } = loaded;
 
@@ -202,7 +203,7 @@ export async function cmdRemoveFeature(
   }
 
   if (sectionId) {
-    const sections = essence.blueprint.sections!;
+    const sections = essence.blueprint.sections;
     const section = sections.find((s) => s.id === sectionId);
     if (!section) {
       console.error(`${RED}Section "${sectionId}" not found.${RESET}`);

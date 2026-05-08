@@ -1,11 +1,9 @@
 /**
- * Essence v2 schema types — normalized terminology.
+ * Essence v4 active contract types.
  *
- * Terminology mapping (v1 wine terms → v2 normalized):
- *   terroir → archetype, vintage → theme, tannins → features,
- *   carafe → shell, cork → guard, blend → layout, clarity → density,
- *   vessel → platform, character → personality,
- *   decantation process → essence pipeline
+ * Decantr V2 treats Essence v4 as the only active runtime contract. Older
+ * Essence v2/v3 document shapes remain modeled only so `decantr migrate --to v4`
+ * can upgrade existing projects.
  */
 
 // --- Theme ---
@@ -197,7 +195,7 @@ export interface Essence {
 
 // --- Essence (sectioned) ---
 
-export interface EssenceSection {
+export interface LegacyEssenceSection {
   id: string;
   path: string;
   archetype: string;
@@ -211,7 +209,7 @@ export interface SectionedEssence {
   version: string;
   platform: Platform;
   personality: string[];
-  sections: EssenceSection[];
+  sections: LegacyEssenceSection[];
   shared_features?: string[];
   density: Density;
   guard: Guard;
@@ -220,7 +218,7 @@ export interface SectionedEssence {
   _impression?: Impression;
 }
 
-// --- Essence v3: DNA/Blueprint/Meta split ---
+// --- Essence v4: DNA/Blueprint/Meta split ---
 
 export interface EssenceDNA {
   theme: Theme;
@@ -305,7 +303,7 @@ export interface SectionNavigationItem {
   badge?: string;
 }
 
-export interface EssenceV31Section {
+export interface EssenceSection {
   id: string;
   role: ArchetypeRole;
   shell: ShellType | string;
@@ -330,7 +328,8 @@ export interface RouteEntry {
 
 export interface EssenceBlueprint {
   shell?: ShellType | string;
-  sections?: EssenceV31Section[];
+  sections: EssenceSection[];
+  /** Migration-only compatibility. Active v4 documents are sectioned-only. */
   pages?: BlueprintPage[];
   features: string[];
   routes?: Record<string, RouteEntry>;
@@ -338,13 +337,13 @@ export interface EssenceBlueprint {
   avatar_style?: string;
 }
 
-export interface EssenceV3Guard {
+export interface EssenceV4Guard {
   mode: GuardMode;
   dna_enforcement: 'error' | 'warn' | 'off';
   blueprint_enforcement: 'warn' | 'off';
   /**
-   * v2.1 C5. Severity for the experiential interactions guard rule (8th
-   * rule). When patterns declare `interactions: [...]` but the source
+   * Severity for the experiential interactions guard rule. When patterns
+   * declare `interactions: [...]` but the source
    * tree is missing the canonical implementations, this controls whether
    * the violation is an error, warning, or ignored.
    *
@@ -358,7 +357,7 @@ export interface EssenceMeta {
   archetype: string;
   target: GeneratorTarget;
   platform: Platform;
-  guard: EssenceV3Guard;
+  guard: EssenceV4Guard;
   seo?: {
     schema_org?: string[];
     meta_priorities?: string[];
@@ -406,29 +405,47 @@ export interface HotkeySemantics {
   /** If true: hotkey matching is case-sensitive. Default false — uppercase implies Shift. */
   match_case?: boolean;
   /**
-   * v2.1 C3. If true (default): render the .d-hotkey-indicator corner badge
-   * when a chord hotkey prefix is armed. If false: silent chord tracking
-   * (no visual feedback). Recommended true for discoverability.
+   * If true (default): render the .d-hotkey-indicator corner badge when a chord
+   * hotkey prefix is armed. If false: silent chord tracking (no visual feedback).
+   * Recommended true for discoverability.
    */
   show_chord_indicator?: boolean;
 }
 
-export interface EssenceV3 {
+export interface EssenceV4 {
   $schema?: string;
-  version: '3.0.0' | '3.1.0';
+  version: '4.0.0';
   dna: EssenceDNA;
   blueprint: EssenceBlueprint;
   meta: EssenceMeta;
   _impression?: Impression;
 }
 
-// --- Discriminated union ---
+export type LegacyEssenceV3 = Omit<EssenceV4, 'version'> & {
+  version: '3.0.0' | '3.1.0';
+};
 
-export type EssenceFile = Essence | SectionedEssence | EssenceV3;
+// --- Active and migration unions ---
 
-export function isV3(essence: EssenceFile): essence is EssenceV3 {
+export type EssenceFile = EssenceV4;
+export type LegacyEssenceFile = Essence | SectionedEssence | LegacyEssenceV3 | EssenceV4;
+
+export function isV4(essence: unknown): essence is EssenceV4 {
   return (
-    (essence.version === '3.0.0' || essence.version === '3.1.0') &&
+    typeof essence === 'object' &&
+    essence !== null &&
+    (essence as { version?: unknown }).version === '4.0.0' &&
+    'dna' in essence &&
+    'blueprint' in essence
+  );
+}
+
+export function isLegacyV3(essence: unknown): essence is LegacyEssenceV3 {
+  return (
+    typeof essence === 'object' &&
+    essence !== null &&
+    ((essence as { version?: unknown }).version === '3.0.0' ||
+      (essence as { version?: unknown }).version === '3.1.0') &&
     'dna' in essence &&
     'blueprint' in essence
   );
@@ -448,12 +465,22 @@ export function flattenPages(blueprint: EssenceBlueprint): BlueprintPage[] {
   return blueprint.pages ?? [];
 }
 
-export function isSectioned(essence: EssenceFile): essence is SectionedEssence {
-  if (isV3(essence)) return false;
-  return 'sections' in essence && Array.isArray((essence as SectionedEssence).sections);
+export function isSectioned(essence: unknown): essence is SectionedEssence {
+  if (isV4(essence)) return false;
+  return (
+    typeof essence === 'object' &&
+    essence !== null &&
+    'sections' in essence &&
+    Array.isArray((essence as SectionedEssence).sections)
+  );
 }
 
-export function isSimple(essence: EssenceFile): essence is Essence {
-  if (isV3(essence)) return false;
-  return 'archetype' in essence && !('sections' in essence);
+export function isSimple(essence: unknown): essence is Essence {
+  if (isV4(essence)) return false;
+  return (
+    typeof essence === 'object' &&
+    essence !== null &&
+    'archetype' in essence &&
+    !('sections' in essence)
+  );
 }

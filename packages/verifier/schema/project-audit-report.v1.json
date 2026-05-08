@@ -17,10 +17,7 @@
     "essence": {
       "anyOf": [
         {
-          "$ref": "https://decantr.ai/schemas/essence.v2.json"
-        },
-        {
-          "$ref": "https://decantr.ai/schemas/essence.v3.json"
+          "$ref": "https://decantr.ai/schemas/essence.v4.json"
         },
         {
           "type": "null"

@@ -19,18 +19,19 @@ Adoption modes:
 
 ## Adapters
 
-Adapters expose four capabilities:
+Adapters expose five capabilities:
 
 - `bootstrap`: write a runnable greenfield starter.
+- `realize`: apply a certified first-mile realization plan from Essence v4 without turning Decantr core into a framework code generator.
 - `attach`: describe route/layout/component conventions for an existing app.
 - `styling`: map adoption mode into dependencies, style files, and prompts.
 - `verify`: provide dev/build commands, dist directory, and runtime expectations.
 
 Current adapter availability:
 
-- `react-vite`: runnable bootstrap, attach, styling, verify.
-- `next-app`: runnable Next.js App Router bootstrap, App/Pages Router attach hints, verify.
-- `generic-web`: contract-only fallback for unsupported targets.
+- `react-vite`: runnable bootstrap, certified realization, attach, styling, verify.
+- `next-app`: runnable Next.js App Router bootstrap, certified realization, App/Pages Router attach hints, verify.
+- `generic-web`: contract-only fallback for unsupported targets; no framework code realization.
 
 Unsupported targets should feel intentional, not broken: Decantr writes the contract and tells the user that the runtime remains theirs.
 

@@ -1,14 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceV3, EssenceV31Section } from '@decantr/essence-spec';
-import { isV3 } from '@decantr/essence-spec';
+import type { EssenceSection, EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
+import type { AmbientContextInventory } from './ambient-context.js';
 import type { ComponentsAnalysis } from './analyzers/components.js';
 import type { DependenciesAnalysis } from './analyzers/dependencies.js';
 import type { FeaturesAnalysis } from './analyzers/features.js';
 import type { LayoutAnalysis } from './analyzers/layout.js';
 import type { RoutesAnalysis } from './analyzers/routes.js';
 import type { StylingAnalysis } from './analyzers/styling.js';
-import type { AmbientContextInventory } from './ambient-context.js';
 import type { DetectedProject } from './detect.js';
 import type { DoctrineMap } from './doctrine-map.js';
 
@@ -28,7 +28,7 @@ export interface BrownfieldProposal {
   kind: 'brownfield-observed-essence';
   generatedAt: string;
   status: 'proposed';
-  essence: EssenceV3;
+  essence: EssenceV4;
   evidence: {
     routeCount: number;
     componentCount: number;
@@ -60,7 +60,7 @@ function slugify(value: string, fallback: string): string {
 
 interface RouteDomain {
   sectionId: string;
-  role: EssenceV31Section['role'];
+  role: EssenceSection['role'];
   label: string;
   description: string;
   featureHints: string[];
@@ -80,7 +80,8 @@ const ROUTE_DOMAINS: RouteDomain[] = [
     sectionId: 'observed-rbac',
     role: 'auxiliary',
     label: 'RBAC and User Administration',
-    description: 'Observed role, permission, user-management, and access-control administration surfaces.',
+    description:
+      'Observed role, permission, user-management, and access-control administration surfaces.',
     featureHints: ['admin', 'team', 'settings', 'auth'],
     priority: 30,
   },
@@ -104,7 +105,8 @@ const ROUTE_DOMAINS: RouteDomain[] = [
     sectionId: 'observed-settings',
     role: 'auxiliary',
     label: 'Settings',
-    description: 'Observed account, profile, client-settings, organization, and user-preference surfaces.',
+    description:
+      'Observed account, profile, client-settings, organization, and user-preference surfaces.',
     featureHints: ['settings', 'profile', 'team'],
     priority: 38,
   },
@@ -144,7 +146,8 @@ const ROUTE_DOMAINS: RouteDomain[] = [
     sectionId: 'observed-ai-insights',
     role: 'primary',
     label: 'AI Insights',
-    description: 'Observed AI insight, assistant, intelligence, recommendation, and automation surfaces.',
+    description:
+      'Observed AI insight, assistant, intelligence, recommendation, and automation surfaces.',
     featureHints: ['dashboard', 'chat'],
     priority: 64,
   },
@@ -207,16 +210,28 @@ function routeDomain(path: string): RouteDomain {
   ) {
     return ROUTE_DOMAINS[0];
   }
-  if (/\/(rbac|roles?|permissions?|manage-rbac|manage-users|user-management|access-control)\b/.test(lower)) {
+  if (
+    /\/(rbac|roles?|permissions?|manage-rbac|manage-users|user-management|access-control)\b/.test(
+      lower,
+    )
+  ) {
     return ROUTE_DOMAINS.find((domain) => domain.sectionId === 'observed-rbac')!;
   }
-  if (/\/(billing|subscription|subscriptions|pricing|plans|checkout|payment|payments|stripe|invoice|invoices)\b/.test(lower)) {
+  if (
+    /\/(billing|subscription|subscriptions|pricing|plans|checkout|payment|payments|stripe|invoice|invoices)\b/.test(
+      lower,
+    )
+  ) {
     return ROUTE_DOMAINS.find((domain) => domain.sectionId === 'observed-billing')!;
   }
   if (/\/(admin|moderation|moderate|system-logs)\b/.test(lower)) {
     return ROUTE_DOMAINS.find((domain) => domain.sectionId === 'observed-admin')!;
   }
-  if (/\/(settings|profile|account|client-settings|user-settings|preferences|organization|org|team|members)\b/.test(lower)) {
+  if (
+    /\/(settings|profile|account|client-settings|user-settings|preferences|organization|org|team|members)\b/.test(
+      lower,
+    )
+  ) {
     return ROUTE_DOMAINS.find((domain) => domain.sectionId === 'observed-settings')!;
   }
   if (/\/(api-keys?|api-key-management|developer|developers|tokens?|credentials?)\b/.test(lower)) {
@@ -240,7 +255,9 @@ function routeDomain(path: string): RouteDomain {
   if (/\/(brand|brand-portal|assets?|media|gallery|uploads?)\b/.test(lower)) {
     return ROUTE_DOMAINS.find((domain) => domain.sectionId === 'observed-brand-portal')!;
   }
-  if (/\/(content|cms|editor|posts?|articles?|catalog|library|registry|marketplace)\b/.test(lower)) {
+  if (
+    /\/(content|cms|editor|posts?|articles?|catalog|library|registry|marketplace)\b/.test(lower)
+  ) {
     return ROUTE_DOMAINS.find((domain) => domain.sectionId === 'observed-content')!;
   }
   if (
@@ -269,7 +286,8 @@ function platformForTarget(target: string, routeStrategy: RoutesAnalysis['strate
   if (normalized === 'nextjs' || normalized === 'nuxt' || normalized === 'astro') {
     return { type: 'ssr' as const, routing: 'pathname' as const };
   }
-  if (routeStrategy === 'react-router') return { type: 'spa' as const, routing: 'history' as const };
+  if (routeStrategy === 'react-router')
+    return { type: 'spa' as const, routing: 'history' as const };
   if (normalized === 'html') return { type: 'static' as const, routing: 'pathname' as const };
   return { type: 'spa' as const, routing: 'history' as const };
 }
@@ -306,8 +324,8 @@ function doctrineEffects(ambient: AmbientContextInventory): Record<string, strin
 export function createBrownfieldProposal(input: BrownfieldProposalInput): BrownfieldProposal {
   const target = input.project.framework !== 'unknown' ? input.project.framework : 'generic-web';
   const shell = input.layout.shellPattern || 'observed-existing-shell';
-  const routeMap: EssenceV3['blueprint']['routes'] = {};
-  const sectionMap = new Map<string, EssenceV31Section>();
+  const routeMap: EssenceV4['blueprint']['routes'] = {};
+  const sectionMap = new Map<string, EssenceSection>();
 
   const observedRoutes =
     input.routes.routes.length > 0
@@ -329,7 +347,7 @@ export function createBrownfieldProposal(input: BrownfieldProposalInput): Brownf
           `Semantic domain: ${classified.label}. Use this as an observed product-domain grouping, not a scaffold category.`,
           'Preserve existing route files, layouts, data boundaries, and styling conventions unless the user explicitly approves a migration.',
         ],
-      } satisfies EssenceV31Section);
+      } satisfies EssenceSection);
 
     const pageId = route.path === '/' ? 'home' : slugify(route.path, 'observed-page');
     if (!section.pages.some((page) => page.id === pageId)) {
@@ -352,8 +370,8 @@ export function createBrownfieldProposal(input: BrownfieldProposalInput): Brownf
     return aPriority - bPriority || a.id.localeCompare(b.id);
   });
 
-  const essence: EssenceV3 = {
-    version: '3.1.0',
+  const essence: EssenceV4 = {
+    version: '4.0.0',
     dna: {
       theme: {
         id: 'existing',
@@ -465,7 +483,7 @@ export function readBrownfieldProposal(projectRoot: string): BrownfieldProposal 
   if (!existsSync(path)) return null;
   try {
     const parsed = JSON.parse(readFileSync(path, 'utf-8')) as BrownfieldProposal;
-    if (parsed.kind !== 'brownfield-observed-essence' || !isV3(parsed.essence)) return null;
+    if (parsed.kind !== 'brownfield-observed-essence' || !isV4(parsed.essence)) return null;
     return parsed;
   } catch {
     return null;
@@ -480,7 +498,9 @@ export function generateBrownfieldReport(
   const lines: string[] = [];
   lines.push('# Decantr Brownfield Report');
   lines.push('');
-  lines.push('Decantr analyzed this app as an existing product. The proposal below is observed from the codebase and ambient project doctrine; it is not a Decantr scaffold.');
+  lines.push(
+    'Decantr analyzed this app as an existing product. The proposal below is observed from the codebase and ambient project doctrine; it is not a Decantr scaffold.',
+  );
   lines.push('');
   lines.push('## Proposal');
   lines.push('');
@@ -499,26 +519,45 @@ export function generateBrownfieldReport(
   lines.push('');
   lines.push('## Immediate Value');
   lines.push('');
-  lines.push('- Converts scattered brownfield routes, styling signals, docs, rules, schemas, and CI evidence into one Decantr contract without scaffolding runtime code.');
-  lines.push('- Gives assistants a compiled contract layer while keeping original docs/rules available as cited evidence.');
-  lines.push('- Enables `decantr check --brownfield` to catch route drift, unsafe defaults, doctrine conflicts, and missing context.');
+  lines.push(
+    '- Converts scattered brownfield routes, styling signals, docs, rules, schemas, and CI evidence into one Decantr contract without scaffolding runtime code.',
+  );
+  lines.push(
+    '- Gives assistants a compiled contract layer while keeping original docs/rules available as cited evidence.',
+  );
+  lines.push(
+    '- Enables `decantr check --brownfield` to catch route drift, unsafe defaults, doctrine conflicts, and missing context.',
+  );
   lines.push('');
   lines.push('## Non-Goals By Default');
   lines.push('');
-  lines.push('- Does not install Decantr CSS, switch themes, replace layouts, rewrite docs, mutate assistant rules, or import registry patterns unless explicitly requested.');
-  lines.push('- Does not treat stale migration or completion summaries as current doctrine without verification.');
+  lines.push(
+    '- Does not install Decantr CSS, switch themes, replace layouts, rewrite docs, mutate assistant rules, or import registry patterns unless explicitly requested.',
+  );
+  lines.push(
+    '- Does not treat stale migration or completion summaries as current doctrine without verification.',
+  );
   lines.push('');
   lines.push('## Accepted Evidence');
   lines.push('');
-  lines.push('- Existing framework, routes, layout shell, feature names, styling signals, and ambient doctrine were used as evidence for the proposal.');
-  lines.push('- Decantr registry content, Decantr CSS, and default Decantr themes were not accepted as brownfield defaults.');
+  lines.push(
+    '- Existing framework, routes, layout shell, feature names, styling signals, and ambient doctrine were used as evidence for the proposal.',
+  );
+  lines.push(
+    '- Decantr registry content, Decantr CSS, and default Decantr themes were not accepted as brownfield defaults.',
+  );
   lines.push('');
   lines.push('## Uncertain Evidence');
   lines.push('');
   const uncertain: string[] = [];
-  if (proposal.evidence.routeCount === 0) uncertain.push('No explicit route declarations were found; proposal uses `/` as a placeholder observation.');
-  if (proposal.evidence.stylingApproach === 'unknown') uncertain.push('Styling approach was not confidently detected.');
-  if (proposal.evidence.ambientContextCount === 0) uncertain.push('No ambient docs, rules, CI, schema, or project-memory files were detected.');
+  if (proposal.evidence.routeCount === 0)
+    uncertain.push(
+      'No explicit route declarations were found; proposal uses `/` as a placeholder observation.',
+    );
+  if (proposal.evidence.stylingApproach === 'unknown')
+    uncertain.push('Styling approach was not confidently detected.');
+  if (proposal.evidence.ambientContextCount === 0)
+    uncertain.push('No ambient docs, rules, CI, schema, or project-memory files were detected.');
   if (uncertain.length === 0) {
     lines.push('- No major uncertainty detected by the first-pass scanners.');
   } else {
@@ -561,7 +600,9 @@ export function generateBrownfieldReport(
         }
       }
       if (doctrine.resolutions.length > 8) {
-        lines.push(`- +${doctrine.resolutions.length - 8} more resolution suggestion(s) in .decantr/doctrine-map.json`);
+        lines.push(
+          `- +${doctrine.resolutions.length - 8} more resolution suggestion(s) in .decantr/doctrine-map.json`,
+        );
       }
     }
     lines.push('');
@@ -574,10 +615,14 @@ export function generateBrownfieldReport(
   } else {
     for (const item of notable) {
       const cite = item.safeToCite ? 'safe to cite' : 'do not cite directly';
-      lines.push(`- ${item.path} (${item.role}, ${item.type}, ${cite}, confidence ${item.confidence.toFixed(2)})`);
+      lines.push(
+        `- ${item.path} (${item.role}, ${item.type}, ${cite}, confidence ${item.confidence.toFixed(2)})`,
+      );
     }
     if (ambient.items.length > notable.length) {
-      lines.push(`- +${ambient.items.length - notable.length} more item(s) in .decantr/ambient-context.json`);
+      lines.push(
+        `- +${ambient.items.length - notable.length} more item(s) in .decantr/ambient-context.json`,
+      );
     }
   }
   lines.push('');
@@ -592,15 +637,20 @@ export function generateBrownfieldReport(
   lines.push('');
   lines.push('## Assistant Posture');
   lines.push('');
-  lines.push('LLMs should treat Decantr as the compiled contract layer and the original files as cited evidence. Do not migrate, rewrite, or delete existing docs/rules unless the user explicitly asks for doctrine migration.');
+  lines.push(
+    'LLMs should treat Decantr as the compiled contract layer and the original files as cited evidence. Do not migrate, rewrite, or delete existing docs/rules unless the user explicitly asks for doctrine migration.',
+  );
   lines.push('');
   return `${lines.join('\n')}\n`;
 }
 
-export function mergeEssenceWithProposal(existing: EssenceV3, proposal: BrownfieldProposal): EssenceV3 {
-  const next: EssenceV3 = JSON.parse(JSON.stringify(existing)) as EssenceV3;
+export function mergeEssenceWithProposal(
+  existing: EssenceV4,
+  proposal: BrownfieldProposal,
+): EssenceV4 {
+  const next: EssenceV4 = JSON.parse(JSON.stringify(existing)) as EssenceV4;
   const proposed = proposal.essence;
-  next.version = '3.1.0';
+  next.version = '4.0.0';
   next.blueprint.features = [
     ...new Set([...(next.blueprint.features ?? []), ...(proposed.blueprint.features ?? [])]),
   ];
@@ -609,7 +659,9 @@ export function mergeEssenceWithProposal(existing: EssenceV3, proposal: Brownfie
     ...(next.blueprint.routes ?? {}),
   };
 
-  const existingSections = new Map((next.blueprint.sections ?? []).map((section) => [section.id, section]));
+  const existingSections = new Map(
+    (next.blueprint.sections ?? []).map((section) => [section.id, section]),
+  );
   for (const proposedSection of proposed.blueprint.sections ?? []) {
     const current = existingSections.get(proposedSection.id);
     if (!current) {
@@ -618,7 +670,9 @@ export function mergeEssenceWithProposal(existing: EssenceV3, proposal: Brownfie
     }
     const pageIds = new Set(current.pages.map((page) => page.id));
     current.pages.push(...proposedSection.pages.filter((page) => !pageIds.has(page.id)));
-    current.features = [...new Set([...(current.features ?? []), ...(proposedSection.features ?? [])])];
+    current.features = [
+      ...new Set([...(current.features ?? []), ...(proposedSection.features ?? [])]),
+    ];
   }
   next.blueprint.sections = [...existingSections.values()];
   delete next.blueprint.pages;

@@ -1,5 +1,5 @@
-import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import type { ContentResolver } from '@decantr/registry';
 import { walkIR } from './ir-helpers.js';
 import { runPipeline } from './pipeline.js';
@@ -271,7 +271,7 @@ export interface PagePackPattern {
    */
   presetDescription?: string;
   /**
-   * v2.1 Tier C1. Declared interactions from the pattern JSON. Rendered
+   * Declared interactions from the pattern JSON. Rendered
    * as a checkbox checklist so cold LLMs in generation mode see a
    * hard-edged list they can't categorize as "philosophy". Enforced by
    * decantr check --strict (C5 guard rule).
@@ -633,7 +633,8 @@ function summarizePageRoute(
   return (
     summarizeRoutes(appNode).find(
       (route) =>
-        route.pageId === pageId && (!sectionId || !route.sectionId || route.sectionId === sectionId),
+        route.pageId === pageId &&
+        (!sectionId || !route.sectionId || route.sectionId === sectionId),
     ) ?? null
   );
 }
@@ -646,7 +647,8 @@ function findPageNode(
   const page = appNode.children.find((node) => {
     const pageNode = node as IRPageNode;
     return (
-      pageNode.pageId === pageId && (!sectionId || !pageNode.sectionId || pageNode.sectionId === sectionId)
+      pageNode.pageId === pageId &&
+      (!sectionId || !pageNode.sectionId || pageNode.sectionId === sectionId)
     );
   });
   return page ? (page as IRPageNode) : null;
@@ -956,11 +958,13 @@ export function renderExecutionPackMarkdown(pack: ExecutionPackBase<unknown>): s
       if (pattern.presetDescription) {
         lines.push(`  > ${pattern.presetDescription}`);
       }
-      // v2.1 C1: surface declared interactions[] as a checkbox checklist.
+      // Surface declared interactions[] as a checkbox checklist.
       // Hard-edged format — LLMs in generation mode cannot categorize a
       // checkbox as philosophy. Enforced by decantr check --strict (C5).
       if (pattern.interactions && pattern.interactions.length > 0) {
-        lines.push(`  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**`);
+        lines.push(
+          `  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**`,
+        );
         for (const interaction of pattern.interactions) {
           lines.push(`  - [ ] ${interaction}`);
         }
@@ -1130,91 +1134,61 @@ export function resolvePackAdapter(
   return 'generic-web';
 }
 
-export function listPackSections(essence: EssenceV3): SectionPackInput[] {
+export function listPackSections(essence: EssenceV4): SectionPackInput[] {
   const declaredSections = essence.blueprint.sections;
-  if (declaredSections && declaredSections.length > 0) {
-    const routedSectionPages = new Set(
-      Object.values(essence.blueprint.routes ?? {}).map(
-        (entry) => `${entry.section}:${entry.page}`,
-      ),
-    );
-    return declaredSections
-      .map((section) => {
-        const pageIds = section.pages
-          .filter(
-            (page) =>
-              routedSectionPages.size === 0 || routedSectionPages.has(`${section.id}:${page.id}`),
-          )
-          .map((page) => page.id);
-
-        return {
-          id: section.id,
-          role: section.role,
-          shell: section.shell as string,
-          description: section.description,
-          features: section.features,
-          pageIds,
-          ...(Array.isArray(section.navigation_items) && section.navigation_items.length > 0
-            ? { navigationItems: section.navigation_items as SectionNavigationItemPack[] }
-            : {}),
-          ...(Array.isArray(section.directives) && section.directives.length > 0
-            ? { directives: section.directives }
-            : {}),
-        };
-      })
-      .filter((section) => section.pageIds.length > 0);
-  }
-
-  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
-  return [
-    {
-      id: essence.meta.archetype || 'default',
-      role: 'primary',
-      shell: (essence.blueprint.shell ?? 'sidebar-main') as string,
-      description: `${essence.meta.archetype || 'Application'} section`,
-      features: essence.blueprint.features || [],
-      pageIds: pages.map((page) => page.id),
-    },
-  ];
-}
-
-export function listPackPages(essence: EssenceV3): PagePackInput[] {
-  const declaredSections = essence.blueprint.sections;
-  if (declaredSections && declaredSections.length > 0) {
-    const routedSectionPages = new Set(
-      Object.values(essence.blueprint.routes ?? {}).map(
-        (entry) => `${entry.section}:${entry.page}`,
-      ),
-    );
-    return declaredSections.flatMap((section) =>
-      section.pages
-        .map((page) => ({
-          pageId: page.id,
-          shell: (page.shell_override ?? section.shell) as string,
-          sectionId: section.id,
-          sectionRole: section.role,
-          features: section.features,
-          ...(Array.isArray(page.directives) && page.directives.length > 0
-            ? { directives: page.directives }
-            : {}),
-        }))
+  const routedSectionPages = new Set(
+    Object.values(essence.blueprint.routes ?? {}).map((entry) => `${entry.section}:${entry.page}`),
+  );
+  return declaredSections
+    .map((section) => {
+      const pageIds = section.pages
         .filter(
           (page) =>
-            routedSectionPages.size === 0 ||
-            routedSectionPages.has(`${page.sectionId}:${page.pageId}`),
-        ),
-    );
-  }
+            routedSectionPages.size === 0 || routedSectionPages.has(`${section.id}:${page.id}`),
+        )
+        .map((page) => page.id);
 
-  const pages = essence.blueprint.pages ?? [{ id: 'home', layout: ['hero'] }];
-  const defaultShell = (essence.blueprint.shell ?? 'sidebar-main') as string;
-  return pages.map((page) => ({
-    pageId: page.id,
-    shell: (page.shell_override ?? defaultShell) as string,
-    sectionId: essence.meta.archetype || 'default',
-    sectionRole: 'primary',
-    features: essence.blueprint.features || [],
-  }));
+      return {
+        id: section.id,
+        role: section.role,
+        shell: section.shell as string,
+        description: section.description,
+        features: section.features,
+        pageIds,
+        ...(Array.isArray(section.navigation_items) && section.navigation_items.length > 0
+          ? { navigationItems: section.navigation_items as SectionNavigationItemPack[] }
+          : {}),
+        ...(Array.isArray(section.directives) && section.directives.length > 0
+          ? { directives: section.directives }
+          : {}),
+      };
+    })
+    .filter((section) => section.pageIds.length > 0);
+}
+
+export function listPackPages(essence: EssenceV4): PagePackInput[] {
+  const declaredSections = essence.blueprint.sections;
+  const routedSectionPages = new Set(
+    Object.values(essence.blueprint.routes ?? {}).map((entry) => `${entry.section}:${entry.page}`),
+  );
+  return declaredSections.flatMap((section) =>
+    section.pages
+      .map((page) => ({
+        pageId: page.id,
+        shell: (page.shell_override ?? section.shell) as string,
+        sectionId: section.id,
+        sectionRole: section.role,
+        features: section.features,
+        ...(Array.isArray(page.directives) && page.directives.length > 0
+          ? { directives: page.directives }
+          : {}),
+      }))
+      .filter(
+        (page) =>
+          routedSectionPages.size === 0 ||
+          routedSectionPages.has(`${page.sectionId}:${page.pageId}`),
+      ),
+  );
 }
 
 function buildPageManifestEntries(pages: PagePackInput[]): PackManifestPageEntry[] {
@@ -1600,12 +1574,17 @@ export async function compileExecutionPackBundle(
   essence: EssenceFile,
   options: CompileExecutionPackBundleOptions = {},
 ): Promise<ExecutionPackBundle> {
-  const effectiveEssence = isV3(essence) ? essence : migrateV2ToV3(essence);
+  if (!isV4(essence)) {
+    throw new Error(
+      'Active Decantr V2 workflows require Essence v4.0.0. Run `decantr migrate --to v4` for older essence files.',
+    );
+  }
+
   const generatedAt = new Date().toISOString();
   const sharedTarget = {
-    framework: effectiveEssence.meta.target || null,
-    runtime: effectiveEssence.meta.platform.type || null,
-    adapter: resolvePackAdapter(effectiveEssence.meta.target, effectiveEssence.meta.platform.type),
+    framework: essence.meta.target || null,
+    runtime: essence.meta.platform.type || null,
+    adapter: resolvePackAdapter(essence.meta.target, essence.meta.platform.type),
   };
 
   const pipeline = await runPipeline(essence, {
@@ -1614,7 +1593,7 @@ export async function compileExecutionPackBundle(
     resolver: options.resolver,
   });
 
-  const navMeta = effectiveEssence.meta.navigation;
+  const navMeta = essence.meta.navigation;
   // Preserve the full command_palette value when it's a structured contract;
   // coerce to boolean only when it's the legacy flag form.
   const commandPaletteValue: boolean | CommandPaletteContract =
@@ -1674,8 +1653,8 @@ export async function compileExecutionPackBundle(
   const review = buildReviewPack(pipeline.ir, {
     target: sharedTarget,
   });
-  const sectionInputs = listPackSections(effectiveEssence);
-  const pageInputs = listPackPages(effectiveEssence);
+  const sectionInputs = listPackSections(essence);
+  const pageInputs = listPackPages(essence);
 
   const sections = sectionInputs.map((section) =>
     buildSectionPack(pipeline.ir, section, {

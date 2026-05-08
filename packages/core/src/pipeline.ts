@@ -1,5 +1,5 @@
 import type { EssenceFile } from '@decantr/essence-spec';
-import { isV3, migrateV2ToV3, validateEssence } from '@decantr/essence-spec';
+import { validateEssence } from '@decantr/essence-spec';
 import type { ContentResolver, Theme as RegistryTheme } from '@decantr/registry';
 import { createResolver } from '@decantr/registry';
 import { buildPageIR } from './ir.js';
@@ -8,16 +8,7 @@ import type { IRAppNode, IRLayer, IRPageNode, IRShellNode, IRStoreNode } from '.
 import { pascalCase } from './utils.js';
 
 function extractRouting(essence: EssenceFile): 'hash' | 'history' | 'pathname' {
-  // Modern-SPA default. See packages/cli/src/scaffold.ts getPlatformMeta for rationale.
-  if (isV3(essence)) {
-    return essence.meta.platform.routing || 'history';
-  }
-  return (
-    ((essence as { platform?: { routing?: string } }).platform?.routing as
-      | 'hash'
-      | 'history'
-      | 'pathname') || 'history'
-  );
+  return essence.meta.platform.routing || 'history';
 }
 
 export interface PipelineOptions {
@@ -63,10 +54,7 @@ export async function runPipeline(
     throw new Error(`Invalid essence: ${validation.errors.join(', ')}`);
   }
 
-  // 2. Auto-migrate v2 → v3 before processing
-  const effectiveEssence = isV3(essence) ? essence : migrateV2ToV3(essence);
-
-  // 3. Create resolver and resolve
+  // 2. Create resolver and resolve
   const resolver =
     options.resolver ??
     (() => {
@@ -80,10 +68,10 @@ export async function runPipeline(
       });
     })();
 
-  const resolved = await resolveEssence(effectiveEssence, resolver);
+  const resolved = await resolveEssence(essence, resolver);
 
-  // 4. Build IR pages (v3 sources get layer metadata)
-  const layer: IRLayer | undefined = resolved.isV3Source ? 'blueprint' : undefined;
+  // 3. Build IR pages
+  const layer: IRLayer = 'blueprint';
   const pageNodes: IRPageNode[] = [];
   for (const rp of resolved.pages) {
     const pageIR = buildPageIR(

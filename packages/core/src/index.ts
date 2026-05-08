@@ -62,6 +62,14 @@ export {
 } from './packs.js';
 export type { PipelineOptions, PipelineResult } from './pipeline.js';
 export { runPipeline } from './pipeline.js';
+export type {
+  RealizationAdapter,
+  RealizationInteractionPlaceholder,
+  RealizationMockDataSeed,
+  RealizationPlan,
+  RealizationRoute,
+} from './realization.js';
+export { compileRealizationPlan } from './realization.js';
 export type { ResolvedEssence, ResolvedPage } from './resolve.js';
 export { resolveEssence, resolveVisualEffects } from './resolve.js';
 export type {

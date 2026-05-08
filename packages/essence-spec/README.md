@@ -15,9 +15,9 @@ npm install @decantr/essence-spec
 
 - `validateEssence()` for schema validation
 - `evaluateGuard()` for contract/guard checks
-- `normalizeEssence()` for version normalization
-- `migrateV2ToV3()` and `migrateV30ToV31()` for structured migrations
-- Decantr essence TypeScript types
+- `normalizeEssence()` for active Essence v4 normalization
+- `migrateToV4()` for the explicit legacy migration path
+- Decantr Essence v4 TypeScript types
 
 ## Example
 
@@ -34,12 +34,12 @@ const violations = evaluateGuard(essence, {});
 
 ## Schema Exports
 
-- `@decantr/essence-spec/schema/essence.v2.json`
-- `@decantr/essence-spec/schema/essence.v3.json`
+- `@decantr/essence-spec/schema/essence.v4.json`
+- `@decantr/essence-spec/schema/essence.v2.json` and `essence.v3.json` remain archived references for migration tooling only
 
 ## Compatibility
 
-`@decantr/essence-spec` now defines a stable public contract for Decantr essence validation and migration in the `1.x` line.
+`@decantr/essence-spec` defines the active Essence v4 public contract for Decantr V2. Runtime validation accepts v4 only; older Essence v2/v3 files are supported through `decantr migrate --to v4`.
 
 - additive schema fields may be introduced in compatible minor releases
 - breaking schema or migration behavior changes require a major version

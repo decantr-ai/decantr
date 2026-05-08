@@ -35,33 +35,34 @@ describe('migrateEssenceFile', () => {
     target: 'react',
   };
 
-  it('migrates a valid v2 essence to v3 format', () => {
+  it('migrates a valid V2 essence to V4 format', () => {
     writeFileSync(essencePath, JSON.stringify(validV2Essence, null, 2));
 
     const result = migrateEssenceFile(essencePath);
 
     expect(result.success).toBe(true);
-    expect(result.alreadyV3).toBeUndefined();
+    expect(result.alreadyV4).toBeUndefined();
     expect(result.backupPath).toBeDefined();
 
     // Check the migrated file
     const migrated = JSON.parse(readFileSync(essencePath, 'utf-8'));
-    expect(migrated.version).toBe('3.0.0');
+    expect(migrated.version).toBe('4.0.0');
     expect(migrated.dna).toBeDefined();
     expect(migrated.blueprint).toBeDefined();
     expect(migrated.meta).toBeDefined();
     expect(migrated.dna.theme.id).toBe('luminarum');
-    expect(migrated.blueprint.pages).toHaveLength(2);
+    expect(migrated.blueprint.sections).toHaveLength(1);
+    expect(migrated.blueprint.sections[0].pages).toHaveLength(2);
     expect(migrated.meta.archetype).toBe('dashboard');
   });
 
-  it('creates a .v2.backup.json backup file', () => {
+  it('creates a .pre-v4.backup.json backup file', () => {
     writeFileSync(essencePath, JSON.stringify(validV2Essence, null, 2));
 
     const result = migrateEssenceFile(essencePath);
 
     expect(result.success).toBe(true);
-    const backupPath = essencePath.replace(/\.json$/, '.v2.backup.json');
+    const backupPath = essencePath.replace(/\.json$/, '.pre-v4.backup.json');
     expect(existsSync(backupPath)).toBe(true);
 
     // Backup should contain the original v2 content
@@ -70,9 +71,9 @@ describe('migrateEssenceFile', () => {
     expect(backup.archetype).toBe('dashboard');
   });
 
-  it('returns alreadyV3 for v3 essence files', () => {
-    const v3Essence = {
-      version: '3.0.0',
+  it('returns alreadyV4 for V4 essence files', () => {
+    const v4Essence = {
+      version: '4.0.0',
       dna: {
         theme: { id: 'test', mode: 'dark' },
         spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
@@ -86,8 +87,18 @@ describe('migrateEssenceFile', () => {
       },
       blueprint: {
         shell: 'sidebar-main',
-        pages: [{ id: 'home', layout: ['hero'] }],
+        sections: [
+          {
+            id: 'custom',
+            role: 'primary',
+            shell: 'sidebar-main',
+            features: [],
+            description: 'Custom section',
+            pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+          },
+        ],
         features: [],
+        routes: { '/': { section: 'custom', page: 'home' } },
       },
       meta: {
         archetype: 'custom',
@@ -96,12 +107,12 @@ describe('migrateEssenceFile', () => {
         guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'off' },
       },
     };
-    writeFileSync(essencePath, JSON.stringify(v3Essence, null, 2));
+    writeFileSync(essencePath, JSON.stringify(v4Essence, null, 2));
 
     const result = migrateEssenceFile(essencePath);
 
     expect(result.success).toBe(true);
-    expect(result.alreadyV3).toBe(true);
+    expect(result.alreadyV4).toBe(true);
   });
 
   it('returns error for non-existent file', () => {
@@ -120,7 +131,7 @@ describe('migrateEssenceFile', () => {
     expect(result.error).toContain('Invalid JSON');
   });
 
-  it('preserves v3 structure fields correctly', () => {
+  it('preserves structure fields correctly in V4', () => {
     writeFileSync(essencePath, JSON.stringify(validV2Essence, null, 2));
 
     migrateEssenceFile(essencePath);
@@ -138,8 +149,16 @@ describe('migrateEssenceFile', () => {
     expect(migrated.dna.personality).toEqual(['professional', 'clean']);
 
     // Blueprint should map structure correctly
-    expect(migrated.blueprint.shell).toBe('sidebar-main');
     expect(migrated.blueprint.features).toEqual(['auth', 'search']);
+    expect(migrated.blueprint.sections[0]).toMatchObject({
+      id: 'dashboard',
+      role: 'primary',
+      shell: 'sidebar-main',
+    });
+    expect(migrated.blueprint.routes).toMatchObject({
+      '/': { section: 'dashboard', page: 'home' },
+      '/settings': { section: 'dashboard', page: 'settings' },
+    });
 
     // Meta should carry over archetype, target, platform
     expect(migrated.meta.target).toBe('react');

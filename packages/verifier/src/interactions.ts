@@ -1,5 +1,5 @@
 /**
- * v2.1 Tier C4 — Experiential interaction verifier.
+ * Experiential interaction verifier.
  *
  * Scans generated source files for evidence that declared `interactions[]`
  * (from pattern.v2.json) are actually implemented. This is the enforcement

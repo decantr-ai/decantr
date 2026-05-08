@@ -6,7 +6,7 @@ import type { InitOptions } from '../src/prompts.js';
 import type { RegistryClient } from '../src/registry.js';
 import type { ThemeData } from '../src/scaffold.js';
 import {
-  buildEssenceV3,
+  buildEssenceV4,
   refreshDerivedFiles,
   scaffoldMinimal,
   scaffoldProject,
@@ -20,8 +20,8 @@ function createMockRegistry(): RegistryClient {
   } as unknown as RegistryClient;
 }
 
-describe('v3 scaffold', () => {
-  const testDir = join(process.cwd(), 'test-scaffold-v3-project');
+describe('V4 scaffold', () => {
+  const testDir = join(process.cwd(), 'test-scaffold-v4-project');
 
   const defaultOptions: InitOptions = {
     theme: 'luminarum',
@@ -55,63 +55,64 @@ describe('v3 scaffold', () => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  it('buildEssenceV3 produces valid v3 structure', () => {
-    const v3 = buildEssenceV3(defaultOptions);
+  it('buildEssenceV4 produces valid V4 structure', () => {
+    const v4 = buildEssenceV4(defaultOptions);
 
-    expect(v3.version).toBe('3.0.0');
-    expect(v3.dna).toBeDefined();
-    expect(v3.blueprint).toBeDefined();
-    expect(v3.meta).toBeDefined();
+    expect(v4.version).toBe('4.0.0');
+    expect(v4.dna).toBeDefined();
+    expect(v4.blueprint).toBeDefined();
+    expect(v4.meta).toBeDefined();
 
     // DNA checks
-    expect(v3.dna.theme.id).toBe('luminarum');
-    expect(v3.dna.theme.mode).toBe('dark');
-    expect(v3.dna.spacing.density).toBe('comfortable');
-    expect(v3.dna.radius.philosophy).toBe('rounded');
-    expect(v3.dna.radius.base).toBe(8);
-    expect(v3.dna.accessibility.wcag_level).toBe('AA');
-    expect(v3.dna.personality).toEqual(['professional', 'clean']);
+    expect(v4.dna.theme.id).toBe('luminarum');
+    expect(v4.dna.theme.mode).toBe('dark');
+    expect(v4.dna.spacing.density).toBe('comfortable');
+    expect(v4.dna.radius.philosophy).toBe('rounded');
+    expect(v4.dna.radius.base).toBe(8);
+    expect(v4.dna.accessibility.wcag_level).toBe('AA');
+    expect(v4.dna.personality).toEqual(['professional', 'clean']);
 
     // Blueprint checks
-    expect(v3.blueprint.shell).toBe('sidebar-main');
-    expect(v3.blueprint.pages.length).toBeGreaterThan(0);
-    expect(v3.blueprint.features).toContain('auth');
+    expect(v4.blueprint.shell).toBe('sidebar-main');
+    expect(v4.blueprint.sections.length).toBeGreaterThan(0);
+    expect(v4.blueprint.sections[0].pages.length).toBeGreaterThan(0);
+    expect(v4.blueprint.features).toContain('auth');
 
     // Meta checks
-    expect(v3.meta.target).toBe('react');
-    expect(v3.meta.guard.mode).toBe('guided');
-    expect(v3.meta.guard.dna_enforcement).toBe('error');
+    expect(v4.meta.target).toBe('react');
+    expect(v4.meta.guard.mode).toBe('guided');
+    expect(v4.meta.guard.dna_enforcement).toBe('error');
   });
 
-  it('scaffoldProject generates v3 essence file', async () => {
+  it('scaffoldProject generates V4 essence file', async () => {
     const result = await scaffoldProject(testDir, defaultOptions, detected, createMockRegistry());
 
     expect(existsSync(result.essencePath)).toBe(true);
 
     const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
-    expect(essence.version).toBe('3.0.0');
+    expect(essence.version).toBe('4.0.0');
     expect(essence.dna).toBeDefined();
     expect(essence.blueprint).toBeDefined();
     expect(essence.meta).toBeDefined();
   });
 
-  it('scaffoldMinimal generates v3 essence file', () => {
+  it('scaffoldMinimal generates V4 essence file', () => {
     const result = scaffoldMinimal(testDir);
 
     expect(existsSync(result.essencePath)).toBe(true);
 
     const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
-    expect(essence.version).toBe('3.0.0');
+    expect(essence.version).toBe('4.0.0');
     expect(essence.dna).toBeDefined();
     expect(essence.dna.theme.id).toBe('default');
     expect(essence.blueprint).toBeDefined();
-    expect(essence.blueprint.pages).toHaveLength(1);
+    expect(essence.blueprint.sections[0].pages).toHaveLength(1);
     expect(essence.meta).toBeDefined();
     expect(essence.meta.guard.mode).toBe('guided');
   });
 
-  it('scaffoldMinimal and scaffoldProject both produce v3', async () => {
-    // Test that both paths produce consistent v3 output
+  it('scaffoldMinimal and scaffoldProject both produce V4', async () => {
+    // Test that both paths produce consistent V4 output
     const minimalResult = scaffoldMinimal(testDir);
     const minimalEssence = JSON.parse(readFileSync(minimalResult.essencePath, 'utf-8'));
 
@@ -127,9 +128,9 @@ describe('v3 scaffold', () => {
     );
     const fullEssence = JSON.parse(readFileSync(fullResult.essencePath, 'utf-8'));
 
-    // Both should be v3
-    expect(minimalEssence.version).toBe('3.0.0');
-    expect(fullEssence.version).toBe('3.0.0');
+    // Both should be V4
+    expect(minimalEssence.version).toBe('4.0.0');
+    expect(fullEssence.version).toBe('4.0.0');
 
     // Both should have the same top-level structure
     expect(Object.keys(minimalEssence).sort()).toEqual(
@@ -140,80 +141,80 @@ describe('v3 scaffold', () => {
     );
   });
 
-  it('buildEssenceV3 maps shape to correct radius base', () => {
-    const pill = buildEssenceV3({ ...defaultOptions, shape: 'pill' });
+  it('buildEssenceV4 maps shape to correct radius base', () => {
+    const pill = buildEssenceV4({ ...defaultOptions, shape: 'pill' });
     expect(pill.dna.radius.base).toBe(12);
     expect(pill.dna.radius.philosophy).toBe('pill');
 
-    const sharp = buildEssenceV3({ ...defaultOptions, shape: 'sharp' });
+    const sharp = buildEssenceV4({ ...defaultOptions, shape: 'sharp' });
     expect(sharp.dna.radius.base).toBe(2);
     expect(sharp.dna.radius.philosophy).toBe('sharp');
   });
 
-  it('buildEssenceV3 maps guard modes correctly', () => {
-    const strict = buildEssenceV3({ ...defaultOptions, guard: 'strict' });
+  it('buildEssenceV4 maps guard modes correctly', () => {
+    const strict = buildEssenceV4({ ...defaultOptions, guard: 'strict' });
     expect(strict.meta.guard.dna_enforcement).toBe('error');
     expect(strict.meta.guard.blueprint_enforcement).toBe('warn');
 
-    const creative = buildEssenceV3({ ...defaultOptions, guard: 'creative' });
+    const creative = buildEssenceV4({ ...defaultOptions, guard: 'creative' });
     expect(creative.meta.guard.dna_enforcement).toBe('off');
     expect(creative.meta.guard.blueprint_enforcement).toBe('off');
   });
 
-  it('buildEssenceV3 uses pathname routing for nextjs target', () => {
-    const nextjs = buildEssenceV3({ ...defaultOptions, target: 'nextjs' });
+  it('buildEssenceV4 uses pathname routing for nextjs target', () => {
+    const nextjs = buildEssenceV4({ ...defaultOptions, target: 'nextjs' });
 
     expect(nextjs.meta.target).toBe('nextjs');
     expect(nextjs.meta.platform.routing).toBe('pathname');
   });
 
-  it('buildEssenceV3 with theme hints produces matching dna.typography values', () => {
+  it('buildEssenceV4 with theme hints produces matching dna.typography values', () => {
     const themeHints: ThemeData = {
       typography: { scale: 'linear', heading_weight: 700, body_weight: 350 },
     };
-    const v3 = buildEssenceV3(defaultOptions, undefined, themeHints);
+    const v4 = buildEssenceV4(defaultOptions, undefined, themeHints);
 
-    expect(v3.dna.typography.scale).toBe('linear');
-    expect(v3.dna.typography.heading_weight).toBe(700);
-    expect(v3.dna.typography.body_weight).toBe(350);
+    expect(v4.dna.typography.scale).toBe('linear');
+    expect(v4.dna.typography.heading_weight).toBe(700);
+    expect(v4.dna.typography.body_weight).toBe(350);
   });
 
-  it('buildEssenceV3 with theme radius overrides shape-based defaults', () => {
+  it('buildEssenceV4 with theme radius overrides shape-based defaults', () => {
     const themeHints: ThemeData = {
       radius: { philosophy: 'pill', base: 16 },
     };
     // Options say 'rounded' (base 8), but theme overrides to pill/16
-    const v3 = buildEssenceV3(defaultOptions, undefined, themeHints);
+    const v4 = buildEssenceV4(defaultOptions, undefined, themeHints);
 
-    expect(v3.dna.radius.philosophy).toBe('pill');
-    expect(v3.dna.radius.base).toBe(16);
+    expect(v4.dna.radius.philosophy).toBe('pill');
+    expect(v4.dna.radius.base).toBe(16);
   });
 
-  it('buildEssenceV3 with theme motion hints sets motion preference', () => {
+  it('buildEssenceV4 with theme motion hints sets motion preference', () => {
     const themeHints: ThemeData = {
       motion: { preference: 'expressive', reduce_motion: false },
     };
-    const v3 = buildEssenceV3(defaultOptions, undefined, themeHints);
+    const v4 = buildEssenceV4(defaultOptions, undefined, themeHints);
 
-    expect(v3.dna.motion.preference).toBe('expressive');
-    expect(v3.dna.motion.reduce_motion).toBe(false);
+    expect(v4.dna.motion.preference).toBe('expressive');
+    expect(v4.dna.motion.reduce_motion).toBe(false);
   });
 
-  it('buildEssenceV3 with NO hints falls back to hardcoded defaults', () => {
-    const v3 = buildEssenceV3(defaultOptions);
+  it('buildEssenceV4 with NO hints falls back to hardcoded defaults', () => {
+    const v4 = buildEssenceV4(defaultOptions);
 
     // Typography defaults
-    expect(v3.dna.typography.scale).toBe('modular');
-    expect(v3.dna.typography.heading_weight).toBe(600);
-    expect(v3.dna.typography.body_weight).toBe(400);
+    expect(v4.dna.typography.scale).toBe('modular');
+    expect(v4.dna.typography.heading_weight).toBe(600);
+    expect(v4.dna.typography.body_weight).toBe(400);
 
     // Motion defaults
-    expect(v3.dna.motion.preference).toBe('subtle');
-    expect(v3.dna.motion.reduce_motion).toBe(true);
+    expect(v4.dna.motion.preference).toBe('subtle');
+    expect(v4.dna.motion.reduce_motion).toBe(true);
 
     // Radius defaults from shape ('rounded')
-    expect(v3.dna.radius.philosophy).toBe('rounded');
-    expect(v3.dna.radius.base).toBe(8);
+    expect(v4.dna.radius.philosophy).toBe('rounded');
+    expect(v4.dna.radius.base).toBe(8);
   });
 
   it('scaffoldProject skips task-modify.md and task-add-page.md during init', async () => {
@@ -333,12 +334,13 @@ describe('v3 scaffold', () => {
     );
     expect(content).toContain('# Scaffold Pack');
     expect(content).toContain('react-vite (react)');
-    expect(content).toContain('- / -> home @ sidebar-main [hero]');
+    expect(content).toContain('- / -> custom/home @ sidebar-main [hero]');
     expect(packJson.$schema).toBe('https://decantr.ai/schemas/scaffold-pack.v1.json');
     expect(packJson.packType).toBe('scaffold');
     expect(packJson.data.routes).toEqual([
       {
         pageId: 'home',
+        sectionId: 'custom',
         path: '/',
         shell: 'sidebar-main',
         patternIds: ['hero'],
@@ -346,13 +348,14 @@ describe('v3 scaffold', () => {
     ]);
     expect(sectionContent).toContain('# Section Pack');
     expect(sectionContent).toContain('- Section: custom');
-    expect(sectionContent).toContain('- / -> home @ sidebar-main [hero]');
+    expect(sectionContent).toContain('- / -> custom/home @ sidebar-main [hero]');
     expect(sectionPackJson.$schema).toBe('https://decantr.ai/schemas/section-pack.v1.json');
     expect(sectionPackJson.packType).toBe('section');
     expect(sectionPackJson.data.sectionId).toBe('custom');
     expect(sectionPackJson.data.routes).toEqual([
       {
         pageId: 'home',
+        sectionId: 'custom',
         path: '/',
         shell: 'sidebar-main',
         patternIds: ['hero'],
@@ -433,7 +436,7 @@ describe('v3 scaffold', () => {
     expect(scaffoldTask).toContain('## Primary Compiled Contract');
     expect(scaffoldTask).toContain('.decantr/context/scaffold-pack.md');
     expect(scaffoldTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
-    expect(scaffoldTask).toContain('- `/` -> `home` [hero]');
+    expect(scaffoldTask).toContain('- `/` -> `custom/home` [hero]');
     expect(scaffoldTask).toContain('Post-scaffold enforcement mode: **GUIDED**.');
   });
 

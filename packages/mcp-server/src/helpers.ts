@@ -1,8 +1,8 @@
 import { realpathSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { isV3, migrateV2ToV3 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
+import { isV4 } from '@decantr/essence-spec';
 import { RegistryAPIClient } from '@decantr/registry';
 
 const MAX_INPUT_LENGTH = 1000;
@@ -58,10 +58,7 @@ export function resetAPIClient(): void {
   _publicApiClient = null;
 }
 
-export function resolveWorkspacePath(
-  inputPath: string,
-  workspaceRoot = process.cwd(),
-): string {
+export function resolveWorkspacePath(inputPath: string, workspaceRoot = process.cwd()): string {
   const rawRoot = resolve(workspaceRoot);
   const resolvedPath = isAbsolute(inputPath) ? resolve(inputPath) : resolve(rawRoot, inputPath);
   const root = canonicalizeForContainment(rawRoot);
@@ -119,16 +116,21 @@ export async function writeEssenceFile(essencePath: string, essence: EssenceFile
 }
 
 /**
- * Read an essence, ensure it's v3 (migrating if needed), apply a mutation, and write back.
- * Returns the updated v3 essence.
+ * Read an Essence v4 file, apply a mutation, and write back.
+ * Older essence formats must use `decantr migrate --to v4` first.
  */
 export async function mutateEssenceFile(
   essencePath: string | undefined,
-  mutate: (essence: EssenceV3) => EssenceV3,
-): Promise<{ essence: EssenceV3; path: string }> {
+  mutate: (essence: EssenceV4) => EssenceV4,
+): Promise<{ essence: EssenceV4; path: string }> {
   const { essence, path } = await readEssenceFile(essencePath);
-  const v3 = isV3(essence) ? structuredClone(essence) : migrateV2ToV3(essence);
-  const updated = mutate(v3);
+  if (!isV4(essence)) {
+    throw new Error(
+      'Active Decantr V2 workflows require Essence v4.0.0. Run `decantr migrate --to v4` for older essence files.',
+    );
+  }
+  const v4 = structuredClone(essence);
+  const updated = mutate(v4);
   await writeEssenceFile(path, updated);
   return { essence: updated, path };
 }

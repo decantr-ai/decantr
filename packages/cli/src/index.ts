@@ -2,10 +2,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ExecutionPackBundle } from '@decantr/core';
-import type { EssenceFile, EssenceV3 } from '@decantr/essence-spec';
-import { evaluateGuard, isV3, validateEssence } from '@decantr/essence-spec';
-// v2.1 C5 wiring — scan source for missing interaction implementations.
-import { scanProjectInteractions } from './lib/scan-interactions.js';
+import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
+import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
   ApiContentType,
   ComposeEntry,
@@ -35,18 +33,19 @@ import {
   type ProjectAuditReport,
   type VerificationFinding,
 } from '@decantr/verifier';
-import { clearCredentials, getCredentials, saveCredentials } from './auth.js';
-import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import {
   applyAssistantBridge,
   buildAssistantBridgeContent,
   writeAssistantBridgePreview,
 } from './assistant-bridge.js';
+import { clearCredentials, getCredentials, saveCredentials } from './auth.js';
+import { resolveBootstrapTarget } from './bootstrap.js';
 import {
   mergeEssenceWithProposal,
   proposalPath,
   readBrownfieldProposal,
 } from './brownfield-proposal.js';
+import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
 import { cmdCreate } from './commands/create.js';
 import type { ExportTarget } from './commands/export.js';
@@ -54,7 +53,6 @@ import { cmdExport } from './commands/export.js';
 import { cmdMagic } from './commands/magic.js';
 import { cmdMigrate } from './commands/migrate.js';
 import { cmdNewProject } from './commands/new-project.js';
-import { resolveBootstrapTarget } from './bootstrap.js';
 import { cmdPublish } from './commands/publish.js';
 import { cmdRefresh } from './commands/refresh.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
@@ -63,6 +61,8 @@ import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 import { cmdThemeSwitch } from './commands/theme-switch.js';
 import { detectProject, formatDetection } from './detect.js';
 import { buildGuardRegistryContext } from './guard-context.js';
+// V4 C5 wiring — scan source for missing interaction implementations.
+import { scanProjectInteractions } from './lib/scan-interactions.js';
 import { seedOfflineRegistry } from './offline-content.js';
 import {
   confirm,
@@ -72,7 +72,6 @@ import {
   runSimplifiedInit,
 } from './prompts.js';
 import { RegistryClient, syncRegistry } from './registry.js';
-import { sendCliCommandTelemetry } from './telemetry.js';
 import {
   type BlueprintOverrides,
   type ComposeSectionsResult,
@@ -98,6 +97,7 @@ import {
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
+import { sendCliCommandTelemetry } from './telemetry.js';
 import {
   createTheme,
   deleteTheme,
@@ -106,10 +106,10 @@ import {
   validateCustomTheme,
 } from './theme-commands.js';
 import {
-  readBrownfieldInitSeed,
-  resolveWorkflowPolicy,
   type AdoptionMode,
   type AssistantBridgeMode,
+  readBrownfieldInitSeed,
+  resolveWorkflowPolicy,
   type WorkflowMode,
 } from './workflow-model.js';
 import { resolveWorkspaceInfo } from './workspace.js';
@@ -318,15 +318,9 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   if (usesDecantrCss) {
     lines.push('');
     lines.push('Use these canonical compact atom shapes:');
-    lines.push(
-      '- Layout: _flex, _col, _aic, _jcc, _jcsb, _grid, _gc3, _gc[2fr_1fr], _gap4, _wrap',
-    );
-    lines.push(
-      '- Spacing/sizing: _p4, _py4, _px6, _wfull, _maxw[40rem], _mxauto, _h[20rem]',
-    );
-    lines.push(
-      '- Position/type: _rel, _abs, _sticky, _top0, _text2xl, _textlg, _fgmuted',
-    );
+    lines.push('- Layout: _flex, _col, _aic, _jcc, _jcsb, _grid, _gc3, _gc[2fr_1fr], _gap4, _wrap');
+    lines.push('- Spacing/sizing: _p4, _py4, _px6, _wfull, _maxw[40rem], _mxauto, _h[20rem]');
+    lines.push('- Position/type: _rel, _abs, _sticky, _top0, _text2xl, _textlg, _fgmuted');
     lines.push('- Responsive: _sm:gc2, _lg:gc3, _mdmax:p4, _lg:gc[1.05fr_1fr]');
     lines.push('');
     lines.push(
@@ -385,9 +379,7 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     );
   }
   lines.push('');
-  lines.push(
-    'Consult DECANTR.md only when you need the full table or exact data-* attributes.',
-  );
+  lines.push('Consult DECANTR.md only when you need the full table or exact data-* attributes.');
   lines.push('');
   lines.push('═══ THEME DECORATOR CONTRACT — APPLY OR THE THEME DOES NOT LAND ═══');
   lines.push('');
@@ -438,11 +430,17 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     '- Start with the shell layouts and route structure first, then build section pages route by route.',
   );
   if (ctx.adoptionMode === 'decantr-css') {
-    lines.push('- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.');
+    lines.push(
+      '- Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.',
+    );
   } else if (ctx.adoptionMode === 'style-bridge') {
-    lines.push('- Import src/styles/tokens.css and src/styles/decantr-bridge.css where appropriate.');
+    lines.push(
+      '- Import src/styles/tokens.css and src/styles/decantr-bridge.css where appropriate.',
+    );
   } else {
-    lines.push('- Keep styling imports aligned with the selected runtime; Decantr does not own CSS here.');
+    lines.push(
+      '- Keep styling imports aligned with the selected runtime; Decantr does not own CSS here.',
+    );
   }
   lines.push(
     usesDecantrCss
@@ -514,8 +512,12 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   if (ctx.analysisArtifacts) {
     lines.push('Treat .decantr/analysis.json as the factual inventory of the current app.');
-    lines.push('Treat .decantr/doctrine-map.json, .decantr/ambient-context.json, and .decantr/brownfield-report.md as the ranked doctrine inventory and conflict report.');
-    lines.push('Treat the accepted observed proposal as the source of Decantr route/section coverage.');
+    lines.push(
+      'Treat .decantr/doctrine-map.json, .decantr/ambient-context.json, and .decantr/brownfield-report.md as the ranked doctrine inventory and conflict report.',
+    );
+    lines.push(
+      'Treat the accepted observed proposal as the source of Decantr route/section coverage.',
+    );
   } else {
     lines.push(
       'No Decantr analysis seed is present. Start by inventorying the app before changing runtime files.',
@@ -533,9 +535,15 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
     lines.push(
       '1. .decantr/analysis.json for the detected framework, routes, styling, layout, and dependencies.',
     );
-    lines.push('2. .decantr/doctrine-map.json for ranked source precedence across security/data, architecture, design-system, workflow, feature, and assistant evidence.');
-    lines.push('3. .decantr/ambient-context.json for assistant rules, docs, design-system, CI, schema, and workflow evidence.');
-    lines.push('4. .decantr/brownfield-report.md for conflicts, stale risks, and acceptance context.');
+    lines.push(
+      '2. .decantr/doctrine-map.json for ranked source precedence across security/data, architecture, design-system, workflow, feature, and assistant evidence.',
+    );
+    lines.push(
+      '3. .decantr/ambient-context.json for assistant rules, docs, design-system, CI, schema, and workflow evidence.',
+    );
+    lines.push(
+      '4. .decantr/brownfield-report.md for conflicts, stale risks, and acceptance context.',
+    );
     lines.push('5. DECANTR.md for guard rules, CSS expectations, and Decantr operating rules.');
     lines.push(
       '6. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
@@ -547,7 +555,9 @@ function generateBrownfieldPrompt(ctx: PromptContext): string {
       '8. The matching section and page pack files only when you are working on those specific surfaces.',
     );
   } else {
-    lines.push('1. Inventory existing framework, routes, styling, layout, rule files, and dependencies.');
+    lines.push(
+      '1. Inventory existing framework, routes, styling, layout, rule files, and dependencies.',
+    );
     lines.push('2. DECANTR.md for guard rules, adoption mode, and Decantr operating rules.');
     lines.push(
       '3. .decantr/context/scaffold-pack.md for the compact compiled shell, theme, feature, and route contract.',
@@ -1420,8 +1430,7 @@ async function cmdValidate(path?: string) {
     return;
   }
 
-  // Detect and report version
-  const detectedVersion = isV3(essence) ? 'v3' : 'v2';
+  const detectedVersion = isV4(essence) ? 'v4' : 'legacy';
   console.log(`${DIM}Detected essence version: ${detectedVersion}${RESET}`);
 
   const result = validateEssence(essence);
@@ -1434,17 +1443,13 @@ async function cmdValidate(path?: string) {
       console.error(`  ${RED}${err}${RESET}`);
     }
     process.exitCode = 1;
-  }
-
-  // For v2 essences, suggest migration
-  if (detectedVersion === 'v2' && result.valid) {
-    console.log(`${YELLOW}Tip: Run \`decantr migrate\` to upgrade to v3 format.${RESET}`);
+    return;
   }
 
   try {
     // Build registry context for guard validation
     const { themeRegistry, patternRegistry } = buildGuardRegistryContext(process.cwd());
-    // v2.1 C5: scan project source for missing interaction implementations.
+    // V4 C5: scan project source for missing interaction implementations.
     // Returns formatted issues for the experiential guard rule (8th rule).
     // Gracefully no-ops when the project has no pack-manifest or no
     // declared interactions.
@@ -1596,7 +1601,10 @@ function timestampForFile(): string {
 function backupExistingEssence(projectRoot: string, label: string): string | null {
   const essencePath = join(projectRoot, 'decantr.essence.json');
   if (!existsSync(essencePath)) return null;
-  const backupPath = join(projectRoot, `decantr.essence.${label}.${timestampForFile()}.backup.json`);
+  const backupPath = join(
+    projectRoot,
+    `decantr.essence.${label}.${timestampForFile()}.backup.json`,
+  );
   writeFileSync(backupPath, readFileSync(essencePath, 'utf-8'), 'utf-8');
   return backupPath;
 }
@@ -1663,28 +1671,42 @@ async function applyAcceptedBrownfieldProposal(input: {
 }): Promise<void> {
   const proposal = readBrownfieldProposal(input.projectRoot);
   if (!proposal) {
-    console.log(error(`No observed brownfield proposal found at ${proposalPath(input.projectRoot)}.`));
-    console.log(dim('Run `decantr analyze` first, review `.decantr/brownfield-report.md`, then accept or merge the proposal.'));
+    console.log(
+      error(`No observed brownfield proposal found at ${proposalPath(input.projectRoot)}.`),
+    );
+    console.log(
+      dim(
+        'Run `decantr analyze` first, review `.decantr/brownfield-report.md`, then accept or merge the proposal.',
+      ),
+    );
     process.exitCode = 1;
     return;
   }
 
   const essencePath = join(input.projectRoot, 'decantr.essence.json');
   const hasEssence = existsSync(essencePath);
-  let essence: EssenceV3;
+  let essence: EssenceV4;
   let backupPath: string | null = null;
 
   if (input.mode === 'accept' && hasEssence) {
     console.log(error('Refusing to accept proposal over an existing decantr.essence.json.'));
-    console.log(dim('Use `--merge-proposal` to preserve the existing contract or `--replace-essence` for an explicit destructive replacement.'));
+    console.log(
+      dim(
+        'Use `--merge-proposal` to preserve the existing contract or `--replace-essence` for an explicit destructive replacement.',
+      ),
+    );
     process.exitCode = 1;
     return;
   }
 
   if (input.mode === 'merge' && hasEssence) {
     const existing = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
-    if (!isV3(existing)) {
-      console.log(error('Existing essence is not v3. Run `decantr migrate` before merging a brownfield proposal.'));
+    if (!isV4(existing)) {
+      console.log(
+        error(
+          'Existing essence is not v4. Run `decantr migrate --to v4` before merging a brownfield proposal.',
+        ),
+      );
       process.exitCode = 1;
       return;
     }
@@ -1695,7 +1717,9 @@ async function applyAcceptedBrownfieldProposal(input: {
 
   const validation = validateEssence(essence);
   if (!validation.valid) {
-    console.log(error('Brownfield proposal produced an invalid Decantr essence. No files were changed.'));
+    console.log(
+      error('Brownfield proposal produced an invalid Decantr essence. No files were changed.'),
+    );
     for (const validationError of validation.errors) {
       console.log(`  ${RED}${validationError}${RESET}`);
     }
@@ -1723,12 +1747,18 @@ async function applyAcceptedBrownfieldProposal(input: {
     offline: true,
     projectRoot: input.projectRoot,
   });
-  const refreshResult = await refreshDerivedFiles(input.projectRoot, essence, registryClient, undefined, {
-    isInitialScaffold: true,
-    workflowMode: 'brownfield-attach',
-    adoptionMode: 'contract-only',
-    analysisArtifacts: true,
-  });
+  const refreshResult = await refreshDerivedFiles(
+    input.projectRoot,
+    essence,
+    registryClient,
+    undefined,
+    {
+      isInitialScaffold: true,
+      workflowMode: 'brownfield-attach',
+      adoptionMode: 'contract-only',
+      analysisArtifacts: true,
+    },
+  );
 
   let assistantBridgePath: string | null = null;
   if (input.assistantBridge === 'preview' || input.assistantBridge === 'apply') {
@@ -1740,7 +1770,9 @@ async function applyAcceptedBrownfieldProposal(input: {
     });
   }
   const appliedRuleFiles =
-    input.assistantBridge === 'apply' ? applyAssistantBridge(input.projectRoot, input.detected) : [];
+    input.assistantBridge === 'apply'
+      ? applyAssistantBridge(input.projectRoot, input.detected)
+      : [];
 
   console.log(success('\nBrownfield proposal accepted.\n'));
   console.log('  Files created/updated:');
@@ -1841,7 +1873,9 @@ async function cmdInit(args: InitArgs) {
   }
 
   if (policy.workflowMode === 'brownfield-attach' && detected.existingEssence) {
-    console.log(error('Refusing to overwrite existing decantr.essence.json in brownfield attach mode.'));
+    console.log(
+      error('Refusing to overwrite existing decantr.essence.json in brownfield attach mode.'),
+    );
     console.log(
       dim(
         'Run `decantr analyze`, then use `decantr init --existing --merge-proposal` or the explicit destructive `--replace-essence`.',
@@ -2054,7 +2088,7 @@ async function cmdInit(args: InitArgs) {
       }
     | undefined;
 
-  // V3.1 composition data (populated when blueprint has compose entries)
+  // Essence v4 composition data (populated when blueprint has compose entries)
   let composedSections: ComposeSectionsResult | undefined;
   let routeMap: Record<string, { section: string; page: string }> | undefined;
   let patternSpecs: Record<string, PatternSpecSummary> | undefined;
@@ -2117,10 +2151,10 @@ async function cmdInit(args: InitArgs) {
         options.archetype = primaryId;
         options.shell = composed.defaultShell;
 
-        // Compose sections (v3.1 style — keeps pages grouped by archetype)
+        // Compose sections (keeps pages grouped by archetype)
         composedSections = composeSections(entries, archetypeMap, blueprint.overrides);
 
-        // Store blueprint data for V3.1 essence enrichment
+        // Store blueprint data for Essence v4 enrichment
         blueprintData = blueprint;
 
         // Map blueprint routes to section pages
@@ -2270,7 +2304,7 @@ async function cmdInit(args: InitArgs) {
     registrySource as 'api' | 'cache',
     themeData,
     topologyMarkdown,
-    // V3.1 composition data:
+    // Essence v4 composition data:
     composedSections,
     routeMap,
     patternSpecs,
@@ -2322,7 +2356,9 @@ async function cmdInit(args: InitArgs) {
 
   console.log('');
   console.log('  Next steps:');
-  console.log('    1. Read .decantr/context/scaffold-pack.md first as the primary compiled contract');
+  console.log(
+    '    1. Read .decantr/context/scaffold-pack.md first as the primary compiled contract',
+  );
   console.log(
     '    2. Read .decantr/context/scaffold.md for broader topology, route map, and voice guidance',
   );
@@ -2342,28 +2378,23 @@ async function cmdInit(args: InitArgs) {
   console.log(`    ${cyan('decantr validate')}   Check essence file`);
   console.log(`    ${cyan('decantr upgrade')}    Update to latest patterns`);
   console.log(`    ${cyan('decantr check')}      Detect drift issues`);
-  console.log(`    ${cyan('decantr migrate')}    Migrate v2 essence to v3`);
+  console.log(`    ${cyan('decantr migrate --to v4')} Migrate older essence files to v4`);
 
-  // Validate (skip for V3.1 — the V1/V2 validator produces false oneOf warnings)
   const essenceContent = readFileSync(result.essencePath, 'utf-8');
   const essence = JSON.parse(essenceContent);
-  if (essence.version !== '3.1.0') {
-    const validation = validateEssence(essence);
-    if (!validation.valid) {
-      console.log(error(`\nValidation warnings: ${validation.errors.join(', ')}`));
-    }
+  const validation = validateEssence(essence);
+  if (!validation.valid) {
+    console.log(error(`\nValidation warnings: ${validation.errors.join(', ')}`));
   }
 
   console.log('');
 
   // Generate curated prompt
   let promptPages: PromptContext['pages'];
-  if (isV3(essence)) {
-    const allPages = essence.blueprint.sections
-      ? essence.blueprint.sections.flatMap((s: any) =>
-          s.pages.map((p: any) => ({ ...p, _sectionId: s.id, _shell: s.shell })),
-        )
-      : essence.blueprint.pages || [];
+  if (isV4(essence)) {
+    const allPages = essence.blueprint.sections.flatMap((s: any) =>
+      s.pages.map((p: any) => ({ ...p, _sectionId: s.id, _shell: s.shell })),
+    );
     promptPages = allPages.map(
       (p: {
         id: string;
@@ -2381,7 +2412,7 @@ async function cmdInit(args: InitArgs) {
       }),
     );
   } else {
-    promptPages = essence.structure || [{ id: 'home', shell: options.shell, layout: ['hero'] }];
+    promptPages = [];
   }
 
   const promptCtx: PromptContext = {
@@ -2435,7 +2466,7 @@ async function cmdStatus() {
     const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
     const validation = validateEssence(essence);
 
-    const essenceVersion = isV3(essence) ? 'v3' : 'v2';
+    const essenceVersion = isV4(essence) ? 'v4' : 'legacy';
     console.log(`${BOLD}Essence:${RESET}`);
     if (validation.valid) {
       console.log(`  ${GREEN}Valid${RESET} (${essenceVersion})`);
@@ -2443,59 +2474,46 @@ async function cmdStatus() {
       console.log(`  ${RED}Invalid: ${validation.errors.join(', ')}${RESET}`);
     }
 
-    if (isV3(essence)) {
-      const v3 = essence as EssenceV3;
-      const sections = v3.blueprint.sections ?? [];
-      const flatPages =
-        sections.length > 0
-          ? sections.flatMap((section: any) => section.pages ?? [])
-          : (v3.blueprint.pages ?? []);
+    if (isV4(essence)) {
+      const v4 = essence as EssenceV4;
+      const sections = v4.blueprint.sections;
+      const flatPages = sections.flatMap((section: any) => section.pages ?? []);
       const resolvedShell =
         sections.find((section: any) => section.role === 'primary')?.shell ||
         sections[0]?.shell ||
-        (v3.blueprint as any).shell ||
+        (v4.blueprint as any).shell ||
         'unknown';
-      const resolvedFeatures = v3.blueprint.features ?? [];
+      const resolvedFeatures = v4.blueprint.features ?? [];
       // DNA axioms
       console.log(`  ${BOLD}DNA:${RESET}`);
-      console.log(`    Theme: ${v3.dna.theme.id} (${v3.dna.theme.mode})`);
+      console.log(`    Theme: ${v4.dna.theme.id} (${v4.dna.theme.mode})`);
       console.log(
-        `    Spacing: ${v3.dna.spacing.density} density, ${v3.dna.spacing.content_gap} gap`,
+        `    Spacing: ${v4.dna.spacing.density} density, ${v4.dna.spacing.content_gap} gap`,
       );
-      console.log(`    Typography: ${v3.dna.typography.scale} scale`);
-      console.log(`    Radius: ${v3.dna.radius.philosophy} (base ${v3.dna.radius.base}px)`);
+      console.log(`    Typography: ${v4.dna.typography.scale} scale`);
+      console.log(`    Radius: ${v4.dna.radius.philosophy} (base ${v4.dna.radius.base}px)`);
       console.log(
-        `    Motion: ${v3.dna.motion.preference} (reduce: ${v3.dna.motion.reduce_motion})`,
+        `    Motion: ${v4.dna.motion.preference} (reduce: ${v4.dna.motion.reduce_motion})`,
       );
-      console.log(`    Accessibility: WCAG ${v3.dna.accessibility.wcag_level}`);
-      console.log(`    Personality: ${v3.dna.personality.join(', ')}`);
+      console.log(`    Accessibility: WCAG ${v4.dna.accessibility.wcag_level}`);
+      console.log(`    Personality: ${v4.dna.personality.join(', ')}`);
       // Blueprint
       console.log(`  ${BOLD}Blueprint:${RESET}`);
       console.log(`    Shell: ${resolvedShell}`);
       console.log(`    Pages: ${flatPages.length}`);
-      if (sections.length > 0) {
-        console.log(`    Sections: ${sections.length}`);
-      }
+      console.log(`    Sections: ${sections.length}`);
       console.log(
         `    Features: ${resolvedFeatures.length > 0 ? resolvedFeatures.join(', ') : 'none'}`,
       );
       // Meta
       console.log(`  ${BOLD}Meta:${RESET}`);
-      console.log(`    Archetype: ${v3.meta.archetype}`);
-      console.log(`    Target: ${v3.meta.target}`);
+      console.log(`    Archetype: ${v4.meta.archetype}`);
+      console.log(`    Target: ${v4.meta.target}`);
       console.log(
-        `    Guard: ${v3.meta.guard.mode} (DNA: ${v3.meta.guard.dna_enforcement}, Blueprint: ${v3.meta.guard.blueprint_enforcement})`,
+        `    Guard: ${v4.meta.guard.mode} (DNA: ${v4.meta.guard.dna_enforcement}, Blueprint: ${v4.meta.guard.blueprint_enforcement})`,
       );
     } else {
-      // v2 display
-      const e = essence as Record<string, unknown>;
-      const theme = e.theme as Record<string, string> | undefined;
-      const guard = e.guard as Record<string, string> | undefined;
-      const structure = e.structure as unknown[] | undefined;
-      console.log(`  Theme: ${theme?.id || 'unknown'} (${theme?.mode || 'unknown'})`);
-      console.log(`  Guard: ${guard?.mode || 'unknown'}`);
-      console.log(`  Pages: ${(structure || []).length}`);
-      console.log(`  ${YELLOW}Tip: Run \`decantr migrate\` to upgrade to v3.${RESET}`);
+      console.log(`  ${YELLOW}Run \`decantr migrate --to v4\` to upgrade this project.${RESET}`);
     }
   } catch (e) {
     console.log(`  ${RED}Error reading essence: ${(e as Error).message}${RESET}`);
@@ -2854,7 +2872,7 @@ ${BOLD}Usage:${RESET}
   decantr status
   decantr sync
   decantr audit [file]
-  decantr migrate
+  decantr migrate --to v4
   decantr check
   decantr check --brownfield
   decantr sync-drift
@@ -2912,7 +2930,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
-  ${cyan('migrate')}     Migrate v2 essence to v3 format (with .v2.backup.json backup)
+  ${cyan('migrate')}     Migrate older essence files to v4 format (with .pre-v4.backup.json backup)
   ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry] [--brownfield]
   ${cyan('sync-drift')}  Review and resolve drift log entries
   ${cyan('search')}      Search the registry
@@ -2920,7 +2938,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('get')}         Get full details of a registry item
   ${cyan('list')}        List items by type
   ${cyan('showcase')}    Inspect audited showcase benchmark metadata
-  ${cyan('validate')}    Validate essence file (v2 and v3)
+  ${cyan('validate')}    Validate an Essence v4 file
   ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
   ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
   ${cyan('publish')}     Publish a custom content item to the community registry
@@ -2954,7 +2972,7 @@ ${BOLD}Examples:${RESET}
   decantr studio
   decantr audit
   decantr audit src/pages/HomePage.tsx
-  decantr migrate
+  decantr migrate --to v4
   decantr check --brownfield
   decantr sync-drift
   decantr search dashboard
@@ -3022,10 +3040,7 @@ async function main() {
       const here = dirname(fileURLToPath(import.meta.url));
       // Walk up from dist/* to packages/cli — package.json lives at the package root.
       // In a published install the dist/ sits alongside package.json (one level up).
-      const candidates = [
-        join(here, '..', 'package.json'),
-        join(here, '..', '..', 'package.json'),
-      ];
+      const candidates = [join(here, '..', 'package.json'), join(here, '..', '..', 'package.json')];
       for (const candidate of candidates) {
         if (existsSync(candidate)) {
           const pkg = JSON.parse(readFileSync(candidate, 'utf-8')) as { version?: string };
@@ -3186,7 +3201,7 @@ async function main() {
     }
 
     case 'migrate': {
-      await cmdMigrate(process.cwd());
+      await cmdMigrate(process.cwd(), args.slice(1));
       break;
     }
 
@@ -3603,7 +3618,9 @@ async function main() {
       const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
       if (workspaceInfo.requiresProjectSelection) {
         console.log(error('This looks like a workspace root with multiple app candidates.'));
-        console.log(dim(`Use --project=<path>. Candidates: ${workspaceInfo.appCandidates.join(', ')}`));
+        console.log(
+          dim(`Use --project=<path>. Candidates: ${workspaceInfo.appCandidates.join(', ')}`),
+        );
         process.exitCode = 1;
         break;
       }

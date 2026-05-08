@@ -1,15 +1,13 @@
 import type {
   BlueprintPage,
   ColumnLayout,
-  Essence,
   EssenceFile,
-  EssenceV3,
+  EssenceV4,
   LayoutItem,
   PatternRef,
-  SectionedEssence,
   StructurePage,
 } from '@decantr/essence-spec';
-import { computeDensity, isSectioned, isSimple, isV3 } from '@decantr/essence-spec';
+import { computeDensity, isV4 } from '@decantr/essence-spec';
 import type {
   ContentResolver,
   Pattern,
@@ -49,8 +47,8 @@ export interface ResolvedEssence {
   shell: IRShellConfig;
   routes: IRRoute[];
   features: string[];
-  /** True when the source essence was v3 (DNA/Blueprint/Meta) */
-  isV3Source: boolean;
+  /** True when the source essence uses the active DNA/Blueprint/Meta contract. */
+  isBlueprintSource: boolean;
 }
 
 // ─── Icon Mapping ─────────────────────────────────────────────
@@ -184,16 +182,7 @@ function buildThemeDecoration(theme: RegistryTheme): IRThemeDecoration | null {
   };
 }
 
-function buildTheme(essence: Essence, isAddon: boolean): IRTheme {
-  return {
-    id: essence.theme.id,
-    mode: essence.theme.mode,
-    shape: essence.theme.shape || null,
-    isAddon,
-  };
-}
-
-function buildThemeFromV3(essence: EssenceV3, isAddon: boolean): IRTheme {
+function buildThemeFromV4(essence: EssenceV4, isAddon: boolean): IRTheme {
   const dna = essence.dna;
   return {
     id: dna.theme.id,
@@ -203,7 +192,7 @@ function buildThemeFromV3(essence: EssenceV3, isAddon: boolean): IRTheme {
   };
 }
 
-/** Convert v3 BlueprintPage to the StructurePage shape used by the resolver pipeline */
+/** Convert a BlueprintPage to the StructurePage shape used by the resolver pipeline */
 function blueprintPageToStructurePage(
   page: BlueprintPage,
   defaultShell: string,
@@ -223,7 +212,7 @@ function routeIdentity(pageId: string, sectionId?: string): string {
   return sectionId ? `${sectionId}:${pageId}` : pageId;
 }
 
-function buildV3Routes(essence: EssenceV3, structurePages: ResolvedStructurePage[]): IRRoute[] {
+function buildV4Routes(essence: EssenceV4, structurePages: ResolvedStructurePage[]): IRRoute[] {
   const explicitRoutes = new Map<string, string>();
 
   for (const [path, entry] of Object.entries(essence.blueprint.routes ?? {})) {
@@ -343,106 +332,19 @@ export async function resolveEssence(
   essence: EssenceFile,
   resolver: ContentResolver,
 ): Promise<ResolvedEssence> {
-  // ─── V3 path: read from dna + blueprint layers ───────────
-  if (isV3(essence)) {
-    return resolveV3Essence(essence, resolver);
+  if (!isV4(essence)) {
+    throw new Error(
+      'Active Decantr V2 workflows require Essence v4.0.0. Run `decantr migrate --to v4` for older essence files.',
+    );
   }
 
-  // ─── V2 path: simple or sectioned ────────────────────────
-  let simpleEssence: Essence;
-  if (isSimple(essence)) {
-    simpleEssence = essence;
-  } else if (isSectioned(essence)) {
-    const sectioned = essence as SectionedEssence;
-    if (sectioned.sections.length > 1) {
-      throw new Error(
-        `Sectioned essences with ${sectioned.sections.length} sections are not yet supported. ` +
-          `Only single-section sectioned essences can be processed. ` +
-          `Consider migrating to v3 format using migrateV2ToV3().`,
-      );
-    }
-    const firstSection = sectioned.sections[0];
-    simpleEssence = {
-      version: sectioned.version,
-      archetype: firstSection.archetype,
-      theme: firstSection.theme,
-      personality: sectioned.personality,
-      platform: sectioned.platform,
-      structure: firstSection.structure,
-      features: firstSection.features || [],
-      density: sectioned.density,
-      guard: sectioned.guard,
-      target: sectioned.target,
-    };
-  } else {
-    throw new Error('Invalid essence format');
-  }
-
-  // 1. Theme resolution (replaces former recipe resolution)
-  let registryTheme: RegistryTheme | null = null;
-  const themeResult = await resolver.resolve('theme', simpleEssence.theme.id);
-  if (themeResult) {
-    registryTheme = themeResult.item;
-  }
-
-  // 2. Density computation
-  const themeSpatial = registryTheme?.spatial;
-  const density = computeDensity(
-    simpleEssence.personality,
-    themeSpatial
-      ? {
-          density_bias: themeSpatial.density_bias,
-          content_gap_shift: themeSpatial.content_gap_shift,
-        }
-      : undefined,
-  );
-
-  // 3. Theme
-  const themeId = simpleEssence.theme.id;
-  const isAddon = themeId.startsWith('custom:') || !CORE_STYLES.has(themeId);
-  const theme = buildTheme(simpleEssence, isAddon);
-
-  // 4. Resolve each page
-  const resolvedPages = await resolvePages(simpleEssence.structure, resolver, registryTheme);
-
-  // 5. Shell config
-  const shellType = simpleEssence.structure[0]?.shell || 'sidebar-main';
-  const brand = pascalCase(simpleEssence.archetype);
-  const nav = buildNavItems(simpleEssence.structure);
-  const decoration = registryTheme ? buildThemeDecoration(registryTheme) : null;
-
-  const shell: IRShellConfig = {
-    type: shellType,
-    brand,
-    nav,
-    inset: false,
-    decoration,
-  };
-
-  // 6. Routes
-  const routes: IRRoute[] = simpleEssence.structure.map((page, i) => ({
-    path: routePath(page.id, i),
-    pageId: page.id,
-    shell: page.shell,
-  }));
-
-  return {
-    essence,
-    pages: resolvedPages,
-    registryTheme,
-    density: { gap: density.content_gap, level: density.level },
-    theme,
-    shell,
-    routes,
-    features: simpleEssence.features ?? [],
-    isV3Source: false,
-  };
+  return resolveV4Essence(essence, resolver);
 }
 
-// ─── V3 Resolution ──────────────────────────────────────────
+// ─── V4 Resolution ──────────────────────────────────────────
 
-async function resolveV3Essence(
-  essence: EssenceV3,
+async function resolveV4Essence(
+  essence: EssenceV4,
   resolver: ContentResolver,
 ): Promise<ResolvedEssence> {
   const { dna, blueprint, meta } = essence;
@@ -454,7 +356,7 @@ async function resolveV3Essence(
     registryTheme = themeResult.item;
   }
 
-  // 2. Density — v3 carries density directly in dna.spacing
+  // 2. Density — v4 carries density directly in dna.spacing
   const themeSpatial = registryTheme?.spatial;
   const density = computeDensity(
     dna.personality,
@@ -465,7 +367,7 @@ async function resolveV3Essence(
         }
       : undefined,
   );
-  // V3 dna.spacing is authoritative; override computed density with DNA values
+  // V4 dna.spacing is authoritative; override computed density with DNA values
   const densityResult = {
     gap: dna.spacing.content_gap || density.content_gap,
     level: dna.spacing.density || density.level,
@@ -474,31 +376,21 @@ async function resolveV3Essence(
   // 3. Theme from DNA layer
   const themeId = dna.theme.id;
   const isAddon = themeId.startsWith('custom:') || !CORE_STYLES.has(themeId);
-  const theme = buildThemeFromV3(essence, isAddon);
+  const theme = buildThemeFromV4(essence, isAddon);
 
-  // 4. Convert blueprint pages to StructurePage and resolve
-  // V3.1 essences may use sections instead of pages; flatten sections into pages
-  const defaultShell = blueprint.shell ?? blueprint.sections?.[0]?.shell ?? 'sidebar-main';
-  const structurePages: ResolvedStructurePage[] = blueprint.pages
-    ? blueprint.pages.map((page) => blueprintPageToStructurePage(page, defaultShell))
-    : blueprint.sections
-      ? blueprint.sections.flatMap((section) =>
-          section.pages.map((page) =>
-            blueprintPageToStructurePage(page, section.shell ?? defaultShell, section.id),
-          ),
-        )
-      : [
-          blueprintPageToStructurePage(
-            { id: 'home', layout: ['hero'] as LayoutItem[] },
-            defaultShell,
-          ),
-        ];
+  // 4. Convert sectioned blueprint pages to StructurePage and resolve
+  const defaultShell = blueprint.shell ?? blueprint.sections[0]?.shell ?? 'sidebar-main';
+  const structurePages: ResolvedStructurePage[] = blueprint.sections.flatMap((section) =>
+    section.pages.map((page) =>
+      blueprintPageToStructurePage(page, section.shell ?? defaultShell, section.id),
+    ),
+  );
   const resolvedPages = await resolvePages(structurePages, resolver, registryTheme);
 
   // 5. Shell config from blueprint
   const shellType = defaultShell;
   const brand = pascalCase(meta.archetype);
-  const routes = buildV3Routes(essence, structurePages);
+  const routes = buildV4Routes(essence, structurePages);
   const nav = buildNavItems(structurePages, routes);
   const decoration = registryTheme ? buildThemeDecoration(registryTheme) : null;
 
@@ -519,7 +411,7 @@ async function resolveV3Essence(
     shell,
     routes,
     features: blueprint.features ?? [],
-    isV3Source: true,
+    isBlueprintSource: true,
   };
 }
 

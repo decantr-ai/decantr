@@ -46,7 +46,7 @@ export interface Pattern {
     ambient?: Record<string, string>;
   };
   /**
-   * v2.1 Tier C1. Declared runtime interactions this pattern MUST implement.
+   * Declared runtime interactions this pattern MUST implement.
    * Surfaced as a checkbox checklist in the per-page execution pack; enforced
    * by `decantr check --strict` (C5 guard rule). Each value maps to a
    * canonical implementation (treatment class + handler pattern) — see the

@@ -277,7 +277,7 @@
 [13.325, "o", "    \u001b[38;2;0;224;171m\u2713\u001b[0m 23 patterns      \u001b[38;2;161;161;170mresolved from @official registry\u001b[0m\r\n"]
 [13.625, "o", "\r\n"]
 [14.125, "o", "  \u001b[1m\u2192\u001b[0m Writing the contract...\r\n"]
-[14.375, "o", "    \u001b[38;2;0;224;171m\u2713\u001b[0m \u001b[38;2;10;243;235mdecantr.essence.json\u001b[0m        \u001b[38;2;161;161;170mv3.1.0, 4 sections, 14 pages, 23 patterns\u001b[0m\r\n"]
+[14.375, "o", "    \u001b[38;2;0;224;171m\u2713\u001b[0m \u001b[38;2;10;243;235mdecantr.essence.json\u001b[0m        \u001b[38;2;161;161;170mv4.0.0, 4 sections, 14 pages, 23 patterns\u001b[0m\r\n"]
 [14.625, "o", "    \u001b[38;2;0;224;171m\u2713\u001b[0m \u001b[38;2;10;243;235mDECANTR.md\u001b[0m                  \u001b[38;2;161;161;170mmethodology primer for the AI assistant\u001b[0m\r\n"]
 [14.875, "o", "    \u001b[38;2;0;224;171m\u2713\u001b[0m \u001b[38;2;10;243;235m.decantr/context/\u001b[0m           \u001b[38;2;161;161;170m1 scaffold + 4 per-section context files\u001b[0m\r\n"]
 [15.175, "o", "    \u001b[38;2;0;224;171m\u2713\u001b[0m \u001b[38;2;10;243;235msrc/styles/\u001b[0m                 \u001b[38;2;161;161;170mtokens.css \u00b7 treatments.css \u00b7 decorators.css\u001b[0m\r\n"]

@@ -1,21 +1,21 @@
-import type { Essence, EssenceV3, SectionedEssence } from '../src/types.js';
+import type { Essence, EssenceV4, LegacyEssenceV3, SectionedEssence } from '../src/types.js';
 
 export const VALID_V2_SIMPLE: Essence = {
   version: '2.0.0',
   archetype: 'saas-dashboard',
   theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
   personality: ['professional', 'data-rich'],
-  platform: { type: 'spa', routing: 'hash' },
+  platform: { type: 'spa', routing: 'history' },
   structure: [{ id: 'overview', shell: 'sidebar-main', layout: ['kpi-grid', 'chart-grid'] }],
   features: ['auth'],
-  density: { level: 'comfortable', content_gap: '4' },
+  density: { level: 'comfortable', content_gap: '_gap4' },
   guard: { enforce_style: true, mode: 'strict' },
   target: 'react',
 };
 
 export const VALID_V2_SECTIONED: SectionedEssence = {
   version: '2.0.0',
-  platform: { type: 'spa', routing: 'hash' },
+  platform: { type: 'spa', routing: 'history' },
   personality: ['professional'],
   sections: [
     {
@@ -24,108 +24,75 @@ export const VALID_V2_SECTIONED: SectionedEssence = {
       archetype: 'portfolio',
       theme: { id: 'glassmorphism', mode: 'dark' },
       structure: [{ id: 'home', shell: 'full-bleed', layout: ['hero'] }],
+      features: ['lead-capture'],
     },
   ],
-  density: { level: 'spacious', content_gap: '6' },
+  shared_features: ['analytics'],
+  density: { level: 'spacious', content_gap: '_gap6' },
   guard: { mode: 'creative' },
-  target: 'decantr',
+  target: 'react',
 };
 
-export const VALID_V31: EssenceV3 = {
-  version: '3.1.0',
+export const VALID_V4: EssenceV4 = {
+  version: '4.0.0',
   dna: {
-    theme: { id: 'luminarum', mode: 'dark', shape: 'pill' },
+    theme: { id: 'auradecantism', mode: 'dark', shape: 'rounded' },
     spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
     typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
     color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
-    radius: { philosophy: 'pill', base: 12 },
+    radius: { philosophy: 'rounded', base: 8 },
     elevation: { system: 'layered', max_levels: 3 },
-    motion: { preference: 'subtle', duration_scale: 1.0, reduce_motion: true },
+    motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
     accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
-    personality: ['professional'],
+    personality: ['professional', 'data-rich'],
   },
   blueprint: {
-    features: ['auth'],
+    shell: 'sidebar-main',
     sections: [
       {
         id: 'dashboard',
         role: 'primary',
         shell: 'sidebar-main',
         features: ['auth'],
-        description: 'Main dashboard section',
+        description: 'Dashboard section',
         pages: [
-          {
-            id: 'main',
-            route: '/dashboard',
-            layout: ['kpi-grid', 'chart-grid'],
-          },
-          {
-            id: 'settings',
-            route: '/dashboard/settings',
-            layout: ['settings-form'],
-          },
+          { id: 'overview', route: '/', layout: ['kpi-grid', 'chart-grid'] },
+          { id: 'settings', route: '/settings', layout: ['settings-form'] },
         ],
       },
     ],
+    features: ['auth'],
     routes: {
-      '/dashboard': { section: 'dashboard', page: 'main' },
-      '/dashboard/settings': { section: 'dashboard', page: 'settings' },
+      '/': { section: 'dashboard', page: 'overview' },
+      '/settings': { section: 'dashboard', page: 'settings' },
     },
   },
   meta: {
     archetype: 'saas-dashboard',
     target: 'react',
-    platform: { type: 'spa', routing: 'hash' },
+    platform: { type: 'spa', routing: 'history' },
     guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
-    seo: {
-      schema_org: ['WebApplication'],
-      meta_priorities: ['description', 'og:image'],
-    },
     navigation: {
       command_palette: true,
-      hotkeys: [
-        { key: 'g d', label: 'Dashboard', route: '/dashboard' },
-        { key: 'g s', label: 'Settings', route: '/dashboard/settings' },
-      ],
+      hotkeys: [{ key: 'g d', label: 'Dashboard', route: '/' }],
     },
   },
 };
 
-export const VALID_V3: EssenceV3 = {
+export const VALID_V31: LegacyEssenceV3 = {
+  ...VALID_V4,
+  version: '3.1.0',
+};
+
+export const VALID_V3: LegacyEssenceV3 = {
+  ...VALID_V4,
   version: '3.0.0',
-  dna: {
-    theme: { id: 'luminarum', mode: 'dark', shape: 'pill' },
-    spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
-    typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
-    color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
-    radius: { philosophy: 'pill', base: 12 },
-    elevation: { system: 'layered', max_levels: 3 },
-    motion: { preference: 'subtle', duration_scale: 1.0, reduce_motion: true },
-    accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
-    personality: ['professional'],
-  },
   blueprint: {
     shell: 'sidebar-main',
     pages: [
-      {
-        id: 'main',
-        layout: [
-          { pattern: 'hero', preset: 'landing', as: 'guild-hero' },
-          'kpi-grid',
-          { cols: ['activity-feed', 'top-players'], at: 'lg' },
-        ],
-      },
-      {
-        id: 'news',
-        layout: ['filter-bar', 'post-list'],
-      },
+      { id: 'main', layout: ['kpi-grid', 'chart-grid'] },
+      { id: 'news', layout: ['filter-bar', 'post-list'] },
     ],
-    features: ['guild-state', 'achievements', 'realtime-data'],
-  },
-  meta: {
-    archetype: 'gaming-community',
-    target: 'react',
-    platform: { type: 'spa', routing: 'hash' },
-    guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+    features: ['auth', 'realtime-data'],
   },
 };

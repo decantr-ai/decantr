@@ -69,7 +69,10 @@ describe('analyze command', () => {
     expect(existsSync(reportPath)).toBe(true);
 
     const analysis = JSON.parse(readFileSync(analysisPath, 'utf-8')) as {
-      decantr?: { workflow?: string; attach?: { recommendedCommand?: string; adoptionMode?: string } };
+      decantr?: {
+        workflow?: string;
+        attach?: { recommendedCommand?: string; adoptionMode?: string };
+      };
       retrofitPlan?: { recommendedAdoptionMode?: string; doctrineMapPath?: string };
     };
     const seed = JSON.parse(readFileSync(seedPath, 'utf-8')) as {
@@ -147,7 +150,7 @@ describe('analyze command', () => {
       join(testDir, 'decantr.essence.json'),
       JSON.stringify(
         {
-          version: '3.1.0',
+          version: '4.0.0',
           dna: {
             theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
             spacing: {
@@ -237,7 +240,10 @@ describe('analyze command', () => {
     );
     writeFileSync(join(testDir, 'next.config.ts'), 'export default {};\n');
     writeFileSync(join(testDir, 'tsconfig.json'), '{}\n');
-    writeFileSync(join(testDir, 'tailwind.config.ts'), 'export default { content: ["./src/**/*.{ts,tsx}"] };\n');
+    writeFileSync(
+      join(testDir, 'tailwind.config.ts'),
+      'export default { content: ["./src/**/*.{ts,tsx}"] };\n',
+    );
     writeFileSync(
       join(testDir, 'components.json'),
       JSON.stringify({ style: 'new-york', tailwind: { css: 'src/app/globals.css' } }, null, 2),
@@ -254,8 +260,12 @@ describe('analyze command', () => {
     mkdirSync(join(testDir, 'supabase', 'migrations'), { recursive: true });
     mkdirSync(join(testDir, 'src', 'app', '(marketing)'), { recursive: true });
     mkdirSync(join(testDir, 'src', 'app', 'dashboard'), { recursive: true });
-    mkdirSync(join(testDir, 'src', 'app', 'dashboard', 'client-settings', 'manage-rbac'), { recursive: true });
-    mkdirSync(join(testDir, 'src', 'app', 'dashboard', 'reports', 'environmental'), { recursive: true });
+    mkdirSync(join(testDir, 'src', 'app', 'dashboard', 'client-settings', 'manage-rbac'), {
+      recursive: true,
+    });
+    mkdirSync(join(testDir, 'src', 'app', 'dashboard', 'reports', 'environmental'), {
+      recursive: true,
+    });
     mkdirSync(join(testDir, 'src', 'app', 'admin', 'users'), { recursive: true });
     mkdirSync(join(testDir, 'src', 'app', 'blog', '[slug]'), { recursive: true });
 
@@ -275,19 +285,43 @@ describe('analyze command', () => {
     writeFileSync(join(testDir, '.env.local'), 'DATABASE_URL=postgres://secret\n');
     writeFileSync(join(testDir, 'docs', 'legacy-summary.md'), '# Legacy Summary\n');
     writeFileSync(join(testDir, 'project-memory', 'release-risks.md'), '# Release Risks\n');
-    writeFileSync(join(testDir, 'supabase', 'migrations', '0001_init.sql'), 'create table profiles(id uuid primary key);\n');
+    writeFileSync(
+      join(testDir, 'supabase', 'migrations', '0001_init.sql'),
+      'create table profiles(id uuid primary key);\n',
+    );
     writeFileSync(join(testDir, 'src', 'middleware.ts'), 'export function middleware() {}\n');
     writeFileSync(
       join(testDir, 'src', 'app', 'globals.css'),
       ':root { --brand-primary: #123456; --surface-card: #ffffff; }\n.dark { color-scheme: dark; }\n',
     );
-    writeFileSync(join(testDir, 'src', 'app', 'layout.tsx'), 'export default function Layout({ children }) { return children; }\n');
-    writeFileSync(join(testDir, 'src', 'app', '(marketing)', 'page.tsx'), 'export default function Page() { return null; }\n');
-    writeFileSync(join(testDir, 'src', 'app', 'dashboard', 'page.tsx'), 'export default function Page() { return null; }\n');
-    writeFileSync(join(testDir, 'src', 'app', 'dashboard', 'client-settings', 'manage-rbac', 'page.tsx'), 'export default function Page() { return null; }\n');
-    writeFileSync(join(testDir, 'src', 'app', 'dashboard', 'reports', 'environmental', 'page.tsx'), 'export default function Page() { return null; }\n');
-    writeFileSync(join(testDir, 'src', 'app', 'admin', 'users', 'page.tsx'), 'export default function Page() { return null; }\n');
-    writeFileSync(join(testDir, 'src', 'app', 'blog', '[slug]', 'page.tsx'), 'export default function Page() { return null; }\n');
+    writeFileSync(
+      join(testDir, 'src', 'app', 'layout.tsx'),
+      'export default function Layout({ children }) { return children; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', '(marketing)', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'client-settings', 'manage-rbac', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'reports', 'environmental', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'admin', 'users', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'blog', '[slug]', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
 
     execSync(`node ${cliPath} analyze`, { cwd: testDir, stdio: 'pipe' });
 
@@ -311,15 +345,29 @@ describe('analyze command', () => {
       essence?: {
         dna?: { theme?: { id?: string }; constraints?: { effects?: Record<string, string> } };
         meta?: { platform?: { type?: string } };
-        blueprint?: { routes?: Record<string, unknown>; sections?: Array<{ id?: string; pages?: Array<{ layout?: string[] }> }> };
+        blueprint?: {
+          routes?: Record<string, unknown>;
+          sections?: Array<{ id?: string; pages?: Array<{ layout?: string[] }> }>;
+        };
       };
     };
     const doctrine = JSON.parse(
       readFileSync(join(testDir, '.decantr', 'doctrine-map.json'), 'utf-8'),
     ) as {
-      sources: Array<{ path: string; area: string; precedence: number; currency: string; safeToCite: boolean }>;
+      sources: Array<{
+        path: string;
+        area: string;
+        precedence: number;
+        currency: string;
+        safeToCite: boolean;
+      }>;
       summary: Record<string, number>;
-      resolutions: Array<{ kind: string; issue: string; recommendation: string; preferredSources: string[] }>;
+      resolutions: Array<{
+        kind: string;
+        issue: string;
+        recommendation: string;
+        preferredSources: string[];
+      }>;
     };
     const report = readFileSync(join(testDir, '.decantr', 'brownfield-report.md'), 'utf-8');
     const itemByPath = new Map(ambient.items.map((item) => [item.path, item]));
@@ -353,7 +401,9 @@ describe('analyze command', () => {
     expect(itemByPath.get('.github/workflows/ci.yml')?.role).toBe('workflow-ci');
     expect(itemByPath.get('.env.local')?.safeToCite).toBe(false);
     expect(ambient.conflicts).toEqual(
-      expect.arrayContaining(['Ambient docs contain both Tailwind usage and anti-Tailwind language.']),
+      expect.arrayContaining([
+        'Ambient docs contain both Tailwind usage and anti-Tailwind language.',
+      ]),
     );
     expect(ambient.staleRisks.some((risk) => risk.includes('docs/legacy-summary.md'))).toBe(true);
 
@@ -378,8 +428,8 @@ describe('analyze command', () => {
     expect(JSON.stringify(proposal)).not.toContain('luminarum');
     expect(JSON.stringify(proposal)).not.toContain('home:hero');
     expect(
-      proposal.essence?.blueprint?.sections?.flatMap((section) =>
-        section.pages?.flatMap((page) => page.layout ?? []) ?? [],
+      proposal.essence?.blueprint?.sections?.flatMap(
+        (section) => section.pages?.flatMap((page) => page.layout ?? []) ?? [],
       ),
     ).toContain('existing-surface');
     expect(report).toContain('## Accepted Evidence');
@@ -391,15 +441,15 @@ describe('analyze command', () => {
     expect(report).toContain('## Notable Context Evidence');
     expect(report).toContain('.claude/initiatives/rbac.md');
     expect(doctrine.summary['security-data']).toBeGreaterThan(0);
-    expect(doctrine.sources[0]?.precedence).toBeGreaterThanOrEqual(doctrine.sources[1]?.precedence ?? 0);
-    expect(doctrine.sources.some((source) => source.path === '.env.local' && !source.safeToCite)).toBe(
-      true,
+    expect(doctrine.sources[0]?.precedence).toBeGreaterThanOrEqual(
+      doctrine.sources[1]?.precedence ?? 0,
     );
+    expect(
+      doctrine.sources.some((source) => source.path === '.env.local' && !source.safeToCite),
+    ).toBe(true);
     expect(doctrine.resolutions.some((resolution) => resolution.issue.includes('Tailwind'))).toBe(
       true,
     );
-    expect(
-      doctrine.resolutions.some((resolution) => resolution.kind === 'stale-risk'),
-    ).toBe(true);
+    expect(doctrine.resolutions.some((resolution) => resolution.kind === 'stale-risk')).toBe(true);
   });
 });

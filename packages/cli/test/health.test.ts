@@ -32,11 +32,13 @@ function writeRegistryCache(): void {
   });
 }
 
-function writeEssence(routes: Record<string, { section: string; page: string }> = {
-  '/': { section: 'marketing', page: 'home' },
-}): void {
+function writeEssence(
+  routes: Record<string, { section: string; page: string }> = {
+    '/': { section: 'marketing', page: 'home' },
+  },
+): void {
   writeJson(join(testDir, 'decantr.essence.json'), {
-    version: '3.1.0',
+    version: '4.0.0',
     dna: {
       theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
       spacing: {
@@ -94,7 +96,14 @@ function writePacks(): void {
         sectionRole: 'public',
       },
     ],
-    mutations: [{ id: 'mutation-add-page', markdown: 'mutation.md', json: 'mutation.json', mutationType: 'add-page' }],
+    mutations: [
+      {
+        id: 'mutation-add-page',
+        markdown: 'mutation.md',
+        json: 'mutation.json',
+        mutationType: 'add-page',
+      },
+    ],
   });
   writeJson(join(testDir, '.decantr', 'context', 'review-pack.json'), {
     $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
@@ -169,7 +178,10 @@ describe('Project Health report', () => {
     writeJson(join(testDir, 'package.json'), {
       dependencies: { next: '^16.0.0', react: '^19.0.0', 'react-dom': '^19.0.0' },
     });
-    writeFileSync(join(testDir, 'src', 'app', 'dashboard', 'page.tsx'), 'export default function Page() { return null; }\n');
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'page.tsx'),
+      'export default function Page() { return null; }\n',
+    );
 
     const report = await createProjectHealthReport(testDir);
 
@@ -184,7 +196,9 @@ describe('Project Health report', () => {
     const report = await createProjectHealthReport(testDir);
 
     expect(report.packs.manifestPresent).toBe(false);
-    expect(report.findings.some((finding) => finding.id === 'pack-pack-manifest-missing')).toBe(true);
+    expect(report.findings.some((finding) => finding.id === 'pack-pack-manifest-missing')).toBe(
+      true,
+    );
   });
 
   it('renders markdown and scoped remediation prompts', async () => {
@@ -197,7 +211,9 @@ describe('Project Health report', () => {
 
     expect(markdown).toContain('# Decantr Project Health');
     expect(markdown).toContain('## Findings');
-    expect(finding.remediation.prompt).toContain('You are fixing one Decantr Project Health finding');
+    expect(finding.remediation.prompt).toContain(
+      'You are fixing one Decantr Project Health finding',
+    );
     expect(finding.remediation.prompt).toContain(`Finding: ${finding.id}`);
   });
 
@@ -222,7 +238,9 @@ describe('Project Health report', () => {
     });
 
     expect(workflow).toContain('name: Decantr Project Health');
-    expect(workflow).toContain('npx --yes @decantr/cli@1.11.0 health --json --output reports/decantr-health.json');
+    expect(workflow).toContain(
+      'npx --yes @decantr/cli@1.11.0 health --json --output reports/decantr-health.json',
+    );
     expect(workflow).toContain(
       'npx --yes @decantr/cli@1.11.0 health --ci --fail-on warn --markdown --output reports/decantr-health.md',
     );
@@ -238,7 +256,9 @@ describe('Project Health report', () => {
     });
 
     expect(workflow).toContain('working-directory: apps/registry');
-    expect(workflow).toContain('npx --yes @decantr/cli@1.11.0 health --json --output reports/decantr-health.json');
+    expect(workflow).toContain(
+      'npx --yes @decantr/cli@1.11.0 health --json --output reports/decantr-health.json',
+    );
     expect(workflow).toContain('apps/registry/reports/decantr-health.json');
     expect(workflow).toContain('apps/registry/reports/decantr-health.md');
   });
@@ -298,8 +318,8 @@ describe('Project Health report', () => {
     expect(() => renderProjectHealthCiWorkflow({ projectPath: '../apps/registry' })).toThrow(
       /Invalid --project/,
     );
-    expect(() =>
-      renderProjectHealthCiWorkflow({ failOn: 'always' as unknown as 'error' }),
-    ).toThrow(/Invalid --fail-on/);
+    expect(() => renderProjectHealthCiWorkflow({ failOn: 'always' as unknown as 'error' })).toThrow(
+      /Invalid --fail-on/,
+    );
   });
 });

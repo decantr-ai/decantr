@@ -11,12 +11,12 @@ beforeEach(() => {
 });
 
 describe('loadEssence', () => {
-  it('loads and returns a valid v3 essence file', () => {
+  it('loads and returns a valid V4 essence file', () => {
     const essencePath = join(TMP, 'decantr.essence.json');
     writeFileSync(
       essencePath,
       JSON.stringify({
-        version: '3.1.0',
+        version: '4.0.0',
         dna: {
           theme: { id: 'clean', mode: 'dark', shape: 'rounded' },
           spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
@@ -30,7 +30,14 @@ describe('loadEssence', () => {
         },
         blueprint: {
           shell: 'top-nav-main',
-          pages: [{ id: 'home', layout: ['hero'] }],
+          sections: [
+            {
+              id: 'main',
+              role: 'primary',
+              label: 'Main',
+              pages: [{ id: 'home', layout: ['hero'] }],
+            },
+          ],
           features: [],
         },
         meta: {
@@ -44,7 +51,7 @@ describe('loadEssence', () => {
 
     const result = loadEssence(essencePath);
     expect(result).not.toBeNull();
-    expect(result!.version).toBe('3.1.0');
+    expect(result!.version).toBe('4.0.0');
   });
 
   it('returns null for missing file', () => {
