@@ -168,7 +168,13 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
 export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): Promise<void> {
   const projectRoot = resolveCliTelemetryProjectRoot(input.projectRoot ?? process.cwd(), input.args);
   const command = normalizeCommand(input.args[0]);
-  if (!isOptedIn(projectRoot) || !command || command === 'help' || command === 'version') {
+  if (
+    !isOptedIn(projectRoot) ||
+    !command ||
+    command === 'help' ||
+    command === 'version' ||
+    isHelpOrVersionProbe(input.args)
+  ) {
     return;
   }
 
@@ -586,6 +592,12 @@ function normalizeCommand(command: string | undefined): string | null {
   if (command === '--help' || command === '-h') return 'help';
   if (command === '--version' || command === '-v') return 'version';
   return command;
+}
+
+function isHelpOrVersionProbe(args: string[]): boolean {
+  if (args.some((arg) => arg === '--help' || arg === '-h')) return true;
+  if (args[1] === 'help') return true;
+  return false;
 }
 
 function inferFlagValue(args: string[], flag: string): string | undefined {

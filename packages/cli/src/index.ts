@@ -2899,8 +2899,10 @@ ${BOLD}Usage:${RESET}
   decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+  decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health init-ci [--force] [--project <path>] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr content-health [--json] [--markdown] [--ci]
+  decantr studio [--port 4319] [--host 127.0.0.1]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
@@ -3032,6 +3034,92 @@ ${BOLD}Examples:${RESET}
   decantr rules preview
   decantr rules preview --project=apps/web
   decantr rules apply --project=apps/web
+`);
+}
+
+function isCommandHelpRequest(args: string[]): boolean {
+  return args[1] === 'help' || args.slice(1).some((arg) => arg === '--help' || arg === '-h');
+}
+
+function cmdHealthHelp() {
+  console.log(`
+${BOLD}decantr health${RESET} — Generate a local Project Health report
+
+${BOLD}Usage:${RESET}
+  decantr health [--format text|json|markdown] [--output <file>]
+  decantr health --json
+  decantr health --markdown
+  decantr health --ci [--fail-on error|warn|none]
+  decantr health --prompt <finding-id>
+  decantr health init-ci [--force] [--project <path>] [--fail-on error|warn|none] [--cli-version <version|latest>]
+
+${BOLD}Options:${RESET}
+  --format      Output format: text, json, or markdown
+  --json        Emit JSON report
+  --markdown    Emit markdown report
+  --output      Write the selected report format to a file
+  --ci          Enable CI exit-code behavior
+  --fail-on     CI threshold: error, warn, or none
+  --prompt      Print an AI-ready remediation prompt for a finding
+
+${BOLD}Examples:${RESET}
+  decantr health
+  decantr health --json
+  decantr health --markdown --output decantr-health.md
+  decantr health --ci --fail-on error
+  decantr health --prompt audit-essence-missing
+  decantr health init-ci --project apps/web
+`);
+}
+
+function cmdContentHealthHelp() {
+  console.log(`
+${BOLD}decantr content-health${RESET} — Generate a local registry content health report
+
+${BOLD}Usage:${RESET}
+  decantr content-health [--format text|json|markdown] [--output <file>]
+  decantr content-health --json
+  decantr content-health --markdown
+  decantr content-health --ci [--fail-on error|warn|none]
+  decantr content-health --prompt <finding-id>
+
+${BOLD}Options:${RESET}
+  --format      Output format: text, json, or markdown
+  --json        Emit JSON report
+  --markdown    Emit markdown report
+  --output      Write the selected report format to a file
+  --ci          Enable CI exit-code behavior
+  --fail-on     CI threshold: error, warn, or none
+  --prompt      Print an AI-ready remediation prompt for a finding
+
+${BOLD}Examples:${RESET}
+  decantr content-health
+  decantr content-health --json
+  decantr content-health --markdown --output content-health.md
+  decantr content-health --ci --fail-on error
+`);
+}
+
+function cmdStudioHelp() {
+  console.log(`
+${BOLD}decantr studio${RESET} — Run a local Project Health dashboard
+
+${BOLD}Usage:${RESET}
+  decantr studio [--port 4319] [--host 127.0.0.1]
+
+${BOLD}Options:${RESET}
+  --port        Local port to bind; defaults to 4319
+  --host        Local host to bind; defaults to 127.0.0.1
+
+${BOLD}Endpoints:${RESET}
+  GET  /
+  GET  /api/health
+  POST /api/refresh
+
+${BOLD}Examples:${RESET}
+  decantr studio
+  decantr studio --port 4320
+  decantr studio --host 127.0.0.1 --port 4319
 `);
 }
 
@@ -3186,6 +3274,10 @@ async function main() {
 
     case 'health': {
       try {
+        if (isCommandHelpRequest(args)) {
+          cmdHealthHelp();
+          break;
+        }
         const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
         await cmdHealth(process.cwd(), parseHealthArgs(args));
       } catch (e) {
@@ -3197,6 +3289,10 @@ async function main() {
 
     case 'content-health': {
       try {
+        if (isCommandHelpRequest(args)) {
+          cmdContentHealthHelp();
+          break;
+        }
         const { cmdContentHealth, parseContentHealthArgs } = await import(
           './commands/content-health.js'
         );
@@ -3210,6 +3306,10 @@ async function main() {
 
     case 'studio': {
       try {
+        if (isCommandHelpRequest(args)) {
+          cmdStudioHelp();
+          break;
+        }
         const { cmdStudio, parseStudioArgs } = await import('./commands/studio.js');
         await cmdStudio(process.cwd(), parseStudioArgs(args));
       } catch (e) {
