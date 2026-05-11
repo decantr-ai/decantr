@@ -14,6 +14,8 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Active implementation specs for the reset program.
 - `reference/`
   - Human-readable references for active public/runtime contracts such as Project Health, Content Health, workflow mode, telemetry, and registry API surfaces.
+- `guides/`
+  - Focused public entry points for existing-app adoption, Project Health CI, AI assistant setup, registry publishing, and design contract basics.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
 - `schemas/`

@@ -4,6 +4,8 @@
   "mcpName": "io.github.decantr-ai/mcp-server",
   "description": "MCP server for Decantr — exposes design intelligence, packs, and verification to AI coding assistants",
   "keywords": [
+    "decantr",
+    "decantr-ai",
     "mcp",
     "mcp-server",
     "model-context-protocol",
@@ -15,6 +17,7 @@
     "windsurf",
     "design-system",
     "design-intelligence",
+    "project-health",
     "ui-generation",
     "drift-detection"
   ],

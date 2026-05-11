@@ -2,6 +2,17 @@
   "name": "@decantr/verifier",
   "version": "2.0.0",
   "description": "Shared verification, critique, Project Health, and report-schema engine for Decantr",
+  "keywords": [
+    "decantr",
+    "decantr-ai",
+    "project-health",
+    "ui-verification",
+    "drift-detection",
+    "design-governance",
+    "ai-generated-ui",
+    "ci",
+    "critique"
+  ],
   "author": "Decantr AI",
   "license": "MIT",
   "bugs": {

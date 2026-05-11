@@ -40,10 +40,14 @@
   },
   "keywords": [
     "decantr",
+    "decantr-ai",
     "css",
     "atoms",
     "utility-css",
-    "design-intelligence"
+    "design-intelligence",
+    "design-system",
+    "design-tokens",
+    "ai-generated-ui"
   ],
   "license": "MIT",
   "devDependencies": {

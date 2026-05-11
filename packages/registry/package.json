@@ -2,6 +2,18 @@
   "name": "@decantr/registry",
   "version": "2.0.0",
   "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
+  "keywords": [
+    "decantr",
+    "decantr-ai",
+    "registry",
+    "design-registry",
+    "ui-patterns",
+    "blueprints",
+    "archetypes",
+    "design-intelligence",
+    "ai-generated-ui",
+    "content-health"
+  ],
   "author": "Decantr AI",
   "license": "MIT",
   "bugs": {

@@ -20,6 +20,31 @@ const nextConfig: NextConfig = {
       destination: '/:path*',
       permanent: true,
     },
+    {
+      source: '/patterns',
+      destination: '/browse/patterns',
+      permanent: true,
+    },
+    {
+      source: '/themes',
+      destination: '/browse/themes',
+      permanent: true,
+    },
+    {
+      source: '/blueprints',
+      destination: '/browse/blueprints',
+      permanent: true,
+    },
+    {
+      source: '/archetypes',
+      destination: '/browse/archetypes',
+      permanent: true,
+    },
+    {
+      source: '/shells',
+      destination: '/browse/shells',
+      permanent: true,
+    },
   ],
   images: {
     remotePatterns: [
