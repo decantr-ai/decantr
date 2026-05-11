@@ -169,7 +169,9 @@ decantr health --ci --fail-on error
 decantr health --prompt <finding-id>
 decantr health init-ci
 decantr health init-ci --project apps/registry
+decantr health --json --output decantr-health.json
 decantr studio --port 4319 --host 127.0.0.1
+decantr studio --report decantr-health.json
 ```
 
 Official content supply chain:
@@ -216,7 +218,18 @@ If the default port is busy:
 decantr studio --host 127.0.0.1 --port 4320
 ```
 
-Studio is local-only and shows the same Project Health signal as `decantr health`. It is for interactive triage; `decantr health --ci --fail-on error` is still the pull-request gate.
+Studio is local-only and shows the same Project Health signal as `decantr health`. Its Overview keeps triage focused: pick the issue to fix first, review the AI prompt before copying it, switch to manual guidance or commands, and expand project details when you need route/runtime/pack evidence.
+
+`decantr health --prompt <finding-id>` prints a focused repair prompt for the assistant doing the implementation. It does not edit files by itself; use Studio's copy buttons or paste the printed prompt into your AI coding workflow, then rerun Project Health.
+
+To view a CI-produced report artifact without scanning a checkout:
+
+```bash
+decantr health --json --output decantr-health.json
+decantr studio --report decantr-health.json
+```
+
+Studio is for interactive triage; `decantr health --ci --fail-on error` is still the pull-request gate.
 
 See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration, CI, and drift questions.
 

@@ -157,7 +157,30 @@ Studio is local-only and uses the same Project Health report as:
 npx @decantr/cli health
 ```
 
-Use Studio when you want a browser view of drift, route coverage, pack health, and remediation prompts. Use `health --ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
+Use Studio when you want a browser view of status, the issue to fix first, the AI prompt before copying it, manual repair guidance, verification commands, route coverage, runtime evidence, pack health, and CI readiness. Use `health --ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
+
+## Does Decantr automatically fix Project Health findings?
+
+Not by default. Decantr is the contract and verification layer; it tells the developer or AI assistant what drifted and what needs to change. For an LLM-assisted workflow, use Studio's **Copy AI prompt** button or run:
+
+```bash
+npx @decantr/cli health --prompt <finding-id>
+```
+
+That command prints a focused repair prompt. It does not edit files by itself. Paste the prompt into the assistant doing the implementation, make the change, then rerun:
+
+```bash
+npx @decantr/cli health
+```
+
+To view a CI-produced JSON report without scanning the project source again:
+
+```bash
+npx @decantr/cli health --json --output decantr-health.json
+npx @decantr/cli studio --report decantr-health.json
+```
+
+Report mode is useful for customer-controlled dashboards or internal reporting pages. It serves the JSON artifact you provide; it does not upload the report to Decantr telemetry.
 
 ## How do I regenerate Decantr guidance after changing the app contract?
 

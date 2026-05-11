@@ -97,12 +97,13 @@ decantr health --markdown --output health.md
 decantr health --ci --fail-on error
 decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
+decantr health --json --output decantr-health.json
 decantr health init-ci
 decantr health init-ci --fail-on warn --cli-version latest --force
 decantr health init-ci --project apps/registry
 ```
 
-Use `--json` for machines and schema validation, `--markdown` for CI summaries, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
+Use `--json` for machines and schema validation, `--markdown` for CI summaries, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
 
 `decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes `decantr-health.json`, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path.
 
@@ -111,9 +112,17 @@ Use `--json` for machines and schema validation, `--markdown` for CI summaries, 
 ```bash
 decantr studio
 decantr studio --port 4319 --host 127.0.0.1
+decantr studio --report decantr-health.json
 ```
 
-Studio is for local triage, not Decantr admin telemetry. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
+Studio is for local triage, not Decantr admin telemetry. The Overview keeps the first decision simple: pick the issue to fix first, review the full AI repair prompt before copying it, switch to manual guidance or commands, and expand project details when route/runtime/pack evidence matters. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
+
+Use report mode for customer-controlled reporting from CI artifacts:
+
+```bash
+decantr health --json --output decantr-health.json
+decantr studio --report decantr-health.json
+```
 
 If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, `init --telemetry`, `check --telemetry`, `health`, and `studio` emit only aggregate product-activation metadata such as lifecycle command outcome, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, or prompt text.
 
