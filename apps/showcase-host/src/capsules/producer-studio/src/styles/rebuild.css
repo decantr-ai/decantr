@@ -1,0 +1,2538 @@
+@layer app {
+  .ps2-root {
+    --d-primary: #22d3ee;
+    --d-secondary: #d946ef;
+    --d-accent: #fbbf24;
+    --d-bg: #070a12;
+    --d-surface: #0d1322;
+    --d-surface-raised: #131b2e;
+    --d-border: #28425f;
+    --d-text: #edf7ff;
+    --d-text-muted: #91a7c3;
+    --d-success: #34d399;
+    --d-error: #fb7185;
+    --d-warning: #fbbf24;
+    min-height: 100dvh;
+    background:
+      linear-gradient(90deg, rgba(34, 211, 238, 0.06), transparent 28%, rgba(217, 70, 239, 0.05) 78%, transparent),
+      radial-gradient(circle at 48% -20%, rgba(251, 191, 36, 0.14), transparent 28rem),
+      var(--d-bg);
+    color: var(--d-text);
+  }
+
+  .ps2-root a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ps2-root button,
+  .ps2-root input,
+  .ps2-root select {
+    font: inherit;
+  }
+
+  .ps2-root h1,
+  .ps2-root h2,
+  .ps2-root h3,
+  .ps2-root p {
+    letter-spacing: 0;
+  }
+
+  .ps2-root h1 {
+    font-size: 4.2rem;
+    line-height: 0.94;
+    max-width: 10ch;
+  }
+
+  .ps2-root h2 {
+    font-size: 1.25rem;
+    line-height: 1.15;
+  }
+
+  .ps2-root p {
+    color: var(--d-text-muted);
+  }
+
+  .ps2-registry-strip {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.74);
+    background: rgba(7, 10, 18, 0.94);
+    backdrop-filter: blur(16px);
+  }
+
+  .ps2-registry-link {
+    color: #aac9ff;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .ps2-registry-link::before {
+    content: "< ";
+    color: var(--d-primary);
+  }
+
+  .ps2-registry-badge,
+  .ps2-sync-pill,
+  .ps2-status-pill,
+  .ps2-eyebrow {
+    display: inline-flex;
+    min-height: 26px;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(34, 211, 238, 0.35);
+    border-radius: 999px;
+    padding: 0.24rem 0.65rem;
+    background: rgba(34, 211, 238, 0.09);
+    color: var(--d-primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  .ps2-public-nav {
+    position: sticky;
+    top: 48px;
+    z-index: 50;
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 2rem;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.42);
+    background: rgba(7, 10, 18, 0.76);
+    backdrop-filter: blur(18px);
+  }
+
+  .ps2-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--d-text);
+    font-weight: 900;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  .ps2-brand svg {
+    color: var(--d-accent);
+  }
+
+  .ps2-public-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--d-text-muted);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  .ps2-public-links a:hover,
+  .ps2-sidebar a:hover,
+  .ps2-sidebar button:hover,
+  .ps2-bottom-nav a:hover {
+    color: var(--d-text);
+  }
+
+  .ps2-mobile-only,
+  .ps2-mobile-menu {
+    display: none;
+  }
+
+  .ps2-public-nav .ps2-mobile-only,
+  .ps2-studio-header .ps2-mobile-only {
+    display: none;
+  }
+
+  .ps2-mobile-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 1rem;
+    min-width: 220px;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 1px solid rgba(40, 66, 95, 0.78);
+    border-radius: 8px;
+    padding: 0.65rem;
+    background: rgba(13, 19, 34, 0.98);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  }
+
+  .ps2-mobile-menu a {
+    border-radius: 6px;
+    padding: 0.65rem 0.75rem;
+    color: var(--d-text-muted);
+    font-weight: 750;
+  }
+
+  .ps2-mobile-menu a:hover {
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--d-text);
+  }
+
+  .ps2-primary-cta,
+  .ps2-ghost-cta,
+  .ps2-icon-button,
+  .ps2-play-button,
+  .ps2-record-button,
+  .ps2-browser-toolbar button,
+  .ps2-auth-card button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.48rem;
+    min-height: 42px;
+    border: 1px solid rgba(34, 211, 238, 0.36);
+    border-radius: 8px;
+    padding: 0.62rem 1rem;
+    background: rgba(13, 19, 34, 0.82);
+    color: var(--d-text);
+    cursor: pointer;
+    font-weight: 850;
+    letter-spacing: 0;
+    transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, color 140ms ease;
+  }
+
+  .ps2-primary-cta,
+  .ps2-play-button,
+  .ps2-auth-card button {
+    border-color: rgba(34, 211, 238, 0.8);
+    background: linear-gradient(135deg, #22d3ee, #a78bfa 55%, #d946ef);
+    color: #031016;
+  }
+
+  .ps2-ghost-cta {
+    border-color: rgba(145, 167, 195, 0.3);
+    color: var(--d-text-muted);
+  }
+
+  .ps2-icon-button {
+    min-width: 42px;
+    padding: 0;
+  }
+
+  .ps2-record-button {
+    min-height: 36px;
+    border-color: rgba(251, 113, 133, 0.46);
+    color: #fecdd3;
+  }
+
+  .ps2-record-button svg {
+    color: var(--d-error);
+  }
+
+  .ps2-primary-cta:hover,
+  .ps2-ghost-cta:hover,
+  .ps2-icon-button:hover,
+  .ps2-play-button:hover,
+  .ps2-record-button:hover,
+  .ps2-browser-toolbar button:hover,
+  .ps2-auth-card button:hover {
+    transform: translateY(-1px);
+    border-color: var(--d-primary);
+  }
+
+  .ps2-home {
+    overflow: hidden;
+  }
+
+  .ps2-home-hero {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.82fr) minmax(620px, 1.18fr);
+    min-height: calc(100dvh - 120px);
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  .ps2-hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .ps2-hero-copy p {
+    max-width: 42rem;
+    font-size: 1.02rem;
+  }
+
+  .ps2-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .ps2-cockpit {
+    display: grid;
+    gap: 0.85rem;
+    min-width: 0;
+    border: 1px solid rgba(40, 66, 95, 0.72);
+    border-radius: 8px;
+    padding: 0.85rem;
+    background: rgba(9, 14, 25, 0.92);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .ps2-cockpit.home-preview {
+    min-height: 620px;
+  }
+
+  .ps2-cockpit-grid,
+  .ps2-workspace-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.32fr);
+    gap: 0.85rem;
+    min-width: 0;
+  }
+
+  .ps2-proof-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    border-top: 1px solid rgba(40, 66, 95, 0.68);
+    border-bottom: 1px solid rgba(40, 66, 95, 0.68);
+    background: rgba(40, 66, 95, 0.72);
+  }
+
+  .ps2-proof-strip article {
+    display: grid;
+    gap: 0.55rem;
+    min-height: 188px;
+    align-content: start;
+    padding: 1.4rem;
+    background: rgba(9, 14, 25, 0.96);
+  }
+
+  .ps2-proof-strip svg {
+    color: var(--d-accent);
+  }
+
+  .ps2-proof-strip h2 {
+    font-size: 1.08rem;
+  }
+
+  .ps2-pricing-band {
+    display: grid;
+    grid-template-columns: 1fr repeat(3, minmax(170px, 0.28fr));
+    gap: 1rem;
+    align-items: stretch;
+    padding: 2rem;
+  }
+
+  .ps2-pricing-band > div,
+  .ps2-pricing-band article {
+    border: 1px solid rgba(40, 66, 95, 0.7);
+    border-radius: 8px;
+    padding: 1.1rem;
+    background: rgba(13, 19, 34, 0.72);
+  }
+
+  .ps2-pricing-band article {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .ps2-pricing-band article strong {
+    font-size: 1.9rem;
+  }
+
+  .ps2-pricing-band article.featured {
+    border-color: rgba(34, 211, 238, 0.72);
+    background: rgba(34, 211, 238, 0.09);
+  }
+
+  .ps2-transport {
+    display: grid;
+    grid-template-columns: auto minmax(180px, 1fr) auto;
+    gap: 0.9rem;
+    align-items: center;
+    min-width: 0;
+    border: 1px solid rgba(40, 66, 95, 0.74);
+    border-radius: 8px;
+    padding: 0.7rem;
+    background: linear-gradient(180deg, rgba(19, 27, 46, 0.98), rgba(11, 17, 31, 0.98));
+  }
+
+  .ps2-transport.compact {
+    grid-template-columns: auto minmax(150px, 1fr) auto;
+    padding: 0.55rem;
+  }
+
+  .ps2-transport-controls,
+  .ps2-transport-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ps2-transport-center {
+    display: grid;
+    gap: 0.42rem;
+    min-width: 0;
+    color: var(--d-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9rem;
+  }
+
+  .ps2-progress {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(145, 167, 195, 0.18);
+  }
+
+  .ps2-progress span {
+    display: block;
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--d-primary), var(--d-accent), var(--d-secondary));
+  }
+
+  .ps2-transport-meta {
+    justify-content: flex-end;
+    color: var(--d-text-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .ps2-transport-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 6px;
+    padding: 0.38rem 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ps2-arrangement {
+    position: relative;
+    display: grid;
+    min-height: 420px;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(40, 66, 95, 0.72);
+    border-radius: 8px;
+    background:
+      repeating-linear-gradient(90deg, rgba(145, 167, 195, 0.08) 0 1px, transparent 1px 9%),
+      linear-gradient(180deg, rgba(13, 19, 34, 0.98), rgba(7, 10, 18, 0.98));
+  }
+
+  .ps2-arrangement.preview {
+    min-height: 356px;
+  }
+
+  .ps2-ruler {
+    position: relative;
+    height: 36px;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.72);
+    color: var(--d-text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+  }
+
+  .ps2-ruler span {
+    position: absolute;
+    top: 0.72rem;
+    transform: translateX(-50%);
+  }
+
+  .ps2-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 38%;
+    z-index: 3;
+    width: 2px;
+    background: var(--d-accent);
+    box-shadow: 0 0 16px rgba(251, 191, 36, 0.7);
+  }
+
+  .ps2-playhead::before {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    border-radius: 0 0 5px 5px;
+    background: var(--d-accent);
+    content: "";
+    transform: translateX(-50%);
+  }
+
+  .ps2-cursor {
+    position: absolute;
+    z-index: 4;
+    border-radius: 999px;
+    padding: 0.18rem 0.45rem;
+    color: #041017;
+    font-size: 0.68rem;
+    font-weight: 900;
+  }
+
+  .ps2-cursor-kael {
+    top: 66px;
+    left: 59%;
+    background: var(--d-primary);
+  }
+
+  .ps2-cursor-luna {
+    top: 165px;
+    left: 48%;
+    background: var(--d-secondary);
+  }
+
+  .ps2-track-row {
+    display: grid;
+    grid-template-columns: 148px minmax(260px, 1fr);
+    min-height: 63px;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.56);
+  }
+
+  .ps2-track-row:last-child {
+    border-bottom: 0;
+  }
+
+  .ps2-track-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.18rem 0.45rem;
+    align-content: center;
+    min-width: 0;
+    border-right: 1px solid rgba(40, 66, 95, 0.72);
+    padding: 0.55rem 0.65rem;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .ps2-track-head strong {
+    overflow: hidden;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ps2-track-head small {
+    grid-column: 2;
+    color: var(--d-text-muted);
+    font-size: 0.7rem;
+  }
+
+  .ps2-stem-dot {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 999px;
+    box-shadow: 0 0 12px currentColor;
+  }
+
+  .ps2-track-lane {
+    position: relative;
+    min-width: 0;
+    padding: 0.58rem 0.75rem;
+  }
+
+  .ps2-region {
+    position: absolute;
+    top: 0.58rem;
+    bottom: 0.58rem;
+    min-width: 130px;
+    overflow: hidden;
+    border: 1px solid;
+    border-radius: 6px;
+    background: rgba(34, 211, 238, 0.09);
+  }
+
+  .ps2-waveform {
+    display: grid;
+    grid-template-columns: repeat(48, minmax(2px, 1fr));
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    height: 100%;
+    min-height: 42px;
+    padding: 0.35rem;
+  }
+
+  .ps2-waveform span {
+    display: block;
+    height: var(--bar-height);
+    min-height: 4px;
+    border-radius: 999px;
+    background: var(--bar-color);
+    opacity: 0.86;
+  }
+
+  .ps2-automation-line {
+    position: absolute;
+    right: 10%;
+    bottom: 19px;
+    left: 22%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--d-accent) 25%, var(--d-accent) 72%, transparent);
+  }
+
+  .ps2-mixer {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(118px, 1fr));
+    gap: 0.65rem;
+    min-width: 0;
+    overflow-x: auto;
+    border: 1px solid rgba(40, 66, 95, 0.72);
+    border-radius: 8px;
+    padding: 0.65rem;
+    background: linear-gradient(180deg, rgba(13, 19, 34, 0.98), rgba(7, 10, 18, 0.98));
+  }
+
+  .ps2-mixer.compact {
+    grid-template-columns: repeat(5, minmax(104px, 1fr));
+  }
+
+  .ps2-channel {
+    display: grid;
+    gap: 0.55rem;
+    justify-items: center;
+    min-height: 246px;
+    border: 1px solid rgba(40, 66, 95, 0.65);
+    border-radius: 7px;
+    padding: 0.75rem 0.55rem;
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .ps2-channel.master {
+    border-color: rgba(251, 191, 36, 0.54);
+    background: rgba(251, 191, 36, 0.07);
+  }
+
+  .ps2-channel strong {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ps2-inserts,
+  .ps2-mini-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.28rem;
+  }
+
+  .ps2-inserts span,
+  .ps2-mini-buttons span {
+    min-width: 26px;
+    border: 1px solid rgba(145, 167, 195, 0.22);
+    border-radius: 5px;
+    padding: 0.18rem 0.28rem;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--d-text-muted);
+    font-size: 0.62rem;
+    font-weight: 850;
+    text-align: center;
+  }
+
+  .ps2-mini-buttons .armed {
+    border-color: rgba(251, 113, 133, 0.7);
+    color: #fecdd3;
+  }
+
+  .ps2-knob {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(145, 167, 195, 0.3);
+    border-radius: 999px;
+    background:
+      conic-gradient(from var(--knob-angle), var(--d-primary) 0 30deg, rgba(255, 255, 255, 0.08) 30deg 360deg),
+      radial-gradient(circle, #111827 0 48%, transparent 50%);
+  }
+
+  .ps2-fader-bank {
+    display: grid;
+    grid-template-columns: 10px 20px 10px;
+    gap: 0.38rem;
+    height: 120px;
+    align-items: stretch;
+  }
+
+  .ps2-meter,
+  .ps2-fader {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(145, 167, 195, 0.14);
+  }
+
+  .ps2-meter::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: var(--meter-level);
+    background: linear-gradient(0deg, #34d399, #fbbf24 68%, #fb7185);
+    content: "";
+  }
+
+  .ps2-meter.alt::after {
+    background: linear-gradient(0deg, #22d3ee, #a78bfa 70%, #d946ef);
+  }
+
+  .ps2-fader {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .ps2-fader i {
+    position: absolute;
+    left: 50%;
+    display: block;
+    width: 30px;
+    height: 10px;
+    border-radius: 4px;
+    background: #dbeafe;
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.55);
+    transform: translateX(-50%);
+  }
+
+  .ps2-inspector {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    min-width: 0;
+    border: 1px solid rgba(40, 66, 95, 0.72);
+    border-radius: 8px;
+    padding: 0.9rem;
+    background: rgba(13, 19, 34, 0.92);
+  }
+
+  .ps2-inspector section {
+    display: grid;
+    gap: 0.45rem;
+    border-top: 1px solid rgba(40, 66, 95, 0.58);
+    padding-top: 0.78rem;
+  }
+
+  .ps2-inspector small,
+  .ps2-panel-heading,
+  .ps2-track-card small,
+  .ps2-collab-card small,
+  .ps2-room-card div,
+  .ps2-auth-card p {
+    color: var(--d-text-muted);
+  }
+
+  .ps2-panel-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 900;
+  }
+
+  .ps2-status-row,
+  .ps2-person-row {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .ps2-status-row.good {
+    color: var(--d-success);
+  }
+
+  .ps2-status-row.warn {
+    color: var(--d-warning);
+  }
+
+  .ps2-person-row > span,
+  .ps2-presence span,
+  .ps2-avatar {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(7, 10, 18, 0.9);
+    border-radius: 999px;
+    color: #031016;
+    font-size: 0.72rem;
+    font-weight: 950;
+  }
+
+  .ps2-person-row div {
+    display: grid;
+    min-width: 0;
+  }
+
+  .ps2-person-row small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ps2-presence {
+    display: flex;
+    align-items: center;
+  }
+
+  .ps2-presence span {
+    margin-left: -0.42rem;
+    background: linear-gradient(135deg, var(--d-primary), var(--d-secondary));
+  }
+
+  .ps2-presence span:first-child {
+    margin-left: 0;
+  }
+
+  .ps2-shell {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    min-height: calc(100dvh - 48px);
+  }
+
+  .ps2-sidebar {
+    position: sticky;
+    top: 48px;
+    display: grid;
+    height: calc(100dvh - 48px);
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    border-right: 1px solid rgba(40, 66, 95, 0.72);
+    padding: 1rem;
+    background: rgba(9, 14, 25, 0.96);
+  }
+
+  .ps2-sidebar nav,
+  .ps2-sidebar-footer {
+    display: grid;
+    gap: 0.42rem;
+    align-content: start;
+  }
+
+  .ps2-sidebar a,
+  .ps2-sidebar button {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 42px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 0.6rem 0.7rem;
+    background: transparent;
+    color: var(--d-text-muted);
+    cursor: pointer;
+    font-weight: 800;
+    text-align: left;
+  }
+
+  .ps2-sidebar a.active {
+    border-color: rgba(34, 211, 238, 0.38);
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--d-text);
+  }
+
+  .ps2-main {
+    min-width: 0;
+  }
+
+  .ps2-studio-header {
+    position: sticky;
+    top: 48px;
+    z-index: 40;
+    display: flex;
+    min-height: 74px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.72);
+    padding: 0.9rem 1rem;
+    background: rgba(7, 10, 18, 0.88);
+    backdrop-filter: blur(16px);
+  }
+
+  .ps2-studio-header small {
+    color: var(--d-text-muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+  }
+
+  .ps2-studio-header h1 {
+    max-width: none;
+    font-size: 1.34rem;
+    line-height: 1.1;
+  }
+
+  .ps2-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .ps2-bottom-nav {
+    display: none;
+  }
+
+  .ps2-workspace,
+  .ps2-list-page {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.9rem;
+  }
+
+  .ps2-workspace {
+    grid-template-rows: auto auto auto;
+  }
+
+  .ps2-panel-tabs {
+    display: none;
+  }
+
+  .ps2-workspace-panel {
+    min-width: 0;
+  }
+
+  .ps2-stem-browser {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .ps2-browser-toolbar {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid rgba(40, 66, 95, 0.72);
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: rgba(13, 19, 34, 0.72);
+  }
+
+  .ps2-browser-toolbar label {
+    display: flex;
+    min-width: 220px;
+    flex: 1;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(145, 167, 195, 0.22);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--d-text-muted);
+  }
+
+  .ps2-browser-toolbar input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    outline: 0;
+  }
+
+  .ps2-track-card,
+  .ps2-collab-card,
+  .ps2-room-card,
+  .ps2-split-workbench,
+  .ps2-live-stage,
+  .ps2-chat-panel,
+  .ps2-version-timeline,
+  .ps2-settings-panel {
+    border: 1px solid rgba(40, 66, 95, 0.72);
+    border-radius: 8px;
+    background: rgba(13, 19, 34, 0.76);
+    box-shadow: 0 18px 56px rgba(0, 0, 0, 0.2);
+  }
+
+  .ps2-track-card {
+    display: grid;
+    grid-template-columns: minmax(190px, 0.32fr) minmax(240px, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    min-height: 104px;
+    padding: 0.9rem;
+  }
+
+  .ps2-track-card > div:first-child {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .ps2-status-pill.mastered,
+  .ps2-status-pill.live,
+  .ps2-status-pill.signed {
+    border-color: rgba(52, 211, 153, 0.45);
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--d-success);
+  }
+
+  .ps2-status-pill.mixing,
+  .ps2-status-pill.recording {
+    border-color: rgba(251, 191, 36, 0.45);
+    background: rgba(251, 191, 36, 0.1);
+    color: var(--d-warning);
+  }
+
+  .ps2-status-pill.idle {
+    border-color: rgba(145, 167, 195, 0.34);
+    background: rgba(145, 167, 195, 0.08);
+    color: var(--d-text-muted);
+  }
+
+  .ps2-collaborator-grid,
+  .ps2-rooms-grid {
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+  }
+
+  .ps2-collab-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+    padding: 1rem;
+  }
+
+  .ps2-collab-card h2 {
+    font-size: 1rem;
+  }
+
+  .ps2-split-mini {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    color: var(--d-text-muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .ps2-split-mini span {
+    border-radius: 6px;
+    padding: 0.32rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .ps2-split-workbench {
+    overflow: hidden;
+  }
+
+  .ps2-split-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.72);
+    padding: 1rem;
+  }
+
+  .ps2-split-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .ps2-split-header span {
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    font-weight: 900;
+  }
+
+  .ps2-split-header .valid-total {
+    background: rgba(52, 211, 153, 0.12);
+    color: var(--d-success);
+  }
+
+  .ps2-split-header .invalid-total {
+    background: rgba(251, 113, 133, 0.12);
+    color: var(--d-error);
+  }
+
+  .ps2-split-row {
+    display: grid;
+    grid-template-columns: 44px minmax(130px, 1fr) minmax(130px, 1fr) auto auto auto;
+    gap: 0.8rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(40, 66, 95, 0.58);
+    padding: 0.8rem 1rem;
+  }
+
+  .ps2-split-row:last-child {
+    border-bottom: 0;
+  }
+
+  .ps2-split-row > span:not(.ps2-avatar) {
+    color: var(--d-text-muted);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .ps2-split-row .signed,
+  .ps2-split-row .pending {
+    border-radius: 999px;
+    padding: 0.26rem 0.55rem;
+  }
+
+  .ps2-split-row .signed {
+    background: rgba(52, 211, 153, 0.12);
+    color: var(--d-success);
+  }
+
+  .ps2-split-row .pending {
+    background: rgba(251, 191, 36, 0.12);
+    color: var(--d-warning);
+  }
+
+  .ps2-room-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .ps2-room-stage {
+    display: flex;
+    min-height: 128px;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-radius: 7px;
+    padding: 0.8rem;
+    background:
+      linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(217, 70, 239, 0.12)),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 22px);
+  }
+
+  .ps2-room-card > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .ps2-live-stage {
+    display: grid;
+    gap: 0.75rem;
+    min-height: 260px;
+    align-content: end;
+    padding: 1.2rem;
+    background:
+      linear-gradient(180deg, rgba(7, 10, 18, 0.2), rgba(7, 10, 18, 0.9)),
+      repeating-linear-gradient(90deg, rgba(34, 211, 238, 0.12) 0 1px, transparent 1px 40px),
+      rgba(13, 19, 34, 0.9);
+  }
+
+  .ps2-live-stage > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--d-accent);
+  }
+
+  .ps2-live-stage h2 {
+    font-size: 2.2rem;
+  }
+
+  .ps2-chat-panel,
+  .ps2-version-timeline,
+  .ps2-settings-panel {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .ps2-chat-panel p,
+  .ps2-version-timeline p {
+    color: var(--d-text-muted);
+  }
+
+  .ps2-version-timeline article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.7rem;
+    border-top: 1px solid rgba(40, 66, 95, 0.58);
+    padding-top: 0.75rem;
+  }
+
+  .ps2-version-timeline svg {
+    color: var(--d-success);
+  }
+
+  .ps2-auth-page {
+    display: grid;
+    min-height: calc(100dvh - 48px);
+    place-items: center;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .ps2-auth-card {
+    display: grid;
+    width: min(100%, 420px);
+    gap: 0.85rem;
+    border: 1px solid rgba(40, 66, 95, 0.74);
+    border-radius: 8px;
+    padding: 1.2rem;
+    background: rgba(13, 19, 34, 0.92);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  }
+
+  .ps2-auth-card h1 {
+    max-width: none;
+    font-size: 2rem;
+  }
+
+  .ps2-auth-card > svg {
+    color: var(--d-accent);
+  }
+
+  .ps2-auth-card label,
+  .ps2-settings-grid label {
+    display: grid;
+    gap: 0.36rem;
+    color: var(--d-text-muted);
+    font-size: 0.84rem;
+    font-weight: 800;
+  }
+
+  .ps2-auth-card input,
+  .ps2-settings-grid input,
+  .ps2-settings-grid select {
+    width: 100%;
+    border: 1px solid rgba(145, 167, 195, 0.25);
+    border-radius: 7px;
+    padding: 0.68rem 0.75rem;
+    background: rgba(255, 255, 255, 0.045);
+    color: var(--d-text);
+    outline: 0;
+  }
+
+  .ps2-auth-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--d-text-muted);
+    font-size: 0.85rem;
+  }
+
+  .ps2-settings-panel {
+    max-width: 880px;
+  }
+
+  .ps2-settings-panel > svg {
+    color: var(--d-primary);
+  }
+
+  .ps2-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 0.85rem;
+    border-top: 1px solid rgba(40, 66, 95, 0.58);
+    padding-top: 0.9rem;
+  }
+
+  .ps2-settings-grid label:has(input[type="checkbox"]) {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+  }
+
+  .ps2-settings-grid input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  @media (max-width: 1120px) {
+    .ps2-root h1 {
+      font-size: 3.2rem;
+      max-width: 12ch;
+    }
+
+    .ps2-home-hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding: 1.5rem;
+    }
+
+    .ps2-cockpit.home-preview {
+      min-height: 0;
+    }
+
+    .ps2-proof-strip,
+    .ps2-pricing-band {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ps2-pricing-band > div {
+      grid-column: 1 / -1;
+    }
+
+    .ps2-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-sidebar {
+      position: fixed;
+      z-index: 70;
+      top: 48px;
+      bottom: 0;
+      left: 0;
+      width: min(84vw, 300px);
+      height: auto;
+      transform: translateX(-102%);
+      transition: transform 180ms ease;
+    }
+
+    .ps2-sidebar.open {
+      transform: translateX(0);
+    }
+
+    .ps2-studio-header {
+      top: 48px;
+    }
+
+    .ps2-mobile-only {
+      display: inline-flex;
+    }
+
+    .ps2-public-nav .ps2-mobile-only,
+    .ps2-studio-header .ps2-mobile-only {
+      display: inline-flex;
+    }
+
+    .ps2-workspace-grid,
+    .ps2-cockpit-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-inspector {
+      min-height: 0;
+    }
+
+    .ps2-mixer {
+      grid-template-columns: repeat(7, minmax(116px, 132px));
+    }
+
+    .ps2-collaborator-grid,
+    .ps2-rooms-grid {
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+  }
+
+  @media (max-width: 860px) {
+    .ps2-public-nav {
+      padding: 0 1rem;
+    }
+
+    .ps2-public-links {
+      display: none;
+    }
+
+    .ps2-mobile-menu {
+      display: flex;
+    }
+
+    .ps2-root h1 {
+      font-size: 2.35rem;
+      max-width: 13ch;
+    }
+
+    .ps2-home-hero {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .ps2-home-hero .ps2-cockpit.home-preview {
+      order: -1;
+    }
+
+    .ps2-cockpit.home-preview {
+      gap: 0.55rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-transport {
+      grid-template-columns: auto minmax(120px, 1fr) auto;
+      gap: 0.45rem;
+      padding: 0.5rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-record-button,
+    .ps2-cockpit.home-preview .ps2-transport-meta span:nth-child(2),
+    .ps2-cockpit.home-preview .ps2-transport-meta span:nth-child(3) {
+      display: none;
+    }
+
+    .ps2-cockpit.home-preview .ps2-arrangement.preview {
+      min-height: 232px;
+    }
+
+    .ps2-cockpit.home-preview .ps2-ruler,
+    .ps2-cockpit.home-preview .ps2-track-row {
+      min-width: 560px;
+    }
+
+    .ps2-cockpit.home-preview .ps2-track-row {
+      grid-template-columns: 116px minmax(420px, 1fr);
+      min-height: 49px;
+    }
+
+    .ps2-cockpit.home-preview .ps2-track-head {
+      padding: 0.4rem 0.5rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-track-head small {
+      font-size: 0.65rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(176px, 1fr);
+      max-height: 132px;
+      overflow-x: auto;
+      padding: 0.6rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector .ps2-panel-heading {
+      display: none;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector section {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector p {
+      display: none;
+    }
+
+    .ps2-cockpit.home-preview .ps2-mixer.compact {
+      grid-template-columns: repeat(5, minmax(92px, 104px));
+      padding: 0.5rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-channel {
+      min-height: 158px;
+      gap: 0.35rem;
+      padding: 0.45rem;
+    }
+
+    .ps2-cockpit.home-preview .ps2-knob,
+    .ps2-cockpit.home-preview .ps2-inserts {
+      display: none;
+    }
+
+    .ps2-cockpit.home-preview .ps2-fader-bank {
+      height: 72px;
+    }
+
+    .ps2-cockpit {
+      padding: 0.65rem;
+    }
+
+    .ps2-proof-strip,
+    .ps2-pricing-band,
+    .ps2-collaborator-grid,
+    .ps2-rooms-grid,
+    .ps2-settings-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-pricing-band {
+      padding: 1rem;
+    }
+
+    .ps2-transport {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .ps2-transport-controls,
+    .ps2-transport-meta {
+      justify-content: space-between;
+      overflow-x: auto;
+    }
+
+    .ps2-arrangement {
+      min-height: 400px;
+      overflow-x: auto;
+    }
+
+    .ps2-ruler,
+    .ps2-track-row {
+      min-width: 690px;
+    }
+
+    .ps2-panel-tabs {
+      display: flex;
+      gap: 0.45rem;
+      overflow-x: auto;
+      border: 1px solid rgba(40, 66, 95, 0.72);
+      border-radius: 8px;
+      padding: 0.42rem;
+      background: rgba(13, 19, 34, 0.76);
+    }
+
+    .ps2-panel-tabs button {
+      min-height: 36px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 0.45rem 0.65rem;
+      background: transparent;
+      color: var(--d-text-muted);
+      cursor: pointer;
+      font-weight: 850;
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    .ps2-panel-tabs button.active {
+      border-color: rgba(34, 211, 238, 0.38);
+      background: rgba(34, 211, 238, 0.1);
+      color: var(--d-text);
+    }
+
+    .ps2-workspace-panel {
+      display: none;
+    }
+
+    .ps2-workspace-panel.active {
+      display: block;
+    }
+
+    .ps2-workspace-grid {
+      display: block;
+    }
+
+    .inspector-panel:not(.active) .ps2-inspector {
+      display: none;
+    }
+
+    .mixer-panel:not(.active),
+    .crate-panel:not(.active) {
+      display: none;
+    }
+
+    .mixer-panel.active,
+    .crate-panel.active {
+      display: block;
+    }
+
+    .ps2-studio-header {
+      min-height: 66px;
+      padding: 0.75rem;
+    }
+
+    .ps2-header-actions .ps2-sync-pill {
+      display: none;
+    }
+
+    .ps2-workspace,
+    .ps2-list-page {
+      padding: 0.7rem 0.7rem 5.25rem;
+    }
+
+    .ps2-bottom-nav {
+      position: fixed;
+      right: 0.65rem;
+      bottom: 0.65rem;
+      left: 0.65rem;
+      z-index: 60;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.25rem;
+      border: 1px solid rgba(40, 66, 95, 0.78);
+      border-radius: 8px;
+      padding: 0.35rem;
+      background: rgba(7, 10, 18, 0.94);
+      backdrop-filter: blur(18px);
+    }
+
+    .ps2-bottom-nav a {
+      display: grid;
+      gap: 0.2rem;
+      place-items: center;
+      min-height: 50px;
+      border-radius: 6px;
+      color: var(--d-text-muted);
+      font-size: 0.68rem;
+      font-weight: 850;
+    }
+
+    .ps2-bottom-nav a.active {
+      background: rgba(34, 211, 238, 0.11);
+      color: var(--d-text);
+    }
+
+    .ps2-track-card {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .ps2-track-card .ps2-waveform {
+      min-height: 64px;
+    }
+
+    .ps2-split-row {
+      grid-template-columns: 38px minmax(0, 1fr) auto;
+    }
+
+    .ps2-split-row > span:nth-of-type(2),
+    .ps2-split-row > span:nth-of-type(3) {
+      grid-column: 2 / -1;
+    }
+
+    .ps2-split-row > span:nth-of-type(4),
+    .ps2-split-row > span:nth-of-type(5) {
+      justify-self: start;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .ps2-registry-strip {
+      padding: 0 0.7rem;
+    }
+
+    .ps2-registry-badge {
+      max-width: 48vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ps2-public-nav {
+      min-height: 62px;
+    }
+
+    .ps2-root h1 {
+      font-size: 2rem;
+      max-width: 100%;
+    }
+
+    .ps2-root h2 {
+      font-size: 1.08rem;
+    }
+
+    .ps2-hero-copy p {
+      font-size: 0.94rem;
+    }
+
+    .ps2-hero-actions,
+    .ps2-primary-cta,
+    .ps2-ghost-cta {
+      width: 100%;
+    }
+
+    .ps2-transport-controls {
+      gap: 0.36rem;
+    }
+
+    .ps2-record-button {
+      padding-inline: 0.64rem;
+    }
+
+    .ps2-track-row {
+      grid-template-columns: 124px minmax(520px, 1fr);
+    }
+
+    .ps2-track-head strong {
+      font-size: 0.72rem;
+    }
+
+    .ps2-mixer,
+    .ps2-mixer.compact {
+      grid-template-columns: repeat(7, minmax(106px, 116px));
+    }
+
+    .ps2-channel {
+      min-height: 224px;
+    }
+
+    .ps2-browser-toolbar,
+    .ps2-split-header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .ps2-browser-toolbar label {
+      min-width: 0;
+    }
+
+    .ps2-live-stage {
+      min-height: 220px;
+    }
+
+    .ps2-live-stage h2 {
+      font-size: 1.55rem;
+    }
+
+    .ps2-auth-page {
+      place-items: start center;
+      padding-top: 2rem;
+    }
+
+    .ps2-auth-card h1 {
+      font-size: 1.65rem;
+    }
+
+    .ps2-auth-links {
+      display: grid;
+    }
+  }
+}
+
+@layer app {
+  .ps2-root {
+    --d-primary: #67e8f9;
+    --d-secondary: #c084fc;
+    --d-accent: #fbbf24;
+    --d-bg: #05070d;
+    --d-surface: #090d16;
+    --d-surface-raised: #101725;
+    --d-border: #243349;
+    --d-text: #f4f8ff;
+    --d-text-muted: #8fa2bd;
+    --ps-card: rgba(10, 15, 26, 0.88);
+    --ps-card-strong: rgba(15, 23, 38, 0.94);
+    --ps-line: rgba(148, 163, 184, 0.16);
+    font-family: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(circle at 68% 14%, rgba(103, 232, 249, 0.12), transparent 24rem),
+      radial-gradient(circle at 42% 100%, rgba(192, 132, 252, 0.08), transparent 28rem),
+      linear-gradient(180deg, #05070d 0%, #070a12 52%, #05070d 100%);
+  }
+
+  .ps2-root::before {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.026) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.026) 1px, transparent 1px);
+    background-size: 56px 56px;
+    content: "";
+    mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, 0.36) 54%, transparent 100%);
+  }
+
+  .ps2-root > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .ps2-root h1 {
+    max-width: 12ch;
+    font-size: clamp(3rem, 5.4vw, 5.8rem);
+    font-weight: 850;
+    letter-spacing: 0;
+    line-height: 0.9;
+  }
+
+  .ps2-root h2 {
+    font-weight: 780;
+  }
+
+  .ps2-registry-strip {
+    min-height: 40px;
+    border-bottom-color: rgba(148, 163, 184, 0.14);
+    background: rgba(5, 7, 13, 0.88);
+  }
+
+  .ps2-registry-badge,
+  .ps2-sync-pill,
+  .ps2-status-pill,
+  .ps2-eyebrow {
+    border-color: rgba(103, 232, 249, 0.28);
+    background: rgba(103, 232, 249, 0.08);
+    color: #9beefd;
+  }
+
+  .ps2-public-nav {
+    top: 40px;
+    min-height: 64px;
+    border-bottom-color: rgba(148, 163, 184, 0.12);
+    background: rgba(5, 7, 13, 0.76);
+  }
+
+  .ps2-brand {
+    font-weight: 820;
+  }
+
+  .ps2-brand svg {
+    color: var(--d-accent);
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.38));
+  }
+
+  .ps2-public-links {
+    gap: 1.1rem;
+    font-size: 0.86rem;
+  }
+
+  .ps2-primary-cta,
+  .ps2-ghost-cta,
+  .ps2-icon-button,
+  .ps2-play-button,
+  .ps2-record-button,
+  .ps2-browser-toolbar button,
+  .ps2-auth-card button {
+    min-height: 40px;
+    border-color: rgba(148, 163, 184, 0.18);
+    border-radius: 7px;
+    background: rgba(15, 23, 38, 0.86);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+    font-weight: 760;
+  }
+
+  .ps2-primary-cta,
+  .ps2-play-button,
+  .ps2-auth-card button {
+    border-color: rgba(103, 232, 249, 0.82);
+    background: linear-gradient(180deg, #a5f3fc, #67e8f9 48%, #38bdf8);
+    color: #051018;
+    box-shadow: 0 12px 34px rgba(56, 189, 248, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  }
+
+  .ps2-ghost-cta {
+    color: #d7e4f5;
+  }
+
+  .ps2-record-button {
+    border-color: rgba(251, 113, 133, 0.36);
+    background: rgba(127, 29, 29, 0.12);
+    color: #fecdd3;
+  }
+
+  .ps2-home-hero {
+    grid-template-columns: minmax(300px, 0.5fr) minmax(720px, 1.5fr);
+    min-height: calc(100dvh - 178px);
+    align-items: center;
+    gap: clamp(1.1rem, 2vw, 2rem);
+    padding: clamp(1rem, 2vw, 2rem);
+  }
+
+  .ps2-hero-copy {
+    gap: 1rem;
+    max-width: 34rem;
+  }
+
+  .ps2-hero-copy h1 {
+    font-size: clamp(3rem, 4.8vw, 4.9rem);
+  }
+
+  .ps2-hero-copy p {
+    max-width: 33rem;
+    color: #a6b7cf;
+    font-size: clamp(0.96rem, 1vw, 1.08rem);
+    line-height: 1.68;
+  }
+
+  .ps2-hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: min(100%, 31rem);
+  }
+
+  .ps2-hero-metrics span {
+    display: grid;
+    gap: 0.12rem;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 7px;
+    padding: 0.65rem 0.72rem;
+    background: rgba(15, 23, 38, 0.5);
+    color: var(--d-text-muted);
+    font-size: 0.72rem;
+    font-weight: 720;
+  }
+
+  .ps2-hero-metrics strong {
+    color: var(--d-text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1rem;
+  }
+
+  .ps2-cockpit {
+    gap: 0.7rem;
+    border-color: rgba(148, 163, 184, 0.16);
+    border-radius: 10px;
+    background:
+      linear-gradient(180deg, rgba(15, 23, 38, 0.96), rgba(6, 10, 18, 0.98)),
+      var(--d-surface);
+    box-shadow:
+      0 32px 120px rgba(0, 0, 0, 0.52),
+      0 0 0 1px rgba(103, 232, 249, 0.04),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .ps2-cockpit.home-preview {
+    min-height: min(620px, calc(100dvh - 188px));
+  }
+
+  .ps2-cockpit.home-preview .ps2-arrangement.preview {
+    min-height: 250px;
+  }
+
+  .ps2-cockpit.home-preview .ps2-track-row {
+    min-height: 44px;
+  }
+
+  .ps2-cockpit.home-preview .ps2-mixer.compact {
+    grid-template-columns: repeat(5, minmax(104px, 1fr));
+  }
+
+  .ps2-cockpit.home-preview .ps2-channel {
+    min-height: 128px;
+    gap: 0.3rem;
+    padding: 0.44rem;
+  }
+
+  .ps2-cockpit.home-preview .ps2-knob {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ps2-cockpit.home-preview .ps2-fader-bank {
+    height: 50px;
+  }
+
+  .ps2-cockpit-titlebar {
+    display: flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    background: rgba(3, 6, 13, 0.62);
+  }
+
+  .ps2-cockpit-titlebar > div,
+  .ps2-cockpit-actions,
+  .ps2-cockpit-actions span {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+  }
+
+  .ps2-cockpit-titlebar strong {
+    display: block;
+    color: var(--d-text);
+    font-size: 0.92rem;
+    line-height: 1.1;
+  }
+
+  .ps2-cockpit-titlebar small,
+  .ps2-cockpit-actions span {
+    color: var(--d-text-muted);
+    font-size: 0.72rem;
+    font-weight: 720;
+  }
+
+  .ps2-live-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 9px;
+    border-radius: 999px;
+    background: #34d399;
+    box-shadow: 0 0 0 5px rgba(52, 211, 153, 0.1), 0 0 18px rgba(52, 211, 153, 0.8);
+  }
+
+  .ps2-transport,
+  .ps2-arrangement,
+  .ps2-mixer,
+  .ps2-inspector,
+  .ps2-browser-toolbar,
+  .ps2-track-card,
+  .ps2-collab-card,
+  .ps2-room-card,
+  .ps2-split-workbench,
+  .ps2-live-stage,
+  .ps2-chat-panel,
+  .ps2-version-timeline,
+  .ps2-settings-panel,
+  .ps2-auth-card {
+    border-color: rgba(148, 163, 184, 0.15);
+    background: var(--ps-card);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .ps2-transport {
+    grid-template-columns: auto minmax(220px, 1fr) auto;
+    padding: 0.6rem;
+    background: linear-gradient(180deg, rgba(17, 25, 40, 0.96), rgba(8, 12, 22, 0.96));
+  }
+
+  .ps2-transport-center {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+
+  .ps2-progress {
+    height: 6px;
+    background: rgba(148, 163, 184, 0.16);
+  }
+
+  .ps2-progress span {
+    background: linear-gradient(90deg, #67e8f9 0%, #fbbf24 48%, #c084fc 100%);
+  }
+
+  .ps2-transport-meta span {
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 6px;
+    background: rgba(148, 163, 184, 0.07);
+  }
+
+  .ps2-arrangement {
+    min-height: 390px;
+    background:
+      linear-gradient(90deg, rgba(103, 232, 249, 0.07) 0 1px, transparent 1px 9%),
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px 63px),
+      linear-gradient(180deg, rgba(11, 18, 31, 0.98), rgba(5, 8, 15, 0.98));
+  }
+
+  .ps2-arrangement.preview {
+    min-height: 330px;
+  }
+
+  .ps2-ruler {
+    height: 34px;
+    border-bottom-color: rgba(148, 163, 184, 0.14);
+    color: #7f90a9;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ps2-playhead {
+    width: 1px;
+    background: #fbbf24;
+    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.22), 0 0 24px rgba(251, 191, 36, 0.55);
+  }
+
+  .ps2-playhead::before {
+    width: 15px;
+    height: 15px;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .ps2-track-row {
+    min-height: 60px;
+    border-bottom-color: rgba(148, 163, 184, 0.12);
+  }
+
+  .ps2-track-head {
+    border-right-color: rgba(148, 163, 184, 0.14);
+    background: rgba(15, 23, 38, 0.48);
+  }
+
+  .ps2-track-head strong {
+    font-size: 0.76rem;
+    font-weight: 820;
+  }
+
+  .ps2-track-head small {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ps2-region {
+    border-radius: 7px;
+    background: rgba(103, 232, 249, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 10px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .ps2-waveform {
+    gap: 3px;
+  }
+
+  .ps2-waveform span {
+    opacity: 0.92;
+  }
+
+  .ps2-automation-line {
+    height: 1px;
+    opacity: 0.76;
+  }
+
+  .ps2-mixer {
+    grid-template-columns: repeat(7, minmax(118px, 1fr));
+    gap: 0.55rem;
+    padding: 0.55rem;
+    background: rgba(6, 10, 18, 0.96);
+  }
+
+  .ps2-channel {
+    min-height: 214px;
+    border-color: rgba(148, 163, 184, 0.14);
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(20, 28, 43, 0.88), rgba(9, 13, 23, 0.92));
+  }
+
+  .ps2-channel.master {
+    border-color: rgba(251, 191, 36, 0.34);
+    background: linear-gradient(180deg, rgba(44, 35, 14, 0.48), rgba(12, 13, 16, 0.95));
+  }
+
+  .ps2-inserts span,
+  .ps2-mini-buttons span {
+    border-color: rgba(148, 163, 184, 0.18);
+    background: rgba(148, 163, 184, 0.075);
+  }
+
+  .ps2-knob {
+    width: 34px;
+    height: 34px;
+    border-color: rgba(148, 163, 184, 0.24);
+    background:
+      conic-gradient(from var(--knob-angle), #67e8f9 0 28deg, rgba(148, 163, 184, 0.1) 28deg 360deg),
+      radial-gradient(circle, #1f2937 0 46%, #05070d 48% 100%);
+  }
+
+  .ps2-fader-bank {
+    height: 96px;
+  }
+
+  .ps2-fader i {
+    height: 9px;
+    background: linear-gradient(180deg, #f8fafc, #94a3b8);
+    box-shadow: 0 0 14px rgba(103, 232, 249, 0.4);
+  }
+
+  .ps2-inspector {
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .ps2-inspector section {
+    border-top-color: rgba(148, 163, 184, 0.13);
+  }
+
+  .ps2-status-row.warn {
+    color: #fbbf24;
+  }
+
+  .ps2-person-row > span,
+  .ps2-presence span,
+  .ps2-avatar {
+    border-color: rgba(5, 7, 13, 0.88);
+    font-weight: 900;
+  }
+
+  .ps2-proof-strip {
+    border-color: rgba(148, 163, 184, 0.14);
+    background: rgba(148, 163, 184, 0.12);
+  }
+
+  .ps2-proof-strip article {
+    min-height: 164px;
+    background: rgba(5, 7, 13, 0.92);
+  }
+
+  .ps2-pricing-band > div,
+  .ps2-pricing-band article {
+    border-color: rgba(148, 163, 184, 0.14);
+    background: rgba(9, 13, 23, 0.82);
+  }
+
+  .ps2-shell {
+    grid-template-columns: 232px minmax(0, 1fr);
+    min-height: calc(100dvh - 40px);
+  }
+
+  .ps2-sidebar {
+    top: 40px;
+    height: calc(100dvh - 40px);
+    border-right-color: rgba(148, 163, 184, 0.14);
+    background: rgba(5, 8, 15, 0.92);
+  }
+
+  .ps2-sidebar a,
+  .ps2-sidebar button {
+    border-radius: 7px;
+    color: #9aaac0;
+    font-size: 0.94rem;
+    font-weight: 760;
+  }
+
+  .ps2-sidebar a.active {
+    border-color: rgba(103, 232, 249, 0.34);
+    background: rgba(103, 232, 249, 0.09);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .ps2-studio-header {
+    top: 40px;
+    min-height: 70px;
+    border-bottom-color: rgba(148, 163, 184, 0.14);
+    background: rgba(5, 7, 13, 0.82);
+  }
+
+  .ps2-studio-header h1 {
+    font-size: 1.28rem;
+    font-weight: 820;
+  }
+
+  .ps2-workspace,
+  .ps2-list-page {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .ps2-panel-tabs {
+    border-color: rgba(148, 163, 184, 0.16);
+  }
+
+  .ps2-panel-tabs button {
+    font-weight: 760;
+  }
+
+  .ps2-track-card {
+    min-height: 96px;
+    transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  }
+
+  .ps2-track-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(103, 232, 249, 0.32);
+    background: rgba(15, 23, 38, 0.92);
+  }
+
+  @media (max-width: 1120px) {
+    .ps2-home-hero {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .ps2-home-hero .ps2-cockpit.home-preview {
+      order: -1;
+    }
+
+    .ps2-cockpit.home-preview {
+      min-height: 0;
+    }
+
+    .ps2-sidebar {
+      top: 40px;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .ps2-root,
+    .ps2-home,
+    .ps2-shell,
+    .ps2-main {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    .ps2-root h1 {
+      font-size: clamp(2.25rem, 12vw, 3.6rem);
+      line-height: 0.95;
+    }
+
+    .ps2-registry-strip {
+      min-height: 40px;
+    }
+
+    .ps2-public-nav {
+      top: 40px;
+      min-height: 60px;
+      padding: 0 0.8rem;
+      z-index: 80;
+      background: rgba(5, 7, 13, 0.96);
+    }
+
+    .ps2-home-hero {
+      padding: 1rem 0.75rem 0.75rem;
+    }
+
+    .ps2-hero-copy {
+      gap: 0.85rem;
+    }
+
+    .ps2-hero-metrics {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .ps2-hero-metrics span {
+      padding: 0.55rem;
+      font-size: 0.65rem;
+    }
+
+    .ps2-cockpit {
+      border-radius: 10px;
+      padding: 0.55rem;
+    }
+
+    .ps2-cockpit-titlebar {
+      min-height: 42px;
+      padding: 0.48rem 0.55rem;
+    }
+
+    .ps2-cockpit-titlebar small,
+    .ps2-cockpit-actions {
+      display: none;
+    }
+
+    .ps2-cockpit.home-preview .ps2-transport {
+      grid-template-columns: auto minmax(96px, 1fr) auto;
+    }
+
+    .ps2-cockpit.home-preview .ps2-arrangement.preview {
+      min-height: 238px;
+    }
+
+    .ps2-cockpit.home-preview .ps2-ruler,
+    .ps2-cockpit.home-preview .ps2-track-row {
+      min-width: 600px;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-auto-flow: row;
+      max-height: none;
+      overflow: hidden;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector section:nth-of-type(3) {
+      display: none;
+    }
+
+    .ps2-cockpit.home-preview .ps2-inspector strong {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .ps2-cockpit.home-preview .ps2-mixer.compact {
+      grid-template-columns: repeat(5, minmax(94px, 102px));
+    }
+
+    .ps2-cockpit.home-preview .ps2-channel {
+      min-height: 150px;
+    }
+
+    .ps2-transport {
+      gap: 0.55rem;
+      padding: 0.55rem;
+    }
+
+    .ps2-arrangement {
+      min-height: 390px;
+    }
+
+    .ps2-ruler,
+    .ps2-track-row {
+      min-width: 720px;
+    }
+
+    .ps2-panel-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.3rem;
+      overflow: visible;
+    }
+
+    .ps2-panel-tabs button {
+      min-width: 0;
+      overflow: hidden;
+      padding-inline: 0.45rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ps2-studio-header {
+      top: 40px;
+      width: 100%;
+      max-width: 100vw;
+      overflow: hidden;
+    }
+
+    .ps2-studio-header > div {
+      min-width: 0;
+    }
+
+    .ps2-studio-header h1 {
+      overflow-wrap: anywhere;
+    }
+
+    .ps2-header-actions {
+      min-width: max-content;
+    }
+
+    .ps2-workspace {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    .ps2-bottom-nav {
+      border-color: rgba(148, 163, 184, 0.18);
+      background: rgba(5, 7, 13, 0.94);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .ps2-hero-metrics {
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.35rem;
+    }
+
+    .ps2-hero-metrics strong {
+      font-size: 0.86rem;
+    }
+
+    .ps2-hero-actions {
+      gap: 0.55rem;
+    }
+
+    .ps2-track-row {
+      grid-template-columns: 122px minmax(560px, 1fr);
+    }
+
+    .ps2-mixer,
+    .ps2-mixer.compact {
+      grid-template-columns: repeat(7, minmax(104px, 112px));
+    }
+
+    .ps2-channel {
+      min-height: 202px;
+    }
+  }
+}
+
+@layer app {
+  @media (max-width: 1120px) {
+    .ps2-shell {
+      display: block;
+      grid-template-columns: 1fr;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    .ps2-main {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .ps2-sidebar {
+      position: fixed;
+      top: 40px;
+      bottom: 0;
+      left: 0;
+      z-index: 70;
+      width: min(84vw, 300px);
+      height: auto;
+      transform: translateX(-102%);
+      transition: transform 180ms ease;
+    }
+
+    .ps2-sidebar.open {
+      transform: translateX(0);
+    }
+  }
+
+  @media (max-width: 860px) {
+    .ps2-studio-header {
+      position: relative;
+      top: auto;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 0.58rem;
+      margin-top: 0;
+      margin-bottom: 0;
+      transform: none;
+    }
+
+    .ps2-studio-header > div:first-of-type {
+      min-width: 0;
+    }
+
+    .ps2-studio-header small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ps2-studio-header h1 {
+      max-width: 100%;
+      overflow: hidden;
+      font-size: clamp(1rem, 4.8vw, 1.22rem);
+      line-height: 1.05;
+      overflow-wrap: normal;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: normal;
+    }
+
+    .ps2-header-actions {
+      flex: 0 0 auto;
+      min-width: 0;
+    }
+
+    .ps2-header-actions .ps2-presence {
+      max-width: 104px;
+      overflow: hidden;
+    }
+
+    .ps2-header-actions .ps2-presence span {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      margin-left: -0.5rem;
+      font-size: 0.62rem;
+    }
+
+    .ps2-header-actions .ps2-presence span:first-child {
+      margin-left: 0;
+    }
+
+    .ps2-workspace,
+    .ps2-list-page {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .ps2-workspace > .ps2-transport,
+    .ps2-list-page > .ps2-transport {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .ps2-workspace > .ps2-transport .ps2-transport-controls,
+    .ps2-workspace > .ps2-transport .ps2-transport-meta,
+    .ps2-list-page > .ps2-transport .ps2-transport-controls,
+    .ps2-list-page > .ps2-transport .ps2-transport-meta {
+      justify-content: space-between;
+      overflow-x: visible;
+    }
+
+    .ps2-workspace > .ps2-transport .ps2-transport-center,
+    .ps2-list-page > .ps2-transport .ps2-transport-center {
+      min-width: 0;
+    }
+
+    .ps2-panel-tabs button {
+      font-size: 0.78rem;
+      text-overflow: clip;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .ps2-header-actions .ps2-presence span:nth-child(n + 4) {
+      display: none;
+    }
+
+    .ps2-panel-tabs button {
+      padding-inline: 0.35rem;
+      font-size: 0.74rem;
+    }
+  }
+}
