@@ -1,0 +1,210 @@
+# Decantr FAQ
+
+Short answers for common Decantr usage questions.
+
+## How do I start a new app with Decantr?
+
+Use `decantr new`:
+
+```bash
+npx @decantr/cli new my-app
+cd my-app
+```
+
+You can also start from a specific blueprint:
+
+```bash
+npx @decantr/cli new my-app --blueprint=agent-marketplace
+```
+
+Decantr creates the app contract, starter context, and available adapter files. The AI assistant still writes and edits the implementation.
+
+## How do I use Decantr in an existing app?
+
+Start with analysis, then attach Decantr intentionally:
+
+```bash
+npx @decantr/cli analyze
+npx @decantr/cli init --existing --accept-proposal
+```
+
+For monorepos, point Decantr at the app:
+
+```bash
+npx @decantr/cli analyze --project apps/web
+npx @decantr/cli init --existing --accept-proposal --project apps/web
+```
+
+Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
+
+## How does Decantr keep AI or agent work tied back to the original spec?
+
+You cannot truly force an LLM to follow a spec. Models are probabilistic, and once implementation starts they can drift, improvise, or overfit to the last instruction.
+
+That is why Decantr exists. It gives the assistant a durable contract to work from, scoped context to read while coding, and checks that report when the implementation drifts away from the intended product shape.
+
+The normal loop is:
+
+```bash
+npx @decantr/cli refresh
+npx @decantr/cli check
+npx @decantr/cli audit
+npx @decantr/cli health
+```
+
+If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
+
+```bash
+npx @decantr/cli add page dashboard/reports
+npx @decantr/cli add feature auth
+npx @decantr/cli refresh
+npx @decantr/cli check
+```
+
+The guardrail is simple: do not let implementation silently redefine the product. Either the code follows the contract, or the contract changes on purpose.
+
+## How do I make sure my project keeps following Decantr over time?
+
+Use local checks for fast feedback, then make Decantr part of CI so drift cannot be merged unnoticed.
+
+You cannot guarantee that every LLM, editor, or developer action will follow Decantr perfectly at all times. Local agents can ignore instructions, humans can forget commands, and commit hooks can be bypassed. The durable guardrail is to make Decantr health a required CI check.
+
+Install the default GitHub Actions gate:
+
+```bash
+npx @decantr/cli health init-ci
+```
+
+For monorepos:
+
+```bash
+npx @decantr/cli health init-ci --project apps/web
+```
+
+The generated workflow runs:
+
+```bash
+npx @decantr/cli health --ci --fail-on error
+```
+
+Then mark that GitHub check as required in branch protection. That makes Decantr drift unmergeable until it is fixed or the contract is deliberately updated.
+
+For local convenience, add package scripts:
+
+```json
+{
+  "scripts": {
+    "decantr:check": "decantr check",
+    "decantr:audit": "decantr audit",
+    "decantr:health": "decantr health",
+    "decantr:ci": "decantr health --ci --fail-on error"
+  }
+}
+```
+
+Some teams also wire those scripts into pre-commit or pre-push hooks, but CI is the enforcement layer. The local checks help people and agents catch drift early; CI keeps drift out of the main branch.
+
+## How do I check whether my app is still following Decantr?
+
+Run:
+
+```bash
+npx @decantr/cli check
+```
+
+For an existing app that was attached through brownfield adoption:
+
+```bash
+npx @decantr/cli check --brownfield
+```
+
+For a broader report:
+
+```bash
+npx @decantr/cli health
+```
+
+## How do I regenerate Decantr guidance after changing the app contract?
+
+Run:
+
+```bash
+npx @decantr/cli refresh
+```
+
+Use `refresh` after changing routes, sections, theme, features, or any other product-shape decision that the assistant should follow.
+
+## How do I add a page, feature, or theme?
+
+Examples:
+
+```bash
+npx @decantr/cli add page dashboard/reports
+npx @decantr/cli add feature auth
+npx @decantr/cli theme switch auradecantism
+npx @decantr/cli refresh
+```
+
+After the change, run:
+
+```bash
+npx @decantr/cli check
+```
+
+## How do I migrate an older Decantr project to V2 / Essence V4?
+
+Run:
+
+```bash
+npx @decantr/cli migrate --to v4
+```
+
+Then refresh and check:
+
+```bash
+npx @decantr/cli refresh
+npx @decantr/cli check
+```
+
+Pre-V4 essence files are migration inputs, not active runtime contracts.
+
+## How do I add Decantr checks to CI?
+
+Install the default GitHub Actions gate:
+
+```bash
+npx @decantr/cli health init-ci
+```
+
+For monorepos:
+
+```bash
+npx @decantr/cli health init-ci --project apps/web
+```
+
+CI can then run:
+
+```bash
+npx @decantr/cli health --ci --fail-on error
+```
+
+## Is Decantr a code generator?
+
+Not primarily. Decantr is a design-intelligence and governance layer for AI-generated UI. It gives AI tools a clearer contract, better UI context, registry-backed guidance, and drift checks. The assistant still writes the code.
+
+## What should I do when Decantr flags drift?
+
+Decide whether the code or the contract is wrong.
+
+If the implementation drifted, fix the code and rerun:
+
+```bash
+npx @decantr/cli check
+```
+
+If the product direction changed, update Decantr first, then regenerate guidance:
+
+```bash
+npx @decantr/cli refresh
+npx @decantr/cli check
+```

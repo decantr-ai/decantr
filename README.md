@@ -180,10 +180,34 @@ decantr content-health --ci --fail-on error
 decantr content-health --prompt <finding-id>
 ```
 
+## FAQ
+
+### How does Decantr keep AI or agent work tied back to the original spec?
+
+You cannot truly force an LLM to follow a spec. Decantr gives the assistant a durable contract, scoped context, and drift checks so implementation stays tied to the intended product shape.
+
+```bash
+decantr refresh
+decantr check
+decantr audit
+decantr health
+```
+
+If the product direction changes, update Decantr deliberately, then regenerate and check:
+
+```bash
+decantr add page dashboard/reports
+decantr refresh
+decantr check
+```
+
+See the full [FAQ](docs/faq.md) for common setup, brownfield, migration, CI, and drift questions.
+
 ## Links
 
 - Registry — [registry.decantr.ai](https://registry.decantr.ai)
 - Discord — [discord.gg/WeDpBd4xFU](https://discord.gg/WeDpBd4xFU)
+- FAQ — [docs/faq.md](docs/faq.md)
 - Published schemas — [decantr.ai/schemas](https://decantr.ai/schemas/)
 - Project Health — [docs/reference/project-health.md](docs/reference/project-health.md)
 - Content Health — [docs/reference/content-health.md](docs/reference/content-health.md)
