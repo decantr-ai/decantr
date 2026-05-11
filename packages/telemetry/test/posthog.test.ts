@@ -61,7 +61,7 @@ describe('PostHog telemetry sink', () => {
       decantr_actor_type: 'customer',
       decantr_org_id: 'org_123',
       decantr_project_id: 'project_123',
-      decantr_schema_version: '0.2.0',
+      decantr_schema_version: '0.3.0',
       decantr_source: 'api',
       decantr_environment: 'production',
       service_name: 'decantr-api',

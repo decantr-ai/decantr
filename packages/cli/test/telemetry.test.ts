@@ -2,7 +2,12 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendCliCommandTelemetry, sendNewProjectCompletedTelemetry } from '../src/telemetry.js';
+import { cmdTelemetry } from '../src/commands/telemetry.js';
+import {
+  sendAnalyzeCompletedTelemetry,
+  sendCliCommandTelemetry,
+  sendNewProjectCompletedTelemetry,
+} from '../src/telemetry.js';
 
 let projectRoot = '';
 let configDir = '';
@@ -87,7 +92,7 @@ describe('CLI command telemetry', () => {
     };
 
     expect(url).toBe('https://telemetry.test/v1/events');
-    expect(body.schemaVersion).toBe('0.2.0');
+    expect(body.schemaVersion).toBe('0.3.0');
     expect(body.event.name).toBe('cli.command.completed');
     expect(lifecycleBody.event.name).toBe('decantr.refresh.completed');
     expect(body.event.context.source).toBe('cli');
@@ -207,6 +212,87 @@ describe('CLI command telemetry', () => {
     expect(JSON.stringify(body)).not.toContain(projectRoot);
     expect(JSON.stringify(body)).not.toContain('customer-app');
     expect(JSON.stringify(body)).not.toContain('agent-marketplace');
+  });
+
+  it('captures brownfield analyze lifecycle telemetry without source paths', async () => {
+    writeProjectConfig({
+      telemetry: true,
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await sendAnalyzeCompletedTelemetry({
+      componentCount: 12,
+      dependencyCategoryCount: 3,
+      durationMs: 150,
+      pageCount: 4,
+      projectRoot,
+      routeCount: 6,
+      success: true,
+      targetFramework: 'nextjs',
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body)) as {
+      event: {
+        name: string;
+        properties: Record<string, unknown>;
+      };
+    };
+
+    expect(body.event.name).toBe('decantr.analyze.completed');
+    expect(body.event.properties).toMatchObject({
+      command: 'analyze',
+      componentCount: 12,
+      dependencyCategoryCount: 3,
+      pageCount: 4,
+      routeCount: 6,
+      success: true,
+      workflowMode: 'brownfield-attach',
+    });
+    expect(JSON.stringify(body)).not.toContain(projectRoot);
+  });
+
+  it('links opted-in opaque CLI telemetry identity to the API', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ linked: 2 }), {
+        headers: { 'Content-Type': 'application/json' },
+        status: 200,
+      }),
+    );
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.stubGlobal('fetch', fetchMock);
+
+    await cmdTelemetry(
+      [
+        'link',
+        '--enable',
+        '--api-key',
+        'test-key',
+        '--api-url',
+        'https://api.test/v1',
+        '--org',
+        'customer-co',
+      ],
+      projectRoot,
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    const projectConfig = readJson(join(projectRoot, '.decantr', 'project.json'));
+
+    expect(url).toBe('https://api.test/v1/me/telemetry-link');
+    expect(init.headers).toMatchObject({ Authorization: 'Bearer test-key' });
+    expect(body.install_id).toMatch(/^install_/);
+    expect(body.project_id).toMatch(/^project_/);
+    expect(body.org_slug).toBe('customer-co');
+    expect(projectConfig.telemetry).toBe(true);
+    expect(JSON.stringify(body)).not.toContain(projectRoot);
+
+    logSpy.mockRestore();
   });
 
   it('attributes workspace --project commands to the selected app root', async () => {

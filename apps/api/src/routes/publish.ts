@@ -12,6 +12,7 @@ import { getContentIntelligence } from '../lib/content-intelligence.js';
 import { getCommercialLimits } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { recordUsageEvent } from '../lib/usage-metering.js';
+import { emitApiTelemetry } from '../lib/telemetry.js';
 import {
   getSignedThumbnailUrl,
   REGISTRY_THUMBNAIL_BUCKET,
@@ -273,8 +274,15 @@ publishRoutes.get('/my/content', async (c) => {
 
 // POST /v1/content - Publish new content
 publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) => {
+  const startedAt = Date.now();
   const auth = c.get('auth') as AuthContext;
   const body = await c.req.json();
+  const validationTelemetryContext = {
+    actorType: 'service' as const,
+    anonymousId: 'api:content-validation',
+    orgId: undefined,
+    userId: undefined,
+  };
 
   // Validate required fields
   if (!body.type || !CONTENT_TYPES.includes(body.type)) {
@@ -292,6 +300,17 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
 
   const contentValidation = validateRegistryContent(body.type, body.data);
   if (!contentValidation.valid) {
+    emitApiTelemetry(c, {
+      name: 'content.validation.completed',
+      context: validationTelemetryContext,
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCount: contentValidation.errors.length,
+        itemCount: 1,
+        valid: false,
+      },
+    });
     return c.json({
       error: 'Content data failed registry schema validation',
       validationErrors: contentValidation.errors,
@@ -304,6 +323,17 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
   if (body.data.version && (body.data.platform || body.data.dna)) {
     const validation = validateEssence(body.data);
     if (!validation.valid) {
+      emitApiTelemetry(c, {
+        name: 'content.validation.completed',
+        context: validationTelemetryContext,
+        properties: {
+          contentType: body.type,
+          durationMs: Date.now() - startedAt,
+          errorCount: validation.errors.length,
+          itemCount: 1,
+          valid: false,
+        },
+      });
       return c.json({
         error: 'Content data failed essence validation',
         validationErrors: validation.errors,
@@ -311,11 +341,33 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
     }
   }
 
+  emitApiTelemetry(c, {
+    name: 'content.validation.completed',
+    context: validationTelemetryContext,
+    properties: {
+      contentType: body.type,
+      durationMs: Date.now() - startedAt,
+      errorCount: 0,
+      itemCount: 1,
+      valid: true,
+    },
+  });
+
   // Determine visibility
   const visibility = body.visibility === 'private' ? 'private' : 'public';
 
   // Private content requires Pro+ tier
   if (visibility === 'private' && auth.user!.tier === 'free') {
+    emitApiTelemetry(c, {
+      name: 'content.publish.completed',
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCode: 'private_content_requires_paid_plan',
+        success: false,
+        visibility,
+      },
+    });
     return c.json({ error: 'Private content requires Pro tier or higher' }, 403);
   }
 
@@ -362,6 +414,16 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
     .is('org_id', null);
 
   if (typeof limits.personal_content_items === 'number' && (personalContentCount ?? 0) >= limits.personal_content_items) {
+    emitApiTelemetry(c, {
+      name: 'content.publish.completed',
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCode: 'personal_content_limit_reached',
+        success: false,
+        visibility,
+      },
+    });
     return c.json({ error: 'You have reached your personal content limit for this plan.' }, 403);
   }
 
@@ -374,6 +436,16 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
       .eq('visibility', 'private');
 
     if ((privateCount ?? 0) >= limits.personal_private_packages) {
+      emitApiTelemetry(c, {
+        name: 'content.publish.completed',
+        properties: {
+          contentType: body.type,
+          durationMs: Date.now() - startedAt,
+          errorCode: 'personal_private_package_limit_reached',
+          success: false,
+          visibility,
+        },
+      });
       return c.json({ error: 'You have reached your private package limit for this plan.' }, 403);
     }
   }
@@ -403,6 +475,17 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
     .single();
 
   if (error) {
+    const errorCode = error.code === '23505' ? 'duplicate_content' : 'publish_failed';
+    emitApiTelemetry(c, {
+      name: 'content.publish.completed',
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCode,
+        success: false,
+        visibility,
+      },
+    });
     if (error.code === '23505') {
       return c.json({ error: `Content "${namespace}/${body.type}/${body.slug}" already exists` }, 409);
     }
@@ -437,6 +520,16 @@ publishRoutes.post('/content', requireApiKeyScope('content:write'), async (c) =>
     metric: visibility === 'private' ? 'private_package_publish' : 'content_publish',
     quantity: 1,
     source: 'jwt',
+  });
+
+  emitApiTelemetry(c, {
+    name: 'content.publish.completed',
+    properties: {
+      contentType: body.type,
+      durationMs: Date.now() - startedAt,
+      success: true,
+      visibility,
+    },
   });
 
   const statusCode = status === 'published' ? 201 : 202;

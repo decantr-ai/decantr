@@ -383,7 +383,7 @@ export async function cmdMagic(
     console.log(
       dim(' Running brownfield analysis instead so you can attach Decantr deliberately.\n'),
     );
-    cmdAnalyze(projectRoot);
+    await cmdAnalyze(projectRoot);
     console.log(
       `${BOLD}Recommended next step:${RESET} ${cyan('decantr init --existing --accept-proposal')}`,
     );

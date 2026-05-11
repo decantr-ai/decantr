@@ -438,6 +438,7 @@ export interface AdminTelemetryMarketingAttribution {
 
 export interface AdminTelemetryProductActivation {
   activation_rate: number;
+  analyze_completed_events: number;
   check_completed_events: number;
   ci_failure_events: number;
   ci_failure_rate: number;

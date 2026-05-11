@@ -17,6 +17,7 @@ import {
   type OrganizationEntitlementSummary,
 } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
+import { emitApiTelemetry } from '../lib/telemetry.js';
 
 export const billingRoutes = new Hono<Env>();
 
@@ -29,6 +30,12 @@ function billingComingSoonResponse(c: any) {
     error: 'Paid plan checkout is coming soon. Billing is not active yet.',
     code: 'billing_coming_soon',
   }, 403);
+}
+
+type CheckoutPlan = 'pro' | 'team';
+
+function normalizeCheckoutPlan(value: unknown): CheckoutPlan | undefined {
+  return value === 'pro' || value === 'team' ? value : undefined;
 }
 
 function getAllowedBillingOrigins(): Set<string> {
@@ -77,10 +84,6 @@ function validateBillingCallbackUrl(value: string, label: string): string | null
 // POST /billing/checkout -- Create a Stripe Checkout session for Pro or Team
 // ---------------------------------------------------------------------------
 billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billing:manage'), async (c) => {
-  if (!isBillingLaunchEnabled()) {
-    return billingComingSoonResponse(c);
-  }
-
   const auth = c.get('auth') as AuthContext;
   const user = auth.user!;
 
@@ -89,9 +92,29 @@ billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billi
     quantity?: number;
     success_url: string;
     cancel_url: string;
-  }>();
+  }>().catch(() => ({} as {
+    plan?: unknown;
+    quantity?: number;
+    success_url?: string;
+    cancel_url?: string;
+  }));
 
-  if (!body.plan || !['pro', 'team'].includes(body.plan)) {
+  if (!isBillingLaunchEnabled()) {
+    emitApiTelemetry(c, {
+      name: 'billing.checkout_blocked',
+      properties: {
+        billingEnabled: false,
+        orgScoped: false,
+        plan: normalizeCheckoutPlan(body.plan),
+        reason: 'billing_coming_soon',
+        surface: 'api_billing_checkout',
+      },
+    });
+    return billingComingSoonResponse(c);
+  }
+
+  const plan = normalizeCheckoutPlan(body.plan);
+  if (!plan) {
     return c.json({ error: 'Invalid plan. Must be "pro" or "team".' }, 400);
   }
 
@@ -107,11 +130,11 @@ billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billi
     return c.json({ error: cancelUrlError }, 400);
   }
 
-  if (body.plan === 'team' && user.tier === 'team') {
+  if (plan === 'team' && user.tier === 'team') {
     return c.json({ error: 'Already on Team plan. Use billing portal to manage seats.' }, 400);
   }
 
-  if (body.plan === 'pro' && (user.tier === 'pro' || user.tier === 'team' || user.tier === 'enterprise')) {
+  if (plan === 'pro' && (user.tier === 'pro' || user.tier === 'team' || user.tier === 'enterprise')) {
     return c.json({ error: 'Already on a paid plan equal to or above Pro.' }, 400);
   }
 
@@ -142,8 +165,8 @@ billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billi
       .eq('id', user.id);
   }
 
-  const priceId = body.plan === 'pro' ? STRIPE_PRO_PRICE_ID : STRIPE_TEAM_PRICE_ID;
-  const quantity = body.plan === 'team' ? (body.quantity ?? 1) : 1;
+  const priceId = plan === 'pro' ? STRIPE_PRO_PRICE_ID : STRIPE_TEAM_PRICE_ID;
+  const quantity = plan === 'team' ? (body.quantity ?? 1) : 1;
 
   const session = await stripe.checkout.sessions.create({
     customer: stripeCustomerId,
@@ -156,7 +179,7 @@ billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billi
     ],
     metadata: {
       supabase_user_id: user.id,
-      plan: body.plan,
+      plan,
       quantity: String(quantity),
     },
     success_url: body.success_url,
@@ -170,7 +193,7 @@ billingRoutes.post('/billing/checkout', requireAuth(), requireApiKeyScope('billi
     target_type: 'checkout_session',
     target_id: session.id,
     details: {
-      plan: body.plan,
+      plan,
       quantity,
     },
   });

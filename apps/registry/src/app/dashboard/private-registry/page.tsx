@@ -3,6 +3,7 @@ import { api, type DashboardContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
 import { RegistryWebEventTracker } from '@/components/registry-web-telemetry';
 import { getWorkspaceState } from '@/lib/workspace-state';
+import { PrivateRegistryTelemetryLink } from './private-registry-telemetry-link';
 
 interface PrivateRegistryPageProps {
   searchParams: Promise<{
@@ -32,8 +33,9 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
       <div className="registry-page-stack">
         <RegistryWebEventTracker
           eventKey="private-registry-gate"
-          name="registry_web.organization_viewed"
+          name="private_registry.gate_viewed"
           properties={{
+            enterpriseOrgCount: enterpriseOrgs.length,
             orgScoped: false,
             plan: workspace?.tier ?? 'unknown',
             surface: 'dashboard_private_registry_gate',
@@ -52,12 +54,25 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
               Upgrade to Enterprise to browse an internal org registry with dedicated discovery and governance controls.
             </p>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard/billing" className="d-interactive" data-variant="primary">
+              <PrivateRegistryTelemetryLink
+                action="open_billing"
+                href="/dashboard/billing"
+                orgScoped={false}
+                plan={workspace?.tier ?? 'unknown'}
+                surface="dashboard_private_registry_gate"
+                variant="primary"
+              >
                 Review plans
-              </Link>
-              <Link href="/dashboard/team" className="d-interactive" data-variant="ghost">
+              </PrivateRegistryTelemetryLink>
+              <PrivateRegistryTelemetryLink
+                action="open_team"
+                href="/dashboard/team"
+                orgScoped={false}
+                plan={workspace?.tier ?? 'unknown'}
+                surface="dashboard_private_registry_gate"
+              >
                 Open team workspace
-              </Link>
+              </PrivateRegistryTelemetryLink>
             </div>
           </div>
         </section>
@@ -84,12 +99,16 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
     <div className="registry-page-stack">
       <RegistryWebEventTracker
         eventKey={`private-registry:${activeOrg.id}:${items.length}`}
-        name="registry_web.organization_viewed"
+        name="private_registry.content_listed"
         properties={{
           itemCount: items.length,
           orgScoped: true,
           plan: workspace.tier,
+          queryPresent: Boolean(query),
+          statusFilterPresent: Boolean(status),
           surface: 'dashboard_private_registry',
+          typeFilterPresent: Boolean(type),
+          visibilityFilterPresent: Boolean(visibility),
         }}
       />
       <div className="registry-page-intro">

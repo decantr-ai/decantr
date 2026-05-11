@@ -10,11 +10,16 @@ import { logger } from './logger.js';
 const CACHE_TTL_MS = 60_000;
 
 type TelemetryIdentityType = 'anonymous' | 'install' | 'project';
-type CachedActor = TelemetryActorType | null;
+interface TelemetryContextResolution {
+  actorType: TelemetryActorType | null;
+  userId?: string | null;
+  orgId?: string | null;
+}
+type CachedResolution = TelemetryContextResolution | null;
 
 interface CacheEntry {
   expiresAt: number;
-  value: CachedActor;
+  value: CachedResolution;
 }
 
 const actorCache = new Map<string, CacheEntry>();
@@ -27,31 +32,51 @@ export async function resolveApiTelemetryActorType(
   context: TelemetryContext,
   options: TelemetryActorResolutionOptions = {},
 ): Promise<TelemetryActorType> {
+  return (await resolveApiTelemetryContext(context, options)).actorType ?? 'service';
+}
+
+export async function resolveApiTelemetryContext(
+  context: TelemetryContext,
+  options: TelemetryActorResolutionOptions = {},
+): Promise<TelemetryContext> {
+  if (context.source === 'api' && context.actorType === 'service') {
+    return context;
+  }
+
   const serverContext = { ...context, actorType: undefined };
   const envResolved = resolveTelemetryActorType(serverContext, options);
 
   if (envResolved === 'official_pipeline' || envResolved === 'internal') {
-    return envResolved;
+    return { ...context, actorType: envResolved };
   }
 
-  const dbResolved = await resolveDatabaseActorType(context);
-  if (dbResolved) {
-    return dbResolved;
+  const dbResolved = await resolveDatabaseContext(context);
+  const enrichedContext: TelemetryContext = {
+    ...context,
+    userId: context.userId ?? dbResolved?.userId ?? undefined,
+    orgId: context.orgId ?? dbResolved?.orgId ?? undefined,
+  };
+
+  if (dbResolved?.actorType) {
+    return { ...enrichedContext, actorType: dbResolved.actorType };
   }
 
-  return envResolved;
+  return {
+    ...enrichedContext,
+    actorType: resolveTelemetryActorType({ ...enrichedContext, actorType: undefined }, options),
+  };
 }
 
-async function resolveDatabaseActorType(context: TelemetryContext): Promise<CachedActor> {
+async function resolveDatabaseContext(context: TelemetryContext): Promise<CachedResolution> {
   try {
     if (context.userId) {
-      const userActor = await getFlaggedActor('user', context.userId);
-      if (userActor) return userActor;
+      const userResolution = await getFlaggedActor('user', context.userId);
+      if (userResolution?.actorType) return userResolution;
     }
 
     if (context.orgId) {
-      const orgActor = await getFlaggedActor('org', context.orgId);
-      if (orgActor) return orgActor;
+      const orgResolution = await getFlaggedActor('org', context.orgId);
+      if (orgResolution?.actorType) return orgResolution;
     }
 
     const aliases: Array<{ identityType: TelemetryIdentityType; identityId: string | undefined }> = [
@@ -62,8 +87,8 @@ async function resolveDatabaseActorType(context: TelemetryContext): Promise<Cach
 
     for (const alias of aliases) {
       if (!alias.identityId) continue;
-      const aliasActor = await getAliasActor(alias.identityType, alias.identityId);
-      if (aliasActor) return aliasActor;
+      const aliasResolution = await getAliasResolution(alias.identityType, alias.identityId);
+      if (aliasResolution?.actorType) return aliasResolution;
     }
 
     return null;
@@ -73,7 +98,7 @@ async function resolveDatabaseActorType(context: TelemetryContext): Promise<Cach
   }
 }
 
-async function getFlaggedActor(scope: 'org' | 'user', id: string): Promise<CachedActor> {
+async function getFlaggedActor(scope: 'org' | 'user', id: string): Promise<CachedResolution> {
   const cacheKey = `${scope}:${id}`;
   const cached = readCache(cacheKey);
   if (cached !== undefined) return cached;
@@ -91,15 +116,15 @@ async function getFlaggedActor(scope: 'org' | 'user', id: string): Promise<Cache
   }
 
   const row = data as { is_internal?: boolean | null; is_test?: boolean | null } | null;
-  const actor = row?.is_internal || row?.is_test ? 'internal' : null;
-  writeCache(cacheKey, actor);
-  return actor;
+  const resolution = row?.is_internal || row?.is_test ? { actorType: 'internal' as const } : null;
+  writeCache(cacheKey, resolution);
+  return resolution;
 }
 
-async function getAliasActor(
+async function getAliasResolution(
   identityType: TelemetryIdentityType,
   identityId: string,
-): Promise<CachedActor> {
+): Promise<CachedResolution> {
   const cacheKey = `alias:${identityType}:${identityId}`;
   const cached = readCache(cacheKey);
   if (cached !== undefined) return cached;
@@ -107,7 +132,7 @@ async function getAliasActor(
   const client = createAdminClient();
   const { data, error } = await client
     .from('telemetry_identity_aliases')
-    .select('actor_type')
+    .select('actor_type, user_id, org_id')
     .eq('identity_type', identityType)
     .eq('identity_id', identityId)
     .maybeSingle();
@@ -116,12 +141,23 @@ async function getAliasActor(
     throw error;
   }
 
-  const actor = (data?.actor_type ?? null) as CachedActor;
-  writeCache(cacheKey, actor);
-  return actor;
+  const row = data as {
+    actor_type?: TelemetryActorType | null;
+    org_id?: string | null;
+    user_id?: string | null;
+  } | null;
+  const resolution = row?.actor_type
+    ? {
+        actorType: row.actor_type,
+        orgId: row.org_id ?? null,
+        userId: row.user_id ?? null,
+      }
+    : null;
+  writeCache(cacheKey, resolution);
+  return resolution;
 }
 
-function readCache(key: string): CachedActor | undefined {
+function readCache(key: string): CachedResolution | undefined {
   const entry = actorCache.get(key);
   if (!entry) return undefined;
   if (entry.expiresAt < Date.now()) {
@@ -131,7 +167,7 @@ function readCache(key: string): CachedActor | undefined {
   return entry.value;
 }
 
-function writeCache(key: string, value: CachedActor): void {
+function writeCache(key: string, value: CachedResolution): void {
   actorCache.set(key, {
     expiresAt: Date.now() + CACHE_TTL_MS,
     value,

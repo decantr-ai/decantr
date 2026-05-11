@@ -110,10 +110,13 @@ interface TierDef {
   description: string;
   features: string[];
   planId?: 'pro' | 'team';
+  intentPlan?: BillingIntentPlan;
   highlighted?: boolean;
   current?: boolean;
   ctaLabel?: string;
 }
+
+type BillingIntentPlan = 'enterprise' | 'pro' | 'team';
 
 function TierUpgradeCard({
   tier,
@@ -126,9 +129,10 @@ function TierUpgradeCard({
   highlighted: boolean;
   isPending: boolean;
   billingLaunchEnabled: boolean;
-  onUpgrade: (plan: 'pro' | 'team') => void;
+  onUpgrade: (plan: BillingIntentPlan) => void;
 }) {
-  const disabled = tier.current || isPending || !tier.planId || !billingLaunchEnabled;
+  const intentPlan = tier.intentPlan ?? tier.planId;
+  const disabled = tier.current || isPending || !intentPlan;
 
   return (
     <div
@@ -187,14 +191,14 @@ function TierUpgradeCard({
         className="d-interactive registry-plan-card-cta"
         data-variant={tier.current ? 'ghost' : 'primary'}
         disabled={disabled}
-        onClick={() => !disabled && tier.planId && onUpgrade(tier.planId)}
+        onClick={() => !disabled && intentPlan && onUpgrade(intentPlan)}
       >
         {tier.current
           ? 'Current Plan'
           : isPending
           ? 'Loading...'
           : !billingLaunchEnabled
-          ? 'Coming Soon'
+          ? tier.ctaLabel ?? 'Register Interest'
           : tier.ctaLabel || 'Upgrade'}
       </button>
     </div>
@@ -301,13 +305,46 @@ export default function BillingPage() {
         'Advanced governance controls',
         'Dedicated support path',
       ],
+      intentPlan: 'enterprise',
       ctaLabel: 'Contact Sales',
       current: currentTier === 'enterprise',
     },
   ];
 
-  function handleUpgrade(plan: 'pro' | 'team') {
+  function handleUpgrade(plan: BillingIntentPlan) {
     setError(null);
+    capture('billing.plan_clicked', {
+      billingEnabled: billingLaunchEnabled,
+      currentPlan: currentTier,
+      orgScoped: Boolean(activeOrg),
+      plan,
+      surface: 'dashboard_billing',
+    });
+
+    if (!billingLaunchEnabled) {
+      capture('billing.checkout_blocked', {
+        billingEnabled: false,
+        orgScoped: Boolean(activeOrg),
+        plan,
+        reason: 'billing_coming_soon',
+        surface: 'dashboard_billing',
+      });
+      setError('Paid plan checkout is coming soon. Your plan interest has been recorded.');
+      return;
+    }
+
+    if (plan === 'enterprise') {
+      capture('billing.checkout_blocked', {
+        billingEnabled: billingLaunchEnabled,
+        orgScoped: Boolean(activeOrg),
+        plan,
+        reason: 'billing_not_configured',
+        surface: 'dashboard_billing',
+      });
+      setError('Enterprise private registries are manually provisioned right now.');
+      return;
+    }
+
     startTransition(async () => {
       const result = await upgradeAction(plan);
       if (result?.error) {

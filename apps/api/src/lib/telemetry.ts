@@ -12,7 +12,7 @@ import {
 import type { Context } from 'hono';
 import type { Env } from '../types.js';
 import { logger } from './logger.js';
-import { resolveApiTelemetryActorType } from './telemetry-actor.js';
+import { resolveApiTelemetryContext } from './telemetry-actor.js';
 
 const TELEMETRY_TIMEOUT_MS = 3000;
 
@@ -82,10 +82,7 @@ async function normalizeTelemetryContext(context: TelemetryContext): Promise<Tel
     ...context,
   };
 
-  return {
-    ...normalized,
-    actorType: await resolveApiTelemetryActorType(normalized, getInternalActorOptions()),
-  };
+  return resolveApiTelemetryContext(normalized, getInternalActorOptions());
 }
 
 function getApiTelemetryClient(): ReturnType<typeof createTelemetryClient> {

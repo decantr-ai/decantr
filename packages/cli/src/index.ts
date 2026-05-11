@@ -58,6 +58,7 @@ import { cmdRefresh } from './commands/refresh.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
 import { cmdRemoveFeature, cmdRemovePage, cmdRemoveSection } from './commands/remove.js';
 import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
+import { cmdTelemetry } from './commands/telemetry.js';
 import { cmdThemeSwitch } from './commands/theme-switch.js';
 import { detectProject, formatDetection } from './detect.js';
 import { buildGuardRegistryContext } from './guard-context.js';
@@ -2903,6 +2904,8 @@ ${BOLD}Usage:${RESET}
   decantr health init-ci [--force] [--project <path>] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr content-health [--json] [--markdown] [--ci]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json]
+  decantr telemetry status [--json]
+  decantr telemetry link [--enable] [--org <slug>]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
@@ -2961,6 +2964,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
   ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
+  ${cyan('telemetry')}   Inspect or link this project's opted-in CLI telemetry identity
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
   ${cyan('registry')}    Registry management and intelligence summary
   ${cyan('rules')}       Preview/apply Decantr assistant bridge blocks to repo rule files
@@ -2987,6 +2991,8 @@ ${BOLD}Examples:${RESET}
   decantr content-health --ci --fail-on error
   decantr studio
   decantr studio --report decantr-health.json
+  decantr telemetry status
+  decantr telemetry link --enable --org my-team
   decantr audit
   decantr audit src/pages/HomePage.tsx
   decantr migrate --to v4
@@ -3511,6 +3517,11 @@ async function main() {
       break;
     }
 
+    case 'telemetry': {
+      await cmdTelemetry(args.slice(1), process.cwd());
+      break;
+    }
+
     case 'create': {
       const type = args[1];
       const name = args[2];
@@ -3747,7 +3758,7 @@ async function main() {
         process.exitCode = 1;
         break;
       }
-      cmdAnalyze(workspaceInfo.appRoot, workspaceInfo);
+      await cmdAnalyze(workspaceInfo.appRoot, workspaceInfo);
       break;
     }
 

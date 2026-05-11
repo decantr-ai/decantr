@@ -43,6 +43,7 @@ const TELEMETRY_SIGNAL_BUCKETS = [
     label: 'CLI adoption',
     events: [
       'cli.command.completed',
+      'decantr.analyze.completed',
       'decantr.check.completed',
       'decantr.init.completed',
       'decantr.new.completed',
@@ -54,6 +55,7 @@ const TELEMETRY_SIGNAL_BUCKETS = [
     key: 'product_activation',
     label: 'Product activation',
     events: [
+      'decantr.analyze.completed',
       'decantr.check.completed',
       'decantr.health.healthy',
       'decantr.init.completed',
@@ -86,10 +88,34 @@ const TELEMETRY_SIGNAL_BUCKETS = [
     events: ['content.validation.completed', 'content.publish.completed'],
   },
   {
+    key: 'identity_hygiene',
+    label: 'Identity hygiene',
+    events: ['registry_web.identity_linked', 'telemetry.identity_linked'],
+  },
+  {
+    key: 'billing_intent',
+    label: 'Billing intent',
+    events: ['billing.plan_clicked', 'billing.checkout_blocked', 'registry_web.billing_viewed'],
+  },
+  {
+    key: 'private_registry_readiness',
+    label: 'Private registry readiness',
+    events: [
+      'private_registry.gate_viewed',
+      'private_registry.intent_clicked',
+      'private_registry.content_listed',
+      'registry_web.organization_viewed',
+    ],
+  },
+  {
     key: 'commercial_intent',
     label: 'Commercial intent',
     events: [
+      'billing.checkout_blocked',
+      'billing.plan_clicked',
       'marketing_web.cta_clicked',
+      'private_registry.gate_viewed',
+      'private_registry.intent_clicked',
       'registry_web.billing_viewed',
       'registry_web.api_key_page_viewed',
       'registry_web.organization_viewed',
@@ -249,6 +275,7 @@ export interface TelemetryMarketingAttributionSummary {
 
 export interface TelemetryProductActivationSummary {
   activation_rate: number;
+  analyze_completed_events: number;
   check_completed_events: number;
   ci_failure_events: number;
   ci_failure_rate: number;
@@ -717,10 +744,14 @@ function eventListSql() {
 
 function marketingAttributionEventListSql() {
   return [
+    'billing.checkout_blocked',
+    'billing.plan_clicked',
     'marketing_web.command_clicked',
     'marketing_web.cta_clicked',
     'marketing_web.outbound_clicked',
     'marketing_web.page_viewed',
+    'private_registry.gate_viewed',
+    'private_registry.intent_clicked',
     'registry_web.content_opened',
     'registry_web.page_viewed',
     'registry_web.search_performed',
@@ -930,7 +961,10 @@ function buildMarketingAttribution(rows: TelemetryMarketingAttributionRow[]): {
   for (const row of rows) {
     const count = row.count;
     const isMarketingEvent = row.event.startsWith('marketing_web.');
-    const isRegistryFollowThrough = row.event.startsWith('registry_web.');
+    const isRegistryFollowThrough =
+      row.event.startsWith('billing.') ||
+      row.event.startsWith('private_registry.') ||
+      row.event.startsWith('registry_web.');
     const hasMarketingAttribution = Boolean(row.campaign || row.landing_path);
     if (isMarketingEvent) {
       totalMarketingEvents += count;
@@ -1044,6 +1078,7 @@ function buildProductActivationSummary(
 
   return {
     activation_rate: activationRate,
+    analyze_completed_events: totals.get('decantr.analyze.completed') ?? 0,
     check_completed_events: totals.get('decantr.check.completed') ?? 0,
     ci_failure_events: ciFailureEvents,
     ci_failure_rate: ciFailureRate,
@@ -1136,6 +1171,9 @@ function buildOperatingAlerts(input: {
   const failureRate = input.trends.failure_rate.current;
   const commercialIntent = input.signalBuckets.find((bucket) => bucket.key === 'commercial_intent');
   const activation = input.signalBuckets.find((bucket) => bucket.key === 'activation');
+  const billingIntent = input.signalBuckets.find((bucket) => bucket.key === 'billing_intent');
+  const identityHygiene = input.signalBuckets.find((bucket) => bucket.key === 'identity_hygiene');
+  const privateRegistryReadiness = input.signalBuckets.find((bucket) => bucket.key === 'private_registry_readiness');
 
   if (input.summary.total_events === 0) {
     alerts.push({
@@ -1186,6 +1224,30 @@ function buildOperatingAlerts(input: {
       level: 'info',
       title: 'Commercial intent rising',
       detail: `Commercial-intent events are ${formatSignedNumber(commercialIntent.delta)} versus the previous period.`,
+    });
+  }
+
+  if (identityHygiene && identityHygiene.current_events > 0) {
+    alerts.push({
+      level: 'info',
+      title: 'Telemetry identities linked',
+      detail: `${identityHygiene.current_events} identity-hygiene events were recorded in this period.`,
+    });
+  }
+
+  if (billingIntent && billingIntent.current_events > billingIntent.previous_events) {
+    alerts.push({
+      level: 'info',
+      title: 'Billing intent rising',
+      detail: `Billing-intent events are ${formatSignedNumber(billingIntent.delta)} versus the previous period while checkout remains gated.`,
+    });
+  }
+
+  if (privateRegistryReadiness && privateRegistryReadiness.current_events > 0) {
+    alerts.push({
+      level: 'info',
+      title: 'Private registry readiness signals',
+      detail: `${privateRegistryReadiness.current_events} private-registry gate, intent, or listing events were recorded.`,
     });
   }
 

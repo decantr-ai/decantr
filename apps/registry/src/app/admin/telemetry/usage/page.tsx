@@ -406,7 +406,7 @@ export default async function AdminTelemetryUsagePage({
                 <span className="registry-admin-row-copy">
                   <span className="registry-admin-row-title">Lifecycle commands</span>
                   <span className="registry-admin-row-meta">
-                    New {formatNumber(usage.product_activation.new_completed_events)} · init {formatNumber(usage.product_activation.init_completed_events)} · refresh {formatNumber(usage.product_activation.refresh_completed_events)} · check {formatNumber(usage.product_activation.check_completed_events)}
+                    Analyze {formatNumber(usage.product_activation.analyze_completed_events)} · new {formatNumber(usage.product_activation.new_completed_events)} · init {formatNumber(usage.product_activation.init_completed_events)} · refresh {formatNumber(usage.product_activation.refresh_completed_events)} · check {formatNumber(usage.product_activation.check_completed_events)}
                   </span>
                 </span>
               </div>

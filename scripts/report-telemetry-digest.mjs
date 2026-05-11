@@ -111,7 +111,10 @@ function buildDigest(input) {
   const failureEvents = readNumber(all7?.failure_events);
   const failureRate = totalEvents > 0 ? failureEvents / totalEvents : 0;
   const classificationCoverage = readNestedNullableNumber(all7, ['data_quality', 'classification_coverage']);
+  const billingIntent = signalBuckets.find((bucket) => bucket.key === 'billing_intent');
   const commercialIntent = signalBuckets.find((bucket) => bucket.key === 'commercial_intent');
+  const identityHygiene = signalBuckets.find((bucket) => bucket.key === 'identity_hygiene');
+  const privateRegistryReadiness = signalBuckets.find((bucket) => bucket.key === 'private_registry_readiness');
   const projectHealth = buildProjectHealthAdoption({ all7, all30, customer30 });
   const status = digestStatus({
     all7,
@@ -123,6 +126,7 @@ function buildDigest(input) {
     all7,
     all30,
     attributionRows: topAttribution,
+    billingIntentEvents: billingIntent?.current_events ?? 0,
     commercialIntentEvents: commercialIntent?.current_events ?? 0,
     customer30,
     customer30Events,
@@ -131,9 +135,11 @@ function buildDigest(input) {
     failureEvents,
     failureRate,
     healthResults,
+    identityHygieneEvents: identityHygiene?.current_events ?? 0,
     operatingAlerts,
     previousCustomerEvents,
     previousTotalEvents,
+    privateRegistryReadinessEvents: privateRegistryReadiness?.current_events ?? 0,
     projectHealth,
     signalBuckets,
     status,
@@ -170,6 +176,9 @@ function renderMarkdown(digest, { apiUrl, dryRun, generatedAt }) {
     `- Customer-attributed events, last 30 days: ${formatNumber(digest.customer30Events)}`,
     `- Active customer orgs/projects/installs: ${formatNumber(digest.active.orgs)} orgs, ${formatNumber(digest.active.projects)} projects, ${formatNumber(digest.active.installs)} installs`,
     `- Commercial-intent signals: ${formatNumber(digest.commercialIntentEvents)}`,
+    `- Billing-intent signals: ${formatNumber(digest.billingIntentEvents)}`,
+    `- Private-registry readiness signals: ${formatNumber(digest.privateRegistryReadinessEvents)}`,
+    `- Identity-hygiene signals: ${formatNumber(digest.identityHygieneEvents)}`,
     `- Failure signals: ${formatNumber(digest.failureEvents)} (${formatPercent(digest.failureRate)} of last-7-day events)`,
     `- Classification coverage: ${formatNullablePercent(digest.quality.classificationCoverage)}`,
     `- Candidate aliases to review: ${formatNumber(digest.quality.candidateAliases)}`,
@@ -186,6 +195,7 @@ function renderMarkdown(digest, { apiUrl, dryRun, generatedAt }) {
     '',
     '| Lifecycle | Last 7d | Last 30d | Customer 30d |',
     '| --- | ---: | ---: | ---: |',
+    `| Analyze completed | ${formatNumber(digest.projectHealth.lifecycle7d.analyzeCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.analyzeCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.analyzeCompleted)} |`,
     `| New completed | ${formatNumber(digest.projectHealth.lifecycle7d.newCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.newCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.newCompleted)} |`,
     `| Init completed | ${formatNumber(digest.projectHealth.lifecycle7d.initCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.initCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.initCompleted)} |`,
     `| Refresh completed | ${formatNumber(digest.projectHealth.lifecycle7d.refreshCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.refreshCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.refreshCompleted)} |`,
@@ -293,6 +303,9 @@ function discordWebhookPayload({ apiUrl, digest, dryRun, generatedAt }) {
               `Customer 30d: **${formatNumber(digest.customer30Events)}**`,
               `Active: **${formatNumber(digest.active.orgs)} orgs / ${formatNumber(digest.active.projects)} projects / ${formatNumber(digest.active.installs)} installs**`,
               `Commercial intent: **${formatNumber(digest.commercialIntentEvents)}**`,
+              `Billing intent: **${formatNumber(digest.billingIntentEvents)}**`,
+              `Private registry: **${formatNumber(digest.privateRegistryReadinessEvents)}**`,
+              `Identity hygiene: **${formatNumber(digest.identityHygieneEvents)}**`,
               `Failures: **${formatNumber(digest.failureEvents)}** (${formatPercent(digest.failureRate)})`,
             ].join('\n'),
             inline: false,
@@ -468,6 +481,7 @@ function buildProjectHealthAdoption({ all7, all30, customer30 }) {
 
 function lifecycleCounts(totals) {
   return {
+    analyzeCompleted: readEventCount(totals, 'decantr.analyze.completed'),
     checkCompleted: readEventCount(totals, 'decantr.check.completed'),
     initCompleted: readEventCount(totals, 'decantr.init.completed'),
     newCompleted: readEventCount(totals, 'decantr.new.completed'),
@@ -558,6 +572,7 @@ function sampleDigestInput() {
         customer_events: 42,
         data_quality: { classification_coverage: 0.91 },
         event_counts: [
+          { event: 'decantr.analyze.completed', count: 2 },
           { event: 'decantr.new.completed', count: 2 },
           { event: 'decantr.init.completed', count: 3 },
           { event: 'decantr.refresh.completed', count: 4 },
@@ -577,6 +592,9 @@ function sampleDigestInput() {
           { bucket_key: 'registry_discovery', current_events: 48, delta: 12, label: 'Registry discovery', previous_events: 36 },
           { bucket_key: 'hosted_intelligence', current_events: 21, delta: 4, label: 'Hosted intelligence', previous_events: 17 },
           { bucket_key: 'commercial_intent', current_events: 7, delta: 3, label: 'Commercial intent', previous_events: 4 },
+          { bucket_key: 'billing_intent', current_events: 3, delta: 3, label: 'Billing intent', previous_events: 0 },
+          { bucket_key: 'private_registry_readiness', current_events: 5, delta: 5, label: 'Private registry readiness', previous_events: 0 },
+          { bucket_key: 'identity_hygiene', current_events: 2, delta: 2, label: 'Identity hygiene', previous_events: 0 },
         ],
         source: 'all',
         total_events: 103,
@@ -588,6 +606,7 @@ function sampleDigestInput() {
         actor_type: 'all',
         captured_at: generated,
         event_counts: [
+          { event: 'decantr.analyze.completed', count: 6 },
           { event: 'decantr.new.completed', count: 8 },
           { event: 'decantr.init.completed', count: 11 },
           { event: 'decantr.refresh.completed', count: 17 },
@@ -607,6 +626,7 @@ function sampleDigestInput() {
         actor_type: 'customer',
         captured_at: generated,
         event_counts: [
+          { event: 'decantr.analyze.completed', count: 2 },
           { event: 'decantr.new.completed', count: 3 },
           { event: 'decantr.init.completed', count: 4 },
           { event: 'decantr.refresh.completed', count: 8 },

@@ -10,6 +10,7 @@ vi.mock('../../src/db/client.js', () => ({
 
 const {
   clearTelemetryActorCache,
+  resolveApiTelemetryContext,
   resolveApiTelemetryActorType,
 } = await import('../../src/lib/telemetry-actor.js');
 
@@ -27,6 +28,7 @@ function createActorClient() {
     telemetry_identity_aliases: new Map<string, any>([
       ['project:internal-project', { actor_type: 'internal' }],
       ['install:customer-install', { actor_type: 'customer' }],
+      ['project:linked-project', { actor_type: 'customer', user_id: 'linked-user', org_id: 'linked-org' }],
     ]),
   };
 
@@ -73,6 +75,15 @@ describe('API telemetry actor resolution', () => {
   it('classifies opaque project and install aliases', async () => {
     await expect(resolveApiTelemetryActorType({ source: 'cli', projectId: 'internal-project' })).resolves.toBe('internal');
     await expect(resolveApiTelemetryActorType({ source: 'cli', installId: 'customer-install' })).resolves.toBe('customer');
+  });
+
+  it('enriches linked opaque telemetry identities with user and org attribution', async () => {
+    await expect(resolveApiTelemetryContext({ source: 'cli', projectId: 'linked-project' })).resolves.toMatchObject({
+      actorType: 'customer',
+      orgId: 'linked-org',
+      projectId: 'linked-project',
+      userId: 'linked-user',
+    });
   });
 
   it('falls back to server-side inference for ordinary customer and anonymous contexts', async () => {

@@ -81,6 +81,8 @@ decantr audit
 decantr check
 decantr health --ci --fail-on error
 decantr studio --port 4319 --host 127.0.0.1
+decantr telemetry status
+decantr telemetry link --enable --org <org-slug>
 decantr content-health --ci --fail-on error
 decantr registry summary --namespace @official --json
 decantr showcase verification --json
@@ -124,7 +126,20 @@ decantr health --json --output decantr-health.json
 decantr studio --report decantr-health.json
 ```
 
-If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, `init --telemetry`, `check --telemetry`, `health`, and `studio` emit only aggregate product-activation metadata such as lifecycle command outcome, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, or prompt text.
+If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, `init --telemetry`, `analyze`, `check --telemetry`, `health`, and `studio` emit only aggregate product-activation metadata such as lifecycle command outcome, analyze counts, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, package names, or prompt text.
+
+## Opted-In Telemetry Identity
+
+`decantr telemetry` lets users inspect and link the opaque install/project ids used by opted-in CLI telemetry. This is how customer org attribution becomes durable without collecting repository names, local paths, source code, prompts, private package slugs, emails, or secrets.
+
+```bash
+decantr telemetry status
+decantr telemetry status --json
+decantr login --api-key=<key>
+decantr telemetry link --enable --org <org-slug>
+```
+
+`telemetry link` calls the hosted `/v1/me/telemetry-link` endpoint with only opaque ids, optional org slug, and optional label. The API verifies org membership, writes `telemetry_identity_aliases`, clears the actor-resolution cache, audit logs the change, and emits `telemetry.identity_linked`.
 
 ## Content Health
 
