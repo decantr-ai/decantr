@@ -389,10 +389,16 @@ export interface ProductEventProperties extends TelemetryProperties {
 }
 
 export interface CampaignAttributionProperties extends TelemetryProperties {
+  attributionChannel?: string | null;
   attributionClickIdProvider?: string | null;
   attributionClickIdPresent?: boolean;
+  attributionFirstChannel?: string | null;
   attributionFirstLandingPath?: string | null;
+  attributionFirstLandingIntent?: string | null;
+  attributionFirstLandingPageKind?: string | null;
   attributionFirstReferrerDomain?: string | null;
+  attributionFirstSource?: string | null;
+  attributionFirstSourceCategory?: string | null;
   attributionFirstUtmCampaign?: string | null;
   attributionFirstUtmContent?: string | null;
   attributionFirstUtmId?: string | null;
@@ -400,8 +406,15 @@ export interface CampaignAttributionProperties extends TelemetryProperties {
   attributionFirstUtmSource?: string | null;
   attributionFirstUtmTerm?: string | null;
   attributionLandingPath?: string | null;
+  attributionLandingIntent?: string | null;
+  attributionLandingPageKind?: string | null;
+  attributionLastChannel?: string | null;
   attributionLastLandingPath?: string | null;
+  attributionLastLandingIntent?: string | null;
+  attributionLastLandingPageKind?: string | null;
   attributionLastReferrerDomain?: string | null;
+  attributionLastSource?: string | null;
+  attributionLastSourceCategory?: string | null;
   attributionLastUtmCampaign?: string | null;
   attributionLastUtmContent?: string | null;
   attributionLastUtmId?: string | null;
@@ -409,6 +422,8 @@ export interface CampaignAttributionProperties extends TelemetryProperties {
   attributionLastUtmSource?: string | null;
   attributionLastUtmTerm?: string | null;
   attributionReferrerDomain?: string | null;
+  attributionSource?: string | null;
+  attributionSourceCategory?: string | null;
   attributionUtmCampaign?: string | null;
   attributionUtmContent?: string | null;
   attributionUtmId?: string | null;

@@ -296,6 +296,68 @@ const insightSpecs = [
     ),
   },
   {
+    name: 'Discovery channel mix',
+    description:
+      'Marketing and registry discovery split by inferred channel, including organic search, AI referrals, developer referrals, package registries, social, paid, and direct traffic.',
+    query: trendBar(
+      [
+        [events.marketingWebPageViewed, 'Marketing page viewed'],
+        [events.marketingWebCtaClicked, 'Marketing CTA clicked'],
+        [events.registryWebPageViewed, 'Registry page viewed'],
+        [events.registryWebSearchPerformed, 'Registry search performed'],
+        [events.registryWebContentOpened, 'Registry content opened'],
+        [events.registryWebSignupClicked, 'Signup clicked'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'attributionChannel',
+          breakdown_type: 'event',
+        },
+      },
+    ),
+  },
+  {
+    name: 'Discovery source category mix',
+    description:
+      'High-level source categories for acquisition and activation: search, AI, developer, social, email, direct, and referral.',
+    query: trendBar(
+      [
+        [events.marketingWebPageViewed, 'Marketing page viewed'],
+        [events.marketingWebCtaClicked, 'Marketing CTA clicked'],
+        [events.registryWebPageViewed, 'Registry page viewed'],
+        [events.registryWebContentOpened, 'Registry content opened'],
+        [events.registryWebSignupClicked, 'Signup clicked'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'attributionSourceCategory',
+          breakdown_type: 'event',
+        },
+      },
+    ),
+  },
+  {
+    name: 'Discovery intent follow-through',
+    description:
+      'Registry exploration and signup intent broken down by inferred landing intent, such as brand, MCP, Project Health CI, existing-app adoption, AI assistant setup, design guardrails, and registry content.',
+    query: trendBar(
+      [
+        [events.marketingWebPageViewed, 'Marketing page viewed'],
+        [events.marketingWebCtaClicked, 'Marketing CTA clicked'],
+        [events.registryWebPageViewed, 'Registry page viewed'],
+        [events.registryWebSearchPerformed, 'Search performed'],
+        [events.registryWebContentOpened, 'Content opened'],
+        [events.registryWebSignupClicked, 'Signup clicked'],
+      ],
+      {
+        breakdownFilter: {
+          breakdown: 'attributionLandingIntent',
+          breakdown_type: 'event',
+        },
+      },
+    ),
+  },
+  {
     name: 'Campaign registry follow-through',
     description:
       'Registry exploration and signup intent broken down by original UTM campaign after marketing-site handoff.',

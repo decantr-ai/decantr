@@ -30,10 +30,15 @@ const CLICK_ID_PARAMS = [
 type UtmKey = (typeof UTM_KEYS)[number];
 
 interface CampaignTouch {
+  channel?: string | null;
   clickIdPresent?: boolean;
   clickIdProvider?: string | null;
   landingPath?: string | null;
+  landingIntent?: string | null;
+  landingPageKind?: string | null;
   referrerDomain?: string | null;
+  source?: string | null;
+  sourceCategory?: string | null;
   timestamp?: string;
   utm?: Partial<Record<UtmKey, string>>;
 }
@@ -66,30 +71,46 @@ export function getCampaignAttributionProperties(): CampaignAttributionPropertie
   if (!isBrowser()) return {};
 
   const state = readAttributionState();
-  const current = state.last ?? state.first;
-  if (!current) return {};
+  const first = enrichTouch(state.first);
+  const last = enrichTouch(state.last);
+  const current = last ?? first ?? buildDirectTouch();
 
   return {
+    attributionChannel: current.channel ?? null,
     attributionClickIdProvider: current.clickIdProvider ?? null,
     attributionClickIdPresent: Boolean(current.clickIdPresent),
-    attributionFirstLandingPath: state.first?.landingPath ?? null,
-    attributionFirstReferrerDomain: state.first?.referrerDomain ?? null,
-    attributionFirstUtmCampaign: state.first?.utm?.utm_campaign ?? null,
-    attributionFirstUtmContent: state.first?.utm?.utm_content ?? null,
-    attributionFirstUtmId: state.first?.utm?.utm_id ?? null,
-    attributionFirstUtmMedium: state.first?.utm?.utm_medium ?? null,
-    attributionFirstUtmSource: state.first?.utm?.utm_source ?? null,
-    attributionFirstUtmTerm: state.first?.utm?.utm_term ?? null,
+    attributionFirstChannel: first?.channel ?? null,
+    attributionFirstLandingPath: first?.landingPath ?? null,
+    attributionFirstLandingIntent: first?.landingIntent ?? null,
+    attributionFirstLandingPageKind: first?.landingPageKind ?? null,
+    attributionFirstReferrerDomain: first?.referrerDomain ?? null,
+    attributionFirstSource: first?.source ?? null,
+    attributionFirstSourceCategory: first?.sourceCategory ?? null,
+    attributionFirstUtmCampaign: first?.utm?.utm_campaign ?? null,
+    attributionFirstUtmContent: first?.utm?.utm_content ?? null,
+    attributionFirstUtmId: first?.utm?.utm_id ?? null,
+    attributionFirstUtmMedium: first?.utm?.utm_medium ?? null,
+    attributionFirstUtmSource: first?.utm?.utm_source ?? null,
+    attributionFirstUtmTerm: first?.utm?.utm_term ?? null,
     attributionLandingPath: current.landingPath ?? null,
-    attributionLastLandingPath: state.last?.landingPath ?? null,
-    attributionLastReferrerDomain: state.last?.referrerDomain ?? null,
-    attributionLastUtmCampaign: state.last?.utm?.utm_campaign ?? null,
-    attributionLastUtmContent: state.last?.utm?.utm_content ?? null,
-    attributionLastUtmId: state.last?.utm?.utm_id ?? null,
-    attributionLastUtmMedium: state.last?.utm?.utm_medium ?? null,
-    attributionLastUtmSource: state.last?.utm?.utm_source ?? null,
-    attributionLastUtmTerm: state.last?.utm?.utm_term ?? null,
+    attributionLandingIntent: current.landingIntent ?? null,
+    attributionLandingPageKind: current.landingPageKind ?? null,
+    attributionLastChannel: last?.channel ?? null,
+    attributionLastLandingPath: last?.landingPath ?? null,
+    attributionLastLandingIntent: last?.landingIntent ?? null,
+    attributionLastLandingPageKind: last?.landingPageKind ?? null,
+    attributionLastReferrerDomain: last?.referrerDomain ?? null,
+    attributionLastSource: last?.source ?? null,
+    attributionLastSourceCategory: last?.sourceCategory ?? null,
+    attributionLastUtmCampaign: last?.utm?.utm_campaign ?? null,
+    attributionLastUtmContent: last?.utm?.utm_content ?? null,
+    attributionLastUtmId: last?.utm?.utm_id ?? null,
+    attributionLastUtmMedium: last?.utm?.utm_medium ?? null,
+    attributionLastUtmSource: last?.utm?.utm_source ?? null,
+    attributionLastUtmTerm: last?.utm?.utm_term ?? null,
     attributionReferrerDomain: current.referrerDomain ?? null,
+    attributionSource: current.source ?? null,
+    attributionSourceCategory: current.sourceCategory ?? null,
     attributionUtmCampaign: current.utm?.utm_campaign ?? null,
     attributionUtmContent: current.utm?.utm_content ?? null,
     attributionUtmId: current.utm?.utm_id ?? null,
@@ -172,14 +193,198 @@ function buildCurrentTouch(): CampaignTouch | null {
 
   if (!hasUtm && !hasClickId && !referrerDomain) return null;
 
-  return {
+  return enrichTouch({
     clickIdPresent: hasClickId,
     clickIdProvider,
     landingPath: window.location.pathname || '/',
     referrerDomain,
     timestamp: new Date().toISOString(),
     utm,
+  });
+}
+
+function buildDirectTouch(): CampaignTouch {
+  const touch: CampaignTouch = {
+    clickIdPresent: false,
+    clickIdProvider: null,
+    landingPath: window.location.pathname || '/',
+    referrerDomain: null,
+    timestamp: new Date().toISOString(),
+    utm: {},
   };
+
+  return enrichTouch(touch) ?? touch;
+}
+
+function enrichTouch(touch: CampaignTouch | null | undefined): CampaignTouch | null {
+  if (!touch) return null;
+
+  const landingPath = touch.landingPath ?? (isBrowser() ? window.location.pathname || '/' : '/');
+  const utm = touch.utm ?? {};
+  const source = touch.source ?? classifySource(utm, touch.clickIdProvider ?? null, touch.referrerDomain ?? null);
+  const channel =
+    touch.channel ?? classifyChannel(utm, touch.clickIdProvider ?? null, touch.referrerDomain ?? null);
+
+  return {
+    ...touch,
+    channel,
+    landingPath,
+    landingIntent: touch.landingIntent ?? classifyLandingIntent(landingPath, utm),
+    landingPageKind: touch.landingPageKind ?? classifyLandingPageKind(landingPath),
+    source,
+    sourceCategory: touch.sourceCategory ?? classifySourceCategory(source, channel),
+  };
+}
+
+function classifySource(
+  utm: Partial<Record<UtmKey, string>>,
+  clickIdProvider: string | null,
+  referrerDomain: string | null,
+): string {
+  const utmSource = normalizeValue(utm.utm_source);
+  if (utmSource) return utmSource;
+  if (clickIdProvider) return normalizeValue(clickIdProvider) ?? 'paid';
+  if (referrerDomain) return normalizeReferrerSource(referrerDomain);
+  return 'direct';
+}
+
+function classifyChannel(
+  utm: Partial<Record<UtmKey, string>>,
+  clickIdProvider: string | null,
+  referrerDomain: string | null,
+): string {
+  const medium = normalizeValue(utm.utm_medium);
+  const source = normalizeValue(utm.utm_source);
+
+  if (clickIdProvider === 'google' || clickIdProvider === 'microsoft') return 'paid_search';
+  if (clickIdProvider) return 'paid_social';
+
+  if (medium?.includes('paid') && medium.includes('search')) return 'paid_search';
+  if (medium?.includes('cpc') || medium?.includes('ppc') || medium?.includes('sem')) return 'paid_search';
+  if (medium?.includes('paid') && medium.includes('social')) return 'paid_social';
+  if (medium === 'organic-social' || medium === 'social') return 'organic_social';
+  if (medium === 'package-registry') return 'package_registry';
+  if (medium === 'community') return 'community';
+  if (medium === 'docs') return 'docs';
+  if (medium === 'email' || medium === 'newsletter') return 'email';
+  if (medium === 'launch') return 'launch';
+  if (medium === 'referral' || medium === 'partner') return 'referral';
+
+  if (source && ['github', 'npm', 'jsr'].includes(source)) return source === 'npm' || source === 'jsr' ? 'package_registry' : 'developer_referral';
+  if (source && ['x', 'twitter', 'linkedin', 'meta', 'facebook', 'threads', 'tiktok'].includes(source)) {
+    return 'organic_social';
+  }
+  if (source && ['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'].includes(source)) return 'ai_referral';
+
+  if (!referrerDomain) return 'direct';
+
+  const referrer = normalizeReferrerSource(referrerDomain);
+  if (isSearchSource(referrer)) return 'organic_search';
+  if (isAiSource(referrer)) return 'ai_referral';
+  if (['github', 'stackoverflow', 'hackernews', 'news.ycombinator'].includes(referrer)) return 'developer_referral';
+  if (['npm', 'jsr'].includes(referrer)) return 'package_registry';
+  if (['x', 'twitter', 'linkedin', 'reddit', 'youtube', 'facebook', 'threads', 'tiktok'].includes(referrer)) {
+    return 'organic_social';
+  }
+
+  return 'referral';
+}
+
+function classifySourceCategory(source: string | null | undefined, channel: string | null | undefined): string {
+  if (channel === 'organic_search' || channel === 'paid_search') return 'search';
+  if (channel === 'ai_referral') return 'ai';
+  if (channel === 'developer_referral' || channel === 'package_registry' || channel === 'docs') return 'developer';
+  if (channel === 'paid_social' || channel === 'organic_social' || channel === 'community') return 'social';
+  if (channel === 'email') return 'email';
+  if (channel === 'direct') return 'direct';
+  if (source && isSearchSource(source)) return 'search';
+  if (source && isAiSource(source)) return 'ai';
+  return 'referral';
+}
+
+function classifyLandingIntent(
+  landingPath: string,
+  utm: Partial<Record<UtmKey, string>>,
+): string {
+  const text = [
+    landingPath,
+    utm.utm_campaign,
+    utm.utm_content,
+    utm.utm_term,
+    utm.utm_source,
+    utm.utm_medium,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (text.includes('mcp')) return 'mcp';
+  if (text.includes('project-health') || text.includes('health-ci') || text.includes('project health')) {
+    return 'project_health_ci';
+  }
+  if (text.includes('existing-app') || text.includes('brownfield')) return 'existing_app_adoption';
+  if (text.includes('ai-assistant') || text.includes('cursor') || text.includes('claude') || text.includes('codex')) {
+    return 'ai_assistant_setup';
+  }
+  if (text.includes('design-contract') || text.includes('guardrail') || text.includes('design-token')) {
+    return 'design_guardrails';
+  }
+  if (text.includes('registry') || text.includes('pattern') || text.includes('theme') || text.includes('blueprint')) {
+    return 'registry_content';
+  }
+  if (text.includes('cli') || text.includes('install') || text.includes('quickstart')) return 'cli_install';
+  if (landingPath.startsWith('/guides/') || landingPath.startsWith('/reference/')) return 'docs_reference';
+  if (landingPath === '/' || text.includes('decantr-ai') || text.includes('brand')) return 'brand';
+  return 'unknown';
+}
+
+function classifyLandingPageKind(landingPath: string): string {
+  if (landingPath === '/') return 'homepage';
+  if (landingPath.startsWith('/guides/')) return 'guide';
+  if (landingPath.startsWith('/reference/')) return 'reference';
+  if (landingPath.startsWith('/showcase/')) return 'showcase';
+  if (landingPath.startsWith('/browse')) return 'registry_browse';
+  if (landingPath.startsWith('/dashboard')) return 'dashboard';
+  if (landingPath.startsWith('/admin')) return 'admin';
+  if (landingPath === '/login') return 'auth';
+  if (/^\/[^/]+\/[^/]+\/[^/]+/.test(landingPath)) return 'registry_detail';
+  return 'other';
+}
+
+function normalizeValue(value: string | null | undefined): string | null {
+  const normalized = value?.trim().toLowerCase().replace(/^www\./, '');
+  return normalized ? normalized.slice(0, 80) : null;
+}
+
+function normalizeReferrerSource(domain: string): string {
+  const normalized = normalizeValue(domain) ?? 'referral';
+  if (normalized.includes('google.')) return 'google';
+  if (normalized.includes('bing.')) return 'bing';
+  if (normalized.includes('duckduckgo.')) return 'duckduckgo';
+  if (normalized.includes('yahoo.')) return 'yahoo';
+  if (normalized.includes('chatgpt.') || normalized.includes('openai.')) return 'chatgpt';
+  if (normalized.includes('perplexity.')) return 'perplexity';
+  if (normalized.includes('claude.') || normalized.includes('anthropic.')) return 'claude';
+  if (normalized.includes('gemini.') || normalized.includes('bard.google.')) return 'gemini';
+  if (normalized.includes('github.')) return 'github';
+  if (normalized.includes('npmjs.')) return 'npm';
+  if (normalized.includes('jsr.')) return 'jsr';
+  if (normalized.includes('x.com') || normalized.includes('twitter.')) return 'x';
+  if (normalized.includes('linkedin.')) return 'linkedin';
+  if (normalized.includes('reddit.')) return 'reddit';
+  if (normalized.includes('news.ycombinator.')) return 'news.ycombinator';
+  if (normalized.includes('stackoverflow.')) return 'stackoverflow';
+  if (normalized.includes('discord.')) return 'discord';
+  if (normalized.includes('youtube.')) return 'youtube';
+  return normalized.slice(0, 80);
+}
+
+function isSearchSource(source: string): boolean {
+  return ['google', 'bing', 'duckduckgo', 'yahoo', 'yandex', 'baidu', 'kagi'].includes(source);
+}
+
+function isAiSource(source: string): boolean {
+  return ['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'].includes(source);
 }
 
 function getClickIdProvider(params: URLSearchParams): string | null {
