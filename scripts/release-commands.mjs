@@ -41,6 +41,15 @@ function createPublishPackagesCommand(extraArgs = []) {
   return parts.join(' ');
 }
 
+function createVerifyPublishedPackagesCommand(extraArgs = []) {
+  const parts = ['node scripts/verify-published-packages.mjs', ...extraArgs];
+  if (onlyWave) parts.push(`--wave=${onlyWave}`);
+  if (onlyNames.size > 0) parts.push(`--only=${[...onlyNames].join(',')}`);
+  if (includeExperimental) parts.push('--include-experimental');
+  if (tagOverride) parts.push(`--tag-override=${tagOverride}`);
+  return parts.join(' ');
+}
+
 const commands = selected.map((entry) => {
   const cwd = join(root, entry.path);
   const packageJson = JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8'));
@@ -113,6 +122,7 @@ const output = {
     auth: createPublishPackagesCommand().replace('node scripts/publish-packages.mjs', 'pnpm audit:npm-auth'),
     preflight: createPublishPackagesCommand(['--publish-dry-run']),
     publish: createPublishPackagesCommand(),
+    verify: createVerifyPublishedPackagesCommand(),
   },
   commands,
   npmRepairs: selectedRepairs,
@@ -139,8 +149,9 @@ const lines = [
   `- auth: \`${output.wrapperCommands.auth}\``,
   `- preflight: \`${output.wrapperCommands.preflight}\``,
   `- publish: \`${output.wrapperCommands.publish}\``,
+  `- verify: \`${output.wrapperCommands.verify}\``,
   '',
-  'The wrapper commands are preferred because they audit packed tarball manifests before publishing.',
+  'The wrapper commands are preferred because they audit packed tarball manifests before publishing, then verify the public npm install surface after publishing.',
   '',
 ];
 

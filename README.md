@@ -129,6 +129,7 @@ pnpm lint
 pnpm audit:public-api
 pnpm audit:registry-dogfood
 pnpm showcase:verify:shortlist
+pnpm release:verify
 ```
 
 ## More CLI

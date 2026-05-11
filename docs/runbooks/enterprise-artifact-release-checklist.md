@@ -10,4 +10,12 @@
 - `pnpm audit:public-api -- --core-only --fail-on-error`
 - `pnpm audit:registry-portal -- --fail-on-error`
 - `pnpm release:evidence --out=package-release-evidence`
-- `npm publish --provenance --access public` from the pinned publish workflow
+- `node scripts/publish-packages.mjs --publish-dry-run --wave=<wave>`
+- `node scripts/publish-packages.mjs --wave=<wave>` from the pinned publish workflow or local authenticated shell
+- `node scripts/verify-published-packages.mjs --wave=<wave>`
+
+Optional release notification:
+
+- Set `RELEASE_VERIFICATION_WEBHOOK_URL` to a private release Discord webhook.
+- Or reuse `TELEMETRY_HEALTH_WEBHOOK_URL` and run `node scripts/verify-published-packages.mjs --wave=<wave> --send-webhook`.
+- Local verification loads `.env.release.local`, `.env.telemetry.local`, and `.env.local`; use `--env-file <path>` when validating from another secrets file.
