@@ -130,3 +130,30 @@ jobs:
             ARGS="$ARGS --dry-run"
           fi
           node scripts/publish-packages.mjs $ARGS
+      - name: Verify published npm packages
+        if: ${{ github.event.inputs.dry_run_only != 'true' }}
+        env:
+          RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
+          DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
+          ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
+          INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
+          RELEASE_VERIFICATION_WEBHOOK_URL: ${{ secrets.RELEASE_VERIFICATION_WEBHOOK_URL }}
+          TELEMETRY_HEALTH_WEBHOOK_URL: ${{ secrets.TELEMETRY_HEALTH_WEBHOOK_URL }}
+        run: |
+          ARGS=""
+          if [ "$RELEASE_WAVE" != "all" ]; then
+            ARGS="$ARGS --wave=$RELEASE_WAVE"
+          fi
+          if [ -n "$DIST_TAG_OVERRIDE" ]; then
+            ARGS="$ARGS --tag-override=$DIST_TAG_OVERRIDE"
+          fi
+          if [ -n "$ONLY_PACKAGES" ]; then
+            ARGS="$ARGS --only=$ONLY_PACKAGES"
+          fi
+          if [ "$INCLUDE_EXPERIMENTAL" = "true" ]; then
+            ARGS="$ARGS --include-experimental"
+          fi
+          if [ -n "$RELEASE_VERIFICATION_WEBHOOK_URL$TELEMETRY_HEALTH_WEBHOOK_URL" ]; then
+            ARGS="$ARGS --send-webhook"
+          fi
+          node scripts/verify-published-packages.mjs $ARGS --retries=6 --retry-delay=10000

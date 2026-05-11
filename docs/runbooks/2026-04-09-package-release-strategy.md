@@ -97,6 +97,7 @@ Release planning now also has an executable source:
 - `pnpm release:plan`
 - `pnpm release:graduation-plan`
 - `pnpm release:commands`
+- `pnpm release:verify`
 - `pnpm audit:release-surface`
 - `pnpm audit:npm-auth`
 - `pnpm audit:npm-surface`
@@ -118,6 +119,7 @@ The workflow:
 - runs `pnpm audit:release-readiness`
 - writes the selected release plan into the GitHub Actions step summary before publishing
 - publishes only the packages marked `publish: true`
+- verifies selected packages from the public npm registry after publishing
 - skips experimental packages unless `include_experimental=true`
 - publishes in release-wave order from `config/package-surface.json`
 - supports `--wave=<wave>` for targeted publish rehearsals
@@ -128,6 +130,11 @@ The workflow:
   - fails when a packed manifest still contains `workspace:*` dependency ranges
   - uses `pnpm publish --dry-run` for versions that are not yet published
   - uses the packed-manifest audit for versions that are already on npm, so package-shape validation still works without failing on duplicate-version checks
+- now also supports post-publish public npm verification through `scripts/verify-published-packages.mjs`:
+  - confirms the selected npm dist-tag points at the local package manifest version
+  - confirms the published package manifest has no `workspace:*` dependency leakage
+  - smoke-tests the published CLI through `npx`, including command help and `health --json`
+  - writes a GitHub Actions summary and can post a Discord-compatible webhook when `RELEASE_VERIFICATION_WEBHOOK_URL` or `TELEMETRY_HEALTH_WEBHOOK_URL` is configured
 
 Packages must be published with `pnpm publish` through `scripts/publish-packages.mjs`. Direct `npm publish` does not rewrite pnpm workspace dependency ranges and is blocked by each public package's `prepublishOnly` guard.
 
@@ -303,6 +310,7 @@ pnpm audit:npm-auth
 pnpm audit:npm-surface
 pnpm release:plan
 pnpm release:graduation-plan
+pnpm release:commands
 ```
 
 Dry-run the publish selection locally:
@@ -324,6 +332,16 @@ pnpm release:preflight
 node scripts/publish-packages.mjs --publish-dry-run --wave=foundation
 node scripts/publish-packages.mjs --publish-dry-run --only=@decantr/verifier
 ```
+
+After publishing, verify the public npm install surface:
+
+```bash
+pnpm release:verify
+node scripts/verify-published-packages.mjs --wave=delivery
+node scripts/verify-published-packages.mjs --only=@decantr/cli --send-webhook
+```
+
+Use `RELEASE_VERIFICATION_WEBHOOK_URL` for a dedicated release channel, or let `--send-webhook` fall back to `TELEMETRY_HEALTH_WEBHOOK_URL` when the existing telemetry Discord channel should receive the release result. Local runs load `.env.release.local`, `.env.telemetry.local`, and `.env.local`; pass `--env-file <path>` for a one-off secrets file.
 
 For GitHub Actions rehearsals, trigger `.github/workflows/publish.yml` with:
 

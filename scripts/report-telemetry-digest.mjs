@@ -112,6 +112,7 @@ function buildDigest(input) {
   const failureRate = totalEvents > 0 ? failureEvents / totalEvents : 0;
   const classificationCoverage = readNestedNullableNumber(all7, ['data_quality', 'classification_coverage']);
   const commercialIntent = signalBuckets.find((bucket) => bucket.key === 'commercial_intent');
+  const projectHealth = buildProjectHealthAdoption({ all7, all30, customer30 });
   const status = digestStatus({
     all7,
     healthIssues,
@@ -133,6 +134,7 @@ function buildDigest(input) {
     operatingAlerts,
     previousCustomerEvents,
     previousTotalEvents,
+    projectHealth,
     signalBuckets,
     status,
     totalDelta: totalEvents - previousTotalEvents,
@@ -171,6 +173,27 @@ function renderMarkdown(digest, { apiUrl, dryRun, generatedAt }) {
     `- Failure signals: ${formatNumber(digest.failureEvents)} (${formatPercent(digest.failureRate)} of last-7-day events)`,
     `- Classification coverage: ${formatNullablePercent(digest.quality.classificationCoverage)}`,
     `- Candidate aliases to review: ${formatNumber(digest.quality.candidateAliases)}`,
+    '',
+    '## Project Health Adoption',
+    '',
+    `- Reports generated, last 7 days: ${formatNumber(digest.projectHealth.reports7d)}`,
+    `- Healthy milestones, last 7 days: ${formatNumber(digest.projectHealth.healthy7d)} (${formatPercent(digest.projectHealth.healthyRate7d)} healthy-report rate)`,
+    `- CI failures, last 7 days: ${formatNumber(digest.projectHealth.ciFailures7d)} (${formatPercent(digest.projectHealth.ciFailureRate7d)} of reports)`,
+    `- Studio starts and refreshes, last 7 days: ${formatNumber(digest.projectHealth.studioStarts7d)} starts / ${formatNumber(digest.projectHealth.studioRefreshes7d)} refreshes`,
+    `- Remediation prompts, last 7 days: ${formatNumber(digest.projectHealth.remediationPrompts7d)}`,
+    `- Customer Project Health reports, last 30 days: ${formatNumber(digest.projectHealth.customerReports30d)}`,
+    `- Customer Studio starts, last 30 days: ${formatNumber(digest.projectHealth.customerStudioStarts30d)}`,
+    '',
+    '| Lifecycle | Last 7d | Last 30d | Customer 30d |',
+    '| --- | ---: | ---: | ---: |',
+    `| New completed | ${formatNumber(digest.projectHealth.lifecycle7d.newCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.newCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.newCompleted)} |`,
+    `| Init completed | ${formatNumber(digest.projectHealth.lifecycle7d.initCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.initCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.initCompleted)} |`,
+    `| Refresh completed | ${formatNumber(digest.projectHealth.lifecycle7d.refreshCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.refreshCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.refreshCompleted)} |`,
+    `| Check completed | ${formatNumber(digest.projectHealth.lifecycle7d.checkCompleted)} | ${formatNumber(digest.projectHealth.lifecycle30d.checkCompleted)} | ${formatNumber(digest.projectHealth.customerLifecycle30d.checkCompleted)} |`,
+    '',
+    ...(digest.projectHealth.hasEventCounts
+      ? []
+      : ['No durable event-count rows are available for Project Health adoption in the latest stored snapshots.']),
     '',
     '## Adoption Buckets',
     '',
@@ -271,6 +294,17 @@ function discordWebhookPayload({ apiUrl, digest, dryRun, generatedAt }) {
               `Active: **${formatNumber(digest.active.orgs)} orgs / ${formatNumber(digest.active.projects)} projects / ${formatNumber(digest.active.installs)} installs**`,
               `Commercial intent: **${formatNumber(digest.commercialIntentEvents)}**`,
               `Failures: **${formatNumber(digest.failureEvents)}** (${formatPercent(digest.failureRate)})`,
+            ].join('\n'),
+            inline: false,
+          },
+          {
+            name: 'Project Health adoption',
+            value: [
+              `Reports 7d: **${formatNumber(digest.projectHealth.reports7d)}**`,
+              `Healthy milestones: **${formatNumber(digest.projectHealth.healthy7d)}** (${formatPercent(digest.projectHealth.healthyRate7d)})`,
+              `CI failures: **${formatNumber(digest.projectHealth.ciFailures7d)}** (${formatPercent(digest.projectHealth.ciFailureRate7d)})`,
+              `Studio: **${formatNumber(digest.projectHealth.studioStarts7d)} starts / ${formatNumber(digest.projectHealth.studioRefreshes7d)} refreshes**`,
+              `Customer reports 30d: **${formatNumber(digest.projectHealth.customerReports30d)}**`,
             ].join('\n'),
             inline: false,
           },
@@ -406,6 +440,56 @@ function normalizeSignalBucket(value) {
   };
 }
 
+function buildProjectHealthAdoption({ all7, all30, customer30 }) {
+  const totals7d = readEventTotals(all7?.event_counts);
+  const totals30d = readEventTotals(all30?.event_counts);
+  const customerTotals30d = readEventTotals(customer30?.event_counts);
+  const reports7d = readEventCount(totals7d, 'health.report.generated');
+  const healthy7d = readEventCount(totals7d, 'decantr.health.healthy');
+  const ciFailures7d = readEventCount(totals7d, 'health.ci.failed');
+
+  return {
+    ciFailureRate7d: reports7d > 0 ? ciFailures7d / reports7d : 0,
+    ciFailures7d,
+    customerLifecycle30d: lifecycleCounts(customerTotals30d),
+    customerReports30d: readEventCount(customerTotals30d, 'health.report.generated'),
+    customerStudioStarts30d: readEventCount(customerTotals30d, 'studio.started'),
+    hasEventCounts: totals7d.size > 0 || totals30d.size > 0 || customerTotals30d.size > 0,
+    healthy7d,
+    healthyRate7d: reports7d > 0 ? healthy7d / reports7d : 0,
+    lifecycle7d: lifecycleCounts(totals7d),
+    lifecycle30d: lifecycleCounts(totals30d),
+    remediationPrompts7d: readEventCount(totals7d, 'health.finding.prompt_requested'),
+    reports7d,
+    studioRefreshes7d: readEventCount(totals7d, 'studio.health_refreshed'),
+    studioStarts7d: readEventCount(totals7d, 'studio.started'),
+  };
+}
+
+function lifecycleCounts(totals) {
+  return {
+    checkCompleted: readEventCount(totals, 'decantr.check.completed'),
+    initCompleted: readEventCount(totals, 'decantr.init.completed'),
+    newCompleted: readEventCount(totals, 'decantr.new.completed'),
+    refreshCompleted: readEventCount(totals, 'decantr.refresh.completed'),
+  };
+}
+
+function readEventTotals(value) {
+  const totals = new Map();
+  for (const row of readArray(value)) {
+    const event = Array.isArray(row) ? readString(row[0]) : readString(row?.event);
+    const count = Array.isArray(row) ? readNumber(row[1]) : readNumber(row?.count);
+    if (!event) continue;
+    totals.set(event, (totals.get(event) ?? 0) + count);
+  }
+  return totals;
+}
+
+function readEventCount(totals, event) {
+  return totals.get(event) ?? 0;
+}
+
 function normalizeAttributionRow(value) {
   const orgLabel =
     readString(value?.org_name) ||
@@ -473,6 +557,18 @@ function sampleDigestInput() {
         captured_at: generated,
         customer_events: 42,
         data_quality: { classification_coverage: 0.91 },
+        event_counts: [
+          { event: 'decantr.new.completed', count: 2 },
+          { event: 'decantr.init.completed', count: 3 },
+          { event: 'decantr.refresh.completed', count: 4 },
+          { event: 'decantr.check.completed', count: 4 },
+          { event: 'health.report.generated', count: 4 },
+          { event: 'decantr.health.healthy', count: 2 },
+          { event: 'health.finding.prompt_requested', count: 2 },
+          { event: 'health.ci.failed', count: 1 },
+          { event: 'studio.started', count: 1 },
+          { event: 'studio.health_refreshed', count: 2 },
+        ],
         failure_events: 1,
         operating_alerts: [],
         previous_summary: { customer_events: 31, total_events: 86 },
@@ -491,6 +587,15 @@ function sampleDigestInput() {
         active_projects: 8,
         actor_type: 'all',
         captured_at: generated,
+        event_counts: [
+          { event: 'decantr.new.completed', count: 8 },
+          { event: 'decantr.init.completed', count: 11 },
+          { event: 'decantr.refresh.completed', count: 17 },
+          { event: 'decantr.check.completed', count: 20 },
+          { event: 'health.report.generated', count: 14 },
+          { event: 'decantr.health.healthy', count: 9 },
+          { event: 'studio.started', count: 5 },
+        ],
         range_days: 30,
         source: 'all',
         total_events: 389,
@@ -501,6 +606,15 @@ function sampleDigestInput() {
         active_projects: 4,
         actor_type: 'customer',
         captured_at: generated,
+        event_counts: [
+          { event: 'decantr.new.completed', count: 3 },
+          { event: 'decantr.init.completed', count: 4 },
+          { event: 'decantr.refresh.completed', count: 8 },
+          { event: 'decantr.check.completed', count: 9 },
+          { event: 'health.report.generated', count: 7 },
+          { event: 'decantr.health.healthy', count: 5 },
+          { event: 'studio.started', count: 2 },
+        ],
         operating_alerts: [
           {
             detail: '1 active identity needs customer/internal classification review.',
