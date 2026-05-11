@@ -132,6 +132,17 @@ pnpm showcase:verify:shortlist
 pnpm release:verify
 ```
 
+Telemetry operations for Decantr itself live in the same scripts surface:
+
+```bash
+pnpm telemetry:posthog-dashboard
+pnpm telemetry:npm-downloads -- --dry-run
+pnpm telemetry:threshold-alerts -- --dry-run
+pnpm telemetry:digest -- --dry-run
+```
+
+The CLI side is opt-in per project. Use `decantr telemetry status` to inspect the local opaque install/project identity, and `decantr telemetry link --enable --org <slug>` after `decantr login` when a customer wants their opted-in CLI usage attributed to their account or organization.
+
 ## More CLI
 
 Intent and discovery:

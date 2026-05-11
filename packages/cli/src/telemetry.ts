@@ -120,6 +120,14 @@ export interface CliTelemetryEventInput {
   registrySource?: RegistrySource;
 }
 
+export interface CliTelemetryIdentityStatus {
+  enabled: boolean;
+  hasProjectConfig: boolean;
+  installId?: string;
+  projectId?: string;
+  projectRoot: string;
+}
+
 export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): Promise<void> {
   const projectRoot = resolveCliTelemetryProjectRoot(
     input.projectRoot ?? process.cwd(),
@@ -163,6 +171,34 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
   } catch {
     // Fire-and-forget: silently ignore all errors.
   }
+}
+
+export function getCliTelemetryIdentityStatus(
+  projectRoot: string,
+  options: { create?: boolean } = {},
+): CliTelemetryIdentityStatus {
+  const resolvedRoot = resolve(projectRoot);
+  const projectJsonPath = join(resolvedRoot, '.decantr', 'project.json');
+  const projectData = readProjectJson(resolvedRoot);
+  const enabled = projectData?.telemetry === true;
+  let installId = readExistingInstallId();
+  let projectId = typeof projectData?.telemetryProjectId === 'string'
+    ? projectData.telemetryProjectId
+    : undefined;
+
+  if (options.create && enabled) {
+    const identities = ensureTelemetryIdentities(resolvedRoot);
+    installId = identities?.installId ?? installId;
+    projectId = identities?.projectId ?? projectId;
+  }
+
+  return {
+    enabled,
+    hasProjectConfig: existsSync(projectJsonPath),
+    installId,
+    projectId,
+    projectRoot: resolvedRoot,
+  };
 }
 
 export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): Promise<void> {
@@ -530,6 +566,17 @@ function getOrCreateInstallId(): string {
     return installId;
   } catch {
     return `install_${randomUUID()}`;
+  }
+}
+
+function readExistingInstallId(): string | undefined {
+  const configPath = join(getConfigDir(), 'config.json');
+  try {
+    if (!existsSync(configPath)) return undefined;
+    const data = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<string, unknown>;
+    return typeof data.telemetryInstallId === 'string' ? data.telemetryInstallId : undefined;
+  } catch {
+    return undefined;
   }
 }
 

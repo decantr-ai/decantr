@@ -1,0 +1,42 @@
+name: Telemetry Threshold Alerts
+
+on:
+  schedule:
+    - cron: '40 14 * * *'
+  workflow_dispatch:
+    inputs:
+      send_webhook_test:
+        description: 'Post the threshold summary even when no alerts trigger'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  thresholds:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: '22'
+
+      - name: Check telemetry thresholds
+        env:
+          DECANTR_API_URL: ${{ vars.DECANTR_API_URL || 'https://api.decantr.ai/v1' }}
+          DECANTR_TELEMETRY_SNAPSHOT_TOKEN: ${{ secrets.DECANTR_TELEMETRY_SNAPSHOT_TOKEN || secrets.DECANTR_ADMIN_KEY }}
+          TELEMETRY_THRESHOLD_WEBHOOK_URL: ${{ secrets.TELEMETRY_THRESHOLD_WEBHOOK_URL || secrets.TELEMETRY_HEALTH_WEBHOOK_URL }}
+          TELEMETRY_THRESHOLD_WEBHOOK_ALWAYS: ${{ github.event_name == 'workflow_dispatch' && inputs.send_webhook_test && 'true' || 'false' }}
+          TELEMETRY_FAILURE_RATE_ALERT_THRESHOLD: ${{ vars.TELEMETRY_FAILURE_RATE_ALERT_THRESHOLD || '0.05' }}
+          TELEMETRY_CANDIDATE_ALIAS_ALERT_THRESHOLD: ${{ vars.TELEMETRY_CANDIDATE_ALIAS_ALERT_THRESHOLD || '0' }}
+          TELEMETRY_COMMERCIAL_INTENT_ALERT_THRESHOLD: ${{ vars.TELEMETRY_COMMERCIAL_INTENT_ALERT_THRESHOLD || '5' }}
+        run: |
+          if [ -z "$DECANTR_TELEMETRY_SNAPSHOT_TOKEN" ]; then
+            echo "Missing DECANTR_TELEMETRY_SNAPSHOT_TOKEN. DECANTR_ADMIN_KEY is accepted as a fallback."
+            exit 1
+          fi
+
+          node scripts/check-telemetry-thresholds.mjs

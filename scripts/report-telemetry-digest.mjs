@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fetchNpmDownloadSummary } from './npm-downloads-lib.mjs';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
@@ -29,7 +30,7 @@ if (!token) {
   fail('Missing DECANTR_TELEMETRY_SNAPSHOT_TOKEN. DECANTR_ADMIN_KEY is accepted as a fallback.');
 }
 
-const input = dryRun ? sampleDigestInput() : await fetchDigestInput();
+const input = dryRun ? await sampleDigestInput() : await fetchDigestInput();
 const digest = buildDigest(input);
 const markdown = renderMarkdown(digest, { apiUrl, dryRun, generatedAt });
 
@@ -44,7 +45,7 @@ if (webhookUrl && (!dryRun || webhookAlways)) {
 }
 
 async function fetchDigestInput() {
-  const [usageResponse, customerAttributionResponse, healthResults] = await Promise.all([
+  const [usageResponse, customerAttributionResponse, healthResults, npmDownloads] = await Promise.all([
     fetchJson('/admin/telemetry-snapshots/usage?limit=60'),
     fetchJson('/admin/telemetry-snapshots/attribution?actor_type=customer&days=30&limit=10'),
     Promise.all([
@@ -52,13 +53,30 @@ async function fetchDigestInput() {
       fetchJson('/admin/telemetry-snapshots/health?days=30'),
       fetchJson('/admin/telemetry-snapshots/health?actor_type=customer&days=30'),
     ]),
+    fetchOptionalNpmDownloadSummary(),
   ]);
 
   return {
     attributionRows: readItems(customerAttributionResponse),
     healthResults,
+    npmDownloads,
     usageSnapshots: readItems(usageResponse),
   };
+}
+
+async function fetchOptionalNpmDownloadSummary(options = {}) {
+  try {
+    return await fetchNpmDownloadSummary(options);
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : 'npm download summary failed',
+      generatedAt: new Date().toISOString(),
+      packages: [],
+      periods: [],
+      top: {},
+      totals: {},
+    };
+  }
 }
 
 async function fetchJson(path) {
@@ -131,6 +149,7 @@ function buildDigest(input) {
     failureEvents,
     failureRate,
     healthResults,
+    npmDownloads: normalizeNpmDownloads(input.npmDownloads),
     operatingAlerts,
     previousCustomerEvents,
     previousTotalEvents,
@@ -173,6 +192,10 @@ function renderMarkdown(digest, { apiUrl, dryRun, generatedAt }) {
     `- Failure signals: ${formatNumber(digest.failureEvents)} (${formatPercent(digest.failureRate)} of last-7-day events)`,
     `- Classification coverage: ${formatNullablePercent(digest.quality.classificationCoverage)}`,
     `- Candidate aliases to review: ${formatNumber(digest.quality.candidateAliases)}`,
+    '',
+    '## npm Download Interest',
+    '',
+    ...renderNpmDownloadLines(digest.npmDownloads),
     '',
     '## Project Health Adoption',
     '',
@@ -295,6 +318,11 @@ function discordWebhookPayload({ apiUrl, digest, dryRun, generatedAt }) {
               `Commercial intent: **${formatNumber(digest.commercialIntentEvents)}**`,
               `Failures: **${formatNumber(digest.failureEvents)}** (${formatPercent(digest.failureRate)})`,
             ].join('\n'),
+            inline: false,
+          },
+          {
+            name: 'npm download interest',
+            value: discordNpmDownloadValue(digest.npmDownloads),
             inline: false,
           },
           {
@@ -505,6 +533,69 @@ function normalizeAttributionRow(value) {
   };
 }
 
+function normalizeNpmDownloads(value) {
+  if (!value || typeof value !== 'object') {
+    return {
+      error: 'No npm download summary was available.',
+      generatedAt: null,
+      packages: [],
+      periods: [],
+      top: {},
+      totals: {},
+    };
+  }
+  return {
+    error: readNullableString(value.error),
+    generatedAt: readNullableString(value.generatedAt),
+    packages: readArray(value.packages),
+    periods: readArray(value.periods).map(String),
+    top: value.top && typeof value.top === 'object' ? value.top : {},
+    totals: value.totals && typeof value.totals === 'object' ? value.totals : {},
+  };
+}
+
+function renderNpmDownloadLines(summary) {
+  if (summary.error) {
+    return [`- npm download summary unavailable: ${summary.error}`];
+  }
+  if (!summary.periods.length) {
+    return ['- No npm download periods were returned.'];
+  }
+
+  const lines = [];
+  for (const period of summary.periods) {
+    const top = readArray(summary.top[period]).slice(0, 3);
+    const leaders = top.length
+      ? ` Top: ${top.map((row) => `${row.name} (${formatNumber(readNestedNumber(row, ['downloads', period]))})`).join(', ')}.`
+      : '';
+    lines.push(
+      `- ${formatPeriod(period)}: ${formatNumber(readNumber(summary.totals[period]))} downloads.${leaders}`,
+    );
+  }
+  return lines;
+}
+
+function discordNpmDownloadValue(summary) {
+  if (summary.error) {
+    return limitDiscordText(`Unavailable: ${summary.error}`, 1_024);
+  }
+  if (!summary.periods.length) return 'No npm download periods returned.';
+  return limitDiscordText(summary.periods.map((period) => {
+    const top = readArray(summary.top[period]).slice(0, 3);
+    const leaders = top.length
+      ? top.map((row) => `${row.name}: **${formatNumber(readNestedNumber(row, ['downloads', period]))}**`).join(', ')
+      : 'No top packages returned.';
+    return `${formatPeriod(period)}: **${formatNumber(readNumber(summary.totals[period]))}** downloads\n${leaders}`;
+  }).join('\n'), 1_024);
+}
+
+function formatPeriod(period) {
+  return String(period)
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 function attributionActive(kind, rows) {
   const values = new Set();
   for (const row of rows) {
@@ -520,7 +611,7 @@ function healthLabel(health) {
   return `${actor}, ${days || '?'}d`;
 }
 
-function sampleDigestInput() {
+async function sampleDigestInput() {
   const generated = '2026-05-08T14:30:00.000Z';
   return {
     healthResults: [
@@ -546,6 +637,7 @@ function sampleDigestInput() {
         status: 'success',
       },
     ],
+    npmDownloads: await fetchOptionalNpmDownloadSummary({ dryRun: true }),
     usageSnapshots: [
       {
         active_anonymous_ids: 2,

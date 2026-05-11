@@ -2,7 +2,11 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendCliCommandTelemetry, sendNewProjectCompletedTelemetry } from '../src/telemetry.js';
+import {
+  getCliTelemetryIdentityStatus,
+  sendCliCommandTelemetry,
+  sendNewProjectCompletedTelemetry,
+} from '../src/telemetry.js';
 
 let projectRoot = '';
 let configDir = '';
@@ -282,6 +286,23 @@ describe('CLI command telemetry', () => {
     });
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('reports telemetry identity status and creates opaque ids only when requested', () => {
+    writeProjectConfig({ telemetry: true });
+
+    const before = getCliTelemetryIdentityStatus(projectRoot);
+    expect(before.enabled).toBe(true);
+    expect(before.installId).toBeUndefined();
+    expect(before.projectId).toBeUndefined();
+
+    const after = getCliTelemetryIdentityStatus(projectRoot, { create: true });
+    expect(after.installId).toMatch(/^install_/);
+    expect(after.projectId).toMatch(/^project_/);
+
+    const again = getCliTelemetryIdentityStatus(projectRoot);
+    expect(again.installId).toBe(after.installId);
+    expect(again.projectId).toBe(after.projectId);
   });
 
   it('skips help and version probes', async () => {

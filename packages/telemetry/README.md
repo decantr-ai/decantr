@@ -63,6 +63,8 @@ If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API norm
 
 The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `install`, and `project` aliases without writing SQL. Aliases can be linked by user email/id or organization slug/id. Mutations are audit logged and clear the hosted API actor-resolution cache. `/admin/telemetry/usage` adds the protected PostHog query view for active identities, source/actor mix, paid-acquisition signals, failure signals, period-over-period trends, product signal buckets, operating alerts, stored rollup history, snapshot freshness, and unaliased identity candidates, with one-click candidate classification through the same audited alias flow. `/admin/reports` and individual organization admin pages read durable Supabase rollups written by the service-token protected snapshot runner, giving Decantr an owned business-intelligence history while PostHog remains the raw event explorer.
 
+End users can also link opted-in CLI identities themselves with `decantr telemetry link` after authenticating with an API key. The CLI sends only opaque `install_...` and `project_...` identifiers plus an optional organization slug/label to `POST /v1/me/telemetry-link`; it does not send source code, prompts, file paths, health reports, routes, or environment values.
+
 ## Campaign Attribution
 
 The marketing site and registry can attach campaign attribution fields to web events: UTM source/medium/campaign/content/term/id, first and last touch variants, landing path, referrer domain, click-id provider, and whether a supported click id was present. Raw ad click ids such as `twclid`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `ttclid`, and `li_fat_id` are not included in Decantr telemetry.
@@ -122,3 +124,9 @@ const telemetry = createTelemetryClient({
 ```
 
 That endpoint can write raw events and daily rollups into Supabase or an analytics warehouse while PostHog remains the fast product analytics layer.
+
+Operational scripts in the monorepo combine PostHog-backed usage rollups with install-interest signals:
+
+- `pnpm telemetry:npm-downloads` summarizes public npm package download demand.
+- `pnpm telemetry:threshold-alerts` checks durable Supabase rollups for daily alert thresholds.
+- `pnpm telemetry:digest` posts the weekly executive rollup, now including npm download interest.

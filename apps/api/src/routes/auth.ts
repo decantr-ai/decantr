@@ -14,12 +14,14 @@ import {
 } from '../lib/entitlements.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { emitApiTelemetry } from '../lib/telemetry.js';
+import { clearTelemetryActorCache } from '../lib/telemetry-actor.js';
 import { ensureUserProfile } from '../lib/user-profile.js';
 import { hashApiKey } from '../lib/api-key-hash.js';
 
 export const authRoutes = new Hono<Env>();
 
 type UserUpdate = Database['public']['Tables']['users']['Update'];
+const TELEMETRY_LINK_ALIAS_SELECT = 'id, identity_type, identity_id, actor_type, user_id, org_id, label, created_at, updated_at';
 
 // Auth routes require authentication, without shadowing other /v1 route modules.
 authRoutes.use('/me', requireAuth());
@@ -108,6 +110,174 @@ authRoutes.get('/me', requireApiKeyScope('read'), async (c) => {
     updated_at: user.updated_at,
   });
 });
+
+// POST /v1/me/telemetry-link
+// Link this authenticated account/org to opaque CLI install/project ids.
+authRoutes.post('/me/telemetry-link', requireApiKeyScope('read'), async (c) => {
+  const auth = c.get('auth') as AuthContext;
+  const body = await c.req.json().catch(() => null);
+  const rawInstallId = readBodyString(body, 'install_id');
+  const rawProjectId = readBodyString(body, 'project_id');
+  const installId = normalizeTelemetryLinkId(rawInstallId, 'install');
+  const projectId = normalizeTelemetryLinkId(rawProjectId, 'project');
+  const label = normalizeTelemetryLinkLabel(readBodyString(body, 'label'));
+  const orgSlug = normalizeTelemetryLinkLabel(readBodyString(body, 'org_slug'));
+
+  if (rawInstallId && !installId) {
+    return c.json({ error: 'install_id must be an opaque install_ identifier.' }, 400);
+  }
+
+  if (rawProjectId && !projectId) {
+    return c.json({ error: 'project_id must be an opaque project_ identifier.' }, 400);
+  }
+
+  if (!installId && !projectId) {
+    return c.json({ error: 'install_id or project_id is required.' }, 400);
+  }
+
+  const client = createAdminClient();
+  const orgResult = await resolveTelemetryLinkOrganization(client, auth, orgSlug);
+  if ('error' in orgResult) {
+    return c.json({ error: orgResult.error }, orgResult.status);
+  }
+
+  const now = new Date().toISOString();
+  const aliasInputs = [
+    installId ? { identity_type: 'install', identity_id: installId } : null,
+    projectId ? { identity_type: 'project', identity_id: projectId } : null,
+  ].filter(Boolean) as Array<{ identity_id: string; identity_type: 'install' | 'project' }>;
+  const aliases = [];
+
+  for (const aliasInput of aliasInputs) {
+    const { data, error } = await client
+      .from('telemetry_identity_aliases')
+      .upsert({
+        ...aliasInput,
+        actor_type: 'customer',
+        user_id: auth.user!.id,
+        org_id: orgResult.orgId,
+        label: label || telemetryLinkLabel(aliasInput.identity_type, auth.user!.username),
+        updated_at: now,
+      }, { onConflict: 'identity_type,identity_id' })
+      .select(TELEMETRY_LINK_ALIAS_SELECT)
+      .single();
+
+    if (error || !data) {
+      return c.json({ error: 'Failed to link telemetry identity.' }, 500);
+    }
+    aliases.push(data);
+  }
+
+  clearTelemetryActorCache();
+  await recordAuditEvent({
+    actor_user_id: auth.user!.id,
+    org_id: orgResult.orgId,
+    scope: 'user',
+    action: 'telemetry_identity.linked',
+    target_type: 'telemetry_identity_alias',
+    target_id: aliases.map((alias: any) => alias.id).join(','),
+    details: {
+      identity_types: aliases.map((alias: any) => alias.identity_type),
+      org_slug: orgResult.orgSlug,
+      source: 'cli',
+    },
+  });
+
+  emitApiTelemetry(c, {
+    name: 'registry_web.identity_linked',
+    context: {
+      orgId: orgResult.orgId ?? undefined,
+    },
+    properties: {
+      success: true,
+      channel: auth.authSource === 'api_key' ? 'api_key' : 'jwt',
+      entrypoint: 'cli_telemetry_link',
+      orgScoped: Boolean(orgResult.orgId),
+      plan: auth.user!.tier,
+      surface: 'cli_telemetry_link',
+    },
+  });
+
+  return c.json({
+    aliases,
+    linked: true,
+    org_id: orgResult.orgId,
+    org_slug: orgResult.orgSlug,
+  }, 201);
+});
+
+function readBodyString(body: unknown, key: string): string | null {
+  if (!body || typeof body !== 'object') return null;
+  const value = (body as Record<string, unknown>)[key];
+  return typeof value === 'string' ? value : null;
+}
+
+function normalizeTelemetryLinkId(
+  value: string | null,
+  prefix: 'install' | 'project',
+): string | null {
+  const normalized = value?.trim() ?? '';
+  if (!normalized) return null;
+  if (
+    normalized.length > 160 ||
+    !new RegExp(`^${prefix}_[A-Za-z0-9._:-]+$`).test(normalized)
+  ) {
+    return null;
+  }
+  return normalized;
+}
+
+function normalizeTelemetryLinkLabel(value: string | null): string | null {
+  const normalized = value?.trim() ?? '';
+  if (!normalized) return null;
+  return normalized.slice(0, 160);
+}
+
+function telemetryLinkLabel(identityType: 'install' | 'project', username: string | null): string {
+  return `${username || 'Decantr user'} ${identityType}`.slice(0, 160);
+}
+
+async function resolveTelemetryLinkOrganization(
+  client: ReturnType<typeof createAdminClient>,
+  auth: AuthContext,
+  orgSlug: string | null,
+): Promise<
+  | { orgId: string | null; orgSlug: string | null }
+  | { error: string; status: 400 | 403 | 404 }
+> {
+  if (!orgSlug) {
+    return {
+      orgId: auth.apiKeyOrgId ?? null,
+      orgSlug: null,
+    };
+  }
+
+  const { data: org } = await client
+    .from('organizations')
+    .select('id, slug')
+    .eq('slug', orgSlug)
+    .single();
+
+  if (!org?.id) {
+    return { error: 'Organization not found.', status: 404 };
+  }
+
+  const { data: membership } = await client
+    .from('org_members')
+    .select('role')
+    .eq('org_id', org.id)
+    .eq('user_id', auth.user!.id)
+    .single();
+
+  if (!membership) {
+    return { error: 'Not authorized to link telemetry to this organization.', status: 403 };
+  }
+
+  return {
+    orgId: org.id,
+    orgSlug: org.slug ?? orgSlug,
+  };
+}
 
 // PATCH /v1/me
 authRoutes.patch('/me', requireApiKeyScope('admin:*'), async (c) => {

@@ -81,6 +81,8 @@ decantr audit
 decantr check
 decantr health --ci --fail-on error
 decantr studio --port 4319 --host 127.0.0.1
+decantr telemetry status
+decantr telemetry link --enable --org my-team
 decantr content-health --ci --fail-on error
 decantr registry summary --namespace @official --json
 decantr showcase verification --json
@@ -116,6 +118,26 @@ decantr studio --port 4319 --host 127.0.0.1
 Studio is for local triage, not Decantr admin telemetry. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
 
 If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, `init --telemetry`, `check --telemetry`, `health`, and `studio` emit only aggregate product-activation metadata such as lifecycle command outcome, status, score, finding counts, CI failure outcome, Studio usage, and remediation prompt requests. They never upload the health report, finding evidence, local paths, route names, source code, or prompt text.
+
+## Telemetry Identity Linking
+
+CLI telemetry remains explicit opt-in per project. `decantr telemetry status` shows whether the current project is opted in and whether the local opaque install/project IDs have been created.
+
+```bash
+decantr telemetry status
+decantr telemetry status --json
+```
+
+After `decantr login --api-key=<key>`, `decantr telemetry link` can attach those opaque IDs to your authenticated Decantr account or organization for customer-vs-internal reporting. It does not upload source code, prompts, routes, paths, reports, or environment values.
+
+```bash
+decantr telemetry link
+decantr telemetry link --enable
+decantr telemetry link --org my-team --label "CI runner"
+decantr telemetry link --api-key=<key> --api-url=https://api.decantr.ai/v1
+```
+
+Use `--enable` when the project has not opted in yet. The command writes only `telemetry: true` and the opaque project id to `.decantr/project.json`, then calls `POST /v1/me/telemetry-link` with the install/project ids.
 
 ## Content Health
 

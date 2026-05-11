@@ -60,4 +60,13 @@ describe('command help (e2e)', () => {
     expect(output).toContain('POST /api/refresh');
     expect(output).not.toContain('Decantr Studio is running');
   });
+
+  it('prints telemetry help without requiring a Decantr project', () => {
+    const output = runHelp(testDir, ['telemetry', '--help']);
+
+    expect(output).toContain('decantr telemetry');
+    expect(output).toContain('telemetry status');
+    expect(output).toContain('telemetry link');
+    expect(output).not.toContain('No decantr.essence.json');
+  });
 });

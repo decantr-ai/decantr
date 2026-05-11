@@ -166,6 +166,27 @@ const insightSpecs = [
     }),
   },
   {
+    name: 'Install interest to healthy project funnel',
+    description:
+      'Connects marketing install-command interest to opted-in CLI usage, Project Health report generation, healthy milestones, and Studio adoption.',
+    query: insightViz({
+      kind: 'FunnelsQuery',
+      dateRange: last30Days(),
+      filterTestAccounts: false,
+      funnelsFilter: {
+        funnelVizType: 'steps',
+        layout: 'horizontal',
+      },
+      series: [
+        eventNode(events.marketingWebCommandClicked, 'Install command clicked'),
+        eventNode(events.decantrNewCompleted, 'New project completed'),
+        eventNode(events.healthReportGenerated, 'Health report generated'),
+        eventNode(events.decantrHealthHealthy, 'Healthy milestone'),
+        eventNode(events.studioStarted, 'Studio started'),
+      ],
+    }),
+  },
+  {
     name: 'Project Health outcomes',
     description:
       'Daily opted-in Project Health outcomes across reports, healthy milestones, remediation prompts, CI failures, and Studio refreshes.',
@@ -331,6 +352,18 @@ const insightSpecs = [
     ]),
   },
   {
+    name: 'Private registry readiness signals',
+    description:
+      'Early demand signals for private registry packaging: organization surfaces, billing/API-key views, CLI identity linking, org creation, and registry-source mix.',
+    query: trendLine([
+      [events.registryWebOrganizationViewed, 'Organization viewed'],
+      [events.registryWebBillingViewed, 'Billing viewed'],
+      [events.registryWebApiKeyPageViewed, 'API key page viewed'],
+      [events.registryWebIdentityLinked, 'CLI identity linked'],
+      [events.orgCreated, 'Organization created'],
+    ]),
+  },
+  {
     name: 'Content pipeline health',
     description:
       'Daily health of the official content pipeline: validation and registry publish events from CI.',
@@ -452,6 +485,14 @@ const cohortSpecs = [
       performedEvent(events.registryWebSearchPerformed, 5),
       performedEvent(events.registryWebContentOpened, 5),
       performedEvent(events.registryItemResolved, 10),
+    ]),
+  },
+  {
+    name: 'Decantr: Linked CLI identities',
+    description:
+      'Users who linked an opted-in CLI telemetry identity to an authenticated account or organization in the last 30 days.',
+    filters: cohortFilters('OR', [
+      performedEvent(events.registryWebIdentityLinked),
     ]),
   },
 ];

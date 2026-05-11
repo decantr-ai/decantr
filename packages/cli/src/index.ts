@@ -2901,6 +2901,8 @@ ${BOLD}Usage:${RESET}
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health init-ci [--force] [--project <path>] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
+  decantr telemetry status
+  decantr telemetry link [--enable] [--org <slug>]
   decantr content-health [--json] [--markdown] [--ci]
   decantr studio [--port 4319] [--host 127.0.0.1]
   decantr rules preview [--project=<path>]
@@ -2942,6 +2944,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]; use health init-ci to install a GitHub Actions gate
+  ${cyan('telemetry')}   Inspect or link this project's opted-in CLI telemetry identity
   ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
@@ -2982,6 +2985,8 @@ ${BOLD}Examples:${RESET}
   decantr status
   decantr health
   decantr health init-ci
+  decantr telemetry status
+  decantr telemetry link --enable --org my-team
   decantr health init-ci --project apps/web
   decantr health --ci --fail-on error
   decantr content-health --ci --fail-on error
@@ -3312,6 +3317,17 @@ async function main() {
         }
         const { cmdStudio, parseStudioArgs } = await import('./commands/studio.js');
         await cmdStudio(process.cwd(), parseStudioArgs(args));
+      } catch (e) {
+        console.error(error((e as Error).message));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'telemetry': {
+      try {
+        const { cmdTelemetry } = await import('./commands/telemetry.js');
+        await cmdTelemetry(process.cwd(), args);
       } catch (e) {
         console.error(error((e as Error).message));
         process.exitCode = 1;

@@ -101,6 +101,15 @@ These events support the first board-level and operator-level metrics:
 - paid acquisition and public marketing CTA movement
 - registry-web discovery and commercial intent
 - anonymous-to-authenticated identity linking
+- npm download interest across the public package surface
+
+## Private Registry Gating
+
+Private registry capability is modeled as an Enterprise entitlement today. In the API entitlement map, `private_registry_portal` is true for `enterprise` and false for `team`, `pro`, and `free`; the registry UI reads the same capability before exposing private-registry portal affordances.
+
+That is not the same as a live self-serve paywall. Stripe-backed billing and checkout are still guarded by `REGISTRY_BILLING_ENABLED=true` in the API and `NEXT_PUBLIC_REGISTRY_BILLING_ENABLED=true` in the registry app. With those flags off, Private Registry is an enterprise-gated product capability rather than an active public Stripe paywall.
+
+Telemetry is already ready for the product line: private registry usage should use `registrySource: "private"` and `visibility: "private"` on registry resolution events, while dashboard/billing/organization surfaces emit the existing commercial-intent and private-registry readiness signals.
 
 ## PostHog Policy
 
@@ -126,7 +135,22 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. To also provision cohorts and alerts, add `cohort:read`, `cohort:write`, `alert:read`, and `alert:write`. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
 
-The dashboard automation creates saved insights for activation, paid acquisition, project entrypoints, project activation, Project Health outcomes, core usage, customer-only usage, commercial intent, registry-web adoption, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
+The dashboard automation creates saved insights for activation, paid acquisition, project entrypoints, project activation, install-interest-to-healthy-project movement, Project Health outcomes, core usage, customer-only usage, commercial intent, private-registry readiness, registry-web adoption, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, content power users, and linked CLI identities, plus failure and commercial-intent threshold alerts.
+
+## npm Download Intelligence
+
+npm downloads are install-interest signals, not authenticated product usage. They help answer whether public package demand is moving before enough customers opt into CLI telemetry or link identities.
+
+Run the standalone report with:
+
+```bash
+pnpm telemetry:npm-downloads
+pnpm telemetry:npm-downloads -- --dry-run
+pnpm telemetry:npm-downloads -- --only=@decantr/cli --period=last-week --json
+pnpm telemetry:npm-downloads -- --send-webhook
+```
+
+The script reads the public package surface, calls the npm downloads API for `last-week` and `last-month` by default, writes markdown/JSON, and can post a Discord-compatible embed through `NPM_DOWNLOAD_WEBHOOK_URL`. If that secret is omitted it falls back to `TELEMETRY_DIGEST_WEBHOOK_URL` and then `TELEMETRY_HEALTH_WEBHOOK_URL`.
 
 ## Weekly Snapshot Reporting
 
@@ -205,7 +229,15 @@ The storage layer is split into `telemetry_usage_snapshots`, `telemetry_signal_b
 
 `.github/workflows/telemetry-health-check.yml` runs that health signal daily through `node scripts/check-telemetry-health.mjs`, checking all-actor 7-day, all-actor 30-day, and customer 30-day rollups. It fails on any non-fresh status, writes a GitHub Actions summary, and can post unhealthy summaries to `TELEMETRY_HEALTH_WEBHOOK_URL`. Manual workflow runs can enable `send_webhook_test` to post the current summary even when healthy. Discord webhook URLs are detected automatically and receive a compact rich embed with status color and per-rollup fields; custom Discord-compatible relays can force that payload shape with `TELEMETRY_HEALTH_WEBHOOK_FORMAT=discord`. The operational triage path lives in `docs/runbooks/2026-05-08-telemetry-health-checks.md`.
 
-`.github/workflows/telemetry-weekly-digest.yml` runs the executive digest through `node scripts/report-telemetry-digest.mjs` every Monday after the weekly snapshot workflow. It reads the service-token protected durable snapshot endpoints, writes a GitHub Actions summary, and posts a Discord-friendly rich embed to `TELEMETRY_DIGEST_WEBHOOK_URL`, falling back to `TELEMETRY_HEALTH_WEBHOOK_URL` when a dedicated digest secret is not configured. The digest includes last-7-day usage movement, customer-attributed activity, active customer org/project/install counts, Project Health adoption, commercial-intent and adoption bucket movement, top customer attribution rows, stored operating alerts, and snapshot health. The operational triage path lives in `docs/runbooks/2026-05-08-telemetry-weekly-digest.md`.
+`.github/workflows/telemetry-weekly-digest.yml` runs the executive digest through `node scripts/report-telemetry-digest.mjs` every Monday after the weekly snapshot workflow. It reads the service-token protected durable snapshot endpoints, writes a GitHub Actions summary, and posts a Discord-friendly rich embed to `TELEMETRY_DIGEST_WEBHOOK_URL`, falling back to `TELEMETRY_HEALTH_WEBHOOK_URL` when a dedicated digest secret is not configured. The digest includes last-7-day usage movement, customer-attributed activity, active customer org/project/install counts, npm download interest, Project Health adoption, commercial-intent and adoption bucket movement, top customer attribution rows, stored operating alerts, and snapshot health. The operational triage path lives in `docs/runbooks/2026-05-08-telemetry-weekly-digest.md`.
+
+`.github/workflows/telemetry-threshold-alerts.yml` runs a daily Discord/Actions threshold check through `node scripts/check-telemetry-thresholds.mjs`. It reads the same service-token protected durable rollups and alerts on missing telemetry, stale snapshot health, missing CLI activation, missing customer-attributed usage, elevated failure rate, candidate aliases, first customer usage, Project Health CI failures, and rising commercial intent. It posts to `TELEMETRY_THRESHOLD_WEBHOOK_URL`, falling back to `TELEMETRY_HEALTH_WEBHOOK_URL`, and exits non-zero only when a critical threshold triggers. Tune thresholds with:
+
+```env
+TELEMETRY_FAILURE_RATE_ALERT_THRESHOLD=0.05
+TELEMETRY_CANDIDATE_ALIAS_ALERT_THRESHOLD=0
+TELEMETRY_COMMERCIAL_INTENT_ALERT_THRESHOLD=5
+```
 
 Post-publish package verification can use the same Discord style without mixing release state into product telemetry. `node scripts/verify-published-packages.mjs --send-webhook` posts a release-confidence embed through `RELEASE_VERIFICATION_WEBHOOK_URL`, falling back to `TELEMETRY_HEALTH_WEBHOOK_URL` when a dedicated release webhook is not configured. This verifies public npm dist-tags, published manifests, and CLI smoke behavior; it does not emit analytics events.
 
@@ -408,6 +440,17 @@ decantr new my-app --blueprint=agent-marketplace --telemetry
 decantr init --existing --accept-proposal --telemetry
 decantr check --telemetry
 ```
+
+Inspect and link the local opaque telemetry identity with:
+
+```bash
+decantr telemetry status
+decantr telemetry status --json
+decantr login --api-key=<key>
+decantr telemetry link --enable --org my-team --label "Founder laptop"
+```
+
+`decantr telemetry link` creates missing opaque install/project ids only after opt-in, then posts them to `POST /v1/me/telemetry-link`. The API resolves the authenticated user and optional organization membership, upserts `telemetry_identity_aliases` as `customer`, audit logs the mutation, clears the actor-resolution cache, and emits `registry_web.identity_linked`. This is the customer-controlled path for separating real customer usage from Decantr internal usage without asking users to expose source code, prompts, paths, reports, emails, or environment values.
 
 The CLI stores opaque IDs only:
 
