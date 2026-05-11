@@ -28,6 +28,18 @@ npm install @decantr/core
 
 In the current workflow architecture, `@decantr/core` owns the canonical adapter labels used by compiled packs, while runnable greenfield bootstrap adapters are resolved in the CLI on top of those labels.
 
+## FAQ
+
+Most teams should start with the CLI rather than this low-level package:
+
+```bash
+npx @decantr/cli new my-app
+npx @decantr/cli analyze
+npx @decantr/cli check
+```
+
+For common setup, brownfield, migration, CI, and agent-alignment questions, see the user-facing [Decantr FAQ](https://github.com/decantr-ai/decantr/blob/main/docs/faq.md).
+
 ## Example
 
 ```ts
