@@ -71,7 +71,7 @@ Admin access is not stored on the `users` table. The registry app reads `DECANTR
 For local or preview admin smoke tests, include the seeded admin persona:
 
 ```bash
-DECANTR_ADMIN_EMAILS=davidaimi@gmail.com,decantr-test+admin@example.com
+DECANTR_ADMIN_EMAILS=david@decantr.ai,decantr-test+admin@example.com
 ```
 
 ## Stripe Bypass
