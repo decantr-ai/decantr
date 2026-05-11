@@ -41,15 +41,18 @@ CLI / API / MCP / marketing web / registry web / content CI
                 +--> raw events, rollups, enterprise dashboards, billing meters
 ```
 
-## MVP Event Contract
+## Event Contract
 
-The first event vocabulary is intentionally small:
+The event vocabulary is typed in `@decantr/telemetry` and guarded by `DECANTR_TELEMETRY_EVENT_CATALOG`. Public ingest accepts the previous and current schema versions during rollout, but new emitters use schema `0.3.0`. Each catalog entry declares allowed sources, a signal bucket, privacy class, public-ingest eligibility, and privacy notes. The API rejects forged source/event pairs before forwarding to PostHog.
+
+All telemetry clients pass through the shared redaction layer before a sink sees the event. Sensitive keys such as prompts, source code, file paths, repository names, raw route names, package slugs, emails, tokens, cookies, URLs, user agents, and authorization fields are redacted even if a future caller accidentally includes them.
 
 - `cli.command.completed`
 - `registry.item.resolved`
 - `registry.sync.completed`
 - `execution_pack.compiled`
 - `execution_pack.selected`
+- `decantr.analyze.completed`
 - `decantr.init.completed`
 - `decantr.new.completed`
 - `decantr.refresh.completed`
@@ -67,6 +70,11 @@ The first event vocabulary is intentionally small:
 - `user.signup.completed`
 - `org.created`
 - `api_key.created`
+- `billing.plan_clicked`
+- `billing.checkout_blocked`
+- `private_registry.gate_viewed`
+- `private_registry.intent_clicked`
+- `private_registry.content_listed`
 - `marketing_web.page_viewed`
 - `marketing_web.cta_clicked`
 - `marketing_web.outbound_clicked`
@@ -79,8 +87,18 @@ The first event vocabulary is intentionally small:
 - `registry_web.billing_viewed`
 - `registry_web.organization_viewed`
 - `registry_web.identity_linked`
+- `telemetry.identity_linked`
 
-Private registries are accounted for through the generic registry event model rather than a separate first release surface: use `registrySource: "private"` and `visibility: "private"` when that product line is enabled.
+Private Registry remains Enterprise-gated/manual-provisioned while billing launch flags are off. Telemetry only records readiness and permitted usage: gate views, intent clicks, and aggregate content-list counts. It does not collect private package slugs, source files, prompts, emails, raw paths, or package contents.
+
+### Source Matrix
+
+- `cli`: opted-in local CLI product events, including lifecycle commands, Project Health/Studio usage, registry sync, and `decantr.analyze.completed`.
+- `api`: hosted API product events, identity-link audit telemetry, execution packs, hosted audit/critique, content publish, billing checkout blocking, signup, API key, and org creation.
+- `registry-web`: registry portal discovery, billing interest, private-registry readiness, and identity-linking browser events.
+- `marketing-web`: public marketing page, CTA, outbound, and command-click events with sanitized campaign attribution.
+- `content-ci`: official content validation/publish automation.
+- `mcp`: registry resolution from MCP/agent surfaces.
 
 ## Metrics
 
@@ -101,6 +119,8 @@ These events support the first board-level and operator-level metrics:
 - paid acquisition and public marketing CTA movement
 - registry-web discovery and commercial intent
 - anonymous-to-authenticated identity linking
+- identity hygiene and customer-attributed CLI usage
+- private-registry readiness and billing intent while the paywall remains off
 
 ## PostHog Policy
 
@@ -126,7 +146,7 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_ENVIRONMENT_ID` is the numeric project id from the PostHog app URL, not the `phc_` ingestion token. The personal API key needs dashboard and insight read/write access. To also provision cohorts and alerts, add `cohort:read`, `cohort:write`, `alert:read`, and `alert:write`. The script is idempotent: reruns update the existing `Decantr Operating Dashboard` and its saved insights instead of creating duplicates.
 
-The dashboard automation creates saved insights for activation, paid acquisition, project entrypoints, project activation, Project Health outcomes, core usage, customer-only usage, commercial intent, registry-web adoption, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure and commercial-intent threshold alerts.
+The dashboard automation creates saved insights for activation, paid acquisition, project entrypoints, project activation, Project Health outcomes, core usage, customer-only usage, commercial intent, registry-web adoption, private-registry readiness, identity hygiene, marketing acquisition by campaign, registry-web discovery, content pipeline health, hosted intelligence workload, source mix, actor-type mix, failure signals, and registry adoption mix. With the extra scopes, it also creates cohorts for activated users, commercial-intent users, and content power users, plus failure, commercial-intent, identity-hygiene, and private-registry readiness threshold alerts.
 
 ## Weekly Snapshot Reporting
 
@@ -139,7 +159,7 @@ pnpm telemetry:persist-rollups
 
 The weekly snapshot command reads the same PostHog env values and requires `query:read`. The rollup persistence command posts to the Decantr API snapshot runner with `DECANTR_API_URL` and `DECANTR_TELEMETRY_SNAPSHOT_TOKEN`, writing an operator-readable markdown summary of persisted usage snapshots, attribution snapshots, event totals, and attribution row counts. In GitHub Actions, `.github/workflows/telemetry-weekly-snapshot.yml` runs every Monday and writes both summaries to the workflow step summary. Optionally set `TELEMETRY_WEEKLY_REPORT_WEBHOOK_URL` as a repository secret to post the PostHog markdown payload to a webhook.
 
-The weekly snapshot includes total/customer event movement, paid-acquisition movement, marketing attribution health, Product Activation, top campaigns, top landing paths, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
+The weekly snapshot includes total/customer event movement, paid-acquisition movement, marketing attribution health, Product Activation, billing intent, private-registry readiness, identity hygiene, top campaigns, top landing paths, source mix, actor mix, customer source mix, active customer identities, failure signals, and operating alerts. Alert thresholds can be tuned with:
 
 ```env
 TELEMETRY_FAILURE_ALERT_THRESHOLD=3
@@ -167,7 +187,15 @@ POSTHOG_PERSONAL_API_KEY=
 
 `POSTHOG_QUERY_HOST` can be omitted when the project is in PostHog US cloud; set it explicitly for other PostHog regions or self-hosted deployments. The personal API key needs `query:read`.
 
-The response includes total/customer/internal/failure events, source mix, actor mix, active identities, previous-period summaries, period-over-period trends, product signal buckets, operating alerts, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path.
+The response includes total/customer/internal/failure events, source mix, actor mix, active identities, previous-period summaries, period-over-period trends, product signal buckets, operating alerts, and candidate aliases. Candidate aliases are active opaque ids that do not yet exist in `telemetry_identity_aliases`; promote Decantr-owned identities to durable aliases so customer metrics remain clean. The registry page supports one-click candidate classification as `customer`, `internal`, or `official_pipeline`; each action uses the normal audited alias upsert path. Customer teams can also self-link opted-in CLI installs/projects after login:
+
+```bash
+decantr telemetry status
+decantr telemetry explain
+decantr telemetry link --enable --org <org-slug>
+```
+
+The explain command prints the CLI event catalog subset, aggregate field categories, current opaque ids if they already exist, and the never-collected list. The link command sends only opaque install/project ids and optional org slug/label. It never sends local file paths, repository names, prompts, source, or package slugs.
 
 The usage response also includes lightweight Product Activation and marketing attribution summaries. Product Activation tracks opted-in greenfield `new`, attach/init, refresh/check lifecycle events, Project Health report volume, healthy-project milestones, CI failure events, Studio usage, and remediation prompt requests. Marketing attribution tracks campaign coverage, landing-path coverage, registry follow-through, top UTM campaigns, and top landing paths. Campaign naming and launch-link hygiene live in [Decantr UTM Taxonomy](./telemetry-utm-taxonomy.md).
 
@@ -178,14 +206,17 @@ Signal buckets group raw telemetry events into operator-level adoption lanes:
 - `activation`: marketing CTA clicks, signups, and API key creation.
 - `paid_acquisition`: marketing page views, CTA clicks, outbound clicks, and command clicks.
 - `registry_discovery`: registry search, content opens, and hosted item resolution.
-- `cli_adoption`: CLI command completion, lifecycle milestones, and registry sync activity.
-- `product_activation`: Decantr new/init/refresh/check milestones, Project Health report generation, healthy project milestones, and Studio starts.
+- `cli_adoption`: CLI command completion, analyze lifecycle, other lifecycle milestones, and registry sync activity.
+- `product_activation`: Decantr analyze/new/init/refresh/check milestones, Project Health report generation, healthy project milestones, and Studio starts.
 - `project_health`: Project Health reports, healthy milestones, remediation prompts, CI failures, and Studio usage.
 - `hosted_intelligence`: execution-pack, critique, and audit usage.
 - `content_pipeline`: content validation and publish automation.
-- `commercial_intent`: marketing CTA, billing, API key, organization, and org creation signals.
+- `identity_hygiene`: registry-web and API identity linking events.
+- `billing_intent`: plan clicks, checkout-blocked events, and billing page views.
+- `private_registry_readiness`: private-registry gate views, intent clicks, and permitted listing events.
+- `commercial_intent`: marketing CTA, billing, private-registry intent, API key, organization, and org creation signals.
 
-Operating alerts are computed in the API response from the same query payload. They flag missing telemetry, elevated failure rates, customer usage drops, unaliased identities, fresh activation, and rising commercial intent. They are intentionally lightweight for now so they can later feed a Decantr-owned dashboard or private-registry operator console without changing event names.
+Operating alerts are computed in the API response from the same query payload. They flag missing telemetry, elevated failure rates, customer usage drops, unaliased identities, fresh activation, identity links, rising billing/commercial intent, and private-registry readiness. They are intentionally lightweight for now so they can later feed a Decantr-owned dashboard or private-registry operator console without changing event names.
 
 Durable Decantr-owned rollups are stored in Supabase through:
 
@@ -232,6 +263,9 @@ The hosted API currently emits:
 - `user.signup.completed` from hosted profile provisioning
 - `api_key.created` from `/v1/api-keys`
 - `org.created` from team checkout provisioning
+- `telemetry.identity_linked` from opted-in CLI identity self-linking
+- `content.validation.completed` and `content.publish.completed` from hosted content publish flows
+- `billing.checkout_blocked` from billing checkout requests while the launch flag is off
 
 Telemetry failures are logged at debug level and must not block request handling.
 
@@ -305,8 +339,15 @@ POSTHOG_ENVIRONMENT_ID=
 - `registry_web.billing_viewed` from billing and plan review
 - `registry_web.organization_viewed` from team/private-registry organization surfaces
 - `registry_web.identity_linked` when an anonymous registry session becomes authenticated
+- `billing.plan_clicked` when a user clicks a paid-plan intent CTA
+- `billing.checkout_blocked` when checkout is unavailable because billing launch remains off
+- `private_registry.gate_viewed` when a user sees the Enterprise private-registry gate
+- `private_registry.intent_clicked` when a gated user opens billing, team, or private-registry intent CTAs
+- `private_registry.content_listed` when an authorized Enterprise workspace lists private-registry content counts
 
 Registry web events are enriched with the same campaign attribution fields as the marketing site when a user arrives with UTM parameters, supported ad click ids, or an external referrer. The registry app can override the default endpoint with `NEXT_PUBLIC_DECANTR_TELEMETRY_ENDPOINT` and can disable client telemetry with `NEXT_PUBLIC_DECANTR_TELEMETRY_DISABLED=true`.
+
+Do not enable `REGISTRY_BILLING_ENABLED` or `NEXT_PUBLIC_REGISTRY_BILLING_ENABLED` for this telemetry batch. Billing and private-registry events are readiness and intent signals only until self-serve checkout is intentionally launched.
 
 Optional X Pixel support is configured with public build-time environment variables:
 
@@ -409,9 +450,18 @@ decantr init --existing --accept-proposal --telemetry
 decantr check --telemetry
 ```
 
+For security review before opt-in, use:
+
+```bash
+decantr telemetry explain
+decantr telemetry explain --json
+```
+
 The CLI stores opaque IDs only:
 
 - install ID in the Decantr config directory (`DECANTR_CONFIG_DIR` or the default user config directory)
 - project ID in `.decantr/project.json`
 
 CLI events include command name, success/failure, duration, workflow mode, adoption mode, registry source, project scope, target framework, and offline usage. They do not include raw prompts, source code, generated files, raw paths, env vars, secrets, emails, IP addresses, or user agents.
+
+`decantr telemetry explain --json` is safe to attach to customer security reviews: it lists event names, privacy classes, aggregate field categories, and controls without including local file paths or repository names.

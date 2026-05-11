@@ -49,6 +49,20 @@ describe('POST /v1/telemetry/events', () => {
     expect(await res.json()).toEqual({ accepted: true });
   });
 
+  it('accepts the current telemetry schema during rollout', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/telemetry/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...validEvent,
+        schemaVersion: '0.3.0',
+      }),
+    });
+
+    expect(res.status).toBe(202);
+  });
+
   it('accepts registry web telemetry events for the public product surface', async () => {
     const app = createTestApp();
     const res = await app.request('/v1/telemetry/events', {
@@ -153,6 +167,34 @@ describe('POST /v1/telemetry/events', () => {
           name: 'unknown.event',
           context: { source: 'cli' },
           properties: {},
+        },
+      }),
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects public telemetry with forged source and event combinations', async () => {
+    const app = createTestApp();
+    const res = await app.request('/v1/telemetry/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        schemaVersion: '0.3.0',
+        event: {
+          name: 'registry_web.page_viewed',
+          context: {
+            source: 'cli',
+            environment: 'production',
+            installId: 'install_test',
+            projectId: 'project_test',
+          },
+          properties: {
+            authenticated: false,
+            route: 'browse',
+            routePath: '/browse',
+            surface: 'registry_browser',
+          },
         },
       }),
     });

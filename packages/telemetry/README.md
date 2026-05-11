@@ -19,6 +19,7 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `execution_pack.selected`
 - `audit.completed`
 - `critique.completed`
+- `decantr.analyze.completed`
 - `decantr.init.completed`
 - `decantr.new.completed`
 - `decantr.refresh.completed`
@@ -34,6 +35,11 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `user.signup.completed`
 - `org.created`
 - `api_key.created`
+- `billing.plan_clicked`
+- `billing.checkout_blocked`
+- `private_registry.gate_viewed`
+- `private_registry.intent_clicked`
+- `private_registry.content_listed`
 - `marketing_web.page_viewed`
 - `marketing_web.cta_clicked`
 - `marketing_web.outbound_clicked`
@@ -46,8 +52,11 @@ Allowed signals include command names, registry sources, registry content IDs, p
 - `registry_web.billing_viewed`
 - `registry_web.organization_viewed`
 - `registry_web.identity_linked`
+- `telemetry.identity_linked`
 
-Private registries do not need a separate telemetry surface yet. Use `registry.item.resolved` with `registrySource: "private"` and `visibility: "private"` when that product line lands.
+Private Registry remains manually provisioned and Enterprise-gated while the paywall is off. The telemetry surface records readiness and permitted usage only: gated views, intent clicks, and aggregate content-list counts. It does not collect private package slugs or customer source material.
+
+`DECANTR_TELEMETRY_EVENT_CATALOG` is the canonical source/event matrix. Public ingest should call `isTelemetryEventAllowedForSource(name, source)` and accept both `DECANTR_TELEMETRY_ACCEPTED_SCHEMA_VERSIONS` during rollout, while new emitters use schema `0.3.0`.
 
 ## Actor Attribution
 
@@ -61,7 +70,9 @@ Every event can carry `context.actorType` so Decantr can distinguish founder/int
 
 If omitted, sinks call `resolveTelemetryActorType(context)`. The hosted API normalizes public ingest events with server-authoritative attribution from Supabase identity flags, `telemetry_identity_aliases`, and fallback overrides through `DECANTR_INTERNAL_USER_IDS`, `DECANTR_INTERNAL_ORG_IDS`, `DECANTR_INTERNAL_INSTALL_IDS`, `DECANTR_INTERNAL_PROJECT_IDS`, and `DECANTR_INTERNAL_ANONYMOUS_IDS`.
 
-The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `install`, and `project` aliases without writing SQL. Aliases can be linked by user email/id or organization slug/id. Mutations are audit logged and clear the hosted API actor-resolution cache. `/admin/telemetry/usage` adds the protected PostHog query view for active identities, source/actor mix, paid-acquisition signals, failure signals, period-over-period trends, product signal buckets, operating alerts, stored rollup history, snapshot freshness, and unaliased identity candidates, with one-click candidate classification through the same audited alias flow. `/admin/reports` and individual organization admin pages read durable Supabase rollups written by the service-token protected snapshot runner, giving Decantr an owned business-intelligence history while PostHog remains the raw event explorer.
+The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `install`, and `project` aliases without writing SQL. Aliases can be linked by user email/id or organization slug/id. Opted-in CLI users can review the shareable event/field explanation with `decantr telemetry explain`, then self-link opaque install/project ids with `decantr telemetry link --enable --org <slug>`, which calls the audited API alias flow and emits `telemetry.identity_linked`. Mutations clear the hosted API actor-resolution cache. `/admin/telemetry/usage` adds the protected PostHog query view for active identities, source/actor mix, paid-acquisition signals, failure signals, period-over-period trends, product signal buckets, operating alerts, stored rollup history, snapshot freshness, identity coverage, and unaliased identity candidates, with one-click candidate classification through the same audited alias flow. `/admin/reports` and individual organization admin pages read durable Supabase rollups written by the service-token protected snapshot runner, giving Decantr an owned business-intelligence history while PostHog remains the raw event explorer.
+
+The shared client redacts sensitive keys before any sink receives an event. This includes prompts, source code, file paths, repository names, raw route names, package slugs, emails, tokens, cookies, URLs, user agents, and authorization fields, while preserving aggregate product fields such as command, duration, success, counts, workflow mode, and signal bucket metadata.
 
 ## Campaign Attribution
 

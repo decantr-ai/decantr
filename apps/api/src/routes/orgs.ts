@@ -8,6 +8,7 @@ import { validateRegistryContent } from '../lib/content-validation.js';
 import { recordAuditEvent } from '../lib/audit-log.js';
 import { recordUsageEvent } from '../lib/usage-metering.js';
 import { getSignedThumbnailUrl } from '../lib/content-presentation.js';
+import { emitApiTelemetry } from '../lib/telemetry.js';
 
 export const orgRoutes = new Hono<Env>();
 const AUDIT_SCOPES = ['user', 'organization', 'billing', 'content', 'membership'] as const;
@@ -369,10 +370,17 @@ orgRoutes.patch('/orgs/:slug/policy', requireApiKeyScope('org:write'), async (c)
 
 // POST /v1/orgs/:slug/content
 orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async (c) => {
+  const startedAt = Date.now();
   const auth = c.get('auth') as AuthContext;
   const slug = c.req.param('slug')!;
   const body = await c.req.json();
   const { client, org, membership } = await requireOrgMembership(auth, slug);
+  const validationTelemetryContext = {
+    actorType: 'service' as const,
+    anonymousId: 'api:content-validation',
+    orgId: undefined,
+    userId: undefined,
+  };
 
   if (!org) {
     return c.json({ error: 'Organization not found' }, 404);
@@ -393,6 +401,17 @@ orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async
 
   const contentValidation = validateRegistryContent(body.type, body.data);
   if (!contentValidation.valid) {
+    emitApiTelemetry(c, {
+      name: 'content.validation.completed',
+      context: validationTelemetryContext,
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCount: contentValidation.errors.length,
+        itemCount: 1,
+        valid: false,
+      },
+    });
     return c.json({
       error: 'Content data failed registry schema validation',
       validationErrors: contentValidation.errors,
@@ -401,6 +420,17 @@ orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async
 
   const namespace = `@org:${org.slug}`;
   const visibility = body.visibility === 'public' ? 'public' : 'private';
+  emitApiTelemetry(c, {
+    name: 'content.validation.completed',
+    context: validationTelemetryContext,
+    properties: {
+      contentType: body.type,
+      durationMs: Date.now() - startedAt,
+      errorCount: 0,
+      itemCount: 1,
+      valid: true,
+    },
+  });
   const { data: policy } = await client
     .from('organization_policies')
     .select('require_public_content_approval, allow_member_submissions, require_private_content_approval')
@@ -411,6 +441,17 @@ orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async
   const allowMemberSubmissions = org.tier === 'enterprise' && policy?.allow_member_submissions === true;
 
   if (!canManageDirectly && !(membership?.role === 'member' && allowMemberSubmissions)) {
+    emitApiTelemetry(c, {
+      name: 'content.publish.completed',
+      context: { orgId: org.id },
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCode: 'member_submission_not_allowed',
+        success: false,
+        visibility,
+      },
+    });
     return c.json({ error: 'Requires admin or owner role unless member submissions are enabled.' }, 403);
   }
 
@@ -441,6 +482,18 @@ orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async
     .single();
 
   if (error) {
+    const errorCode = error.code === '23505' ? 'duplicate_content' : 'publish_failed';
+    emitApiTelemetry(c, {
+      name: 'content.publish.completed',
+      context: { orgId: org.id },
+      properties: {
+        contentType: body.type,
+        durationMs: Date.now() - startedAt,
+        errorCode,
+        success: false,
+        visibility,
+      },
+    });
     if (error.code === '23505') {
       return c.json({ error: `Content "${namespace}/${body.type}/${body.slug}" already exists` }, 409);
     }
@@ -469,6 +522,17 @@ orgRoutes.post('/orgs/:slug/content', requireApiKeyScope('content:write'), async
     metric: 'org_package_publish',
     quantity: 1,
     source: 'jwt',
+  });
+
+  emitApiTelemetry(c, {
+    name: 'content.publish.completed',
+    context: { orgId: org.id },
+    properties: {
+      contentType: body.type,
+      durationMs: Date.now() - startedAt,
+      success: true,
+      visibility,
+    },
   });
 
   return c.json({

@@ -7,6 +7,7 @@ import {
   type AdoptionMode,
   createFetchTelemetrySink,
   createTelemetryClient,
+  type DecantrAnalyzeCompletedProperties,
   type DecantrTelemetryEvent,
   type DecantrTelemetryEventName,
   type DecantrLifecycleCompletedProperties,
@@ -242,6 +243,45 @@ export interface NewProjectCompletedTelemetryInput {
   durationMs: number;
   projectRoot?: string;
   success: boolean;
+}
+
+export interface AnalyzeCompletedTelemetryInput {
+  componentCount?: number;
+  dependencyCategoryCount?: number;
+  durationMs?: number;
+  pageCount?: number;
+  projectRoot?: string;
+  routeCount?: number;
+  success: boolean;
+  targetFramework?: string;
+}
+
+export async function sendAnalyzeCompletedTelemetry(
+  input: AnalyzeCompletedTelemetryInput,
+): Promise<void> {
+  const projectRoot = input.projectRoot ?? process.cwd();
+  const metadata = readProjectTelemetryMetadata(projectRoot);
+  const properties: DecantrAnalyzeCompletedProperties = {
+    command: 'analyze',
+    success: input.success,
+    durationMs: input.durationMs,
+    adoptionMode: metadata.adoptionMode ?? 'contract-only',
+    componentCount: input.componentCount,
+    dependencyCategoryCount: input.dependencyCategoryCount,
+    errorCode: input.success ? undefined : 'analyze_failed',
+    pageCount: input.pageCount,
+    projectScope: metadata.projectScope ?? inferProjectScope(projectRoot),
+    routeCount: input.routeCount,
+    targetFramework: input.targetFramework,
+    workflowMode: metadata.workflowMode ?? 'brownfield-attach',
+  };
+
+  await captureCliTelemetryEvent({
+    args: ['analyze'],
+    name: 'decantr.analyze.completed',
+    projectRoot,
+    properties,
+  });
 }
 
 export async function sendNewProjectCompletedTelemetry(
@@ -480,6 +520,32 @@ interface TelemetryIdentities {
   projectId: string;
 }
 
+export interface CliTelemetryIdentityStatus {
+  enabled: boolean;
+  hasProjectConfig: boolean;
+  installId?: string;
+  projectId?: string;
+  projectRoot: string;
+}
+
+export function getCliTelemetryIdentityStatus(
+  projectRoot: string,
+  options: { create?: boolean } = {},
+): CliTelemetryIdentityStatus {
+  const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
+  const hasProjectConfig = existsSync(projectJsonPath);
+  const identities = options.create ? ensureTelemetryIdentities(projectRoot) : null;
+  const projectData = readProjectJson(projectRoot);
+
+  return {
+    enabled: projectData?.telemetry === true,
+    hasProjectConfig,
+    installId: identities?.installId ?? readExistingInstallId(),
+    projectId: identities?.projectId ?? readStringProperty(projectData, 'telemetryProjectId'),
+    projectRoot,
+  };
+}
+
 function ensureTelemetryIdentities(projectRoot: string): TelemetryIdentities | null {
   const installId = getOrCreateInstallId();
   const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
@@ -533,6 +599,17 @@ function getOrCreateInstallId(): string {
   }
 }
 
+function readExistingInstallId(): string | undefined {
+  const configPath = join(getConfigDir(), 'config.json');
+  if (!existsSync(configPath)) return undefined;
+  try {
+    const data = JSON.parse(readFileSync(configPath, 'utf-8')) as Record<string, unknown>;
+    return readStringProperty(data, 'telemetryInstallId');
+  } catch {
+    return undefined;
+  }
+}
+
 function getConfigDir(): string {
   return process.env.DECANTR_CONFIG_DIR || join(homedir(), '.config', 'decantr');
 }
@@ -581,6 +658,14 @@ function readProjectJson(projectRoot: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+function readStringProperty(
+  value: Record<string, unknown> | null | undefined,
+  key: string,
+): string | undefined {
+  const property = value?.[key];
+  return typeof property === 'string' && property.trim() ? property : undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

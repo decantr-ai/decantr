@@ -174,6 +174,16 @@ decantr studio --port 4319 --host 127.0.0.1
 decantr studio --report decantr-health.json
 ```
 
+Opted-in product telemetry:
+
+```bash
+decantr telemetry status
+decantr telemetry explain
+decantr telemetry link --enable --org <org-slug>
+```
+
+Telemetry stays product-level: command names, aggregate lifecycle counts, registry sources, Project Health scores/counts, private-registry readiness, and billing intent. `decantr telemetry explain` prints the CLI event catalog subset and never-collected list before a team opts in. It does not collect source code, prompts, raw paths, emails, private package slugs, or health report contents.
+
 Official content supply chain:
 
 ```bash

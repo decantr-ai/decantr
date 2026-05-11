@@ -238,6 +238,9 @@ function eventListSql() {
     'content.publish.completed',
     'content.validation.completed',
     'critique.completed',
+    'billing.checkout_blocked',
+    'billing.plan_clicked',
+    'decantr.analyze.completed',
     'decantr.check.completed',
     'decantr.health.healthy',
     'decantr.init.completed',
@@ -253,6 +256,9 @@ function eventListSql() {
     'marketing_web.outbound_clicked',
     'marketing_web.page_viewed',
     'org.created',
+    'private_registry.content_listed',
+    'private_registry.gate_viewed',
+    'private_registry.intent_clicked',
     'registry.item.resolved',
     'registry.sync.completed',
     'registry_web.api_key_page_viewed',
@@ -265,6 +271,7 @@ function eventListSql() {
     'registry_web.signup_clicked',
     'studio.health_refreshed',
     'studio.started',
+    'telemetry.identity_linked',
     'user.signup.completed',
   ]
     .map((event) => `'${event}'`)
@@ -273,10 +280,14 @@ function eventListSql() {
 
 function marketingAttributionEventListSql() {
   return [
+    'billing.checkout_blocked',
+    'billing.plan_clicked',
     'marketing_web.command_clicked',
     'marketing_web.cta_clicked',
     'marketing_web.outbound_clicked',
     'marketing_web.page_viewed',
+    'private_registry.gate_viewed',
+    'private_registry.intent_clicked',
     'registry_web.content_opened',
     'registry_web.page_viewed',
     'registry_web.search_performed',
@@ -399,6 +410,7 @@ function renderMarkdown({
     '',
     '## Product Activation',
     '',
+    `- Analyze completed: ${formatNumber(projectActivation.analyzeCompleted)} (${formatNumber(customerProjectActivation.analyzeCompleted)} customer)`,
     `- Project Health reports: ${formatNumber(projectActivation.healthReports)}`,
     `- Healthy project milestones: ${formatNumber(projectActivation.healthyMilestones)} (${formatPercent(projectActivation.activationRate)} healthy-report rate)`,
     `- Studio starts: ${formatNumber(projectActivation.studioStarts)} (${formatNumber(projectActivation.studioRefreshes)} refreshes)`,
@@ -408,6 +420,7 @@ function renderMarkdown({
     '',
     '| Lifecycle | Last 7d | Customer |',
     '| --- | ---: | ---: |',
+    `| Analyze completed | ${formatNumber(projectActivation.analyzeCompleted)} | ${formatNumber(customerProjectActivation.analyzeCompleted)} |`,
     `| New completed | ${formatNumber(projectActivation.newCompleted)} | ${formatNumber(customerProjectActivation.newCompleted)} |`,
     `| Init completed | ${formatNumber(projectActivation.initCompleted)} | ${formatNumber(customerProjectActivation.initCompleted)} |`,
     `| Refresh completed | ${formatNumber(projectActivation.refreshCompleted)} | ${formatNumber(customerProjectActivation.refreshCompleted)} |`,
@@ -474,8 +487,11 @@ function renderMarkdown({
     `- Customer product activation signals: ${formatNumber(customerProjectActivation.productSignals)}`,
     `- Registry discovery signals: ${formatNumber((current.get('registry_web.search_performed') ?? 0) + (current.get('registry_web.content_opened') ?? 0) + (current.get('registry.item.resolved') ?? 0))}`,
     `- Customer registry discovery signals: ${formatNumber((customer.get('registry_web.search_performed') ?? 0) + (customer.get('registry_web.content_opened') ?? 0) + (customer.get('registry.item.resolved') ?? 0))}`,
-    `- Commercial-intent signals: ${formatNumber((current.get('marketing_web.cta_clicked') ?? 0) + (current.get('registry_web.billing_viewed') ?? 0) + (current.get('registry_web.api_key_page_viewed') ?? 0) + (current.get('registry_web.organization_viewed') ?? 0) + (current.get('org.created') ?? 0))}`,
-    `- Customer commercial-intent signals: ${formatNumber((customer.get('marketing_web.cta_clicked') ?? 0) + (customer.get('registry_web.billing_viewed') ?? 0) + (customer.get('registry_web.api_key_page_viewed') ?? 0) + (customer.get('registry_web.organization_viewed') ?? 0) + (customer.get('org.created') ?? 0))}`,
+    `- Commercial-intent signals: ${formatNumber(commercialIntentSignals(current))}`,
+    `- Customer commercial-intent signals: ${formatNumber(commercialIntentSignals(customer))}`,
+    `- Private-registry readiness signals: ${formatNumber(privateRegistrySignals(current))}`,
+    `- Billing-intent signals: ${formatNumber(billingIntentSignals(current))}`,
+    `- Identity-hygiene signals: ${formatNumber(identityHygieneSignals(current))}`,
     `- Active customer identities: ${formatNumber(customerIdentities.length)}`,
     `- Failure rate: ${formatPercent(failureRate)}`,
   );
@@ -493,7 +509,42 @@ function sumMap(map) {
   return total;
 }
 
+function billingIntentSignals(map) {
+  return (
+    (map.get('billing.checkout_blocked') ?? 0) +
+    (map.get('billing.plan_clicked') ?? 0) +
+    (map.get('registry_web.billing_viewed') ?? 0)
+  );
+}
+
+function commercialIntentSignals(map) {
+  return (
+    billingIntentSignals(map) +
+    privateRegistrySignals(map) +
+    (map.get('marketing_web.cta_clicked') ?? 0) +
+    (map.get('registry_web.api_key_page_viewed') ?? 0) +
+    (map.get('registry_web.organization_viewed') ?? 0) +
+    (map.get('org.created') ?? 0)
+  );
+}
+
+function identityHygieneSignals(map) {
+  return (
+    (map.get('registry_web.identity_linked') ?? 0) +
+    (map.get('telemetry.identity_linked') ?? 0)
+  );
+}
+
+function privateRegistrySignals(map) {
+  return (
+    (map.get('private_registry.content_listed') ?? 0) +
+    (map.get('private_registry.gate_viewed') ?? 0) +
+    (map.get('private_registry.intent_clicked') ?? 0)
+  );
+}
+
 function summarizeProjectActivation(map) {
+  const analyzeCompleted = map.get('decantr.analyze.completed') ?? 0;
   const healthReports = map.get('health.report.generated') ?? 0;
   const healthyMilestones = map.get('decantr.health.healthy') ?? 0;
   const ciFailures = map.get('health.ci.failed') ?? 0;
@@ -504,6 +555,7 @@ function summarizeProjectActivation(map) {
   const studioStarts = map.get('studio.started') ?? 0;
   return {
     activationRate: healthReports > 0 ? healthyMilestones / healthReports : 0,
+    analyzeCompleted,
     checkCompleted,
     ciFailureRate: healthReports > 0 ? ciFailures / healthReports : 0,
     ciFailures,
@@ -513,6 +565,7 @@ function summarizeProjectActivation(map) {
     newCompleted,
     productSignals:
       newCompleted +
+      analyzeCompleted +
       initCompleted +
       refreshCompleted +
       checkCompleted +
@@ -538,6 +591,8 @@ function sampleRows(query) {
       ['launch-project-health', 'x', 'organic-social', '/', 'marketing_web.page_viewed', 31, '2026-05-08T12:00:00Z'],
       ['launch-project-health', 'x', 'organic-social', '/', 'marketing_web.cta_clicked', 5, '2026-05-08T12:04:00Z'],
       ['launch-project-health', 'x', 'organic-social', '/', 'registry_web.page_viewed', 4, '2026-05-08T12:05:00Z'],
+      ['launch-project-health', 'x', 'organic-social', '/', 'billing.plan_clicked', 2, '2026-05-08T12:07:00Z'],
+      ['launch-project-health', 'x', 'organic-social', '/', 'private_registry.intent_clicked', 1, '2026-05-08T12:08:00Z'],
       ['v2-essence4', 'npm', 'package-registry', '/', 'marketing_web.page_viewed', 17, '2026-05-07T12:00:00Z'],
       [null, null, null, '/', 'marketing_web.outbound_clicked', 1, '2026-05-07T12:01:00Z'],
     ];
@@ -566,6 +621,7 @@ function sampleRows(query) {
       ['health.report.generated', 4],
       ['decantr.health.healthy', 2],
       ['studio.started', 1],
+      ['decantr.analyze.completed', 2],
       ['api_key.created', 2],
     ];
   }
@@ -591,6 +647,7 @@ function sampleRows(query) {
       ['execution_pack.compiled', 8],
       ['health.report.generated', 2],
       ['decantr.health.healthy', 1],
+      ['decantr.analyze.completed', 1],
       ['registry_web.page_viewed', 11],
     ];
   }
@@ -600,7 +657,12 @@ function sampleRows(query) {
     ['marketing_web.outbound_clicked', 1],
     ['registry.item.resolved', 25],
     ['execution_pack.compiled', 9],
+    ['billing.plan_clicked', 2],
+    ['billing.checkout_blocked', 2],
+    ['private_registry.gate_viewed', 3],
+    ['private_registry.intent_clicked', 2],
     ['decantr.new.completed', 2],
+    ['decantr.analyze.completed', 3],
     ['decantr.init.completed', 3],
     ['decantr.refresh.completed', 4],
     ['decantr.check.completed', 4],
@@ -663,7 +725,10 @@ function summarizeMarketingAttribution(rows) {
     const count = Number(countValue) || 0;
     const lastSeen = lastSeenValue ? String(lastSeenValue) : null;
     const isMarketingEvent = event.startsWith('marketing_web.');
-    const isRegistryFollowThrough = event.startsWith('registry_web.');
+    const isRegistryFollowThrough =
+      event.startsWith('billing.') ||
+      event.startsWith('private_registry.') ||
+      event.startsWith('registry_web.');
     const hasMarketingAttribution = Boolean(campaignValue || landingValue);
 
     if (isMarketingEvent) {

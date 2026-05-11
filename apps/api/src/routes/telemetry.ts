@@ -1,7 +1,8 @@
 import {
-  DECANTR_TELEMETRY_SCHEMA_VERSION,
   isDecantrTelemetryEventName,
+  isDecantrTelemetrySchemaVersion,
   isTelemetryActorType,
+  isTelemetryEventAllowedForSource,
   type DecantrTelemetryEvent,
   type TelemetrySource,
 } from '@decantr/telemetry';
@@ -28,7 +29,7 @@ function isPublicTelemetrySource(value: unknown): value is TelemetrySource {
 }
 
 function parseTelemetryEvent(body: unknown): DecantrTelemetryEvent | null {
-  if (!isRecord(body) || body.schemaVersion !== DECANTR_TELEMETRY_SCHEMA_VERSION) {
+  if (!isRecord(body) || !isDecantrTelemetrySchemaVersion(body.schemaVersion)) {
     return null;
   }
 
@@ -38,6 +39,10 @@ function parseTelemetryEvent(body: unknown): DecantrTelemetryEvent | null {
   }
 
   if (!isRecord(event.context) || !isPublicTelemetrySource(event.context.source)) {
+    return null;
+  }
+
+  if (!isTelemetryEventAllowedForSource(event.name, event.context.source)) {
     return null;
   }
 

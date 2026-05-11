@@ -54,6 +54,9 @@ const events = {
   contentPublishCompleted: 'content.publish.completed',
   contentValidationCompleted: 'content.validation.completed',
   critiqueCompleted: 'critique.completed',
+  billingCheckoutBlocked: 'billing.checkout_blocked',
+  billingPlanClicked: 'billing.plan_clicked',
+  decantrAnalyzeCompleted: 'decantr.analyze.completed',
   decantrCheckCompleted: 'decantr.check.completed',
   decantrHealthHealthy: 'decantr.health.healthy',
   decantrInitCompleted: 'decantr.init.completed',
@@ -69,6 +72,9 @@ const events = {
   marketingWebOutboundClicked: 'marketing_web.outbound_clicked',
   marketingWebPageViewed: 'marketing_web.page_viewed',
   orgCreated: 'org.created',
+  privateRegistryContentListed: 'private_registry.content_listed',
+  privateRegistryGateViewed: 'private_registry.gate_viewed',
+  privateRegistryIntentClicked: 'private_registry.intent_clicked',
   registryWebApiKeyPageViewed: 'registry_web.api_key_page_viewed',
   registryWebBillingViewed: 'registry_web.billing_viewed',
   registryWebContentOpened: 'registry_web.content_opened',
@@ -81,6 +87,7 @@ const events = {
   registrySyncCompleted: 'registry.sync.completed',
   studioHealthRefreshed: 'studio.health_refreshed',
   studioStarted: 'studio.started',
+  telemetryIdentityLinked: 'telemetry.identity_linked',
   userSignupCompleted: 'user.signup.completed',
 };
 
@@ -135,6 +142,7 @@ const insightSpecs = [
       'Daily opted-in greenfield and brownfield entrypoint volume for project creation, attach/init, refresh, and checks.',
     query: trendLine(
       [
+        [events.decantrAnalyzeCompleted, 'Analyze completed'],
         [events.decantrNewCompleted, 'New project completed'],
         [events.decantrInitCompleted, 'Init completed'],
         [events.decantrRefreshCompleted, 'Refresh completed'],
@@ -156,6 +164,7 @@ const insightSpecs = [
         layout: 'horizontal',
       },
       series: [
+        eventNode(events.decantrAnalyzeCompleted, 'Analyze completed'),
         eventNode(events.decantrInitCompleted, 'Init completed'),
         eventNode(events.decantrRefreshCompleted, 'Refresh completed'),
         eventNode(events.decantrCheckCompleted, 'Check completed'),
@@ -193,6 +202,7 @@ const insightSpecs = [
         [events.auditCompleted, 'Audit completed'],
         [events.critiqueCompleted, 'Critique completed'],
         [events.cliCommandCompleted, 'CLI command completed'],
+        [events.decantrAnalyzeCompleted, 'Analyze completed'],
         [events.healthReportGenerated, 'Health report generated'],
         [events.decantrHealthHealthy, 'Healthy milestone'],
       ],
@@ -211,6 +221,7 @@ const insightSpecs = [
         [events.auditCompleted, 'Audit completed'],
         [events.critiqueCompleted, 'Critique completed'],
         [events.cliCommandCompleted, 'CLI command completed'],
+        [events.decantrAnalyzeCompleted, 'Analyze completed'],
         [events.healthReportGenerated, 'Health report generated'],
         [events.decantrHealthHealthy, 'Healthy milestone'],
       ],
@@ -222,7 +233,11 @@ const insightSpecs = [
     description:
       'Daily commercial-intent signals: new hosted profiles, API keys, and team/org creation.',
     query: trendLine([
+      [events.billingPlanClicked, 'Billing plan clicked'],
+      [events.billingCheckoutBlocked, 'Checkout blocked'],
       [events.marketingWebCtaClicked, 'Marketing CTA clicked'],
+      [events.privateRegistryGateViewed, 'Private registry gate viewed'],
+      [events.privateRegistryIntentClicked, 'Private registry intent clicked'],
       [events.userSignupCompleted, 'Signup completed'],
       [events.registryWebSignupClicked, 'Signup clicked'],
       [events.registryWebApiKeyPageViewed, 'API key page viewed'],
@@ -328,6 +343,28 @@ const insightSpecs = [
       [events.registryWebApiKeyPageViewed, 'API key page viewed'],
       [events.registryWebBillingViewed, 'Billing viewed'],
       [events.registryWebOrganizationViewed, 'Organization viewed'],
+      [events.privateRegistryGateViewed, 'Private registry gate viewed'],
+      [events.privateRegistryIntentClicked, 'Private registry intent clicked'],
+      [events.privateRegistryContentListed, 'Private registry content listed'],
+    ]),
+  },
+  {
+    name: 'Private registry readiness',
+    description:
+      'Daily private-registry readiness signals across gated views, intent clicks, and permitted enterprise listing usage.',
+    query: trendLine([
+      [events.privateRegistryGateViewed, 'Gate viewed'],
+      [events.privateRegistryIntentClicked, 'Intent clicked'],
+      [events.privateRegistryContentListed, 'Content listed'],
+    ]),
+  },
+  {
+    name: 'Identity hygiene',
+    description:
+      'Daily identity-linking events that improve customer/org attribution across registry web, API, and opted-in CLI usage.',
+    query: trendLine([
+      [events.registryWebIdentityLinked, 'Registry identity linked'],
+      [events.telemetryIdentityLinked, 'API telemetry identity linked'],
     ]),
   },
   {
@@ -357,12 +394,15 @@ const insightSpecs = [
     query: trendBar([
       [events.marketingWebPageViewed, 'Marketing web'],
       [events.cliCommandCompleted, 'CLI'],
+      [events.decantrAnalyzeCompleted, 'CLI analyze'],
       [events.healthReportGenerated, 'Project Health'],
       [events.registryItemResolved, 'Registry/API/MCP'],
       [events.executionPackCompiled, 'Execution packs'],
       [events.contentValidationCompleted, 'Content CI'],
       [events.contentPublishCompleted, 'Content publish'],
       [events.registryWebPageViewed, 'Registry web'],
+      [events.privateRegistryGateViewed, 'Private registry readiness'],
+      [events.billingPlanClicked, 'Billing intent'],
     ]),
   },
   {
@@ -373,12 +413,15 @@ const insightSpecs = [
       [
         [events.marketingWebPageViewed, 'Marketing web'],
         [events.cliCommandCompleted, 'CLI'],
+        [events.decantrAnalyzeCompleted, 'CLI analyze'],
         [events.healthReportGenerated, 'Project Health'],
         [events.registryItemResolved, 'Registry/API/MCP'],
         [events.executionPackCompiled, 'Execution packs'],
         [events.contentValidationCompleted, 'Content CI'],
         [events.contentPublishCompleted, 'Content publish'],
         [events.registryWebPageViewed, 'Registry web'],
+        [events.privateRegistryGateViewed, 'Private registry readiness'],
+        [events.billingPlanClicked, 'Billing intent'],
       ],
       {
         breakdownFilter: {
@@ -436,6 +479,10 @@ const cohortSpecs = [
       'Users who touched billing, API keys, organization surfaces, team creation, or signup intent in the last 30 days.',
     filters: cohortFilters('OR', [
       performedEvent(events.marketingWebCtaClicked),
+      performedEvent(events.billingPlanClicked),
+      performedEvent(events.billingCheckoutBlocked),
+      performedEvent(events.privateRegistryGateViewed),
+      performedEvent(events.privateRegistryIntentClicked),
       performedEvent(events.registryWebBillingViewed),
       performedEvent(events.registryWebApiKeyPageViewed),
       performedEvent(events.registryWebOrganizationViewed),
@@ -451,6 +498,7 @@ const cohortSpecs = [
     filters: cohortFilters('OR', [
       performedEvent(events.registryWebSearchPerformed, 5),
       performedEvent(events.registryWebContentOpened, 5),
+      performedEvent(events.privateRegistryContentListed, 2),
       performedEvent(events.registryItemResolved, 10),
     ]),
   },
@@ -481,6 +529,8 @@ const alertResults = await runOptionalSetup('alerts', ['alert:read', 'alert:writ
   const insightsByName = new Map(insightResults.map((insight) => [insight.name, insight]));
   const failureInsight = insightsByName.get('Failure signals');
   const commercialInsight = insightsByName.get('Commercial intent');
+  const identityInsight = insightsByName.get('Identity hygiene');
+  const privateRegistryInsight = insightsByName.get('Private registry readiness');
   const specs = [
     failureInsight
       ? {
@@ -498,6 +548,24 @@ const alertResults = await runOptionalSetup('alerts', ['alert:read', 'alert:writ
           thresholdName: 'Commercial intent above baseline threshold',
           seriesIndex: 0,
           lowerBound: 10,
+        }
+      : null,
+    identityInsight
+      ? {
+          insightId: identityInsight.id,
+          name: 'Decantr: telemetry identity links detected',
+          thresholdName: 'Identity hygiene activity',
+          seriesIndex: 0,
+          lowerBound: 0,
+        }
+      : null,
+    privateRegistryInsight
+      ? {
+          insightId: privateRegistryInsight.id,
+          name: 'Decantr: private registry readiness detected',
+          thresholdName: 'Private registry readiness activity',
+          seriesIndex: 0,
+          lowerBound: 0,
         }
       : null,
   ].filter(Boolean);

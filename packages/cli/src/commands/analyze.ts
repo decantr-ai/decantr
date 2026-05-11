@@ -14,6 +14,7 @@ import {
 } from '../brownfield-proposal.js';
 import { detectProject, formatDetection } from '../detect.js';
 import { createDoctrineMap, writeDoctrineMap } from '../doctrine-map.js';
+import { sendAnalyzeCompletedTelemetry } from '../telemetry.js';
 import { createBrownfieldInitSeed } from '../workflow-model.js';
 import type { WorkspaceInfo } from '../workspace.js';
 
@@ -24,7 +25,11 @@ const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
 
-export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: WorkspaceInfo): void {
+export async function cmdAnalyze(
+  projectRoot: string = process.cwd(),
+  workspace?: WorkspaceInfo,
+): Promise<void> {
+  const startedAt = Date.now();
   console.log(`\n${BOLD}Analyzing project...${RESET}\n`);
 
   // 1. Detect project basics
@@ -192,4 +197,21 @@ export function cmdAnalyze(projectRoot: string = process.cwd(), workspace?: Work
   console.log(
     `\n${YELLOW}Next step:${RESET} Review ${BOLD}.decantr/brownfield-report.md${RESET}, then run ${BOLD}decantr init --existing --accept-proposal${RESET} to attach Decantr using the observed proposal.\n`,
   );
+
+  await sendAnalyzeCompletedTelemetry({
+    componentCount: components.componentCount,
+    dependencyCategoryCount: [
+      dependencies.auth,
+      dependencies.db,
+      dependencies.state,
+      dependencies.styling,
+      dependencies.ui,
+    ].filter((items) => items.length > 0).length,
+    durationMs: Date.now() - startedAt,
+    pageCount: components.pageCount,
+    projectRoot,
+    routeCount: routes.routes.length,
+    success: true,
+    targetFramework: project.framework,
+  });
 }
