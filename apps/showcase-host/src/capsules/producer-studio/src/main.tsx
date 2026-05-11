@@ -1,11 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { App } from './App';
+import { App } from './RebuildApp';
 import './styles/global.css';
 import './styles/tokens.css';
 import './styles/treatments.css';
 import './styles/decorators.css';
+import './styles/rebuild.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
