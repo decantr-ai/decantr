@@ -7,10 +7,11 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 ## Docs
 
 - [Homepage](https://decantr.ai/): What Decantr is and why AI-generated UI needs a contract layer.
-- [Workflow model](https://decantr.ai/reference/workflow-model.html): Explicit workflow/adoption policy for greenfield blueprint, greenfield contract-only, brownfield attach, hybrid composition, adapters, monorepos, and offline mode.
+- [Sitemap](https://decantr.ai/sitemap.xml): Crawl inventory for public Decantr docs, schemas, references, and release notes.
+- [Workflow model](https://decantr.ai/reference/workflow-model.md): Explicit workflow/adoption policy for greenfield blueprint, greenfield contract-only, brownfield attach, hybrid composition, adapters, monorepos, and offline mode.
 - Brownfield attach is proposal-driven: run `decantr analyze`, review `.decantr/brownfield-report.md` and `.decantr/doctrine-map.json`, accept with `decantr init --existing --accept-proposal`, then verify with `decantr check --brownfield`. In brownfield, Decantr is the reconciled contract layer and existing docs/rules are ranked cited evidence, not material to overwrite by default. Proposals group observed routes into semantic product domains across common brownfield routers, preserve observed styling systems such as Tailwind/Bootstrap/MUI/Chakra/plain CSS, and report doctrine conflicts/stale risks with deterministic resolution suggestions.
 - [Public API reference](https://decantr.ai/reference/registry-public-api.html): Registry endpoints, pack compilation, critique, audit.
-- [Package support matrix](https://decantr.ai/reference/package-support-matrix.html): Which packages are stable, beta, or experimental.
+- [Package support matrix](https://decantr.ai/reference/package-support-matrix.md): Which packages are stable, beta, or experimental.
 
 ## Packages
 
@@ -27,6 +28,8 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 The registry is open — both the Decantr team (under the `@official` namespace) and the community can publish patterns, archetypes, themes, blueprints, and shells. This makes Decantr a platform, not just a tool: every published contribution extends the design vocabulary available to every AI coding assistant that uses Decantr.
 
 - [Registry portal](https://registry.decantr.ai/): Browse and publish patterns, archetypes, themes, blueprints, shells. Community contributions live alongside `@official` content.
+- [Registry sitemap](https://registry.decantr.ai/sitemap.xml): Crawl inventory for public registry browse and detail pages.
+- [Registry llms.txt](https://registry.decantr.ai/llms.txt): Machine-readable registry summary for AI search and agentic retrieval.
 - [Registry API](https://api.decantr.ai/v1/): Hosted API for content resolution, pack compilation, critique, audit. Public read access requires no API key.
 - [decantr-ai/decantr-content](https://github.com/decantr-ai/decantr-content): Source of truth for all `@official` namespace content — patterns, archetypes, themes, blueprints, shells. PRs to this repo auto-sync to the live registry.
 - [Publish your own content](https://registry.decantr.ai/): Sign in to the registry portal to publish under your own namespace.
@@ -36,7 +39,7 @@ The registry is open — both the Decantr team (under the `@official` namespace)
 - [Essence spec](https://decantr.ai/schemas/): The durable contract — theme, sections, routes, features, guard rules.
 - [Design Pipeline](https://github.com/decantr-ai/decantr/blob/main/README.md#the-model): Seven stages — Intent, Interpret, Decompose, Specify, Compose, Generate, Guard.
 - [Guard rules](https://github.com/decantr-ai/decantr/blob/main/CLAUDE.md#guard-rules): DNA guards (style, density, accessibility, theme-mode compatibility) and Blueprint guards (structure, layout, pattern existence).
-- [CSS scaffolding guide](https://decantr.ai/css-scaffolding-guide.html): Full CSS implementation spec covering `@layer` structure, theme scoping, and variable naming.
+- [CSS scaffolding guide](https://decantr.ai/css-scaffolding-guide.md): Full CSS implementation spec covering `@layer` structure, theme scoping, and variable naming.
 
 ## Repositories
 

@@ -67,3 +67,6 @@ jobs:
             registry-portal-report.json
             registry-portal-summary.md
           if-no-files-found: error
+      - name: Notify IndexNow
+        continue-on-error: true
+        run: node scripts/submit-indexnow.mjs --sitemap "$REGISTRY_PORTAL_URL/sitemap.xml"

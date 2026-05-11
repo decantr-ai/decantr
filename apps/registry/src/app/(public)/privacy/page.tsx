@@ -1,3 +1,13 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'Privacy policy for the hosted Decantr registry service.',
+  alternates: {
+    canonical: '/privacy',
+  },
+};
+
 const PRIVACY_SECTIONS = [
   {
     title: 'Scope',
