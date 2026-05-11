@@ -82,6 +82,7 @@ decantr check
 decantr health --ci --fail-on error
 decantr studio --port 4319 --host 127.0.0.1
 decantr telemetry status
+decantr telemetry explain
 decantr telemetry link --enable --org <org-slug>
 decantr content-health --ci --fail-on error
 decantr registry summary --namespace @official --json
@@ -135,11 +136,15 @@ If the project has explicitly enabled Decantr CLI telemetry, `new --telemetry`, 
 ```bash
 decantr telemetry status
 decantr telemetry status --json
+decantr telemetry explain
+decantr telemetry explain --json
 decantr login --api-key=<key>
 decantr telemetry link --enable --org <org-slug>
 ```
 
 `telemetry link` calls the hosted `/v1/me/telemetry-link` endpoint with only opaque ids, optional org slug, and optional label. The API verifies org membership, writes `telemetry_identity_aliases`, clears the actor-resolution cache, audit logs the change, and emits `telemetry.identity_linked`.
+
+`telemetry explain` prints the CLI event catalog subset, aggregate field categories, current opaque ids if they already exist, and the explicit never-collected list. It is designed for security review and customer trust conversations before a team opts in.
 
 ## Content Health
 

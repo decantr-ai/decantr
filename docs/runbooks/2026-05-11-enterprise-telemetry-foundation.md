@@ -14,6 +14,7 @@ NEXT_PUBLIC_REGISTRY_BILLING_ENABLED=false
 - `@decantr/telemetry` now exposes a typed event catalog, accepted schema versions, signal buckets, privacy classes, and source/event validation helpers.
 - Public telemetry ingest accepts the rollout-safe schema versions and rejects source/event mismatches.
 - API telemetry resolves actor type plus linked user/org context from Supabase identity flags and `telemetry_identity_aliases`.
+- Opted-in CLI users can review the exact CLI telemetry catalog and never-collected list with `decantr telemetry explain`.
 - Opted-in CLI users can link opaque install/project ids with `decantr telemetry link --enable --org <org-slug>`.
 - New events cover analyze completion, identity linking, private-registry readiness, billing intent, and hosted content validation/publish outcomes.
 - PostHog dashboard, weekly snapshot, durable rollups, digest, and operating alerts include identity hygiene, billing intent, private-registry readiness, content pipeline, and customer-attributed CLI usage.
@@ -23,6 +24,15 @@ NEXT_PUBLIC_REGISTRY_BILLING_ENABLED=false
 Allowed telemetry is product metadata only: event name, source, actor type, opaque install/project/user/org ids, aggregate counts, success/failure, duration, plan tier, feature surface, and sanitized campaign attribution.
 
 Never send source code, prompts, generated files, health reports, finding evidence, local file paths, repository names, emails, IP addresses, raw referrer URLs, user agents, API keys, secrets, or private package slugs.
+
+For customer security review, ask the team to run:
+
+```bash
+decantr telemetry explain
+decantr telemetry explain --json
+```
+
+The JSON explanation is intentionally shareable: it lists event names, privacy classes, aggregate field categories, controls, and existing opaque ids without including local paths or repository names.
 
 ## Rollout
 
@@ -60,6 +70,7 @@ After deployment and publishing, confirm these events appear in PostHog:
 ## Triage
 
 - If customer usage looks low, open `/admin/telemetry/usage` and review candidate aliases.
+- If identity coverage is low, use the `/admin/telemetry/usage` Identity Coverage panel to prioritize candidate aliases and self-linking outreach.
 - If internal traffic pollutes customer views, classify the opaque ids in `/admin/telemetry` or add temporary env allowlist entries.
 - If billing or private-registry signals spike, treat them as readiness/intent until the paywall is explicitly launched.
 - If digest or health Discord posts are missing, verify `TELEMETRY_DIGEST_WEBHOOK_URL` or `TELEMETRY_HEALTH_WEBHOOK_URL` and run the scripts with dry-run output.

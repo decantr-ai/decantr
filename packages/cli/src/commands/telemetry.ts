@@ -1,3 +1,4 @@
+import { DECANTR_TELEMETRY_EVENT_CATALOG } from '@decantr/telemetry';
 import { getApiKeyOrToken } from '../auth.js';
 import { getCliTelemetryIdentityStatus, isOptedIn, optIn } from '../telemetry.js';
 
@@ -34,6 +35,11 @@ export async function cmdTelemetry(
     return;
   }
 
+  if (subcommand === 'explain') {
+    printTelemetryExplain(projectRoot, options);
+    return;
+  }
+
   if (subcommand === 'link') {
     await linkTelemetryIdentity(projectRoot, options);
     return;
@@ -48,11 +54,13 @@ ${BOLD}decantr telemetry${RESET} — Inspect and link privacy-filtered CLI telem
 
 ${BOLD}Usage:${RESET}
   decantr telemetry status [--json]
+  decantr telemetry explain [--json]
   decantr telemetry link [--enable] [--org <slug>] [--label <label>] [--api-key <key>] [--api-url <url>]
 
 ${BOLD}Examples:${RESET}
   decantr init --telemetry
   decantr telemetry status
+  decantr telemetry explain
   decantr login --api-key=<your-key>
   decantr telemetry link --org my-team --label "CI runner"
 `);
@@ -80,6 +88,83 @@ function printTelemetryStatus(projectRoot: string, options: TelemetryCommandOpti
   } else {
     console.log(DIM + 'Run `decantr init --telemetry` or `decantr telemetry link --enable` to opt in.' + RESET);
   }
+}
+
+function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOptions): void {
+  const status = getCliTelemetryIdentityStatus(projectRoot, { create: false });
+  const cliEvents = DECANTR_TELEMETRY_EVENT_CATALOG
+    .filter((entry) => entry.allowedSources.includes('cli'))
+    .map((entry) => ({
+      name: entry.name,
+      bucket: entry.bucket,
+      privacy: entry.privacy,
+      publicIngest: entry.publicIngest,
+      notes: entry.privacyNotes,
+    }));
+  const report = {
+    source: 'cli',
+    enabled: status.enabled,
+    hasProjectConfig: status.hasProjectConfig,
+    identifiers: {
+      installId: status.installId ?? null,
+      projectId: status.projectId ?? null,
+      meaning: 'Opaque Decantr-generated ids used only when this project has opted into CLI telemetry.',
+    },
+    endpoint: process.env.DECANTR_TELEMETRY_ENDPOINT ?? 'https://api.decantr.ai/v1/telemetry/events',
+    events: cliEvents,
+    aggregateFields: [
+      'command name',
+      'success or failure',
+      'duration',
+      'workflow and adoption mode',
+      'project scope',
+      'registry source',
+      'aggregate analyze counts',
+      'Project Health status, score, and finding counts',
+      'CI gate outcome',
+      'Studio start and refresh activity',
+      'remediation prompt request outcome',
+    ],
+    neverCollected: [
+      'source code',
+      'prompt text',
+      'local file paths',
+      'repository names',
+      'emails',
+      'secrets',
+      'raw route names',
+      'private package slugs',
+      'health report bodies',
+      'finding evidence',
+    ],
+    controls: {
+      optIn: 'Run decantr init --telemetry, decantr new --telemetry, or decantr telemetry link --enable.',
+      optOut: 'Set "telemetry": false in .decantr/project.json.',
+      link: 'Run decantr telemetry link after login to attach opaque ids to your Decantr account/org.',
+    },
+  };
+
+  if (options.json) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  console.log(`\n${BOLD}Decantr telemetry explanation${RESET}`);
+  console.log(`  Source:     cli`);
+  console.log(`  Enabled:    ${status.enabled ? `${GREEN}yes${RESET}` : 'no'}`);
+  console.log(`  Install ID: ${status.installId ?? `${DIM}not created yet${RESET}`}`);
+  console.log(`  Project ID: ${status.projectId ?? `${DIM}not created yet${RESET}`}`);
+  console.log(`  Events:     ${cliEvents.length} CLI event types in the public catalog`);
+  console.log(`\n${BOLD}Aggregate fields${RESET}`);
+  for (const field of report.aggregateFields) {
+    console.log(`  - ${field}`);
+  }
+  console.log(`\n${BOLD}Never collected${RESET}`);
+  for (const field of report.neverCollected) {
+    console.log(`  - ${field}`);
+  }
+  console.log(`\n${DIM}${report.controls.optOut}${RESET}`);
+  console.log(`${DIM}${report.controls.link}${RESET}`);
 }
 
 async function linkTelemetryIdentity(

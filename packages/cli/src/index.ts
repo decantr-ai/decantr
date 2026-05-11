@@ -2905,6 +2905,7 @@ ${BOLD}Usage:${RESET}
   decantr content-health [--json] [--markdown] [--ci]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json]
   decantr telemetry status [--json]
+  decantr telemetry explain [--json]
   decantr telemetry link [--enable] [--org <slug>]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
@@ -2992,6 +2993,7 @@ ${BOLD}Examples:${RESET}
   decantr studio
   decantr studio --report decantr-health.json
   decantr telemetry status
+  decantr telemetry explain
   decantr telemetry link --enable --org my-team
   decantr audit
   decantr audit src/pages/HomePage.tsx

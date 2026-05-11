@@ -295,6 +295,37 @@ describe('CLI command telemetry', () => {
     logSpy.mockRestore();
   });
 
+  it('explains opted-in telemetry without exposing local project data', async () => {
+    writeProjectConfig({ telemetry: true });
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await cmdTelemetry(['explain', '--json'], projectRoot);
+
+    const output = logSpy.mock.calls.map((call) => String(call[0])).join('\n');
+    const report = JSON.parse(output) as {
+      enabled: boolean;
+      events: Array<{ name: string; privacy: string }>;
+      neverCollected: string[];
+    };
+
+    expect(report.enabled).toBe(true);
+    expect(report.events).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'cli.command.completed', privacy: 'aggregate' }),
+      expect.objectContaining({ name: 'decantr.analyze.completed', privacy: 'aggregate' }),
+      expect.objectContaining({ name: 'health.report.generated', privacy: 'aggregate' }),
+    ]));
+    expect(report.neverCollected).toEqual(expect.arrayContaining([
+      'source code',
+      'prompt text',
+      'local file paths',
+      'emails',
+      'private package slugs',
+    ]));
+    expect(output).not.toContain(projectRoot);
+
+    logSpy.mockRestore();
+  });
+
   it('attributes workspace --project commands to the selected app root', async () => {
     const appRoot = join(projectRoot, 'apps', 'web');
     mkdirSync(appRoot, { recursive: true });

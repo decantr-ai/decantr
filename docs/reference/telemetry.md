@@ -189,10 +189,11 @@ The response includes total/customer/internal/failure events, source mix, actor 
 
 ```bash
 decantr telemetry status
+decantr telemetry explain
 decantr telemetry link --enable --org <org-slug>
 ```
 
-The link command sends only opaque install/project ids and optional org slug/label. It never sends local file paths, repository names, prompts, source, or package slugs.
+The explain command prints the CLI event catalog subset, aggregate field categories, current opaque ids if they already exist, and the never-collected list. The link command sends only opaque install/project ids and optional org slug/label. It never sends local file paths, repository names, prompts, source, or package slugs.
 
 The usage response also includes lightweight Product Activation and marketing attribution summaries. Product Activation tracks opted-in greenfield `new`, attach/init, refresh/check lifecycle events, Project Health report volume, healthy-project milestones, CI failure events, Studio usage, and remediation prompt requests. Marketing attribution tracks campaign coverage, landing-path coverage, registry follow-through, top UTM campaigns, and top landing paths. Campaign naming and launch-link hygiene live in [Decantr UTM Taxonomy](./telemetry-utm-taxonomy.md).
 
@@ -447,9 +448,18 @@ decantr init --existing --accept-proposal --telemetry
 decantr check --telemetry
 ```
 
+For security review before opt-in, use:
+
+```bash
+decantr telemetry explain
+decantr telemetry explain --json
+```
+
 The CLI stores opaque IDs only:
 
 - install ID in the Decantr config directory (`DECANTR_CONFIG_DIR` or the default user config directory)
 - project ID in `.decantr/project.json`
 
 CLI events include command name, success/failure, duration, workflow mode, adoption mode, registry source, project scope, target framework, and offline usage. They do not include raw prompts, source code, generated files, raw paths, env vars, secrets, emails, IP addresses, or user agents.
+
+`decantr telemetry explain --json` is safe to attach to customer security reviews: it lists event names, privacy classes, aggregate field categories, and controls without including local file paths or repository names.

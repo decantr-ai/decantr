@@ -63,6 +63,16 @@ function formatPercent(value: number) {
   return `${Math.round(value * 1000) / 10}%`;
 }
 
+function identityCoverage(summary: { total_events: number; unclassified_events: number }) {
+  if (summary.total_events <= 0) return 1;
+  return 1 - (summary.unclassified_events / summary.total_events);
+}
+
+function candidateAliasRate(summary: { active_identities: number; candidate_aliases: number }) {
+  if (summary.active_identities <= 0) return 0;
+  return summary.candidate_aliases / summary.active_identities;
+}
+
 function trendMeta(trend: AdminTelemetryUsageTrend) {
   return `${formatDelta(trend.delta)} vs previous`;
 }
@@ -363,6 +373,53 @@ export default async function AdminTelemetryUsagePage({
                 <span className="registry-admin-row-title">{formatNumber(usage.summary.failure_events)}</span>
                 <span className="registry-admin-row-meta">Failure signals</span>
                 <span className="registry-admin-row-meta">{rateTrendMeta(usage.trends.failure_rate)}</span>
+              </div>
+            </div>
+          </section>
+
+          <section className="d-section" data-density="compact">
+            <span className="d-label registry-anchor-label">
+              Identity Coverage
+            </span>
+            <div className="registry-admin-stat-grid">
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatPercent(identityCoverage(usage.summary))}</span>
+                <span className="registry-admin-row-meta">Classification coverage</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(usage.summary.unclassified_events)} unclassified events
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.summary.candidate_aliases)}</span>
+                <span className="registry-admin-row-meta">Candidate aliases</span>
+                <span className="registry-admin-row-meta">
+                  {formatPercent(candidateAliasRate(usage.summary))} of active identities
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.summary.active_orgs)}</span>
+                <span className="registry-admin-row-meta">Active customer orgs</span>
+                <span className="registry-admin-row-meta">
+                  {formatNumber(usage.summary.active_projects)} active projects
+                </span>
+              </div>
+              <div className="d-surface registry-admin-stat">
+                <span className="registry-admin-row-title">{formatNumber(usage.summary.customer_events)}</span>
+                <span className="registry-admin-row-meta">Customer-attributed events</span>
+                <span className="registry-admin-row-meta">{trendMeta(usage.trends.customer_events)}</span>
+              </div>
+            </div>
+            <div className="d-surface registry-admin-stack">
+              <div className="registry-admin-row">
+                <span className="registry-admin-row-copy">
+                  <span className="registry-admin-row-title">Operator playbook</span>
+                  <span className="registry-admin-row-meta">
+                    Review candidate aliases, mark internal/test traffic first, then ask customer teams to run decantr telemetry link after login so opted-in CLI usage attaches to their org.
+                  </span>
+                </span>
+                <Link href="/admin/telemetry" className="d-interactive" data-variant="ghost">
+                  Review identities
+                </Link>
               </div>
             </div>
           </section>

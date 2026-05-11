@@ -25,6 +25,16 @@ const PRIVACY_SECTIONS = [
       'We may collect operational and security data such as request logs, rate-limit events, moderation actions, audit history, and basic usage diagnostics needed to run, secure, and improve the hosted service.',
   },
   {
+    title: 'Opted-In Product Telemetry',
+    body:
+      'Decantr CLI product telemetry is off unless a project opts in. When enabled, it sends aggregate lifecycle metadata such as command outcome, duration, workflow mode, analyze counts, Project Health status, finding counts, CI gate outcome, Studio usage, and remediation prompt request outcome. It does not send source code, prompt text, local file paths, repository names, emails, secrets, raw route names, private package slugs, health report bodies, or finding evidence.',
+  },
+  {
+    title: 'Telemetry Identity Linking',
+    body:
+      'Users may run decantr telemetry link after logging in to attach opaque install and project ids to their Decantr account or organization. The link improves customer attribution for opted-in CLI usage without collecting project names, local paths, source content, prompts, or private registry slugs.',
+  },
+  {
     title: 'How We Use Data',
     body:
       'Decantr uses service data to authenticate users, render dashboard and registry experiences, enforce plan entitlements, power collaboration and governance workflows, prevent abuse, investigate incidents, and improve product reliability.',
@@ -56,7 +66,7 @@ export default function PrivacyPage() {
           <p className="registry-legal-copy">
             Decantr keeps the source repositories MIT licensed while also publishing a service-level privacy policy for the hosted registry experience.
           </p>
-          <p className="registry-legal-updated">Effective date: April 21, 2026</p>
+          <p className="registry-legal-updated">Effective date: May 11, 2026</p>
         </div>
       </section>
 
@@ -81,6 +91,8 @@ export default function PrivacyPage() {
             <ul className="registry-legal-list">
               <li>Use public or private visibility controls when publishing content.</li>
               <li>Review organization membership and governance settings before sharing collaborative content.</li>
+              <li>Run decantr telemetry explain to inspect CLI telemetry fields before opting in.</li>
+              <li>Set telemetry to false in .decantr/project.json to opt out of CLI product telemetry.</li>
               <li>Use the contact channels published on decantr.ai for service privacy questions or requests.</li>
             </ul>
           </div>
