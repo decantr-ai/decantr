@@ -2902,7 +2902,7 @@ ${BOLD}Usage:${RESET}
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health init-ci [--force] [--project <path>] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr content-health [--json] [--markdown] [--ci]
-  decantr studio [--port 4319] [--host 127.0.0.1]
+  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json]
   decantr rules preview [--project=<path>]
   decantr rules apply [--project=<path>]
   decantr validate [path]
@@ -2986,6 +2986,7 @@ ${BOLD}Examples:${RESET}
   decantr health --ci --fail-on error
   decantr content-health --ci --fail-on error
   decantr studio
+  decantr studio --report decantr-health.json
   decantr audit
   decantr audit src/pages/HomePage.tsx
   decantr migrate --to v4
@@ -3105,11 +3106,12 @@ function cmdStudioHelp() {
 ${BOLD}decantr studio${RESET} — Run a local Project Health dashboard
 
 ${BOLD}Usage:${RESET}
-  decantr studio [--port 4319] [--host 127.0.0.1]
+  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json]
 
 ${BOLD}Options:${RESET}
   --port        Local port to bind; defaults to 4319
   --host        Local host to bind; defaults to 127.0.0.1
+  --report      Serve a read-only Project Health JSON artifact instead of scanning the current project
 
 ${BOLD}Endpoints:${RESET}
   GET  /
@@ -3120,6 +3122,8 @@ ${BOLD}Examples:${RESET}
   decantr studio
   decantr studio --port 4320
   decantr studio --host 127.0.0.1 --port 4319
+  decantr health --json --output decantr-health.json
+  decantr studio --report decantr-health.json
 `);
 }
 

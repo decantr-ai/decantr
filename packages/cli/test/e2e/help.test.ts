@@ -56,6 +56,7 @@ describe('command help (e2e)', () => {
     const output = runHelp(testDir, ['studio', '--help']);
 
     expect(output).toContain('decantr studio');
+    expect(output).toContain('--report');
     expect(output).toContain('GET  /api/health');
     expect(output).toContain('POST /api/refresh');
     expect(output).not.toContain('Decantr Studio is running');

@@ -19,10 +19,12 @@ decantr health --output health.md
 decantr health --ci --fail-on error
 decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
+decantr health --json --output decantr-health.json
 decantr studio --port 4319 --host 127.0.0.1
+decantr studio --report decantr-health.json
 ```
 
-`decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding.
+`decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
 
 ## What The Report Contains
 
@@ -51,6 +53,8 @@ Score uses `100 - errors*15 - warnings*5 - info*1`, clamped from `0` to `100`. T
 - `GET /api/health` for the current report
 - `POST /api/refresh` to recompute the report
 
+The Overview is the triage surface: it summarizes status in plain language, lets the user pick the finding to fix first, previews the full AI repair prompt before copying, and offers tabs for manual guidance or verification commands. Route, runtime, pack, workflow, and source-count evidence live under expandable project details so the first screen stays focused.
+
 Studio tabs:
 
 - Overview
@@ -62,6 +66,15 @@ Studio tabs:
 - Packs
 
 Use Studio while attaching Decantr to an existing project, before asking an AI assistant to remediate drift, or before opening a pull request.
+
+Report mode serves a customer-controlled JSON artifact instead of scanning the local source tree:
+
+```bash
+decantr health --json --output decantr-health.json
+decantr studio --report decantr-health.json
+```
+
+In report mode, `GET /api/health` reads the JSON artifact and `POST /api/refresh` re-reads it. This is the lightweight path for permanent internal reporting today: CI writes `decantr-health.json`, an internal host serves Studio against that artifact, and the report stays under the customer's control. This is distinct from Decantr telemetry and does not create hosted ingestion, auth, retention, or cross-project history.
 
 ## Greenfield
 
@@ -81,7 +94,7 @@ Healthy greenfield projects should have generated context packs, route coverage,
 decantr health --prompt <finding-id>
 ```
 
-Then give the prompt to the assistant that is implementing the app.
+That command prints a focused prompt; it does not apply the fix. Give the prompt to the assistant that is implementing the app, or copy the full prompt directly from Studio.
 
 ## Brownfield
 
