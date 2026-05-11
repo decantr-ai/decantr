@@ -201,7 +201,23 @@ decantr refresh
 decantr check
 ```
 
-See the full [FAQ](docs/faq.md) for common setup, brownfield, migration, CI, and drift questions.
+### How do I open Decantr Studio?
+
+Run Studio from the app root, where `decantr.essence.json` lives:
+
+```bash
+decantr studio
+```
+
+If the default port is busy:
+
+```bash
+decantr studio --host 127.0.0.1 --port 4320
+```
+
+Studio is local-only and shows the same Project Health signal as `decantr health`. It is for interactive triage; `decantr health --ci --fail-on error` is still the pull-request gate.
+
+See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration, CI, and drift questions.
 
 ## Links
 

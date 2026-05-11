@@ -124,6 +124,41 @@ For a broader report:
 npx @decantr/cli health
 ```
 
+## How do I open the Decantr Studio dashboard?
+
+Run Studio from the app root, where `decantr.essence.json` lives:
+
+```bash
+npx @decantr/cli studio
+```
+
+Then open:
+
+```text
+http://127.0.0.1:4319
+```
+
+If that port is already in use:
+
+```bash
+npx @decantr/cli studio --host 127.0.0.1 --port 4320
+```
+
+In a monorepo, run Studio from the app package rather than the workspace root:
+
+```bash
+cd apps/web
+npx @decantr/cli studio
+```
+
+Studio is local-only and uses the same Project Health report as:
+
+```bash
+npx @decantr/cli health
+```
+
+Use Studio when you want a browser view of drift, route coverage, pack health, and remediation prompts. Use `health --ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
+
 ## How do I regenerate Decantr guidance after changing the app contract?
 
 Run:

@@ -38,7 +38,7 @@ npx @decantr/cli analyze
 npx @decantr/cli check
 ```
 
-For common setup, brownfield, migration, CI, and agent-alignment questions, see the user-facing [Decantr FAQ](https://github.com/decantr-ai/decantr/blob/main/docs/faq.md).
+For common setup, brownfield, Studio, migration, CI, and agent-alignment questions, see the user-facing [Decantr FAQ](https://github.com/decantr-ai/decantr/blob/main/docs/faq.md).
 
 ## Example
 
