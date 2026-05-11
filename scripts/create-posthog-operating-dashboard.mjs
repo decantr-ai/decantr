@@ -775,6 +775,16 @@ async function runOptionalSetup(label, scopes, fn) {
       );
       return [];
     }
+    if (
+      label === 'alerts' &&
+      error instanceof PostHogApiError &&
+      error.status === 400 &&
+      /alert/i.test(error.message) &&
+      /limit/i.test(error.message)
+    ) {
+      console.warn(`Skipping remaining alerts: PostHog alert limit reached for this project.`);
+      return [];
+    }
     throw error;
   }
 }
