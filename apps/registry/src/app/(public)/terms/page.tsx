@@ -1,3 +1,13 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Terms Of Service',
+  description: 'Terms of service for the hosted Decantr registry service.',
+  alternates: {
+    canonical: '/terms',
+  },
+};
+
 const TERMS_SECTIONS = [
   {
     title: 'Using The Hosted Service',

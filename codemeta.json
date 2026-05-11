@@ -1,0 +1,48 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "Decantr",
+  "description": "Design intelligence, governance, and verification for AI-generated UI.",
+  "codeRepository": "https://github.com/decantr-ai/decantr",
+  "url": "https://decantr.ai/",
+  "license": "https://opensource.org/license/mit",
+  "programmingLanguage": "TypeScript",
+  "runtimePlatform": "Node.js >=20",
+  "applicationCategory": "DeveloperApplication",
+  "keywords": [
+    "Decantr",
+    "Decantr AI",
+    "AI-generated UI",
+    "design intelligence",
+    "Model Context Protocol",
+    "MCP",
+    "schema",
+    "UI generation",
+    "design systems",
+    "AI coding assistants"
+  ],
+  "author": {
+    "@type": "Organization",
+    "name": "Decantr AI",
+    "url": "https://decantr.ai/"
+  },
+  "maintainer": {
+    "@type": "Organization",
+    "name": "Decantr AI",
+    "url": "https://decantr.ai/"
+  },
+  "softwareRequirements": [
+    "Node.js >=20",
+    "pnpm >=9"
+  ],
+  "relatedLink": [
+    "https://registry.decantr.ai/",
+    "https://api.decantr.ai/v1/",
+    "https://www.npmjs.com/org/decantr"
+  ],
+  "isPartOf": {
+    "@type": "SoftwareApplication",
+    "name": "Decantr",
+    "url": "https://decantr.ai/"
+  }
+}

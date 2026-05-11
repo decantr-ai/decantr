@@ -1,12 +1,22 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getContent } from '@/lib/api';
 import type { ContentRecord } from '@/lib/api';
+import { JsonLd } from '@/components/json-ld';
 import { JsonViewer } from '@/components/json-viewer';
 import { getShowcaseMetadata, getShowcaseUrl } from '@/lib/showcase';
 import { CopyInstallButton } from './copy-install-button';
 import { getDisplaySourceLine } from '@/lib/content-presentation';
+import {
+  buildRegistryContentJsonLd,
+  getContentDescription,
+  getContentDisplayName,
+  getContentRoutePath,
+  getContentRouteUrl,
+  getContentTypeLabel,
+} from '@/lib/seo';
 import styles from './page.module.css';
 
 const TYPE_STYLES: Record<string, { canvas: string; badge: string }> = {
@@ -589,6 +599,50 @@ interface DetailPageProps {
   params: Promise<{ type: string; namespace: string; slug: string }>;
 }
 
+export async function generateMetadata({ params }: DetailPageProps): Promise<Metadata> {
+  const { type, namespace: rawNamespace, slug } = await params;
+  const namespace = decodeURIComponent(rawNamespace);
+
+  try {
+    const content = await getContent(type, namespace, slug);
+    const name = getContentDisplayName(content);
+    const description = getContentDescription(content);
+    const path = getContentRoutePath(content.type, content.namespace, content.slug);
+    const typeLabel = getContentTypeLabel(content.type);
+    const image = content.thumbnail_url ?? undefined;
+
+    return {
+      title: `${name} ${typeLabel}`,
+      description,
+      alternates: {
+        canonical: path,
+      },
+      openGraph: {
+        title: `${name} — Decantr ${typeLabel}`,
+        description,
+        type: 'article',
+        url: getContentRouteUrl(content.type, content.namespace, content.slug),
+        images: image ? [{ url: image, alt: name }] : undefined,
+      },
+      twitter: {
+        card: image ? 'summary_large_image' : 'summary',
+        title: `${name} — Decantr ${typeLabel}`,
+        description,
+        images: image ? [image] : undefined,
+      },
+    };
+  } catch {
+    return {
+      title: 'Registry Content',
+      description: 'Inspect a Decantr registry contract.',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+}
+
 export default async function ContentDetailPage({ params }: DetailPageProps) {
   const { type, namespace: rawNamespace, slug } = await params;
   const namespace = decodeURIComponent(rawNamespace);
@@ -706,6 +760,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
 
   return (
     <main className={`${styles.pageCanvas} ${typeStyles.canvas}`}>
+      <JsonLd data={buildRegistryContentJsonLd(content)} />
       <div className={styles.pageShellBreakpoint}>
         <nav className={styles.breadcrumbs} aria-label="Breadcrumb">
           <Link href="/" className={`no-underline transition-colors hover:text-d-primary ${styles.mutedLink}`}>

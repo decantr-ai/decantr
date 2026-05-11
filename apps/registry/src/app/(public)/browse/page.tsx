@@ -1,7 +1,9 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { JsonLd } from '@/components/json-ld';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
 import {
@@ -14,8 +16,18 @@ import {
   CONTENT_TYPES,
   isRegistryContentType,
 } from '@/lib/content-types';
+import { buildRegistryCollectionJsonLd } from '@/lib/seo';
 
 export const revalidate = 300; // ISR: revalidate every 5 minutes
+
+export const metadata: Metadata = {
+  title: 'Browse',
+  description:
+    'Explore the Decantr registry across patterns, themes, blueprints, archetypes, and shells.',
+  alternates: {
+    canonical: '/browse',
+  },
+};
 
 const LIMIT = 18;
 
@@ -96,9 +108,16 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const description = selectedType
     ? CONTENT_TYPE_DESCRIPTIONS[selectedType]
     : 'Explore the full Decantr registry across patterns, themes, blueprints, archetypes, and shells.';
+  const jsonLd = buildRegistryCollectionJsonLd({
+    path: selectedType ? `/browse/${selectedType}` : '/browse',
+    name: selectedType ? `Decantr ${CONTENT_TYPE_LABELS[selectedType]}` : 'Decantr Registry Browse',
+    description,
+    items,
+  });
 
   return (
     <div className="registry-page-max registry-browser-shell">
+      <JsonLd data={jsonLd} />
       <div className="registry-page-intro">
         <h1 className="text-2xl font-bold">{title}</h1>
         <p className="text-sm text-d-muted">{description}</p>

@@ -24,6 +24,8 @@
     "clean": "pnpm -r exec rm -rf dist",
     "mcp": "node packages/mcp-server/dist/index.js",
     "schemas:sync": "node scripts/sync-schema-copies.mjs",
+    "seo:docs-sitemap": "node scripts/generate-docs-sitemap.mjs",
+    "seo:indexnow": "node scripts/submit-indexnow.mjs",
     "audit:docs-marketing": "node scripts/audit-docs-marketing.mjs",
     "audit:package-surface": "node scripts/audit-package-surface.mjs",
     "audit:release-readiness": "node scripts/audit-release-readiness.mjs",

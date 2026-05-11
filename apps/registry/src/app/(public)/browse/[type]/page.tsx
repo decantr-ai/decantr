@@ -1,8 +1,10 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
+import { JsonLd } from '@/components/json-ld';
 import { SearchFilterBar } from '@/components/search-filter-bar';
 import { Pagination } from '@/components/pagination';
 import { normalizePublicContentSort } from '@/lib/content-ranking';
@@ -11,6 +13,7 @@ import {
   CONTENT_TYPE_LABELS,
   isRegistryContentType,
 } from '@/lib/content-types';
+import { buildRegistryCollectionJsonLd } from '@/lib/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +27,30 @@ interface BrowseTypePageProps {
     sort?: string;
     offset?: string;
   }>;
+}
+
+export async function generateMetadata({ params }: Pick<BrowseTypePageProps, 'params'>): Promise<Metadata> {
+  const { type } = await params;
+
+  if (!isRegistryContentType(type)) {
+    return {
+      title: 'Browse',
+    };
+  }
+
+  return {
+    title: CONTENT_TYPE_LABELS[type],
+    description: CONTENT_TYPE_DESCRIPTIONS[type],
+    alternates: {
+      canonical: `/browse/${type}`,
+    },
+    openGraph: {
+      title: `${CONTENT_TYPE_LABELS[type]} — Decantr Registry`,
+      description: CONTENT_TYPE_DESCRIPTIONS[type],
+      url: `/browse/${type}`,
+      type: 'website',
+    },
+  };
 }
 
 export default async function BrowseTypePage({ params, searchParams }: BrowseTypePageProps) {
@@ -68,9 +95,16 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
   } catch {
     // API unavailable
   }
+  const jsonLd = buildRegistryCollectionJsonLd({
+    path: `/browse/${type}`,
+    name: `Decantr ${CONTENT_TYPE_LABELS[type]}`,
+    description: CONTENT_TYPE_DESCRIPTIONS[type],
+    items,
+  });
 
   return (
     <div className="registry-page-max registry-browser-shell">
+      <JsonLd data={jsonLd} />
       <div className="registry-page-intro">
         <h1 className="text-2xl font-bold">{CONTENT_TYPE_LABELS[type]}</h1>
         <p className="text-sm text-d-muted">{CONTENT_TYPE_DESCRIPTIONS[type]}</p>
