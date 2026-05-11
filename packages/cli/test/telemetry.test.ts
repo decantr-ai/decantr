@@ -301,6 +301,18 @@ describe('CLI command telemetry', () => {
       projectRoot,
       success: true,
     });
+    await sendCliCommandTelemetry({
+      args: ['health', '--help'],
+      durationMs: 3,
+      projectRoot,
+      success: true,
+    });
+    await sendCliCommandTelemetry({
+      args: ['studio', 'help'],
+      durationMs: 3,
+      projectRoot,
+      success: true,
+    });
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
