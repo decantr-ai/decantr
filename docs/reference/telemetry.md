@@ -45,6 +45,8 @@ CLI / API / MCP / marketing web / registry web / content CI
 
 The event vocabulary is typed in `@decantr/telemetry` and guarded by `DECANTR_TELEMETRY_EVENT_CATALOG`. Public ingest accepts the previous and current schema versions during rollout, but new emitters use schema `0.3.0`. Each catalog entry declares allowed sources, a signal bucket, privacy class, public-ingest eligibility, and privacy notes. The API rejects forged source/event pairs before forwarding to PostHog.
 
+All telemetry clients pass through the shared redaction layer before a sink sees the event. Sensitive keys such as prompts, source code, file paths, repository names, raw route names, package slugs, emails, tokens, cookies, URLs, user agents, and authorization fields are redacted even if a future caller accidentally includes them.
+
 - `cli.command.completed`
 - `registry.item.resolved`
 - `registry.sync.completed`

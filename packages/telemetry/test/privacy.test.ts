@@ -8,6 +8,9 @@ describe('telemetry privacy', () => {
     expect(isSensitiveTelemetryKey('source')).toBe(true);
     expect(isSensitiveTelemetryKey('sourceCode')).toBe(true);
     expect(isSensitiveTelemetryKey('filePath')).toBe(true);
+    expect(isSensitiveTelemetryKey('privatePackageSlug')).toBe(true);
+    expect(isSensitiveTelemetryKey('repositoryName')).toBe(true);
+    expect(isSensitiveTelemetryKey('routeNames')).toBe(true);
     expect(isSensitiveTelemetryKey('api_key')).toBe(true);
     expect(isSensitiveTelemetryKey('durationMs')).toBe(false);
     expect(isSensitiveTelemetryKey('errorCode')).toBe(false);
@@ -29,7 +32,10 @@ describe('telemetry privacy', () => {
         errorCode: 'guard_failed',
         prompt: 'make a private fintech dashboard',
         filePath: '/Users/example/project/src/App.tsx',
+        privatePackageSlug: '@customer/private-payments',
+        repositoryName: 'customer-secret-repo',
         nested: {
+          routeNames: ['/billing', '/admin'],
           sourceCode: '<button>private</button>',
           warningCount: 2,
         },
@@ -43,7 +49,10 @@ describe('telemetry privacy', () => {
     expect(sanitized.properties.errorCode).toBe('guard_failed');
     expect(sanitized.properties.prompt).toBe(REDACTED_VALUE);
     expect(sanitized.properties.filePath).toBe(REDACTED_VALUE);
+    expect(sanitized.properties.privatePackageSlug).toBe(REDACTED_VALUE);
+    expect(sanitized.properties.repositoryName).toBe(REDACTED_VALUE);
     expect(sanitized.properties.nested).toEqual({
+      routeNames: REDACTED_VALUE,
       sourceCode: REDACTED_VALUE,
       warningCount: 2,
     });

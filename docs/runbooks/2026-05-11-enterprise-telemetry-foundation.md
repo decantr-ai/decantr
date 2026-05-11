@@ -42,6 +42,36 @@ The JSON explanation is intentionally shareable: it lists event names, privacy c
 4. Rerun `pnpm telemetry:posthog-dashboard` to update PostHog insights, cohorts, and threshold alerts.
 5. Let the weekly snapshot/digest jobs run, or execute them manually with `--dry-run` first.
 
+## Live Validation Checklist
+
+Close the rollout by checking every lane that can regress silently:
+
+```bash
+npm whoami
+node scripts/publish-packages.mjs --publish-dry-run --only=@decantr/telemetry,@decantr/cli
+node scripts/publish-packages.mjs --only=@decantr/telemetry,@decantr/cli
+node scripts/verify-published-packages.mjs --only=@decantr/telemetry,@decantr/cli
+```
+
+Then validate the deployed telemetry surfaces:
+
+```bash
+decantr telemetry explain --json
+decantr telemetry status --json
+decantr login --api-key=<customer-or-admin-key>
+decantr telemetry link --enable --org <org-slug>
+node scripts/create-posthog-operating-dashboard.mjs --dry-run
+node scripts/posthog-weekly-telemetry-report.mjs --dry-run
+node scripts/report-telemetry-digest.mjs --dry-run
+```
+
+Operator confirmation:
+
+- PostHog shows `decantr.analyze.completed`, `telemetry.identity_linked`, billing intent, and private-registry readiness events.
+- `/admin/telemetry/usage` shows the Identity Coverage panel, Product Activation counts, signal buckets, candidate aliases, and stored snapshot freshness.
+- Discord health/digest payloads still render after dry-run or scheduled jobs.
+- `REGISTRY_BILLING_ENABLED` and `NEXT_PUBLIC_REGISTRY_BILLING_ENABLED` remain `false`.
+
 ## Operator Checks
 
 ```bash
@@ -70,7 +100,8 @@ After deployment and publishing, confirm these events appear in PostHog:
 ## Triage
 
 - If customer usage looks low, open `/admin/telemetry/usage` and review candidate aliases.
-- If identity coverage is low, use the `/admin/telemetry/usage` Identity Coverage panel to prioritize candidate aliases and self-linking outreach.
+- If identity coverage drops below 95%, use the `/admin/telemetry/usage` Identity Coverage panel to prioritize candidate aliases and self-linking outreach.
+- If candidate aliases rise faster than customer events, classify internal/test traffic first, then ask real customer teams to run `decantr telemetry explain` and `decantr telemetry link --enable --org <org-slug>`.
 - If internal traffic pollutes customer views, classify the opaque ids in `/admin/telemetry` or add temporary env allowlist entries.
 - If billing or private-registry signals spike, treat them as readiness/intent until the paywall is explicitly launched.
 - If digest or health Discord posts are missing, verify `TELEMETRY_DIGEST_WEBHOOK_URL` or `TELEMETRY_HEALTH_WEBHOOK_URL` and run the scripts with dry-run output.
