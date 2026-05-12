@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/workspace-health-report.v1.json",
+  "title": "Decantr Workspace Health Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "generatedAt",
+    "workspaceRoot",
+    "changedOnly",
+    "since",
+    "summary",
+    "projects"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/workspace-health-report.v1.json"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "workspaceRoot": {
+      "type": "string"
+    },
+    "changedOnly": {
+      "type": "boolean"
+    },
+    "since": {
+      "type": ["string", "null"]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projectCount",
+        "checkedCount",
+        "healthyCount",
+        "warningCount",
+        "errorCount",
+        "failedCount"
+      ],
+      "properties": {
+        "projectCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "checkedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "healthyCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warningCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failedCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "path",
+          "status",
+          "score",
+          "errorCount",
+          "warnCount",
+          "infoCount",
+          "findingCount",
+          "durationMs",
+          "changed",
+          "source",
+          "error"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": ["healthy", "warning", "error", "failed"]
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "errorCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "warnCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "infoCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "findingCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "changed": {
+            "type": "boolean"
+          },
+          "source": {
+            "enum": ["manifest", "auto"]
+          },
+          "error": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  }
+}

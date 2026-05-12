@@ -1,6 +1,7 @@
-import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { ReviewExecutionPack } from '@decantr/core';
 import type { EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
@@ -25,6 +26,8 @@ export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
   projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
   projectHealth: 'https://decantr.ai/schemas/project-health-report.v1.json',
+  evidenceBundle: 'https://decantr.ai/schemas/evidence-bundle.v1.json',
+  workspaceHealth: 'https://decantr.ai/schemas/workspace-health-report.v1.json',
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
   showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
 } as const;
@@ -33,8 +36,11 @@ export type VerificationSeverity = 'error' | 'warn' | 'info';
 export type ProjectHealthStatus = 'healthy' | 'warning' | 'error';
 export type ProjectHealthFindingSource =
   | 'audit'
+  | 'assertion'
+  | 'browser'
   | 'check'
   | 'brownfield'
+  | 'design-token'
   | 'runtime'
   | 'pack'
   | 'interaction';
@@ -163,6 +169,407 @@ export interface ProjectHealthReport {
     failOn: 'error' | 'warn' | 'none';
   };
   findings: ProjectHealthFinding[];
+}
+
+export type ContractAssertionCategory =
+  | 'route'
+  | 'shell'
+  | 'region'
+  | 'interaction'
+  | 'accessibility'
+  | 'design-token'
+  | 'context'
+  | 'policy';
+
+export interface ContractAssertion {
+  id: string;
+  category: ContractAssertionCategory;
+  status: 'passed' | 'failed' | 'not_applicable';
+  severity: VerificationSeverity;
+  message: string;
+  evidence: string[];
+  target?: string;
+  rule: string;
+  suggestedFix?: string;
+}
+
+export interface EvidenceProvenanceEntry {
+  path: string;
+  present: boolean;
+  hash: string | null;
+  generatedAt: string | null;
+}
+
+export interface EvidenceBundle {
+  $schema: string;
+  generatedAt: string;
+  project: {
+    id: string;
+    rootLabel: string;
+  };
+  toolchain: {
+    verifierVersion: string | null;
+  };
+  privacy: {
+    localOnly: boolean;
+    redactedFields: string[];
+    screenshotsLocalOnly: boolean;
+  };
+  health: {
+    status: ProjectHealthStatus;
+    score: number;
+    errorCount: number;
+    warnCount: number;
+    infoCount: number;
+    findingCount: number;
+  };
+  provenance: {
+    essence: EvidenceProvenanceEntry;
+    packManifest: EvidenceProvenanceEntry;
+    reviewPack: EvidenceProvenanceEntry;
+    workspaceConfig?: EvidenceProvenanceEntry;
+    designTokens?: EvidenceProvenanceEntry;
+  };
+  assertions: ContractAssertion[];
+  findings: Array<{
+    id: string;
+    source: ProjectHealthFindingSource;
+    category: string;
+    severity: VerificationSeverity;
+    message: string;
+    evidence: string[];
+    target?: string;
+    rule?: string;
+    suggestedFix?: string;
+    remediationSummary: string;
+    commands: string[];
+    promptCommand: string;
+  }>;
+  browser?: {
+    enabled: boolean;
+    status: 'not_requested' | 'unavailable' | 'passed' | 'failed';
+    baseUrl: string | null;
+    screenshots: string[];
+    findings: string[];
+  };
+  designTokens?: {
+    source: string;
+    status: 'not_requested' | 'passed' | 'warning' | 'error';
+    compared: number;
+    matched: number;
+    missing: string[];
+  };
+}
+
+export interface EvidenceBundleInput {
+  projectRoot: string;
+  report: ProjectHealthReport;
+  audit?: ProjectAuditReport | null;
+  assertions?: ContractAssertion[];
+  verifierVersion?: string | null;
+  workspaceConfigPath?: string | null;
+  designTokensPath?: string | null;
+  browser?: EvidenceBundle['browser'];
+  designTokens?: EvidenceBundle['designTokens'];
+}
+
+export const EVIDENCE_BUNDLE_SCHEMA_URL = 'https://decantr.ai/schemas/evidence-bundle.v1.json';
+
+function hashString(value: string): string {
+  return createHash('sha256').update(value).digest('hex').slice(0, 16);
+}
+
+function hashFile(path: string): string | null {
+  if (!existsSync(path)) return null;
+  try {
+    return createHash('sha256').update(readFileSync(path)).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+function provenanceEntry(projectRoot: string, relativePath: string): EvidenceProvenanceEntry {
+  const path = join(projectRoot, relativePath);
+  if (!existsSync(path)) {
+    return {
+      path: relativePath,
+      present: false,
+      hash: null,
+      generatedAt: null,
+    };
+  }
+
+  let generatedAt: string | null = null;
+  try {
+    generatedAt = statSync(path).mtime.toISOString();
+  } catch {
+    generatedAt = null;
+  }
+
+  return {
+    path: relativePath,
+    present: true,
+    hash: hashFile(path),
+    generatedAt,
+  };
+}
+
+function provenanceForPath(projectRoot: string, path: string): EvidenceProvenanceEntry {
+  const rel = isAbsolute(path) ? relative(projectRoot, path).replace(/\\/g, '/') : path;
+  return provenanceEntry(projectRoot, rel && !rel.startsWith('..') ? rel : basename(path));
+}
+
+function redactEvidenceText(projectRoot: string, value: string): string {
+  const normalizedRoot = projectRoot.replace(/\\/g, '/');
+  const normalized = value.replace(/\\/g, '/');
+  if (normalized.includes(normalizedRoot)) {
+    return normalized.split(normalizedRoot).join('<project>');
+  }
+  return normalized.replace(/\/Users\/[^/\s]+/g, '~').replace(/\/home\/[^/\s]+/g, '~');
+}
+
+function redactEvidenceList(projectRoot: string, evidence: string[]): string[] {
+  return evidence.map((entry) => redactEvidenceText(projectRoot, entry));
+}
+
+function assertion(
+  input: Omit<ContractAssertion, 'status'> & { status?: ContractAssertion['status'] },
+): ContractAssertion {
+  return {
+    status: 'passed',
+    ...input,
+  };
+}
+
+export function createContractAssertions(
+  projectRoot: string,
+  audit?: ProjectAuditReport | null,
+): ContractAssertion[] {
+  const assertions: ContractAssertion[] = [];
+  const essence = audit?.essence;
+  const v4 = essence && isV4(essence) ? essence : null;
+  const contextDir = join(projectRoot, '.decantr', 'context');
+  const packManifest = audit?.packManifest ?? null;
+
+  assertions.push(
+    assertion({
+      id: 'contract.essence.present',
+      category: 'context',
+      severity: 'error',
+      rule: 'essence-present',
+      status: essence ? 'passed' : 'failed',
+      message: essence
+        ? 'Decantr Essence contract is present.'
+        : 'No Decantr Essence contract was found.',
+      evidence: [redactEvidenceText(projectRoot, join(projectRoot, 'decantr.essence.json'))],
+      suggestedFix: essence ? undefined : 'Run `decantr init` or restore decantr.essence.json.',
+    }),
+  );
+
+  assertions.push(
+    assertion({
+      id: 'contract.essence.v4',
+      category: 'context',
+      severity: 'error',
+      rule: 'essence-v4',
+      status: v4 ? 'passed' : essence ? 'failed' : 'not_applicable',
+      message: v4
+        ? 'Essence uses the active v4.0.0 contract.'
+        : essence
+          ? 'Essence is not the active v4.0.0 contract.'
+          : 'Essence version could not be checked.',
+      evidence: [essence ? `version=${String(essence.version)}` : 'essence missing'],
+      suggestedFix: v4 ? undefined : 'Run `decantr migrate --to v4` before reliability checks.',
+    }),
+  );
+
+  if (v4) {
+    const declaredRoutes = Object.keys(v4.blueprint.routes ?? {}).sort();
+    for (const route of declaredRoutes) {
+      const routeTarget = (v4.blueprint.routes ?? {})[route];
+      const section = v4.blueprint.sections.find((entry) => entry.id === routeTarget.section);
+      const page = section?.pages.find((entry) => entry.id === routeTarget.page);
+      assertions.push(
+        assertion({
+          id: `contract.route.${hashString(route)}`,
+          category: 'route',
+          severity: page ? 'info' : 'warn',
+          rule: 'declared-route-resolves',
+          status: page ? 'passed' : 'failed',
+          target: route,
+          message: page
+            ? `Declared route ${route} resolves to a section page.`
+            : `Declared route ${route} does not resolve to an existing section page.`,
+          evidence: [`section=${routeTarget.section}`, `page=${routeTarget.page}`],
+          suggestedFix: page
+            ? undefined
+            : 'Update blueprint.routes or add the missing section/page before running AI repair.',
+        }),
+      );
+    }
+
+    for (const section of v4.blueprint.sections) {
+      assertions.push(
+        assertion({
+          id: `contract.shell.${section.id}`,
+          category: 'shell',
+          severity: section.shell && section.shell !== 'inherit' ? 'info' : 'warn',
+          rule: 'section-shell-concrete',
+          status: section.shell && section.shell !== 'inherit' ? 'passed' : 'failed',
+          target: section.id,
+          message:
+            section.shell && section.shell !== 'inherit'
+              ? `Section ${section.id} uses concrete shell ${section.shell}.`
+              : `Section ${section.id} does not declare a concrete shell.`,
+          evidence: [`shell=${section.shell || 'missing'}`],
+          suggestedFix:
+            section.shell && section.shell !== 'inherit'
+              ? undefined
+              : 'Resolve inherited shells during composition so AI agents get concrete layout intent.',
+        }),
+      );
+    }
+
+    assertions.push(
+      assertion({
+        id: 'contract.accessibility.focus-visible',
+        category: 'accessibility',
+        severity: v4.dna.accessibility.focus_visible ? 'info' : 'warn',
+        rule: 'focus-visible-enabled',
+        status: v4.dna.accessibility.focus_visible ? 'passed' : 'failed',
+        message: v4.dna.accessibility.focus_visible
+          ? 'DNA requires visible focus states.'
+          : 'DNA does not require visible focus states.',
+        evidence: [`focus_visible=${String(v4.dna.accessibility.focus_visible)}`],
+        suggestedFix: v4.dna.accessibility.focus_visible
+          ? undefined
+          : 'Set dna.accessibility.focus_visible=true for stronger UI reliability gates.',
+      }),
+    );
+  }
+
+  assertions.push(
+    assertion({
+      id: 'contract.context.pack-manifest',
+      category: 'context',
+      severity: packManifest ? 'info' : 'warn',
+      rule: 'pack-manifest-present',
+      status: packManifest ? 'passed' : 'failed',
+      message: packManifest
+        ? 'Compiled execution pack manifest is present.'
+        : 'Compiled execution pack manifest is missing.',
+      evidence: [redactEvidenceText(projectRoot, join(contextDir, 'pack-manifest.json'))],
+      suggestedFix: packManifest ? undefined : 'Run `decantr refresh` to regenerate context packs.',
+    }),
+  );
+
+  assertions.push(
+    assertion({
+      id: 'contract.context.review-pack',
+      category: 'context',
+      severity: audit?.reviewPack ? 'info' : 'warn',
+      rule: 'review-pack-present',
+      status: audit?.reviewPack ? 'passed' : 'failed',
+      message: audit?.reviewPack
+        ? 'Compiled review pack is present.'
+        : 'Compiled review pack is missing.',
+      evidence: [redactEvidenceText(projectRoot, join(contextDir, 'review-pack.json'))],
+      suggestedFix: audit?.reviewPack
+        ? undefined
+        : 'Run `decantr refresh` or hydrate the review pack from the registry.',
+    }),
+  );
+
+  const tokensPath = join(projectRoot, 'src', 'styles', 'tokens.css');
+  assertions.push(
+    assertion({
+      id: 'contract.design-token.tokens-file',
+      category: 'design-token',
+      severity: existsSync(tokensPath) ? 'info' : 'warn',
+      rule: 'tokens-file-present',
+      status: existsSync(tokensPath) ? 'passed' : 'failed',
+      message: existsSync(tokensPath)
+        ? 'Decantr token CSS file is present.'
+        : 'Decantr token CSS file was not found.',
+      evidence: [redactEvidenceText(projectRoot, tokensPath)],
+      suggestedFix: existsSync(tokensPath)
+        ? undefined
+        : 'Run `decantr refresh` or map Decantr tokens into the existing styling system.',
+    }),
+  );
+
+  return assertions;
+}
+
+export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle {
+  const assertions = input.assertions ?? createContractAssertions(input.projectRoot, input.audit);
+  let resolvedProjectRoot = input.projectRoot;
+  try {
+    resolvedProjectRoot = realpathSync(input.projectRoot);
+  } catch {
+    resolvedProjectRoot = resolve(input.projectRoot);
+  }
+  const projectId = `project_${hashString(resolvedProjectRoot)}`;
+
+  return {
+    $schema: EVIDENCE_BUNDLE_SCHEMA_URL,
+    generatedAt: new Date().toISOString(),
+    project: {
+      id: projectId,
+      rootLabel: basename(input.projectRoot) || 'project',
+    },
+    toolchain: {
+      verifierVersion: input.verifierVersion ?? null,
+    },
+    privacy: {
+      localOnly: true,
+      redactedFields: [
+        'source',
+        'prompt',
+        'secret',
+        'environment',
+        'absolute_path',
+        'repository_name',
+      ],
+      screenshotsLocalOnly: true,
+    },
+    health: {
+      status: input.report.status,
+      score: input.report.score,
+      errorCount: input.report.summary.errorCount,
+      warnCount: input.report.summary.warnCount,
+      infoCount: input.report.summary.infoCount,
+      findingCount: input.report.summary.findingCount,
+    },
+    provenance: {
+      essence: provenanceEntry(input.projectRoot, 'decantr.essence.json'),
+      packManifest: provenanceEntry(input.projectRoot, '.decantr/context/pack-manifest.json'),
+      reviewPack: provenanceEntry(input.projectRoot, '.decantr/context/review-pack.json'),
+      ...(input.workspaceConfigPath
+        ? { workspaceConfig: provenanceForPath(input.projectRoot, input.workspaceConfigPath) }
+        : {}),
+      ...(input.designTokensPath
+        ? { designTokens: provenanceForPath(input.projectRoot, input.designTokensPath) }
+        : {}),
+    },
+    assertions,
+    findings: input.report.findings.map((finding) => ({
+      id: finding.id,
+      source: finding.source,
+      category: finding.category,
+      severity: finding.severity,
+      message: redactEvidenceText(input.projectRoot, finding.message),
+      evidence: redactEvidenceList(input.projectRoot, finding.evidence),
+      target: finding.target ? redactEvidenceText(input.projectRoot, finding.target) : undefined,
+      rule: finding.rule,
+      suggestedFix: finding.suggestedFix,
+      remediationSummary: finding.remediation.summary,
+      commands: finding.remediation.commands,
+      promptCommand: `decantr health --prompt ${finding.id}`,
+    })),
+    ...(input.browser ? { browser: input.browser } : {}),
+    ...(input.designTokens ? { designTokens: input.designTokens } : {}),
+  };
 }
 
 export interface FileCritiqueReport {
@@ -1181,7 +1588,18 @@ function guardViolationToFinding(violation: GuardViolation): VerificationFinding
 
 function countPages(essence: EssenceFile | null): number {
   if (!essence) return 0;
-  return essence.blueprint.sections.reduce((sum, section) => sum + section.pages.length, 0);
+  const blueprint = essence.blueprint as {
+    pages?: unknown[];
+    sections?: Array<{ pages?: unknown[] }>;
+  };
+  const sectionPages = Array.isArray(blueprint.sections)
+    ? blueprint.sections.reduce(
+        (sum, section) => sum + (Array.isArray(section.pages) ? section.pages.length : 0),
+        0,
+      )
+    : 0;
+  const flatPages = Array.isArray(blueprint.pages) ? blueprint.pages.length : 0;
+  return sectionPages + flatPages;
 }
 
 interface TopologySummary {

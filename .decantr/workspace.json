@@ -1,0 +1,28 @@
+{
+  "projects": [
+    {
+      "id": "registry-portal",
+      "path": "apps/registry",
+      "owner": "decantr",
+      "tags": ["dogfood", "registry", "portal"],
+      "criticality": "high"
+    },
+    {
+      "id": "showcase-host",
+      "path": "apps/showcase-host",
+      "owner": "decantr",
+      "tags": ["showcase", "benchmark"],
+      "criticality": "normal"
+    },
+    {
+      "id": "docs-site",
+      "path": "docs",
+      "owner": "decantr",
+      "tags": ["docs", "public"],
+      "criticality": "normal"
+    }
+  ],
+  "ignore": ["public"],
+  "concurrency": 3,
+  "timeoutMs": 120000
+}

@@ -8,8 +8,8 @@ afterEach(() => {
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define 20 tools', () => {
-      expect(TOOLS).toHaveLength(20);
+    it('should define the full MCP tool surface', () => {
+      expect(TOOLS).toHaveLength(24);
     });
 
     it('should have unique tool names', () => {
@@ -66,6 +66,10 @@ describe('MCP tool handlers', () => {
         'decantr_get_scaffold_context',
         'decantr_get_page_context',
         'decantr_get_execution_pack',
+        'decantr_get_evidence_bundle',
+        'decantr_workspace_health',
+        'decantr_get_repair_prompt',
+        'decantr_run_health_loop',
       ];
       for (const name of localToolNames) {
         const tool = TOOLS.find((t) => t.name === name);
@@ -90,6 +94,17 @@ describe('MCP tool handlers', () => {
       })) as { valid: boolean; errors: string[] };
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('reliability tools', () => {
+    it('rejects project paths outside the active workspace root', async () => {
+      const result = await handleTool('decantr_get_evidence_bundle', {
+        project_path: '../outside-workspace',
+      });
+
+      expect(result).toHaveProperty('error');
+      expect(String((result as { error: string }).error)).toContain('escapes the active workspace');
     });
   });
 

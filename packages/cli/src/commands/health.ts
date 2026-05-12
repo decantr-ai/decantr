@@ -1,8 +1,13 @@
+import { createRequire } from 'node:module';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   auditProject,
+  createContractAssertions,
+  createEvidenceBundle,
+  type ContractAssertion,
+  type EvidenceBundle,
   type ProjectHealthFinding,
   type ProjectHealthFindingSource,
   type ProjectHealthReport,
@@ -42,6 +47,11 @@ export interface HealthCommandOptions {
   ci?: boolean;
   failOn?: HealthFailOn;
   promptId?: string;
+  evidence?: boolean;
+  browser?: boolean;
+  requireBrowser?: boolean;
+  browserBaseUrl?: string;
+  designTokensPath?: string;
   initCi?: HealthCiOptions;
 }
 
@@ -53,6 +63,7 @@ export interface HealthCiOptions {
   reportPath?: string;
   jsonPath?: string;
   projectPath?: string;
+  workspace?: boolean;
 }
 
 export interface HealthCiWriteResult {
@@ -61,12 +72,40 @@ export interface HealthCiWriteResult {
   cliPackage: string;
   failOn: HealthFailOn;
   projectPath?: string;
+  workspace?: boolean;
+}
+
+export interface ProjectHealthReportOptions {
+  browser?: boolean;
+  requireBrowser?: boolean;
+  browserBaseUrl?: string;
+  designTokensPath?: string;
 }
 
 interface ProjectMetadata {
   workflowMode: string | null;
   adoptionMode: string | null;
   autoBrownfield: boolean;
+}
+
+interface BrowserVerificationResult {
+  evidence: NonNullable<EvidenceBundle['browser']>;
+  finding: ProjectHealthFinding | null;
+}
+
+interface PlaywrightLike {
+  chromium: {
+    launch(options: { headless: boolean }): Promise<{
+      newPage(): Promise<{
+        goto(
+          url: string,
+          options: { waitUntil: 'load' | 'domcontentloaded' | 'networkidle'; timeout: number },
+        ): Promise<unknown>;
+        screenshot(options: { path: string; fullPage: boolean }): Promise<unknown>;
+      }>;
+      close(): Promise<unknown>;
+    }>;
+  };
 }
 
 function readProjectMetadata(projectRoot: string): ProjectMetadata {
@@ -203,16 +242,20 @@ function prefixArtifactPath(projectPath: string | undefined, artifactPath: strin
 
 export function renderProjectHealthCiWorkflow(options: HealthCiOptions = {}): string {
   const failOn = normalizeHealthFailOn(options.failOn);
-  const projectPath = validateProjectPath(options.projectPath);
+  const projectPath = options.workspace ? undefined : validateProjectPath(options.projectPath);
   const reportPath = validateArtifactPath(
-    options.reportPath || DEFAULT_HEALTH_CI_REPORT_PATH,
+    options.reportPath || (options.workspace ? '.decantr/workspace-health.md' : DEFAULT_HEALTH_CI_REPORT_PATH),
     '--report-path',
   );
-  const jsonPath = validateArtifactPath(options.jsonPath || DEFAULT_HEALTH_CI_JSON_PATH, '--json-path');
+  const jsonPath = validateArtifactPath(
+    options.jsonPath || (options.workspace ? '.decantr/workspace-health.json' : DEFAULT_HEALTH_CI_JSON_PATH),
+    '--json-path',
+  );
   const template = loadHealthTemplate('decantr-health.workflow.yml.template');
   return renderTemplate(template, {
     CLI_PACKAGE: normalizeCliPackageSpecifier(options.cliVersion),
     FAIL_ON: failOn,
+    HEALTH_COMMAND: options.workspace ? 'workspace health' : 'health',
     PROJECT_WORKING_DIRECTORY: projectPath ? `        working-directory: ${projectPath}\n` : '',
     REPORT_PATH: reportPath,
     JSON_PATH: jsonPath,
@@ -238,7 +281,7 @@ export function writeProjectHealthCiWorkflow(
 
   mkdirSync(dirname(workflowPath), { recursive: true });
   writeFileSync(workflowPath, renderProjectHealthCiWorkflow(options), 'utf-8');
-  const projectPath = validateProjectPath(options.projectPath);
+  const projectPath = options.workspace ? undefined : validateProjectPath(options.projectPath);
 
   const result: HealthCiWriteResult = {
     path: workflowRelativePath,
@@ -247,6 +290,7 @@ export function writeProjectHealthCiWorkflow(
     failOn: normalizeHealthFailOn(options.failOn),
   };
   if (projectPath) result.projectPath = projectPath;
+  if (options.workspace) result.workspace = true;
   return result;
 }
 
@@ -332,6 +376,12 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
       return ['npm run build', 'decantr health'];
     case 'interaction':
       return ['decantr check --strict', 'decantr health'];
+    case 'assertion':
+      return ['decantr refresh', 'decantr health --evidence'];
+    case 'browser':
+      return ['decantr health --browser', 'decantr health --evidence'];
+    case 'design-token':
+      return ['decantr export --to figma-tokens', 'decantr health --evidence'];
     case 'check':
       return ['decantr check', 'decantr health'];
     default:
@@ -363,6 +413,7 @@ function buildRemediationPrompt(input: {
     input.suggestedFix ? `Suggested fix: ${input.suggestedFix}` : null,
     '',
     'Make the smallest coherent code or contract change that resolves this finding. Preserve the existing framework, routing, styling system, and Decantr workflow mode unless the finding explicitly requires a contract update.',
+    'Do not rewrite unrelated routes, replace the styling system, remove existing product behavior, or regenerate Decantr artifacts unless the finding is about stale or missing generated context.',
     '',
     `After the fix, run:\n${input.commands.map((command) => `- ${command}`).join('\n')}`,
   ]
@@ -452,7 +503,311 @@ function isDuplicateFinding(existing: Set<string>, finding: ProjectHealthFinding
   return false;
 }
 
-export async function createProjectHealthReport(projectRoot: string = process.cwd()): Promise<ProjectHealthReport> {
+function resolveOptionalPath(projectRoot: string, path: string | undefined): string | undefined {
+  if (!path) return undefined;
+  return isAbsolute(path) ? path : resolve(projectRoot, path);
+}
+
+function hasProjectPlaywright(projectRoot: string): boolean {
+  try {
+    const requireFromProject = createRequire(join(projectRoot, 'package.json'));
+    requireFromProject.resolve('playwright');
+    return true;
+  } catch {
+    try {
+      const requireFromProject = createRequire(join(projectRoot, 'package.json'));
+      requireFromProject.resolve('@playwright/test');
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function loadProjectPlaywright(projectRoot: string): PlaywrightLike | null {
+  const requireFromProject = createRequire(join(projectRoot, 'package.json'));
+  for (const packageName of ['playwright', '@playwright/test']) {
+    try {
+      const loaded = requireFromProject(packageName) as Partial<PlaywrightLike>;
+      if (loaded.chromium?.launch) return loaded as PlaywrightLike;
+    } catch {
+      /* try next package */
+    }
+  }
+  return null;
+}
+
+function browserRouteUrl(baseUrl: string, route: string): string {
+  return new URL(route || '/', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`).toString();
+}
+
+function browserScreenshotRelativePath(route: string): string {
+  const name = slugify(route === '/' ? 'root' : route) || 'root';
+  return `.decantr/evidence/screenshots/${name}.png`;
+}
+
+async function collectBrowserVerification(
+  projectRoot: string,
+  options: ProjectHealthReportOptions,
+  declaredRoutes: string[],
+): Promise<BrowserVerificationResult | null> {
+  if (!options.browser) return null;
+
+  if (!hasProjectPlaywright(projectRoot)) {
+    const finding = createHealthFinding({
+      source: 'browser',
+      category: 'Browser Verification',
+      severity: options.requireBrowser ? 'error' : 'warn',
+      message:
+        'Browser verification was requested, but Playwright is not installed in this project.',
+      evidence: ['Expected dependency: playwright or @playwright/test'],
+      rule: 'browser-playwright-missing',
+      suggestedFix:
+        'Install Playwright in the project or rerun without `--browser` for static-only evidence.',
+      baseId: 'playwright-missing',
+    });
+    return {
+      finding,
+      evidence: {
+        enabled: true,
+        status: 'unavailable',
+        baseUrl: options.browserBaseUrl ?? null,
+        screenshots: [],
+        findings: [finding.message],
+      },
+    };
+  }
+
+  if (!options.browserBaseUrl) {
+    const finding = createHealthFinding({
+      source: 'browser',
+      category: 'Browser Verification',
+      severity: options.requireBrowser ? 'error' : 'warn',
+      message:
+        'Browser verification was requested, but no base URL was provided for rendered route checks.',
+      evidence: ['Pass --base-url <url> or set DECANTR_BROWSER_BASE_URL.'],
+      rule: 'browser-base-url-missing',
+      suggestedFix: 'Start the app and rerun with `decantr health --browser --base-url <url>`.',
+      baseId: 'base-url-missing',
+    });
+    return {
+      finding,
+      evidence: {
+        enabled: true,
+        status: 'unavailable',
+        baseUrl: null,
+        screenshots: [],
+        findings: [finding.message],
+      },
+    };
+  }
+
+  const playwright = loadProjectPlaywright(projectRoot);
+  if (!playwright) {
+    const finding = createHealthFinding({
+      source: 'browser',
+      category: 'Browser Verification',
+      severity: options.requireBrowser ? 'error' : 'warn',
+      message: 'Playwright is installed, but Decantr could not load a Chromium browser adapter.',
+      evidence: ['Expected chromium.launch from playwright or @playwright/test.'],
+      rule: 'browser-adapter-missing',
+      suggestedFix: 'Repair the local Playwright install and rerun `decantr health --browser`.',
+      baseId: 'adapter-missing',
+    });
+    return {
+      finding,
+      evidence: {
+        enabled: true,
+        status: 'unavailable',
+        baseUrl: options.browserBaseUrl,
+        screenshots: [],
+        findings: [finding.message],
+      },
+    };
+  }
+
+  const routes = (declaredRoutes.length > 0 ? declaredRoutes : ['/']).slice(0, 12);
+  const screenshots: string[] = [];
+  const browserFindings: string[] = [];
+  const screenshotDir = join(projectRoot, '.decantr', 'evidence', 'screenshots');
+  mkdirSync(screenshotDir, { recursive: true });
+
+  let browser: Awaited<ReturnType<PlaywrightLike['chromium']['launch']>> | null = null;
+  try {
+    browser = await playwright.chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    for (const route of routes) {
+      const url = browserRouteUrl(options.browserBaseUrl, route);
+      const relativePath = browserScreenshotRelativePath(route);
+      try {
+        await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
+        await page.screenshot({ path: join(projectRoot, relativePath), fullPage: true });
+        screenshots.push(relativePath);
+      } catch (error) {
+        browserFindings.push(`${route}: ${(error as Error).message}`);
+      }
+    }
+  } catch (error) {
+    browserFindings.push((error as Error).message);
+  } finally {
+    if (browser) await browser.close();
+  }
+
+  if (browserFindings.length > 0) {
+    const finding = createHealthFinding({
+      source: 'browser',
+      category: 'Browser Verification',
+      severity: options.requireBrowser ? 'error' : 'warn',
+      message: 'Browser verification could not render every declared route.',
+      evidence: browserFindings.slice(0, 5),
+      rule: 'browser-route-verification-failed',
+      suggestedFix:
+        'Start the app at the provided base URL, fix route render errors, and rerun `decantr health --browser --evidence`.',
+      baseId: 'route-verification-failed',
+    });
+    return {
+      finding,
+      evidence: {
+        enabled: true,
+        status: 'failed',
+        baseUrl: options.browserBaseUrl,
+        screenshots,
+        findings: browserFindings,
+      },
+    };
+  }
+
+  return {
+    finding: null,
+    evidence: {
+      enabled: true,
+      status: 'passed',
+      baseUrl: options.browserBaseUrl,
+      screenshots,
+      findings: [],
+    },
+  };
+}
+
+function flattenDesignTokenKeys(value: unknown, prefix = ''): Set<string> {
+  const keys = new Set<string>();
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return keys;
+
+  for (const [rawKey, rawValue] of Object.entries(value as Record<string, unknown>)) {
+    const key = prefix ? `${prefix}.${rawKey}` : rawKey;
+    if (
+      rawValue &&
+      typeof rawValue === 'object' &&
+      !Array.isArray(rawValue) &&
+      ('$value' in rawValue || 'value' in rawValue)
+    ) {
+      keys.add(key);
+      keys.add(rawKey);
+    } else if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+      for (const nested of flattenDesignTokenKeys(rawValue, key)) keys.add(nested);
+    }
+  }
+
+  return keys;
+}
+
+function parseDecantrCssTokenNames(projectRoot: string): string[] {
+  const tokensPath = join(projectRoot, 'src', 'styles', 'tokens.css');
+  if (!existsSync(tokensPath)) return [];
+  const css = readFileSync(tokensPath, 'utf-8');
+  const names = new Set<string>();
+  for (const match of css.matchAll(/(--d-[\w-]+)\s*:/g)) {
+    names.add(match[1]);
+  }
+  return [...names].sort();
+}
+
+export function collectDesignTokenEvidence(
+  projectRoot: string,
+  designTokensPath: string | undefined,
+): EvidenceBundle['designTokens'] | undefined {
+  const resolved = resolveOptionalPath(projectRoot, designTokensPath);
+  if (!resolved) return undefined;
+
+  const sourceLabel = isAbsolute(designTokensPath ?? '')
+    ? '<design-tokens>'
+    : (designTokensPath ?? '<design-tokens>');
+
+  if (!existsSync(resolved)) {
+    return {
+      source: sourceLabel,
+      status: 'error',
+      compared: 0,
+      matched: 0,
+      missing: ['design-token-source-missing'],
+    };
+  }
+
+  const decantrTokens = parseDecantrCssTokenNames(projectRoot);
+  const parsed = JSON.parse(readFileSync(resolved, 'utf-8')) as unknown;
+  const designKeys = flattenDesignTokenKeys(parsed);
+  const missing = decantrTokens.filter((token) => {
+    const bare = token.replace(/^--/, '');
+    return !designKeys.has(token) && !designKeys.has(bare) && !designKeys.has(bare.replace(/^d-/, ''));
+  });
+
+  return {
+    source: sourceLabel,
+    status: missing.length === 0 ? 'passed' : 'warning',
+    compared: decantrTokens.length,
+    matched: decantrTokens.length - missing.length,
+    missing,
+  };
+}
+
+function collectDesignTokenFinding(
+  projectRoot: string,
+  designTokensPath: string | undefined,
+): ProjectHealthFinding | null {
+  const evidence = collectDesignTokenEvidence(projectRoot, designTokensPath);
+  if (!evidence) return null;
+  if (evidence.status === 'passed') {
+    return createHealthFinding({
+      source: 'design-token',
+      category: 'Design Tokens',
+      severity: 'info',
+      message: 'Imported design-token source covers Decantr token names.',
+      evidence: [`matched=${evidence.matched}/${evidence.compared}`],
+      rule: 'design-token-coverage',
+      baseId: 'coverage-passed',
+    });
+  }
+
+  return createHealthFinding({
+    source: 'design-token',
+    category: 'Design Tokens',
+    severity: evidence.status === 'error' ? 'error' : 'warn',
+    message: 'Imported design-token source does not cover all Decantr token names.',
+    evidence: [
+      `matched=${evidence.matched}/${evidence.compared}`,
+      evidence.missing.slice(0, 12).join(', ') || 'No Decantr CSS tokens found.',
+    ],
+    rule: 'design-token-coverage',
+    suggestedFix:
+      'Update the Figma/Tokens Studio export or Decantr token mapping so shared UI policy can be verified.',
+    baseId: 'coverage-missing',
+  });
+}
+
+async function browserEvidenceFromOptions(
+  projectRoot: string,
+  options: ProjectHealthReportOptions,
+  declaredRoutes: string[],
+): Promise<EvidenceBundle['browser'] | undefined> {
+  if (!options.browser) return undefined;
+  const result = await collectBrowserVerification(projectRoot, options, declaredRoutes);
+  return result?.evidence;
+}
+
+export async function createProjectHealthReport(
+  projectRoot: string = process.cwd(),
+  options: ProjectHealthReportOptions = {},
+): Promise<ProjectHealthReport> {
   const metadata = readProjectMetadata(projectRoot);
   const audit = await auditProject(projectRoot);
   const findings: ProjectHealthFinding[] = [];
@@ -472,6 +827,27 @@ export async function createProjectHealthReport(projectRoot: string = process.cw
       baseId: finding.id,
     });
     if (!isDuplicateFinding(seen, healthFinding)) findings.push(healthFinding);
+  }
+
+  for (const contractAssertion of createContractAssertions(projectRoot, audit)) {
+    if (contractAssertion.status !== 'failed') continue;
+    const healthFinding = createHealthFinding({
+      source: 'assertion',
+      category: `Contract ${contractAssertion.category}`,
+      severity: contractAssertion.severity,
+      message: contractAssertion.message,
+      evidence: contractAssertion.evidence,
+      target: contractAssertion.target,
+      rule: contractAssertion.rule,
+      suggestedFix: contractAssertion.suggestedFix,
+      baseId: contractAssertion.id,
+    });
+    if (!isDuplicateFinding(seen, healthFinding)) findings.push(healthFinding);
+  }
+
+  const designTokenFinding = collectDesignTokenFinding(projectRoot, options.designTokensPath);
+  if (designTokenFinding && !isDuplicateFinding(seen, designTokenFinding)) {
+    findings.push(designTokenFinding);
   }
 
   try {
@@ -518,18 +894,22 @@ export async function createProjectHealthReport(projectRoot: string = process.cw
     );
   }
 
-  const counts = countFindings(findings);
   const declaredRoutes = collectDeclaredRoutes(audit.essence);
   const manifest = audit.packManifest;
+  const browserVerification = await collectBrowserVerification(projectRoot, options, declaredRoutes);
+  if (browserVerification?.finding && !isDuplicateFinding(seen, browserVerification.finding)) {
+    findings.push(browserVerification.finding);
+  }
+  const finalCounts = countFindings(findings);
 
   return {
     $schema: PROJECT_HEALTH_SCHEMA_URL,
     generatedAt: new Date().toISOString(),
     projectRoot,
-    status: statusFromCounts(counts),
-    score: scoreFromCounts(counts),
+    status: statusFromCounts(finalCounts),
+    score: scoreFromCounts(finalCounts),
     summary: {
-      ...counts,
+      ...finalCounts,
       findingCount: findings.length,
       workflowMode: metadata.workflowMode,
       adoptionMode: metadata.adoptionMode,
@@ -673,6 +1053,27 @@ export function formatProjectHealthJson(report: ProjectHealthReport): string {
   return `${JSON.stringify(report, null, 2)}\n`;
 }
 
+export async function createProjectEvidenceBundle(
+  projectRoot: string,
+  report: ProjectHealthReport,
+  options: ProjectHealthReportOptions = {},
+): Promise<EvidenceBundle> {
+  const audit = await auditProject(projectRoot);
+  const assertions: ContractAssertion[] = createContractAssertions(projectRoot, audit);
+  return createEvidenceBundle({
+    projectRoot,
+    report,
+    audit,
+    assertions,
+    workspaceConfigPath: existsSync(join(projectRoot, '.decantr', 'workspace.json'))
+      ? join(projectRoot, '.decantr', 'workspace.json')
+      : null,
+    designTokensPath: resolveOptionalPath(projectRoot, options.designTokensPath) ?? null,
+      browser: await browserEvidenceFromOptions(projectRoot, options, report.routes.declared),
+    designTokens: collectDesignTokenEvidence(projectRoot, options.designTokensPath),
+  });
+}
+
 function resolveFormat(options: HealthCommandOptions): HealthOutputFormat {
   if (options.json) return 'json';
   if (options.markdown) return 'markdown';
@@ -698,7 +1099,12 @@ export async function cmdHealth(
       if (result.projectPath) {
         console.log(`${DIM}Project: ${result.projectPath}${RESET}`);
       }
-      console.log(`${DIM}CI gate: decantr health --ci --fail-on ${result.failOn}${RESET}`);
+      if (result.workspace) {
+        console.log(`${DIM}Workspace mode enabled.${RESET}`);
+      }
+      console.log(
+        `${DIM}CI gate: decantr ${result.workspace ? 'workspace health' : 'health'} --ci --fail-on ${result.failOn}${RESET}`,
+      );
     } catch (e) {
       console.error(`${RED}${(e as Error).message}${RESET}`);
       process.exitCode = 1;
@@ -707,7 +1113,13 @@ export async function cmdHealth(
   }
 
   const startedAt = Date.now();
-  const report = await createProjectHealthReport(projectRoot);
+  const reportOptions: ProjectHealthReportOptions = {
+    browser: options.browser,
+    requireBrowser: options.requireBrowser,
+    browserBaseUrl: options.browserBaseUrl ?? process.env.DECANTR_BROWSER_BASE_URL,
+    designTokensPath: options.designTokensPath,
+  };
+  const report = await createProjectHealthReport(projectRoot, reportOptions);
 
   if (options.promptId) {
     const finding = report.findings.find((entry) => entry.id === options.promptId);
@@ -734,17 +1146,22 @@ export async function cmdHealth(
 
   const format = resolveFormat(options);
   const failOn = options.failOn ?? 'error';
-  const payload =
-    format === 'json'
+  const payload = options.evidence
+    ? `${JSON.stringify(await createProjectEvidenceBundle(projectRoot, report, reportOptions), null, 2)}\n`
+    : format === 'json'
       ? formatProjectHealthJson(report)
       : format === 'markdown'
         ? formatProjectHealthMarkdown(report)
         : formatProjectHealthText(report);
 
   if (options.output) {
-    writeFileSync(options.output, payload, 'utf-8');
+    const outputPath = isAbsolute(options.output) ? options.output : join(projectRoot, options.output);
+    mkdirSync(dirname(outputPath), { recursive: true });
+    writeFileSync(outputPath, payload, 'utf-8');
     if (!options.ci) {
-      console.log(`${GREEN}Wrote Decantr health report:${RESET} ${options.output}`);
+      console.log(
+        `${GREEN}Wrote Decantr ${options.evidence ? 'evidence bundle' : 'health report'}:${RESET} ${options.output}`,
+      );
     }
   } else {
     process.stdout.write(payload);
@@ -811,11 +1228,13 @@ export function parseHealthArgs(args: string[]): HealthCommandOptions {
         options.initCi.projectPath = args[++index];
       } else if (arg.startsWith('--project=')) {
         options.initCi.projectPath = arg.split('=')[1];
+      } else if (arg === '--workspace') {
+        options.initCi.workspace = true;
       }
     }
 
     normalizeHealthFailOn(options.initCi.failOn);
-    validateProjectPath(options.initCi.projectPath);
+    if (!options.initCi.workspace) validateProjectPath(options.initCi.projectPath);
     return options;
   }
 
@@ -825,6 +1244,22 @@ export function parseHealthArgs(args: string[]): HealthCommandOptions {
       options.json = true;
     } else if (arg === '--markdown') {
       options.markdown = true;
+    } else if (arg === '--evidence') {
+      options.evidence = true;
+      options.json = true;
+    } else if (arg === '--browser') {
+      options.browser = true;
+    } else if (arg === '--require-browser') {
+      options.browser = true;
+      options.requireBrowser = true;
+    } else if (arg === '--base-url' && args[index + 1]) {
+      options.browserBaseUrl = args[++index];
+    } else if (arg.startsWith('--base-url=')) {
+      options.browserBaseUrl = arg.split('=')[1];
+    } else if (arg === '--design-tokens' && args[index + 1]) {
+      options.designTokensPath = args[++index];
+    } else if (arg.startsWith('--design-tokens=')) {
+      options.designTokensPath = arg.split('=')[1];
     } else if (arg === '--ci') {
       options.ci = true;
     } else if (arg === '--format' && args[index + 1]) {

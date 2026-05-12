@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { isAbsolute, resolve } from 'node:path';
 import type { ProjectHealthReport } from '@decantr/verifier';
 import { createProjectHealthReport } from './health.js';
+import { createWorkspaceHealthReport } from './workspace.js';
 import { sendStudioHealthRefreshedTelemetry, sendStudioStartedTelemetry } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
@@ -14,6 +15,7 @@ export interface StudioCommandOptions {
   host?: string;
   port?: number;
   report?: string;
+  workspace?: boolean;
 }
 
 export interface StudioServerHandle {
@@ -1127,16 +1129,71 @@ function studioHtml(reportMode = false): string {
 </html>`;
 }
 
+function workspaceStudioHtml(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decantr Workspace Health</title>
+  <style>
+    body { margin: 0; background: #101014; color: #f5f2eb; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    header { padding: 1rem; border-bottom: 1px solid rgba(245,242,235,.12); display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+    h1 { margin: 0; font-size: 1rem; }
+    main { padding: 1rem; display: grid; gap: .75rem; }
+    button { border: 1px solid rgba(245,242,235,.14); border-radius: 8px; background: rgba(245,242,235,.06); color: inherit; padding: .55rem .8rem; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid rgba(245,242,235,.1); border-radius: 8px; overflow: hidden; }
+    .cell { padding: .7rem; border-bottom: 1px solid rgba(245,242,235,.08); }
+    .head { color: #ada7bd; font-size: .75rem; text-transform: uppercase; }
+    .healthy { color: #5ee2a0; } .warning { color: #f2bd61; } .error, .failed { color: #ff6f7d; }
+    .card { border: 1px solid rgba(245,242,235,.1); border-radius: 8px; padding: 1rem; background: rgba(245,242,235,.025); }
+  </style>
+</head>
+<body>
+  <header><h1>Decantr Workspace Health</h1><button id="refresh">Refresh</button></header>
+  <main id="root"><div class="card">Loading workspace health...</div></main>
+  <script>
+    const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+    async function load(refresh = false) {
+      const res = await fetch(refresh ? '/api/workspace/refresh' : '/api/workspace', { method: refresh ? 'POST' : 'GET' });
+      const report = await res.json();
+      if (!res.ok) throw new Error(report.message || report.error || 'failed');
+      const summary = report.summary || {};
+      const rows = (report.projects || []).map((p) => '<div class="cell"><strong>' + esc(p.path) + '</strong></div><div class="cell ' + esc(p.status) + '">' + esc(p.status) + '</div><div class="cell">' + esc(p.score) + '</div><div class="cell">' + esc(p.findingCount) + '</div><div class="cell">' + esc(p.source) + '</div>').join('');
+      document.getElementById('root').innerHTML =
+        '<div class="card">Projects checked: <strong>' + esc(summary.checkedCount) + '/' + esc(summary.projectCount) + '</strong> · Healthy ' + esc(summary.healthyCount) + ' · Warnings ' + esc(summary.warningCount) + ' · Errors ' + esc(summary.errorCount) + ' · Failed ' + esc(summary.failedCount) + '</div>' +
+        '<div class="grid"><div class="cell head">Project</div><div class="cell head">Status</div><div class="cell head">Score</div><div class="cell head">Findings</div><div class="cell head">Source</div>' + rows + '</div>';
+    }
+    document.getElementById('refresh').addEventListener('click', () => load(true).catch((e) => alert(e.message)));
+    load().catch((e) => document.getElementById('root').innerHTML = '<div class="card error">' + esc(e.message) + '</div>');
+  </script>
+</body>
+</html>`;
+}
+
 export function createStudioRequestHandler(projectRoot: string, options: StudioCommandOptions = {}) {
   const reportPath = resolveReportPath(projectRoot, options.report);
   const loadReport = () =>
     reportPath ? readProjectHealthReport(reportPath) : createProjectHealthReport(projectRoot);
+  const loadWorkspaceReport = () => createWorkspaceHealthReport(projectRoot);
 
   return async function handleStudioRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = new URL(req.url ?? '/', 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/') {
+        if (options.workspace) {
+          sendHtml(res, workspaceStudioHtml());
+          return;
+        }
         sendHtml(res, studioHtml(Boolean(reportPath)));
+        return;
+      }
+      if (options.workspace && req.method === 'GET' && url.pathname === '/api/workspace') {
+        sendJson(res, 200, await loadWorkspaceReport());
+        return;
+      }
+      if (options.workspace && req.method === 'POST' && url.pathname === '/api/workspace/refresh') {
+        sendJson(res, 200, await loadWorkspaceReport());
         return;
       }
       if (req.method === 'GET' && url.pathname === '/api/health') {
@@ -1199,6 +1256,9 @@ export async function cmdStudio(
   if (options.report) {
     console.log('Report mode enabled. Refresh re-reads the local Project Health JSON file.');
   }
+  if (options.workspace) {
+    console.log('Workspace mode enabled. Studio aggregates Decantr project health locally.');
+  }
   console.log('Press Ctrl+C to stop.');
 }
 
@@ -1224,6 +1284,8 @@ export function parseStudioArgs(args: string[]): StudioCommandOptions {
       const value = arg.slice('--report='.length);
       if (!value) throw new Error('Missing --report value.');
       options.report = value;
+    } else if (arg === '--workspace') {
+      options.workspace = true;
     }
   }
 

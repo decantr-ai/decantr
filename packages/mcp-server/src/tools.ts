@@ -4,6 +4,17 @@ import { basename, dirname, join, relative } from 'node:path';
 import type { BlueprintPage, EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
+  ContractAssertion,
+  EvidenceBundle,
+  ProjectAuditReport,
+  ProjectHealthFinding,
+  ProjectHealthFindingSource,
+  ProjectHealthReport,
+  ProjectHealthStatus,
+  VerificationFinding,
+  VerificationSeverity,
+} from '@decantr/verifier';
+import type {
   ArchetypeRole,
   ComposeEntry,
   ContentIntelligenceSource,
@@ -544,6 +555,411 @@ const WRITE_TOOL = {
   openWorldHint: false,
 };
 
+const MCP_PROJECT_HEALTH_SCHEMA_URL = 'https://decantr.ai/schemas/project-health-report.v1.json';
+const MCP_WORKSPACE_HEALTH_SCHEMA_URL =
+  'https://decantr.ai/schemas/workspace-health-report.v1.json';
+const MCP_WORKSPACE_IGNORES = new Set([
+  '.git',
+  '.next',
+  '.turbo',
+  '.vercel',
+  'coverage',
+  'dist',
+  'node_modules',
+  'playwright-report',
+]);
+
+function mcpSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
+function mcpStatusFromCounts(counts: {
+  errorCount: number;
+  warnCount: number;
+}): ProjectHealthStatus {
+  if (counts.errorCount > 0) return 'error';
+  if (counts.warnCount > 0) return 'warning';
+  return 'healthy';
+}
+
+function mcpScoreFromCounts(counts: {
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+}): number {
+  return Math.max(0, Math.min(100, 100 - counts.errorCount * 15 - counts.warnCount * 5 - counts.infoCount));
+}
+
+function mcpCommandsForFinding(source: ProjectHealthFindingSource): string[] {
+  switch (source) {
+    case 'assertion':
+      return ['decantr refresh', 'decantr health --evidence'];
+    case 'brownfield':
+      return ['decantr analyze', 'decantr init --existing --merge-proposal', 'decantr health'];
+    case 'browser':
+      return ['decantr health --browser', 'decantr health --evidence'];
+    case 'check':
+      return ['decantr check', 'decantr health'];
+    case 'design-token':
+      return ['decantr export --to figma-tokens', 'decantr health --evidence'];
+    case 'interaction':
+      return ['decantr check --strict', 'decantr health'];
+    case 'pack':
+      return ['decantr refresh', 'decantr registry get-pack review --write-context', 'decantr health'];
+    case 'runtime':
+      return ['npm run build', 'decantr health'];
+    default:
+      return ['decantr audit', 'decantr health'];
+  }
+}
+
+function mcpSourceFromFinding(finding: VerificationFinding): ProjectHealthFindingSource {
+  const category = finding.category.toLowerCase();
+  const id = finding.id.toLowerCase();
+  const rule = finding.rule?.toLowerCase() ?? '';
+  if (category.includes('runtime') || category.includes('document') || category.includes('performance')) {
+    return 'runtime';
+  }
+  if (category.includes('pack') || category.includes('review contract')) {
+    return 'pack';
+  }
+  if (category.includes('interaction') || id.includes('interaction') || rule.includes('interaction')) {
+    return 'interaction';
+  }
+  return 'audit';
+}
+
+function mcpBuildRepairPrompt(input: {
+  id: string;
+  source: ProjectHealthFindingSource;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  evidence: string[];
+  suggestedFix?: string;
+  commands: string[];
+}): string {
+  return [
+    'You are fixing one Decantr Project Health finding in this local workspace.',
+    '',
+    'Read `DECANTR.md`, `decantr.essence.json`, and `.decantr/context/scaffold-pack.md` if they exist. For route or page work, read the matching page/section packs before editing.',
+    '',
+    `Finding: ${input.id}`,
+    `Source: ${input.source}`,
+    `Severity: ${input.severity}`,
+    `Category: ${input.category}`,
+    `Message: ${input.message}`,
+    input.evidence.length > 0
+      ? `Evidence:\n${input.evidence.map((entry) => `- ${entry}`).join('\n')}`
+      : null,
+    input.suggestedFix ? `Suggested fix: ${input.suggestedFix}` : null,
+    '',
+    'Make the smallest coherent code or contract change that resolves this finding. Preserve the existing framework, routing, styling system, and Decantr workflow mode unless the finding explicitly requires a contract update.',
+    'Do not rewrite unrelated routes, replace the styling system, remove existing product behavior, or regenerate Decantr artifacts unless the finding is about stale or missing generated context.',
+    '',
+    `After the fix, run:\n${input.commands.map((command) => `- ${command}`).join('\n')}`,
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join('\n');
+}
+
+function mcpHealthFinding(input: {
+  source: ProjectHealthFindingSource;
+  category: string;
+  severity: VerificationSeverity;
+  message: string;
+  evidence?: string[];
+  target?: string;
+  file?: string;
+  rule?: string;
+  suggestedFix?: string;
+  baseId?: string;
+}): ProjectHealthFinding {
+  const id = `${input.source}-${mcpSlug(input.baseId || input.rule || `${input.category}-${input.message}`)}`;
+  const commands = mcpCommandsForFinding(input.source);
+  return {
+    id,
+    source: input.source,
+    category: input.category,
+    severity: input.severity,
+    message: input.message,
+    evidence: input.evidence ?? [],
+    target: input.target,
+    file: input.file,
+    rule: input.rule,
+    suggestedFix: input.suggestedFix,
+    remediation: {
+      summary: input.suggestedFix || `Resolve ${input.category.toLowerCase()} finding.`,
+      commands,
+      prompt: mcpBuildRepairPrompt({
+        id,
+        source: input.source,
+        category: input.category,
+        severity: input.severity,
+        message: input.message,
+        evidence: input.evidence ?? [],
+        suggestedFix: input.suggestedFix,
+        commands,
+      }),
+    },
+  };
+}
+
+function mcpCollectDeclaredRoutes(essence: EssenceFile | null): string[] {
+  if (!essence || !isV4(essence)) return [];
+  return Object.keys(essence.blueprint.routes ?? {}).sort();
+}
+
+function mcpReportFromAudit(
+  projectRoot: string,
+  audit: ProjectAuditReport,
+  assertions: ContractAssertion[],
+): ProjectHealthReport {
+  const findings: ProjectHealthFinding[] = [];
+  const seen = new Set<string>();
+  const pushUnique = (finding: ProjectHealthFinding) => {
+    const key = `${finding.rule ?? finding.id}|${finding.message}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    findings.push(finding);
+  };
+
+  for (const finding of audit.findings) {
+    pushUnique(
+      mcpHealthFinding({
+        source: mcpSourceFromFinding(finding),
+        category: finding.category,
+        severity: finding.severity,
+        message: finding.message,
+        evidence: finding.evidence,
+        target: finding.target,
+        file: finding.file,
+        rule: finding.rule,
+        suggestedFix: finding.suggestedFix,
+        baseId: finding.id,
+      }),
+    );
+  }
+
+  for (const assertion of assertions) {
+    if (assertion.status !== 'failed') continue;
+    pushUnique(
+      mcpHealthFinding({
+        source: 'assertion',
+        category: `Contract ${assertion.category}`,
+        severity: assertion.severity,
+        message: assertion.message,
+        evidence: assertion.evidence,
+        target: assertion.target,
+        rule: assertion.rule,
+        suggestedFix: assertion.suggestedFix,
+        baseId: assertion.id,
+      }),
+    );
+  }
+
+  if (!audit.valid && findings.every((finding) => finding.severity !== 'error')) {
+    pushUnique(
+      mcpHealthFinding({
+        source: 'audit',
+        category: 'Project Contract',
+        severity: 'error',
+        message: 'Project audit is not valid.',
+        evidence: ['The verifier returned valid=false.'],
+        rule: 'project-audit-invalid',
+        suggestedFix: 'Resolve blocking audit findings and rerun `decantr health`.',
+      }),
+    );
+  }
+
+  const counts = {
+    errorCount: findings.filter((finding) => finding.severity === 'error').length,
+    warnCount: findings.filter((finding) => finding.severity === 'warn').length,
+    infoCount: findings.filter((finding) => finding.severity === 'info').length,
+  };
+  const manifest = audit.packManifest;
+
+  return {
+    $schema: MCP_PROJECT_HEALTH_SCHEMA_URL,
+    generatedAt: new Date().toISOString(),
+    projectRoot,
+    status: mcpStatusFromCounts(counts),
+    score: mcpScoreFromCounts(counts),
+    summary: {
+      ...counts,
+      findingCount: findings.length,
+      workflowMode: null,
+      adoptionMode: null,
+      essenceVersion: audit.summary.essenceVersion,
+      pageCount: audit.summary.pageCount,
+      runtimeAuditChecked: audit.summary.runtimeAuditChecked,
+      runtimePassed: audit.summary.runtimePassed,
+      packManifestPresent: audit.summary.packManifestPresent,
+      reviewPackPresent: audit.summary.reviewPackPresent,
+    },
+    routes: {
+      declared: mcpCollectDeclaredRoutes(audit.essence),
+      runtimeChecked: audit.runtimeAudit.routeHintsChecked,
+      runtimeMatched: audit.runtimeAudit.routeHintsMatched,
+      runtimeCoverageOk: audit.summary.runtimeAuditChecked
+        ? audit.runtimeAudit.routeHintsCoverageOk
+        : null,
+      issues: findings
+        .filter(
+          (finding) =>
+            finding.category.toLowerCase().includes('route') ||
+            finding.rule?.toLowerCase().includes('route') ||
+            finding.id.toLowerCase().includes('route'),
+        )
+        .map((finding) => finding.message),
+    },
+    packs: {
+      manifestPresent: Boolean(manifest),
+      reviewPackPresent: Boolean(manifest?.review ?? audit.reviewPack),
+      scaffoldPackPresent: Boolean(manifest?.scaffold),
+      sectionPackCount: manifest?.sections.length ?? 0,
+      pagePackCount: manifest?.pages.length ?? 0,
+      mutationPackCount: manifest?.mutations?.length ?? 0,
+      generatedAt: typeof manifest?.generatedAt === 'string' ? manifest.generatedAt : null,
+    },
+    ci: {
+      recommendedCommand: 'decantr health --ci --fail-on error',
+      failOn: 'error',
+    },
+    findings,
+  };
+}
+
+function resolveMcpProjectRoot(value: unknown): string {
+  if (value == null) return process.cwd();
+  if (typeof value !== 'string') {
+    throw new Error('project_path must be a string when provided.');
+  }
+  return resolveWorkspacePath(value);
+}
+
+async function getMcpHealthState(projectRoot: string): Promise<{
+  audit: ProjectAuditReport;
+  assertions: ContractAssertion[];
+  report: ProjectHealthReport;
+  evidence: EvidenceBundle;
+}> {
+  const { auditProject, createContractAssertions, createEvidenceBundle } = await import(
+    '@decantr/verifier'
+  );
+  const audit = await auditProject(projectRoot);
+  const assertions = createContractAssertions(projectRoot, audit);
+  const report = mcpReportFromAudit(projectRoot, audit, assertions);
+  const evidence = createEvidenceBundle({
+    projectRoot,
+    audit,
+    assertions,
+    report,
+    workspaceConfigPath: existsSync(join(projectRoot, '.decantr', 'workspace.json'))
+      ? join(projectRoot, '.decantr', 'workspace.json')
+      : null,
+  });
+  return { audit, assertions, report, evidence };
+}
+
+function discoverMcpWorkspaceProjects(root: string, maxProjects = 500): Array<{
+  id: string;
+  path: string;
+  absolutePath: string;
+}> {
+  const projects: Array<{ id: string; path: string; absolutePath: string }> = [];
+
+  function walk(dir: string, depth: number): void {
+    if (projects.length >= maxProjects || depth > 6) return;
+    if (existsSync(join(dir, 'decantr.essence.json'))) {
+      const path = relative(root, dir).replace(/\\/g, '/') || '.';
+      projects.push({
+        id: path.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'project',
+        path,
+        absolutePath: dir,
+      });
+      return;
+    }
+
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
+      if (MCP_WORKSPACE_IGNORES.has(entry.name)) continue;
+      walk(join(dir, entry.name), depth + 1);
+      if (projects.length >= maxProjects) return;
+    }
+  }
+
+  walk(root, 0);
+  return projects.sort((a, b) => a.path.localeCompare(b.path));
+}
+
+async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
+  const root = args.workspace_root == null ? process.cwd() : resolveMcpProjectRoot(args.workspace_root);
+  const maxProjects =
+    typeof args.max_projects === 'number' && Number.isFinite(args.max_projects)
+      ? Math.max(1, Math.floor(args.max_projects))
+      : 500;
+  const discovered = discoverMcpWorkspaceProjects(root, maxProjects);
+  const projects = [];
+
+  for (const project of discovered) {
+    const startedAt = Date.now();
+    try {
+      const state = await getMcpHealthState(project.absolutePath);
+      projects.push({
+        id: project.id,
+        path: project.path,
+        status: state.report.status,
+        score: state.report.score,
+        errorCount: state.report.summary.errorCount,
+        warnCount: state.report.summary.warnCount,
+        infoCount: state.report.summary.infoCount,
+        findingCount: state.report.summary.findingCount,
+        durationMs: Date.now() - startedAt,
+        changed: false,
+        source: 'auto',
+        error: null,
+      });
+    } catch (error) {
+      projects.push({
+        id: project.id,
+        path: project.path,
+        status: 'failed',
+        score: 0,
+        errorCount: 1,
+        warnCount: 0,
+        infoCount: 0,
+        findingCount: 1,
+        durationMs: Date.now() - startedAt,
+        changed: false,
+        source: 'auto',
+        error: (error as Error).message,
+      });
+    }
+  }
+
+  return {
+    $schema: MCP_WORKSPACE_HEALTH_SCHEMA_URL,
+    generatedAt: new Date().toISOString(),
+    workspaceRoot: '<workspace>',
+    changedOnly: false,
+    since: null,
+    summary: {
+      projectCount: discovered.length,
+      checkedCount: projects.length,
+      healthyCount: projects.filter((project) => project.status === 'healthy').length,
+      warningCount: projects.filter((project) => project.status === 'warning').length,
+      errorCount: projects.filter((project) => project.status === 'error').length,
+      failedCount: projects.filter((project) => project.status === 'failed').length,
+    },
+    projects,
+  };
+}
+
 export const TOOLS = [
   // 1. decantr_read_essence — local read
   {
@@ -1060,6 +1476,92 @@ export const TOOLS = [
       required: ['file_path'],
     },
     annotations: READ_ONLY_NETWORK,
+  },
+  // 22. decantr_get_evidence_bundle — local reliability artifact
+  {
+    name: 'decantr_get_evidence_bundle',
+    title: 'Get Evidence Bundle',
+    description:
+      'Generate a local Evidence Bundle for the current Decantr project. The bundle redacts source, prompts, secrets, absolute paths, repo names, and screenshots by default.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 23. decantr_workspace_health — local workspace reliability scan
+  {
+    name: 'decantr_workspace_health',
+    title: 'Workspace Health',
+    description:
+      'Discover Decantr projects in the active workspace and return deterministic aggregate health for monorepos with many Decantr apps.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        workspace_root: {
+          type: 'string' as const,
+          description:
+            'Optional relative workspace root inside the active workspace. Defaults to the current working directory.',
+        },
+        max_projects: {
+          type: 'number' as const,
+          description: 'Optional cap on discovered projects. Defaults to 500.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 24. decantr_get_repair_prompt — local AI repair loop
+  {
+    name: 'decantr_get_repair_prompt',
+    title: 'Get Repair Prompt',
+    description:
+      'Return an AI-ready repair prompt for a Project Health finding, including exact finding evidence, preserved constraints, do-not-change guidance, and rerun commands.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        finding_id: {
+          type: 'string' as const,
+          description:
+            'Optional finding id. Defaults to the first error or warning, then the first finding.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 25. decantr_run_health_loop — local evidence + repair loop
+  {
+    name: 'decantr_run_health_loop',
+    title: 'Run Health Loop',
+    description:
+      'Run Project Health, produce evidence, and return the next repair prompt for AI agents without uploading project source.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        finding_id: {
+          type: 'string' as const,
+          description:
+            'Optional finding id to target. Defaults to the first error or warning, then the first finding.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
   },
 ];
 
@@ -2476,6 +2978,120 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       return auditProject(projectRoot);
+    }
+
+    case 'decantr_get_evidence_bundle': {
+      try {
+        const projectRoot = resolveMcpProjectRoot(args.project_path);
+        const state = await getMcpHealthState(projectRoot);
+        return state.evidence;
+      } catch (error) {
+        return { error: (error as Error).message };
+      }
+    }
+
+    case 'decantr_workspace_health': {
+      if (args.workspace_root != null && typeof args.workspace_root !== 'string') {
+        return { error: 'Invalid workspace_root. Must be a string when provided.' };
+      }
+      if (
+        args.max_projects != null &&
+        (typeof args.max_projects !== 'number' || !Number.isFinite(args.max_projects))
+      ) {
+        return { error: 'Invalid max_projects. Must be a finite number when provided.' };
+      }
+      try {
+        return await getMcpWorkspaceHealth(args);
+      } catch (error) {
+        return { error: (error as Error).message };
+      }
+    }
+
+    case 'decantr_get_repair_prompt': {
+      if (args.finding_id != null && typeof args.finding_id !== 'string') {
+        return { error: 'Invalid finding_id. Must be a string when provided.' };
+      }
+      try {
+        const projectRoot = resolveMcpProjectRoot(args.project_path);
+        const state = await getMcpHealthState(projectRoot);
+        const finding =
+          (typeof args.finding_id === 'string'
+            ? state.report.findings.find((entry) => entry.id === args.finding_id)
+            : undefined) ??
+          state.report.findings.find((entry) => entry.severity === 'error') ??
+          state.report.findings.find((entry) => entry.severity === 'warn') ??
+          state.report.findings[0] ??
+          null;
+        if (!finding) {
+          return {
+            project: state.evidence.project,
+            health: state.evidence.health,
+            prompt: null,
+            message: 'No Project Health findings require repair.',
+            commands: ['decantr health --evidence'],
+          };
+        }
+        return {
+          project: state.evidence.project,
+          health: state.evidence.health,
+          finding: {
+            id: finding.id,
+            source: finding.source,
+            severity: finding.severity,
+            category: finding.category,
+            message: finding.message,
+          },
+          prompt: finding.remediation.prompt,
+          commands: finding.remediation.commands,
+        };
+      } catch (error) {
+        return { error: (error as Error).message };
+      }
+    }
+
+    case 'decantr_run_health_loop': {
+      if (args.finding_id != null && typeof args.finding_id !== 'string') {
+        return { error: 'Invalid finding_id. Must be a string when provided.' };
+      }
+      try {
+        const projectRoot = resolveMcpProjectRoot(args.project_path);
+        const state = await getMcpHealthState(projectRoot);
+        const finding =
+          (typeof args.finding_id === 'string'
+            ? state.report.findings.find((entry) => entry.id === args.finding_id)
+            : undefined) ??
+          state.report.findings.find((entry) => entry.severity === 'error') ??
+          state.report.findings.find((entry) => entry.severity === 'warn') ??
+          state.report.findings[0] ??
+          null;
+        return {
+          project: state.evidence.project,
+          health: state.evidence.health,
+          report: state.report,
+          evidence: state.evidence,
+          repair:
+            finding === null
+              ? {
+                  finding: null,
+                  prompt: null,
+                  commands: ['decantr health --evidence'],
+                  message: 'No Project Health findings require repair.',
+                }
+              : {
+                  finding: {
+                    id: finding.id,
+                    source: finding.source,
+                    severity: finding.severity,
+                    category: finding.category,
+                    message: finding.message,
+                  },
+                  prompt: finding.remediation.prompt,
+                  commands: finding.remediation.commands,
+                },
+        };
+      } catch (error) {
+        return { error: (error as Error).message };
+      }
     }
 
     default:

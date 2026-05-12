@@ -207,7 +207,17 @@
         },
         "source": {
           "type": "string",
-          "enum": ["audit", "check", "brownfield", "runtime", "pack", "interaction"]
+          "enum": [
+            "audit",
+            "assertion",
+            "browser",
+            "check",
+            "brownfield",
+            "design-token",
+            "runtime",
+            "pack",
+            "interaction"
+          ]
         },
         "category": {
           "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"

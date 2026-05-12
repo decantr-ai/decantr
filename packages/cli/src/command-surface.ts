@@ -1,0 +1,296 @@
+export type CommandSurfaceClass =
+  | 'primary'
+  | 'advanced'
+  | 'operator'
+  | 'content-author'
+  | 'experimental'
+  | 'deprecated-alias';
+
+export interface CommandSurfaceEntry {
+  command: string;
+  classification: CommandSurfaceClass;
+  mutates: boolean;
+  audience: 'app-developer' | 'content-author' | 'operator' | 'ai-agent' | 'internal';
+  purpose: string;
+  consolidation: 'keep' | 'soft-deprecate' | 'advanced-namespace' | 'experimental-hold';
+}
+
+export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
+  {
+    command: 'new',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Create a greenfield Decantr workspace and optional runnable starter.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'magic',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Intent-first greenfield path that steers existing apps into brownfield analysis.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'init',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Attach or initialize Decantr contract and context files.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'analyze',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Brownfield inventory and proposal entrypoint.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'refresh',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Regenerate derived context and style artifacts from Essence and registry content.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'health',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Canonical local reliability report, evidence, remediation, and CI spine.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'studio',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Local Project Health and workspace triage dashboard.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'workspace',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Monorepo Decantr project discovery and aggregate health.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'check',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Fast contract and guard validation.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'heal',
+    classification: 'deprecated-alias',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Deprecated alias for check.',
+    consolidation: 'soft-deprecate',
+  },
+  {
+    command: 'audit',
+    classification: 'advanced',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Lower-level verifier audit or file critique against compiled packs.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'migrate',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Migrate pre-v4 Essence files to the active v4 contract.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'add',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Compose sections, pages, and features into an attached contract.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'remove',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Remove sections, pages, and features from an attached contract.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'theme',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Manage and switch Decantr themes.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'rules',
+    classification: 'advanced',
+    mutates: true,
+    audience: 'ai-agent',
+    purpose: 'Preview or apply assistant bridge snippets to supported rule files.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'export',
+    classification: 'advanced',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Export Decantr tokens to framework or design-token formats.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'status',
+    classification: 'advanced',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Inspect local project DNA and sync status.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'sync',
+    classification: 'advanced',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Sync official registry content into the local cache.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'upgrade',
+    classification: 'advanced',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Check and optionally apply registry-backed content updates.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'sync-drift',
+    classification: 'advanced',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Review and resolve local drift log entries.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'registry',
+    classification: 'operator',
+    mutates: true,
+    audience: 'operator',
+    purpose: 'Registry intelligence, hosted pack hydration, critique, audit, and mirroring.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'search',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Registry content discovery shortcut.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'suggest',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Registry pattern suggestion shortcut.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'get',
+    classification: 'advanced',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Fetch full registry item details.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'list',
+    classification: 'advanced',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'List registry items by type.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'showcase',
+    classification: 'operator',
+    mutates: false,
+    audience: 'operator',
+    purpose: 'Inspect audited showcase benchmark metadata.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'validate',
+    classification: 'advanced',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Validate an Essence file directly.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'content-health',
+    classification: 'content-author',
+    mutates: false,
+    audience: 'content-author',
+    purpose: 'Local registry content repository health report.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'create',
+    classification: 'content-author',
+    mutates: true,
+    audience: 'content-author',
+    purpose: 'Create a custom registry content item scaffold.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'publish',
+    classification: 'content-author',
+    mutates: false,
+    audience: 'content-author',
+    purpose: 'Publish a custom content item to the community registry.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'login',
+    classification: 'operator',
+    mutates: true,
+    audience: 'operator',
+    purpose: 'Persist Decantr registry API credentials.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'logout',
+    classification: 'operator',
+    mutates: true,
+    audience: 'operator',
+    purpose: 'Remove Decantr registry API credentials.',
+    consolidation: 'advanced-namespace',
+  },
+  {
+    command: 'telemetry',
+    classification: 'operator',
+    mutates: true,
+    audience: 'operator',
+    purpose: 'Inspect or link privacy-filtered CLI telemetry identity.',
+    consolidation: 'advanced-namespace',
+  },
+];
+
+export function commandSurfaceByName(command: string): CommandSurfaceEntry | undefined {
+  return COMMAND_SURFACE.find((entry) => entry.command === command);
+}
+

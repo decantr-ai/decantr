@@ -175,6 +175,112 @@ describe('verifier schema contracts', () => {
     assertMatchesVerifierSchema('project-health-report.v1.json', report);
   });
 
+  it('accepts evidence bundles matching the published schema', () => {
+    const bundle = {
+      $schema: 'https://decantr.ai/schemas/evidence-bundle.v1.json',
+      generatedAt: '2026-05-12T14:00:00.000Z',
+      project: { id: 'project_abc123', rootLabel: 'app' },
+      toolchain: { verifierVersion: '2.0.0' },
+      privacy: {
+        localOnly: true,
+        redactedFields: ['source', 'prompt', 'secret', 'absolute_path'],
+        screenshotsLocalOnly: true,
+      },
+      health: {
+        status: 'warning',
+        score: 95,
+        errorCount: 0,
+        warnCount: 1,
+        infoCount: 0,
+        findingCount: 1,
+      },
+      provenance: {
+        essence: {
+          path: 'decantr.essence.json',
+          present: true,
+          hash: '9e2d5d3f6a3f2c1b',
+          generatedAt: '2026-05-12T14:00:00.000Z',
+        },
+        packManifest: {
+          path: '.decantr/context/pack-manifest.json',
+          present: true,
+          hash: '7e2d5d3f6a3f2c1b',
+          generatedAt: '2026-05-12T14:00:00.000Z',
+        },
+        reviewPack: {
+          path: '.decantr/context/review-pack.json',
+          present: true,
+          hash: '6e2d5d3f6a3f2c1b',
+          generatedAt: '2026-05-12T14:00:00.000Z',
+        },
+      },
+      assertions: [
+        {
+          id: 'contract.essence.present',
+          category: 'context',
+          status: 'passed',
+          severity: 'info',
+          message: 'Decantr Essence contract is present.',
+          evidence: ['decantr.essence.json'],
+          rule: 'essence-present',
+        },
+      ],
+      findings: [
+        {
+          id: 'assertion-contract-context-pack-manifest',
+          source: 'assertion',
+          category: 'Contract context',
+          severity: 'warn',
+          message: 'Compiled execution pack manifest is missing.',
+          evidence: ['.decantr/context/pack-manifest.json'],
+          rule: 'pack-manifest-present',
+          suggestedFix: 'Run `decantr refresh`.',
+          remediationSummary: 'Run `decantr refresh`.',
+          commands: ['decantr refresh', 'decantr health --evidence'],
+          promptCommand: 'decantr health --prompt assertion-contract-context-pack-manifest',
+        },
+      ],
+    };
+
+    assertMatchesVerifierSchema('evidence-bundle.v1.json', bundle);
+  });
+
+  it('accepts workspace health reports matching the published schema', () => {
+    const report = {
+      $schema: 'https://decantr.ai/schemas/workspace-health-report.v1.json',
+      generatedAt: '2026-05-12T14:00:00.000Z',
+      workspaceRoot: '/workspace',
+      changedOnly: false,
+      since: null,
+      summary: {
+        projectCount: 1,
+        checkedCount: 1,
+        healthyCount: 1,
+        warningCount: 0,
+        errorCount: 0,
+        failedCount: 0,
+      },
+      projects: [
+        {
+          id: 'apps-web',
+          path: 'apps/web',
+          status: 'healthy',
+          score: 100,
+          errorCount: 0,
+          warnCount: 0,
+          infoCount: 0,
+          findingCount: 0,
+          durationMs: 14,
+          changed: false,
+          source: 'auto',
+          error: null,
+        },
+      ],
+    };
+
+    assertMatchesVerifierSchema('workspace-health-report.v1.json', report);
+  });
+
   it('matches the published showcase shortlist schema for the checked-in report artifact', () => {
     const shortlistReport = JSON.parse(
       readFileSync(

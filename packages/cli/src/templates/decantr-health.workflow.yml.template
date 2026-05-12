@@ -38,10 +38,10 @@ jobs:
           fi
 
       - name: Generate Decantr health JSON
-{{PROJECT_WORKING_DIRECTORY}}        run: npx --yes {{CLI_PACKAGE}} health --json --output {{JSON_PATH}}
+{{PROJECT_WORKING_DIRECTORY}}        run: npx --yes {{CLI_PACKAGE}} {{HEALTH_COMMAND}} --json --output {{JSON_PATH}}
 
       - name: Audit Decantr health
-{{PROJECT_WORKING_DIRECTORY}}        run: npx --yes {{CLI_PACKAGE}} health --ci --fail-on {{FAIL_ON}} --markdown --output {{REPORT_PATH}}
+{{PROJECT_WORKING_DIRECTORY}}        run: npx --yes {{CLI_PACKAGE}} {{HEALTH_COMMAND}} --ci --fail-on {{FAIL_ON}} --markdown --output {{REPORT_PATH}}
 
       - name: Publish health summary
         if: always()

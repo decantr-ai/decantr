@@ -1,8 +1,11 @@
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { COMMAND_SURFACE, commandSurfaceByName } from '../src/command-surface.js';
 import {
+  createProjectEvidenceBundle,
   createProjectHealthReport,
   formatProjectHealthMarkdown,
   parseHealthArgs,
@@ -10,6 +13,7 @@ import {
   shouldFailHealth,
   writeProjectHealthCiWorkflow,
 } from '../src/commands/health.js';
+import { createWorkspaceHealthReport, listWorkspaceProjects } from '../src/commands/workspace.js';
 
 let testDir = '';
 
@@ -17,15 +21,15 @@ function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
 }
 
-function writeRegistryCache(): void {
-  mkdirSync(join(testDir, '.decantr', 'cache', '@official', 'patterns'), { recursive: true });
-  mkdirSync(join(testDir, '.decantr', 'cache', '@official', 'themes'), { recursive: true });
-  writeJson(join(testDir, '.decantr', 'cache', '@official', 'patterns', 'hero.json'), {
+function writeRegistryCache(root = testDir): void {
+  mkdirSync(join(root, '.decantr', 'cache', '@official', 'patterns'), { recursive: true });
+  mkdirSync(join(root, '.decantr', 'cache', '@official', 'themes'), { recursive: true });
+  writeJson(join(root, '.decantr', 'cache', '@official', 'patterns', 'hero.json'), {
     id: 'hero',
     name: 'Hero',
     version: '1.0.0',
   });
-  writeJson(join(testDir, '.decantr', 'cache', '@official', 'themes', 'luminarum.json'), {
+  writeJson(join(root, '.decantr', 'cache', '@official', 'themes', 'luminarum.json'), {
     id: 'luminarum',
     modes: ['dark', 'light'],
     version: '1.0.0',
@@ -36,8 +40,9 @@ function writeEssence(
   routes: Record<string, { section: string; page: string }> = {
     '/': { section: 'marketing', page: 'home' },
   },
+  root = testDir,
 ): void {
-  writeJson(join(testDir, 'decantr.essence.json'), {
+  writeJson(join(root, 'decantr.essence.json'), {
     version: '4.0.0',
     dna: {
       theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
@@ -52,7 +57,7 @@ function writeEssence(
       radius: { philosophy: 'rounded', base: 8 },
       elevation: { system: 'layered', max_levels: 3 },
       motion: { preference: 'subtle', duration_scale: 1, reduce_motion: false },
-      accessibility: { wcag_level: 'AA', focus_visible: false, skip_nav: false },
+      accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: false },
       personality: ['clean'],
     },
     blueprint: {
@@ -78,9 +83,15 @@ function writeEssence(
   });
 }
 
-function writePacks(): void {
-  mkdirSync(join(testDir, '.decantr', 'context'), { recursive: true });
-  writeJson(join(testDir, '.decantr', 'context', 'pack-manifest.json'), {
+function writePacks(root = testDir): void {
+  mkdirSync(join(root, '.decantr', 'context'), { recursive: true });
+  mkdirSync(join(root, 'src', 'styles'), { recursive: true });
+  writeFileSync(
+    join(root, 'src', 'styles', 'tokens.css'),
+    ':root { --d-bg: #101014; --d-text: #f5f2eb; --d-radius: 8px; }\n:focus-visible { outline: 2px solid var(--d-text); }\n',
+    'utf-8',
+  );
+  writeJson(join(root, '.decantr', 'context', 'pack-manifest.json'), {
     $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
     version: '1.0.0',
     generatedAt: '2026-05-08T14:00:00.000Z',
@@ -105,7 +116,7 @@ function writePacks(): void {
       },
     ],
   });
-  writeJson(join(testDir, '.decantr', 'context', 'review-pack.json'), {
+  writeJson(join(root, '.decantr', 'context', 'review-pack.json'), {
     $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
     packVersion: '1.0.0',
     packType: 'review',
@@ -215,6 +226,44 @@ describe('Project Health report', () => {
       'You are fixing one Decantr Project Health finding',
     );
     expect(finding.remediation.prompt).toContain(`Finding: ${finding.id}`);
+    expect(finding.remediation.prompt).toContain('Do not rewrite unrelated routes');
+  });
+
+  it('emits a privacy-redacted Evidence Bundle with freshness hashes', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+
+    const report = await createProjectHealthReport(testDir);
+    const evidence = await createProjectEvidenceBundle(testDir, report);
+    const firstHash = evidence.provenance.essence.hash;
+
+    expect(evidence.$schema).toBe('https://decantr.ai/schemas/evidence-bundle.v1.json');
+    expect(firstHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(JSON.stringify(evidence)).not.toContain(testDir);
+
+    const essencePath = join(testDir, 'decantr.essence.json');
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      dna: { theme: { mode: string } };
+    };
+    essence.dna.theme.mode = 'light';
+    writeJson(essencePath, essence);
+
+    const updatedReport = await createProjectHealthReport(testDir);
+    const updatedEvidence = await createProjectEvidenceBundle(testDir, updatedReport);
+    expect(updatedEvidence.provenance.essence.hash).not.toBe(firstHash);
+  });
+
+  it('turns missing Playwright into a browser setup finding instead of a crash', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+
+    const report = await createProjectHealthReport(testDir, { browser: true });
+
+    expect(report.findings.some((finding) => finding.rule === 'browser-playwright-missing')).toBe(
+      true,
+    );
   });
 
   it('supports warning-sensitive CI gating', async () => {
@@ -263,6 +312,21 @@ describe('Project Health report', () => {
     expect(workflow).toContain('apps/registry/reports/decantr-health.md');
   });
 
+  it('renders a workspace Project Health workflow', () => {
+    const workflow = renderProjectHealthCiWorkflow({
+      workspace: true,
+      cliVersion: '2.0.0',
+    });
+
+    expect(workflow).toContain(
+      'npx --yes @decantr/cli@2.0.0 workspace health --json --output .decantr/workspace-health.json',
+    );
+    expect(workflow).toContain(
+      'npx --yes @decantr/cli@2.0.0 workspace health --ci --fail-on error --markdown --output .decantr/workspace-health.md',
+    );
+    expect(workflow).not.toContain('working-directory:');
+  });
+
   it('writes the Project Health CI workflow without clobbering by default', () => {
     const result = writeProjectHealthCiWorkflow(testDir, { cliVersion: 'latest' });
     const workflowPath = join(testDir, '.github', 'workflows', 'decantr-health.yml');
@@ -303,6 +367,111 @@ describe('Project Health report', () => {
       jsonPath: 'reports/health.json',
       projectPath: 'apps/registry',
     });
+  });
+
+  it('parses workspace init-ci options', () => {
+    const parsed = parseHealthArgs(['health', 'init-ci', '--workspace', '--fail-on=warn']);
+
+    expect(parsed.initCi).toEqual({
+      workspace: true,
+      failOn: 'warn',
+    });
+  });
+
+  it('tracks the audited CLI command surface', () => {
+    const commands = new Set(COMMAND_SURFACE.map((entry) => entry.command));
+    const dispatchedCommands = [
+      'add',
+      'analyze',
+      'audit',
+      'check',
+      'content-health',
+      'create',
+      'export',
+      'get',
+      'heal',
+      'health',
+      'init',
+      'list',
+      'login',
+      'logout',
+      'magic',
+      'migrate',
+      'new',
+      'publish',
+      'refresh',
+      'registry',
+      'remove',
+      'rules',
+      'search',
+      'showcase',
+      'studio',
+      'suggest',
+      'sync',
+      'sync-drift',
+      'telemetry',
+      'theme',
+      'upgrade',
+      'validate',
+      'workspace',
+    ];
+
+    for (const command of dispatchedCommands) {
+      expect(commands.has(command)).toBe(true);
+    }
+    expect(commandSurfaceByName('health')?.classification).toBe('primary');
+    expect(commandSurfaceByName('heal')?.classification).toBe('deprecated-alias');
+    expect(commandSurfaceByName('workspace')?.purpose).toContain('Monorepo');
+  });
+
+  it('discovers workspace projects and reports deterministic aggregate health', async () => {
+    const appA = join(testDir, 'apps', 'a');
+    const appB = join(testDir, 'apps', 'b');
+    mkdirSync(appA, { recursive: true });
+    mkdirSync(appB, { recursive: true });
+    for (const root of [appA, appB]) {
+      writeRegistryCache(root);
+      writeEssence(undefined, root);
+      writePacks(root);
+    }
+
+    const projects = listWorkspaceProjects(testDir);
+    const report = await createWorkspaceHealthReport(testDir, { concurrency: 2 });
+
+    expect(projects.map((project) => project.path)).toEqual(['apps/a', 'apps/b']);
+    expect(report.$schema).toBe('https://decantr.ai/schemas/workspace-health-report.v1.json');
+    expect(report.projects.map((project) => project.path)).toEqual(['apps/a', 'apps/b']);
+    expect(report.summary.projectCount).toBe(2);
+  });
+
+  it('filters workspace health to changed projects', async () => {
+    const appA = join(testDir, 'apps', 'a');
+    const appB = join(testDir, 'apps', 'b');
+    mkdirSync(join(appA, 'src', 'styles'), { recursive: true });
+    mkdirSync(join(appB, 'src', 'styles'), { recursive: true });
+    for (const root of [appA, appB]) {
+      writeRegistryCache(root);
+      writeEssence(undefined, root);
+      writePacks(root);
+      writeFileSync(join(root, 'src', 'styles', 'tokens.css'), ':root { --d-bg: #000; }\n');
+    }
+    execFileSync('git', ['init'], { cwd: testDir, stdio: 'ignore' });
+    execFileSync('git', ['add', '.'], { cwd: testDir, stdio: 'ignore' });
+    execFileSync(
+      'git',
+      ['-c', 'user.name=Decantr Test', '-c', 'user.email=test@decantr.ai', 'commit', '-m', 'init'],
+      { cwd: testDir, stdio: 'ignore' },
+    );
+    writeFileSync(join(appB, 'src', 'styles', 'tokens.css'), ':root { --d-bg: #111; }\n');
+
+    const report = await createWorkspaceHealthReport(testDir, {
+      changedOnly: true,
+      since: 'HEAD',
+    });
+
+    expect(report.changedOnly).toBe(true);
+    expect(report.projects.map((project) => project.path)).toEqual(['apps/b']);
+    expect(report.projects[0]?.changed).toBe(true);
   });
 
   it('rejects unsafe Project Health CI template inputs', () => {

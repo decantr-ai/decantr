@@ -2901,9 +2901,12 @@ ${BOLD}Usage:${RESET}
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
-  decantr health init-ci [--force] [--project <path>] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
+  decantr health --evidence [--browser] [--design-tokens <path>]
+  decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
+  decantr workspace list [--json]
+  decantr workspace health [--json] [--changed --since origin/main]
   decantr content-health [--json] [--markdown] [--ci]
-  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json]
+  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
   decantr telemetry status [--json]
   decantr telemetry explain [--json]
   decantr telemetry link [--enable] [--org <slug>]
@@ -2946,6 +2949,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]; use health init-ci to install a GitHub Actions gate
+  ${cyan('workspace')}   Discover and aggregate health across Decantr projects in a monorepo
   ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
@@ -2989,6 +2993,9 @@ ${BOLD}Examples:${RESET}
   decantr health init-ci
   decantr health init-ci --project apps/web
   decantr health --ci --fail-on error
+  decantr health --evidence --output .decantr/evidence/latest.json
+  decantr workspace list
+  decantr workspace health --changed --since origin/main
   decantr content-health --ci --fail-on error
   decantr studio
   decantr studio --report decantr-health.json
@@ -3060,7 +3067,8 @@ ${BOLD}Usage:${RESET}
   decantr health --markdown
   decantr health --ci [--fail-on error|warn|none]
   decantr health --prompt <finding-id>
-  decantr health init-ci [--force] [--project <path>] [--fail-on error|warn|none] [--cli-version <version|latest>]
+  decantr health --evidence [--browser] [--design-tokens <path>]
+  decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on error|warn|none] [--cli-version <version|latest>]
 
 ${BOLD}Options:${RESET}
   --format      Output format: text, json, or markdown
@@ -3070,6 +3078,9 @@ ${BOLD}Options:${RESET}
   --ci          Enable CI exit-code behavior
   --fail-on     CI threshold: error, warn, or none
   --prompt      Print an AI-ready remediation prompt for a finding
+  --evidence    Emit a local Evidence Bundle JSON artifact
+  --browser     Include optional rendered-browser setup/evidence checks
+  --design-tokens Compare against a Figma/Tokens Studio JSON export
 
 ${BOLD}Examples:${RESET}
   decantr health
@@ -3077,7 +3088,26 @@ ${BOLD}Examples:${RESET}
   decantr health --markdown --output decantr-health.md
   decantr health --ci --fail-on error
   decantr health --prompt audit-essence-missing
+  decantr health --evidence --output .decantr/evidence/latest.json
   decantr health init-ci --project apps/web
+  decantr health init-ci --workspace
+`);
+}
+
+function cmdWorkspaceHelp() {
+  console.log(`
+${BOLD}decantr workspace${RESET} — Inspect Decantr projects across a monorepo
+
+${BOLD}Usage:${RESET}
+  decantr workspace list [--json]
+  decantr workspace health [--json|--markdown] [--output <file>]
+  decantr workspace health --changed --since origin/main
+
+${BOLD}Examples:${RESET}
+  decantr workspace list
+  decantr workspace health
+  decantr workspace health --json --output .decantr/workspace-health.json
+  decantr workspace health --changed --since origin/main
 `);
 }
 
@@ -3120,6 +3150,7 @@ ${BOLD}Options:${RESET}
   --port        Local port to bind; defaults to 4319
   --host        Local host to bind; defaults to 127.0.0.1
   --report      Serve a read-only Project Health JSON artifact instead of scanning the current project
+  --workspace   Serve a monorepo workspace health dashboard
 
 ${BOLD}Endpoints:${RESET}
   GET  /
@@ -3132,6 +3163,7 @@ ${BOLD}Examples:${RESET}
   decantr studio --host 127.0.0.1 --port 4319
   decantr health --json --output decantr-health.json
   decantr studio --report decantr-health.json
+  decantr studio --workspace
 `);
 }
 
@@ -3324,6 +3356,21 @@ async function main() {
         }
         const { cmdStudio, parseStudioArgs } = await import('./commands/studio.js');
         await cmdStudio(process.cwd(), parseStudioArgs(args));
+      } catch (e) {
+        console.error(error((e as Error).message));
+        process.exitCode = 1;
+      }
+      break;
+    }
+
+    case 'workspace': {
+      try {
+        if (isCommandHelpRequest(args)) {
+          cmdWorkspaceHelp();
+          break;
+        }
+        const { cmdWorkspace } = await import('./commands/workspace.js');
+        await cmdWorkspace(process.cwd(), args);
       } catch (e) {
         console.error(error((e as Error).message));
         process.exitCode = 1;
@@ -3858,7 +3905,7 @@ async function main() {
           exportOutput = args[i].split('=')[1];
         }
       }
-      const validTargets = ['shadcn', 'tailwind', 'css-vars'];
+      const validTargets = ['shadcn', 'tailwind', 'css-vars', 'figma-tokens'];
       if (!exportTarget || !validTargets.includes(exportTarget)) {
         console.error(error(`Usage: decantr export --to <${validTargets.join('|')}>`));
         process.exitCode = 1;

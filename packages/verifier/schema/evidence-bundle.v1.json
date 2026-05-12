@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/evidence-bundle.v1.json",
+  "title": "Decantr Evidence Bundle",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "project",
+    "toolchain",
+    "privacy",
+    "health",
+    "provenance",
+    "assertions",
+    "findings"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/evidence-bundle.v1.json"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "rootLabel"],
+      "properties": {
+        "id": { "type": "string" },
+        "rootLabel": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "toolchain": {
+      "type": "object",
+      "required": ["verifierVersion"],
+      "properties": {
+        "verifierVersion": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["localOnly", "redactedFields", "screenshotsLocalOnly"],
+      "properties": {
+        "localOnly": { "type": "boolean" },
+        "redactedFields": { "type": "array", "items": { "type": "string" } },
+        "screenshotsLocalOnly": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "health": {
+      "type": "object",
+      "required": ["status", "score", "errorCount", "warnCount", "infoCount", "findingCount"],
+      "properties": {
+        "status": { "type": "string", "enum": ["healthy", "warning", "error"] },
+        "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "warnCount": { "type": "integer", "minimum": 0 },
+        "infoCount": { "type": "integer", "minimum": 0 },
+        "findingCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["essence", "packManifest", "reviewPack"],
+      "properties": {
+        "essence": { "$ref": "#/$defs/provenanceEntry" },
+        "packManifest": { "$ref": "#/$defs/provenanceEntry" },
+        "reviewPack": { "$ref": "#/$defs/provenanceEntry" },
+        "workspaceConfig": { "$ref": "#/$defs/provenanceEntry" },
+        "designTokens": { "$ref": "#/$defs/provenanceEntry" }
+      },
+      "additionalProperties": false
+    },
+    "assertions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/assertion" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "browser": {
+      "type": "object",
+      "required": ["enabled", "status", "baseUrl", "screenshots", "findings"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["not_requested", "unavailable", "passed", "failed"]
+        },
+        "baseUrl": { "type": ["string", "null"] },
+        "screenshots": { "type": "array", "items": { "type": "string" } },
+        "findings": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "designTokens": {
+      "type": "object",
+      "required": ["source", "status", "compared", "matched", "missing"],
+      "properties": {
+        "source": { "type": "string" },
+        "status": { "type": "string", "enum": ["not_requested", "passed", "warning", "error"] },
+        "compared": { "type": "integer", "minimum": 0 },
+        "matched": { "type": "integer", "minimum": 0 },
+        "missing": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "provenanceEntry": {
+      "type": "object",
+      "required": ["path", "present", "hash", "generatedAt"],
+      "properties": {
+        "path": { "type": "string" },
+        "present": { "type": "boolean" },
+        "hash": { "type": ["string", "null"] },
+        "generatedAt": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "assertion": {
+      "type": "object",
+      "required": ["id", "category", "status", "severity", "message", "evidence", "rule"],
+      "properties": {
+        "id": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "route",
+            "shell",
+            "region",
+            "interaction",
+            "accessibility",
+            "design-token",
+            "context",
+            "policy"
+          ]
+        },
+        "status": { "type": "string", "enum": ["passed", "failed", "not_applicable"] },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "target": { "type": "string" },
+        "rule": { "type": "string" },
+        "suggestedFix": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "source",
+        "category",
+        "severity",
+        "message",
+        "evidence",
+        "remediationSummary",
+        "commands",
+        "promptCommand"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "source": {
+          "type": "string",
+          "enum": [
+            "audit",
+            "assertion",
+            "browser",
+            "check",
+            "brownfield",
+            "design-token",
+            "runtime",
+            "pack",
+            "interaction"
+          ]
+        },
+        "category": { "type": "string" },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "target": { "type": "string" },
+        "rule": { "type": "string" },
+        "suggestedFix": { "type": "string" },
+        "remediationSummary": { "type": "string" },
+        "commands": { "type": "array", "items": { "type": "string" } },
+        "promptCommand": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   cmdExport,
   generateCSSVars,
+  generateFigmaTokens,
   generateShadcnComponentsJSON,
   generateShadcnCSS,
   generateTailwindConfig,
@@ -181,6 +182,20 @@ describe('generateCSSVars', () => {
   });
 });
 
+describe('generateFigmaTokens', () => {
+  it('exports Tokens Studio-compatible token JSON', () => {
+    const tokens = parseTokensCSS(SAMPLE_TOKENS);
+    const parsed = JSON.parse(generateFigmaTokens(tokens)) as Record<
+      string,
+      { $type: string; $value: string }
+    >;
+
+    expect(parsed['d.primary'].$type).toBe('color');
+    expect(parsed['d.primary'].$value).toBe('#7C93B0');
+    expect(parsed['d.radius'].$type).toBe('borderRadius');
+  });
+});
+
 describe('cmdExport', () => {
   const tmpDir = join(import.meta.dirname ?? '.', '__export-test-tmp__');
 
@@ -231,6 +246,20 @@ describe('cmdExport', () => {
 
     const content = readFileSync(outPath, 'utf-8');
     expect(content).toContain('--d-primary:');
+  });
+
+  it('exports Figma/Tokens Studio JSON', async () => {
+    await cmdExport('figma-tokens', tmpDir);
+
+    const outPath = join(tmpDir, '.decantr', 'design', 'figma-tokens.json');
+    expect(existsSync(outPath)).toBe(true);
+
+    const content = JSON.parse(readFileSync(outPath, 'utf-8')) as Record<
+      string,
+      { $type: string; $value: string }
+    >;
+    expect(content['d.primary'].$type).toBe('color');
+    expect(content['d.radius'].$value).toBe('0.5rem');
   });
 
   it('respects --output option', async () => {

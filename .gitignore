@@ -45,6 +45,12 @@ apps/registry/.next/
 
 # Decantr cache
 .decantr/cache/
+.decantr/evidence/
+.decantr/workspace-health.json
+.decantr/workspace-health.md
+**/.decantr/evidence/
+**/.decantr/workspace-health.json
+**/.decantr/workspace-health.md
 apps/showcase-host/src/capsules/*/.decantr/cache/
 apps/showcase-host/src/capsules/*/.decantr/custom/
 

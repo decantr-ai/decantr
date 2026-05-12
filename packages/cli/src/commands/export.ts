@@ -7,7 +7,7 @@ const DIM = '\x1b[2m';
 const CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
 
-export type ExportTarget = 'shadcn' | 'tailwind' | 'css-vars';
+export type ExportTarget = 'shadcn' | 'tailwind' | 'css-vars' | 'figma-tokens';
 
 export interface ExportOptions {
   output?: string;
@@ -192,6 +192,32 @@ export function generateCSSVars(tokens: Map<string, string>): string {
   return lines.join('\n');
 }
 
+export function generateFigmaTokens(tokens: Map<string, string>): string {
+  const out: Record<string, { $type: string; $value: string; $description: string }> = {};
+
+  for (const [key, value] of tokens) {
+    const name = key.replace(/^--/, '').replace(/-/g, '.');
+    const type = /color|bg|surface|text|border|primary|secondary|accent|error|warning|success|info/.test(
+      key,
+    )
+      ? 'color'
+      : /radius/.test(key)
+        ? 'borderRadius'
+        : /shadow/.test(key)
+          ? 'shadow'
+          : /gap|space|spacing/.test(key)
+            ? 'dimension'
+            : 'string';
+    out[name] = {
+      $type: type,
+      $value: value,
+      $description: `Exported from ${key} by Decantr.`,
+    };
+  }
+
+  return `${JSON.stringify(out, null, 2)}\n`;
+}
+
 // ── Main Command ──
 
 export async function cmdExport(
@@ -258,6 +284,17 @@ export async function cmdExport(
       writeFileSync(out, generateCSSVars(tokens), 'utf-8');
 
       console.log(`${GREEN}Exported CSS variables:${RESET}`);
+      console.log(`  ${DIM}File:${RESET} ${out}`);
+      break;
+    }
+
+    case 'figma-tokens': {
+      const out = options.output ?? join(projectRoot, '.decantr', 'design', 'figma-tokens.json');
+
+      ensureDir(out);
+      writeFileSync(out, generateFigmaTokens(tokens), 'utf-8');
+
+      console.log(`${GREEN}Exported Figma/Tokens Studio tokens:${RESET}`);
       console.log(`  ${DIM}File:${RESET} ${out}`);
       break;
     }
