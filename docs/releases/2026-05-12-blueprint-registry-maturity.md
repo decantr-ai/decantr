@@ -1,5 +1,7 @@
 # Blueprint Registry Maturity
 
+Release targets: `@decantr/registry@2.1.0`, `@decantr/cli@2.5.0`.
+
 Decantr now treats blueprint discovery as a curated product surface instead of a flat catalog.
 
 ## What Changed
