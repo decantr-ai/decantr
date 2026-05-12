@@ -175,6 +175,102 @@ export interface ThemeShell {
 // --- Blueprint ---
 export type ComposeEntry = string | { archetype: string; prefix: string; role?: ArchetypeRole };
 
+export const BLUEPRINT_PORTFOLIO_VISIBILITIES = [
+  'featured',
+  'public',
+  'labs',
+  'hidden',
+] as const;
+export type BlueprintPortfolioVisibility = (typeof BLUEPRINT_PORTFOLIO_VISIBILITIES)[number];
+
+export const BLUEPRINT_PORTFOLIO_MATURITIES = [
+  'certified-flagship',
+  'supported-contract',
+  'experimental',
+  'fold-candidate',
+  'legacy-hidden',
+] as const;
+export type BlueprintPortfolioMaturity = (typeof BLUEPRINT_PORTFOLIO_MATURITIES)[number];
+
+export const BLUEPRINT_ARTIFACT_STATUSES = ['none', 'planned', 'candidate', 'certified'] as const;
+export type BlueprintArtifactStatus = (typeof BLUEPRINT_ARTIFACT_STATUSES)[number];
+
+export const PUBLIC_BLUEPRINT_SETS = ['all', 'featured', 'certified', 'labs'] as const;
+export type PublicBlueprintSet = (typeof PUBLIC_BLUEPRINT_SETS)[number];
+
+export interface BlueprintPortfolioArtifact {
+  status: BlueprintArtifactStatus;
+  showcase?: string;
+  notes?: string;
+}
+
+export interface BlueprintPortfolioMetadata {
+  visibility: BlueprintPortfolioVisibility;
+  maturity: BlueprintPortfolioMaturity;
+  rationale: string;
+  recommended_alternative?: string;
+  artifact: BlueprintPortfolioArtifact;
+}
+
+export function isBlueprintPortfolioVisibility(
+  value: unknown,
+): value is BlueprintPortfolioVisibility {
+  return BLUEPRINT_PORTFOLIO_VISIBILITIES.includes(value as BlueprintPortfolioVisibility);
+}
+
+export function isBlueprintPortfolioMaturity(value: unknown): value is BlueprintPortfolioMaturity {
+  return BLUEPRINT_PORTFOLIO_MATURITIES.includes(value as BlueprintPortfolioMaturity);
+}
+
+export function isBlueprintArtifactStatus(value: unknown): value is BlueprintArtifactStatus {
+  return BLUEPRINT_ARTIFACT_STATUSES.includes(value as BlueprintArtifactStatus);
+}
+
+export function isPublicBlueprintSet(value: unknown): value is PublicBlueprintSet {
+  return PUBLIC_BLUEPRINT_SETS.includes(value as PublicBlueprintSet);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function getBlueprintPortfolioMetadata(
+  value: unknown,
+): BlueprintPortfolioMetadata | null {
+  const candidate = isRecord(value) && isRecord(value.blueprint_portfolio)
+    ? value.blueprint_portfolio
+    : value;
+  if (!isRecord(candidate)) {
+    return null;
+  }
+
+  const artifact = candidate.artifact;
+  if (
+    !isBlueprintPortfolioVisibility(candidate.visibility) ||
+    !isBlueprintPortfolioMaturity(candidate.maturity) ||
+    typeof candidate.rationale !== 'string' ||
+    !isRecord(artifact) ||
+    !isBlueprintArtifactStatus(artifact.status)
+  ) {
+    return null;
+  }
+
+  return {
+    visibility: candidate.visibility,
+    maturity: candidate.maturity,
+    rationale: candidate.rationale,
+    recommended_alternative:
+      typeof candidate.recommended_alternative === 'string'
+        ? candidate.recommended_alternative
+        : undefined,
+    artifact: {
+      status: artifact.status,
+      showcase: typeof artifact.showcase === 'string' ? artifact.showcase : undefined,
+      notes: typeof artifact.notes === 'string' ? artifact.notes : undefined,
+    },
+  };
+}
+
 export interface BlueprintRoute {
   shell?: string;
   archetype?: string;
@@ -206,6 +302,7 @@ export interface Blueprint {
   decantr_compat?: string;
   name: string;
   description?: string;
+  blueprint_portfolio?: BlueprintPortfolioMetadata;
   tags?: string[];
   archetype?: string;
   compose?: ComposeEntry[];
@@ -512,6 +609,7 @@ export interface PublicContentSummary {
   owner_name?: string | null;
   owner_username?: string | null;
   thumbnail_url?: string | null;
+  blueprint_portfolio?: BlueprintPortfolioMetadata | null;
   intelligence?: ContentIntelligenceMetadata | null;
 }
 
@@ -577,6 +675,8 @@ export interface SearchParams {
   sort?: string;
   recommended?: boolean;
   intelligenceSource?: ContentIntelligenceSource;
+  blueprintSet?: PublicBlueprintSet;
+  labs?: boolean;
   limit?: number;
   offset?: number;
 }

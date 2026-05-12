@@ -13,6 +13,13 @@ The Decantr registry is the public catalog of blueprints, archetypes, patterns, 
 
 The `decantr-content` repository is the source of truth for the `@official` namespace. It contains patterns, themes, blueprints, archetypes, and shells. Changes are validated in CI and published by maintainers after they land on `main`.
 
+Blueprints also carry `blueprint_portfolio` metadata. This lets maintainers keep the public registry simple while preserving compatibility:
+
+- **Featured** and **Certified** are the strongest default picks for new users.
+- **All** contains supported public blueprint contracts.
+- **Labs** is opt-in for promising directions that need sharper proof.
+- Folded legacy or overlap slugs remain directly addressable by slug, but are not shown in public browsing.
+
 Local checks:
 
 ```bash

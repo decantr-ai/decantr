@@ -22,11 +22,11 @@ Decantr is the contract layer between product intent and AI-generated implementa
 ### 1. Scaffold from a blueprint
 
 ```bash
-npx @decantr/cli new my-app --blueprint=agent-marketplace
+npx @decantr/cli new my-app --blueprint=esports-hq
 cd my-app
 ```
 
-A blueprint is a published app composition — theme, sections, pages, layouts, voice, and personality. Try `agent-marketplace`, `terminal-dashboard`, or `portfolio` to start, or run `decantr search` to browse the full catalog.
+A blueprint is a published app composition — theme, sections, pages, layouts, voice, and personality. The public registry now keeps blueprint discovery intentionally small: **Featured** and **Certified** are the strongest default picks, **All** shows supported contracts, and **Labs** is opt-in for promising but less-proven directions. Try `esports-hq`, `agent-studio`, or `registry-platform` to start, or run `decantr list blueprints --blueprint-set featured` to browse the curated set.
 
 > **Adapter availability.** `react-vite`, `next-app`, `vanilla-vite`, `vue-vite`, `sveltekit`, `angular`, and `solid-vite` are certified runnable starter adapters. Other contract targets remain valid Decantr targets but initialize through `generic-web` contract-only mode — Decantr writes the contract, you own the runtime.
 
@@ -140,6 +140,8 @@ Intent and discovery:
 ```bash
 decantr magic "AI chatbot with a bold terminal-inspired workspace"
 decantr search dashboard
+decantr list blueprints --blueprint-set certified
+decantr list blueprints --blueprint-set labs
 decantr suggest leaderboard
 ```
 

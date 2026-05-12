@@ -19,6 +19,7 @@ These parameters are supported wherever noted below:
 - `sort` — `recommended`, `recent`, or `name`
 - `recommended=true` — return only recommended content
 - `intelligence_source` — `authored`, `benchmark`, or `hybrid`
+- `blueprint_set` — for blueprint list/search results: `all`, `featured`, `certified`, or `labs`
 - `limit` — page size
 - `offset` — result offset for pagination
 
@@ -26,6 +27,7 @@ These parameters are supported wherever noted below:
 
 ```http
 GET /search?q=portfolio&type=blueprint&source=official&sort=recommended
+GET /search?q=studio&type=blueprint&blueprint_set=certified
 ```
 
 Purpose:
@@ -39,12 +41,15 @@ Notable response fields:
 - `total`
 - `results[]`
 - `results[].thumbnail_url`
+- `results[].blueprint_portfolio` for blueprint summaries
 - `results[].intelligence`
 
 ## Public Lists
 
 ```http
 GET /blueprints?source=official&sort=recommended
+GET /blueprints?blueprint_set=featured
+GET /blueprints?blueprint_set=labs
 GET /patterns?source=community&limit=50&offset=0
 GET /archetypes?namespace=@official&intelligence_source=authored
 ```
@@ -67,7 +72,10 @@ Notable response fields:
 - `total`
 - `items[]`
 - `items[].thumbnail_url`
+- `items[].blueprint_portfolio` for blueprint summaries
 - `items[].intelligence`
+
+Blueprint lists/searches exclude Labs and folded slugs by default. `blueprint_set=labs` shows Labs only, `blueprint_set=featured` shows curated default picks, and `blueprint_set=certified` shows blueprints with certified artifact metadata. Direct detail routes remain slug-based for published records.
 
 ## Public Detail
 

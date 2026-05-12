@@ -77,7 +77,7 @@ describe('GET /v1/search', () => {
     expect(json.results[0]?.thumbnail_url).toBe('http://localhost/v1/blueprints/%40community/zeta/thumbnail');
     expect(rpc).toHaveBeenCalledWith('search_content', expect.objectContaining({
       search_query: 'port',
-      result_limit: 2,
+      result_limit: 500,
       result_offset: 0,
     }));
   });

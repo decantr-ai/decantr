@@ -183,6 +183,8 @@ export class RegistryAPIClient {
       sort?: string;
       recommended?: boolean;
       intelligenceSource?: SearchParams['intelligenceSource'];
+      blueprintSet?: SearchParams['blueprintSet'];
+      labs?: boolean;
       limit?: number;
       offset?: number;
     },
@@ -198,6 +200,8 @@ export class RegistryAPIClient {
     if (params?.recommended) searchParams.set('recommended', 'true');
     if (params?.intelligenceSource)
       searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params?.blueprintSet) searchParams.set('blueprint_set', params.blueprintSet);
+    if (params?.labs) searchParams.set('labs', 'true');
     if (params?.limit) searchParams.set('limit', String(params.limit));
     if (params?.offset) searchParams.set('offset', String(params.offset));
 
@@ -285,6 +289,8 @@ export class RegistryAPIClient {
     if (params.recommended) searchParams.set('recommended', 'true');
     if (params.intelligenceSource)
       searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params.blueprintSet) searchParams.set('blueprint_set', params.blueprintSet);
+    if (params.labs) searchParams.set('labs', 'true');
     if (params.limit) searchParams.set('limit', String(params.limit));
     if (params.offset) searchParams.set('offset', String(params.offset));
 
@@ -309,6 +315,8 @@ export class RegistryAPIClient {
       sort?: string;
       recommended?: boolean;
       intelligenceSource?: SearchParams['intelligenceSource'];
+      blueprintSet?: SearchParams['blueprintSet'];
+      labs?: boolean;
       limit?: number;
       offset?: number;
     },
@@ -324,6 +332,8 @@ export class RegistryAPIClient {
     if (params?.recommended) searchParams.set('recommended', 'true');
     if (params?.intelligenceSource)
       searchParams.set('intelligence_source', params.intelligenceSource);
+    if (params?.blueprintSet) searchParams.set('blueprint_set', params.blueprintSet);
+    if (params?.labs) searchParams.set('labs', 'true');
     if (params?.limit != null) searchParams.set('limit', String(params.limit));
     if (params?.offset != null) searchParams.set('offset', String(params.offset));
 

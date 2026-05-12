@@ -3,6 +3,9 @@ import {
   isContentIntelligenceSource,
   type ContentIntelligenceSource,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  getBlueprintPortfolioMetadata,
+  isPublicBlueprintSet,
+  type PublicBlueprintSet,
 } from '@decantr/registry';
 import type { Env } from '../types.js';
 import { API_CONTENT_TYPES, PLURAL_TO_SINGULAR, isApiContentType, parsePagination } from '../types.js';
@@ -216,6 +219,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
     const sort = c.req.query('sort') ?? undefined;
     const recommendedOnly = c.req.query('recommended') === 'true';
     const rawIntelligenceSource = c.req.query('intelligence_source');
+    const rawBlueprintSet = c.req.query('blueprint_set');
     const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
     if (rawSource && !isPublicContentSource(rawSource)) {
@@ -226,6 +230,10 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
       return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
     }
 
+    if (rawBlueprintSet && !isPublicBlueprintSet(rawBlueprintSet)) {
+      return c.json({ error: `Invalid blueprint set: ${rawBlueprintSet}` }, 400);
+    }
+
     const source: PublicContentSource | undefined =
       rawSource && isPublicContentSource(rawSource)
         ? rawSource
@@ -234,6 +242,9 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
       rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
         ? rawIntelligenceSource
         : undefined;
+    const blueprintSet: PublicBlueprintSet =
+      rawBlueprintSet && isPublicBlueprintSet(rawBlueprintSet) ? rawBlueprintSet : 'all';
+    const includeLabs = c.req.query('labs') === 'true' || blueprintSet === 'labs';
 
     const client = createAdminClient();
 
@@ -249,7 +260,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
       query = query.eq('namespace', namespace);
     }
 
-    const { data, error, count } = await query;
+    const { data, error } = await query;
 
     if (error) {
       return c.json({ error: 'Failed to fetch content' }, 500);
@@ -277,6 +288,7 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
           item.slug,
           itemData,
         ),
+        blueprint_portfolio: getBlueprintPortfolioMetadata(itemData),
         intelligence: getContentIntelligence(
           singularType,
           item.namespace,
@@ -293,11 +305,13 @@ contentRoutes.get(`/:type{${CONTENT_ROUTE_PATTERN}}`, async (c) => {
       sort,
       recommendedOnly,
       intelligenceSource,
+      blueprintSet,
+      includeLabs,
       limit,
       offset,
     );
     return c.json({
-      total: recommendedOnly || intelligenceSource || source ? ordered.filteredTotal : (count ?? 0),
+      total: ordered.filteredTotal,
       limit,
       offset,
       items: ordered.items,

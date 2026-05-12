@@ -1,4 +1,4 @@
-import type { PublicContentSummary } from './types.js';
+import { getBlueprintPortfolioMetadata, type PublicContentSummary } from './types.js';
 
 export type PublicContentSort = 'recommended' | 'recent' | 'name';
 
@@ -49,6 +49,19 @@ function confidenceTierScore(tier?: string | null): number {
 function getRecommendedPriority(item: PublicContentSummary): number {
   const intelligence = item.intelligence;
   let score = 0;
+
+  const portfolio = getBlueprintPortfolioMetadata(item.blueprint_portfolio);
+  if (portfolio?.visibility === 'featured') {
+    score += 900;
+  }
+  if (portfolio?.artifact.status === 'certified') {
+    score += 650;
+  } else if (portfolio?.artifact.status === 'candidate') {
+    score += 120;
+  }
+  if (portfolio?.visibility === 'labs' || portfolio?.visibility === 'hidden') {
+    score -= 400;
+  }
 
   if (!intelligence) {
     return score;

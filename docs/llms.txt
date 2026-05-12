@@ -34,6 +34,8 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 
 The registry is open — both the Decantr team (under the `@official` namespace) and the community can publish patterns, archetypes, themes, blueprints, and shells. This makes Decantr a platform, not just a tool: every published contribution extends the design vocabulary available to every AI coding assistant that uses Decantr.
 
+Blueprint discovery is curated through public sets: `All`, `Featured`, `Certified`, and opt-in `Labs`. Internally richer portfolio metadata can fold overlapping legacy slugs out of browse/search while keeping direct slug access intact.
+
 - [Registry portal](https://registry.decantr.ai/): Browse and publish patterns, archetypes, themes, blueprints, shells. Community contributions live alongside `@official` content.
 - [Registry sitemap](https://registry.decantr.ai/sitemap.xml): Crawl inventory for public registry browse and detail pages.
 - [Registry llms.txt](https://registry.decantr.ai/llms.txt): Machine-readable registry summary for AI search and agentic retrieval.

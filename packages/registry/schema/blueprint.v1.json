@@ -30,6 +30,65 @@
     "description": {
       "type": "string"
     },
+    "blueprint_portfolio": {
+      "type": "object",
+      "description": "Registry portfolio metadata for public blueprint discovery. This controls Featured/All/Labs presentation without changing direct slug availability.",
+      "required": [
+        "visibility",
+        "maturity",
+        "rationale",
+        "artifact"
+      ],
+      "properties": {
+        "visibility": {
+          "enum": [
+            "featured",
+            "public",
+            "labs",
+            "hidden"
+          ]
+        },
+        "maturity": {
+          "enum": [
+            "certified-flagship",
+            "supported-contract",
+            "experimental",
+            "fold-candidate",
+            "legacy-hidden"
+          ]
+        },
+        "rationale": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+        },
+        "recommended_alternative": {
+          "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+        },
+        "artifact": {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "none",
+                "planned",
+                "candidate",
+                "certified"
+              ]
+            },
+            "showcase": {
+              "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+            },
+            "notes": {
+              "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "tags": {
       "$ref": "https://decantr.ai/schemas/common.v1.json#/$defs/nonEmptyStringArray"
     },

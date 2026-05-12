@@ -121,6 +121,7 @@ async function BlueprintLaunchHero() {
       listContent('blueprints', {
         source: 'official',
         sort: 'recommended',
+        blueprintSet: 'featured',
         limit: 8,
         offset: 0,
       }),
@@ -355,6 +356,7 @@ async function FeaturedBlueprintLaunchpads() {
       listContent('blueprints', {
         source: 'official',
         sort: 'recommended',
+        blueprintSet: 'featured',
         limit: 5,
         offset: 0,
       }),

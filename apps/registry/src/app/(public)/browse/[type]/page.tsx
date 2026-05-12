@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { isPublicBlueprintSet, type PublicBlueprintSet } from '@decantr/registry/client';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
@@ -25,6 +26,7 @@ interface BrowseTypePageProps {
     q?: string;
     source?: string;
     sort?: string;
+    blueprint_set?: string;
     offset?: string;
   }>;
 }
@@ -66,6 +68,9 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
     ? sp.source
     : undefined;
   const sort = normalizePublicContentSort(sp.sort);
+  const blueprintSet: PublicBlueprintSet = isPublicBlueprintSet(sp.blueprint_set)
+    ? sp.blueprint_set
+    : 'all';
   const offset = parseInt(sp.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -77,6 +82,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
         type,
         source,
         sort,
+        blueprintSet: type === 'blueprints' ? blueprintSet : undefined,
         limit: LIMIT,
         offset,
       });
@@ -86,6 +92,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
       const result = await listContent(type, {
         source,
         sort,
+        blueprintSet: type === 'blueprints' ? blueprintSet : undefined,
         limit: LIMIT,
         offset,
       });
@@ -101,13 +108,16 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
     description: CONTENT_TYPE_DESCRIPTIONS[type],
     items,
   });
+  const pageDescription = type === 'blueprints'
+    ? 'Browse supported blueprint contracts. Featured and Certified are the strongest default picks; Labs contains promising directions that need more proof.'
+    : CONTENT_TYPE_DESCRIPTIONS[type];
 
   return (
     <div className="registry-page-max registry-browser-shell">
       <JsonLd data={jsonLd} />
       <div className="registry-page-intro">
         <h1 className="text-2xl font-bold">{CONTENT_TYPE_LABELS[type]}</h1>
-        <p className="text-sm text-d-muted">{CONTENT_TYPE_DESCRIPTIONS[type]}</p>
+        <p className="text-sm text-d-muted">{pageDescription}</p>
       </div>
 
       <Suspense>

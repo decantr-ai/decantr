@@ -11,6 +11,7 @@ import type {
   ContentIntelligenceSource,
   ExecutionPackBundleResponse,
   Blueprint as RegistryBlueprint,
+  PublicBlueprintSet,
   RegistryIntelligenceSummaryResponse,
   SelectedExecutionPackResponse,
   ShowcaseManifestResponse,
@@ -20,9 +21,11 @@ import type {
 import {
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
   CONTENT_TYPES as GET_CONTENT_TYPES,
+  getBlueprintPortfolioMetadata,
   isApiContentType,
   isContentIntelligenceSource,
   isContentType as isGetContentType,
+  isPublicBlueprintSet,
   API_CONTENT_TYPES as LIST_CONTENT_TYPES,
   RegistryAPIClient,
 } from '@decantr/registry';
@@ -1332,12 +1335,55 @@ async function printHostedProjectAudit(
 
 // ── Commands ──
 
+function formatBlueprintPortfolioSummary(value: unknown): string | null {
+  const portfolio = getBlueprintPortfolioMetadata(value);
+  if (!portfolio) return null;
+
+  const labels: string[] = [];
+  if (portfolio.artifact.status === 'certified') labels.push('Certified');
+  if (portfolio.visibility === 'featured') labels.push('Featured');
+  if (portfolio.visibility === 'labs') labels.push('Labs');
+  if (portfolio.visibility === 'hidden') labels.push('Folded');
+  if (labels.length === 0) labels.push('All');
+
+  const alternative = portfolio.recommended_alternative
+    ? `; recommended alternative: ${portfolio.recommended_alternative}`
+    : '';
+  return `Blueprint set: ${labels.join(' + ')}${alternative}`;
+}
+
+function printBlueprintPortfolioNotice(blueprint: RegistryBlueprint): void {
+  const portfolio = getBlueprintPortfolioMetadata(blueprint);
+  if (!portfolio) return;
+
+  if (portfolio.visibility === 'hidden' || portfolio.maturity === 'fold-candidate') {
+    console.log(
+      `${YELLOW}  Warning:${RESET} blueprint "${blueprint.id}" is folded out of public browsing.`,
+    );
+    if (portfolio.recommended_alternative) {
+      console.log(
+        dim(
+          `  Recommended public alternative: decantr new <name> --blueprint=${portfolio.recommended_alternative}`,
+        ),
+      );
+    }
+    return;
+  }
+
+  if (portfolio.visibility === 'labs') {
+    console.log(
+      `${YELLOW}  Note:${RESET} blueprint "${blueprint.id}" is a Labs blueprint; direct scaffolding is supported, but it is not a default recommendation yet.`,
+    );
+  }
+}
+
 async function cmdSearch(
   query: string,
   type?: string,
   sort?: string,
   recommended?: boolean,
   intelligenceSource?: ContentIntelligenceSource,
+  blueprintSet?: PublicBlueprintSet,
 ) {
   const apiClient = getAPIClient();
   try {
@@ -1347,6 +1393,7 @@ async function cmdSearch(
       sort,
       recommended,
       intelligenceSource,
+      blueprintSet,
     });
     const results = response.results;
 
@@ -1362,6 +1409,12 @@ async function cmdSearch(
       const intelligenceSummary = formatIntelligenceSummary(r.intelligence);
       if (intelligenceSummary) {
         console.log(`  ${dim(intelligenceSummary)}`);
+      }
+      const portfolioSummary = formatBlueprintPortfolioSummary(
+        (r as { blueprint_portfolio?: unknown }).blueprint_portfolio,
+      );
+      if (portfolioSummary) {
+        console.log(`  ${dim(portfolioSummary)}`);
       }
       console.log('');
     }
@@ -1534,6 +1587,7 @@ async function cmdList(
   sort?: string,
   recommended?: boolean,
   intelligenceSource?: ContentIntelligenceSource,
+  blueprintSet?: PublicBlueprintSet,
 ) {
   if (!isApiContentType(type)) {
     console.error(
@@ -1553,6 +1607,7 @@ async function cmdList(
     sort,
     recommended,
     intelligenceSource,
+    blueprintSet,
   );
   const items = result.data.items;
 
@@ -1591,6 +1646,12 @@ async function cmdList(
       );
       if (intelligenceSummary) {
         console.log(`  ${dim(intelligenceSummary)}`);
+      }
+      const portfolioSummary = formatBlueprintPortfolioSummary(
+        (item as { blueprint_portfolio?: unknown }).blueprint_portfolio ?? item,
+      );
+      if (portfolioSummary) {
+        console.log(`  ${dim(portfolioSummary)}`);
       }
     }
   }
@@ -2153,6 +2214,7 @@ async function cmdInit(args: InitArgs) {
     const blueprintResult = await registryClient.fetchBlueprint(options.blueprint);
     if (blueprintResult) {
       const blueprint = blueprintResult.data as RegistryBlueprint;
+      printBlueprintPortfolioNotice(blueprint);
 
       // Apply blueprint theme settings (unless user explicitly provided flags)
       if (blueprint.theme) {
@@ -3477,7 +3539,7 @@ async function main() {
       if (!query) {
         console.error(
           error(
-            'Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]',
+            'Usage: decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>] [--blueprint-set <all|featured|certified|labs>]',
           ),
         );
         process.exitCode = 1;
@@ -3489,6 +3551,24 @@ async function main() {
       const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
       const sourceIdx = args.indexOf('--source');
       const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
+      const blueprintSetIdx = args.indexOf('--blueprint-set');
+      const rawBlueprintSet = args.includes('--labs')
+        ? 'labs'
+        : blueprintSetIdx !== -1
+          ? args[blueprintSetIdx + 1]
+          : undefined;
+      const blueprintSet = rawBlueprintSet && isPublicBlueprintSet(rawBlueprintSet)
+        ? rawBlueprintSet
+        : undefined;
+      if (rawBlueprintSet && !blueprintSet) {
+        console.error(
+          error(
+            `Invalid blueprint set "${rawBlueprintSet}". Must be one of: all, featured, certified, labs.`,
+          ),
+        );
+        process.exitCode = 1;
+        return;
+      }
       if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
         console.error(
           error(
@@ -3499,7 +3579,7 @@ async function main() {
         return;
       }
       const recommended = args.includes('--recommended');
-      await cmdSearch(query, type, sort, recommended, intelligenceSource);
+      await cmdSearch(query, type, sort, recommended, intelligenceSource, blueprintSet);
       break;
     }
 
@@ -3533,7 +3613,7 @@ async function main() {
       if (!type) {
         console.error(
           error(
-            'Usage: decantr list <type> [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>]',
+            'Usage: decantr list <type> [--sort <recommended|recent|name>] [--source <authored|benchmark|hybrid>] [--blueprint-set <all|featured|certified|labs>]',
           ),
         );
         process.exitCode = 1;
@@ -3543,6 +3623,24 @@ async function main() {
       const sort = sortIdx !== -1 ? args[sortIdx + 1] : undefined;
       const sourceIdx = args.indexOf('--source');
       const intelligenceSource = sourceIdx !== -1 ? args[sourceIdx + 1] : undefined;
+      const blueprintSetIdx = args.indexOf('--blueprint-set');
+      const rawBlueprintSet = args.includes('--labs')
+        ? 'labs'
+        : blueprintSetIdx !== -1
+          ? args[blueprintSetIdx + 1]
+          : undefined;
+      const blueprintSet = rawBlueprintSet && isPublicBlueprintSet(rawBlueprintSet)
+        ? rawBlueprintSet
+        : undefined;
+      if (rawBlueprintSet && !blueprintSet) {
+        console.error(
+          error(
+            `Invalid blueprint set "${rawBlueprintSet}". Must be one of: all, featured, certified, labs.`,
+          ),
+        );
+        process.exitCode = 1;
+        return;
+      }
       if (intelligenceSource && !isContentIntelligenceSource(intelligenceSource)) {
         console.error(
           error(
@@ -3553,7 +3651,7 @@ async function main() {
         return;
       }
       const recommended = args.includes('--recommended');
-      await cmdList(type, sort, recommended, intelligenceSource);
+      await cmdList(type, sort, recommended, intelligenceSource, blueprintSet);
       break;
     }
 

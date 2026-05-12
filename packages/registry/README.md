@@ -19,6 +19,7 @@ npm install @decantr/registry
 - `@decantr/registry/client` for web-safe API usage
 - public schema exports for registry content, content health, and summary responses
 - ranking and sorting helpers for public registry content
+- blueprint portfolio metadata helpers for public `All`, `Featured`, `Certified`, and `Labs` registry cuts
 
 ## Example
 
@@ -28,7 +29,11 @@ Node/runtime usage:
 import { RegistryAPIClient } from '@decantr/registry';
 
 const client = new RegistryAPIClient({ baseUrl: 'https://api.decantr.ai/v1' });
-const results = await client.search({ query: 'dashboard', type: 'blueprint' });
+const results = await client.search({
+  q: 'dashboard',
+  type: 'blueprint',
+  blueprintSet: 'featured',
+});
 ```
 
 Browser-safe usage:
@@ -43,6 +48,13 @@ const summary = await client.getIntelligenceSummary();
 ## Related Schemas
 
 This package owns the canonical registry schemas published under `@decantr/registry/schema/*`, including `content-health-report.v1.json` for local content repository health reports emitted by `decantr content-health`.
+
+Blueprint records can include `blueprint_portfolio` metadata. List/search summaries expose that metadata so clients can show public-facing blueprint sets without leaking internal maturity labels:
+
+- `all` — supported public blueprints, excluding Labs and folded slugs by default
+- `featured` — curated default discovery picks
+- `certified` — blueprints with certified artifact metadata
+- `labs` — opt-in experimental directions
 
 ## Compatibility
 

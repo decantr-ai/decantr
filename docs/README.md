@@ -46,3 +46,5 @@ Current active phase specs:
 ## Working Rule
 
 If an older document conflicts with a file under `programs/`, `audit/`, or the active `specs/` directory, treat the active vNext docs as authoritative on this branch.
+
+Registry blueprint docs should describe the public sets as `All`, `Featured`, `Certified`, and `Labs`. Internal portfolio labels such as fold candidates are maintainer metadata only; public docs should say that overlapping legacy slugs remain addressable directly but are hidden from browse/search.
