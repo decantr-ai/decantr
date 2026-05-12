@@ -8,6 +8,11 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 
 - [Homepage](https://decantr.ai/): What Decantr is and why AI-generated UI needs a contract layer.
 - [Sitemap](https://decantr.ai/sitemap.xml): Crawl inventory for public Decantr docs, schemas, references, and release notes.
+- [Design contract basics](https://decantr.ai/guides/design-contract-basics.md): Short explanation of Essence, DNA, Blueprint, context files, and the Decantr loop.
+- [Existing app adoption](https://decantr.ai/guides/existing-apps.md): Brownfield attach path for adding Decantr to an existing app without rewriting the runtime.
+- [Project Health CI](https://decantr.ai/guides/project-health-ci.md): Installing and running the Decantr Project Health gate in CI.
+- [AI assistant setup](https://decantr.ai/guides/ai-assistant-setup.md): Using Decantr with MCP-compatible assistants and file-based CLI context.
+- [Registry publishing](https://decantr.ai/guides/registry-content-publishing.md): Registry portal, official content source, community publishing, and Content Health.
 - [Workflow model](https://decantr.ai/reference/workflow-model.md): Explicit workflow/adoption policy for greenfield blueprint, greenfield contract-only, brownfield attach, hybrid composition, adapters, monorepos, and offline mode.
 - [Project Health](https://decantr.ai/reference/project-health.md): Local reliability layer, Evidence Bundle, workspace health, browser verification, design-token checks, Studio, and GitHub artifact workflow.
 - [Command surface](https://decantr.ai/reference/command-surface.md): Current CLI command audit and consolidation decisions.

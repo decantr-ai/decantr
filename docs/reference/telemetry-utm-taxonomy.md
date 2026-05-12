@@ -2,7 +2,7 @@
 
 This taxonomy keeps Decantr marketing-web telemetry useful before paid acquisition volume grows. Use it for public launches, social posts, newsletter links, partner links, docs links, and product-led experiments that hand traffic to `decantr.ai` or `registry.decantr.ai`.
 
-Telemetry stores UTM values, landing path, referrer domain, click-id provider, and whether an ad click id was present. It does not store raw click ids, raw referrer URLs, emails, prompts, source code, file paths, or user agents.
+Telemetry stores UTM values, landing path, referrer domain, click-id provider, whether an ad click id was present, and inferred discovery labels such as channel, source category, landing-page kind, and landing intent. It does not store raw click ids, raw referrer URLs, emails, prompts, source code, file paths, user agents, or search query text.
 
 ## Required Fields
 
@@ -117,11 +117,13 @@ In PostHog and `/admin/telemetry/usage`, prioritize:
 
 - Campaign-attributed marketing events
 - Landing-attributed marketing events
+- Discovery channel and source-category mix
+- Landing-intent follow-through into registry browsing and signup intent
 - CTA clicks by campaign
 - Registry follow-through from attributed sessions
 - Signup/API-key intent after attributed registry sessions
 
-The PostHog operating dashboard should include campaign acquisition, landing-path acquisition, and campaign registry follow-through insights. Refresh it with:
+The PostHog operating dashboard should include campaign acquisition, landing-path acquisition, discovery channel/source mix, landing-intent follow-through, and campaign registry follow-through insights. Refresh it with:
 
 ```bash
 pnpm telemetry:posthog-dashboard

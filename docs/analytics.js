@@ -164,44 +164,60 @@
 
   function getAttributionProperties() {
     var state = readAttributionState();
-    var current = state.last || state.first;
-    if (!current) return {};
+    var first = enrichTouch(state.first);
+    var last = enrichTouch(state.last);
+    var current = last || first || buildDirectTouch();
 
     return {
+      attributionChannel: current.channel || null,
       attributionClickIdProvider: current.clickIdProvider || null,
       attributionClickIdPresent: Boolean(current.clickIdPresent),
-      attributionFirstLandingPath: state.first && state.first.landingPath ? state.first.landingPath : null,
+      attributionFirstChannel: first && first.channel ? first.channel : null,
+      attributionFirstLandingPath: first && first.landingPath ? first.landingPath : null,
+      attributionFirstLandingIntent: first && first.landingIntent ? first.landingIntent : null,
+      attributionFirstLandingPageKind: first && first.landingPageKind ? first.landingPageKind : null,
       attributionFirstReferrerDomain:
-        state.first && state.first.referrerDomain ? state.first.referrerDomain : null,
+        first && first.referrerDomain ? first.referrerDomain : null,
+      attributionFirstSource: first && first.source ? first.source : null,
+      attributionFirstSourceCategory: first && first.sourceCategory ? first.sourceCategory : null,
       attributionFirstUtmCampaign:
-        state.first && state.first.utm && state.first.utm.utm_campaign ? state.first.utm.utm_campaign : null,
+        first && first.utm && first.utm.utm_campaign ? first.utm.utm_campaign : null,
       attributionFirstUtmContent:
-        state.first && state.first.utm && state.first.utm.utm_content ? state.first.utm.utm_content : null,
+        first && first.utm && first.utm.utm_content ? first.utm.utm_content : null,
       attributionFirstUtmId:
-        state.first && state.first.utm && state.first.utm.utm_id ? state.first.utm.utm_id : null,
+        first && first.utm && first.utm.utm_id ? first.utm.utm_id : null,
       attributionFirstUtmMedium:
-        state.first && state.first.utm && state.first.utm.utm_medium ? state.first.utm.utm_medium : null,
+        first && first.utm && first.utm.utm_medium ? first.utm.utm_medium : null,
       attributionFirstUtmSource:
-        state.first && state.first.utm && state.first.utm.utm_source ? state.first.utm.utm_source : null,
+        first && first.utm && first.utm.utm_source ? first.utm.utm_source : null,
       attributionFirstUtmTerm:
-        state.first && state.first.utm && state.first.utm.utm_term ? state.first.utm.utm_term : null,
+        first && first.utm && first.utm.utm_term ? first.utm.utm_term : null,
       attributionLandingPath: current.landingPath || null,
-      attributionLastLandingPath: state.last && state.last.landingPath ? state.last.landingPath : null,
+      attributionLandingIntent: current.landingIntent || null,
+      attributionLandingPageKind: current.landingPageKind || null,
+      attributionLastChannel: last && last.channel ? last.channel : null,
+      attributionLastLandingPath: last && last.landingPath ? last.landingPath : null,
+      attributionLastLandingIntent: last && last.landingIntent ? last.landingIntent : null,
+      attributionLastLandingPageKind: last && last.landingPageKind ? last.landingPageKind : null,
       attributionLastReferrerDomain:
-        state.last && state.last.referrerDomain ? state.last.referrerDomain : null,
+        last && last.referrerDomain ? last.referrerDomain : null,
+      attributionLastSource: last && last.source ? last.source : null,
+      attributionLastSourceCategory: last && last.sourceCategory ? last.sourceCategory : null,
       attributionLastUtmCampaign:
-        state.last && state.last.utm && state.last.utm.utm_campaign ? state.last.utm.utm_campaign : null,
+        last && last.utm && last.utm.utm_campaign ? last.utm.utm_campaign : null,
       attributionLastUtmContent:
-        state.last && state.last.utm && state.last.utm.utm_content ? state.last.utm.utm_content : null,
+        last && last.utm && last.utm.utm_content ? last.utm.utm_content : null,
       attributionLastUtmId:
-        state.last && state.last.utm && state.last.utm.utm_id ? state.last.utm.utm_id : null,
+        last && last.utm && last.utm.utm_id ? last.utm.utm_id : null,
       attributionLastUtmMedium:
-        state.last && state.last.utm && state.last.utm.utm_medium ? state.last.utm.utm_medium : null,
+        last && last.utm && last.utm.utm_medium ? last.utm.utm_medium : null,
       attributionLastUtmSource:
-        state.last && state.last.utm && state.last.utm.utm_source ? state.last.utm.utm_source : null,
+        last && last.utm && last.utm.utm_source ? last.utm.utm_source : null,
       attributionLastUtmTerm:
-        state.last && state.last.utm && state.last.utm.utm_term ? state.last.utm.utm_term : null,
+        last && last.utm && last.utm.utm_term ? last.utm.utm_term : null,
       attributionReferrerDomain: current.referrerDomain || null,
+      attributionSource: current.source || null,
+      attributionSourceCategory: current.sourceCategory || null,
       attributionUtmCampaign: current.utm && current.utm.utm_campaign ? current.utm.utm_campaign : null,
       attributionUtmContent: current.utm && current.utm.utm_content ? current.utm.utm_content : null,
       attributionUtmId: current.utm && current.utm.utm_id ? current.utm.utm_id : null,
@@ -234,14 +250,208 @@
 
     if (!hasUtm && !hasClickId && !referrerDomain) return null;
 
-    return {
+    return enrichTouch({
       clickIdPresent: hasClickId,
       clickIdProvider: clickIdProvider,
       landingPath: window.location.pathname || '/',
       referrerDomain: referrerDomain,
       timestamp: new Date().toISOString(),
       utm: utm,
-    };
+    });
+  }
+
+  function buildDirectTouch() {
+    return enrichTouch({
+      clickIdPresent: false,
+      clickIdProvider: null,
+      landingPath: window.location.pathname || '/',
+      referrerDomain: null,
+      timestamp: new Date().toISOString(),
+      utm: {},
+    });
+  }
+
+  function enrichTouch(touch) {
+    if (!touch) return null;
+
+    var landingPath = touch.landingPath || window.location.pathname || '/';
+    var utm = touch.utm || {};
+    var source = touch.source || classifySource(utm, touch.clickIdProvider || null, touch.referrerDomain || null);
+    var channel = touch.channel || classifyChannel(utm, touch.clickIdProvider || null, touch.referrerDomain || null);
+
+    touch.channel = channel;
+    touch.landingPath = landingPath;
+    touch.landingIntent = touch.landingIntent || classifyLandingIntent(landingPath, utm);
+    touch.landingPageKind = touch.landingPageKind || classifyLandingPageKind(landingPath);
+    touch.source = source;
+    touch.sourceCategory = touch.sourceCategory || classifySourceCategory(source, channel);
+    return touch;
+  }
+
+  function classifySource(utm, clickIdProvider, referrerDomain) {
+    var utmSource = normalizeValue(utm.utm_source);
+    if (utmSource) return utmSource;
+    if (clickIdProvider) return normalizeValue(clickIdProvider) || 'paid';
+    if (referrerDomain) return normalizeReferrerSource(referrerDomain);
+    return 'direct';
+  }
+
+  function classifyChannel(utm, clickIdProvider, referrerDomain) {
+    var medium = normalizeValue(utm.utm_medium);
+    var source = normalizeValue(utm.utm_source);
+
+    if (clickIdProvider === 'google' || clickIdProvider === 'microsoft') return 'paid_search';
+    if (clickIdProvider) return 'paid_social';
+
+    if (medium && medium.indexOf('paid') !== -1 && medium.indexOf('search') !== -1) return 'paid_search';
+    if (medium && (medium.indexOf('cpc') !== -1 || medium.indexOf('ppc') !== -1 || medium.indexOf('sem') !== -1)) {
+      return 'paid_search';
+    }
+    if (medium && medium.indexOf('paid') !== -1 && medium.indexOf('social') !== -1) return 'paid_social';
+    if (medium === 'organic-social' || medium === 'social') return 'organic_social';
+    if (medium === 'package-registry') return 'package_registry';
+    if (medium === 'community') return 'community';
+    if (medium === 'docs') return 'docs';
+    if (medium === 'email' || medium === 'newsletter') return 'email';
+    if (medium === 'launch') return 'launch';
+    if (medium === 'referral' || medium === 'partner') return 'referral';
+
+    if (source && (source === 'github' || source === 'npm' || source === 'jsr')) {
+      return source === 'npm' || source === 'jsr' ? 'package_registry' : 'developer_referral';
+    }
+    if (source && ['x', 'twitter', 'linkedin', 'meta', 'facebook', 'threads', 'tiktok'].indexOf(source) !== -1) {
+      return 'organic_social';
+    }
+    if (source && ['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'].indexOf(source) !== -1) return 'ai_referral';
+
+    if (!referrerDomain) return 'direct';
+
+    var referrer = normalizeReferrerSource(referrerDomain);
+    if (isSearchSource(referrer)) return 'organic_search';
+    if (isAiSource(referrer)) return 'ai_referral';
+    if (['github', 'stackoverflow', 'hackernews', 'news.ycombinator'].indexOf(referrer) !== -1) {
+      return 'developer_referral';
+    }
+    if (['npm', 'jsr'].indexOf(referrer) !== -1) return 'package_registry';
+    if (['x', 'twitter', 'linkedin', 'reddit', 'youtube', 'facebook', 'threads', 'tiktok'].indexOf(referrer) !== -1) {
+      return 'organic_social';
+    }
+
+    return 'referral';
+  }
+
+  function classifySourceCategory(source, channel) {
+    if (channel === 'organic_search' || channel === 'paid_search') return 'search';
+    if (channel === 'ai_referral') return 'ai';
+    if (channel === 'developer_referral' || channel === 'package_registry' || channel === 'docs') return 'developer';
+    if (channel === 'paid_social' || channel === 'organic_social' || channel === 'community') return 'social';
+    if (channel === 'email') return 'email';
+    if (channel === 'direct') return 'direct';
+    if (source && isSearchSource(source)) return 'search';
+    if (source && isAiSource(source)) return 'ai';
+    return 'referral';
+  }
+
+  function classifyLandingIntent(landingPath, utm) {
+    var text = [
+      landingPath,
+      utm.utm_campaign,
+      utm.utm_content,
+      utm.utm_term,
+      utm.utm_source,
+      utm.utm_medium,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    if (text.indexOf('mcp') !== -1) return 'mcp';
+    if (
+      text.indexOf('project-health') !== -1 ||
+      text.indexOf('health-ci') !== -1 ||
+      text.indexOf('project health') !== -1
+    ) {
+      return 'project_health_ci';
+    }
+    if (text.indexOf('existing-app') !== -1 || text.indexOf('brownfield') !== -1) return 'existing_app_adoption';
+    if (
+      text.indexOf('ai-assistant') !== -1 ||
+      text.indexOf('cursor') !== -1 ||
+      text.indexOf('claude') !== -1 ||
+      text.indexOf('codex') !== -1
+    ) {
+      return 'ai_assistant_setup';
+    }
+    if (
+      text.indexOf('design-contract') !== -1 ||
+      text.indexOf('guardrail') !== -1 ||
+      text.indexOf('design-token') !== -1
+    ) {
+      return 'design_guardrails';
+    }
+    if (
+      text.indexOf('registry') !== -1 ||
+      text.indexOf('pattern') !== -1 ||
+      text.indexOf('theme') !== -1 ||
+      text.indexOf('blueprint') !== -1
+    ) {
+      return 'registry_content';
+    }
+    if (text.indexOf('cli') !== -1 || text.indexOf('install') !== -1 || text.indexOf('quickstart') !== -1) {
+      return 'cli_install';
+    }
+    if (landingPath.indexOf('/guides/') === 0 || landingPath.indexOf('/reference/') === 0) return 'docs_reference';
+    if (landingPath === '/' || text.indexOf('decantr-ai') !== -1 || text.indexOf('brand') !== -1) return 'brand';
+    return 'unknown';
+  }
+
+  function classifyLandingPageKind(landingPath) {
+    if (landingPath === '/') return 'homepage';
+    if (landingPath.indexOf('/guides/') === 0) return 'guide';
+    if (landingPath.indexOf('/reference/') === 0) return 'reference';
+    if (landingPath.indexOf('/showcase/') === 0) return 'showcase';
+    if (landingPath.indexOf('/browse') === 0) return 'registry_browse';
+    if (landingPath.indexOf('/dashboard') === 0) return 'dashboard';
+    if (landingPath.indexOf('/admin') === 0) return 'admin';
+    if (landingPath === '/login') return 'auth';
+    if (/^\/[^/]+\/[^/]+\/[^/]+/.test(landingPath)) return 'registry_detail';
+    return 'other';
+  }
+
+  function normalizeValue(value) {
+    var normalized = value && value.trim ? value.trim().toLowerCase().replace(/^www\./, '') : null;
+    return normalized ? normalized.slice(0, 80) : null;
+  }
+
+  function normalizeReferrerSource(domain) {
+    var normalized = normalizeValue(domain) || 'referral';
+    if (normalized.indexOf('google.') !== -1) return 'google';
+    if (normalized.indexOf('bing.') !== -1) return 'bing';
+    if (normalized.indexOf('duckduckgo.') !== -1) return 'duckduckgo';
+    if (normalized.indexOf('yahoo.') !== -1) return 'yahoo';
+    if (normalized.indexOf('chatgpt.') !== -1 || normalized.indexOf('openai.') !== -1) return 'chatgpt';
+    if (normalized.indexOf('perplexity.') !== -1) return 'perplexity';
+    if (normalized.indexOf('claude.') !== -1 || normalized.indexOf('anthropic.') !== -1) return 'claude';
+    if (normalized.indexOf('gemini.') !== -1 || normalized.indexOf('bard.google.') !== -1) return 'gemini';
+    if (normalized.indexOf('github.') !== -1) return 'github';
+    if (normalized.indexOf('npmjs.') !== -1) return 'npm';
+    if (normalized.indexOf('jsr.') !== -1) return 'jsr';
+    if (normalized.indexOf('x.com') !== -1 || normalized.indexOf('twitter.') !== -1) return 'x';
+    if (normalized.indexOf('linkedin.') !== -1) return 'linkedin';
+    if (normalized.indexOf('reddit.') !== -1) return 'reddit';
+    if (normalized.indexOf('news.ycombinator.') !== -1) return 'news.ycombinator';
+    if (normalized.indexOf('stackoverflow.') !== -1) return 'stackoverflow';
+    if (normalized.indexOf('discord.') !== -1) return 'discord';
+    if (normalized.indexOf('youtube.') !== -1) return 'youtube';
+    return normalized.slice(0, 80);
+  }
+
+  function isSearchSource(source) {
+    return ['google', 'bing', 'duckduckgo', 'yahoo', 'yandex', 'baidu', 'kagi'].indexOf(source) !== -1;
+  }
+
+  function isAiSource(source) {
+    return ['chatgpt', 'perplexity', 'claude', 'gemini', 'copilot'].indexOf(source) !== -1;
   }
 
   function getClickIdProvider(params) {

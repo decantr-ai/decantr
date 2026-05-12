@@ -7,6 +7,7 @@ export interface DetectedProject {
     | 'vue'
     | 'svelte'
     | 'angular'
+    | 'solid'
     | 'nextjs'
     | 'nuxt'
     | 'astro'
@@ -150,6 +151,9 @@ export function detectProject(projectRoot: string = process.cwd()): DetectedProj
       } else if (deps['@angular/core']) {
         result.framework = 'angular';
         result.version = deps['@angular/core'].replace(/^\^|~/, '');
+      } else if (deps['solid-js']) {
+        result.framework = 'solid';
+        result.version = deps['solid-js'].replace(/^\^|~/, '');
       } else if (deps.vue) {
         result.framework = 'vue';
         result.version = deps.vue.replace(/^\^|~/, '');

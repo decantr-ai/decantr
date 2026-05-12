@@ -345,7 +345,7 @@ POSTHOG_ENVIRONMENT_ID=
 - `private_registry.intent_clicked` when a gated user opens billing, team, or private-registry intent CTAs
 - `private_registry.content_listed` when an authorized Enterprise workspace lists private-registry content counts
 
-Registry web events are enriched with the same campaign attribution fields as the marketing site when a user arrives with UTM parameters, supported ad click ids, or an external referrer. The registry app can override the default endpoint with `NEXT_PUBLIC_DECANTR_TELEMETRY_ENDPOINT` and can disable client telemetry with `NEXT_PUBLIC_DECANTR_TELEMETRY_DISABLED=true`.
+Registry web events are enriched with the same campaign attribution fields as the marketing site when a user arrives with UTM parameters, supported ad click ids, or an external referrer. Both surfaces also infer a sanitized discovery channel, source category, landing-page kind, and landing intent so PostHog can separate organic search, AI referrals, developer/package referrals, social/community traffic, direct visits, and campaign traffic without storing raw referrer URLs or search queries. The registry app can override the default endpoint with `NEXT_PUBLIC_DECANTR_TELEMETRY_ENDPOINT` and can disable client telemetry with `NEXT_PUBLIC_DECANTR_TELEMETRY_DISABLED=true`.
 
 Do not enable `REGISTRY_BILLING_ENABLED` or `NEXT_PUBLIC_REGISTRY_BILLING_ENABLED` for this telemetry batch. Billing and private-registry events are readiness and intent signals only until self-serve checkout is intentionally launched.
 
@@ -374,7 +374,7 @@ The marketing script emits:
 - `marketing_web.outbound_clicked` from non-registry external links such as GitHub and npm
 - `marketing_web.command_clicked` from visible install and CLI command snippets
 
-Marketing attribution is deliberately narrow: UTM fields, landing path, first/last landing path, first/last UTM values, referrer domain, click-id provider, and whether a supported click id was present. It does not send the raw click id, raw referrer URL, user agent, email, IP address, prompts, source code, or file paths. Links from `decantr.ai` to `registry.decantr.ai` are decorated with current campaign parameters so registry page views and the X Pixel can keep attribution through the subdomain handoff.
+Marketing attribution is deliberately narrow: UTM fields, landing path, first/last landing path, first/last UTM values, referrer domain, click-id provider, whether a supported click id was present, inferred channel/source category, landing-page kind, and landing intent. It does not send the raw click id, raw referrer URL, user agent, email, IP address, prompts, source code, file paths, or search query text. Links from `decantr.ai` to `registry.decantr.ai` are decorated with current campaign parameters so registry page views and the X Pixel can keep attribution through the subdomain handoff.
 
 The GitHub Pages workflow writes `docs/analytics-config.js` from public repository variables before upload. The Vercel static build writes the same config into `public/analytics-config.js` from build environment variables:
 

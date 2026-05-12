@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -52,6 +52,17 @@ function runCli(cliPath, cwd, args, contentRoot) {
     encoding: 'utf8',
     stdio: 'pipe',
   });
+}
+
+function installFakePackageManagers(tmpRoot) {
+  const fakeBin = join(tmpRoot, '.fake-bin');
+  mkdirSync(fakeBin, { recursive: true });
+  for (const command of ['npm', 'pnpm', 'yarn', 'bun', 'ng']) {
+    const path = join(fakeBin, command);
+    writeFileSync(path, '#!/bin/sh\nexit 0\n');
+    chmodSync(path, 0o755);
+  }
+  process.env.PATH = `${fakeBin}:${process.env.PATH ?? ''}`;
 }
 
 function seedReactProject(projectDir) {
@@ -330,14 +341,14 @@ function certifyAdoptionMode(tmpRoot, cliPath, contentRoot, adoptionMode) {
 }
 
 function certifyUnsupportedTarget(tmpRoot, cliPath, contentRoot) {
-  const projectName = 'workflow-angular-contract';
+  const projectName = 'workflow-rails-contract';
   runCli(
     cliPath,
     tmpRoot,
     [
       'new',
       projectName,
-      '--target=angular',
+      '--target=rails',
       '--workflow=greenfield',
       '--adoption=contract-only',
       '--offline',
@@ -349,6 +360,36 @@ function certifyUnsupportedTarget(tmpRoot, cliPath, contentRoot) {
     throw new Error('unsupported target wrote a runnable starter');
   }
   return { workflow: 'unsupported-target-contract-only', status: 'passed' };
+}
+
+function certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, target, adapterId, expectedFile) {
+  const projectName = `workflow-${target}-adapter`;
+  runCli(
+    cliPath,
+    tmpRoot,
+    [
+      'new',
+      projectName,
+      `--target=${target}`,
+      '--blueprint=agent-marketplace',
+      '--workflow=greenfield',
+      '--adoption=decantr-css',
+      '--offline',
+    ],
+    contentRoot,
+  );
+  const projectDir = join(tmpRoot, projectName);
+  if (!existsSync(join(projectDir, expectedFile))) {
+    throw new Error(`${adapterId} adapter did not emit ${expectedFile}`);
+  }
+  if (readProjectJson(projectDir).initialized?.adapterId !== adapterId) {
+    throw new Error(`${adapterId} adapter id was not persisted`);
+  }
+  const scaffoldPack = JSON.parse(readFileSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf8'));
+  if (scaffoldPack.target?.adapter !== adapterId) {
+    throw new Error(`${adapterId} scaffold pack target was ${scaffoldPack.target?.adapter ?? 'missing'}`);
+  }
+  return { workflow: `${adapterId}-adapter`, status: 'passed' };
 }
 
 function certifyNextAdapter(tmpRoot, cliPath, contentRoot) {
@@ -438,6 +479,7 @@ function main() {
   }
 
   const tmpRoot = mkdtempSync(join(tmpdir(), 'decantr-workflows-'));
+  installFakePackageManagers(tmpRoot);
   const results = [];
   let failed = false;
 
@@ -455,6 +497,11 @@ function main() {
       () => certifyAdoptionMode(tmpRoot, cliPath, contentRoot, 'decantr-css'),
       () => certifyUnsupportedTarget(tmpRoot, cliPath, contentRoot),
       () => certifyNextAdapter(tmpRoot, cliPath, contentRoot),
+      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'html', 'vanilla-vite', 'src/main.js'),
+      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'vue', 'vue-vite', 'src/App.vue'),
+      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'svelte', 'sveltekit', 'src/routes/+page.svelte'),
+      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'angular', 'angular', 'src/app/app.component.ts'),
+      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'solid', 'solid-vite', 'src/App.tsx'),
       () => certifyMonorepoProject(tmpRoot, cliPath, contentRoot),
       () => certifyHybrid(tmpRoot, cliPath, contentRoot),
     ];

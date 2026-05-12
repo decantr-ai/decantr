@@ -273,6 +273,7 @@ export async function runInteractivePrompts(
     { value: 'svelte', label: 'svelte', description: 'Svelte / SvelteKit' },
     { value: 'astro', label: 'astro', description: 'Astro' },
     { value: 'angular', label: 'angular', description: 'Angular' },
+    { value: 'solid', label: 'solid', description: 'SolidJS' },
     { value: 'html', label: 'html', description: 'Plain HTML/CSS/JS' },
   ];
 

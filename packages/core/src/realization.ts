@@ -43,7 +43,15 @@ export interface RealizationPlan {
   unsupportedReason?: string;
 }
 
-const CERTIFIED_REALIZATION_ADAPTERS = new Set(['react-vite', 'next-app']);
+const CERTIFIED_REALIZATION_ADAPTERS = new Set([
+  'react-vite',
+  'next-app',
+  'vanilla-vite',
+  'vue-vite',
+  'sveltekit',
+  'angular',
+  'solid-vite',
+]);
 
 function routePath(page: BlueprintPage, fallbackIndex: number): string {
   if (page.route) return page.route;

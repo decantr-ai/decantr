@@ -2,6 +2,17 @@
   "name": "@decantr/essence-spec",
   "version": "2.0.1",
   "description": "Essence schemas, validation, migration, and TypeScript types for Decantr",
+  "keywords": [
+    "decantr",
+    "decantr-ai",
+    "essence",
+    "json-schema",
+    "schema",
+    "design-contracts",
+    "ai-generated-ui",
+    "design-intelligence",
+    "ui-contract"
+  ],
   "author": "Decantr AI",
   "license": "MIT",
   "bugs": {

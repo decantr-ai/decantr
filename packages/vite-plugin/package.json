@@ -2,6 +2,17 @@
   "name": "@decantr/vite-plugin",
   "version": "0.1.1",
   "description": "Experimental Vite plugin for Decantr guard feedback during local development",
+  "keywords": [
+    "decantr",
+    "decantr-ai",
+    "vite",
+    "vite-plugin",
+    "ai-generated-ui",
+    "design-intelligence",
+    "drift-detection",
+    "project-health",
+    "experimental"
+  ],
   "author": "Decantr AI",
   "license": "MIT",
   "bugs": {
@@ -23,7 +34,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "engines": {
     "node": ">=20"

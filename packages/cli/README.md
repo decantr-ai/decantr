@@ -23,8 +23,13 @@ Use `decantr init` to attach Decantr contract/context files to an existing proje
 
 Current starter adapter availability:
 
-- `react-vite` is the runnable bootstrap adapter in this wave
+- `react-vite` is the React + Vite runnable bootstrap adapter
 - `next-app` is the runnable Next.js App Router adapter
+- `vanilla-vite` is the plain HTML/CSS/JS runnable bootstrap adapter
+- `vue-vite` is the Vue 3 + Vite runnable bootstrap adapter
+- `sveltekit` is the SvelteKit runnable bootstrap adapter
+- `angular` is the Angular standalone runnable bootstrap adapter
+- `solid-vite` is the Solid + Vite runnable bootstrap adapter
 - other contract targets use the `generic-web` contract-only adapter until their runnable adapters land
 
 Explicit workflow/adoption flags:

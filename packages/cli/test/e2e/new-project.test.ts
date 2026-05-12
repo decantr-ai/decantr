@@ -123,6 +123,83 @@ describe('new command (e2e)', () => {
     expect(output).toContain('Bootstrapped Next.js App Router starter');
   });
 
+  it.each([
+    {
+      target: 'html',
+      adapterId: 'vanilla-vite',
+      files: ['package.json', 'index.html', 'src/main.js'],
+      absentDeps: ['react', 'next'],
+    },
+    {
+      target: 'vue',
+      adapterId: 'vue-vite',
+      files: ['package.json', 'vite.config.ts', 'src/main.ts', 'src/App.vue'],
+      deps: ['vue', 'vue-router'],
+    },
+    {
+      target: 'svelte',
+      adapterId: 'sveltekit',
+      files: ['package.json', 'svelte.config.js', 'src/app.html', 'src/routes/+page.svelte'],
+      deps: ['svelte', '@sveltejs/kit'],
+    },
+    {
+      target: 'angular',
+      adapterId: 'angular',
+      files: ['package.json', 'angular.json', 'src/main.ts', 'src/app/app.component.ts'],
+      deps: ['@angular/core', '@angular/router'],
+    },
+    {
+      target: 'solid',
+      adapterId: 'solid-vite',
+      files: ['package.json', 'vite.config.ts', 'src/main.tsx', 'src/App.tsx'],
+      deps: ['solid-js', '@solidjs/router'],
+    },
+  ])('creates a runnable $target starter through $adapterId', ({ target, adapterId, files, deps, absentDeps }) => {
+    writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    const fakeBinDir = join(testDir, '.fake-bin');
+    mkdirSync(fakeBinDir, { recursive: true });
+    const fakePnpm = join(fakeBinDir, 'pnpm');
+    writeFileSync(fakePnpm, '#!/bin/sh\nexit 0\n');
+    chmodSync(fakePnpm, 0o755);
+
+    execSync(
+      `node ${cliPath} new ${target}-smoke --blueprint=agent-marketplace --target=${target} --offline`,
+      {
+        cwd: testDir,
+        env: {
+          ...process.env,
+          DECANTR_CONTENT_DIR: contentRoot,
+          PATH: `${fakeBinDir}:${process.env.PATH ?? ''}`,
+        },
+        stdio: 'pipe',
+        timeout: 30000,
+      },
+    );
+
+    const projectDir = join(testDir, `${target}-smoke`);
+    const packageJson = JSON.parse(readFileSync(join(projectDir, 'package.json'), 'utf-8')) as {
+      dependencies?: Record<string, string>;
+    };
+    const projectJson = JSON.parse(
+      readFileSync(join(projectDir, '.decantr', 'project.json'), 'utf-8'),
+    ) as { initialized?: { adapterId?: string } };
+    const scaffoldPack = JSON.parse(
+      readFileSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf-8'),
+    ) as { target?: { adapter?: string } };
+
+    for (const file of files) {
+      expect(existsSync(join(projectDir, file))).toBe(true);
+    }
+    for (const dep of deps ?? []) {
+      expect(packageJson.dependencies?.[dep]).toBeDefined();
+    }
+    for (const dep of absentDeps ?? []) {
+      expect(packageJson.dependencies?.[dep]).toBeUndefined();
+    }
+    expect(projectJson.initialized?.adapterId).toBe(adapterId);
+    expect(scaffoldPack.target?.adapter).toBe(adapterId);
+  });
+
   it('records blank greenfield new as greenfield contract-only instead of brownfield attach', () => {
     writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
     const fakeBinDir = join(testDir, '.fake-bin');

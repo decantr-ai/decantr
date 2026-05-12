@@ -30,6 +30,11 @@ Adapter support is intentionally separate from npm package support. `@decantr/cl
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `react-vite` | React + Vite | yes | yes | yes | yes | yes | Primary runnable starter and certified first-mile realization adapter. |
 | `next-app` | Next.js App Router / Pages Router | yes | yes | yes | yes | yes | Boots App Router greenfield projects and records App/Pages Router attach metadata. |
+| `vanilla-vite` | Plain HTML/CSS/JavaScript + Vite | yes | yes | yes | yes | yes | Framework-free runnable starter that proves the contract is not React-shaped. |
+| `vue-vite` | Vue 3 + Vite | yes | yes | yes | yes | yes | Boots Vue Router projects and records Vue route/component attach metadata. |
+| `sveltekit` | SvelteKit | yes | yes | yes | yes | yes | Boots SvelteKit file-route projects and records route/layout attach metadata. |
+| `angular` | Angular standalone | yes | yes | yes | yes | yes | Boots modern standalone Angular projects and records Angular Router attach metadata. |
+| `solid-vite` | Solid + Vite | yes | yes | yes | yes | yes | Boots Solid Vite projects and records Solid route/component attach metadata. |
 | `generic-web` | Unsupported or unspecified web targets | no | no | yes | contract-only | basic | Fallback adapter for contract-only Decantr adoption without runtime ownership. |
 
 Unsupported framework targets are still valid Decantr contract targets. They should resolve through `generic-web` unless and until a runnable adapter lands.
