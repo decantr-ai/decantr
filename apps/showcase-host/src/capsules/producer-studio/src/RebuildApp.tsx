@@ -451,9 +451,14 @@ function HomePage() {
 const navItems = [
   { label: 'Session', route: '/session', icon: SlidersHorizontal, match: '/session' },
   { label: 'Tracks', route: '/tracks', icon: Library, match: '/tracks' },
-  { label: 'Splits', route: '/collab/splits', icon: Percent, match: '/collab' },
+  { label: 'Collaborators', route: '/collab', icon: UserCircle, match: '/collab', exact: true },
+  { label: 'Splits', route: '/collab/splits', icon: Percent, match: '/collab/splits' },
   { label: 'Rooms', route: '/rooms', icon: Radio, match: '/rooms' }
 ];
+
+function isNavActive(pathname: string, item: (typeof navItems)[number]) {
+  return item.exact ? pathname === item.match : pathname === item.match || pathname.startsWith(`${item.match}/`);
+}
 
 function StudioShell({ children, title, actions }: { children: ReactNode; title: string; actions?: ReactNode }) {
   const location = useLocation();
@@ -464,12 +469,22 @@ function StudioShell({ children, title, actions }: { children: ReactNode; title:
     <AppFrame>
       <div className="ps2-shell">
         <aside className={`ps2-sidebar ${open ? 'open' : ''}`}>
-          <Link to="/session" className="ps2-brand"><Disc3 size={18} /> Studio</Link>
-          <nav>
+          <div className="ps2-sidebar-top">
+            <Link to="/session" className="ps2-brand ps2-sidebar-brand"><Disc3 size={18} /> Producer Studio</Link>
+            <div className="ps2-sidebar-session">
+              <span className="ps2-live-dot" />
+              <div>
+                <strong>Midnight Pulse</strong>
+                <small>Control Room A / 128 BPM / Am</small>
+              </div>
+            </div>
+          </div>
+          <nav aria-label="Studio sections">
+            <small className="ps2-nav-label">Workspace</small>
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
-                <Link key={item.route} to={item.route} className={location.pathname.startsWith(item.match) ? 'active' : ''} onClick={() => setOpen(false)}>
+                <Link key={item.route} to={item.route} className={isNavActive(location.pathname, item) ? 'active' : ''} onClick={() => setOpen(false)}>
                   <Icon size={17} /> {item.label}
                 </Link>
               );
@@ -485,7 +500,7 @@ function StudioShell({ children, title, actions }: { children: ReactNode; title:
             <button className="ps2-icon-button ps2-mobile-only" type="button" onClick={() => setOpen((value) => !value)} aria-label="Toggle navigation">
               {open ? <X size={18} /> : <Menu size={18} />}
             </button>
-            <div><small>Producer Studio</small><h1>{title}</h1></div>
+            <div><small>Live studio workspace</small><h1>{title}</h1></div>
             <div className="ps2-header-actions">{actions ?? <PresenceStack />}</div>
           </header>
           {children}
@@ -494,7 +509,7 @@ function StudioShell({ children, title, actions }: { children: ReactNode; title:
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.route} to={item.route} className={location.pathname.startsWith(item.match) ? 'active' : ''}>
+              <Link key={item.route} to={item.route} className={isNavActive(location.pathname, item) ? 'active' : ''}>
                 <Icon size={18} /><span>{item.label}</span>
               </Link>
             );
@@ -502,6 +517,15 @@ function StudioShell({ children, title, actions }: { children: ReactNode; title:
         </nav>
       </div>
     </AppFrame>
+  );
+}
+
+function StudioMetric({ icon, label, value, tone = 'neutral' }: { icon: ReactNode; label: string; value: string; tone?: 'neutral' | 'good' | 'warn' }) {
+  return (
+    <article className={`ps2-studio-metric ${tone}`}>
+      <span>{icon}</span>
+      <div><strong>{value}</strong><small>{label}</small></div>
+    </article>
   );
 }
 
@@ -560,12 +584,22 @@ function StemBrowser({ compact = false }: { compact?: boolean }) {
       </div>
       {tracks.map((track) => (
         <Link to={`/tracks/${track.id}`} className="ps2-track-card" key={track.id}>
-          <div>
+          <div className="ps2-track-card-main">
             <strong>{track.title}</strong>
-            <small>{track.artist} / {track.bpm} BPM / {track.key} / {track.genre}</small>
+            <small>{track.artist}</small>
+            <div className="ps2-track-meta">
+              <span>{track.bpm} BPM</span>
+              <span>{track.key}</span>
+              <span>{track.genre}</span>
+              <span>{track.duration}</span>
+            </div>
           </div>
           <Waveform stem={track.stems[0]} bars={compact ? 24 : 38} />
-          <span className={`ps2-status-pill ${track.status}`}>{track.status}</span>
+          <div className="ps2-track-actions">
+            <span className={`ps2-status-pill ${track.status}`}>{track.status}</span>
+            <small>{track.versions.length} versions</small>
+            <small>{track.updated}</small>
+          </div>
         </Link>
       ))}
     </section>
@@ -575,7 +609,26 @@ function StemBrowser({ compact = false }: { compact?: boolean }) {
 function TracksPage() {
   return (
     <StudioShell title="Track crate">
-      <main className="ps2-list-page"><StemBrowser /></main>
+      <main className="ps2-track-crate-page">
+        <section className="ps2-crate-overview">
+          <StudioMetric icon={<AudioWaveform size={17} />} value="15" label="stems indexed" />
+          <StudioMetric icon={<Clock3 size={17} />} value="3" label="sessions active" />
+          <StudioMetric icon={<CheckCircle2 size={17} />} value="2" label="ready to bounce" tone="good" />
+          <StudioMetric icon={<AlertTriangle size={17} />} value="1" label="split pending" tone="warn" />
+        </section>
+        <div className="ps2-crate-grid">
+          <StemBrowser />
+          <aside className="ps2-crate-sidecar">
+            <div className="ps2-panel-heading"><Headphones size={16} /> Session queue</div>
+            {tracks.map((track) => (
+              <Link to={`/tracks/${track.id}`} key={track.id}>
+                <strong>{track.title}</strong>
+                <small>{track.status} / {track.updated}</small>
+              </Link>
+            ))}
+          </aside>
+        </div>
+      </main>
     </StudioShell>
   );
 }
@@ -585,10 +638,16 @@ function TrackDetailPage() {
   const track = tracks.find((item) => item.id === id) ?? tracks[0];
   return (
     <StudioShell title={track.title}>
-      <main className="ps2-workspace detail-page">
+      <main className="ps2-workspace detail-page ps2-track-detail-workbench">
         <TransportBar compact />
-        <ArrangementCanvas preview />
-        <VersionTimeline track={track} />
+        <div className="ps2-track-detail-grid">
+          <section className="ps2-track-review-pane">
+            <ArrangementCanvas preview />
+            <SessionInspector track={track} />
+          </section>
+          <VersionTimeline track={track} />
+        </div>
+        <MixerConsole compact />
       </main>
     </StudioShell>
   );
@@ -601,7 +660,10 @@ function VersionTimeline({ track }: { track: Track }) {
       {track.versions.map((version) => (
         <article key={version.id}>
           <BadgeCheck size={16} />
-          <div><strong>{version.label}</strong><small>{version.author} / {version.time}</small><p>{version.note}</p></div>
+          <div className="ps2-version-copy">
+            <div><strong>{version.label}</strong><small>{version.author} / {version.time}</small></div>
+            <p>{version.note}</p>
+          </div>
         </article>
       ))}
     </section>
@@ -609,10 +671,31 @@ function VersionTimeline({ track }: { track: Track }) {
 }
 
 function CollaboratorsPage() {
+  const signedCount = collaborators.filter((person) => person.signed).length;
   return (
     <StudioShell title="Collaborators">
-      <main className="ps2-list-page ps2-collaborator-grid">
-        {collaborators.map((person) => <CollaboratorCard key={person.id} person={person} />)}
+      <main className="ps2-collab-page">
+        <section className="ps2-collab-command">
+          <StudioMetric icon={<Activity size={17} />} value={`${collaborators.length}`} label="contributors" />
+          <StudioMetric icon={<BadgeCheck size={17} />} value={`${signedCount}/${collaborators.length}`} label="signatures" tone={signedCount === collaborators.length ? 'good' : 'warn'} />
+          <StudioMetric icon={<Percent size={17} />} value="100%" label="master total" tone="good" />
+        </section>
+        <section className="ps2-contributor-board">
+          <div className="ps2-board-heading">
+            <div><small>Midnight Pulse</small><h2>Credits, roles, and live edit state</h2></div>
+            <span className="ps2-sync-pill"><Activity size={14} /> 4 live edits</span>
+          </div>
+          {collaborators.map((person) => <CollaboratorCard key={person.id} person={person} />)}
+        </section>
+        <aside className="ps2-collab-sidecar">
+          <div className="ps2-panel-heading"><Shield size={16} /> Release readiness</div>
+          <div className="ps2-status-row good"><CheckCircle2 size={15} /> Master total validates to 100%</div>
+          <div className="ps2-status-row warn"><AlertTriangle size={15} /> Publishing signatures still pending</div>
+          <div className="ps2-mini-ledger">
+            <span>Last invite</span><strong>Luna / 12m ago</strong>
+            <span>Next payout check</span><strong>May 14 / Label ops</strong>
+          </div>
+        </aside>
       </main>
     </StudioShell>
   );
@@ -622,8 +705,9 @@ function CollaboratorCard({ person }: { person: Collaborator }) {
   return (
     <article className="ps2-collab-card">
       <span className="ps2-avatar" style={{ background: person.color }}>{person.initials}</span>
-      <div><h2>{person.name}</h2><p>{person.role}</p><small>{person.status}</small></div>
+      <div className="ps2-collab-identity"><h2>{person.name}</h2><p>{person.role}</p><small>{person.status}</small></div>
       <div className="ps2-split-mini"><span>Master {person.master}%</span><span>Publishing {person.publishing}%</span></div>
+      <span className={`ps2-status-pill ${person.signed ? 'signed' : 'recording'}`}>{person.signed ? 'signed' : 'pending'}</span>
     </article>
   );
 }
@@ -633,25 +717,59 @@ function SplitsPage() {
   const publishingTotal = collaborators.reduce((sum, person) => sum + person.publishing, 0);
   return (
     <StudioShell title="Split workbench">
-      <main className="ps2-list-page">
-        <section className="ps2-split-workbench">
-          <div className="ps2-split-header">
-            <div><small>Midnight Pulse</small><h2>Royalty readiness</h2></div>
-            <span className={masterTotal === 100 && publishingTotal === 100 ? 'valid-total' : 'invalid-total'}>
-              {masterTotal}% master / {publishingTotal}% publishing
-            </span>
-          </div>
-          {collaborators.map((person) => (
-            <article className="ps2-split-row" key={person.id}>
-              <span className="ps2-avatar" style={{ background: person.color }}>{person.initials}</span>
-              <strong>{person.name}</strong>
-              <span>{person.role}</span>
-              <span>Master {person.master}%</span>
-              <span>Pub {person.publishing}%</span>
-              <span className={person.signed ? 'signed' : 'pending'}>{person.signed ? 'Signed' : 'Pending'}</span>
+      <main className="ps2-splits-page">
+        <section className="ps2-split-main">
+          <section className="ps2-split-workbench">
+            <div className="ps2-split-header">
+              <div><small>Midnight Pulse</small><h2>Royalty readiness</h2></div>
+              <span className={masterTotal === 100 && publishingTotal === 100 ? 'valid-total' : 'invalid-total'}>
+                {masterTotal}% master / {publishingTotal}% publishing
+              </span>
+            </div>
+            {collaborators.map((person) => (
+              <article className="ps2-split-row" key={person.id}>
+                <span className="ps2-avatar" style={{ background: person.color }}>{person.initials}</span>
+                <strong>{person.name}</strong>
+                <span>{person.role}</span>
+                <span>Master {person.master}%</span>
+                <span>Pub {person.publishing}%</span>
+                <span className={person.signed ? 'signed' : 'pending'}>{person.signed ? 'Signed' : 'Pending'}</span>
+              </article>
+            ))}
+          </section>
+          <section className="ps2-ops-grid">
+            <article className="ps2-ops-card">
+              <div className="ps2-panel-heading"><Clock3 size={16} /> Signature timeline</div>
+              <div className="ps2-ops-row"><span>Today</span><strong>DJ Kael and MC Drift locked master shares</strong><small>verified</small></div>
+              <div className="ps2-ops-row"><span>Next</span><strong>Luna publishing signature</strong><small>queued</small></div>
+              <div className="ps2-ops-row"><span>Legal</span><strong>Juno Park agreement review</strong><small>pending</small></div>
             </article>
-          ))}
+            <article className="ps2-ops-card">
+              <div className="ps2-panel-heading"><Shield size={16} /> Distribution gates</div>
+              <div className="ps2-status-row good"><CheckCircle2 size={15} /> Master ownership totals validate</div>
+              <div className="ps2-status-row good"><CheckCircle2 size={15} /> PRO export fields complete</div>
+              <div className="ps2-status-row warn"><AlertTriangle size={15} /> Publishing signatures block release package</div>
+            </article>
+            <article className="ps2-ops-card">
+              <div className="ps2-panel-heading"><Activity size={16} /> Ledger snapshot</div>
+              <div className="ps2-mini-ledger">
+                <span>Advance recoup</span><strong>$4,200 remaining</strong>
+                <span>Next report</span><strong>Friday / label ops</strong>
+                <span>Export format</span><strong>CSV plus PDF summary</strong>
+              </div>
+            </article>
+          </section>
         </section>
+        <aside className="ps2-split-sidecar">
+          <div className="ps2-panel-heading"><Percent size={16} /> Clearance queue</div>
+          <StudioMetric icon={<CheckCircle2 size={17} />} value={`${masterTotal}%`} label="master validated" tone="good" />
+          <StudioMetric icon={<BadgeCheck size={17} />} value="2/5" label="signatures complete" tone="warn" />
+          <div className="ps2-mini-ledger">
+            <span>Next signer</span><strong>Luna / songwriter</strong>
+            <span>Publishing gap</span><strong>3 signatures</strong>
+            <span>Export lock</span><strong>Release package waits on splits</strong>
+          </div>
+        </aside>
       </main>
     </StudioShell>
   );
@@ -660,8 +778,51 @@ function SplitsPage() {
 function RoomsPage() {
   return (
     <StudioShell title="Live rooms">
-      <main className="ps2-list-page ps2-rooms-grid">
-        {rooms.map((room) => <RoomCard key={room.id} room={room} />)}
+      <main className="ps2-rooms-page">
+        <section className="ps2-room-main">
+          <section className="ps2-room-board">
+            <div className="ps2-board-heading">
+              <div><small>Shared session rooms</small><h2>Live transport, cue queue, and latency at a glance</h2></div>
+              <span className="ps2-sync-pill"><Radio size={14} /> {rooms.filter((room) => room.status !== 'idle').length} active</span>
+            </div>
+            <div className="ps2-room-list">
+              {rooms.map((room) => <RoomCard key={room.id} room={room} />)}
+            </div>
+          </section>
+          <section className="ps2-ops-grid">
+            <article className="ps2-ops-card">
+              <div className="ps2-panel-heading"><MessageSquare size={16} /> Cue traffic</div>
+              <div className="ps2-ops-row"><span>Bar 33</span><strong>Control Room A punch-in</strong><small>armed</small></div>
+              <div className="ps2-ops-row"><span>Bridge</span><strong>Vocal Booth harmony stack</strong><small>queued</small></div>
+              <div className="ps2-ops-row"><span>Limiter</span><strong>Mastering Review A/B pass</strong><small>review</small></div>
+            </article>
+            <article className="ps2-ops-card">
+              <div className="ps2-panel-heading"><MonitorSpeaker size={16} /> Patchbay health</div>
+              <div className="ps2-meter-row"><span>Talkback</span><i style={{ '--level': '92%' } as CSSProperties} /></div>
+              <div className="ps2-meter-row"><span>Shared click</span><i style={{ '--level': '84%' } as CSSProperties} /></div>
+              <div className="ps2-meter-row"><span>Stem return</span><i style={{ '--level': '76%' } as CSSProperties} /></div>
+            </article>
+            <article className="ps2-ops-card">
+              <div className="ps2-panel-heading"><Headphones size={16} /> Operator roster</div>
+              <div className="ps2-mini-ledger">
+                <span>Engineer</span><strong>Prism monitoring latency</strong>
+                <span>Producer</span><strong>DJ Kael owns cue order</strong>
+                <span>Vocal lead</span><strong>Luna ready in booth</strong>
+              </div>
+            </article>
+          </section>
+        </section>
+        <aside className="ps2-room-control">
+          <div className="ps2-panel-heading"><Gauge size={16} /> Room monitor</div>
+          <StudioMetric icon={<Gauge size={17} />} value="24ms" label="median latency" />
+          <StudioMetric icon={<Mic2 size={17} />} value="2" label="armed takes" tone="warn" />
+          <div className="ps2-take-list">
+            <span>Next cue</span>
+            <strong>Hook comp pass / Bar 33</strong>
+            <span>Master bus</span>
+            <strong>-9.1 LUFS / true peak clean</strong>
+          </div>
+        </aside>
       </main>
     </StudioShell>
   );
@@ -671,12 +832,13 @@ function RoomCard({ room }: { room: Room }) {
   return (
     <Link to={`/rooms/${room.id}`} className="ps2-room-card">
       <div className="ps2-room-stage">
-        <Radio size={22} />
+        <div><Radio size={22} /><small>Host: {room.host}</small></div>
         <span className={`ps2-status-pill ${room.status}`}>{room.status}</span>
+        <div className="ps2-room-levels"><span /><span /><span /></div>
       </div>
       <h2>{room.name}</h2>
       <p>{room.cue}</p>
-      <div><span>{room.bpm} BPM</span><span>{room.key}</span><span>{room.latency}ms</span></div>
+      <div className="ps2-room-meta"><span>{room.bpm} BPM</span><span>{room.key}</span><span>{room.latency}ms</span></div>
       <div className="ps2-presence">{room.participants.map((p) => <span key={p}>{p}</span>)}</div>
     </Link>
   );
@@ -687,19 +849,34 @@ function RoomDetailPage() {
   const room = rooms.find((item) => item.id === id) ?? rooms[0];
   return (
     <StudioShell title={room.name}>
-      <main className="ps2-workspace room-detail">
-        <section className="ps2-live-stage">
-          <div><Mic2 size={26} /><span className={`ps2-status-pill ${room.status}`}>{room.status}</span></div>
-          <h2>{room.cue}</h2>
-          <p>Hosted by {room.host}. Shared transport is locked at {room.bpm} BPM in {room.key}; latency {room.latency}ms.</p>
-          <PresenceStack />
+      <main className="ps2-room-detail-console">
+        <section className="ps2-room-detail-main">
+          <section className="ps2-live-stage">
+            <div><Mic2 size={26} /><span className={`ps2-status-pill ${room.status}`}>{room.status}</span></div>
+            <h2>{room.cue}</h2>
+            <p>Hosted by {room.host}. Shared transport is locked at {room.bpm} BPM in {room.key}; latency {room.latency}ms.</p>
+            <div className="ps2-room-meta"><span>{room.bpm} BPM</span><span>{room.key}</span><span>{room.latency}ms latency</span></div>
+            <PresenceStack />
+          </section>
+          <TransportBar compact />
+          <section className="ps2-take-queue">
+            <div className="ps2-panel-heading"><AudioWaveform size={16} /> Take queue</div>
+            {['Punch bar 33', 'Harmony pass', 'Limiter A/B'].map((cue, index) => (
+              <article key={cue}><span>0{index + 1}</span><strong>{cue}</strong><small>{index === 0 ? 'armed' : index === 1 ? 'queued' : 'review'}</small></article>
+            ))}
+          </section>
         </section>
-        <TransportBar compact />
-        <section className="ps2-chat-panel">
-          <div className="ps2-panel-heading"><MessageSquare size={16} /> Room notes</div>
-          <p><strong>DJ Kael:</strong> Punch in at bar 33, same pre-delay.</p>
-          <p><strong>Luna:</strong> Keeping take 04. One harmony pass left.</p>
-        </section>
+        <aside className="ps2-room-sidecar">
+          <section className="ps2-chat-panel">
+            <div className="ps2-panel-heading"><MessageSquare size={16} /> Room notes</div>
+            <p><strong>DJ Kael:</strong> Punch in at bar 33, same pre-delay.</p>
+            <p><strong>Luna:</strong> Keeping take 04. One harmony pass left.</p>
+          </section>
+          <section className="ps2-chat-panel">
+            <div className="ps2-panel-heading"><Headphones size={16} /> Voice sync</div>
+            {room.participants.map((person) => <p key={person}><strong>{person}</strong> voice clean / cursor synced</p>)}
+          </section>
+        </aside>
       </main>
     </StudioShell>
   );
@@ -757,7 +934,7 @@ function SettingsPage({ page }: { page: 'profile' | 'security' | 'preferences' |
   const [Icon, title, copy] = data[page];
   return (
     <StudioShell title={title}>
-      <main className="ps2-list-page">
+      <main className="ps2-settings-page">
         <section className="ps2-settings-panel">
           <Icon size={28} />
           <h2>{title}</h2>
@@ -768,6 +945,12 @@ function SettingsPage({ page }: { page: 'profile' | 'security' | 'preferences' |
             <label><input type="checkbox" defaultChecked /> Show live collaborator cursors</label>
           </div>
         </section>
+        <aside className="ps2-settings-sidecar">
+          <div className="ps2-panel-heading"><Shield size={16} /> Studio guardrails</div>
+          <div className="ps2-status-row good"><CheckCircle2 size={15} /> Mock auth routes open the session cockpit</div>
+          <div className="ps2-status-row good"><CheckCircle2 size={15} /> Deterministic waveform data enabled</div>
+          <div className="ps2-status-row warn"><AlertTriangle size={15} /> Label export requires split signatures</div>
+        </aside>
       </main>
     </StudioShell>
   );
