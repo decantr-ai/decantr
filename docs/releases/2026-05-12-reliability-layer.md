@@ -1,5 +1,7 @@
 # Decantr Reliability Layer
 
+Release targets: `@decantr/cli@2.4.0`, `@decantr/verifier@2.1.0`, and `@decantr/mcp-server@2.1.0`.
+
 The next 2.x phase makes Project Health the evidence-backed reliability spine for AI-generated UI.
 
 Highlights:
