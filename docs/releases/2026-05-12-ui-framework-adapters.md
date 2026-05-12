@@ -2,6 +2,8 @@
 
 Date: 2026-05-12
 
+Release targets: `@decantr/core@2.1.0` and `@decantr/cli@2.4.0`.
+
 This release expands Decantr's certified runnable adapter surface while keeping the core contract stack-agnostic.
 
 ## Added
