@@ -1,6 +1,6 @@
 # Decantr
 
-> Design intelligence, governance, and verification for AI-generated UI. Decantr is the contract layer between product intent and AI-generated implementation — giving coding assistants structured design inputs, registry-backed UI knowledge, and scoped context files so they build coherent product surfaces instead of improvising screen by screen.
+> Evidence-backed design intelligence, governance, and verification for AI-generated UI. Decantr is the contract layer between product intent and AI-generated implementation — giving coding assistants structured design inputs, registry-backed UI knowledge, scoped context files, health evidence, and repair prompts so they build coherent product surfaces instead of improvising screen by screen.
 
 Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the code, but Decantr defines the shape, vocabulary, and governance around it. Decantr separates design governance into two layers — **DNA** (durable visual axioms: theme, spacing, motion, accessibility, personality) and **Blueprint** (product topology: sections, page routes, shells, layouts, features). Strict where it should be strict, flexible where it should be flexible.
 
@@ -9,18 +9,20 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 - [Homepage](https://decantr.ai/): What Decantr is and why AI-generated UI needs a contract layer.
 - [Sitemap](https://decantr.ai/sitemap.xml): Crawl inventory for public Decantr docs, schemas, references, and release notes.
 - [Workflow model](https://decantr.ai/reference/workflow-model.md): Explicit workflow/adoption policy for greenfield blueprint, greenfield contract-only, brownfield attach, hybrid composition, adapters, monorepos, and offline mode.
+- [Project Health](https://decantr.ai/reference/project-health.md): Local reliability layer, Evidence Bundle, workspace health, browser verification, design-token checks, Studio, and GitHub artifact workflow.
+- [Command surface](https://decantr.ai/reference/command-surface.md): Current CLI command audit and consolidation decisions.
 - Brownfield attach is proposal-driven: run `decantr analyze`, review `.decantr/brownfield-report.md` and `.decantr/doctrine-map.json`, accept with `decantr init --existing --accept-proposal`, then verify with `decantr check --brownfield`. In brownfield, Decantr is the reconciled contract layer and existing docs/rules are ranked cited evidence, not material to overwrite by default. Proposals group observed routes into semantic product domains across common brownfield routers, preserve observed styling systems such as Tailwind/Bootstrap/MUI/Chakra/plain CSS, and report doctrine conflicts/stale risks with deterministic resolution suggestions.
 - [Public API reference](https://decantr.ai/reference/registry-public-api.html): Registry endpoints, pack compilation, critique, audit.
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.md): Which packages are stable, beta, or experimental.
 
 ## Packages
 
-- [@decantr/cli](https://www.npmjs.com/package/@decantr/cli): Resolve workflow/adoption policy, scaffold or attach Decantr, run checks, manage essence, search registry content.
-- [@decantr/mcp-server](https://www.npmjs.com/package/@decantr/mcp-server): MCP server exposing design intelligence to Claude, Cursor, Windsurf, VS Code, Zed, Continue.dev. Listed at `io.github.decantr-ai/mcp-server` in the official MCP Registry.
+- [@decantr/cli](https://www.npmjs.com/package/@decantr/cli): Resolve workflow/adoption policy, scaffold or attach Decantr, run checks, write Evidence Bundles, aggregate workspace health, manage essence, search registry content.
+- [@decantr/mcp-server](https://www.npmjs.com/package/@decantr/mcp-server): MCP server exposing design intelligence, Evidence Bundles, workspace health, and repair prompts to Claude, Cursor, Windsurf, VS Code, Zed, Continue.dev. Listed at `io.github.decantr-ai/mcp-server` in the official MCP Registry.
 - [@decantr/essence-spec](https://www.npmjs.com/package/@decantr/essence-spec): Essence schemas, validation, migration, TypeScript types.
 - [@decantr/registry](https://www.npmjs.com/package/@decantr/registry): Registry contracts, content utilities, API client surfaces.
 - [@decantr/core](https://www.npmjs.com/package/@decantr/core): Execution-pack compiler primitives.
-- [@decantr/verifier](https://www.npmjs.com/package/@decantr/verifier): Audit, critique, and report-schema engine.
+- [@decantr/verifier](https://www.npmjs.com/package/@decantr/verifier): Audit, critique, contract assertion, Evidence Bundle, and report-schema engine.
 - [@decantr/css](https://www.npmjs.com/package/@decantr/css): Framework-agnostic CSS atom runtime.
 
 ## Registry

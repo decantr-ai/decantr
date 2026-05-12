@@ -1,10 +1,10 @@
 # Decantr
 
-**Design intelligence, governance, and verification for AI-generated UI.**
+**Evidence-backed design intelligence, governance, and verification for AI-generated UI.**
 
 Decantr is the contract layer between product intent and AI-generated implementation. It gives coding assistants three things they don't have on their own — structured design inputs, registry-backed UI knowledge, and scoped context files — so they build coherent product surfaces instead of improvising screen by screen. Think of it as OpenAPI for AI-generated UI: the model still writes the code, but Decantr defines the shape, vocabulary, and checks around it.
 
-> AI generates the interface. Decantr keeps the outcome aligned.
+> AI generates the interface. Decantr proves, with local evidence, whether the outcome stayed aligned.
 
 ## Pick your path
 
@@ -58,10 +58,11 @@ Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your 
 decantr refresh   # regenerate context files from the updated essence
 decantr check     # verify the code matches the new contract
 decantr health    # produce a local project health report for triage or CI
+decantr health --evidence --output .decantr/evidence/latest.json
 decantr studio    # open the local-only health dashboard
 ```
 
-`refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules and tells you exactly where the code drifted from the contract. `decantr health` is the end-user observability surface: it combines audits, checks, route drift, runtime evidence, and pack health into a structured report, while `decantr studio` gives the same signal in a small localhost dashboard. `decantr audit` remains the lower-level audit pass when you want verifier evidence directly.
+`refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules and tells you exactly where the code drifted from the contract. `decantr health` is the end-user reliability surface: it combines audits, contract assertions, guard checks, route drift, optional browser evidence, design-token checks, and pack health into a structured report. `--evidence` writes the privacy-redacted Evidence Bundle that AI agents and CI can use for repair context. `decantr studio` gives the same signal in a small localhost dashboard, and `decantr studio --workspace` expands that view across many Decantr projects in a monorepo.
 
 > Starting from a different point? See the full [workflow model](docs/reference/workflow-model.md).
 
@@ -82,10 +83,10 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, install Project Health CI, inspect Project Health locally, and audit registry content supply-chain health |
-| MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, and audit |
+| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, write Evidence Bundles, run workspace health, install Project Health CI, inspect Studio locally, and audit registry content supply-chain health |
+| MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, audit, evidence bundles, workspace health, and repair prompts |
 | Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
-| Verifier | Shared audit, critique, Project Health, and report-schema engine |
+| Verifier | Shared audit, critique, Project Health, Evidence Bundle, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
 ## Packages
@@ -96,7 +97,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 | `@decantr/registry` | Registry contracts, schemas, content utilities, and API client surfaces |
 | `@decantr/css` | Framework-agnostic CSS atom runtime |
 | `@decantr/core` | Execution-pack compiler primitives and shared Decantr utilities |
-| `@decantr/verifier` | Shared audit, critique, and report-schema engine |
+| `@decantr/verifier` | Shared audit, critique, Evidence Bundle, contract assertion, and report-schema engine |
 | `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
 | `@decantr/cli` | Local scaffold, registry, Project Health CI/Studio, audit, and maintenance workflows |
 | `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
@@ -167,10 +168,17 @@ Project Health and CI:
 decantr health --format markdown
 decantr health --ci --fail-on error
 decantr health --prompt <finding-id>
+decantr health --evidence --output .decantr/evidence/latest.json
+decantr health --browser --base-url http://localhost:3000 --evidence
+decantr health --design-tokens .decantr/design/figma-tokens.json
 decantr health init-ci
 decantr health init-ci --project apps/registry
+decantr health init-ci --workspace
+decantr workspace health --changed --since origin/main
+decantr export --to figma-tokens
 decantr health --json --output decantr-health.json
 decantr studio --port 4319 --host 127.0.0.1
+decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
@@ -228,7 +236,7 @@ If the default port is busy:
 decantr studio --host 127.0.0.1 --port 4320
 ```
 
-Studio is local-only and shows the same Project Health signal as `decantr health`. Its Overview keeps triage focused: pick the issue to fix first, review the AI prompt before copying it, switch to manual guidance or commands, and expand project details when you need route/runtime/pack evidence.
+Studio is local-only and shows the same Project Health signal as `decantr health`. Its Overview keeps triage focused: pick the issue to fix first, review the AI prompt before copying it, switch to manual guidance or commands, and expand project details when you need route/runtime/pack evidence. Workspace mode is available with `decantr studio --workspace` when a repo contains many Decantr projects.
 
 `decantr health --prompt <finding-id>` prints a focused repair prompt for the assistant doing the implementation. It does not edit files by itself; use Studio's copy buttons or paste the printed prompt into your AI coding workflow, then rerun Project Health.
 
@@ -250,6 +258,7 @@ See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration,
 - FAQ — [docs/faq.md](docs/faq.md)
 - Published schemas — [decantr.ai/schemas](https://decantr.ai/schemas/)
 - Project Health — [docs/reference/project-health.md](docs/reference/project-health.md)
+- Command surface — [docs/reference/command-surface.md](docs/reference/command-surface.md)
 - Content Health — [docs/reference/content-health.md](docs/reference/content-health.md)
 - Workflow model — [docs/reference/workflow-model.md](docs/reference/workflow-model.md)
 - Public API reference — [docs/reference/registry-public-api.md](docs/reference/registry-public-api.md)

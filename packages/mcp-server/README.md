@@ -13,6 +13,7 @@ Design intelligence for AI-generated UI. Make Claude, Cursor, and Windsurf gener
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
 - **Structured design context** -- gives your AI assistant patterns, layouts, and component specs instead of letting it guess
+- **Evidence-backed repair loops** -- gives AI agents Project Health, Evidence Bundles, workspace health, and scoped repair prompts without uploading source
 - **Drift detection** -- catches when generated code deviates from your design intent
 - **Zero config** -- run with `npx`, no API keys or accounts required
 
@@ -138,6 +139,10 @@ The server exposes Decantr registry, context, benchmark, and verification tools.
 | `decantr_compile_execution_packs` | Compile a hosted execution-pack bundle from a local or inline essence document | `{ "path": "./decantr.essence.json", "namespace": "@official" }` |
 | `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs, with hosted fallback when local pack artifacts are missing | `{ "namespace": "@official" }` |
 | `decantr_critique` | Critique a file against the compiled review contract, with hosted fallback when local review packs are missing | `{ "file_path": "./src/pages/Overview.tsx", "namespace": "@official" }` |
+| `decantr_get_evidence_bundle` | Generate the local privacy-redacted Evidence Bundle for a project | `{ "project_path": "apps/web" }` |
+| `decantr_workspace_health` | Discover Decantr projects and return aggregate workspace health | `{ "workspace_root": ".", "max_projects": 100 }` |
+| `decantr_get_repair_prompt` | Return the scoped repair prompt for a health finding | `{ "finding_id": "assertion-contract-context-pack-manifest" }` |
+| `decantr_run_health_loop` | Run health, evidence, and next repair prompt in one local agent loop | `{ "project_path": "apps/web" }` |
 | `decantr_get_showcase_benchmarks` | Read the audited showcase corpus manifest, shortlist, or verification report | `{ "view": "verification" }` |
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
@@ -169,8 +174,10 @@ The AI assistant calls these tools behind the scenes:
 7. `decantr_check_drift` -- validates the generated code against the Essence spec before presenting it
 8. `decantr_critique` -- critiques a specific file, falling back to the hosted verifier when the local review pack is missing
 9. `decantr_audit_project` -- runs the stronger project-level audit once the implementation is in place
+10. `decantr_get_evidence_bundle` -- returns the local evidence bundle for the AI repair loop
+11. `decantr_get_repair_prompt` -- gives the assistant exact finding evidence, constraints to preserve, and commands to rerun
 
-The AI now generates code with the right layout structure, correct components, and consistent styling -- not a generic guess.
+The AI now generates code with the right layout structure, correct components, and consistent styling, then gets a scoped evidence-backed repair loop instead of a generic guess.
 
 ## License
 

@@ -16,7 +16,9 @@ npm install @decantr/verifier
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
 - `critiqueFile()` for file-level review against compiled review-pack contracts
-- schema-backed report types for project audits, Project Health, file critiques, and showcase verification
+- `createContractAssertions()` for explicit route, shell, accessibility, context, and design-token assertions derived from Essence/context
+- `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
+- schema-backed report types for project audits, Project Health, Evidence Bundles, Workspace Health, file critiques, and showcase verification
 - `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:
@@ -31,9 +33,16 @@ npm install @decantr/verifier
 ## Example
 
 ```ts
-import { auditProject, critiqueFile, type ProjectHealthReport } from '@decantr/verifier';
+import {
+  auditProject,
+  createContractAssertions,
+  createEvidenceBundle,
+  critiqueFile,
+  type ProjectHealthReport,
+} from '@decantr/verifier';
 
 const audit = await auditProject(process.cwd());
+const assertions = createContractAssertions(process.cwd(), audit);
 const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
 
 function isBlocking(report: ProjectHealthReport) {
@@ -46,6 +55,8 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/verification-report.common.v1.json`
 - `@decantr/verifier/schema/project-audit-report.v1.json`
 - `@decantr/verifier/schema/project-health-report.v1.json`
+- `@decantr/verifier/schema/evidence-bundle.v1.json`
+- `@decantr/verifier/schema/workspace-health-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 

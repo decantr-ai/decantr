@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Decantr — Design Intelligence for AI-Generated UI</title>
-  <meta name="description" content="Decantr is OpenAPI for AI-generated UI. A structured schema and design intelligence layer that makes Claude, Cursor, and Copilot generate better, more consistent web applications.">
+  <meta name="description" content="Decantr is OpenAPI for AI-generated UI: a contract, evidence, and repair layer that helps AI-generated interfaces match product intent, design rules, accessibility baselines, and org policy.">
   <link rel="canonical" href="https://decantr.ai/">
   <meta property="og:title" content="Decantr — Design Intelligence for AI-Generated UI">
   <meta property="og:description" content="We don't care what you build with. We care what you build.">
@@ -13,7 +13,7 @@
   <meta property="og:image" content="https://decantr.ai/logo.svg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Decantr — Design Intelligence for AI-Generated UI">
-  <meta name="twitter:description" content="OpenAPI for AI-generated UI. Decantr gives AI coding assistants structured design contracts, registry-backed UI knowledge, and drift checks.">
+  <meta name="twitter:description" content="OpenAPI for AI-generated UI. Decantr gives AI coding assistants structured design contracts, evidence bundles, workspace health, and repair prompts.">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <script type="application/ld+json">
   {
@@ -48,7 +48,7 @@
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Cross-platform",
         "url": "https://decantr.ai/",
-        "description": "Design intelligence, governance, and verification for AI-generated UI.",
+        "description": "Evidence-backed design intelligence, governance, and verification for AI-generated UI.",
         "sameAs": "https://github.com/decantr-ai/decantr",
         "offers": {
           "@type": "Offer",
@@ -2466,8 +2466,8 @@
       <h1 class="hero-title">decantr<span class="accent-dot">.</span>a<span class="accent-dot">i</span></h1>
       <p class="hero-body-highlight">We don't care what you build <span class="hero-accent-2">with</span>.</p>
       <p class="hero-body-highlight"> We care <span class="hero-accent underline">what</span> you build.</p>
-      <p class="hero-body">Decantr is the design intelligence layer for AI-generated web applications.</p>
-      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> A contract the AI <span class="hero-positioning-emph">checks itself against</span>.</p>
+      <p class="hero-body">Decantr is the evidence-backed reliability layer for AI-generated web applications.</p>
+      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> A contract the AI <span class="hero-positioning-emph">checks, proves, and repairs against</span>.</p>
       <div class="hero-ctas">
         <a href="#quickstart" class="btn-primary">Get Started</a>
         <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
@@ -3050,7 +3050,7 @@ Start with the shell layouts, then build each section's pages.</div>
     <div class="tool-band-label reveal">
       <span class="tool-band-dot" style="background:var(--green)"></span>
       <span class="tool-band-name">Verify</span>
-      <span class="tool-band-sub">Score and audit generated code against the contract</span>
+      <span class="tool-band-sub">Score, audit, and repair generated UI against the contract</span>
     </div>
     <div class="tools-list reveal">
       <div class="tool-item">
@@ -3068,6 +3068,18 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="clipboard-check" class="tool-icon" style="color:var(--green)"></i>decantr_audit_project</div>
         <p class="tool-desc">Schema-backed project audit against packs, guards, and drift</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="folder-check" class="tool-icon" style="color:var(--green)"></i>decantr_get_evidence_bundle</div>
+        <p class="tool-desc">Local evidence bundle for AI repair loops and CI artifacts</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="wrench" class="tool-icon" style="color:var(--green)"></i>decantr_get_repair_prompt</div>
+        <p class="tool-desc">Scoped repair prompt with exact finding evidence and rerun commands</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="network" class="tool-icon" style="color:var(--green)"></i>decantr_workspace_health</div>
+        <p class="tool-desc">Aggregate health for many Decantr projects in a monorepo</p>
       </div>
     </div>
 
@@ -3100,8 +3112,8 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="cli-desc">Detect contract drift and guard violations</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>status</div>
-        <p class="cli-desc">Show project health and drift status</p>
+        <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>health --evidence</div>
+        <p class="cli-desc">Write a privacy-redacted Evidence Bundle for AI repair and CI artifacts</p>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="sparkles" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>magic "prompt"</div>
@@ -3118,6 +3130,14 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="clipboard-check" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>audit</div>
         <p class="cli-desc">Full project audit — drift, packs, guard, critique</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="network" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>workspace health</div>
+        <p class="cli-desc">Aggregate Project Health across many Decantr projects</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="palette" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>export --to figma-tokens</div>
+        <p class="cli-desc">Bridge Decantr tokens into Tokens Studio-compatible JSON</p>
       </div>
     </div>
   </div>
@@ -3397,7 +3417,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="package" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Open source. MIT licensed.</h2>
-    <p class="section-sub reveal">Eight packages, one mission: make AI-generated UI not suck.</p>
+    <p class="section-sub reveal">Eight packages, one mission: make AI-generated UI reliable enough to govern.</p>
 
     <div class="pkg-band-label reveal"><span class="pkg-band-dot" style="background:var(--cyan)"></span>Foundation</div>
     <div class="packages-grid">
@@ -3432,17 +3452,17 @@ Start with the shell layouts, then build each section's pages.</div>
     <div class="packages-grid">
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/cli</div>
-        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, Project Health, and registry sync</p>
+        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, Evidence Bundles, workspace health, and registry sync</p>
         <div class="pkg-version">v2.1.2</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing 20 design intelligence tools to AI assistants</p>
+        <p class="pkg-desc">MCP server exposing 24 design intelligence and reliability tools to AI assistants</p>
         <div class="pkg-version">v2.0.0</div>
       </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/verifier</div>
-        <p class="pkg-desc">Shared audit, critique, and Project Health engine with schema-backed reports</p>
+        <p class="pkg-desc">Shared audit, critique, contract assertion, Evidence Bundle, and Project Health engine</p>
         <div class="pkg-version">v2.0.0</div>
       </div>
     </div>

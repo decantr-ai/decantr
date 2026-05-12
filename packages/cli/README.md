@@ -60,7 +60,7 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 - supports explicit workflow lanes: greenfield blueprint, greenfield contract-only, brownfield adoption, and hybrid composition
 - generates execution-pack context files for AI coding assistants
 - audits projects against Decantr contracts
-- produces local Project Health reports and a localhost Studio dashboard for end-user drift triage
+- produces local Project Health reports, Evidence Bundles, workspace health, and a localhost Studio dashboard for end-user drift triage
 - audits local registry content repositories with Content Health reports for schema, reference, and quality coverage
 - searches the registry and showcase benchmark corpus
 - validates, refreshes, and maintains `decantr.essence.json`
@@ -100,15 +100,31 @@ decantr health --markdown --output health.md
 decantr health --ci --fail-on error
 decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
+decantr health --evidence --output .decantr/evidence/latest.json
+decantr health --browser --base-url http://localhost:3000 --evidence
+decantr health --design-tokens .decantr/design/figma-tokens.json
 decantr health --json --output decantr-health.json
 decantr health init-ci
 decantr health init-ci --fail-on warn --cli-version latest --force
 decantr health init-ci --project apps/registry
+decantr health init-ci --workspace
+decantr workspace list
+decantr workspace health --changed --since origin/main
+decantr export --to figma-tokens
 ```
 
-Use `--json` for machines and schema validation, `--markdown` for CI summaries, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
+Use `--json` for machines and schema validation, `--markdown` for CI summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/`; missing Playwright becomes a setup finding, not a crash. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
 
-`decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes `decantr-health.json`, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path.
+`decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes JSON/markdown health artifacts, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path. Use `--workspace` to generate an aggregate gate that runs `decantr workspace health` from the repository root and uploads `.decantr/workspace-health.json` plus `.decantr/workspace-health.md`.
+
+`decantr workspace` is the monorepo reliability namespace. It discovers Decantr projects from `.decantr/workspace.json` or by finding `decantr.essence.json` files, runs projects with deterministic ordering, concurrency, per-project timeout, failure isolation, and aggregate JSON, and can limit a run to changed projects:
+
+```bash
+decantr workspace list
+decantr workspace health
+decantr workspace health --json --output .decantr/workspace-health.json
+decantr workspace health --changed --since origin/main
+```
 
 `decantr studio` starts a local-only dashboard powered by the same report. It uses Node built-ins only and serves `GET /`, `GET /api/health`, and `POST /api/refresh`.
 
@@ -116,9 +132,12 @@ Use `--json` for machines and schema validation, `--markdown` for CI summaries, 
 decantr studio
 decantr studio --port 4319 --host 127.0.0.1
 decantr studio --report decantr-health.json
+decantr studio --workspace
 ```
 
 Studio is for local triage, not Decantr admin telemetry. The Overview keeps the first decision simple: pick the issue to fix first, review the full AI repair prompt before copying it, switch to manual guidance or commands, and expand project details when route/runtime/pack evidence matters. The tabs cover Overview, Routes, Drift, Findings, Remediation, CI, and Packs without uploading source code, prompts, file paths, or project data.
+
+Workspace Studio uses `decantr workspace health` behind `GET /api/workspace` and `POST /api/workspace/refresh` so large monorepos can triage many Decantr projects from one local dashboard.
 
 Use report mode for customer-controlled reporting from CI artifacts:
 
