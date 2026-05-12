@@ -454,6 +454,19 @@
       }
     },
     {
+      "slug": "retro-launch-campaign",
+      "status": "active",
+      "classification": "pending",
+      "origin": "blueprint-harness-promotion",
+      "target": "react-vite",
+      "thumbnail": {
+        "src": "/showcase/thumbnails/retro-launch-campaign.png",
+        "alt": "Retro Launch Campaign blueprint showcase screenshot",
+        "width": 1600,
+        "height": 1000
+      }
+    },
+    {
       "slug": "saas-dashboard",
       "status": "active",
       "classification": "pending",

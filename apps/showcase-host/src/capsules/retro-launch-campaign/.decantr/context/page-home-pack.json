@@ -1,0 +1,244 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the home route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home"
+    ],
+    "patternIds": [
+      "campaign-marquee-hero",
+      "backer-progress-console",
+      "prototype-demo-bezel",
+      "product-box-spec-panel",
+      "reward-tier-selector",
+      "stretch-goal-ladder",
+      "founder-comic-strip",
+      "backer-wall-ticker",
+      "continue-screen-cta"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "home",
+    "full-bleed",
+    "launch-campaign",
+    "public",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout",
+    "campaign-marquee-hero",
+    "grid",
+    "backer-progress-console",
+    "prototype-demo-bezel",
+    "product-box-spec-panel",
+    "reward-tier-selector",
+    "stretch-goal-ladder",
+    "founder-comic-strip",
+    "backer-wall-ticker",
+    "stack",
+    "continue-screen-cta"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "home",
+    "path": "/",
+    "shell": "full-bleed",
+    "sectionId": "launch-campaign",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "campaign-marquee-hero",
+        "alias": "campaign-marquee-hero",
+        "preset": "coin-op",
+        "layout": "grid",
+        "presetDescription": "First-viewport hero staged like an arcade cabinet: marquee headline, product screen, live counter strip, and dual CTAs.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "click-select",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "backer-progress-console",
+        "alias": "backer-progress-console",
+        "preset": "funding-console",
+        "layout": "grid",
+        "presetDescription": "Wide console for crowdfunding or preorder campaigns with raised amount, goal progress, backer count, and days remaining.",
+        "interactions": [
+          "animate-on-mount",
+          "real-time-updates",
+          "status-pulse",
+          "click-select"
+        ]
+      },
+      {
+        "id": "prototype-demo-bezel",
+        "alias": "prototype-demo-bezel",
+        "preset": "demo-screen",
+        "layout": "grid",
+        "presetDescription": "Large bezel-framed product demo with controls, caption strip, status LEDs, and CTA.",
+        "interactions": [
+          "click-select",
+          "keyboard-navigation",
+          "hover-reveal",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "product-box-spec-panel",
+        "alias": "product-box-spec-panel",
+        "preset": "box-back",
+        "layout": "grid",
+        "presetDescription": "Back-of-package grid with feature callouts, contents list, compatibility, shipping status, and support notes.",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "reward-tier-selector",
+        "alias": "reward-tier-selector",
+        "preset": "cartridge-row",
+        "layout": "grid",
+        "presetDescription": "Horizontal reward cartridges with price, contents, inventory meter, delivery window, and select action.",
+        "interactions": [
+          "click-select",
+          "keyboard-navigation",
+          "animate-on-mount"
+        ]
+      },
+      {
+        "id": "stretch-goal-ladder",
+        "alias": "stretch-goal-ladder",
+        "preset": "level-map",
+        "layout": "grid",
+        "presetDescription": "Horizontal level-select path with milestone gates, unlock labels, and progress connector.",
+        "interactions": [
+          "animate-on-mount",
+          "hover-tooltip",
+          "hover-reveal",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "founder-comic-strip",
+        "alias": "founder-comic-strip",
+        "preset": "story-panels",
+        "layout": "grid",
+        "presetDescription": "Four to six comic-style story panels with captions, maker photos or illustrations, and a clear campaign ask.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "hover-reveal",
+          "click-select"
+        ]
+      },
+      {
+        "id": "backer-wall-ticker",
+        "alias": "backer-wall-ticker",
+        "preset": "ticker-wall",
+        "layout": "stack",
+        "presetDescription": "Horizontal ticker rows mixed with supporter wall segments for recent pledge activity and testimonials.",
+        "interactions": [
+          "hover-reveal",
+          "click-select",
+          "real-time-updates",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "continue-screen-cta",
+        "alias": "continue-screen-cta",
+        "preset": "continue-screen",
+        "layout": "stack",
+        "presetDescription": "Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.",
+        "interactions": [
+          "click-select",
+          "status-pulse",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Render the home page as a campaign funnel, not a generic product landing page.",
+      "Use campaign-native sections and avoid generic hero, features, pricing, testimonials, card-grid, and cta-banner substitutes.",
+      "Keep the first viewport full-bleed but place content inside a clear campaign cabinet safe area.",
+      "Show product evidence early: prototype UI, render, video, screenshot, packaging, or a stable visual placeholder."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the home route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=home | patterns=campaign-marquee-hero, backer-progress-console, prototype-demo-bezel, product-box-spec-panel, reward-tier-selector, stretch-goal-ladder, founder-comic-strip, backer-wall-ticker, continue-screen-cta\n\n## Page Contract\n- Page: home\n- Path: /\n- Shell: full-bleed\n- Section: launch-campaign (public)\n- Theme: retro-arcade (dark)\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- campaign-marquee-hero -> campaign-marquee-hero [grid | coin-op]\n  > First-viewport hero staged like an arcade cabinet: marquee headline, product screen, live counter strip, and dual CTAs.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] click-select\n  - [ ] keyboard-navigation\n- backer-progress-console -> backer-progress-console [grid | funding-console]\n  > Wide console for crowdfunding or preorder campaigns with raised amount, goal progress, backer count, and days remaining.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] real-time-updates\n  - [ ] status-pulse\n  - [ ] click-select\n- prototype-demo-bezel -> prototype-demo-bezel [grid | demo-screen]\n  > Large bezel-framed product demo with controls, caption strip, status LEDs, and CTA.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n  - [ ] animate-on-mount\n- product-box-spec-panel -> product-box-spec-panel [grid | box-back]\n  > Back-of-package grid with feature callouts, contents list, compatibility, shipping status, and support notes.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n- reward-tier-selector -> reward-tier-selector [grid | cartridge-row]\n  > Horizontal reward cartridges with price, contents, inventory meter, delivery window, and select action.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n- stretch-goal-ladder -> stretch-goal-ladder [grid | level-map]\n  > Horizontal level-select path with milestone gates, unlock labels, and progress connector.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] hover-tooltip\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n- founder-comic-strip -> founder-comic-strip [grid | story-panels]\n  > Four to six comic-style story panels with captions, maker photos or illustrations, and a clear campaign ask.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] hover-reveal\n  - [ ] click-select\n- backer-wall-ticker -> backer-wall-ticker [stack | ticker-wall]\n  > Horizontal ticker rows mixed with supporter wall segments for recent pledge activity and testimonials.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] click-select\n  - [ ] real-time-updates\n  - [ ] keyboard-navigation\n- continue-screen-cta -> continue-screen-cta [stack | continue-screen]\n  > Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] status-pulse\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Render the home page as a campaign funnel, not a generic product landing page.\n- Use campaign-native sections and avoid generic hero, features, pricing, testimonials, card-grid, and cta-banner substitutes.\n- Keep the first viewport full-bleed but place content inside a clear campaign cabinet safe area.\n- Show product evidence early: prototype UI, render, video, screenshot, packaging, or a stable visual placeholder.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

@@ -1,0 +1,152 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the story route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "story"
+    ],
+    "patternIds": [
+      "founder-comic-strip",
+      "product-box-spec-panel",
+      "continue-screen-cta"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "story",
+    "full-bleed",
+    "launch-campaign",
+    "public",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout",
+    "founder-comic-strip",
+    "grid",
+    "product-box-spec-panel",
+    "continue-screen-cta",
+    "stack"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "story",
+    "path": "/story",
+    "shell": "full-bleed",
+    "sectionId": "launch-campaign",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "founder-comic-strip",
+        "alias": "founder-comic-strip",
+        "preset": "story-panels",
+        "layout": "grid",
+        "presetDescription": "Four to six comic-style story panels with captions, maker photos or illustrations, and a clear campaign ask.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "hover-reveal",
+          "click-select"
+        ]
+      },
+      {
+        "id": "product-box-spec-panel",
+        "alias": "product-box-spec-panel",
+        "preset": "manual-foldout",
+        "layout": "grid",
+        "presetDescription": "Instruction-manual style foldout with numbered specs, diagrams, and usage scenarios.",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "continue-screen-cta",
+        "alias": "continue-screen-cta",
+        "preset": "continue-screen",
+        "layout": "stack",
+        "presetDescription": "Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.",
+        "interactions": [
+          "click-select",
+          "status-pulse",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Tell a clear problem-prototype-proof-launch story with real product or maker evidence."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the story route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=story | patterns=founder-comic-strip, product-box-spec-panel, continue-screen-cta\n\n## Page Contract\n- Page: story\n- Path: /story\n- Shell: full-bleed\n- Section: launch-campaign (public)\n- Theme: retro-arcade (dark)\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- founder-comic-strip -> founder-comic-strip [grid | story-panels]\n  > Four to six comic-style story panels with captions, maker photos or illustrations, and a clear campaign ask.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] hover-reveal\n  - [ ] click-select\n- product-box-spec-panel -> product-box-spec-panel [grid | manual-foldout]\n  > Instruction-manual style foldout with numbered specs, diagrams, and usage scenarios.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n- continue-screen-cta -> continue-screen-cta [stack | continue-screen]\n  > Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] status-pulse\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Tell a clear problem-prototype-proof-launch story with real product or maker evidence.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

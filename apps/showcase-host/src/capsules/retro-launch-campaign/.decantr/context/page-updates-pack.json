@@ -1,0 +1,152 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the updates route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "updates"
+    ],
+    "patternIds": [
+      "launch-update-log",
+      "backer-progress-console",
+      "continue-screen-cta"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "updates",
+    "full-bleed",
+    "launch-campaign",
+    "public",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "checkout",
+    "launch-update-log",
+    "grid",
+    "backer-progress-console",
+    "continue-screen-cta",
+    "stack"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "updates",
+    "path": "/updates",
+    "shell": "full-bleed",
+    "sectionId": "launch-campaign",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "launch-update-log",
+        "alias": "launch-update-log",
+        "preset": "update-console",
+        "layout": "grid",
+        "presetDescription": "Console-like update feed with pinned latest update, category filters, and expandable entries.",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "animate-on-mount",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "backer-progress-console",
+        "alias": "backer-progress-console",
+        "preset": "funding-console",
+        "layout": "grid",
+        "presetDescription": "Wide console for crowdfunding or preorder campaigns with raised amount, goal progress, backer count, and days remaining.",
+        "interactions": [
+          "animate-on-mount",
+          "real-time-updates",
+          "status-pulse",
+          "click-select"
+        ]
+      },
+      {
+        "id": "continue-screen-cta",
+        "alias": "continue-screen-cta",
+        "preset": "continue-screen",
+        "layout": "stack",
+        "presetDescription": "Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.",
+        "interactions": [
+          "click-select",
+          "status-pulse",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Prioritize factual progress, blockers, unlocked milestones, and fulfillment status over blog-style marketing posts."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the updates route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=updates | patterns=launch-update-log, backer-progress-console, continue-screen-cta\n\n## Page Contract\n- Page: updates\n- Path: /updates\n- Shell: full-bleed\n- Section: launch-campaign (public)\n- Theme: retro-arcade (dark)\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- launch-update-log -> launch-update-log [grid | update-console]\n  > Console-like update feed with pinned latest update, category filters, and expandable entries.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n- backer-progress-console -> backer-progress-console [grid | funding-console]\n  > Wide console for crowdfunding or preorder campaigns with raised amount, goal progress, backer count, and days remaining.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] real-time-updates\n  - [ ] status-pulse\n  - [ ] click-select\n- continue-screen-cta -> continue-screen-cta [stack | continue-screen]\n  > Full-width final CTA with continue prompt, campaign countdown, pledge/reserve action, and share option.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] status-pulse\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Prioritize factual progress, blockers, unlocked milestones, and fulfillment status over blog-style marketing posts.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

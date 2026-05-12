@@ -1,0 +1,138 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the press route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "press"
+    ],
+    "patternIds": [
+      "press-kit-shelf",
+      "product-box-spec-panel"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "press",
+    "full-bleed",
+    "launch-campaign",
+    "public",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout",
+    "press-kit-shelf",
+    "grid",
+    "product-box-spec-panel"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "press",
+    "path": "/press",
+    "shell": "full-bleed",
+    "sectionId": "launch-campaign",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "press-kit-shelf",
+        "alias": "press-kit-shelf",
+        "preset": "press-page",
+        "layout": "grid",
+        "presetDescription": "Full press page layout with launch facts, press quote, contact block, and asset shelves.",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "animate-on-mount",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "product-box-spec-panel",
+        "alias": "product-box-spec-panel",
+        "preset": "box-back",
+        "layout": "grid",
+        "presetDescription": "Back-of-package grid with feature callouts, contents list, compatibility, shipping status, and support notes.",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Press assets should be factual, inspectable, and easy to download or copy.",
+      "Avoid generic marketing cards; use shelf/manual/asset treatments."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the press route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=press | patterns=press-kit-shelf, product-box-spec-panel\n\n## Page Contract\n- Page: press\n- Path: /press\n- Shell: full-bleed\n- Section: launch-campaign (public)\n- Theme: retro-arcade (dark)\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- press-kit-shelf -> press-kit-shelf [grid | press-page]\n  > Full press page layout with launch facts, press quote, contact block, and asset shelves.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n- product-box-spec-panel -> product-box-spec-panel [grid | box-back]\n  > Back-of-package grid with feature callouts, contents list, compatibility, shipping status, and support notes.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Press assets should be factual, inspectable, and easy to download or copy.\n- Avoid generic marketing cards; use shelf/manual/asset treatments.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

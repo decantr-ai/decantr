@@ -1,0 +1,123 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the checkout route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "checkout"
+    ],
+    "patternIds": [
+      "pledge-checkout-panel"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "checkout",
+    "full-bleed",
+    "launch-campaign",
+    "public",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "pledge-checkout-panel",
+    "grid"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "checkout",
+    "path": "/checkout",
+    "shell": "full-bleed",
+    "sectionId": "launch-campaign",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "pledge-checkout-panel",
+        "alias": "pledge-checkout-panel",
+        "preset": "pledge-flow",
+        "layout": "grid",
+        "presetDescription": "Three-step pledge checkout with reward review, supporter details, payment or reservation, and confirmation note.",
+        "interactions": [
+          "click-select",
+          "animate-on-mount",
+          "focus-trap",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Keep checkout calm and readable. The retro theme should support trust, not overwhelm form completion.",
+      "Make payment timing, delivery/access expectations, and consent text explicit."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the checkout route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=checkout | patterns=pledge-checkout-panel\n\n## Page Contract\n- Page: checkout\n- Path: /checkout\n- Shell: full-bleed\n- Section: launch-campaign (public)\n- Theme: retro-arcade (dark)\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- pledge-checkout-panel -> pledge-checkout-panel [grid | pledge-flow]\n  > Three-step pledge checkout with reward review, supporter details, payment or reservation, and confirmation note.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] focus-trap\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Keep checkout calm and readable. The retro theme should support trust, not overwhelm form completion.\n- Make payment timing, delivery/access expectations, and consent text explicit.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

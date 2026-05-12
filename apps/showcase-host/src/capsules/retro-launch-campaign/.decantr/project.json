@@ -1,0 +1,62 @@
+{
+  "detected": {
+    "framework": "react",
+    "version": "19.0.0",
+    "packageManager": "npm",
+    "hasTypeScript": true,
+    "hasTailwind": false,
+    "existingRuleFiles": [],
+    "workspaceRoot": "/private/tmp/harness-2026-05-11-retro-launch-campaign-v3/my-app",
+    "appRoot": "/private/tmp/harness-2026-05-11-retro-launch-campaign-v3/my-app"
+  },
+  "overrides": {
+    "framework": null
+  },
+  "sync": {
+    "status": "needs-sync",
+    "lastSync": "2026-05-11T20:33:11.049Z",
+    "registrySource": "cache",
+    "cachedContent": {
+      "archetypes": [],
+      "patterns": [],
+      "themes": []
+    }
+  },
+  "initialized": {
+    "at": "2026-05-11T20:33:11.049Z",
+    "via": "cli",
+    "version": "2.3.1",
+    "flags": "--blueprint=retro-launch-campaign --theme=retro-arcade --mode=dark --guard=strict --workflow=greenfield-scaffold --adoption=decantr-css --assistant-bridge=none",
+    "workflowMode": "greenfield-scaffold",
+    "adoptionMode": "decantr-css",
+    "contentSource": "cache",
+    "assistantBridge": "none",
+    "projectScope": "single-app",
+    "adapterId": "react-vite",
+    "analysisArtifacts": false
+  },
+  "blueprintId": "retro-launch-campaign",
+  "voice": {
+    "tone": "Excited, maker-led, transparent, playful, and concrete. The copy should make the campaign feel alive while clearly explaining what exists, what is shipping, and what support unlocks.",
+    "cta_verbs": [
+      "Back",
+      "Reserve",
+      "Join",
+      "Choose",
+      "Unlock",
+      "Watch",
+      "Share"
+    ],
+    "avoid": [
+      "Submit",
+      "Buy now",
+      "Learn more",
+      "Click here",
+      "Guaranteed overnight success",
+      "Revolutionary"
+    ],
+    "empty_states": "Use launch-native empty states such as First backers will appear here, Updates will unlock after launch day, or Press assets are being packed.",
+    "errors": "Inline, specific, and calm. Campaign checkout errors must preserve trust and never obscure payment timing, fulfillment expectations, or waitlist status.",
+    "loading": "Render stable retro frames immediately. Counters, tiers, and media fill in without layout shift. No spinner-only launch states."
+  }
+}

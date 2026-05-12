@@ -1,0 +1,228 @@
+{
+  "$schema": "https://decantr.ai/schemas/mutation-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "mutation",
+  "objective": "Execute the modify workflow against the compiled app contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home",
+      "rewards",
+      "updates",
+      "story",
+      "demo",
+      "checkout",
+      "thanks",
+      "press"
+    ],
+    "patternIds": [
+      "campaign-marquee-hero",
+      "backer-progress-console",
+      "prototype-demo-bezel",
+      "product-box-spec-panel",
+      "reward-tier-selector",
+      "stretch-goal-ladder",
+      "founder-comic-strip",
+      "backer-wall-ticker",
+      "continue-screen-cta",
+      "launch-update-log",
+      "pledge-checkout-panel",
+      "share-quest-panel",
+      "press-kit-shelf"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the compiled topology as the source of truth until the essence changes.",
+    "Refresh Decantr context after structural mutations so downstream tasks read current packs."
+  ],
+  "allowedVocabulary": [
+    "modify",
+    "full-bleed",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout",
+    "campaign-marquee-hero",
+    "backer-progress-console",
+    "prototype-demo-bezel",
+    "product-box-spec-panel",
+    "reward-tier-selector",
+    "stretch-goal-ladder",
+    "founder-comic-strip",
+    "backer-wall-ticker",
+    "continue-screen-cta",
+    "launch-update-log",
+    "pledge-checkout-panel",
+    "share-quest-panel",
+    "press-kit-shelf"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "mutation-existing-topology",
+      "label": "Modified routes remain coherent with the compiled topology unless the essence changes first.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-theme-contract",
+      "label": "Theme, shell, and page identity stay aligned with the current contract during edits.",
+      "severity": "error"
+    },
+    {
+      "id": "mutation-page-pack-first",
+      "label": "Route-local edits should start from the compiled page pack rather than improvised structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "mutationType": "modify",
+    "shell": "full-bleed",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "routing": "history",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "launch-campaign",
+        "path": "/",
+        "patternIds": [
+          "campaign-marquee-hero",
+          "backer-progress-console",
+          "prototype-demo-bezel",
+          "product-box-spec-panel",
+          "reward-tier-selector",
+          "stretch-goal-ladder",
+          "founder-comic-strip",
+          "backer-wall-ticker",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "rewards",
+        "sectionId": "launch-campaign",
+        "path": "/rewards",
+        "patternIds": [
+          "reward-tier-selector",
+          "product-box-spec-panel",
+          "backer-progress-console",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "updates",
+        "sectionId": "launch-campaign",
+        "path": "/updates",
+        "patternIds": [
+          "launch-update-log",
+          "backer-progress-console",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "story",
+        "sectionId": "launch-campaign",
+        "path": "/story",
+        "patternIds": [
+          "founder-comic-strip",
+          "product-box-spec-panel",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "demo",
+        "sectionId": "launch-campaign",
+        "path": "/demo",
+        "patternIds": [
+          "prototype-demo-bezel",
+          "product-box-spec-panel",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "checkout",
+        "sectionId": "launch-campaign",
+        "path": "/checkout",
+        "patternIds": [
+          "pledge-checkout-panel"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "thanks",
+        "sectionId": "launch-campaign",
+        "path": "/thanks",
+        "patternIds": [
+          "continue-screen-cta",
+          "share-quest-panel",
+          "backer-wall-ticker"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "press",
+        "sectionId": "launch-campaign",
+        "path": "/press",
+        "patternIds": [
+          "press-kit-shelf",
+          "product-box-spec-panel"
+        ],
+        "shell": "full-bleed"
+      }
+    ],
+    "workflow": [
+      "Read the page pack for the route you are modifying first.",
+      "Stop and update the essence before changing route, shell, or pattern contracts.",
+      "Validate and check drift after code changes complete."
+    ]
+  },
+  "renderedMarkdown": "# Mutation Pack\n\n**Objective:** Execute the modify workflow against the compiled app contract.\n**Target:** react-vite (react)\n**Scope:** pages=home, rewards, updates, story, demo, checkout, thanks, press | patterns=campaign-marquee-hero, backer-progress-console, prototype-demo-bezel, product-box-spec-panel, reward-tier-selector, stretch-goal-ladder, founder-comic-strip, backer-wall-ticker, continue-screen-cta, launch-update-log, pledge-checkout-panel, share-quest-panel, press-kit-shelf\n\n## Mutation Contract\n- Operation: modify\n- Shell: full-bleed\n- Theme: retro-arcade (dark)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n\n## Route Topology\n- / -> launch-campaign/home @ full-bleed [campaign-marquee-hero, backer-progress-console, prototype-demo-bezel, product-box-spec-panel, reward-tier-selector, stretch-goal-ladder, founder-comic-strip, backer-wall-ticker, continue-screen-cta]\n- /rewards -> launch-campaign/rewards @ full-bleed [reward-tier-selector, product-box-spec-panel, backer-progress-console, continue-screen-cta]\n- /updates -> launch-campaign/updates @ full-bleed [launch-update-log, backer-progress-console, continue-screen-cta]\n- /story -> launch-campaign/story @ full-bleed [founder-comic-strip, product-box-spec-panel, continue-screen-cta]\n- /demo -> launch-campaign/demo @ full-bleed [prototype-demo-bezel, product-box-spec-panel, continue-screen-cta]\n- /checkout -> launch-campaign/checkout @ full-bleed [pledge-checkout-panel]\n- /thanks -> launch-campaign/thanks @ full-bleed [continue-screen-cta, share-quest-panel, backer-wall-ticker]\n- /press -> launch-campaign/press @ full-bleed [press-kit-shelf, product-box-spec-panel]\n\n## Workflow\n- Read the page pack for the route you are modifying first.\n- Stop and update the essence before changing route, shell, or pattern contracts.\n- Validate and check drift after code changes complete.\n\n## Required Setup\n- Treat the compiled topology as the source of truth until the essence changes.\n- Refresh Decantr context after structural mutations so downstream tasks read current packs.\n\n## Allowed Vocabulary\n- modify\n- full-bleed\n- retro-arcade\n- dark\n- marketing\n- seo\n- analytics\n- conversion\n- campaign-progress\n- reward-tiers\n- preorder\n- waitlist\n- referrals\n- press-kit\n- updates\n- checkout\n- campaign-marquee-hero\n- backer-progress-console\n- prototype-demo-bezel\n- product-box-spec-panel\n- reward-tier-selector\n- stretch-goal-ladder\n- founder-comic-strip\n- backer-wall-ticker\n- continue-screen-cta\n- launch-update-log\n- pledge-checkout-panel\n- share-quest-panel\n- press-kit-shelf\n\n## Success Checks\n- Modified routes remain coherent with the compiled topology unless the essence changes first. [error]\n- Theme, shell, and page identity stay aligned with the current contract during edits. [error]\n- Route-local edits should start from the compiled page pack rather than improvised structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

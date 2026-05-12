@@ -1,0 +1,154 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the thanks route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "thanks"
+    ],
+    "patternIds": [
+      "continue-screen-cta",
+      "share-quest-panel",
+      "backer-wall-ticker"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "thanks",
+    "full-bleed",
+    "launch-campaign",
+    "public",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout",
+    "continue-screen-cta",
+    "stack",
+    "share-quest-panel",
+    "grid",
+    "backer-wall-ticker"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "thanks",
+    "path": "/thanks",
+    "shell": "full-bleed",
+    "sectionId": "launch-campaign",
+    "sectionRole": "public",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "continue-screen-cta",
+        "alias": "continue-screen-cta",
+        "preset": "share-after-action",
+        "layout": "stack",
+        "presetDescription": "Post-conversion continue screen prompting supporters to share, invite, or unlock referral rewards.",
+        "interactions": [
+          "click-select",
+          "status-pulse",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "share-quest-panel",
+        "alias": "share-quest-panel",
+        "preset": "referral-quest",
+        "layout": "grid",
+        "presetDescription": "Quest-style share panel with referral link, unlock progress, share buttons, and next reward.",
+        "interactions": [
+          "click-select",
+          "real-time-updates",
+          "status-pulse",
+          "keyboard-navigation"
+        ]
+      },
+      {
+        "id": "backer-wall-ticker",
+        "alias": "backer-wall-ticker",
+        "preset": "static-wall",
+        "layout": "grid",
+        "presetDescription": "Reduced-motion friendly static supporter wall with grouped names, quotes, and pledge badges.",
+        "interactions": [
+          "hover-reveal",
+          "click-select",
+          "real-time-updates",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Lead with confirmation before asking for sharing.",
+      "Explain referral unlocks plainly and avoid manipulative sharing pressure."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the thanks route using the compiled page contract.\n**Target:** react-vite (react)\n**Scope:** pages=thanks | patterns=continue-screen-cta, share-quest-panel, backer-wall-ticker\n\n## Page Contract\n- Page: thanks\n- Path: /thanks\n- Shell: full-bleed\n- Section: launch-campaign (public)\n- Theme: retro-arcade (dark)\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- continue-screen-cta -> continue-screen-cta [stack | share-after-action]\n  > Post-conversion continue screen prompting supporters to share, invite, or unlock referral rewards.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] status-pulse\n  - [ ] keyboard-navigation\n- share-quest-panel -> share-quest-panel [grid | referral-quest]\n  > Quest-style share panel with referral link, unlock progress, share buttons, and next reward.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] real-time-updates\n  - [ ] status-pulse\n  - [ ] keyboard-navigation\n- backer-wall-ticker -> backer-wall-ticker [grid | static-wall]\n  > Reduced-motion friendly static supporter wall with grouped names, quotes, and pledge badges.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] click-select\n  - [ ] real-time-updates\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Lead with confirmation before asking for sharing.\n- Explain referral unlocks plainly and avoid manipulative sharing pressure.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
+  "version": "1.0.0",
+  "generatedAt": "2026-05-11T20:33:11.054Z",
+  "scaffold": {
+    "id": "scaffold",
+    "markdown": "scaffold-pack.md",
+    "json": "scaffold-pack.json"
+  },
+  "review": {
+    "id": "review",
+    "markdown": "review-pack.md",
+    "json": "review-pack.json"
+  },
+  "sections": [
+    {
+      "id": "launch-campaign",
+      "markdown": "section-launch-campaign-pack.md",
+      "json": "section-launch-campaign-pack.json",
+      "pageIds": [
+        "home",
+        "rewards",
+        "updates",
+        "story",
+        "demo",
+        "checkout",
+        "thanks",
+        "press"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "markdown": "page-home-pack.md",
+      "json": "page-home-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "rewards",
+      "markdown": "page-rewards-pack.md",
+      "json": "page-rewards-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "updates",
+      "markdown": "page-updates-pack.md",
+      "json": "page-updates-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "story",
+      "markdown": "page-story-pack.md",
+      "json": "page-story-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "demo",
+      "markdown": "page-demo-pack.md",
+      "json": "page-demo-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "checkout",
+      "markdown": "page-checkout-pack.md",
+      "json": "page-checkout-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "thanks",
+      "markdown": "page-thanks-pack.md",
+      "json": "page-thanks-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    },
+    {
+      "id": "press",
+      "markdown": "page-press-pack.md",
+      "json": "page-press-pack.json",
+      "sectionId": "launch-campaign",
+      "sectionRole": "public"
+    }
+  ],
+  "mutations": [
+    {
+      "id": "add-page",
+      "markdown": "mutation-add-page-pack.md",
+      "json": "mutation-add-page-pack.json",
+      "mutationType": "add-page"
+    },
+    {
+      "id": "modify",
+      "markdown": "mutation-modify-pack.md",
+      "json": "mutation-modify-pack.json",
+      "mutationType": "modify"
+    }
+  ]
+}

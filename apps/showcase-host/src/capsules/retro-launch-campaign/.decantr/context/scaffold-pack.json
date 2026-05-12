@@ -1,0 +1,303 @@
+{
+  "$schema": "https://decantr.ai/schemas/scaffold-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "scaffold",
+  "objective": "Scaffold the retro-arcade app shell and declared routes.",
+  "target": {
+    "platform": "web",
+    "framework": "react",
+    "runtime": "spa",
+    "adapter": "react-vite"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "home",
+      "rewards",
+      "updates",
+      "story",
+      "demo",
+      "checkout",
+      "thanks",
+      "press"
+    ],
+    "patternIds": [
+      "campaign-marquee-hero",
+      "backer-progress-console",
+      "prototype-demo-bezel",
+      "product-box-spec-panel",
+      "reward-tier-selector",
+      "stretch-goal-ladder",
+      "founder-comic-strip",
+      "backer-wall-ticker",
+      "continue-screen-cta",
+      "launch-update-log",
+      "pledge-checkout-panel",
+      "share-quest-panel",
+      "press-kit-shelf"
+    ]
+  },
+  "requiredSetup": [
+    "Treat the declared routes as the topology source of truth.",
+    "Preserve the resolved theme and shell contract unless the task explicitly mutates them."
+  ],
+  "allowedVocabulary": [
+    "full-bleed",
+    "retro-arcade",
+    "dark",
+    "marketing",
+    "seo",
+    "analytics",
+    "conversion",
+    "campaign-progress",
+    "reward-tiers",
+    "preorder",
+    "waitlist",
+    "referrals",
+    "press-kit",
+    "updates",
+    "checkout",
+    "campaign-marquee-hero",
+    "backer-progress-console",
+    "prototype-demo-bezel",
+    "product-box-spec-panel",
+    "reward-tier-selector",
+    "stretch-goal-ladder",
+    "founder-comic-strip",
+    "backer-wall-ticker",
+    "continue-screen-cta",
+    "launch-update-log",
+    "pledge-checkout-panel",
+    "share-quest-panel",
+    "press-kit-shelf"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "route-topology",
+      "label": "Routes and page IDs match the compiled topology.",
+      "severity": "error"
+    },
+    {
+      "id": "shell-consistency",
+      "label": "The declared shell contract is preserved unless the task explicitly mutates it.",
+      "severity": "error"
+    },
+    {
+      "id": "theme-consistency",
+      "label": "Theme identity and mode remain consistent across scaffolded routes.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "shell": "full-bleed",
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "routing": "history",
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "navigation": {
+      "commandPalette": true,
+      "hotkeys": [
+        {
+          "key": "g h",
+          "route": "/",
+          "label": "Go to Campaign Home"
+        },
+        {
+          "key": "g r",
+          "route": "/rewards",
+          "label": "Go to Rewards"
+        },
+        {
+          "key": "g u",
+          "route": "/updates",
+          "label": "Go to Updates"
+        },
+        {
+          "key": "g d",
+          "route": "/demo",
+          "label": "Go to Demo"
+        },
+        {
+          "key": "g p",
+          "route": "/press",
+          "label": "Go to Press Kit"
+        }
+      ]
+    },
+    "routes": [
+      {
+        "pageId": "home",
+        "sectionId": "launch-campaign",
+        "path": "/",
+        "patternIds": [
+          "campaign-marquee-hero",
+          "backer-progress-console",
+          "prototype-demo-bezel",
+          "product-box-spec-panel",
+          "reward-tier-selector",
+          "stretch-goal-ladder",
+          "founder-comic-strip",
+          "backer-wall-ticker",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "rewards",
+        "sectionId": "launch-campaign",
+        "path": "/rewards",
+        "patternIds": [
+          "reward-tier-selector",
+          "product-box-spec-panel",
+          "backer-progress-console",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "updates",
+        "sectionId": "launch-campaign",
+        "path": "/updates",
+        "patternIds": [
+          "launch-update-log",
+          "backer-progress-console",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "story",
+        "sectionId": "launch-campaign",
+        "path": "/story",
+        "patternIds": [
+          "founder-comic-strip",
+          "product-box-spec-panel",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "demo",
+        "sectionId": "launch-campaign",
+        "path": "/demo",
+        "patternIds": [
+          "prototype-demo-bezel",
+          "product-box-spec-panel",
+          "continue-screen-cta"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "checkout",
+        "sectionId": "launch-campaign",
+        "path": "/checkout",
+        "patternIds": [
+          "pledge-checkout-panel"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "thanks",
+        "sectionId": "launch-campaign",
+        "path": "/thanks",
+        "patternIds": [
+          "continue-screen-cta",
+          "share-quest-panel",
+          "backer-wall-ticker"
+        ],
+        "shell": "full-bleed"
+      },
+      {
+        "pageId": "press",
+        "sectionId": "launch-campaign",
+        "path": "/press",
+        "patternIds": [
+          "press-kit-shelf",
+          "product-box-spec-panel"
+        ],
+        "shell": "full-bleed"
+      }
+    ],
+    "themeDecorators": [
+      {
+        "class": "arcade-canvas",
+        "intent": "Use on page roots and full-bleed sections. The canvas should feel immersive while preserving a centered campaign safe area.",
+        "applyTo": "Page roots, Full-bleed campaign bands, Launch homepages"
+      },
+      {
+        "class": "arcade-marquee",
+        "intent": "Use for hero headlines, section titles, and primary campaign identity. The marquee must be a dominant visual signal.",
+        "applyTo": "Hero labels, Section headers, Campaign status bands"
+      },
+      {
+        "class": "arcade-bezel",
+        "intent": "Use for product demos, progress consoles, and pledge modules. The bezel replaces generic cards.",
+        "applyTo": "Demo screens, Progress modules, Campaign panels"
+      },
+      {
+        "class": "arcade-button",
+        "intent": "Use for all primary and secondary actions. Buttons should look physical and tappable.",
+        "applyTo": "Primary CTAs, Reward selection, Checkout actions, Share buttons"
+      },
+      {
+        "class": "arcade-token",
+        "intent": "Use for compact status, backer levels, limited-run labels, and pledge tokens.",
+        "applyTo": "Badges, Backer counts, Tier markers, Campaign state chips"
+      },
+      {
+        "class": "arcade-led-counter",
+        "intent": "Use for funding totals, countdowns, backer counts, and reward inventory. Numbers must be highly legible.",
+        "applyTo": "Metric strips, Counters, Campaign timers, Funding totals"
+      },
+      {
+        "class": "arcade-pixel-border",
+        "intent": "Use when a section needs retro structure without becoming another card.",
+        "applyTo": "Spec panels, Manual surfaces, Tier rows, Story panels"
+      },
+      {
+        "class": "arcade-progress-track",
+        "intent": "Use for funding, stretch goals, tier availability, and onboarding completion. Progress should feel like campaign momentum.",
+        "applyTo": "Funding progress, Stretch goals, Inventory meters, Referral progress"
+      },
+      {
+        "class": "arcade-manual-panel",
+        "intent": "Use for explanatory sections, product specs, story steps, and launch instructions. This replaces generic marketing cards.",
+        "applyTo": "Product specs, How-it-works sections, Founder story, FAQ/manual content"
+      },
+      {
+        "class": "arcade-sticker",
+        "intent": "Use sparingly for limited-run notes, shipping states, early-bird labels, and proof cues.",
+        "applyTo": "Limited labels, Launch notes, Inventory tags, Proof badges"
+      }
+    ]
+  },
+  "renderedMarkdown": "# Scaffold Pack\n\n**Objective:** Scaffold the retro-arcade app shell and declared routes.\n**Target:** react-vite (react)\n**Scope:** pages=home, rewards, updates, story, demo, checkout, thanks, press | patterns=campaign-marquee-hero, backer-progress-console, prototype-demo-bezel, product-box-spec-panel, reward-tier-selector, stretch-goal-ladder, founder-comic-strip, backer-wall-ticker, continue-screen-cta, launch-update-log, pledge-checkout-panel, share-quest-panel, press-kit-shelf\n\n## Scaffold Contract\n- Shell: full-bleed\n- Theme: retro-arcade (dark)\n- Routing: history → BrowserRouter from react-router-dom; regular URLs (e.g. /login). Works on Vite dev, Vercel, Netlify, Cloudflare Pages.\n- Features: marketing, seo, analytics, conversion, campaign-progress, reward-tiers, preorder, waitlist, referrals, press-kit, updates, checkout\n- Navigation:\n  - command palette required\n  - Hotkeys:\n    - g h: Go to Campaign Home — /\n    - g r: Go to Rewards — /rewards\n    - g u: Go to Updates — /updates\n    - g d: Go to Demo — /demo\n    - g p: Go to Press Kit — /press\n\n## Route Plan\n- / -> launch-campaign/home @ full-bleed [campaign-marquee-hero, backer-progress-console, prototype-demo-bezel, product-box-spec-panel, reward-tier-selector, stretch-goal-ladder, founder-comic-strip, backer-wall-ticker, continue-screen-cta]\n- /rewards -> launch-campaign/rewards @ full-bleed [reward-tier-selector, product-box-spec-panel, backer-progress-console, continue-screen-cta]\n- /updates -> launch-campaign/updates @ full-bleed [launch-update-log, backer-progress-console, continue-screen-cta]\n- /story -> launch-campaign/story @ full-bleed [founder-comic-strip, product-box-spec-panel, continue-screen-cta]\n- /demo -> launch-campaign/demo @ full-bleed [prototype-demo-bezel, product-box-spec-panel, continue-screen-cta]\n- /checkout -> launch-campaign/checkout @ full-bleed [pledge-checkout-panel]\n- /thanks -> launch-campaign/thanks @ full-bleed [continue-screen-cta, share-quest-panel, backer-wall-ticker]\n- /press -> launch-campaign/press @ full-bleed [press-kit-shelf, product-box-spec-panel]\n\n## Required Theme Decorators (retro-arcade)\n\nThese classes carry the active theme's visual identity. Tokens alone give bones; decorators give personality. Generated source MUST apply these across all sections — without them, every page reads as \"themed colors only\" with no theme character. Section packs reference this table; the contract is project-wide.\n\n| Class | Intent | Apply to |\n|-------|--------|----------|\n| `.arcade-canvas` | Use on page roots and full-bleed sections. The canvas should feel immersive while preserving a centered campaign safe area. | Page roots, Full-bleed campaign bands, Launch homepages |\n| `.arcade-marquee` | Use for hero headlines, section titles, and primary campaign identity. The marquee must be a dominant visual signal. | Hero labels, Section headers, Campaign status bands |\n| `.arcade-bezel` | Use for product demos, progress consoles, and pledge modules. The bezel replaces generic cards. | Demo screens, Progress modules, Campaign panels |\n| `.arcade-button` | Use for all primary and secondary actions. Buttons should look physical and tappable. | Primary CTAs, Reward selection, Checkout actions, Share buttons |\n| `.arcade-token` | Use for compact status, backer levels, limited-run labels, and pledge tokens. | Badges, Backer counts, Tier markers, Campaign state chips |\n| `.arcade-led-counter` | Use for funding totals, countdowns, backer counts, and reward inventory. Numbers must be highly legible. | Metric strips, Counters, Campaign timers, Funding totals |\n| `.arcade-pixel-border` | Use when a section needs retro structure without becoming another card. | Spec panels, Manual surfaces, Tier rows, Story panels |\n| `.arcade-progress-track` | Use for funding, stretch goals, tier availability, and onboarding completion. Progress should feel like campaign momentum. | Funding progress, Stretch goals, Inventory meters, Referral progress |\n| `.arcade-manual-panel` | Use for explanatory sections, product specs, story steps, and launch instructions. This replaces generic marketing cards. | Product specs, How-it-works sections, Founder story, FAQ/manual content |\n| `.arcade-sticker` | Use sparingly for limited-run notes, shipping states, early-bird labels, and proof cues. | Limited labels, Launch notes, Inventory tags, Proof badges |\n\n## Required Setup\n- Treat the declared routes as the topology source of truth.\n- Preserve the resolved theme and shell contract unless the task explicitly mutates them.\n\n## Allowed Vocabulary\n- full-bleed\n- retro-arcade\n- dark\n- marketing\n- seo\n- analytics\n- conversion\n- campaign-progress\n- reward-tiers\n- preorder\n- waitlist\n- referrals\n- press-kit\n- updates\n- checkout\n- campaign-marquee-hero\n- backer-progress-console\n- prototype-demo-bezel\n- product-box-spec-panel\n- reward-tier-selector\n- stretch-goal-ladder\n- founder-comic-strip\n- backer-wall-ticker\n- continue-screen-cta\n- launch-update-log\n- pledge-checkout-panel\n- share-quest-panel\n- press-kit-shelf\n\n## Success Checks\n- Routes and page IDs match the compiled topology. [error]\n- The declared shell contract is preserved unless the task explicitly mutates it. [error]\n- Theme identity and mode remain consistent across scaffolded routes. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+}

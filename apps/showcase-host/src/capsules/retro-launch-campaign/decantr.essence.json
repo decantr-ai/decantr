@@ -1,0 +1,370 @@
+{
+  "version": "4.0.0",
+  "dna": {
+    "theme": {
+      "id": "retro-arcade",
+      "mode": "dark",
+      "shape": "sharp"
+    },
+    "spacing": {
+      "base_unit": 4,
+      "scale": "linear",
+      "density": "comfortable",
+      "content_gap": "_gap4"
+    },
+    "typography": {
+      "scale": "modular",
+      "heading_weight": 600,
+      "body_weight": 400
+    },
+    "color": {
+      "palette": "semantic",
+      "accent_count": 1,
+      "cvd_preference": "auto"
+    },
+    "radius": {
+      "philosophy": "sharp",
+      "base": 4
+    },
+    "elevation": {
+      "system": "layered",
+      "max_levels": 3
+    },
+    "motion": {
+      "preference": "moderate",
+      "duration_scale": 1,
+      "reduce_motion": false
+    },
+    "accessibility": {
+      "wcag_level": "AA",
+      "focus_visible": true,
+      "skip_nav": true
+    },
+    "personality": [
+      "A retro product launch campaign that feels like a coin-op arcade cabinet, a boxed toy set, and a transparent maker campaign in one system. Full-bleed atmosphere is allowed, but content lives inside a centered campaign safe area. Sections are bezels, counters, manual panels, shelves, cartridges, and continue screens rather than generic cards. The funnel is explicit: product reveal -> proof -> rewards -> stretch goals -> maker trust -> conversion -> share. Vibrant, playful, high contrast, and conversion-focused without hiding delivery or beta-access caveats."
+    ]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "launch-campaign",
+        "role": "public",
+        "shell": "full-bleed",
+        "features": [
+          "marketing",
+          "seo",
+          "analytics",
+          "conversion",
+          "campaign-progress",
+          "reward-tiers",
+          "preorder",
+          "waitlist",
+          "referrals",
+          "press-kit",
+          "updates",
+          "checkout"
+        ],
+        "description": "Public product-launch funnel for campaign-style launches, preorders, waitlists, crowdfunding-inspired reward tiers, product demos, maker stories, updates, checkout, press assets, and post-conversion sharing.",
+        "pages": [
+          {
+            "id": "home",
+            "layout": [
+              {
+                "pattern": "campaign-marquee-hero",
+                "preset": "coin-op"
+              },
+              {
+                "pattern": "backer-progress-console",
+                "preset": "funding-console"
+              },
+              {
+                "pattern": "prototype-demo-bezel",
+                "preset": "demo-screen"
+              },
+              {
+                "pattern": "product-box-spec-panel",
+                "preset": "box-back"
+              },
+              {
+                "pattern": "reward-tier-selector",
+                "preset": "cartridge-row"
+              },
+              {
+                "pattern": "stretch-goal-ladder",
+                "preset": "level-map"
+              },
+              {
+                "pattern": "founder-comic-strip",
+                "preset": "story-panels"
+              },
+              {
+                "pattern": "backer-wall-ticker",
+                "preset": "ticker-wall"
+              },
+              {
+                "pattern": "continue-screen-cta",
+                "preset": "continue-screen"
+              }
+            ],
+            "directives": [
+              "Render the home page as a campaign funnel, not a generic product landing page.",
+              "Use campaign-native sections and avoid generic hero, features, pricing, testimonials, card-grid, and cta-banner substitutes.",
+              "Keep the first viewport full-bleed but place content inside a clear campaign cabinet safe area.",
+              "Show product evidence early: prototype UI, render, video, screenshot, packaging, or a stable visual placeholder."
+            ],
+            "route": "/"
+          },
+          {
+            "id": "rewards",
+            "layout": [
+              {
+                "pattern": "reward-tier-selector",
+                "preset": "comparison-console"
+              },
+              {
+                "pattern": "product-box-spec-panel",
+                "preset": "manual-foldout"
+              },
+              {
+                "pattern": "backer-progress-console",
+                "preset": "funding-console"
+              },
+              {
+                "pattern": "continue-screen-cta",
+                "preset": "continue-screen"
+              }
+            ],
+            "directives": [
+              "Treat reward tiers as campaign packages or cartridges rather than SaaS pricing cards.",
+              "Expose inventory, delivery/access timing, and caveats near the tier action."
+            ],
+            "route": "/rewards"
+          },
+          {
+            "id": "updates",
+            "layout": [
+              {
+                "pattern": "launch-update-log",
+                "preset": "update-console"
+              },
+              {
+                "pattern": "backer-progress-console",
+                "preset": "funding-console"
+              },
+              {
+                "pattern": "continue-screen-cta",
+                "preset": "continue-screen"
+              }
+            ],
+            "directives": [
+              "Prioritize factual progress, blockers, unlocked milestones, and fulfillment status over blog-style marketing posts."
+            ],
+            "route": "/updates"
+          },
+          {
+            "id": "story",
+            "layout": [
+              {
+                "pattern": "founder-comic-strip",
+                "preset": "story-panels"
+              },
+              {
+                "pattern": "product-box-spec-panel",
+                "preset": "manual-foldout"
+              },
+              {
+                "pattern": "continue-screen-cta",
+                "preset": "continue-screen"
+              }
+            ],
+            "directives": [
+              "Tell a clear problem-prototype-proof-launch story with real product or maker evidence."
+            ],
+            "route": "/story"
+          },
+          {
+            "id": "demo",
+            "layout": [
+              {
+                "pattern": "prototype-demo-bezel",
+                "preset": "demo-screen"
+              },
+              {
+                "pattern": "product-box-spec-panel",
+                "preset": "box-back"
+              },
+              {
+                "pattern": "continue-screen-cta",
+                "preset": "continue-screen"
+              }
+            ],
+            "directives": [
+              "The demo page must show concrete product evidence in a stable media frame before asking for conversion."
+            ],
+            "route": "/demo"
+          },
+          {
+            "id": "checkout",
+            "layout": [
+              {
+                "pattern": "pledge-checkout-panel",
+                "preset": "pledge-flow"
+              }
+            ],
+            "directives": [
+              "Keep checkout calm and readable. The retro theme should support trust, not overwhelm form completion.",
+              "Make payment timing, delivery/access expectations, and consent text explicit."
+            ],
+            "route": "/checkout"
+          },
+          {
+            "id": "thanks",
+            "layout": [
+              {
+                "pattern": "continue-screen-cta",
+                "preset": "share-after-action"
+              },
+              {
+                "pattern": "share-quest-panel",
+                "preset": "referral-quest"
+              },
+              {
+                "pattern": "backer-wall-ticker",
+                "preset": "static-wall"
+              }
+            ],
+            "directives": [
+              "Lead with confirmation before asking for sharing.",
+              "Explain referral unlocks plainly and avoid manipulative sharing pressure."
+            ],
+            "route": "/thanks"
+          },
+          {
+            "id": "press",
+            "layout": [
+              {
+                "pattern": "press-kit-shelf",
+                "preset": "press-page"
+              },
+              {
+                "pattern": "product-box-spec-panel",
+                "preset": "box-back"
+              }
+            ],
+            "directives": [
+              "Press assets should be factual, inspectable, and easy to download or copy.",
+              "Avoid generic marketing cards; use shelf/manual/asset treatments."
+            ],
+            "route": "/press"
+          }
+        ]
+      }
+    ],
+    "features": [
+      "marketing",
+      "seo",
+      "analytics",
+      "conversion",
+      "campaign-progress",
+      "reward-tiers",
+      "preorder",
+      "waitlist",
+      "referrals",
+      "press-kit",
+      "updates",
+      "checkout"
+    ],
+    "routes": {
+      "/": {
+        "section": "launch-campaign",
+        "page": "home"
+      },
+      "/rewards": {
+        "section": "launch-campaign",
+        "page": "rewards"
+      },
+      "/updates": {
+        "section": "launch-campaign",
+        "page": "updates"
+      },
+      "/story": {
+        "section": "launch-campaign",
+        "page": "story"
+      },
+      "/demo": {
+        "section": "launch-campaign",
+        "page": "demo"
+      },
+      "/checkout": {
+        "section": "launch-campaign",
+        "page": "checkout"
+      },
+      "/thanks": {
+        "section": "launch-campaign",
+        "page": "thanks"
+      },
+      "/press": {
+        "section": "launch-campaign",
+        "page": "press"
+      }
+    }
+  },
+  "meta": {
+    "archetype": "launch-campaign",
+    "target": "react",
+    "platform": {
+      "type": "spa",
+      "routing": "history"
+    },
+    "guard": {
+      "mode": "strict",
+      "dna_enforcement": "error",
+      "blueprint_enforcement": "warn"
+    },
+    "seo": {
+      "schema_org": [
+        "WebSite",
+        "Product",
+        "Organization",
+        "FAQPage"
+      ],
+      "meta_priorities": [
+        "description",
+        "og:title",
+        "og:image",
+        "product:price:amount",
+        "product:availability"
+      ]
+    },
+    "navigation": {
+      "command_palette": true,
+      "hotkeys": [
+        {
+          "key": "g h",
+          "route": "/",
+          "label": "Go to Campaign Home"
+        },
+        {
+          "key": "g r",
+          "route": "/rewards",
+          "label": "Go to Rewards"
+        },
+        {
+          "key": "g u",
+          "route": "/updates",
+          "label": "Go to Updates"
+        },
+        {
+          "key": "g d",
+          "route": "/demo",
+          "label": "Go to Demo"
+        },
+        {
+          "key": "g p",
+          "route": "/press",
+          "label": "Go to Press Kit"
+        }
+      ]
+    }
+  }
+}
