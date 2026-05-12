@@ -32,6 +32,7 @@ export interface FetchResult<T> {
 }
 
 const DEFAULT_API_URL = 'https://api.decantr.ai/v1';
+const REGISTRY_SYNC_PAGE_SIZE = 100;
 
 /**
  * Content types that support custom overrides in .decantr/custom/
@@ -78,6 +79,88 @@ function saveToCache(
   const cachePath = id ? join(dir, `${id}.json`) : join(dir, 'index.json');
 
   writeFileSync(cachePath, JSON.stringify(data, null, 2));
+}
+
+function contentCacheKey(item: unknown): string | null {
+  if (!item || typeof item !== 'object') return null;
+  const record = item as Record<string, unknown>;
+  const data = record.data && typeof record.data === 'object' ? (record.data as Record<string, unknown>) : null;
+  return (
+    (typeof record.slug === 'string' && record.slug) ||
+    (data && typeof data.id === 'string' && data.id) ||
+    (data && typeof data.slug === 'string' && data.slug) ||
+    (typeof record.id === 'string' && record.id) ||
+    null
+  );
+}
+
+function normalizeCacheItem<T>(item: T, fallbackId: string): T {
+  if (!item || typeof item !== 'object') return item;
+  const record = item as Record<string, unknown>;
+  const data = record.data && typeof record.data === 'object' ? (record.data as Record<string, unknown>) : null;
+
+  if (data) {
+    return {
+      ...data,
+      id: typeof data.id === 'string' ? data.id : fallbackId,
+    } as T;
+  }
+
+  return {
+    ...record,
+    publicId: typeof record.id === 'string' && record.id !== fallbackId ? record.id : undefined,
+    id: fallbackId,
+  } as T;
+}
+
+async function fetchAllContent<T extends ApiContentType>(
+  apiClient: RegistryAPIClient,
+  contentType: T,
+  params: {
+    namespace?: string;
+    sort?: string;
+    recommended?: boolean;
+    intelligenceSource?: string;
+  } = {},
+): Promise<{ items: RegistryContentMap[T][]; total: number; limit: number; offset: number }> {
+  const items: RegistryContentMap[T][] = [];
+  const seen = new Set<string>();
+  let total: number | null = null;
+  let offset = 0;
+
+  for (let page = 0; page < 200; page++) {
+    const result = await apiClient.listContent<RegistryContentMap[T]>(contentType, {
+      ...params,
+      limit: REGISTRY_SYNC_PAGE_SIZE,
+      offset,
+    });
+
+    if (total == null && typeof result.total === 'number') {
+      total = result.total;
+    }
+
+    let newItems = 0;
+    for (const item of result.items) {
+      const key = contentCacheKey(item) ?? `offset:${offset + newItems}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(item);
+      newItems++;
+    }
+
+    if (result.items.length === 0) break;
+    if (total != null && items.length >= total) break;
+    if (newItems === 0) break;
+
+    offset += result.items.length;
+  }
+
+  return {
+    items,
+    total: total ?? items.length,
+    limit: REGISTRY_SYNC_PAGE_SIZE,
+    offset: 0,
+  };
 }
 
 /**
@@ -175,7 +258,7 @@ export class RegistryClient {
     // Try API first
     if (!this.offline) {
       try {
-        const apiResult = await this.apiClient.listContent<RegistryContentMap[T]>(contentType, {
+        const apiResult = await fetchAllContent(this.apiClient, contentType, {
           namespace,
           sort,
           recommended,
@@ -350,19 +433,22 @@ export async function syncRegistry(
   // Sync each content type — only writes to cache, never custom
   for (const type of ALL_CONTENT_TYPES) {
     try {
-      const result = await apiClient.listContent(type, { namespace: '@official' });
+      const result = await fetchAllContent(apiClient, type, { namespace: '@official' });
       saveToCache(cacheDir, type, null, result, '@official');
 
-      // Cache individual items by slug.
-      // The list endpoint returns abbreviated items (no inner 'data' field),
-      // but that's OK — fetchContentItem will hit the API for full data when needed.
+      // Cache individual full items by slug so offline guard checks and context
+      // generation see the canonical registry contract, not public list summaries.
       for (const item of result.items) {
-        const slug = (item as Record<string, unknown>).slug as string;
-        const data = (item as Record<string, unknown>).data as Record<string, unknown> | undefined;
-        const innerSlug = (data?.id as string) || (data?.slug as string);
-        const cacheKey = slug || innerSlug || ((item as Record<string, unknown>).id as string);
+        const cacheKey = contentCacheKey(item);
         if (cacheKey) {
-          saveToCache(cacheDir, type, cacheKey, item, '@official');
+          let cacheItem: unknown = normalizeCacheItem(item, cacheKey);
+          try {
+            cacheItem = await apiClient.getContent(type, '@official', cacheKey);
+          } catch {
+            // Keep a normalized list-summary fallback so guard checks still know
+            // the slug exists even if one detail fetch fails.
+          }
+          saveToCache(cacheDir, type, cacheKey, cacheItem, '@official');
         }
       }
 

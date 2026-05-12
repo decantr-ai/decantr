@@ -30,6 +30,7 @@ export function PrivateRegistryTelemetryLink({
       href={href}
       className="d-interactive"
       data-variant={variant}
+      aria-label={typeof children === 'string' ? children : undefined}
       onClick={() => {
         capture('private_registry.intent_clicked', {
           action,

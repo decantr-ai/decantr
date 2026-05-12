@@ -63,6 +63,7 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 - produces local Project Health reports, Evidence Bundles, workspace health, and a localhost Studio dashboard for end-user drift triage
 - audits local registry content repositories with Content Health reports for schema, reference, and quality coverage
 - searches the registry and showcase benchmark corpus
+- syncs paginated hosted registry content into a full slug-keyed local cache for offline guards and context generation
 - validates, refreshes, and maintains `decantr.essence.json`
 
 ## Common Commands
@@ -208,6 +209,8 @@ DECANTR_CONTENT_DIR=/path/to/decantr-content decantr new my-app --blueprint=agen
 ```
 
 If a requested offline blueprint, archetype, or theme cannot be resolved from local cache/custom content or `DECANTR_CONTENT_DIR`, the CLI now stops explicitly instead of silently falling back to the default scaffold.
+
+Run `decantr sync` before offline-heavy or CI-heavy workflows that depend on hosted registry content. Sync paginates the official registry list endpoints, then fetches and stores each item by slug as a full content record under `.decantr/cache/@official/`. That keeps guard checks, Project Health, and context generation aligned with the canonical registry contract instead of abbreviated public list summaries.
 
 ## Workflow Certification
 

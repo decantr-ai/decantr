@@ -922,6 +922,68 @@ describe('verifier', () => {
     }
   });
 
+  it('treats escaped JSON-LD script injection as a reviewed structured-data exception', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'components'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify({
+        version: '4.0.0',
+        dna: {
+          theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' },
+          spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+          typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+          color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+          radius: { philosophy: 'rounded', base: 8 },
+          elevation: { system: 'layered', max_levels: 3 },
+          motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+          accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+          personality: ['professional'],
+        },
+        blueprint: {
+          shell: 'sidebar-main',
+          features: [],
+          sections: [
+            {
+              id: 'marketing',
+              role: 'public',
+              shell: 'sidebar-main',
+              features: [],
+              description: 'Marketing surface',
+              pages: [{ id: 'home', route: '/', layout: ['hero'] }],
+            },
+          ],
+          routes: { '/': { section: 'marketing', page: 'home' } },
+        },
+        meta: {
+          archetype: 'marketing',
+          target: 'react',
+          platform: { type: 'spa', routing: 'hash' },
+          guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+        },
+      }, null, 2));
+      writeFileSync(
+        join(projectRoot, 'src', 'components', 'JsonLd.tsx'),
+        `
+          export function JsonLd({ data }: { data: unknown }) {
+            return (
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(data).replace(/</g, '\\\\u003c'),
+                }}
+              />
+            );
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(report.findings.some(finding => finding.id === 'source-security-risk-patterns-present')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports insecure source transport endpoints before runtime review', async () => {
     const projectRoot = createProjectRoot();
     try {

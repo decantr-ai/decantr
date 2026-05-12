@@ -96,6 +96,7 @@ Offline behavior:
 
 - `--offline --adoption=contract-only` works without registry content.
 - Registry-backed blueprint, archetype, or theme flows require local cache/custom content or `DECANTR_CONTENT_DIR`.
+- `decantr sync` is the hosted-registry cache hardening path: it paginates official list endpoints and stores full slug-keyed item records under `.decantr/cache/@official/`, so offline guards and generated context use canonical content rather than public list summaries.
 - Supported offline flows must not call the hosted API.
 
 ## Harness And Certification

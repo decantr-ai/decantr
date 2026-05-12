@@ -4935,6 +4935,31 @@ function hasNavigationLabel(attributes: ts.JsxAttributes): boolean {
   return Boolean(getJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title'));
 }
 
+function getJsxAttributeOwner(
+  attribute: ts.JsxAttribute,
+): ts.JsxOpeningElement | ts.JsxSelfClosingElement | null {
+  const attributes = attribute.parent;
+  if (!attributes || !ts.isJsxAttributes(attributes)) return null;
+  const owner = attributes.parent;
+  if (ts.isJsxOpeningElement(owner) || ts.isJsxSelfClosingElement(owner)) {
+    return owner;
+  }
+  return null;
+}
+
+function isSafeJsonLdDangerouslySetInnerHtml(attribute: ts.JsxAttribute): boolean {
+  const owner = getJsxAttributeOwner(attribute);
+  if (!owner || getJsxTagName(owner) !== 'script') return false;
+
+  const typeValue = getJsxAttributeLiteralValue(getJsxAttribute(owner.attributes, 'type'))
+    ?.trim()
+    .toLowerCase();
+  if (typeValue !== 'application/ld+json') return false;
+
+  const sourceText = attribute.getText();
+  return /\bJSON\.stringify\s*\(/.test(sourceText) && /\\u003c/i.test(sourceText);
+}
+
 function hasInsecureFormAction(attributes: ts.JsxAttributes): boolean {
   const actionValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'action'));
   const normalized = actionValue?.trim().toLowerCase() ?? '';
@@ -12811,7 +12836,10 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           signals.inlineStyleAttributeCount += 1;
         }
       }
-      if (isPropertyNamed(node.name, 'dangerouslySetInnerHTML')) {
+      if (
+        isPropertyNamed(node.name, 'dangerouslySetInnerHTML') &&
+        !isSafeJsonLdDangerouslySetInnerHtml(node)
+      ) {
         signals.dangerousHtmlCount += 1;
       }
       if (
@@ -15028,10 +15056,7 @@ export function critiqueSource({
     );
   }
 
-  const dangerousHtmlCount = Math.max(
-    astSignals.dangerousHtmlCount,
-    /dangerouslySetInnerHTML\s*=/.test(code) ? 1 : 0,
-  );
+  const dangerousHtmlCount = astSignals.dangerousHtmlCount;
   const rawHtmlInjectionCount = Math.max(
     astSignals.rawHtmlInjectionCount,
     /\binnerHTML\s*=|\binsertAdjacentHTML\s*\(|\bdocument\.write\s*\(/.test(code) ? 1 : 0,
