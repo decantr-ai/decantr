@@ -1126,10 +1126,16 @@ export function resolvePackAdapter(
   target: string | undefined,
   platformType: string | undefined,
 ): string {
+  if (target === 'html' || target === 'vanilla' || target === 'javascript' || target === 'js') {
+    return 'vanilla-vite';
+  }
   if (target === 'react' && platformType === 'spa') return 'react-vite';
   if (target === 'react') return 'react-web';
   if (target === 'vue' && platformType === 'spa') return 'vue-vite';
   if (target === 'svelte' && platformType === 'spa') return 'sveltekit';
+  if (target === 'sveltekit') return 'sveltekit';
+  if (target === 'angular') return 'angular';
+  if (target === 'solid' || target === 'solidjs') return 'solid-vite';
   if (target) return target;
   return 'generic-web';
 }

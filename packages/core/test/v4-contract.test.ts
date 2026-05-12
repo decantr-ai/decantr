@@ -126,6 +126,17 @@ function makeUnsupportedTargetEssence(): EssenceV4 {
   });
 }
 
+function makeTargetEssence(target: string, platformType: 'spa' | 'ssr' = 'spa'): EssenceV4 {
+  return makeSaasEssence({
+    meta: {
+      archetype: 'saas-dashboard',
+      target,
+      platform: { type: platformType, routing: platformType === 'ssr' ? 'pathname' : 'history' },
+      guard: { mode: 'strict', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+    },
+  });
+}
+
 describe('V4 resolution', () => {
   it('resolves V4 sections, theme, routes, patterns, and wiring', async () => {
     const resolver = createResolver({ contentRoot, overridePaths: [contentRoot] });
@@ -289,6 +300,23 @@ describe('first-mile realization plan', () => {
     expect(plan.adapter).toBe('rails');
     expect(plan.canRealizeFrameworkCode).toBe(false);
     expect(plan.unsupportedReason).toContain('No certified realization adapter');
+  });
+
+  it('certifies first-mile realization for supported non-React adapters', () => {
+    const cases = [
+      ['html', 'vanilla-vite'],
+      ['vue', 'vue-vite'],
+      ['svelte', 'sveltekit'],
+      ['angular', 'angular'],
+      ['solid', 'solid-vite'],
+    ] as const;
+
+    for (const [target, adapter] of cases) {
+      const plan = compileRealizationPlan(makeTargetEssence(target));
+      expect(plan.adapter).toBe(adapter);
+      expect(plan.canRealizeFrameworkCode).toBe(true);
+      expect(plan.unsupportedReason).toBeUndefined();
+    }
   });
 });
 

@@ -31,6 +31,11 @@ Current adapter availability:
 
 - `react-vite`: runnable bootstrap, certified realization, attach, styling, verify.
 - `next-app`: runnable Next.js App Router bootstrap, certified realization, App/Pages Router attach hints, verify.
+- `vanilla-vite`: runnable plain HTML/CSS/JavaScript bootstrap, certified realization, attach, styling, verify.
+- `vue-vite`: runnable Vue 3 + Vite bootstrap, certified realization, Vue Router attach hints, styling, verify.
+- `sveltekit`: runnable SvelteKit bootstrap, certified realization, file-route attach hints, styling, verify.
+- `angular`: runnable Angular standalone bootstrap, certified realization, Angular Router attach hints, styling, verify.
+- `solid-vite`: runnable Solid + Vite bootstrap, certified realization, attach, styling, verify.
 - `generic-web`: contract-only fallback for unsupported targets; no framework code realization.
 
 Unsupported targets should feel intentional, not broken: Decantr writes the contract and tells the user that the runtime remains theirs.

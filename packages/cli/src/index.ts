@@ -2923,7 +2923,7 @@ ${BOLD}Init Options:${RESET}
   --theme            Theme ID
   --mode             Color mode: dark | light | auto
   --shape            Border shape: pill | rounded | sharp
-  --target           Framework: react | vue | svelte | angular | nextjs | nuxt | astro | html
+  --target           Framework: react | vue | svelte | angular | solid | nextjs | nuxt | astro | html
   --guard            Guard mode: creative | guided | strict
   --density          Spacing: compact | comfortable | spacious
   --shell            Default shell layout
@@ -3022,7 +3022,7 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
-  Runnable starter adapters: ${cyan('react-vite')}, ${cyan('next-app')}
+  Runnable starter adapters: ${cyan('react-vite')}, ${cyan('next-app')}, ${cyan('vanilla-vite')}, ${cyan('vue-vite')}, ${cyan('sveltekit')}, ${cyan('angular')}, ${cyan('solid-vite')}
   Unsupported targets resolve through ${cyan('generic-web')} contract-only mode until their starter adapters land.
 `);
 }
