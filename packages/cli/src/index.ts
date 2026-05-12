@@ -73,7 +73,6 @@ import {
   runSimplifiedInit,
 } from './prompts.js';
 import { RegistryClient, syncRegistry } from './registry.js';
-import { optIn, sendCliCommandTelemetry } from './telemetry.js';
 import {
   type BlueprintOverrides,
   type ComposeSectionsResult,
@@ -99,6 +98,7 @@ import {
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
+import { optIn, sendCliCommandTelemetry } from './telemetry.js';
 import {
   createTheme,
   deleteTheme,
@@ -214,6 +214,7 @@ interface PromptContext {
   workflow: WorkflowMode;
   adoptionMode?: AdoptionMode;
   analysisArtifacts?: boolean;
+  hasCompiledPacks?: boolean;
   archetype: string;
   blueprint?: string;
   theme: string;
@@ -241,6 +242,7 @@ function extractPatternName(item: unknown): string {
 function generateGreenfieldPrompt(ctx: PromptContext): string {
   const lines: string[] = [];
   const usesDecantrCss = ctx.adoptionMode === 'decantr-css' || !ctx.adoptionMode;
+  const hasCompiledPacks = ctx.hasCompiledPacks ?? true;
 
   lines.push('Build this greenfield application using the Decantr design system.');
   lines.push('');
@@ -260,44 +262,66 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     'This workspace is a new Decantr scaffold. Use the contract to create or extend the runtime deliberately, not to reverse-engineer a hidden starter.',
   );
   lines.push('');
-  lines.push('Treat the compiled execution-pack files as the primary source of truth.');
-  lines.push(
-    'Use narrative docs only as secondary explanation when the compiled packs are not enough.',
-  );
+  if (hasCompiledPacks) {
+    lines.push('Treat the compiled execution-pack files as the primary source of truth.');
+    lines.push(
+      'Use narrative docs only as secondary explanation when the compiled packs are not enough.',
+    );
+  } else {
+    lines.push(
+      'Compiled execution-pack files are not present in this scaffold. Treat narrative Decantr context as the temporary source of truth and run `decantr refresh` after fixing the reported validation issue.',
+    );
+  }
   lines.push(
     'Use only files present in this workspace as the source of truth. If local scaffold files disagree, stop and report the mismatch instead of relying on external Decantr assumptions or prior examples.',
   );
   lines.push('');
   lines.push('Read in this order:');
-  lines.push(
-    '1. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains route plan, shell layouts, navigation, Required Theme Decorators, and project-wide execution rules.',
-  );
-  lines.push(
-    '2. Before section work, read the matching .decantr/context/section-*-pack.md first, then .decantr/context/section-*.md only for extra slot/layout detail.',
-  );
-  lines.push(
-    '3. Before route work, read the matching .decantr/context/page-*-pack.md file. Its pattern layout and interaction checklists are contract.',
-  );
-  lines.push(
-    '4. .decantr/context/scaffold.md for broader topology, route map, and voice guidance after the compact packs are understood.',
-  );
-  lines.push(
-    '5. DECANTR.md as a lookup reference for atoms, treatments, decorators, interaction implementations, and guard rules. Do not let narrative docs override compiled packs.',
-  );
-  lines.push('');
-  lines.push('═══ INTERACTIONS ARE CONTRACT, NOT GUIDANCE ═══');
-  lines.push('');
-  lines.push(
-    'Each page pack lists "Interactions (MUST implement each)" per pattern. Implement the actual behavior, not visible text saying it exists. Use DECANTR.md only to look up the canonical implementation shape when needed.',
-  );
-  lines.push(
-    'Examples: pointer handlers for dragging/panning, onWheel for zoom, onKeyDown + tabIndex for keyboard navigation, IntersectionObserver for scroll reveal, state updates for real-time indicators, and d-* motion classes where the contract calls for animation.',
-  );
-  lines.push('');
-  lines.push(
-    '`decantr check --strict` fails when a declared interaction has no matching implementation.',
-  );
-  lines.push('');
+  if (hasCompiledPacks) {
+    lines.push(
+      '1. .decantr/context/scaffold-pack.md — the canonical compiled contract. Contains route plan, shell layouts, navigation, Required Theme Decorators, and project-wide execution rules.',
+    );
+    lines.push(
+      '2. Before section work, read the matching .decantr/context/section-*-pack.md first, then .decantr/context/section-*.md only for extra slot/layout detail.',
+    );
+    lines.push(
+      '3. Before route work, read the matching .decantr/context/page-*-pack.md file. Its pattern layout and interaction checklists are contract.',
+    );
+    lines.push(
+      '4. .decantr/context/scaffold.md for broader topology, route map, and voice guidance after the compact packs are understood.',
+    );
+    lines.push(
+      '5. DECANTR.md as a lookup reference for atoms, treatments, decorators, interaction implementations, and guard rules. Do not let narrative docs override compiled packs.',
+    );
+    lines.push('');
+    lines.push('═══ INTERACTIONS ARE CONTRACT, NOT GUIDANCE ═══');
+    lines.push('');
+    lines.push(
+      'Each page pack lists "Interactions (MUST implement each)" per pattern. Implement the actual behavior, not visible text saying it exists. Use DECANTR.md only to look up the canonical implementation shape when needed.',
+    );
+    lines.push(
+      'Examples: pointer handlers for dragging/panning, onWheel for zoom, onKeyDown + tabIndex for keyboard navigation, IntersectionObserver for scroll reveal, state updates for real-time indicators, and d-* motion classes where the contract calls for animation.',
+    );
+    lines.push('');
+    lines.push(
+      '`decantr check --strict` fails when a declared interaction has no matching implementation.',
+    );
+    lines.push('');
+  } else {
+    lines.push(
+      '1. .decantr/context/scaffold.md for topology, route map, voice, and section inventory.',
+    );
+    lines.push(
+      '2. The matching .decantr/context/section-*.md file before implementing each section.',
+    );
+    lines.push(
+      '3. DECANTR.md for atoms, treatments, decorators, interaction shapes, and guard rules.',
+    );
+    lines.push(
+      '4. Run `decantr refresh` and switch to compiled pack files once validation passes.',
+    );
+    lines.push('');
+  }
   lines.push('═══ STYLING ADOPTION ═══');
   lines.push('');
   if (ctx.adoptionMode === 'contract-only') {
@@ -384,12 +408,18 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('═══ THEME DECORATOR CONTRACT — APPLY OR THE THEME DOES NOT LAND ═══');
   lines.push('');
-  lines.push(
-    'Each theme ships namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). Apply the scaffold-pack.md "Required Theme Decorators" as additive classes alongside d-* treatments so the theme lands as more than token colors.',
-  );
-  lines.push(
-    'Section packs may point back to the scaffold-pack table; scaffold-pack.md is authoritative.',
-  );
+  if (hasCompiledPacks) {
+    lines.push(
+      'Each theme ships namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). Apply the scaffold-pack.md "Required Theme Decorators" as additive classes alongside d-* treatments so the theme lands as more than token colors.',
+    );
+    lines.push(
+      'Section packs may point back to the scaffold-pack table; scaffold-pack.md is authoritative.',
+    );
+  } else {
+    lines.push(
+      'Each theme ships namespaced decorator classes (`clean-card`, `lum-glass`, `carbon-canvas`, `paper-card`, etc.). Use DECANTR.md and section context to apply the theme, then rerun `decantr refresh` to restore the authoritative decorator table.',
+    );
+  }
   lines.push('');
   lines.push('═══ HARD RULES (NON-NEGOTIABLE) ═══');
   lines.push('');
@@ -410,7 +440,9 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
     '- Use lucide-react for ALL iconography (already in package.json). Pick semantic icons (Bot, Activity, Database, Search) over generic ones. Do NOT inline SVGs for icons that have Lucide equivalents.',
   );
   lines.push(
-    '- Section Directives in section packs are execution rules for layout proportions, treatment stacks, copy conventions, and pattern fitness.',
+    hasCompiledPacks
+      ? '- Section Directives in section packs are execution rules for layout proportions, treatment stacks, copy conventions, and pattern fitness.'
+      : '- Section context files are execution rules for layout proportions, treatment stacks, copy conventions, and pattern fitness until compiled packs are restored.',
   );
   lines.push(
     '- Filter chip rows / tab strips use `d-step-chip[data-step-state]`, not bare `d-interactive` buttons.',
@@ -424,9 +456,15 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('═══ IMPLEMENTATION RULES ═══');
   lines.push(
-    '- Do not invent routes, sections, shells, themes, or features beyond the compiled packs.',
+    hasCompiledPacks
+      ? '- Do not invent routes, sections, shells, themes, or features beyond the compiled packs.'
+      : '- Do not invent routes, sections, shells, themes, or features beyond decantr.essence.json and generated narrative context.',
   );
-  lines.push('- Prefer scaffold-pack, section-pack, and page-pack guidance over narrative docs.');
+  lines.push(
+    hasCompiledPacks
+      ? '- Prefer scaffold-pack, section-pack, and page-pack guidance over narrative docs.'
+      : '- Prefer decantr.essence.json and generated section context over assumptions from prior examples.',
+  );
   lines.push(
     '- Start with the shell layouts and route structure first, then build section pages route by route.',
   );
@@ -474,7 +512,11 @@ function generateGreenfieldPrompt(ctx: PromptContext): string {
   lines.push('');
   lines.push('═══ EXECUTION FLOW ═══');
   lines.push('- Build the shell and shared layout first.');
-  lines.push("- Then implement each section's pages using the matching section and page packs.");
+  lines.push(
+    hasCompiledPacks
+      ? "- Then implement each section's pages using the matching section and page packs."
+      : "- Then implement each section's pages using decantr.essence.json and the matching section context.",
+  );
   lines.push(
     '- After implementation, run `decantr check` (primary gate) and `decantr audit` (supplementary diagnostics).',
   );
@@ -2368,19 +2410,35 @@ async function cmdInit(args: InitArgs) {
     );
   }
 
+  const hasCompiledPacks = existsSync(join(projectRoot, '.decantr', 'context', 'scaffold-pack.md'));
+
   console.log('');
   console.log('  Next steps:');
-  console.log(
-    '    1. Read .decantr/context/scaffold-pack.md first as the primary compiled contract',
-  );
-  console.log(
-    '    2. Read .decantr/context/scaffold.md for broader topology, route map, and voice guidance',
-  );
-  console.log('    3. Read the matching section and page packs before implementing each route');
-  console.log('    4. Use DECANTR.md as a lookup reference for atoms, treatments, and guard rules');
-  console.log('    5. Build the shell and route structure first, then implement the pages');
-  console.log('    6. Run decantr check and decantr audit after implementation');
-  console.log('    7. Explore more at decantr.ai/registry');
+  if (hasCompiledPacks) {
+    console.log(
+      '    1. Read .decantr/context/scaffold-pack.md first as the primary compiled contract',
+    );
+    console.log(
+      '    2. Read .decantr/context/scaffold.md for broader topology, route map, and voice guidance',
+    );
+    console.log('    3. Read the matching section and page packs before implementing each route');
+    console.log(
+      '    4. Use DECANTR.md as a lookup reference for atoms, treatments, and guard rules',
+    );
+    console.log('    5. Build the shell and route structure first, then implement the pages');
+    console.log('    6. Run decantr check and decantr audit after implementation');
+    console.log('    7. Explore more at decantr.ai/registry');
+  } else {
+    console.log('    1. Fix the validation issue reported above');
+    console.log('    2. Run decantr refresh to restore compiled execution packs');
+    console.log(
+      '    3. Until packs exist, read .decantr/context/scaffold.md and section context files',
+    );
+    console.log(
+      '    4. Use DECANTR.md as a lookup reference for atoms, treatments, and guard rules',
+    );
+    console.log('    5. Run decantr check and decantr audit after implementation');
+  }
   console.log('');
   console.log('  Commands:');
   console.log(`    ${cyan('decantr status')}     Project health`);
@@ -2442,6 +2500,7 @@ async function cmdInit(args: InitArgs) {
     personality: options.personality,
     features: options.features,
     guard: options.guard,
+    hasCompiledPacks,
   };
 
   const curatedPrompt = generateCuratedPrompt(promptCtx);

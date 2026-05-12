@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { validateEssence } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DetectedProject } from '../src/detect.js';
 import type { InitOptions } from '../src/prompts.js';
@@ -7,6 +8,7 @@ import type { RegistryClient } from '../src/registry.js';
 import type { ThemeData } from '../src/scaffold.js';
 import {
   buildEssenceV4,
+  normalizeBlueprintDesignConstraints,
   refreshDerivedFiles,
   scaffoldMinimal,
   scaffoldProject,
@@ -94,6 +96,83 @@ describe('V4 scaffold', () => {
     expect(essence.dna).toBeDefined();
     expect(essence.blueprint).toBeDefined();
     expect(essence.meta).toBeDefined();
+  });
+
+  it('normalizes blueprint design constraints into valid Essence constraints', () => {
+    const normalized = normalizeBlueprintDesignConstraints({
+      mode: 'dark_only',
+      public_home: {
+        style: 'cinematic broadcast stage',
+        avoid: ['generic SaaS hero', 'nested first-viewport cards'],
+      },
+      effects: {
+        glow: 'optional',
+        roster_slots: 5,
+      },
+    });
+
+    expect(normalized).toEqual({
+      mode: 'dark_only',
+      effects: {
+        public_home:
+          '{"style":"cinematic broadcast stage","avoid":["generic SaaS hero","nested first-viewport cards"]}',
+        glow: 'optional',
+        roster_slots: '5',
+      },
+    });
+  });
+
+  it('scaffoldProject keeps blueprint design constraints schema-valid before pack compilation', async () => {
+    const result = await scaffoldProject(
+      testDir,
+      defaultOptions,
+      detected,
+      createMockRegistry(),
+      undefined,
+      'cache',
+      undefined,
+      undefined,
+      {
+        defaultShell: 'sidebar-main',
+        features: ['live-scores'],
+        sections: [
+          {
+            id: 'team-operations',
+            role: 'primary',
+            shell: 'sidebar-main',
+            features: ['live-scores'],
+            description: 'Team operations cockpit',
+            pages: [{ id: 'overview', layout: ['hero'] }],
+          },
+        ],
+      },
+      {
+        '/': { section: 'team-operations', page: 'overview' },
+      },
+      undefined,
+      {
+        id: 'esports-hq',
+        name: 'Esports HQ',
+        theme: { id: 'luminarum', mode: 'dark' },
+        design_constraints: {
+          public_home: {
+            style: 'cinematic full-bleed esports broadcast stage',
+            avoid: ['generic SaaS hero plus card grid'],
+          },
+        },
+      },
+    );
+
+    const essence = JSON.parse(readFileSync(result.essencePath, 'utf-8'));
+    const validation = validateEssence(essence);
+
+    expect(validation.valid).toBe(true);
+    expect(essence.dna.constraints).toEqual({
+      effects: {
+        public_home:
+          '{"style":"cinematic full-bleed esports broadcast stage","avoid":["generic SaaS hero plus card grid"]}',
+      },
+    });
   });
 
   it('scaffoldMinimal generates V4 essence file', () => {
