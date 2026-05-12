@@ -1352,6 +1352,17 @@ function formatBlueprintPortfolioSummary(value: unknown): string | null {
   return `Blueprint set: ${labels.join(' + ')}${alternative}`;
 }
 
+function formatRegistryListIdentifier(item: unknown): string {
+  if (!item || typeof item !== 'object') return String(item ?? '');
+  const record = item as Record<string, unknown>;
+  return (
+    (typeof record.slug === 'string' && record.slug) ||
+    (typeof record.id === 'string' && record.id) ||
+    (typeof record.name === 'string' && record.name) ||
+    ''
+  );
+}
+
 function printBlueprintPortfolioNotice(blueprint: RegistryBlueprint): void {
   const portfolio = getBlueprintPortfolioMetadata(blueprint);
   if (!portfolio) return;
@@ -1640,7 +1651,9 @@ async function cmdList(
   } else {
     console.log(heading(`${items.length} ${type} found`));
     for (const item of items) {
-      console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      console.log(
+        `  ${cyan(formatRegistryListIdentifier(item))}  ${dim(item.description || item.name || '')}`,
+      );
       const intelligenceSummary = formatIntelligenceSummary(
         (item as { intelligence?: ContentIntelligenceMetadata | null }).intelligence,
       );

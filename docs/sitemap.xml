@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-12T08:52:29-04:00</lastmod>
+    <lastmod>2026-05-12T15:29:10-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -98,7 +98,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/registry-content-publishing.md</loc>
-    <lastmod>2026-05-11T16:58:48-04:00</lastmod>
+    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -176,13 +176,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/registry-public-api.html</loc>
-    <lastmod>2026-05-08T17:56:58-04:00</lastmod>
+    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/registry-public-api.md</loc>
-    <lastmod>2026-05-08T17:56:58-04:00</lastmod>
+    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -266,7 +266,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-12-blueprint-registry-maturity.md</loc>
-    <lastmod>2026-05-12T14:53:14.766Z</lastmod>
+    <lastmod>2026-05-12T15:29:10-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-12-cli-blueprint-list-polish.md</loc>
+    <lastmod>2026-05-12T22:26:44.796Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -356,7 +362,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/blueprint.v1.json</loc>
-    <lastmod>2026-04-08T19:22:30-04:00</lastmod>
+    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -470,7 +476,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/public-content-summary.v1.json</loc>
-    <lastmod>2026-04-21T22:52:37-04:00</lastmod>
+    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
