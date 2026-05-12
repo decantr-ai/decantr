@@ -2536,3 +2536,747 @@
     }
   }
 }
+
+@layer app {
+  .ps2-shell {
+    grid-template-columns: 224px minmax(0, 1fr);
+    background: linear-gradient(180deg, rgba(5, 7, 13, 0.94), rgba(6, 9, 16, 0.98));
+  }
+
+  .ps2-sidebar {
+    gap: 1.15rem;
+    padding: 0.85rem;
+    background:
+      linear-gradient(180deg, rgba(7, 11, 19, 0.98), rgba(4, 7, 12, 0.98)),
+      var(--d-surface);
+  }
+
+  .ps2-sidebar-top {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .ps2-sidebar-brand {
+    min-height: 40px;
+    padding: 0.2rem 0.1rem;
+    font-size: 0.95rem;
+  }
+
+  .ps2-sidebar-session {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.62rem;
+    align-items: center;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 8px;
+    padding: 0.72rem;
+    background: rgba(15, 23, 38, 0.5);
+  }
+
+  .ps2-sidebar-session strong,
+  .ps2-sidebar-session small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ps2-sidebar-session strong {
+    font-size: 0.84rem;
+  }
+
+  .ps2-sidebar-session small,
+  .ps2-nav-label {
+    color: var(--d-text-muted);
+    font-size: 0.68rem;
+    font-weight: 760;
+  }
+
+  .ps2-nav-label {
+    padding: 0.15rem 0.65rem 0.25rem;
+    text-transform: uppercase;
+  }
+
+  .ps2-sidebar nav {
+    gap: 0.32rem;
+  }
+
+  .ps2-sidebar a,
+  .ps2-sidebar button {
+    min-height: 38px;
+    padding: 0.52rem 0.62rem;
+    font-size: 0.86rem;
+  }
+
+  .ps2-sidebar a.active {
+    background:
+      linear-gradient(90deg, rgba(103, 232, 249, 0.16), rgba(103, 232, 249, 0.045)),
+      rgba(15, 23, 38, 0.74);
+  }
+
+  .ps2-sidebar a.active svg {
+    color: var(--d-primary);
+  }
+
+  .ps2-studio-header {
+    min-height: 64px;
+    padding: 0.72rem 1rem;
+  }
+
+  .ps2-studio-header small {
+    text-transform: none;
+  }
+
+  .ps2-studio-header h1 {
+    font-size: 1.18rem;
+  }
+
+  .ps2-public-links .ps2-primary-cta {
+    color: #051018;
+  }
+
+  .ps2-workspace,
+  .ps2-list-page,
+  .ps2-track-crate-page,
+  .ps2-collab-page,
+  .ps2-splits-page,
+  .ps2-rooms-page,
+  .ps2-room-detail-console,
+  .ps2-settings-page {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0.8rem;
+  }
+
+  .ps2-crate-grid,
+  .ps2-track-detail-grid,
+  .ps2-track-review-pane {
+    display: grid;
+  }
+
+  .ps2-workspace {
+    gap: 0.68rem;
+  }
+
+  .ps2-workspace-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(248px, 0.26fr);
+    gap: 0.68rem;
+  }
+
+  .ps2-arrangement {
+    min-height: 360px;
+  }
+
+  .ps2-mixer {
+    margin-top: 0;
+  }
+
+  .ps2-studio-metric {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.58rem;
+    align-items: center;
+    min-height: 72px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    padding: 0.72rem;
+    background: rgba(10, 15, 26, 0.86);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .ps2-studio-metric > span {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid rgba(103, 232, 249, 0.22);
+    border-radius: 7px;
+    background: rgba(103, 232, 249, 0.08);
+    color: var(--d-primary);
+  }
+
+  .ps2-studio-metric strong,
+  .ps2-studio-metric small {
+    display: block;
+  }
+
+  .ps2-studio-metric strong {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1.05rem;
+  }
+
+  .ps2-studio-metric small {
+    color: var(--d-text-muted);
+    font-size: 0.72rem;
+    font-weight: 720;
+  }
+
+  .ps2-studio-metric.good > span {
+    border-color: rgba(52, 211, 153, 0.28);
+    background: rgba(52, 211, 153, 0.08);
+    color: var(--d-success);
+  }
+
+  .ps2-studio-metric.warn > span {
+    border-color: rgba(251, 191, 36, 0.28);
+    background: rgba(251, 191, 36, 0.08);
+    color: var(--d-warning);
+  }
+
+  .ps2-crate-overview,
+  .ps2-collab-command {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.72rem;
+  }
+
+  .ps2-collab-command {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ps2-crate-grid,
+  .ps2-track-detail-grid,
+  .ps2-collab-page,
+  .ps2-splits-page,
+  .ps2-rooms-page,
+  .ps2-room-detail-console,
+  .ps2-settings-page {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.28fr);
+    align-items: start;
+  }
+
+  .ps2-track-crate-page {
+    grid-template-columns: 1fr;
+  }
+
+  .ps2-stem-browser {
+    min-width: 0;
+  }
+
+  .ps2-browser-toolbar {
+    min-height: 58px;
+  }
+
+  .ps2-track-card {
+    grid-template-columns: minmax(210px, 0.34fr) minmax(320px, 1fr) minmax(132px, auto);
+    min-height: 92px;
+    padding: 0.76rem;
+  }
+
+  .ps2-track-card-main,
+  .ps2-track-actions,
+  .ps2-version-copy,
+  .ps2-crate-sidecar,
+  .ps2-collab-sidecar,
+  .ps2-split-sidecar,
+  .ps2-room-control,
+  .ps2-room-sidecar,
+  .ps2-settings-sidecar {
+    display: grid;
+    gap: 0.52rem;
+    min-width: 0;
+  }
+
+  .ps2-track-card-main strong,
+  .ps2-track-card-main small,
+  .ps2-version-copy strong,
+  .ps2-version-copy small {
+    display: block;
+    min-width: 0;
+  }
+
+  .ps2-track-card-main strong {
+    font-size: 0.98rem;
+  }
+
+  .ps2-track-meta,
+  .ps2-room-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.42rem;
+    align-items: center;
+  }
+
+  .ps2-track-meta span,
+  .ps2-room-meta span {
+    border: 1px solid rgba(148, 163, 184, 0.13);
+    border-radius: 6px;
+    padding: 0.24rem 0.46rem;
+    background: rgba(148, 163, 184, 0.065);
+    color: #b7c6d9;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.68rem;
+    font-weight: 760;
+  }
+
+  .ps2-track-actions {
+    justify-items: end;
+    gap: 0.32rem;
+    color: var(--d-text-muted);
+    font-size: 0.75rem;
+  }
+
+  .ps2-crate-sidecar,
+  .ps2-collab-sidecar,
+  .ps2-split-sidecar,
+  .ps2-room-control,
+  .ps2-room-sidecar,
+  .ps2-settings-sidecar {
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    padding: 0.85rem;
+    background: rgba(10, 15, 26, 0.86);
+  }
+
+  .ps2-crate-sidecar a {
+    display: grid;
+    gap: 0.22rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    padding-top: 0.65rem;
+  }
+
+  .ps2-crate-sidecar small,
+  .ps2-mini-ledger span,
+  .ps2-take-list span {
+    color: var(--d-text-muted);
+    font-size: 0.74rem;
+  }
+
+  .ps2-track-review-pane {
+    display: grid;
+    gap: 0.72rem;
+    grid-template-columns: minmax(0, 1fr) minmax(248px, 0.34fr);
+  }
+
+  .ps2-version-timeline {
+    align-self: stretch;
+  }
+
+  .ps2-version-timeline article {
+    align-items: start;
+  }
+
+  .ps2-version-copy > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.34rem 0.58rem;
+    align-items: baseline;
+  }
+
+  .ps2-version-copy small {
+    color: var(--d-text-muted);
+    font-size: 0.76rem;
+  }
+
+  .ps2-version-copy p {
+    margin: 0;
+  }
+
+  .ps2-board-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.13);
+    padding: 0.92rem;
+  }
+
+  .ps2-board-heading small {
+    color: var(--d-text-muted);
+    font-size: 0.72rem;
+    font-weight: 760;
+  }
+
+  .ps2-board-heading h2 {
+    margin-top: 0.18rem;
+    font-size: 1.08rem;
+  }
+
+  .ps2-contributor-board,
+  .ps2-room-board {
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    background: rgba(10, 15, 26, 0.84);
+  }
+
+  .ps2-collab-card {
+    grid-template-columns: 40px minmax(180px, 1fr) minmax(260px, 0.9fr) auto;
+    align-items: center;
+    border: 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .ps2-collab-card:last-child {
+    border-bottom: 0;
+  }
+
+  .ps2-collab-identity {
+    display: grid;
+    gap: 0.12rem;
+    min-width: 0;
+  }
+
+  .ps2-collab-identity p,
+  .ps2-collab-identity small {
+    margin: 0;
+  }
+
+  .ps2-split-main,
+  .ps2-room-main {
+    display: grid;
+    gap: 0.8rem;
+    min-width: 0;
+  }
+
+  .ps2-ops-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.72rem;
+  }
+
+  .ps2-ops-card {
+    display: grid;
+    align-content: start;
+    gap: 0.68rem;
+    min-height: 176px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    padding: 0.78rem;
+    background:
+      linear-gradient(180deg, rgba(15, 23, 38, 0.9), rgba(8, 12, 22, 0.92)),
+      rgba(10, 15, 26, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  }
+
+  .ps2-ops-row {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    gap: 0.62rem;
+    align-items: center;
+    border-top: 1px solid rgba(148, 163, 184, 0.11);
+    padding-top: 0.62rem;
+  }
+
+  .ps2-ops-row span,
+  .ps2-ops-row small,
+  .ps2-meter-row span {
+    color: var(--d-text-muted);
+    font-size: 0.72rem;
+    font-weight: 760;
+  }
+
+  .ps2-ops-row strong {
+    min-width: 0;
+    font-size: 0.85rem;
+  }
+
+  .ps2-meter-row {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: center;
+  }
+
+  .ps2-meter-row i {
+    position: relative;
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.12);
+  }
+
+  .ps2-meter-row i::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--level);
+    content: "";
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--d-primary), var(--d-accent), var(--d-warning));
+  }
+
+  .ps2-split-mini {
+    grid-column: auto;
+    align-items: center;
+  }
+
+  .ps2-mini-ledger,
+  .ps2-take-list {
+    display: grid;
+    grid-template-columns: minmax(90px, 0.48fr) minmax(0, 1fr);
+    gap: 0.48rem 0.72rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    padding-top: 0.8rem;
+  }
+
+  .ps2-room-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.72rem;
+    padding: 0.72rem;
+  }
+
+  .ps2-room-card {
+    gap: 0.66rem;
+    min-height: 100%;
+    padding: 0.75rem;
+  }
+
+  .ps2-room-card:hover {
+    border-color: rgba(103, 232, 249, 0.32);
+    background: rgba(15, 23, 38, 0.92);
+  }
+
+  .ps2-room-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 116px;
+    overflow: hidden;
+    gap: 0.6rem;
+    background:
+      linear-gradient(180deg, rgba(3, 6, 13, 0.1), rgba(3, 6, 13, 0.82)),
+      linear-gradient(90deg, rgba(103, 232, 249, 0.1) 0 1px, transparent 1px 24px),
+      linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(99, 102, 241, 0.12));
+  }
+
+  .ps2-room-stage > div:first-child {
+    display: grid;
+    gap: 0.34rem;
+    color: var(--d-accent);
+  }
+
+  .ps2-room-stage small {
+    color: #c4d4e8;
+    font-weight: 760;
+  }
+
+  .ps2-room-levels {
+    position: absolute;
+    right: 0.72rem;
+    bottom: 0.7rem;
+    left: 0.72rem;
+    display: grid;
+    grid-template-columns: 0.7fr 1fr 0.44fr;
+    gap: 0.32rem;
+  }
+
+  .ps2-room-levels span {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--d-primary), var(--d-accent));
+  }
+
+  .ps2-room-card h2,
+  .ps2-room-card p {
+    margin: 0;
+  }
+
+  .ps2-room-card .ps2-presence {
+    margin-top: 0.1rem;
+  }
+
+  .ps2-room-detail-console {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.32fr);
+  }
+
+  .ps2-room-detail-main {
+    display: grid;
+    gap: 0.72rem;
+    min-width: 0;
+  }
+
+  .ps2-live-stage {
+    min-height: 320px;
+    align-content: end;
+    background:
+      linear-gradient(180deg, rgba(3, 6, 13, 0.06), rgba(3, 6, 13, 0.9)),
+      linear-gradient(90deg, rgba(103, 232, 249, 0.11) 0 1px, transparent 1px 34px),
+      linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(168, 85, 247, 0.1), rgba(251, 191, 36, 0.07));
+  }
+
+  .ps2-live-stage h2 {
+    max-width: 18ch;
+    font-size: clamp(2rem, 4vw, 3.6rem);
+    line-height: 0.95;
+  }
+
+  .ps2-take-queue {
+    display: grid;
+    gap: 0.62rem;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 8px;
+    padding: 0.85rem;
+    background: rgba(10, 15, 26, 0.86);
+  }
+
+  .ps2-take-queue article {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 0.7rem;
+    align-items: center;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    padding-top: 0.62rem;
+  }
+
+  .ps2-take-queue article span {
+    color: var(--d-primary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  .ps2-take-queue article small {
+    color: var(--d-text-muted);
+    font-weight: 760;
+  }
+
+  .ps2-room-sidecar {
+    gap: 0.72rem;
+  }
+
+  .ps2-settings-page {
+    grid-template-columns: minmax(0, 0.74fr) minmax(280px, 0.26fr);
+  }
+
+  .ps2-settings-panel {
+    max-width: none;
+  }
+
+  .ps2-settings-sidecar {
+    align-content: start;
+  }
+
+  @media (min-width: 1121px) {
+    .ps2-bottom-nav {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1120px) {
+    .ps2-sidebar-top {
+      gap: 0.75rem;
+    }
+
+    .ps2-crate-overview,
+    .ps2-collab-command,
+    .ps2-ops-grid,
+    .ps2-room-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ps2-crate-grid,
+    .ps2-track-detail-grid,
+    .ps2-track-review-pane,
+    .ps2-collab-page,
+    .ps2-splits-page,
+    .ps2-rooms-page,
+    .ps2-room-detail-console,
+    .ps2-settings-page {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-track-card {
+      grid-template-columns: minmax(180px, 0.36fr) minmax(260px, 1fr) auto;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .ps2-sidebar-session,
+    .ps2-nav-label {
+      display: none;
+    }
+
+    .ps2-workspace,
+    .ps2-list-page,
+    .ps2-track-crate-page,
+    .ps2-collab-page,
+    .ps2-splits-page,
+    .ps2-rooms-page,
+    .ps2-room-detail-console,
+    .ps2-settings-page {
+      padding: 0.7rem 0.7rem 5.6rem;
+    }
+
+    .ps2-crate-overview,
+    .ps2-collab-command,
+    .ps2-ops-grid,
+    .ps2-room-list {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-track-card {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-track-actions {
+      justify-items: start;
+    }
+
+    .ps2-track-review-pane {
+      grid-template-columns: 1fr;
+    }
+
+    .ps2-collab-card {
+      grid-template-columns: 38px minmax(0, 1fr) auto;
+    }
+
+    .ps2-collab-card .ps2-split-mini {
+      grid-column: 2 / -1;
+    }
+
+    .ps2-room-detail-console {
+      gap: 0.68rem;
+    }
+
+    .ps2-live-stage {
+      min-height: 240px;
+    }
+
+    .ps2-bottom-nav {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .ps2-bottom-nav a {
+      min-width: 0;
+      font-size: 0.62rem;
+    }
+
+    .ps2-bottom-nav a span {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .ps2-studio-metric {
+      min-height: 64px;
+      padding: 0.62rem;
+    }
+
+    .ps2-board-heading,
+    .ps2-split-header {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .ps2-collab-card {
+      grid-template-columns: 36px minmax(0, 1fr);
+    }
+
+    .ps2-collab-card > .ps2-status-pill {
+      grid-column: 2;
+      justify-self: start;
+    }
+
+    .ps2-mini-ledger,
+    .ps2-take-list,
+    .ps2-ops-row,
+    .ps2-meter-row {
+      grid-template-columns: 1fr;
+    }
+  }
+}
