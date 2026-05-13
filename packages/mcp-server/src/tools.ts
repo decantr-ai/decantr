@@ -4,6 +4,18 @@ import { basename, dirname, join, relative } from 'node:path';
 import type { BlueprintPage, EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
+  ArchetypeRole,
+  ComposeEntry,
+  ContentIntelligenceSource,
+  Pattern,
+} from '@decantr/registry';
+import {
+  isContentIntelligenceSource,
+  patternToDiscoveryCandidate,
+  rankPatternCandidates,
+  resolvePatternPreset,
+} from '@decantr/registry';
+import type {
   ContractAssertion,
   EvidenceBundle,
   ProjectAuditReport,
@@ -14,13 +26,6 @@ import type {
   VerificationFinding,
   VerificationSeverity,
 } from '@decantr/verifier';
-import type {
-  ArchetypeRole,
-  ComposeEntry,
-  ContentIntelligenceSource,
-  Pattern,
-} from '@decantr/registry';
-import { isContentIntelligenceSource, resolvePatternPreset } from '@decantr/registry';
 import type { DriftLogEntry } from './helpers.js';
 import {
   fuzzyScore,
@@ -80,6 +85,74 @@ interface PackManifest {
   sections: Array<PackManifestEntry & { pageIds: string[] }>;
   pages: Array<PackManifestEntry & { sectionId: string | null; sectionRole: string | null }>;
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
+}
+
+function readJsonIfExists<T>(path: string): T | null {
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as T;
+  } catch {
+    return null;
+  }
+}
+
+function extractPatternIdsFromLayoutItem(item: unknown, ids: Set<string>): void {
+  if (typeof item === 'string') {
+    ids.add(item);
+    return;
+  }
+  if (!item || typeof item !== 'object') return;
+  const record = item as Record<string, unknown>;
+  if (typeof record.pattern === 'string') ids.add(record.pattern);
+  if (Array.isArray(record.cols)) {
+    for (const col of record.cols) extractPatternIdsFromLayoutItem(col, ids);
+  }
+}
+
+function extractPagePatternIds(page: BlueprintPage | null): string[] {
+  if (!page) return [];
+  const ids = new Set<string>();
+  for (const item of page.layout ?? []) extractPatternIdsFromLayoutItem(item, ids);
+  return [...ids].sort();
+}
+
+function summarizePackJson(pack: unknown): {
+  directives: unknown[];
+  patterns: unknown[];
+  visualTarget: string | null;
+  sharedComponents: unknown[];
+} {
+  if (!pack || typeof pack !== 'object') {
+    return { directives: [], patterns: [], visualTarget: null, sharedComponents: [] };
+  }
+  const record = pack as Record<string, unknown>;
+  const data =
+    record.data && typeof record.data === 'object'
+      ? (record.data as Record<string, unknown>)
+      : record;
+  const patterns = Array.isArray(data.patterns) ? data.patterns : [];
+  const directives = Array.isArray(data.directives) ? data.directives : [];
+  const sharedComponents = Array.isArray(data.sharedComponents)
+    ? data.sharedComponents
+    : Array.isArray(data.shared_components)
+      ? data.shared_components
+      : [];
+  const visualTarget =
+    typeof data.visualTarget === 'string'
+      ? data.visualTarget
+      : typeof data.visual_target === 'string'
+        ? data.visual_target
+        : null;
+  return { directives, patterns, visualTarget, sharedComponents };
+}
+
+function routeSlug(route: string): string {
+  return (
+    route
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'root'
+  );
 }
 
 async function getShowcaseBenchmarkPayload(view: string) {
@@ -591,7 +664,10 @@ function mcpScoreFromCounts(counts: {
   warnCount: number;
   infoCount: number;
 }): number {
-  return Math.max(0, Math.min(100, 100 - counts.errorCount * 15 - counts.warnCount * 5 - counts.infoCount));
+  return Math.max(
+    0,
+    Math.min(100, 100 - counts.errorCount * 15 - counts.warnCount * 5 - counts.infoCount),
+  );
 }
 
 function mcpCommandsForFinding(source: ProjectHealthFindingSource): string[] {
@@ -609,7 +685,11 @@ function mcpCommandsForFinding(source: ProjectHealthFindingSource): string[] {
     case 'interaction':
       return ['decantr check --strict', 'decantr health'];
     case 'pack':
-      return ['decantr refresh', 'decantr registry get-pack review --write-context', 'decantr health'];
+      return [
+        'decantr refresh',
+        'decantr registry get-pack review --write-context',
+        'decantr health',
+      ];
     case 'runtime':
       return ['npm run build', 'decantr health'];
     default:
@@ -621,13 +701,21 @@ function mcpSourceFromFinding(finding: VerificationFinding): ProjectHealthFindin
   const category = finding.category.toLowerCase();
   const id = finding.id.toLowerCase();
   const rule = finding.rule?.toLowerCase() ?? '';
-  if (category.includes('runtime') || category.includes('document') || category.includes('performance')) {
+  if (
+    category.includes('runtime') ||
+    category.includes('document') ||
+    category.includes('performance')
+  ) {
     return 'runtime';
   }
   if (category.includes('pack') || category.includes('review contract')) {
     return 'pack';
   }
-  if (category.includes('interaction') || id.includes('interaction') || rule.includes('interaction')) {
+  if (
+    category.includes('interaction') ||
+    id.includes('interaction') ||
+    rule.includes('interaction')
+  ) {
     return 'interaction';
   }
   return 'audit';
@@ -866,7 +954,10 @@ async function getMcpHealthState(projectRoot: string): Promise<{
   return { audit, assertions, report, evidence };
 }
 
-function discoverMcpWorkspaceProjects(root: string, maxProjects = 500): Array<{
+function discoverMcpWorkspaceProjects(
+  root: string,
+  maxProjects = 500,
+): Array<{
   id: string;
   path: string;
   absolutePath: string;
@@ -898,7 +989,8 @@ function discoverMcpWorkspaceProjects(root: string, maxProjects = 500): Array<{
 }
 
 async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
-  const root = args.workspace_root == null ? process.cwd() : resolveMcpProjectRoot(args.workspace_root);
+  const root =
+    args.workspace_root == null ? process.cwd() : resolveMcpProjectRoot(args.workspace_root);
   const maxProjects =
     typeof args.max_projects === 'number' && Number.isFinite(args.max_projects)
       ? Math.max(1, Math.floor(args.max_projects))
@@ -1087,6 +1179,14 @@ export const TOOLS = [
           type: 'string',
           description:
             'Description of the page or section (e.g. "dashboard with metrics and charts", "settings form with toggles")',
+        },
+        route: {
+          type: 'string',
+          description: 'Optional route context, for example "/feed" or "/settings".',
+        },
+        source_code: {
+          type: 'string',
+          description: 'Optional local source excerpt to rank against actual code evidence.',
         },
       },
       required: ['description'],
@@ -1301,7 +1401,32 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 16. decantr_get_execution_pack — local read
+  // 16. decantr_prepare_task_context — local read
+  {
+    name: 'decantr_prepare_task_context',
+    title: 'Prepare Task Context',
+    description:
+      'Resolve compact Brownfield/Essence task-time context for a route or page before editing. Returns route, section, page pack, directives, patterns, shared components, visual target, health evidence, and local screenshot references when available.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        route: {
+          type: 'string',
+          description: 'Route being edited, for example "/feed". Preferred when known.',
+        },
+        page_id: {
+          type: 'string',
+          description: 'Page ID when route is unknown.',
+        },
+        task: {
+          type: 'string',
+          description: 'Short task description used to rank relevant patterns and context.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 17. decantr_get_execution_pack — local read
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
@@ -1759,113 +1884,64 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     case 'decantr_suggest_patterns': {
       const err = validateStringArg(args, 'description');
       if (err) return { error: err };
-      const desc = (args.description as string).toLowerCase();
+      const desc = args.description as string;
+      const route = typeof args.route === 'string' ? args.route : undefined;
+      const sourceCode = typeof args.source_code === 'string' ? args.source_code : undefined;
 
       try {
         const patternsResponse = await apiClient.listContent<RegistryPatternListItem>('patterns', {
           namespace: '@official',
-          limit: 100,
+          limit: 250,
         });
 
-        // Phase 1: Score by name/description only (fields present in list items)
-        const prelimScores: { slug: string; score: number; name: string; description: string }[] =
-          [];
+        const preliminary = rankPatternCandidates(
+          { query: desc, route, code: sourceCode, limit: 12 },
+          patternsResponse.items.map((item) =>
+            patternToDiscoveryCandidate({
+              id: item.slug || item.name || 'pattern',
+              slug: item.slug,
+              name: item.name,
+              description: item.description,
+            }),
+          ),
+        );
 
-        for (const p of patternsResponse.items) {
-          const slug = p.slug || '';
-          const name = p.name || slug;
-          const description = p.description || '';
-          const searchable = [name, description].join(' ').toLowerCase();
-
-          let score = 0;
-          const words = desc.split(/\s+/);
-          for (const word of words) {
-            if (word.length < 3) continue;
-            if (searchable.includes(word)) score += 10;
-          }
-
-          // Boost for common keyword associations
-          if (
-            desc.includes('dashboard') &&
-            ['kpi-grid', 'chart-grid', 'data-table', 'filter-bar'].includes(slug)
-          )
-            score += 20;
-          if (desc.includes('metric') && slug === 'kpi-grid') score += 15;
-          if (desc.includes('chart') && slug === 'chart-grid') score += 15;
-          if (desc.includes('table') && slug === 'data-table') score += 15;
-          if (desc.includes('form') && slug === 'form-sections') score += 15;
-          if (desc.includes('setting') && slug === 'form-sections') score += 15;
-          if (desc.includes('landing') && ['hero', 'cta-section', 'card-grid'].includes(slug))
-            score += 20;
-          if (desc.includes('hero') && slug === 'hero') score += 20;
-          if (
-            desc.includes('ecommerce') &&
-            ['card-grid', 'filter-bar', 'detail-header'].includes(slug)
-          )
-            score += 15;
-          if (desc.includes('product') && slug === 'card-grid') score += 15;
-          if (desc.includes('feed') && slug === 'activity-feed') score += 15;
-          if (desc.includes('filter') && slug === 'filter-bar') score += 15;
-          if (desc.includes('search') && slug === 'filter-bar') score += 10;
-
-          if (score > 0) {
-            prelimScores.push({ slug, score, name, description });
-          }
-        }
-
-        prelimScores.sort((a, b) => b.score - a.score);
-
-        // Phase 2: Fetch full data for top 10 and re-score with components/tags
-        const top10 = prelimScores.slice(0, 10);
-        const suggestions: {
-          id: string;
-          score: number;
-          name: string;
-          description: string;
-          components: string[];
-          layout: string;
-        }[] = [];
-
-        for (const candidate of top10) {
-          let fullPattern: Pattern | null = null;
-          try {
-            const fetched = await apiClient.getPattern('@official', candidate.slug);
-            fullPattern = fetched as Pattern;
-          } catch {
-            /* pattern fetch failed, use preliminary data */
-          }
-
-          let score = candidate.score;
-          if (fullPattern) {
-            // Re-score with full data (components, tags)
-            const fullSearchable = [...(fullPattern.components || []), ...(fullPattern.tags || [])]
-              .join(' ')
-              .toLowerCase();
-
-            const words = desc.split(/\s+/);
-            for (const word of words) {
-              if (word.length < 3) continue;
-              if (fullSearchable.includes(word)) score += 10;
+        const fullCandidates = await Promise.all(
+          preliminary.map(async (match) => {
+            const slug = match.candidate.slug || match.candidate.id;
+            try {
+              const fetched = await apiClient.getPattern('@official', slug);
+              return patternToDiscoveryCandidate(fetched as Pattern, { slug, source: 'hosted' });
+            } catch {
+              return match.candidate;
             }
-          }
+          }),
+        );
 
-          const preset = fullPattern?.presets ? Object.values(fullPattern.presets)[0] : null;
-          suggestions.push({
-            id: candidate.slug,
-            score,
-            name: fullPattern?.name || candidate.name,
-            description: fullPattern?.description || candidate.description,
-            components: fullPattern?.components || [],
-            layout: preset?.layout ? preset.layout.layout : 'grid',
-          });
-        }
-
-        suggestions.sort((a, b) => b.score - a.score);
+        const suggestions = rankPatternCandidates(
+          { query: desc, route, code: sourceCode, limit: 5 },
+          fullCandidates,
+        ).map((match) => {
+          const pattern = match.candidate.pattern as Pattern | undefined;
+          const preset = pattern?.presets ? Object.values(pattern.presets)[0] : null;
+          return {
+            id: match.candidate.slug || match.candidate.id,
+            score: match.score,
+            name: match.candidate.name || match.candidate.slug || match.candidate.id,
+            description: match.candidate.description || '',
+            components: match.candidate.components || [],
+            interactions: match.candidate.interactions || [],
+            layout: preset?.layout ? preset.layout.layout : 'unknown',
+            reasons: match.reasons,
+            matched_terms: match.matchedTerms,
+          };
+        });
 
         return {
           query: args.description,
-          suggestions: suggestions.slice(0, 5),
-          total: prelimScores.length,
+          route,
+          suggestions,
+          total: preliminary.length,
         };
       } catch (e) {
         return { error: `Could not fetch patterns: ${(e as Error).message}` };
@@ -2692,6 +2768,171 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             ? 'Using hosted compiled execution-pack data because local page pack artifacts were missing or incomplete.'
             : undefined,
         hosted_fallback_error: hostedFallbackError ?? undefined,
+      };
+    }
+
+    case 'decantr_prepare_task_context': {
+      const routeArg = typeof args.route === 'string' ? args.route : undefined;
+      const pageArg = typeof args.page_id === 'string' ? args.page_id : undefined;
+      const task = typeof args.task === 'string' ? args.task : '';
+      if (!routeArg && !pageArg) {
+        return { error: 'Provide route or page_id.' };
+      }
+
+      let essence: EssenceFile;
+      try {
+        const result = await readEssenceFile();
+        essence = result.essence;
+      } catch {
+        return { error: 'No valid essence file found. Run decantr init first.' };
+      }
+      if (!isV4(essence)) {
+        return {
+          error: 'Task context requires Essence v4.0.0. Run `decantr migrate --to v4` first.',
+        };
+      }
+
+      const routeEntry = routeArg ? essence.blueprint.routes?.[routeArg] : null;
+      const sectionId = routeEntry?.section;
+      const pageId = pageArg || routeEntry?.page;
+      const section = sectionId
+        ? essence.blueprint.sections.find((entry) => entry.id === sectionId)
+        : essence.blueprint.sections.find((entry) =>
+            entry.pages.some((page) => page.id === pageId),
+          );
+      const page = section?.pages.find((entry) => entry.id === pageId) ?? null;
+      if (!section || !page || !pageId) {
+        return {
+          error: 'Could not resolve route/page to an Essence section page.',
+          available_routes: Object.keys(essence.blueprint.routes ?? {}).sort(),
+          available_pages: essence.blueprint.sections.flatMap((entry) =>
+            entry.pages.map((pageEntry) => ({ section_id: entry.id, page_id: pageEntry.id })),
+          ),
+        };
+      }
+
+      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const manifest = readJsonIfExists<PackManifest>(join(contextDir, 'pack-manifest.json'));
+      const pageManifest = manifest?.pages.find((entry) => entry.id === pageId) ?? null;
+      const sectionManifest = manifest?.sections.find((entry) => entry.id === section.id) ?? null;
+      const pagePackJson = pageManifest
+        ? readJsonIfExists<unknown>(join(contextDir, pageManifest.json))
+        : null;
+      const sectionPackJson = sectionManifest
+        ? readJsonIfExists<unknown>(join(contextDir, sectionManifest.json))
+        : null;
+      const pagePackMarkdown =
+        pageManifest && existsSync(join(contextDir, pageManifest.markdown))
+          ? readFileSync(join(contextDir, pageManifest.markdown), 'utf-8')
+          : null;
+      const sectionContextPath = join(contextDir, `section-${section.id}.md`);
+      const sectionContext = existsSync(sectionContextPath)
+        ? readFileSync(sectionContextPath, 'utf-8')
+        : null;
+      const pagePackSummary = summarizePackJson(pagePackJson);
+      const sectionPackSummary = summarizePackJson(sectionPackJson);
+      const visualManifest = readJsonIfExists<{
+        routes?: Array<{
+          route?: string;
+          screenshot?: string | null;
+          screenshotHash?: string | null;
+          status?: string;
+          error?: string;
+        }>;
+      }>(join(process.cwd(), '.decantr', 'evidence', 'visual-manifest.json'));
+      const visualRoute =
+        visualManifest?.routes?.find((entry) => entry.route === routeArg) ??
+        visualManifest?.routes?.find((entry) =>
+          entry.screenshot?.includes(routeSlug(routeArg ?? pageId)),
+        ) ??
+        null;
+      const health = readJsonIfExists<{
+        baselinePath?: string;
+        savedAt?: string | null;
+        statusChanged?: boolean;
+        scoreDelta?: number | null;
+        addedFindings?: string[];
+        resolvedFindings?: string[];
+        changedRoutes?: string[];
+        changedScreenshots?: string[];
+        contractDrift?: string[];
+      }>(join(process.cwd(), '.decantr', 'health-baseline-diff.json'));
+      const themeInventory = readJsonIfExists<Record<string, unknown>>(
+        join(process.cwd(), '.decantr', 'theme-inventory.json'),
+      );
+      const patternIds = extractPagePatternIds(page);
+      const ranked = rankPatternCandidates(
+        {
+          query: [task, routeArg, (page as { description?: string }).description, ...patternIds]
+            .filter(Boolean)
+            .join(' '),
+          limit: 5,
+        },
+        patternIds.map((id) => patternToDiscoveryCandidate({ id, name: id, description: id })),
+      );
+
+      return {
+        route: routeArg ?? null,
+        page_id: pageId,
+        section_id: section.id,
+        section_role: section.role,
+        shell: section.shell,
+        task,
+        visual_target:
+          pagePackSummary.visualTarget ??
+          sectionPackSummary.visualTarget ??
+          essence.dna.personality?.join('. ') ??
+          null,
+        directives: pagePackSummary.directives,
+        patterns: pagePackSummary.patterns.length > 0 ? pagePackSummary.patterns : patternIds,
+        ranked_patterns: ranked.map((match) => ({
+          id: match.candidate.slug || match.candidate.id,
+          score: match.score,
+          reasons: match.reasons,
+        })),
+        shared_components: pagePackSummary.sharedComponents,
+        section_context: sectionContext,
+        page_pack_excerpt: pagePackMarkdown ? pagePackMarkdown.slice(0, 12000) : null,
+        health_evidence: health
+          ? {
+              baseline_path: health.baselinePath,
+              saved_at: health.savedAt,
+              status_changed: health.statusChanged,
+              score_delta: health.scoreDelta,
+              added_findings: health.addedFindings?.slice(0, 8) ?? [],
+              resolved_findings: health.resolvedFindings?.slice(0, 8) ?? [],
+              changed_routes: health.changedRoutes ?? [],
+              changed_screenshots: health.changedScreenshots ?? [],
+              contract_drift: health.contractDrift ?? [],
+            }
+          : null,
+        visual_evidence: visualRoute
+          ? {
+              screenshot: visualRoute.screenshot ?? null,
+              screenshot_hash: visualRoute.screenshotHash ?? null,
+              status: visualRoute.status ?? null,
+              error: visualRoute.error ?? null,
+            }
+          : null,
+        theme_inventory: themeInventory
+          ? {
+              modes: themeInventory.modes,
+              variants: themeInventory.variants,
+              path: '.decantr/theme-inventory.json',
+            }
+          : null,
+        local_files: {
+          page_pack: pageManifest?.markdown ?? null,
+          section_pack: sectionManifest?.markdown ?? null,
+          section_context: existsSync(sectionContextPath)
+            ? `.decantr/context/section-${section.id}.md`
+            : null,
+          visual_manifest: existsSync(
+            join(process.cwd(), '.decantr', 'evidence', 'visual-manifest.json'),
+          )
+            ? '.decantr/evidence/visual-manifest.json'
+            : null,
+        },
       };
     }
 

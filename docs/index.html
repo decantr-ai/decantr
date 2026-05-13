@@ -2024,7 +2024,7 @@
     .install-tab-content { display: none; }
     .install-tab-content.active { display: block; }
 
-    /* -- Tool bands (grouping the 24 tools) -- */
+    /* -- Tool bands (grouping the 25 tools) -- */
     .tool-band-label {
       display: flex;
       align-items: center;
@@ -2910,7 +2910,7 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="section" id="tools">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>24 tools for your AI assistant</h2>
+    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>25 tools for your AI assistant</h2>
     <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
 
     <!-- MCP INSTALL -->
@@ -3085,6 +3085,10 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="tool-name"><i data-lucide="refresh-cw" class="tool-icon" style="color:var(--green)"></i>decantr_run_health_loop</div>
         <p class="tool-desc">Run health, evidence, and the next repair prompt in one local loop</p>
       </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="map" class="tool-icon" style="color:var(--green)"></i>decantr_prepare_task_context</div>
+        <p class="tool-desc">Resolve route-local Brownfield context, visual evidence, and theme inventory before editing</p>
+      </div>
     </div>
 
     <h3 style="margin-top: 3rem; color: var(--amber); text-align: center; font-size: 1.15rem;" class="reveal">CLI Commands</h3>
@@ -3118,6 +3122,10 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>health --evidence</div>
         <p class="cli-desc">Write a privacy-redacted Evidence Bundle for AI repair and CI artifacts</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="lightbulb" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>suggest --route --from-code</div>
+        <p class="cli-desc">Rank patterns against route, file, and source-code evidence</p>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="sparkles" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>magic "prompt"</div>
@@ -3309,7 +3317,7 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="lane-step-body">
           <h3>Analyze</h3>
           <div class="showcase-code"><span class="k">$</span> <span class="s">decantr analyze</span></div>
-          <p class="lane-step-desc">Scans the repo for framework, router, semantic route domains, existing styling systems, project conventions, and ranked doctrine evidence. Writes <code>analysis.json</code> and <code>doctrine-map.json</code>.</p>
+          <p class="lane-step-desc">Scans the repo for framework, router, semantic route domains, existing styling systems, theme variants, project conventions, and ranked doctrine evidence. Writes <code>analysis.json</code>, <code>brownfield-intelligence.json</code>, <code>theme-inventory.json</code>, and <code>doctrine-map.json</code>.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d2">
@@ -3324,8 +3332,8 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="lane-step-num" style="--accent:var(--cyan)">3</div>
         <div class="lane-step-body">
           <h3>Guard</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr check --brownfield</span></div>
-          <p class="lane-step-desc">From now on, route coverage, unsafe defaults, style drift, doctrine coverage, conflict resolution gaps, and assistant bridge gaps are scored against the contract you just captured.</p>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr health --browser --base-url http://localhost:3000 --evidence</span></div>
+          <p class="lane-step-desc">From now on, route coverage, unsafe defaults, style drift, doctrine coverage, visual evidence, baselines, and assistant bridge gaps are scored against the contract you just captured.</p>
         </div>
       </div>
     </div>
@@ -3432,8 +3440,8 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/registry</div>
-        <p class="pkg-desc">Content resolver for patterns, archetypes, themes, blueprints, and shells</p>
-        <div class="pkg-version">v2.1.0</div>
+        <p class="pkg-desc">Content resolver and discovery helpers for patterns, archetypes, themes, blueprints, and shells</p>
+        <div class="pkg-version">v2.2.0</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/css</div>
@@ -3456,18 +3464,18 @@ Start with the shell layouts, then build each section's pages.</div>
     <div class="packages-grid">
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/cli</div>
-        <p class="pkg-desc">Project scaffolding, mutation commands, brownfield analysis, Project Health, Evidence Bundles, workspace health, and registry sync</p>
-        <div class="pkg-version">v2.5.1</div>
+        <p class="pkg-desc">Project scaffolding, mutation commands, Brownfield intelligence, Project Health, visual evidence, baselines, workspace health, and registry sync</p>
+        <div class="pkg-version">v2.6.0</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing 24 design intelligence and reliability tools to AI assistants</p>
-        <div class="pkg-version">v2.1.0</div>
+        <p class="pkg-desc">MCP server exposing 25 design intelligence and reliability tools to AI assistants, including task-time Brownfield context</p>
+        <div class="pkg-version">v2.2.0</div>
       </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/verifier</div>
-        <p class="pkg-desc">Shared audit, critique, contract assertion, Evidence Bundle, and Project Health engine</p>
-        <div class="pkg-version">v2.1.0</div>
+        <p class="pkg-desc">Shared audit, critique, source-grounded interaction evidence, Evidence Bundle, and Project Health engine</p>
+        <div class="pkg-version">v2.2.0</div>
       </div>
     </div>
   </div>

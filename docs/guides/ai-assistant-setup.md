@@ -10,7 +10,9 @@ Use the MCP server when your editor or agent supports MCP tools:
 npx @decantr/mcp-server
 ```
 
-The MCP server exposes Decantr tools for essence reads, registry search, pattern resolution, execution-pack access, critique, and project audit. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
+The MCP server exposes Decantr tools for essence reads, registry search, pattern resolution, execution-pack access, critique, project audit, and Brownfield task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
+
+For an existing app, ask the assistant to call `decantr_prepare_task_context` before editing a route. Provide the route and the task, for example `{ "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, and local screenshot references when available.
 
 ## CLI Context
 
@@ -41,5 +43,7 @@ npx @decantr/cli rules apply
 ```
 
 Brownfield init does not mutate rule files unless apply is explicit.
+
+CLI-only assistants should read `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, and the matching `.decantr/context/page-*-pack.md` before editing Brownfield routes.
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md).

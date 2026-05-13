@@ -1,12 +1,14 @@
-import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   auditProject,
+  type ContractAssertion,
   createContractAssertions,
   createEvidenceBundle,
-  type ContractAssertion,
   type EvidenceBundle,
   type ProjectHealthFinding,
   type ProjectHealthFindingSource,
@@ -15,12 +17,12 @@ import {
   type VerificationFinding,
   type VerificationSeverity,
 } from '@decantr/verifier';
-import { collectCheckIssues, type CheckIssue } from './heal.js';
 import {
   sendProjectHealthCiFailedTelemetry,
   sendProjectHealthPromptTelemetry,
   sendProjectHealthReportTelemetry,
 } from '../telemetry.js';
+import { type CheckIssue, collectCheckIssues } from './heal.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -53,6 +55,8 @@ export interface HealthCommandOptions {
   browserBaseUrl?: string;
   designTokensPath?: string;
   initCi?: HealthCiOptions;
+  saveBaseline?: boolean;
+  sinceBaseline?: boolean;
 }
 
 export interface HealthCiOptions {
@@ -91,6 +95,53 @@ interface ProjectMetadata {
 interface BrowserVerificationResult {
   evidence: NonNullable<EvidenceBundle['browser']>;
   finding: ProjectHealthFinding | null;
+}
+
+interface VisualManifestRoute {
+  route: string;
+  url: string;
+  screenshot: string | null;
+  screenshotHash: string | null;
+  status: 'captured' | 'failed';
+  error?: string;
+}
+
+interface VisualManifest {
+  version: 1;
+  generatedAt: string;
+  localOnly: true;
+  baseUrl: string;
+  routes: VisualManifestRoute[];
+}
+
+interface HealthBaseline {
+  version: 1;
+  generatedAt: string;
+  status: ProjectHealthStatus;
+  score: number;
+  findings: Array<{
+    id: string;
+    severity: VerificationSeverity;
+    source: ProjectHealthFindingSource;
+    message: string;
+  }>;
+  routes: string[];
+  packs: ProjectHealthReport['packs'];
+  screenshots: Array<{ path: string; hash: string | null }>;
+  changedFilesCommand: string;
+}
+
+interface HealthBaselineComparison {
+  baselinePath: string;
+  savedAt: string | null;
+  statusChanged: boolean;
+  scoreDelta: number | null;
+  addedFindings: string[];
+  resolvedFindings: string[];
+  changedFiles: string[];
+  changedRoutes: string[];
+  changedScreenshots: string[];
+  contractDrift: string[];
 }
 
 interface PlaywrightLike {
@@ -156,7 +207,9 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
 function normalizeCliPackageSpecifier(version: string | undefined): string {
   const value = (version || DEFAULT_HEALTH_CI_CLI_VERSION).trim();
   if (!value) return `@decantr/cli@${DEFAULT_HEALTH_CI_CLI_VERSION}`;
-  const versionToken = value.startsWith('@decantr/cli@') ? value.slice('@decantr/cli@'.length) : value;
+  const versionToken = value.startsWith('@decantr/cli@')
+    ? value.slice('@decantr/cli@'.length)
+    : value;
   if (!/^[A-Za-z0-9._~^*-]+$/.test(versionToken)) {
     throw new Error(
       'Invalid --cli-version value. Use a package version or dist-tag such as latest, 2.0.0, or next.',
@@ -244,11 +297,13 @@ export function renderProjectHealthCiWorkflow(options: HealthCiOptions = {}): st
   const failOn = normalizeHealthFailOn(options.failOn);
   const projectPath = options.workspace ? undefined : validateProjectPath(options.projectPath);
   const reportPath = validateArtifactPath(
-    options.reportPath || (options.workspace ? '.decantr/workspace-health.md' : DEFAULT_HEALTH_CI_REPORT_PATH),
+    options.reportPath ||
+      (options.workspace ? '.decantr/workspace-health.md' : DEFAULT_HEALTH_CI_REPORT_PATH),
     '--report-path',
   );
   const jsonPath = validateArtifactPath(
-    options.jsonPath || (options.workspace ? '.decantr/workspace-health.json' : DEFAULT_HEALTH_CI_JSON_PATH),
+    options.jsonPath ||
+      (options.workspace ? '.decantr/workspace-health.json' : DEFAULT_HEALTH_CI_JSON_PATH),
     '--json-path',
   );
   const template = loadHealthTemplate('decantr-health.workflow.yml.template');
@@ -340,13 +395,21 @@ function sourceFromAuditFinding(finding: VerificationFinding): ProjectHealthFind
   const category = finding.category.toLowerCase();
   const id = finding.id.toLowerCase();
   const rule = finding.rule?.toLowerCase() ?? '';
-  if (category.includes('runtime') || category.includes('document') || category.includes('performance')) {
+  if (
+    category.includes('runtime') ||
+    category.includes('document') ||
+    category.includes('performance')
+  ) {
     return 'runtime';
   }
   if (category.includes('pack') || category.includes('review contract')) {
     return 'pack';
   }
-  if (category.includes('interaction') || id.includes('interaction') || rule.includes('interaction')) {
+  if (
+    category.includes('interaction') ||
+    id.includes('interaction') ||
+    rule.includes('interaction')
+  ) {
     return 'interaction';
   }
   return 'audit';
@@ -366,12 +429,34 @@ function slugify(value: string): string {
     .slice(0, 80);
 }
 
+function hashFile(path: string): string | null {
+  if (!existsSync(path)) return null;
+  try {
+    return createHash('sha256').update(readFileSync(path)).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+function readJsonFile<T>(path: string): T | null {
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as T;
+  } catch {
+    return null;
+  }
+}
+
 function commandsForFinding(source: ProjectHealthFindingSource): string[] {
   switch (source) {
     case 'brownfield':
       return ['decantr analyze', 'decantr init --existing --merge-proposal', 'decantr health'];
     case 'pack':
-      return ['decantr refresh', 'decantr registry get-pack review --write-context', 'decantr health'];
+      return [
+        'decantr refresh',
+        'decantr registry get-pack review --write-context',
+        'decantr health',
+      ];
     case 'runtime':
       return ['npm run build', 'decantr health'];
     case 'interaction':
@@ -409,7 +494,9 @@ function buildRemediationPrompt(input: {
     `Severity: ${input.severity}`,
     `Category: ${input.category}`,
     `Message: ${input.message}`,
-    input.evidence.length > 0 ? `Evidence:\n${input.evidence.map((entry) => `- ${entry}`).join('\n')}` : null,
+    input.evidence.length > 0
+      ? `Evidence:\n${input.evidence.map((entry) => `- ${entry}`).join('\n')}`
+      : null,
     input.suggestedFix ? `Suggested fix: ${input.suggestedFix}` : null,
     '',
     'Make the smallest coherent code or contract change that resolves this finding. Preserve the existing framework, routing, styling system, and Decantr workflow mode unless the finding explicitly requires a contract update.',
@@ -480,8 +567,15 @@ function statusFromCounts(counts: { errorCount: number; warnCount: number }): Pr
   return 'healthy';
 }
 
-function scoreFromCounts(counts: { errorCount: number; warnCount: number; infoCount: number }): number {
-  return Math.max(0, Math.min(100, 100 - counts.errorCount * 15 - counts.warnCount * 5 - counts.infoCount));
+function scoreFromCounts(counts: {
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+}): number {
+  return Math.max(
+    0,
+    Math.min(100, 100 - counts.errorCount * 15 - counts.warnCount * 5 - counts.infoCount),
+  );
 }
 
 function routeIssuesFromFindings(findings: ProjectHealthFinding[]): string[] {
@@ -629,6 +723,7 @@ async function collectBrowserVerification(
   const routes = (declaredRoutes.length > 0 ? declaredRoutes : ['/']).slice(0, 12);
   const screenshots: string[] = [];
   const browserFindings: string[] = [];
+  const visualRoutes: VisualManifestRoute[] = [];
   const screenshotDir = join(projectRoot, '.decantr', 'evidence', 'screenshots');
   mkdirSync(screenshotDir, { recursive: true });
 
@@ -641,10 +736,27 @@ async function collectBrowserVerification(
       const relativePath = browserScreenshotRelativePath(route);
       try {
         await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
-        await page.screenshot({ path: join(projectRoot, relativePath), fullPage: true });
+        const absoluteScreenshotPath = join(projectRoot, relativePath);
+        await page.screenshot({ path: absoluteScreenshotPath, fullPage: true });
         screenshots.push(relativePath);
+        visualRoutes.push({
+          route,
+          url,
+          screenshot: relativePath,
+          screenshotHash: hashFile(absoluteScreenshotPath),
+          status: 'captured',
+        });
       } catch (error) {
-        browserFindings.push(`${route}: ${(error as Error).message}`);
+        const message = (error as Error).message;
+        browserFindings.push(`${route}: ${message}`);
+        visualRoutes.push({
+          route,
+          url,
+          screenshot: null,
+          screenshotHash: null,
+          status: 'failed',
+          error: message,
+        });
       }
     }
   } catch (error) {
@@ -652,6 +764,17 @@ async function collectBrowserVerification(
   } finally {
     if (browser) await browser.close();
   }
+
+  const visualManifest: VisualManifest = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    localOnly: true,
+    baseUrl: options.browserBaseUrl,
+    routes: visualRoutes,
+  };
+  const visualManifestPath = join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json');
+  mkdirSync(dirname(visualManifestPath), { recursive: true });
+  writeFileSync(visualManifestPath, JSON.stringify(visualManifest, null, 2) + '\n', 'utf-8');
 
   if (browserFindings.length > 0) {
     const finding = createHealthFinding({
@@ -748,7 +871,9 @@ export function collectDesignTokenEvidence(
   const designKeys = flattenDesignTokenKeys(parsed);
   const missing = decantrTokens.filter((token) => {
     const bare = token.replace(/^--/, '');
-    return !designKeys.has(token) && !designKeys.has(bare) && !designKeys.has(bare.replace(/^d-/, ''));
+    return (
+      !designKeys.has(token) && !designKeys.has(bare) && !designKeys.has(bare.replace(/^d-/, ''))
+    );
   });
 
   return {
@@ -792,6 +917,169 @@ function collectDesignTokenFinding(
       'Update the Figma/Tokens Studio export or Decantr token mapping so shared UI policy can be verified.',
     baseId: 'coverage-missing',
   });
+}
+
+function baselinePath(projectRoot: string): string {
+  return join(projectRoot, '.decantr', 'health-baseline.json');
+}
+
+function baselineDiffPath(projectRoot: string): string {
+  return join(projectRoot, '.decantr', 'health-baseline-diff.json');
+}
+
+function screenshotHashes(projectRoot: string): Array<{ path: string; hash: string | null }> {
+  const manifest = readJsonFile<VisualManifest>(
+    join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json'),
+  );
+  if (manifest?.routes) {
+    return manifest.routes
+      .filter((route) => typeof route.screenshot === 'string')
+      .map((route) => ({
+        path: route.screenshot as string,
+        hash: route.screenshotHash ?? hashFile(join(projectRoot, route.screenshot as string)),
+      }));
+  }
+  return [];
+}
+
+function changedFilesSinceBaseline(projectRoot: string): string[] {
+  const changed = new Set<string>();
+  try {
+    for (const args of [
+      ['diff', '--name-only'],
+      ['diff', '--name-only', '--cached'],
+    ]) {
+      const output = execFileSync('git', args, {
+        cwd: projectRoot,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      for (const entry of output.split(/\r?\n/)) {
+        const file = entry.trim();
+        if (file) changed.add(file);
+      }
+    }
+  } catch {
+    // Git may be unavailable or the project may not be a repository.
+  }
+  return [...changed].sort();
+}
+
+function routeImpactsFromChangedFiles(
+  report: ProjectHealthReport,
+  changedFiles: string[],
+): string[] {
+  const analysis = readJsonFile<{ routes?: { routes?: Array<{ path?: string; file?: string }> } }>(
+    join(report.projectRoot, '.decantr', 'analysis.json'),
+  );
+  const routeEntries = analysis?.routes?.routes ?? [];
+  const impacted = new Set<string>();
+  for (const file of changedFiles) {
+    for (const route of routeEntries) {
+      if (route.file && (file === route.file || file.endsWith(route.file))) {
+        if (route.path) impacted.add(route.path);
+      }
+    }
+  }
+  return [...impacted].sort();
+}
+
+function createHealthBaseline(projectRoot: string, report: ProjectHealthReport): HealthBaseline {
+  return {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    status: report.status,
+    score: report.score,
+    findings: report.findings.map((finding) => ({
+      id: finding.id,
+      severity: finding.severity,
+      source: finding.source,
+      message: finding.message,
+    })),
+    routes: report.routes.declared,
+    packs: report.packs,
+    screenshots: screenshotHashes(projectRoot),
+    changedFilesCommand: 'git diff --name-only + --cached',
+  };
+}
+
+function saveHealthBaseline(projectRoot: string, report: ProjectHealthReport): string {
+  const path = baselinePath(projectRoot);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(
+    path,
+    JSON.stringify(createHealthBaseline(projectRoot, report), null, 2) + '\n',
+    'utf-8',
+  );
+  return path;
+}
+
+function compareHealthBaseline(
+  projectRoot: string,
+  report: ProjectHealthReport,
+): HealthBaselineComparison {
+  const path = baselinePath(projectRoot);
+  const baseline = readJsonFile<HealthBaseline>(path);
+  const currentFindingIds = new Set(report.findings.map((finding) => finding.id));
+  const baselineFindingIds = new Set(baseline?.findings.map((finding) => finding.id) ?? []);
+  const changedFiles = changedFilesSinceBaseline(projectRoot);
+  const currentScreenshots = new Map(
+    screenshotHashes(projectRoot).map((entry) => [entry.path, entry.hash]),
+  );
+  const changedScreenshots =
+    baseline?.screenshots
+      .filter(
+        (entry) =>
+          currentScreenshots.has(entry.path) && currentScreenshots.get(entry.path) !== entry.hash,
+      )
+      .map((entry) => entry.path) ?? [];
+  const contractDrift = [
+    baseline && baseline.routes.join('\n') !== report.routes.declared.join('\n')
+      ? 'Declared route set changed since baseline.'
+      : null,
+    baseline && baseline.packs.generatedAt !== report.packs.generatedAt
+      ? 'Execution-pack generation timestamp changed since baseline.'
+      : null,
+  ].filter((entry): entry is string => Boolean(entry));
+
+  return {
+    baselinePath: path,
+    savedAt: baseline?.generatedAt ?? null,
+    statusChanged: baseline ? baseline.status !== report.status : false,
+    scoreDelta: baseline ? report.score - baseline.score : null,
+    addedFindings: [...currentFindingIds].filter((id) => !baselineFindingIds.has(id)).sort(),
+    resolvedFindings: [...baselineFindingIds].filter((id) => !currentFindingIds.has(id)).sort(),
+    changedFiles,
+    changedRoutes: routeImpactsFromChangedFiles(report, changedFiles),
+    changedScreenshots,
+    contractDrift,
+  };
+}
+
+function saveHealthBaselineComparison(
+  projectRoot: string,
+  comparison: HealthBaselineComparison,
+): string {
+  const path = baselineDiffPath(projectRoot);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, JSON.stringify(comparison, null, 2) + '\n', 'utf-8');
+  return path;
+}
+
+function formatBaselineComparisonText(comparison: HealthBaselineComparison): string {
+  const lines = [
+    '',
+    `${BOLD}Continuity:${RESET}`,
+    `  Baseline: ${comparison.savedAt ?? 'missing'} (${comparison.baselinePath})`,
+    `  Score delta: ${comparison.scoreDelta == null ? 'n/a' : comparison.scoreDelta >= 0 ? `+${comparison.scoreDelta}` : String(comparison.scoreDelta)}`,
+    `  Added findings: ${comparison.addedFindings.length}`,
+    `  Resolved findings: ${comparison.resolvedFindings.length}`,
+    `  Changed files: ${comparison.changedFiles.length}`,
+    `  Route impact: ${comparison.changedRoutes.length > 0 ? comparison.changedRoutes.join(', ') : 'none detected'}`,
+    `  Screenshot drift: ${comparison.changedScreenshots.length}`,
+    `  Contract drift: ${comparison.contractDrift.length > 0 ? comparison.contractDrift.join(' ') : 'none detected'}`,
+  ];
+  return `${lines.join('\n')}\n`;
 }
 
 async function browserEvidenceFromOptions(
@@ -896,7 +1184,11 @@ export async function createProjectHealthReport(
 
   const declaredRoutes = collectDeclaredRoutes(audit.essence);
   const manifest = audit.packManifest;
-  const browserVerification = await collectBrowserVerification(projectRoot, options, declaredRoutes);
+  const browserVerification = await collectBrowserVerification(
+    projectRoot,
+    options,
+    declaredRoutes,
+  );
   if (browserVerification?.finding && !isDuplicateFinding(seen, browserVerification.finding)) {
     findings.push(browserVerification.finding);
   }
@@ -924,7 +1216,9 @@ export async function createProjectHealthReport(
       declared: declaredRoutes,
       runtimeChecked: audit.runtimeAudit.routeHintsChecked,
       runtimeMatched: audit.runtimeAudit.routeHintsMatched,
-      runtimeCoverageOk: audit.summary.runtimeAuditChecked ? audit.runtimeAudit.routeHintsCoverageOk : null,
+      runtimeCoverageOk: audit.summary.runtimeAuditChecked
+        ? audit.runtimeAudit.routeHintsCoverageOk
+        : null,
       issues: routeIssuesFromFindings(findings),
     },
     packs: {
@@ -1069,7 +1363,7 @@ export async function createProjectEvidenceBundle(
       ? join(projectRoot, '.decantr', 'workspace.json')
       : null,
     designTokensPath: resolveOptionalPath(projectRoot, options.designTokensPath) ?? null,
-      browser: await browserEvidenceFromOptions(projectRoot, options, report.routes.declared),
+    browser: await browserEvidenceFromOptions(projectRoot, options, report.routes.declared),
     designTokens: collectDesignTokenEvidence(projectRoot, options.designTokensPath),
   });
 }
@@ -1120,6 +1414,12 @@ export async function cmdHealth(
     designTokensPath: options.designTokensPath,
   };
   const report = await createProjectHealthReport(projectRoot, reportOptions);
+  const baselineComparison = options.sinceBaseline
+    ? compareHealthBaseline(projectRoot, report)
+    : null;
+  const baselineComparisonPath = baselineComparison
+    ? saveHealthBaselineComparison(projectRoot, baselineComparison)
+    : null;
 
   if (options.promptId) {
     const finding = report.findings.find((entry) => entry.id === options.promptId);
@@ -1146,16 +1446,22 @@ export async function cmdHealth(
 
   const format = resolveFormat(options);
   const failOn = options.failOn ?? 'error';
-  const payload = options.evidence
+  const basePayload = options.evidence
     ? `${JSON.stringify(await createProjectEvidenceBundle(projectRoot, report, reportOptions), null, 2)}\n`
     : format === 'json'
       ? formatProjectHealthJson(report)
       : format === 'markdown'
         ? formatProjectHealthMarkdown(report)
         : formatProjectHealthText(report);
+  const payload =
+    baselineComparison && !options.evidence && format === 'text'
+      ? `${basePayload}${formatBaselineComparisonText(baselineComparison)}`
+      : basePayload;
 
   if (options.output) {
-    const outputPath = isAbsolute(options.output) ? options.output : join(projectRoot, options.output);
+    const outputPath = isAbsolute(options.output)
+      ? options.output
+      : join(projectRoot, options.output);
     mkdirSync(dirname(outputPath), { recursive: true });
     writeFileSync(outputPath, payload, 'utf-8');
     if (!options.ci) {
@@ -1176,6 +1482,21 @@ export async function cmdHealth(
     projectRoot,
     report,
   });
+
+  if (options.saveBaseline) {
+    const path = saveHealthBaseline(projectRoot, report);
+    if (!options.ci && !options.output && format !== 'json' && !options.evidence) {
+      console.log(`${GREEN}Saved Decantr health baseline:${RESET} ${path}`);
+    } else if (!options.ci && options.output) {
+      console.log(`${GREEN}Saved Decantr health baseline:${RESET} ${path}`);
+    }
+  }
+
+  if (baselineComparisonPath && !options.ci && options.output) {
+    console.log(
+      `${GREEN}Wrote Decantr health baseline comparison:${RESET} ${baselineComparisonPath}`,
+    );
+  }
 
   if (options.ci && shouldFailHealth(report, failOn)) {
     if (failOn !== 'none') {
@@ -1252,6 +1573,10 @@ export function parseHealthArgs(args: string[]): HealthCommandOptions {
     } else if (arg === '--require-browser') {
       options.browser = true;
       options.requireBrowser = true;
+    } else if (arg === '--save-baseline') {
+      options.saveBaseline = true;
+    } else if (arg === '--since-baseline') {
+      options.sinceBaseline = true;
     } else if (arg === '--base-url' && args[index + 1]) {
       options.browserBaseUrl = args[++index];
     } else if (arg.startsWith('--base-url=')) {

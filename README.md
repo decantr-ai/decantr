@@ -143,6 +143,7 @@ decantr search dashboard
 decantr list blueprints --blueprint-set certified
 decantr list blueprints --blueprint-set labs
 decantr suggest leaderboard
+decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
 ```
 
 Brownfield adoption:
@@ -151,8 +152,12 @@ Brownfield adoption:
 decantr analyze
 decantr init --existing --accept-proposal
 decantr check --brownfield
-decantr health
+decantr health --browser --base-url http://localhost:3000 --evidence
+decantr health --save-baseline
+decantr health --since-baseline
 ```
+
+`analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.
 
 Registry and verification:
 

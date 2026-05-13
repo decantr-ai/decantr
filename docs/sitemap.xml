@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-12T15:29:10-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -74,7 +74,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-05-11T16:58:48-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -86,7 +86,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-11T16:58:48-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -98,7 +98,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/registry-content-publishing.md</loc>
-    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
+    <lastmod>2026-05-11T16:58:48-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -152,7 +152,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-05-11T21:15:46-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -164,25 +164,25 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/package-support-matrix.md</loc>
-    <lastmod>2026-05-11T21:50:51-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-05-11T22:14:58-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/registry-public-api.html</loc>
-    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
+    <lastmod>2026-05-08T17:56:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/registry-public-api.md</loc>
-    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
+    <lastmod>2026-05-08T17:56:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -206,7 +206,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-11T21:50:51-04:00</lastmod>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -266,13 +266,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-12-blueprint-registry-maturity.md</loc>
-    <lastmod>2026-05-12T15:29:10-04:00</lastmod>
+    <lastmod>2026-05-13T00:36:32.070Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-12-brownfield-intelligence.md</loc>
+    <lastmod>2026-05-12T20:32:58-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-12-cli-blueprint-list-polish.md</loc>
-    <lastmod>2026-05-12T22:26:44.796Z</lastmod>
+    <lastmod>2026-05-13T00:36:32.070Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -362,7 +368,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/blueprint.v1.json</loc>
-    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
+    <lastmod>2026-04-08T19:22:30-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -476,7 +482,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/public-content-summary.v1.json</loc>
-    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
+    <lastmod>2026-04-21T22:52:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>

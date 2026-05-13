@@ -16,9 +16,7 @@ describe('verifyInteractionsInSource', () => {
   });
 
   it('detects status-pulse via d-pulse class', () => {
-    const sources = new Map([
-      ['Status.tsx', '<span className="d-pulse" data-status="active" />'],
-    ]);
+    const sources = new Map([['Status.tsx', '<span className="d-pulse" data-status="active" />']]);
     expect(verifyInteractionsInSource(['status-pulse'], sources)).toEqual([]);
   });
 
@@ -33,6 +31,9 @@ describe('verifyInteractionsInSource', () => {
     expect(missing).toHaveLength(1);
     expect(missing[0]?.interaction).toBe('status-pulse');
     expect(missing[0]?.suggestion).toContain('d-pulse');
+    expect(missing[0]?.scannedFiles).toBe(1);
+    expect(missing[0]?.scannedLocations).toEqual([{ file: 'App.tsx', startLine: 1, endLine: 1 }]);
+    expect(missing[0]?.expectedSignals).toContain('d-pulse');
   });
 
   it('detects animate-on-mount via any of the three entrance treatments', () => {
@@ -80,7 +81,7 @@ describe('verifyInteractionsInSource', () => {
     const sources = new Map([
       [
         'Canvas.tsx',
-        '<div onWheel={(e) => setScale(s * (e.deltaY > 0 ? 0.9 : 1.1))} style={{ transform: `scale(${scale})` }} />',
+        `<div onWheel={(e) => setScale(s * (e.deltaY > 0 ? 0.9 : 1.1))} style={{ transform: \`scale(\${scale})\` }} />`,
       ],
     ]);
     expect(verifyInteractionsInSource(['zoom-scroll'], sources)).toEqual([]);
@@ -88,7 +89,10 @@ describe('verifyInteractionsInSource', () => {
 
   it('flags multiple missing interactions in one call', () => {
     const sources = new Map([['App.tsx', 'export default function() { return null; }']]);
-    const missing = verifyInteractionsInSource(['status-pulse', 'glow-hover', 'drag-nodes'], sources);
+    const missing = verifyInteractionsInSource(
+      ['status-pulse', 'glow-hover', 'drag-nodes'],
+      sources,
+    );
     expect(missing.map((m) => m.interaction).sort()).toEqual([
       'drag-nodes',
       'glow-hover',

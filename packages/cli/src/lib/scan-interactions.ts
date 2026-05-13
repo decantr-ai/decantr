@@ -15,8 +15,8 @@
  * nothing to fire on. With it, `decantr check --strict` fails the build
  * when patterns declare interactions that aren't implemented.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { extname, join } from 'node:path';
+import { existsSync, readdirSync, readFileSync, type Stats, statSync } from 'node:fs';
+import { extname, join, relative } from 'node:path';
 import { verifyInteractionsInSource } from '@decantr/verifier';
 
 interface PackManifest {
@@ -78,7 +78,7 @@ function walkSourceTree(rootDir: string): Map<string, string> {
     for (const entry of entries) {
       if (SKIP_DIRECTORIES.has(entry)) continue;
       const fullPath = join(dir, entry);
-      let s;
+      let s: Stats;
       try {
         s = statSync(fullPath);
       } catch {
@@ -89,7 +89,7 @@ function walkSourceTree(rootDir: string): Map<string, string> {
       } else if (s.isFile() && SCAN_EXTENSIONS.has(extname(entry))) {
         if (s.size > MAX_FILE_SIZE) continue;
         try {
-          sources.set(fullPath, readFileSync(fullPath, 'utf8'));
+          sources.set(relative(rootDir, fullPath) || entry, readFileSync(fullPath, 'utf8'));
         } catch {
           // unreadable file — skip silently
         }
@@ -159,5 +159,23 @@ export function scanProjectInteractions(projectRoot: string): string[] {
   if (sources.size === 0) return [];
 
   const missing = verifyInteractionsInSource(declared, sources);
-  return missing.map(({ interaction, suggestion }) => `${interaction} → ${suggestion}`);
+  return missing.map(
+    ({ interaction, suggestion, scannedFiles, scannedLocations, expectedSignals }) => {
+      const evidence = [
+        scannedFiles ? `scanned ${scannedFiles} source file(s)` : null,
+        scannedLocations?.length
+          ? `checked: ${scannedLocations
+              .slice(0, 4)
+              .map((location) => `${location.file}:${location.startLine}-${location.endLine}`)
+              .join(', ')}`
+          : null,
+        expectedSignals?.length
+          ? `expected signals: ${expectedSignals.slice(0, 4).join(', ')}`
+          : null,
+      ]
+        .filter((entry): entry is string => Boolean(entry))
+        .join('; ');
+      return `${interaction} → ${suggestion}${evidence ? ` (${evidence})` : ''}`;
+    },
+  );
 }

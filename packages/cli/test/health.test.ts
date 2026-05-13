@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { COMMAND_SURFACE, commandSurfaceByName } from '../src/command-surface.js';
 import {
+  cmdHealth,
   createProjectEvidenceBundle,
   createProjectHealthReport,
   formatProjectHealthMarkdown,
@@ -266,6 +267,53 @@ describe('Project Health report', () => {
     );
   });
 
+  it('writes visual manifest screenshot evidence when Playwright renders routes', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    const playwrightDir = join(testDir, 'node_modules', 'playwright');
+    mkdirSync(playwrightDir, { recursive: true });
+    writeFileSync(
+      join(playwrightDir, 'index.js'),
+      `const fs = require('node:fs');
+const path = require('node:path');
+exports.chromium = {
+  launch: async () => ({
+    newPage: async () => ({
+      goto: async () => undefined,
+      screenshot: async ({ path: target }) => {
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.writeFileSync(target, 'fake screenshot');
+      },
+    }),
+    close: async () => undefined,
+  }),
+};
+`,
+      'utf-8',
+    );
+
+    await createProjectHealthReport(testDir, {
+      browser: true,
+      browserBaseUrl: 'http://127.0.0.1:3000',
+    });
+
+    const manifest = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), 'utf-8'),
+    ) as {
+      localOnly: boolean;
+      routes: Array<{ route: string; screenshot: string | null; status: string }>;
+    };
+
+    expect(manifest.localOnly).toBe(true);
+    expect(manifest.routes[0]).toMatchObject({
+      route: '/',
+      screenshot: '.decantr/evidence/screenshots/root.png',
+      status: 'captured',
+    });
+    expect(existsSync(join(testDir, '.decantr', 'evidence', 'screenshots', 'root.png'))).toBe(true);
+  });
+
   it('supports warning-sensitive CI gating', async () => {
     writeRegistryCache();
     writeEssence();
@@ -376,6 +424,81 @@ describe('Project Health report', () => {
       workspace: true,
       failOn: 'warn',
     });
+  });
+
+  it('parses health baseline options', () => {
+    const parsed = parseHealthArgs(['health', '--save-baseline', '--since-baseline']);
+
+    expect(parsed.saveBaseline).toBe(true);
+    expect(parsed.sinceBaseline).toBe(true);
+  });
+
+  it('writes health baselines and compares changed files, routes, and screenshot hashes', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    mkdirSync(join(testDir, 'src', 'app'), { recursive: true });
+    mkdirSync(join(testDir, '.decantr', 'evidence', 'screenshots'), { recursive: true });
+    writeFileSync(join(testDir, 'src', 'app', 'page.tsx'), 'export default function Page() {}\n');
+    writeFileSync(join(testDir, '.decantr', 'evidence', 'screenshots', 'root.png'), 'first');
+    writeJson(join(testDir, '.decantr', 'analysis.json'), {
+      routes: { routes: [{ path: '/', file: 'src/app/page.tsx' }] },
+    });
+    writeJson(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), {
+      version: 1,
+      generatedAt: '2026-05-12T00:00:00.000Z',
+      localOnly: true,
+      baseUrl: 'http://localhost:3000',
+      routes: [
+        {
+          route: '/',
+          url: 'http://localhost:3000/',
+          screenshot: '.decantr/evidence/screenshots/root.png',
+          screenshotHash: 'hash-a',
+          status: 'captured',
+        },
+      ],
+    });
+    execFileSync('git', ['init'], { cwd: testDir, stdio: 'ignore' });
+    execFileSync('git', ['add', '.'], { cwd: testDir, stdio: 'ignore' });
+
+    await cmdHealth(testDir, { format: 'json', output: 'health.json', saveBaseline: true });
+
+    writeFileSync(
+      join(testDir, 'src', 'app', 'page.tsx'),
+      'export default function Page() { return <main />; }\n',
+    );
+    writeJson(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), {
+      version: 1,
+      generatedAt: '2026-05-12T00:01:00.000Z',
+      localOnly: true,
+      baseUrl: 'http://localhost:3000',
+      routes: [
+        {
+          route: '/',
+          url: 'http://localhost:3000/',
+          screenshot: '.decantr/evidence/screenshots/root.png',
+          screenshotHash: 'hash-b',
+          status: 'captured',
+        },
+      ],
+    });
+
+    await cmdHealth(testDir, { format: 'json', output: 'health-next.json', sinceBaseline: true });
+
+    const diff = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'health-baseline-diff.json'), 'utf-8'),
+    ) as {
+      changedFiles: string[];
+      changedRoutes: string[];
+      changedScreenshots: string[];
+      scoreDelta: number | null;
+    };
+    expect(existsSync(join(testDir, '.decantr', 'health-baseline.json'))).toBe(true);
+    expect(diff.changedFiles).toContain('src/app/page.tsx');
+    expect(diff.changedRoutes).toContain('/');
+    expect(diff.changedScreenshots).toContain('.decantr/evidence/screenshots/root.png');
+    expect(diff.scoreDelta).not.toBeNull();
   });
 
   it('tracks the audited CLI command surface', () => {

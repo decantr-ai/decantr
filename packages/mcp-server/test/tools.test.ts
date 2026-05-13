@@ -1,15 +1,25 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fuzzyScore, validateStringArg } from '../src/helpers.js';
 import { handleTool, TOOLS } from '../src/tools.js';
 
+const ORIGINAL_CWD = process.cwd();
+
 afterEach(() => {
+  process.chdir(ORIGINAL_CWD);
   vi.restoreAllMocks();
 });
+
+function writeJson(path: string, value: unknown): void {
+  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
+}
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
     it('should define the full MCP tool surface', () => {
-      expect(TOOLS).toHaveLength(24);
+      expect(TOOLS).toHaveLength(25);
     });
 
     it('should have unique tool names', () => {
@@ -65,6 +75,7 @@ describe('MCP tool handlers', () => {
         'decantr_check_drift',
         'decantr_get_scaffold_context',
         'decantr_get_page_context',
+        'decantr_prepare_task_context',
         'decantr_get_execution_pack',
         'decantr_get_evidence_bundle',
         'decantr_workspace_health',
@@ -98,6 +109,184 @@ describe('MCP tool handlers', () => {
   });
 
   describe('reliability tools', () => {
+    it('requires route or page_id for task context', async () => {
+      const result = await handleTool('decantr_prepare_task_context', {
+        task: 'improve feed',
+      });
+
+      expect(result).toHaveProperty('error');
+    });
+
+    it('prepares compact task context with packs, evidence, health, and theme inventory', async () => {
+      const projectDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-context-'));
+      try {
+        process.chdir(projectDir);
+        mkdirSync(join(projectDir, '.decantr', 'context'), { recursive: true });
+        mkdirSync(join(projectDir, '.decantr', 'evidence'), { recursive: true });
+        writeJson(join(projectDir, 'decantr.essence.json'), {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'recipefork', mode: 'dark', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: false },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: false },
+            personality: ['AI-powered social recipe platform'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'app',
+                role: 'primary',
+                shell: 'top-nav-footer',
+                features: ['recipes'],
+                pages: [
+                  {
+                    id: 'feed',
+                    route: '/feed',
+                    description: 'Infinite social recipe feed',
+                    layout: [
+                      {
+                        pattern: 'content-feed',
+                        components: ['RecipeCard'],
+                        interactions: ['infinite-scroll'],
+                      },
+                      'filter-bar',
+                    ],
+                  },
+                ],
+              },
+            ],
+            features: ['recipes'],
+            routes: { '/feed': { section: 'app', page: 'feed' } },
+          },
+          meta: { target: 'react', guard: { mode: 'strict' } },
+        });
+        writeJson(join(projectDir, '.decantr', 'context', 'pack-manifest.json'), {
+          version: '1.0.0',
+          generatedAt: '2026-05-12T00:00:00.000Z',
+          scaffold: null,
+          sections: [
+            {
+              id: 'app',
+              markdown: 'section-app-pack.md',
+              json: 'section-app-pack.json',
+              pageIds: ['feed'],
+            },
+          ],
+          pages: [
+            {
+              id: 'feed',
+              markdown: 'page-feed-pack.md',
+              json: 'page-feed-pack.json',
+              sectionId: 'app',
+              sectionRole: 'primary',
+            },
+          ],
+        });
+        writeJson(join(projectDir, '.decantr', 'context', 'page-feed-pack.json'), {
+          data: {
+            visualTarget: '3-column food-forward feed with lift-hover cards',
+            directives: ['Keep infinite scroll loading visible'],
+            patterns: ['content-feed', 'filter-bar'],
+            sharedComponents: ['RecipeCard'],
+          },
+        });
+        writeJson(join(projectDir, '.decantr', 'context', 'section-app-pack.json'), {
+          data: { visualTarget: 'Dark cookbook social app', patterns: ['content-feed'] },
+        });
+        writeFileSync(
+          join(projectDir, '.decantr', 'context', 'page-feed-pack.md'),
+          '# Feed Pack\nUse the recipe card grid.\n',
+          'utf-8',
+        );
+        writeFileSync(
+          join(projectDir, '.decantr', 'context', 'section-app.md'),
+          '# App Section\nFood social surface.\n',
+          'utf-8',
+        );
+        writeJson(join(projectDir, '.decantr', 'evidence', 'visual-manifest.json'), {
+          version: 1,
+          localOnly: true,
+          routes: [
+            {
+              route: '/feed',
+              screenshot: '.decantr/evidence/screenshots/feed.png',
+              screenshotHash: 'abc123',
+              status: 'captured',
+            },
+          ],
+        });
+        writeJson(join(projectDir, '.decantr', 'health-baseline-diff.json'), {
+          baselinePath: '.decantr/health-baseline.json',
+          savedAt: '2026-05-12T00:00:00.000Z',
+          statusChanged: false,
+          scoreDelta: 2,
+          addedFindings: ['interaction-missing'],
+          resolvedFindings: [],
+          changedRoutes: ['/feed'],
+          changedScreenshots: ['.decantr/evidence/screenshots/feed.png'],
+          contractDrift: ['Declared route set changed since baseline.'],
+        });
+        writeJson(join(projectDir, '.decantr', 'theme-inventory.json'), {
+          modes: [{ mode: 'dark', evidence: ['class=dark'] }],
+          variants: [{ name: 'holiday', evidence: ['data-theme=holiday'] }],
+        });
+
+        const result = (await handleTool('decantr_prepare_task_context', {
+          route: '/feed',
+          task: 'improve recipe feed loading',
+        })) as {
+          route: string;
+          page_id: string;
+          visual_target: string;
+          directives: string[];
+          patterns: string[];
+          shared_components: string[];
+          section_context: string;
+          page_pack_excerpt: string;
+          visual_evidence: { screenshot: string; screenshot_hash: string };
+          health_evidence: {
+            baseline_path: string;
+            score_delta: number;
+            added_findings: string[];
+            changed_routes: string[];
+          };
+          theme_inventory: { modes: unknown[]; variants: unknown[]; path: string };
+          local_files: { visual_manifest: string };
+        };
+
+        expect(result.route).toBe('/feed');
+        expect(result.page_id).toBe('feed');
+        expect(result.visual_target).toContain('3-column');
+        expect(result.directives).toContain('Keep infinite scroll loading visible');
+        expect(result.patterns).toContain('content-feed');
+        expect(result.shared_components).toContain('RecipeCard');
+        expect(result.section_context).toContain('Food social surface');
+        expect(result.page_pack_excerpt).toContain('Feed Pack');
+        expect(result.visual_evidence.screenshot).toBe('.decantr/evidence/screenshots/feed.png');
+        expect(result.visual_evidence.screenshot_hash).toBe('abc123');
+        expect(result.health_evidence.baseline_path).toBe('.decantr/health-baseline.json');
+        expect(result.health_evidence.score_delta).toBe(2);
+        expect(result.health_evidence.added_findings).toContain('interaction-missing');
+        expect(result.health_evidence.changed_routes).toContain('/feed');
+        expect(result.theme_inventory.path).toBe('.decantr/theme-inventory.json');
+        expect(result.theme_inventory.modes).toHaveLength(1);
+        expect(result.theme_inventory.variants).toHaveLength(1);
+        expect(result.local_files.visual_manifest).toBe('.decantr/evidence/visual-manifest.json');
+      } finally {
+        rmSync(projectDir, { recursive: true, force: true });
+      }
+    });
+
     it('rejects project paths outside the active workspace root', async () => {
       const result = await handleTool('decantr_get_evidence_bundle', {
         project_path: '../outside-workspace',

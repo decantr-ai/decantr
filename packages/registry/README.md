@@ -19,6 +19,7 @@ npm install @decantr/registry
 - `@decantr/registry/client` for web-safe API usage
 - public schema exports for registry content, content health, and summary responses
 - ranking and sorting helpers for public registry content
+- Brownfield-aware pattern discovery helpers: `patternToDiscoveryCandidate()`, `scorePatternCandidate()`, and `rankPatternCandidates()`
 - blueprint portfolio metadata helpers for public `All`, `Featured`, `Certified`, and `Labs` registry cuts
 
 ## Example
@@ -43,6 +44,17 @@ import { createRegistryClient } from '@decantr/registry/client';
 
 const client = createRegistryClient({ baseUrl: 'https://api.decantr.ai/v1' });
 const summary = await client.getIntelligenceSummary();
+```
+
+Pattern discovery usage:
+
+```ts
+import { patternToDiscoveryCandidate, rankPatternCandidates } from '@decantr/registry';
+
+const matches = rankPatternCandidates(
+  { query: 'recipe feed with avatars and infinite scroll', route: '/feed' },
+  patterns.map((pattern) => patternToDiscoveryCandidate(pattern)),
+);
 ```
 
 ## Related Schemas

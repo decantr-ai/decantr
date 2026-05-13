@@ -71,6 +71,7 @@ describe('scanProjectInteractions', () => {
     const issues = scanProjectInteractions(projectRoot);
     expect(issues).toHaveLength(1);
     expect(issues[0]).toContain('status-pulse');
+    expect(issues[0]).toContain('checked: src/App.tsx:1-1');
     expect(issues[0]).toContain('d-pulse');
   });
 

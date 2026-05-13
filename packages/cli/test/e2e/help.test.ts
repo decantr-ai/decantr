@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -60,5 +60,14 @@ describe('command help (e2e)', () => {
     expect(output).toContain('GET  /api/health');
     expect(output).toContain('POST /api/refresh');
     expect(output).not.toContain('Decantr Studio is running');
+  });
+
+  it('prints init help without writing project files', () => {
+    const output = runHelp(testDir, ['init', '--help']);
+
+    expect(output).toContain('decantr');
+    expect(output).toContain('Init Options');
+    expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
+    expect(existsSync(join(testDir, '.decantr'))).toBe(false);
   });
 });
