@@ -57,7 +57,7 @@ Monorepos store both `workspaceRoot` and `appRoot`. In non-interactive workspace
 
 Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
 
-Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. `decantr check --brownfield` uses the doctrine map to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, and unsafe defaults without treating current database migrations as stale docs.
+Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. In 2.6 it also writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. Theme variants are observed in the theme inventory without changing Essence V4. `decantr check --brownfield` uses the doctrine map to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, and unsafe defaults without treating current database migrations as stale docs.
 
 ## What It Does
 
@@ -92,6 +92,8 @@ decantr telemetry explain
 decantr telemetry link --enable --org <org-slug>
 decantr content-health --ci --fail-on error
 decantr registry summary --namespace @official --json
+decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
+decantr list patterns
 decantr showcase verification --json
 ```
 
@@ -108,6 +110,8 @@ decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
+decantr health --save-baseline
+decantr health --since-baseline
 decantr health --design-tokens .decantr/design/figma-tokens.json
 decantr health --json --output decantr-health.json
 decantr health init-ci
@@ -119,7 +123,7 @@ decantr workspace health --changed --since origin/main
 decantr export --to figma-tokens
 ```
 
-Use `--json` for machines and schema validation, `--markdown` for CI summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/`; missing Playwright becomes a setup finding, not a crash. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
+Use `--json` for machines and schema validation, `--markdown` for CI summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/` and write `.decantr/evidence/visual-manifest.json`; missing Playwright becomes a setup finding, not a crash. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` with changed files, route impact, finding deltas, screenshot hash drift, and contract drift. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
 
 `decantr health init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes JSON/markdown health artifacts, gates with `decantr health --ci --fail-on error --markdown --output decantr-health.md`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path. Use `--workspace` to generate an aggregate gate that runs `decantr workspace health` from the repository root and uploads `.decantr/workspace-health.json` plus `.decantr/workspace-health.md`.
 

@@ -64,6 +64,33 @@ describe('registry commands (e2e)', () => {
     expect(output).toContain('blueprint');
   });
 
+  it('list patterns is browsable by slug, name, domain, and source', () => {
+    const output = runCli(testDir, 'list patterns');
+
+    expect(output).toContain('content-section');
+    expect(output).toContain('Content Section');
+    expect(output).toContain('general');
+    expect(output).toContain('bundled');
+  });
+
+  it('suggest ranks natural-language pattern matches with route and code context', () => {
+    mkdirSync(join(testDir, 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'feed.tsx'),
+      'export function Feed(){ return <RecipeGrid infiniteScroll avatar likeCount />; }\n',
+      'utf-8',
+    );
+
+    const output = runCli(
+      testDir,
+      'suggest "recipe feed with infinite scroll" --route /feed --file src/feed.tsx --from-code',
+    );
+
+    expect(output).toContain('route /feed');
+    expect(output).toContain('content-feed');
+    expect(output).toContain('why:');
+  });
+
   it('get pattern hero returns JSON with correct slug', () => {
     const output = runCli(testDir, 'get pattern hero');
     const json = JSON.parse(output);

@@ -60,6 +60,9 @@ describe('analyze command', () => {
     const doctrinePath = join(testDir, '.decantr', 'doctrine-map.json');
     const proposalPath = join(testDir, '.decantr', 'observed-essence.proposal.json');
     const reportPath = join(testDir, '.decantr', 'brownfield-report.md');
+    const intelligencePath = join(testDir, '.decantr', 'brownfield-intelligence.json');
+    const themeInventoryPath = join(testDir, '.decantr', 'theme-inventory.json');
+    const backlogPath = join(testDir, '.decantr', 'enrichment-backlog.md');
 
     expect(existsSync(analysisPath)).toBe(true);
     expect(existsSync(seedPath)).toBe(true);
@@ -67,6 +70,9 @@ describe('analyze command', () => {
     expect(existsSync(doctrinePath)).toBe(true);
     expect(existsSync(proposalPath)).toBe(true);
     expect(existsSync(reportPath)).toBe(true);
+    expect(existsSync(intelligencePath)).toBe(true);
+    expect(existsSync(themeInventoryPath)).toBe(true);
+    expect(existsSync(backlogPath)).toBe(true);
 
     const analysis = JSON.parse(readFileSync(analysisPath, 'utf-8')) as {
       decantr?: {
@@ -84,6 +90,15 @@ describe('analyze command', () => {
       registryOptional?: boolean;
       adoptionMode?: string;
     };
+    const intelligence = JSON.parse(readFileSync(intelligencePath, 'utf-8')) as {
+      workflow?: string;
+      styling?: { themeInventoryPath?: string };
+      evidence?: { screenshotsLocalOnly?: boolean };
+    };
+    const themeInventory = JSON.parse(readFileSync(themeInventoryPath, 'utf-8')) as {
+      localOnly?: boolean;
+      variants?: Array<{ id: string }>;
+    };
 
     expect(analysis.decantr?.workflow).toBe('brownfield-adoption');
     expect(analysis.decantr?.attach?.recommendedCommand).toBe(
@@ -99,6 +114,11 @@ describe('analyze command', () => {
     expect(seed.shell).toBe('sidebar-main');
     expect(seed.existing).toBe(true);
     expect(seed.registryOptional).toBe(true);
+    expect(intelligence.workflow).toBe('brownfield-attach');
+    expect(intelligence.styling?.themeInventoryPath).toBe('.decantr/theme-inventory.json');
+    expect(intelligence.evidence?.screenshotsLocalOnly).toBe(true);
+    expect(themeInventory.localOnly).toBe(true);
+    expect(themeInventory.variants?.length ?? 0).toBeGreaterThan(0);
   });
 
   it('recognizes React Router and Decantr starter structure in an attached app', () => {

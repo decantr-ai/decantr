@@ -105,7 +105,7 @@
       "releaseWave": "delivery",
       "publishOrder": 20,
       "defaultDistTag": "latest",
-      "summary": "MCP delivery surface for Decantr design intelligence, packs, evidence bundles, workspace health, and repair prompts.",
+      "summary": "MCP delivery surface for Decantr design intelligence, packs, Brownfield task context, evidence bundles, workspace health, and repair prompts.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -124,7 +124,7 @@
       "releaseWave": "delivery",
       "publishOrder": 10,
       "defaultDistTag": "latest",
-      "summary": "Shared verification, critique, contract assertions, Evidence Bundle, Project Health, Workspace Health, and report-schema engine.",
+      "summary": "Shared verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Workspace Health, and report-schema engine.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,
@@ -143,7 +143,7 @@
       "releaseWave": "delivery",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, registry sync, Evidence Bundles, workspace health, Project Health CI and Studio, Content Health, and project governance.",
+      "summary": "Local workflow/adoption policy resolution, adapter-backed bootstrap/attach, Brownfield intelligence, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, Project Health CI and Studio, Content Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

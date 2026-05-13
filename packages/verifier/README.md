@@ -20,6 +20,7 @@ npm install @decantr/verifier
 - `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
 - schema-backed report types for project audits, Project Health, Evidence Bundles, Workspace Health, file critiques, and showcase verification
 - `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
+- interaction findings now include scanned file counts, file line ranges, and expected signal evidence where available, so CLI health/check output can point agents at source-grounded remediation
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:
   - root document

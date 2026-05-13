@@ -136,7 +136,7 @@ describe('init command', () => {
       expect(content).toContain('Prefer the compiled section pack if the two sources differ');
       expect(content).toContain('Use only files present in this workspace as the source of truth.');
       expect(content).toContain(
-        'trust its declared Decantr dependencies over external assumptions',
+        'trust its declared Decantr dependencies and the project adoption mode over external assumptions',
       );
       expect(content).toContain(
         'Do not modify generated context files unless you are explicitly regenerating or refreshing Decantr context.',

@@ -5,6 +5,16 @@ export type {
   SearchResult,
 } from './api-client.js';
 export { createRegistryClient, RegistryAPIClient, RegistryAPIError } from './api-client.js';
+export type {
+  PatternDiscoveryCandidate,
+  PatternDiscoveryInput,
+  PatternDiscoveryMatch,
+} from './discovery.js';
+export {
+  patternToDiscoveryCandidate,
+  rankPatternCandidates,
+  scorePatternCandidate,
+} from './discovery.js';
 export type { ResolvedPreset } from './pattern.js';
 export { resolvePatternPreset } from './pattern.js';
 export type { PublicContentSort } from './ranking.js';

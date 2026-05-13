@@ -21,4 +21,13 @@ This is the current command audit for the 2.x reliability layer. The goal is con
 
 The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered by tests against the dispatched CLI commands. Any new top-level command should update that file, command help, package docs, root docs, release notes, and relevant skills before it ships.
 
+Brownfield intelligence in 2.6 stays inside existing command namespaces:
+
+- `decantr analyze` writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
+- `decantr suggest` accepts `--route`, `--file`, and `--from-code` for better pattern discovery without adding a new top-level command.
+- `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface.
+- `decantr health --browser --base-url <url> --evidence` writes local screenshots and a visual manifest; `--save-baseline` / `--since-baseline` add continuity.
+
+Command help must be side-effect free. `decantr <command> --help`, `decantr <command> -h`, and `decantr <command> help` should print help and never execute command bodies or write project files.
+
 `@decantr/vite-plugin` remains experimental after this audit. It may become a verifier-backed dev adapter later, but it is not part of the default reliability layer and should not be treated as a graduated 2.x surface yet.

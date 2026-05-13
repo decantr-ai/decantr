@@ -12,7 +12,7 @@ Design intelligence for AI-generated UI. Make Claude, Cursor, and Windsurf gener
 
 ![Decantr MCP demo](https://raw.githubusercontent.com/decantr-ai/decantr/main/packages/mcp-server/assets/decantr-demo.gif)
 
-- **Structured design context** -- gives your AI assistant patterns, layouts, and component specs instead of letting it guess
+- **Structured design context** -- gives your AI assistant patterns, layouts, component specs, and Brownfield task-time context instead of letting it guess
 - **Evidence-backed repair loops** -- gives AI agents Project Health, Evidence Bundles, workspace health, and scoped repair prompts without uploading source
 - **Drift detection** -- catches when generated code deviates from your design intent
 - **Zero config** -- run with `npx`, no API keys or accounts required
@@ -133,9 +133,10 @@ The server exposes Decantr registry, context, benchmark, and verification tools.
 | `decantr_resolve_pattern` | Get full pattern details: layout spec, components, presets, code examples | `{ "id": "data-table", "preset": "product" }` |
 | `decantr_resolve_archetype` | Get archetype details: default pages, layouts, features, suggested theme | `{ "id": "saas-dashboard" }` |
 | `decantr_resolve_blueprint` | Get a full app composition with page structure and personality traits | `{ "id": "ecommerce" }` |
-| `decantr_suggest_patterns` | Given a page description, get ranked pattern suggestions | `{ "description": "dashboard with metrics and charts" }` |
+| `decantr_suggest_patterns` | Given a page description plus optional route/source excerpt, get ranked pattern suggestions | `{ "description": "recipe feed with avatars and infinite scroll", "route": "/feed" }` |
 | `decantr_check_drift` | Check if generated code violates the design intent in the Essence spec | `{ "page_id": "overview", "components_used": ["Card", "LineChart"], "theme_used": "auradecantism" }` |
 | `decantr_get_execution_pack` | Read compiled scaffold, section, page, review, or mutation execution packs, with hosted fallback when local context is missing | `{ "pack_type": "page", "id": "overview", "format": "json" }` |
+| `decantr_prepare_task_context` | Resolve compact route/task context before editing a Brownfield or Essence route | `{ "route": "/feed", "task": "improve recipe card loading" }` |
 | `decantr_compile_execution_packs` | Compile a hosted execution-pack bundle from a local or inline essence document | `{ "path": "./decantr.essence.json", "namespace": "@official" }` |
 | `decantr_audit_project` | Run the schema-backed Decantr project audit against essence and compiled packs, with hosted fallback when local pack artifacts are missing | `{ "namespace": "@official" }` |
 | `decantr_critique` | Critique a file against the compiled review contract, with hosted fallback when local review packs are missing | `{ "file_path": "./src/pages/Overview.tsx", "namespace": "@official" }` |
@@ -170,12 +171,13 @@ The AI assistant calls these tools behind the scenes:
 3. `decantr_suggest_patterns` -- recommends `kpi-grid`, `chart-grid`, `data-table`, and `form-sections` for the described pages
 4. `decantr_resolve_pattern` -- fetches layout specs and component lists for each pattern
 5. `decantr_get_execution_pack` -- loads the compiled scaffold/page/review packs as the task contract, falling back to hosted compilation when local pack artifacts are missing
-6. `decantr_compile_execution_packs` -- compiles the hosted pack bundle when the task needs a fresh remote contract from the essence document
-7. `decantr_check_drift` -- validates the generated code against the Essence spec before presenting it
-8. `decantr_critique` -- critiques a specific file, falling back to the hosted verifier when the local review pack is missing
-9. `decantr_audit_project` -- runs the stronger project-level audit once the implementation is in place
-10. `decantr_get_evidence_bundle` -- returns the local evidence bundle for the AI repair loop
-11. `decantr_get_repair_prompt` -- gives the assistant exact finding evidence, constraints to preserve, and commands to rerun
+6. `decantr_prepare_task_context` -- resolves route-local Brownfield context, visual evidence, and theme inventory before editing an existing app
+7. `decantr_compile_execution_packs` -- compiles the hosted pack bundle when the task needs a fresh remote contract from the essence document
+8. `decantr_check_drift` -- validates the generated code against the Essence spec before presenting it
+9. `decantr_critique` -- critiques a specific file, falling back to the hosted verifier when the local review pack is missing
+10. `decantr_audit_project` -- runs the stronger project-level audit once the implementation is in place
+11. `decantr_get_evidence_bundle` -- returns the local evidence bundle for the AI repair loop
+12. `decantr_get_repair_prompt` -- gives the assistant exact finding evidence, constraints to preserve, and commands to rerun
 
 The AI now generates code with the right layout structure, correct components, and consistent styling, then gets a scoped evidence-backed repair loop instead of a generic guess.
 

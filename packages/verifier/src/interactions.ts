@@ -124,7 +124,7 @@ export const INTERACTION_SIGNALS: Record<string, InteractionRequirement> = {
   },
   'click-connect': {
     interaction: 'click-connect',
-    signals: [/onClick.*?port|connect/i, /connections?\s*[:\[=]/i],
+    signals: [/onClick.*?port|connect/i, /connections?\s*[:[=]/i],
     suggestion:
       'Implement a two-click state machine: first click selects a port, second click on another port creates a connection. Store connections in component state.',
   },
@@ -143,8 +143,7 @@ export const INTERACTION_SIGNALS: Record<string, InteractionRequirement> = {
   'hover-reveal': {
     interaction: 'hover-reveal',
     signals: [/:hover/i, /onMouseEnter/i, /group-hover/i],
-    suggestion:
-      'Implement hover-triggered content reveal via :hover CSS or onMouseEnter handlers.',
+    suggestion: 'Implement hover-triggered content reveal via :hover CSS or onMouseEnter handlers.',
   },
   'live-simulation': {
     interaction: 'live-simulation',
@@ -166,8 +165,7 @@ export const INTERACTION_SIGNALS: Record<string, InteractionRequirement> = {
   'keyboard-navigation': {
     interaction: 'keyboard-navigation',
     signals: [/onKeyDown|onKeyUp/i, /ArrowUp|ArrowDown|ArrowLeft|ArrowRight/],
-    suggestion:
-      'Implement arrow-key navigation via onKeyDown handlers (ArrowUp/Down/Left/Right).',
+    suggestion: 'Implement arrow-key navigation via onKeyDown handlers (ArrowUp/Down/Left/Right).',
   },
   'focus-trap': {
     interaction: 'focus-trap',
@@ -180,6 +178,13 @@ export const INTERACTION_SIGNALS: Record<string, InteractionRequirement> = {
 export interface InteractionMissingFinding {
   interaction: string;
   suggestion: string;
+  scannedFiles?: number;
+  scannedLocations?: Array<{ file: string; startLine: number; endLine: number }>;
+  expectedSignals?: string[];
+}
+
+function sourceLineCount(source: string): number {
+  return Math.max(1, source.replace(/\r?\n$/, '').split(/\r?\n/).length);
 }
 
 /**
@@ -198,14 +203,6 @@ export function verifyInteractionsInSource(
 ): InteractionMissingFinding[] {
   if (interactions.length === 0 || sources.size === 0) return [];
 
-  // Concat all source files into one large string for scanning. This is
-  // simpler than per-file scanning and sufficient for the "is this
-  // interaction implemented anywhere?" question. Trade-off: we lose the
-  // ability to report which specific file is missing it. That's
-  // acceptable for the v1 scope — the goal is binary: is it present or
-  // absent across the project?
-  const combined = Array.from(sources.values()).join('\n\n');
-
   const unique = Array.from(new Set(interactions));
   const missing: InteractionMissingFinding[] = [];
 
@@ -217,17 +214,31 @@ export function verifyInteractionsInSource(
       continue;
     }
 
-    const matched = requirement.signals.some((signal) => {
-      if (typeof signal === 'string') {
-        return combined.includes(signal);
-      }
-      return signal.test(combined);
-    });
+    let matched = false;
+    for (const source of sources.values()) {
+      matched = requirement.signals.some((signal) => {
+        if (typeof signal === 'string') {
+          return source.includes(signal);
+        }
+        signal.lastIndex = 0;
+        return signal.test(source);
+      });
+      if (matched) break;
+    }
 
     if (!matched) {
       missing.push({
         interaction,
         suggestion: requirement.suggestion,
+        scannedFiles: sources.size,
+        scannedLocations: [...sources.entries()].slice(0, 8).map(([file, source]) => ({
+          file,
+          startLine: 1,
+          endLine: sourceLineCount(source),
+        })),
+        expectedSignals: requirement.signals.map((signal) =>
+          typeof signal === 'string' ? signal : String(signal),
+        ),
       });
     }
   }

@@ -21,6 +21,8 @@ decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
+decantr health --save-baseline
+decantr health --since-baseline
 decantr health --design-tokens .decantr/design/figma-tokens.json
 decantr health --json --output decantr-health.json
 decantr workspace list
@@ -30,7 +32,7 @@ decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
-`decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
+`decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
 
 ## What The Report Contains
 
@@ -67,6 +69,19 @@ decantr health --browser --base-url http://localhost:3000 --evidence
 ```
 
 Decantr loads Playwright from the project if `playwright` or `@playwright/test` is installed. It visits declared routes, captures screenshots locally, and turns route render failures into `browser` health findings. If Playwright is not installed, health emits a setup finding instead of crashing. This keeps the default install light while creating a clear adapter boundary for richer UX checks.
+
+When browser evidence is enabled, Decantr also writes `.decantr/evidence/visual-manifest.json`. The manifest maps each checked route to its local screenshot path and screenshot hash. Screenshots stay under `.decantr/evidence/screenshots/`; the Evidence Bundle references paths only.
+
+## Baselines And Continuity
+
+Use health baselines when an AI assistant or team will touch the same Brownfield app across multiple sessions:
+
+```bash
+decantr health --save-baseline
+decantr health --since-baseline
+```
+
+The baseline stores status, score, finding IDs, declared routes, pack summary, and local screenshot hashes. The comparison reports added/resolved findings, changed files from unstaged and staged Git diffs, route impact when `.decantr/analysis.json` can map a changed file to a route, screenshot hash drift, and contract drift such as route-set or pack-generation changes.
 
 ## Design Tokens
 
@@ -161,12 +176,14 @@ For an existing app:
 ```bash
 decantr analyze
 decantr init --existing --accept-proposal
-decantr health
+decantr health --browser --base-url http://localhost:3000 --evidence
 ```
 
 When the project workflow is `brownfield-attach`, health automatically includes route coverage and drift checks from the observed app inventory. This helps separate "the existing app has not been mapped into the contract yet" from "the implementation drifted away from an accepted Decantr contract."
 
 Brownfield health respects existing-app authority. It reports evidence and remediation, but it does not replace the app's router, style system, docs, rules, or source files.
+
+`decantr analyze` writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md` alongside the original analysis/proposal/report files. Theme inventory observes light, dark, and variant theme selectors without changing Essence V4. Those artifacts are local context for agents and reviewers, not source takeover.
 
 ## Hybrid Composition
 
@@ -195,7 +212,7 @@ Use these options to tune the generated workflow:
 ```bash
 decantr health init-ci --force
 decantr health init-ci --fail-on warn
-decantr health init-ci --cli-version 2.4.0
+decantr health init-ci --cli-version 2.6.0
 decantr health init-ci --workflow-path .github/workflows/project-health.yml
 decantr health init-ci --project apps/registry
 decantr health init-ci --workspace

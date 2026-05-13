@@ -1,12 +1,13 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { scanAmbientContext } from '../ambient-context.js';
 import { scanComponents } from '../analyzers/components.js';
 import { scanDependencies } from '../analyzers/dependencies.js';
 import { scanFeatures } from '../analyzers/features.js';
 import { scanLayout } from '../analyzers/layout.js';
 import { scanRoutes } from '../analyzers/routes.js';
 import { scanStyling } from '../analyzers/styling.js';
-import { scanAmbientContext } from '../ambient-context.js';
+import { writeBrownfieldIntelligenceArtifacts } from '../brownfield-intelligence.js';
 import {
   createBrownfieldProposal,
   generateBrownfieldReport,
@@ -153,6 +154,16 @@ export async function cmdAnalyze(
   writeDoctrineMap(projectRoot, doctrine);
   writeBrownfieldProposal(projectRoot, proposal);
   writeFileSync(reportPath, generateBrownfieldReport(proposal, ambient, doctrine), 'utf-8');
+  const intelligenceArtifacts = writeBrownfieldIntelligenceArtifacts({
+    projectRoot,
+    project,
+    routes,
+    components,
+    styling,
+    layout,
+    features,
+    dependencies,
+  });
 
   // 5. Print summary
   console.log(`\n${GREEN}Analysis complete.${RESET}\n`);
@@ -192,8 +203,13 @@ export async function cmdAnalyze(
   console.log(`${DIM}Init seed:${RESET} ${initSeedPath}`);
   console.log(`${DIM}Ambient context:${RESET} ${ambientPath}`);
   console.log(`${DIM}Doctrine map:${RESET} ${doctrinePath}`);
-  console.log(`${DIM}Observed proposal:${RESET} ${join(decantrDir, 'observed-essence.proposal.json')}`);
+  console.log(
+    `${DIM}Observed proposal:${RESET} ${join(decantrDir, 'observed-essence.proposal.json')}`,
+  );
   console.log(`${DIM}Brownfield report:${RESET} ${reportPath}`);
+  console.log(`${DIM}Brownfield intelligence:${RESET} ${intelligenceArtifacts.intelligencePath}`);
+  console.log(`${DIM}Theme inventory:${RESET} ${intelligenceArtifacts.themeInventoryPath}`);
+  console.log(`${DIM}Enrichment backlog:${RESET} ${intelligenceArtifacts.backlogPath}`);
   console.log(
     `\n${YELLOW}Next step:${RESET} Review ${BOLD}.decantr/brownfield-report.md${RESET}, then run ${BOLD}decantr init --existing --accept-proposal${RESET} to attach Decantr using the observed proposal.\n`,
   );

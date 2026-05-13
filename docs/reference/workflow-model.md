@@ -48,10 +48,10 @@ Brownfield starts with:
 decantr analyze
 decantr init --existing --accept-proposal
 decantr check --brownfield
-decantr health
+decantr health --browser --base-url http://localhost:3000 --evidence
 ```
 
-`analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, `.decantr/ambient-context.json`, `.decantr/doctrine-map.json`, `.decantr/observed-essence.proposal.json`, and `.decantr/brownfield-report.md`. The proposal is observed from routes, styling, dependencies, layout signals, features, semantic route domains, ranked doctrine sources, and ambient project context. Route observation covers Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Styling observation preserves existing systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS. It is not a Decantr scaffold.
+`analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, `.decantr/ambient-context.json`, `.decantr/doctrine-map.json`, `.decantr/observed-essence.proposal.json`, `.decantr/brownfield-report.md`, `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal is observed from routes, styling, dependencies, layout signals, features, semantic route domains, ranked doctrine sources, and ambient project context. Route observation covers Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Styling observation preserves existing systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS. Theme inventory observes light, dark, and variant selectors without changing Essence V4. It is not a Decantr scaffold.
 
 Proposal acceptance is deterministic:
 
@@ -63,6 +63,8 @@ decantr init --existing --replace-essence # explicit destructive replacement wit
 
 Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
 
+Task-time activation is explicit. MCP clients should call `decantr_prepare_task_context` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use the existing pack path: `decantr registry get-pack page --route <route>` or generated `.decantr/context/page-*-pack.md` files.
+
 ## Project Health
 
 Project Health is the local reliability layer across all workflow modes:
@@ -71,7 +73,7 @@ Project Health is the local reliability layer across all workflow modes:
 - Brownfield projects automatically include route coverage and drift checks when `.decantr/project.json` declares `brownfield-attach`.
 - Hybrid projects use `decantr health` after `add`, `remove`, `theme switch`, or registry pack changes to catch contract and pack drift before implementation continues.
 
-Use `decantr health init-ci` to install the default GitHub Actions gate, `decantr health --ci --fail-on error` as the default CI command, `decantr health --markdown` for pull request summaries, `decantr health --evidence` for the privacy-redacted Evidence Bundle, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. Monorepos can install the gate from the repository root with `decantr health init-ci --project <app-path>` so dependency install remains root-scoped while health runs inside the app contract, or `decantr health init-ci --workspace` for an aggregate workspace gate. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
+Use `decantr health init-ci` to install the default GitHub Actions gate, `decantr health --ci --fail-on error` as the default CI command, `decantr health --markdown` for pull request summaries, `decantr health --evidence` for the privacy-redacted Evidence Bundle, `decantr health --browser --base-url <url> --evidence` for local screenshots plus `.decantr/evidence/visual-manifest.json`, `decantr health --save-baseline` / `--since-baseline` for continuity, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. Monorepos can install the gate from the repository root with `decantr health init-ci --project <app-path>` so dependency install remains root-scoped while health runs inside the app contract, or `decantr health init-ci --workspace` for an aggregate workspace gate. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
 
 ## Assistant Rule Bridge
 

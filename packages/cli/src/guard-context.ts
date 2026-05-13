@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { loadBundledContentList } from './bundled-content.js';
 
 export interface GuardRegistryContext {
   themeRegistry: Map<string, { modes: string[] }>;
@@ -49,6 +50,14 @@ export function buildGuardRegistryContext(
   for (const data of loadJsonEntries(join(cacheDir, '@official', 'patterns'))) {
     if (typeof data.id === 'string' && !patternRegistry.has(data.id)) {
       patternRegistry.set(data.id, data);
+    }
+  }
+
+  for (const entry of loadBundledContentList('patterns')) {
+    const data = entry.data as Record<string, unknown>;
+    const id = typeof data.id === 'string' ? data.id : entry.id;
+    if (!patternRegistry.has(id)) {
+      patternRegistry.set(id, data);
     }
   }
 

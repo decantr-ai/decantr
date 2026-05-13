@@ -976,7 +976,11 @@ interface SourceAuditEntry {
   code: string;
 }
 
-function hasModuleDirective(filePath: string, code: string, directive: 'use client' | 'use server'): boolean {
+function hasModuleDirective(
+  filePath: string,
+  code: string,
+  directive: 'use client' | 'use server',
+): boolean {
   const sourceFile = ts.createSourceFile(
     filePath,
     code,
@@ -986,10 +990,7 @@ function hasModuleDirective(filePath: string, code: string, directive: 'use clie
   );
 
   for (const statement of sourceFile.statements) {
-    if (
-      ts.isExpressionStatement(statement) &&
-      ts.isStringLiteralLike(statement.expression)
-    ) {
+    if (ts.isExpressionStatement(statement) && ts.isStringLiteralLike(statement.expression)) {
       if (statement.expression.text === directive) {
         return true;
       }
@@ -1569,6 +1570,12 @@ function buildRegistryContext(projectRoot: string): {
     }
   } catch {
     /* best effort */
+  }
+
+  for (const id of ['content-section', 'footer', 'form-basic', 'hero', 'nav-header']) {
+    if (!patternRegistry.has(id)) {
+      patternRegistry.set(id, { id, source: 'bundled' });
+    }
   }
 
   return { themeRegistry, patternRegistry };
@@ -2694,7 +2701,10 @@ function appendRuntimeAuditFindings(
     );
   }
 
-  if (!isFrameworkBuildOutput && runtimeAudit.cssAssetBytes > PERFORMANCE_BUDGETS.totalCssWarnBytes) {
+  if (
+    !isFrameworkBuildOutput &&
+    runtimeAudit.cssAssetBytes > PERFORMANCE_BUDGETS.totalCssWarnBytes
+  ) {
     findings.push(
       makeFinding({
         id: 'runtime-css-bundle-large',
@@ -2711,7 +2721,10 @@ function appendRuntimeAuditFindings(
     );
   }
 
-  if (!isFrameworkBuildOutput && runtimeAudit.totalAssetBytes > PERFORMANCE_BUDGETS.totalAssetsWarnBytes) {
+  if (
+    !isFrameworkBuildOutput &&
+    runtimeAudit.totalAssetBytes > PERFORMANCE_BUDGETS.totalAssetsWarnBytes
+  ) {
     findings.push(
       makeFinding({
         id: 'runtime-total-assets-large',
@@ -3165,7 +3178,10 @@ function appendSourceAuditFindings(
     sourceAudit.protectedSurfaceSignals.count > 0 &&
     sourceAudit.authGuardSignals.count > 0 &&
     !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authGuardSignals) &&
-    !sourceAuditBucketsOverlap(sourceAudit.protectedSurfaceSignals, sourceAudit.authSessionSignals) &&
+    !sourceAuditBucketsOverlap(
+      sourceAudit.protectedSurfaceSignals,
+      sourceAudit.authSessionSignals,
+    ) &&
     !sourceAuditProtectedSurfacesCoveredByGuardedNextLayouts(
       sourceAudit.protectedSurfaceSignals,
       sourceAudit.authGuardSignals,

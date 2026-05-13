@@ -24,7 +24,11 @@ import {
   isContentIntelligenceSource,
   isContentType as isGetContentType,
   API_CONTENT_TYPES as LIST_CONTENT_TYPES,
+  type Pattern,
+  type PatternDiscoveryCandidate,
+  patternToDiscoveryCandidate,
   RegistryAPIClient,
+  rankPatternCandidates,
 } from '@decantr/registry';
 import {
   auditProject,
@@ -45,6 +49,7 @@ import {
   proposalPath,
   readBrownfieldProposal,
 } from './brownfield-proposal.js';
+import { loadBundledContentItem, loadBundledContentList } from './bundled-content.js';
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
 import { cmdCreate } from './commands/create.js';
@@ -1017,6 +1022,24 @@ async function printHostedExecutionPackBundle(
   }
 }
 
+function resolvePagePackIdForRoute(essencePath: string, route: string): string {
+  if (!existsSync(essencePath)) {
+    throw new Error(`Essence file not found at ${essencePath}`);
+  }
+  const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as EssenceFile;
+  if (!isV4(essence)) {
+    throw new Error('Route-based pack resolution requires Essence v4.0.0.');
+  }
+  const target = essence.blueprint.routes?.[route];
+  if (!target) {
+    const known = Object.keys(essence.blueprint.routes ?? {}).sort();
+    throw new Error(
+      `Route "${route}" was not found in blueprint.routes. Known routes: ${known.join(', ') || 'none'}.`,
+    );
+  }
+  return target.page;
+}
+
 async function printHostedSelectedExecutionPack(
   packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
   id?: string,
@@ -1370,49 +1393,197 @@ async function cmdSearch(
   }
 }
 
-async function cmdSuggest(query: string, type?: string) {
-  const apiClient = getAPIClient();
-  const searchType = type || 'pattern';
-  try {
-    const response = await apiClient.search({ q: query, type: searchType });
-    const results = response.results;
+interface SuggestOptions {
+  type?: string;
+  route?: string;
+  file?: string;
+  fromCode?: boolean;
+}
 
-    if (results.length === 0) {
-      console.log(dim(`No suggestions for "${query}"`));
-      console.log('');
-      console.log('Try:');
-      console.log(`  ${cyan('decantr list patterns')} - see all patterns`);
-      console.log(`  ${cyan('decantr search <broader-term>')} - broaden your search`);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function patternCandidateFromRegistryItem(
+  item: Pattern | Record<string, unknown>,
+  source: string,
+): PatternDiscoveryCandidate {
+  const record = item as Record<string, unknown>;
+  const data = isRecord(record.data) ? record.data : record;
+  const slug =
+    (typeof record.slug === 'string' && record.slug) ||
+    (typeof data.slug === 'string' && data.slug) ||
+    (typeof data.id === 'string' && data.id) ||
+    (typeof record.id === 'string' && record.id) ||
+    'pattern';
+  return patternToDiscoveryCandidate(
+    {
+      ...data,
+      id: typeof data.id === 'string' ? data.id : slug,
+      slug,
+      name:
+        typeof data.name === 'string'
+          ? data.name
+          : typeof record.name === 'string'
+            ? record.name
+            : slug,
+      description:
+        typeof data.description === 'string'
+          ? data.description
+          : typeof record.description === 'string'
+            ? record.description
+            : undefined,
+    },
+    { source, slug },
+  );
+}
+
+function readSuggestCodeContext(route: string | undefined, file: string | undefined): string {
+  const pieces: string[] = [];
+  if (file) {
+    const resolved = isAbsolute(file) ? file : join(process.cwd(), file);
+    if (existsSync(resolved)) {
+      pieces.push(readFileSync(resolved, 'utf-8'));
+    }
+  }
+
+  if (route) {
+    const analysisPath = join(process.cwd(), '.decantr', 'analysis.json');
+    if (existsSync(analysisPath)) {
+      try {
+        const analysis = JSON.parse(readFileSync(analysisPath, 'utf-8')) as {
+          routes?: { routes?: Array<{ path?: string; file?: string }> };
+        };
+        const routeEntry = analysis.routes?.routes?.find((entry) => entry.path === route);
+        if (routeEntry?.file) {
+          const resolved = join(process.cwd(), routeEntry.file);
+          if (existsSync(resolved)) {
+            pieces.push(readFileSync(resolved, 'utf-8'));
+          }
+        }
+      } catch {
+        /* best effort */
+      }
+    }
+  }
+
+  return pieces.join('\n\n').slice(0, 20000);
+}
+
+async function loadPatternDiscoveryCandidates(
+  registryClient: RegistryClient,
+): Promise<PatternDiscoveryCandidate[]> {
+  const candidates: PatternDiscoveryCandidate[] = [];
+  const seen = new Set<string>();
+  const add = (candidate: PatternDiscoveryCandidate) => {
+    const key = candidate.slug || candidate.id;
+    if (seen.has(key)) return;
+    seen.add(key);
+    candidates.push(candidate);
+  };
+
+  const bundledPatterns = loadBundledContentList<Pattern>('patterns');
+  for (const entry of bundledPatterns) {
+    add(patternToDiscoveryCandidate(entry.data, { source: 'bundled', slug: entry.id }));
+  }
+
+  try {
+    const result = await registryClient.fetchContentList('patterns');
+    for (const item of result.data.items) {
+      const source = result.source.type === 'api' ? 'hosted' : result.source.type;
+      add(patternCandidateFromRegistryItem(item as Pattern | Record<string, unknown>, source));
+    }
+  } catch {
+    /* API/cache discovery is best effort; bundled/custom still work. */
+  }
+
+  for (const item of registryClient.listCustomContent('patterns')) {
+    add(patternCandidateFromRegistryItem(item as Pattern | Record<string, unknown>, 'custom'));
+  }
+
+  return candidates;
+}
+
+async function cmdSuggest(query: string, options: SuggestOptions = {}) {
+  const searchType = options.type || 'pattern';
+  if (searchType !== 'pattern' && searchType !== 'patterns') {
+    const apiClient = getAPIClient();
+    try {
+      const response = await apiClient.search({ q: query, type: searchType });
+      const results = response.results;
+      if (results.length === 0) {
+        console.log(dim(`No suggestions for "${query}"`));
+        return;
+      }
+      console.log(heading(`Suggestions for "${query}"`));
+      for (const r of results.slice(0, 8)) {
+        console.log(`  ${cyan(r.slug)} - ${r.description || r.name || ''}`);
+      }
+      return;
+    } catch {
+      console.log(dim(`Suggestion search failed. API may be unavailable.`));
       return;
     }
-
-    console.log(heading(`Suggestions for "${query}"`));
-
-    // Group by relevance: exact matches vs related
-    const queryLower = query.toLowerCase();
-    const exact = results.filter((r) => r.slug.toLowerCase().includes(queryLower));
-    const related = results.filter((r) => !r.slug.toLowerCase().includes(queryLower));
-
-    if (exact.length > 0) {
-      console.log(`${BOLD}Direct matches:${RESET}`);
-      for (const r of exact.slice(0, 3)) {
-        console.log(`  ${cyan(r.slug)} - ${r.description || ''}`);
-      }
-      console.log('');
-    }
-
-    if (related.length > 0) {
-      console.log(`${BOLD}Related:${RESET}`);
-      for (const r of related.slice(0, 5)) {
-        console.log(`  ${cyan(r.slug)} - ${r.description || ''}`);
-      }
-      console.log('');
-    }
-
-    console.log(dim(`Use "decantr get pattern <id>" for full details`));
-  } catch {
-    console.log(dim(`Suggestion search failed. API may be unavailable.`));
   }
+
+  const registryClient = new RegistryClient({
+    cacheDir: join(process.cwd(), '.decantr', 'cache'),
+  });
+  const code =
+    options.fromCode || options.file ? readSuggestCodeContext(options.route, options.file) : '';
+  const candidates = await loadPatternDiscoveryCandidates(registryClient);
+  const matches = rankPatternCandidates(
+    {
+      query,
+      route: options.route,
+      code,
+      limit: 10,
+    },
+    candidates,
+  );
+
+  if (matches.length === 0) {
+    console.log(dim(`No pattern suggestions for "${query}"`));
+    console.log('');
+    console.log('Try:');
+    console.log(`  ${cyan('decantr list patterns')} - browse slug, name, domain, and source`);
+    console.log(
+      `  ${cyan('decantr suggest "<broader description>" --from-code --route <route>')} - rank from observed code`,
+    );
+    return;
+  }
+
+  const contextBits = [
+    options.route ? `route ${options.route}` : null,
+    options.file ? `file ${options.file}` : null,
+    code ? 'code context' : null,
+  ].filter((entry): entry is string => Boolean(entry));
+
+  console.log(
+    heading(
+      `Pattern suggestions for "${query}"${contextBits.length > 0 ? ` (${contextBits.join(', ')})` : ''}`,
+    ),
+  );
+  for (const match of matches.slice(0, 8)) {
+    const candidate = match.candidate;
+    const slug = candidate.slug || candidate.id;
+    const details = [
+      candidate.name && candidate.name !== slug ? candidate.name : null,
+      candidate.domain || candidate.category || null,
+      candidate.source || null,
+    ].filter(Boolean);
+    console.log(
+      `  ${cyan(slug)}  score ${match.score}${details.length > 0 ? `  ${dim(details.join(' | '))}` : ''}`,
+    );
+    if (candidate.description) {
+      console.log(`    ${dim(candidate.description)}`);
+    }
+    if (match.reasons.length > 0) {
+      console.log(`    ${dim(`why: ${match.reasons.slice(0, 2).join('; ')}`)}`);
+    }
+  }
+  console.log('');
+  console.log(dim('Use "decantr get pattern <slug>" for full details.'));
 }
 
 async function cmdGet(type: string, id: string) {
@@ -1433,17 +1604,9 @@ async function cmdGet(type: string, id: string) {
     return;
   }
 
-  // Fallback to bundled content — check multiple resolution paths
-  const currentDir = dirname(fileURLToPath(import.meta.url));
-  const bundledCandidates = [
-    join(currentDir, 'bundled', apiType, `${id}.json`), // Running from src/
-    join(currentDir, '..', 'src', 'bundled', apiType, `${id}.json`), // Running from dist/
-    join(currentDir, '..', 'bundled', apiType, `${id}.json`), // Alternative dist layout
-  ];
-  const bundledPath = bundledCandidates.find((p) => existsSync(p)) || null;
-  if (bundledPath) {
-    const data = JSON.parse(readFileSync(bundledPath, 'utf-8'));
-    console.log(JSON.stringify(data, null, 2));
+  const bundled = loadBundledContentItem(apiType, id);
+  if (bundled) {
+    console.log(JSON.stringify(bundled.data, null, 2));
     return;
   }
 
@@ -1554,7 +1717,17 @@ async function cmdList(
     recommended,
     intelligenceSource,
   );
-  const items = result.data.items;
+  const bundledPatternItems =
+    type === 'patterns'
+      ? loadBundledContentList<Pattern>('patterns').map((entry) => ({
+          ...entry.data,
+          id: entry.data.id || entry.id,
+          slug: (entry.data as Pattern & { slug?: string }).slug || entry.id,
+          source: 'bundled',
+        }))
+      : [];
+  const items =
+    type === 'patterns' ? [...bundledPatternItems, ...result.data.items] : result.data.items;
 
   if (items.length === 0) {
     console.log(dim(`No ${type} found.`));
@@ -1585,7 +1758,22 @@ async function cmdList(
   } else {
     console.log(heading(`${items.length} ${type} found`));
     for (const item of items) {
-      console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      if (type === 'patterns') {
+        const pattern = item as Pattern & { slug?: string; source?: string; domain?: string };
+        const slug = pattern.slug || pattern.id;
+        const domain = pattern.domain || pattern.category || pattern.tags?.[0] || 'general';
+        const source =
+          pattern.source || (result.source.type === 'api' ? 'hosted' : result.source.type);
+        const label = [pattern.name && pattern.name !== slug ? pattern.name : null, domain, source]
+          .filter(Boolean)
+          .join(' | ');
+        console.log(`  ${cyan(slug)}  ${dim(label)}`);
+        if (pattern.description) {
+          console.log(`    ${dim(pattern.description)}`);
+        }
+      } else {
+        console.log(`  ${cyan(item.id)}  ${dim(item.description || item.name || '')}`);
+      }
       const intelligenceSummary = formatIntelligenceSummary(
         (item as { intelligence?: ContentIntelligenceMetadata | null }).intelligence,
       );
@@ -2950,7 +3138,7 @@ ${BOLD}Usage:${RESET}
   decantr check --brownfield
   decantr sync-drift
   decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
-  decantr suggest <query> [--type <type>]
+  decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code]
   decantr get <type> <id>
   decantr list <type> [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr showcase [manifest|shortlist|verification] [--json]
@@ -2960,7 +3148,8 @@ ${BOLD}Usage:${RESET}
   decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
-  decantr health --evidence [--browser] [--design-tokens <path>]
+  decantr health --evidence [--browser] [--base-url <url>] [--design-tokens <path>]
+  decantr health --save-baseline | --since-baseline
   decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr workspace list [--json]
   decantr workspace health [--json] [--changed --since origin/main]
@@ -3067,7 +3256,7 @@ ${BOLD}Examples:${RESET}
   decantr check --brownfield
   decantr sync-drift
   decantr search dashboard
-  decantr suggest leaderboard
+  decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
   decantr list patterns
   decantr showcase shortlist
   decantr showcase verification --json
@@ -3084,7 +3273,7 @@ ${BOLD}Examples:${RESET}
 ${BOLD}Workflow Model:${RESET}
   ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
   ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
-  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing --accept-proposal -> decantr check --brownfield
+  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing --accept-proposal -> decantr health --browser --evidence
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
@@ -3127,6 +3316,9 @@ ${BOLD}Usage:${RESET}
   decantr health --ci [--fail-on error|warn|none]
   decantr health --prompt <finding-id>
   decantr health --evidence [--browser] [--design-tokens <path>]
+  decantr health --browser --base-url <url> --evidence
+  decantr health --save-baseline
+  decantr health --since-baseline
   decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on error|warn|none] [--cli-version <version|latest>]
 
 ${BOLD}Options:${RESET}
@@ -3139,6 +3331,9 @@ ${BOLD}Options:${RESET}
   --prompt      Print an AI-ready remediation prompt for a finding
   --evidence    Emit a local Evidence Bundle JSON artifact
   --browser     Include optional rendered-browser setup/evidence checks
+  --base-url    Base URL for rendered route checks when --browser is enabled
+  --save-baseline Save the current health state for later comparison
+  --since-baseline Compare this run to .decantr/health-baseline.json
   --design-tokens Compare against a Figma/Tokens Studio JSON export
 
 ${BOLD}Examples:${RESET}
@@ -3226,6 +3421,64 @@ ${BOLD}Examples:${RESET}
 `);
 }
 
+function cmdRegistryHelp() {
+  console.log(`
+${BOLD}decantr registry${RESET} — Read hosted execution packs and registry intelligence
+
+${BOLD}Usage:${RESET}
+  decantr registry summary [--namespace <namespace>] [--json]
+  decantr registry compile-packs [path] [--namespace <namespace>] [--json] [--write-context]
+  decantr registry get-pack <manifest|scaffold|review|section|page|mutation> [id] [--namespace <namespace>] [--json] [--essence <path>] [--write-context]
+  decantr registry get-pack page --route <route> [--namespace <namespace>] [--json] [--essence <path>]
+  decantr registry critique-file <file> [--namespace <namespace>] [--json] [--essence <path>] [--treatments <path>]
+  decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
+`);
+}
+
+function cmdThemeHelp() {
+  console.log(`
+${BOLD}decantr theme${RESET} — Manage custom themes
+
+${BOLD}Usage:${RESET}
+  decantr theme create <name>
+  decantr theme create <name> --guided
+  decantr theme list
+  decantr theme validate <name>
+  decantr theme delete <name>
+  decantr theme import <path>
+`);
+}
+
+function printCommandHelp(command: string, args: string[]): boolean {
+  if (!isCommandHelpRequest(args)) return false;
+  switch (command) {
+    case 'health':
+      cmdHealthHelp();
+      return true;
+    case 'content-health':
+      cmdContentHealthHelp();
+      return true;
+    case 'studio':
+      cmdStudioHelp();
+      return true;
+    case 'workspace':
+      cmdWorkspaceHelp();
+      return true;
+    case 'rules':
+      cmdRulesHelp();
+      return true;
+    case 'registry':
+      cmdRegistryHelp();
+      return true;
+    case 'theme':
+      cmdThemeHelp();
+      return true;
+    default:
+      cmdHelp();
+      return true;
+  }
+}
+
 // ── Main ──
 
 async function main() {
@@ -3261,6 +3514,10 @@ async function main() {
       console.error(error(`Failed to read CLI version: ${(e as Error).message}`));
       process.exitCode = 1;
     }
+    return;
+  }
+
+  if (printCommandHelp(command, args)) {
     return;
   }
 
@@ -3506,13 +3763,22 @@ async function main() {
     case 'suggest': {
       const query = args[1];
       if (!query) {
-        console.error(error('Usage: decantr suggest <query> [--type <type>]'));
+        console.error(
+          error(
+            'Usage: decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code]',
+          ),
+        );
         process.exitCode = 1;
         return;
       }
       const typeIdx = args.indexOf('--type');
       const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
-      await cmdSuggest(query, type);
+      const routeIdx = args.indexOf('--route');
+      const route = routeIdx !== -1 ? args[routeIdx + 1] : undefined;
+      const fileIdx = args.indexOf('--file');
+      const file = fileIdx !== -1 ? args[fileIdx + 1] : undefined;
+      const fromCode = args.includes('--from-code');
+      await cmdSuggest(query, { type, route, file, fromCode });
       break;
     }
 
@@ -3688,7 +3954,9 @@ async function main() {
         const essenceIdx = args.indexOf('--essence');
         const essencePath = essenceIdx !== -1 ? args[essenceIdx + 1] : undefined;
         const packType = args[2] && !args[2].startsWith('--') ? args[2] : undefined;
-        const id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
+        const routeIdx = args.indexOf('--route');
+        const route = routeIdx !== -1 ? args[routeIdx + 1] : undefined;
+        let id = args[3] && !args[3].startsWith('--') ? args[3] : undefined;
         if (
           !packType ||
           !['manifest', 'scaffold', 'review', 'section', 'page', 'mutation'].includes(packType)
@@ -3702,6 +3970,12 @@ async function main() {
         if (packType === 'manifest') {
           await printHostedExecutionPackManifest(essencePath, namespace, jsonOutput, writeContext);
           break;
+        }
+        if (packType === 'page' && route && !id) {
+          const resolvedPath = essencePath
+            ? resolveUserPath(essencePath)
+            : join(process.cwd(), 'decantr.essence.json');
+          id = resolvePagePackIdForRoute(resolvedPath, route);
         }
         await printHostedSelectedExecutionPack(
           packType as 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
