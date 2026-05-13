@@ -17,6 +17,14 @@ export interface CommandSurfaceEntry {
 
 export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   {
+    command: 'setup',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Detect project state and recommend the correct Decantr workflow.',
+    consolidation: 'keep',
+  },
+  {
     command: 'new',
     classification: 'primary',
     mutates: true,
@@ -25,8 +33,48 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     consolidation: 'keep',
   },
   {
-    command: 'magic',
+    command: 'adopt',
     classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Brownfield workflow: analyze, attach, verify, baseline, and show next steps.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'task',
+    classification: 'primary',
+    mutates: false,
+    audience: 'ai-agent',
+    purpose: 'Prepare route/task context for an AI coding assistant before implementation.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'verify',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'One reliability gate over Project Health, Brownfield checks, baselines, and evidence.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'codify',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Propose and accept project-owned Brownfield UI patterns.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'content',
+    classification: 'content-author',
+    mutates: true,
+    audience: 'content-author',
+    purpose: 'Content-author namespace for registry repo check, create, and publish workflows.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'magic',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Intent-first greenfield path that steers existing apps into brownfield analysis.',
@@ -34,7 +82,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'init',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Attach or initialize Decantr contract and context files.',
@@ -42,7 +90,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'analyze',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Brownfield inventory and proposal entrypoint.',
@@ -50,7 +98,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'refresh',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Regenerate derived context and style artifacts from Essence and registry content.',
@@ -58,7 +106,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'health',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Canonical local reliability report, evidence, remediation, and CI spine.',
@@ -74,7 +122,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'workspace',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Monorepo Decantr project discovery and aggregate health.',
@@ -82,7 +130,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'check',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Fast contract and guard validation.',
@@ -106,7 +154,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'migrate',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Migrate pre-v4 Essence files to the active v4 contract.',
@@ -114,7 +162,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'add',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Compose sections, pages, and features into an attached contract.',
@@ -122,7 +170,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'remove',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Remove sections, pages, and features from an attached contract.',
@@ -130,7 +178,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'theme',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
     purpose: 'Manage and switch Decantr themes.',
@@ -194,7 +242,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'search',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Registry content discovery shortcut.',
@@ -202,7 +250,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
   },
   {
     command: 'suggest',
-    classification: 'primary',
+    classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
     purpose: 'Registry pattern suggestion shortcut.',
@@ -293,4 +341,3 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
 export function commandSurfaceByName(command: string): CommandSurfaceEntry | undefined {
   return COMMAND_SURFACE.find((entry) => entry.command === command);
 }
-

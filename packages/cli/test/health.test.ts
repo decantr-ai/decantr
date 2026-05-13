@@ -505,9 +505,12 @@ exports.chromium = {
     const commands = new Set(COMMAND_SURFACE.map((entry) => entry.command));
     const dispatchedCommands = [
       'add',
+      'adopt',
       'analyze',
       'audit',
       'check',
+      'codify',
+      'content',
       'content-health',
       'create',
       'export',
@@ -528,21 +531,25 @@ exports.chromium = {
       'rules',
       'search',
       'showcase',
+      'setup',
       'studio',
       'suggest',
       'sync',
       'sync-drift',
       'telemetry',
       'theme',
+      'task',
       'upgrade',
       'validate',
+      'verify',
       'workspace',
     ];
 
     for (const command of dispatchedCommands) {
       expect(commands.has(command)).toBe(true);
     }
-    expect(commandSurfaceByName('health')?.classification).toBe('primary');
+    expect(commandSurfaceByName('verify')?.classification).toBe('primary');
+    expect(commandSurfaceByName('health')?.classification).toBe('advanced');
     expect(commandSurfaceByName('heal')?.classification).toBe('deprecated-alias');
     expect(commandSurfaceByName('workspace')?.purpose).toContain('Monorepo');
   });

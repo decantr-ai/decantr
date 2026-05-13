@@ -21,8 +21,7 @@ Use the CLI when you want files in the project that any assistant can read:
 ```bash
 npx @decantr/cli new my-app --blueprint=agent-marketplace
 # or, for an existing app
-npx @decantr/cli analyze
-npx @decantr/cli init --existing --accept-proposal
+npx @decantr/cli adopt --base-url http://localhost:3000 --evidence --yes
 ```
 
 The important files are:
@@ -31,6 +30,7 @@ The important files are:
 - `decantr.essence.json`: the durable product and design contract.
 - `.decantr/context/scaffold.md`: app topology, route map, voice, and shared components.
 - `.decantr/context/section-*.md`: focused section/page implementation contracts.
+- `.decantr/local-patterns.json`: optional project-owned Brownfield UI law after `decantr codify --accept`.
 
 ## Assistant Rule Bridge
 
@@ -44,6 +44,16 @@ npx @decantr/cli rules apply
 
 Brownfield init does not mutate rule files unless apply is explicit.
 
-CLI-only assistants should read `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, and the matching `.decantr/context/page-*-pack.md` before editing Brownfield routes.
+CLI-only assistants should use task activation before editing Brownfield routes:
+
+```bash
+npx @decantr/cli task /feed "improve the recipe feed loading and card layout"
+```
+
+That output points to `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, matching page/section packs, local screenshots, and accepted local patterns when present. After the assistant edits code, run:
+
+```bash
+npx @decantr/cli verify --brownfield
+```
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md).

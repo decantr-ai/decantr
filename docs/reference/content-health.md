@@ -7,6 +7,8 @@ It is designed for repositories such as `decantr-content`, not customer applicat
 ## Commands
 
 ```bash
+decantr content check
+decantr content check --ci --fail-on error
 decantr content-health
 decantr content-health --format text
 decantr content-health --json
@@ -17,7 +19,7 @@ decantr content-health --ci --fail-on warn
 decantr content-health --prompt <finding-id>
 ```
 
-`--json` emits a `ContentHealthReport` matching `https://decantr.ai/schemas/content-health-report.v1.json`. `--markdown` is intended for GitHub Actions summaries and pull request artifacts. `--prompt <finding-id>` prints a scoped AI remediation prompt for one content issue.
+`decantr content check` is the preferred workflow command. `decantr content-health` remains as the backward-compatible primitive. `--json` emits a `ContentHealthReport` matching `https://decantr.ai/schemas/content-health-report.v1.json`. `--markdown` is intended for GitHub Actions summaries and pull request artifacts. `--prompt <finding-id>` prints a scoped AI remediation prompt for one content issue.
 
 ## What It Checks
 
@@ -46,7 +48,7 @@ Hard publish-blocking issues are errors. Softer coverage gaps, such as missing c
 Recommended default gate:
 
 ```bash
-decantr content-health --ci --fail-on error --markdown --output content-health.md
+decantr content check --ci --fail-on error --markdown --output content-health.md
 ```
 
 Use `--fail-on error` for publish-readiness: invalid JSON, schema failures, duplicate ids, and missing hard references block. Use `--fail-on warn` when you want missing suggested themes, missing concrete pattern coverage, or quality guidance gaps to block a pull request.
@@ -55,7 +57,7 @@ Example GitHub Actions step after the CLI version containing Content Health is p
 
 ```yaml
 - name: Decantr content health
-  run: npx @decantr/cli content-health --ci --fail-on error --markdown --output content-health.md
+  run: npx @decantr/cli content check --ci --fail-on error --markdown --output content-health.md
 ```
 
 ## Relationship To Registry Drift

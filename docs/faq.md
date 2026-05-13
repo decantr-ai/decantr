@@ -21,18 +21,16 @@ Decantr creates the app contract, starter context, and available adapter files. 
 
 ## How do I use Decantr in an existing app?
 
-Start with analysis, then attach Decantr intentionally:
+Use the Brownfield adoption workflow:
 
 ```bash
-npx @decantr/cli analyze
-npx @decantr/cli init --existing --accept-proposal
+npx @decantr/cli adopt --base-url http://localhost:3000 --evidence --yes
 ```
 
 For monorepos, point Decantr at the app:
 
 ```bash
-npx @decantr/cli analyze --project apps/web
-npx @decantr/cli init --existing --accept-proposal --project apps/web
+npx @decantr/cli adopt --project apps/web --base-url http://localhost:3000 --evidence --yes
 ```
 
 Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
@@ -47,7 +45,7 @@ The normal loop is:
 
 ```bash
 npx @decantr/cli refresh
-npx @decantr/cli check
+npx @decantr/cli verify
 npx @decantr/cli audit
 npx @decantr/cli health
 ```
@@ -58,7 +56,7 @@ If product intent changes, update the Decantr contract deliberately, regenerate 
 npx @decantr/cli add page dashboard/reports
 npx @decantr/cli add feature auth
 npx @decantr/cli refresh
-npx @decantr/cli check
+npx @decantr/cli verify
 ```
 
 The guardrail is simple: do not let implementation silently redefine the product. Either the code follows the contract, or the contract changes on purpose.
@@ -72,19 +70,19 @@ You cannot guarantee that every LLM, editor, or developer action will follow Dec
 Install the default GitHub Actions gate:
 
 ```bash
-npx @decantr/cli health init-ci
+npx @decantr/cli verify init-ci
 ```
 
 For monorepos:
 
 ```bash
-npx @decantr/cli health init-ci --project apps/web
+npx @decantr/cli verify init-ci --project apps/web
 ```
 
 The generated workflow runs:
 
 ```bash
-npx @decantr/cli health --ci --fail-on error
+npx @decantr/cli verify --ci --fail-on error
 ```
 
 Then mark that GitHub check as required in branch protection. That makes Decantr drift unmergeable until it is fixed or the contract is deliberately updated.
@@ -94,10 +92,10 @@ For local convenience, add package scripts:
 ```json
 {
   "scripts": {
-    "decantr:check": "decantr check",
+    "decantr:check": "decantr verify",
     "decantr:audit": "decantr audit",
     "decantr:health": "decantr health",
-    "decantr:ci": "decantr health --ci --fail-on error"
+    "decantr:ci": "decantr verify --ci --fail-on error"
   }
 }
 ```
@@ -109,13 +107,13 @@ Some teams also wire those scripts into pre-commit or pre-push hooks, but CI is 
 Run:
 
 ```bash
-npx @decantr/cli check
+npx @decantr/cli verify
 ```
 
 For an existing app that was attached through brownfield adoption:
 
 ```bash
-npx @decantr/cli check --brownfield
+npx @decantr/cli verify --brownfield
 ```
 
 For a broader report:
@@ -231,19 +229,19 @@ Pre-V4 essence files are migration inputs, not active runtime contracts.
 Install the default GitHub Actions gate:
 
 ```bash
-npx @decantr/cli health init-ci
+npx @decantr/cli verify init-ci
 ```
 
 For monorepos:
 
 ```bash
-npx @decantr/cli health init-ci --project apps/web
+npx @decantr/cli verify init-ci --project apps/web
 ```
 
 CI can then run:
 
 ```bash
-npx @decantr/cli health --ci --fail-on error
+npx @decantr/cli verify --ci --fail-on error
 ```
 
 ## Is Decantr a code generator?

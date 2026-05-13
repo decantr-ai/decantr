@@ -1,29 +1,39 @@
 # Decantr Command Surface
 
-This is the current command audit for the 2.x reliability layer. The goal is consolidation without breaking users: `health` is the canonical reliability command, `check` remains the fast guard validator, `audit` remains the advanced verifier surface, and `heal` stays as a soft-deprecated alias for `check`.
+This is the current command audit for the 2.x reliability layer. The goal is consolidation without breaking users: workflow commands are the human-facing product surface, while existing primitives remain available for advanced users, scripts, and CI internals.
 
 | Command | Class | Decision | Notes |
 | --- | --- | --- | --- |
+| `setup` | primary | keep | Detect project state and recommend the right Decantr workflow without writing files. |
 | `new` | primary | keep | Greenfield workspace creation. |
-| `magic` | primary | keep | Intent-first greenfield path. |
-| `init` | primary | keep | Attach/setup command for Decantr contracts and context. |
-| `analyze` | primary | keep | Brownfield inventory and proposal entrypoint. |
-| `refresh` | primary | keep | Regenerate derived context/style artifacts. |
-| `check` | primary | keep | Fast contract and guard validation. |
-| `health` | primary | keep | Canonical report, Evidence Bundle, prompt, browser/token checks, and CI spine. |
+| `adopt` | primary | keep | Brownfield one-liner over analyze, proposal acceptance, Project Health, evidence, baseline, and optional CI. |
+| `task` | primary | keep | Route/task context activation for AI coding assistants. |
+| `verify` | primary | keep | One reliability gate over Project Health, optional Brownfield guard checks, baselines, evidence, local-pattern requirement, and workspace health. |
+| `codify` | primary | keep | Propose and accept project-owned Brownfield UI patterns. |
 | `studio` | primary | keep | Local Project Health and workspace triage UI. |
-| `workspace` | primary | keep | Monorepo Decantr project discovery and aggregate health. |
+| `content` | content-author | keep | Content-author namespace over check/create/publish. |
+| `magic` | advanced | keep | Intent-first greenfield path; not the primary enterprise story. |
+| `init` | advanced | keep | Attach/setup primitive for Decantr contracts and context. |
+| `analyze` | advanced | keep | Brownfield inventory and proposal primitive used by `adopt`. |
+| `refresh` | advanced | keep | Regenerate derived context/style artifacts. |
+| `check` | advanced | keep | Fast contract and guard validation. |
+| `health` | advanced | keep | Canonical report, Evidence Bundle, prompt, browser/token checks, and CI spine used by `verify`. |
+| `workspace` | advanced | keep | Monorepo Decantr project discovery and aggregate health; `verify --workspace` is the user-facing shortcut. |
 | `heal` | deprecated-alias | soft-deprecate | Alias for `check`; no hard removal in 2.x. |
 | `audit` | advanced | keep advanced | Lower-level verifier audit/file critique. |
 | `status`, `sync`, `upgrade`, `sync-drift`, `get`, `list`, `validate`, `rules`, `export` | advanced | keep | Useful when users need direct registry, rules, export, or diagnostic control. |
 | `registry`, `showcase`, `login`, `logout`, `telemetry` | operator | keep | Operator/registry/support workflows. |
-| `content-health`, `create`, `publish` | content-author | keep | Registry content repository workflows. |
+| `content-health`, `create`, `publish` | content-author | keep as aliases | Backward-compatible root commands; docs should prefer `decantr content ...`. |
 
 The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered by tests against the dispatched CLI commands. Any new top-level command should update that file, command help, package docs, root docs, release notes, and relevant skills before it ships.
 
-Brownfield intelligence in 2.6 stays inside existing command namespaces:
+Brownfield intelligence is now exposed through workflows first:
 
-- `decantr analyze` writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
+- `decantr adopt` runs the full adoption path and explains the underlying primitives before writing.
+- `decantr task <route>` surfaces the relevant context files, patterns, screenshot references, and local pattern pack for the next LLM edit.
+- `decantr codify` proposes `.decantr/local-patterns.proposal.json`; `decantr codify --accept` promotes it to `.decantr/local-patterns.json`.
+- `decantr verify --brownfield --local-patterns` runs the reliability gate and requires accepted local patterns when a project chooses that layer.
+- `decantr analyze` still writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
 - `decantr suggest` accepts `--route`, `--file`, and `--from-code` for better pattern discovery without adding a new top-level command.
 - `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface.
 - `decantr health --browser --base-url <url> --evidence` writes local screenshots and a visual manifest; `--save-baseline` / `--since-baseline` add continuity.

@@ -3195,6 +3195,552 @@ ${BOLD}Examples:${RESET}
   }
 }
 
+// ── Workflow commands ──
+
+interface LooseParsedArgs {
+  flags: Record<string, string | boolean>;
+  positional: string[];
+}
+
+function parseLooseArgs(args: string[], startIndex = 1): LooseParsedArgs {
+  const flags: Record<string, string | boolean> = {};
+  const positional: string[] = [];
+
+  for (let index = startIndex; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '-y') {
+      flags.yes = true;
+      continue;
+    }
+    if (arg.startsWith('--no-')) {
+      flags[arg.slice(5)] = false;
+      continue;
+    }
+    if (arg.startsWith('--')) {
+      const body = arg.slice(2);
+      const equalsIndex = body.indexOf('=');
+      if (equalsIndex !== -1) {
+        flags[body.slice(0, equalsIndex)] = body.slice(equalsIndex + 1);
+        continue;
+      }
+      if (args[index + 1] && !args[index + 1].startsWith('-')) {
+        flags[body] = args[++index];
+      } else {
+        flags[body] = true;
+      }
+      continue;
+    }
+    positional.push(arg);
+  }
+
+  return { flags, positional };
+}
+
+function flagString(flags: Record<string, string | boolean>, key: string): string | undefined {
+  const value = flags[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+function flagBoolean(
+  flags: Record<string, string | boolean>,
+  key: string,
+  defaultValue = false,
+): boolean {
+  const value = flags[key];
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') return value !== 'false';
+  return defaultValue;
+}
+
+function withoutWorkflowOnlyFlags(args: string[]): string[] {
+  const stripped: string[] = [];
+  const flagsWithValues = new Set(['--project']);
+  for (let index = 1; index < args.length; index += 1) {
+    const arg = args[index];
+    if (
+      arg === '--brownfield' ||
+      arg === '--local-patterns' ||
+      arg === '--workspace' ||
+      arg === '--baseline'
+    ) {
+      continue;
+    }
+    if (arg.startsWith('--project=')) {
+      continue;
+    }
+    if (flagsWithValues.has(arg)) {
+      index += 1;
+      continue;
+    }
+    stripped.push(arg);
+  }
+  return stripped;
+}
+
+function resolveWorkflowProject(flags: Record<string, string | boolean>) {
+  const projectArg = flagString(flags, 'project');
+  const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
+  if (workspaceInfo.requiresProjectSelection) {
+    console.log(error('This looks like a workspace root with multiple app candidates.'));
+    console.log(dim(`Use --project=<path>. Candidates: ${workspaceInfo.appCandidates.join(', ')}`));
+    process.exitCode = 1;
+    return null;
+  }
+  return workspaceInfo;
+}
+
+function printWorkflowPlan(title: string, steps: string[]): void {
+  console.log(heading(title));
+  console.log('  Decantr will run this workflow:');
+  for (const step of steps) {
+    console.log(`    ${cyan(step)}`);
+  }
+  console.log('');
+}
+
+async function cmdSetupWorkflow(args: string[]): Promise<void> {
+  const { flags } = parseLooseArgs(args);
+  const workspaceInfo = resolveWorkflowProject(flags);
+  if (!workspaceInfo) return;
+
+  const detected = detectProject(workspaceInfo.appRoot);
+  const hasFootprint =
+    detected.framework !== 'unknown' ||
+    detected.packageManager !== 'unknown' ||
+    detected.hasTypeScript ||
+    detected.hasTailwind ||
+    detected.existingRuleFiles.length > 0;
+
+  console.log(heading('Decantr Setup'));
+  console.log(`  Project: ${workspaceInfo.appRoot}`);
+  console.log(`  Detected: ${formatDetection(detected)}`);
+  console.log('');
+
+  if (detected.existingEssence) {
+    console.log(`${BOLD}Recommended path:${RESET} maintain an attached Decantr project`);
+    console.log(`  ${cyan('decantr task <route> "<change>"')}  Prepare LLM context before edits`);
+    console.log(`  ${cyan('decantr verify')}                  Run local health and drift checks`);
+    console.log(`  ${cyan('decantr codify')}                  Propose project-owned UI patterns`);
+    return;
+  }
+
+  if (hasFootprint) {
+    console.log(`${BOLD}Recommended path:${RESET} brownfield adoption`);
+    console.log(`  ${cyan('decantr adopt --yes')}                       Analyze, attach, and verify`);
+    console.log(
+      `  ${cyan('decantr adopt --base-url http://localhost:3000 --evidence --yes')}  Include visual evidence`,
+    );
+    console.log(`  ${cyan('decantr codify')}                            Propose local UI law`);
+    return;
+  }
+
+  console.log(`${BOLD}Recommended path:${RESET} greenfield start`);
+  console.log(`  ${cyan('decantr new my-app --blueprint=<slug>')}`);
+  console.log(`  ${cyan('decantr init --workflow=greenfield --adoption=contract-only')}`);
+}
+
+async function cmdAdoptWorkflow(args: string[]): Promise<void> {
+  const { flags } = parseLooseArgs(args);
+  const workspaceInfo = resolveWorkflowProject(flags);
+  if (!workspaceInfo) return;
+
+  const projectRoot = workspaceInfo.appRoot;
+  const dryRun = flagBoolean(flags, 'dry-run');
+  const yes = flagBoolean(flags, 'yes') || flagBoolean(flags, 'y');
+  const baseUrl = flagString(flags, 'base-url');
+  const runVerify = flagBoolean(flags, 'verify', true);
+  const runBrowser = flagBoolean(flags, 'browser') || Boolean(baseUrl);
+  const evidence = flagBoolean(flags, 'evidence') || runBrowser;
+  const saveBaseline = flagBoolean(flags, 'baseline', true) || flagBoolean(flags, 'save-baseline');
+  const initCi = flagBoolean(flags, 'ci') || flagBoolean(flags, 'init-ci');
+  const assistantBridge = flagString(flags, 'assistant-bridge');
+  const hasEssence = existsSync(join(projectRoot, 'decantr.essence.json'));
+  const proposalFlag = flagBoolean(flags, 'replace-essence')
+    ? '--replace-essence'
+    : flagBoolean(flags, 'merge-proposal') || hasEssence
+      ? '--merge-proposal'
+      : '--accept-proposal';
+
+  const steps = [
+    'analyze current app and write .decantr/brownfield intelligence',
+    `init --existing ${proposalFlag} as contract-only Brownfield`,
+  ];
+  if (runVerify) {
+    steps.push(
+      runBrowser
+        ? 'verify with Project Health, browser evidence, visual manifest, and baseline'
+        : 'verify with Project Health and baseline',
+    );
+  }
+  if (initCi) {
+    steps.push('install Project Health CI gate');
+  }
+  printWorkflowPlan('Decantr Adopt', steps);
+
+  if (dryRun) {
+    console.log(dim('Dry run only. No files were written.'));
+    return;
+  }
+
+  if (!yes) {
+    const ok = await confirm('Run this Brownfield adoption workflow?', false);
+    if (!ok) {
+      console.log(dim('Cancelled.'));
+      return;
+    }
+  }
+
+  await cmdAnalyze(projectRoot, workspaceInfo);
+  if (process.exitCode && process.exitCode !== 0) return;
+
+  await cmdInit({
+    existing: true,
+    yes: true,
+    project: flagString(flags, 'project'),
+    'accept-proposal': proposalFlag === '--accept-proposal',
+    'merge-proposal': proposalFlag === '--merge-proposal',
+    'replace-essence': proposalFlag === '--replace-essence',
+    'assistant-bridge': assistantBridge,
+    telemetry: flagBoolean(flags, 'telemetry'),
+  });
+  if (process.exitCode && process.exitCode !== 0) return;
+
+  if (runVerify) {
+    const { cmdHealth } = await import('./commands/health.js');
+    await cmdHealth(projectRoot, {
+      browser: runBrowser,
+      browserBaseUrl: baseUrl,
+      evidence,
+      output: evidence ? '.decantr/evidence/latest.json' : undefined,
+      saveBaseline,
+    });
+  }
+
+  if (initCi) {
+    const { cmdHealth } = await import('./commands/health.js');
+    const ciRoot = flagString(flags, 'project') ? process.cwd() : projectRoot;
+    await cmdHealth(ciRoot, {
+      initCi: {
+        projectPath: flagString(flags, 'project'),
+        failOn: 'error',
+      },
+    });
+  }
+
+  console.log('');
+  console.log(`${BOLD}Next useful commands:${RESET}`);
+  console.log(`  ${cyan('decantr task <route> "<change>"')}  Give your LLM route-specific context`);
+  console.log(`  ${cyan('decantr codify')}                  Propose project-owned UI patterns`);
+  console.log(`  ${cyan('decantr verify --since-baseline')} Compare future work against this baseline`);
+}
+
+async function cmdVerifyWorkflow(args: string[]): Promise<void> {
+  const { flags } = parseLooseArgs(args);
+  const workspaceMode = flagBoolean(flags, 'workspace');
+
+  if (args[1] === 'init-ci') {
+    const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
+    await cmdHealth(process.cwd(), parseHealthArgs(['health', ...args.slice(1)]));
+    return;
+  }
+
+  if (workspaceMode) {
+    const { cmdWorkspace } = await import('./commands/workspace.js');
+    await cmdWorkspace(process.cwd(), ['workspace', 'health', ...withoutWorkflowOnlyFlags(args)]);
+    return;
+  }
+
+  const workspaceInfo = resolveWorkflowProject(flags);
+  if (!workspaceInfo) return;
+
+  const brownfield = flagBoolean(flags, 'brownfield');
+  const localPatterns = flagBoolean(flags, 'local-patterns');
+  const evidence = flagBoolean(flags, 'evidence');
+  const baseUrl = flagString(flags, 'base-url');
+  const healthArgs = ['health', ...withoutWorkflowOnlyFlags(args)];
+  if (flagBoolean(flags, 'baseline') && !healthArgs.includes('--save-baseline')) {
+    healthArgs.push('--save-baseline');
+  }
+  if (evidence && !flagString(flags, 'output')) {
+    healthArgs.push('--output', '.decantr/evidence/latest.json');
+  }
+  if (baseUrl && !healthArgs.includes('--browser')) {
+    healthArgs.push('--browser');
+  }
+
+  const quietOutput =
+    flagBoolean(flags, 'json') || flagBoolean(flags, 'ci') || Boolean(flagString(flags, 'output'));
+  if (!quietOutput) {
+    console.log(heading('Decantr Verify'));
+    console.log(
+      dim(
+        brownfield
+          ? 'Running Brownfield guard validation before Project Health.'
+          : 'Running Project Health as the canonical reliability gate.',
+      ),
+    );
+    console.log('');
+  }
+
+  let guardExitCode: number | undefined;
+  if (brownfield) {
+    const { cmdHeal, collectCheckIssues } = await import('./commands/heal.js');
+    if (quietOutput) {
+      const result = collectCheckIssues(workspaceInfo.appRoot, { brownfield: true });
+      guardExitCode = result.issues.some((issue) => issue.type === 'error') ? 1 : undefined;
+    } else {
+      await cmdHeal(workspaceInfo.appRoot, { brownfield: true });
+      guardExitCode = process.exitCode;
+      process.exitCode = undefined;
+    }
+  }
+
+  const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
+  await cmdHealth(workspaceInfo.appRoot, parseHealthArgs(healthArgs));
+
+  if (localPatterns) {
+    const localPatternsPath = join(workspaceInfo.appRoot, '.decantr', 'local-patterns.json');
+    if (!existsSync(localPatternsPath)) {
+      console.log('');
+      console.log(
+        `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan('decantr codify --accept')} after reviewing the proposal.`,
+      );
+      process.exitCode = process.exitCode || 1;
+    } else {
+      console.log('');
+      console.log(`${GREEN}Local pattern pack found:${RESET} ${localPatternsPath}`);
+    }
+  }
+
+  if (guardExitCode && guardExitCode !== 0 && (!process.exitCode || process.exitCode === 0)) {
+    process.exitCode = guardExitCode;
+  }
+}
+
+function readJsonIfPresent<T>(path: string): T | null {
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function cmdTaskWorkflow(args: string[]): Promise<void> {
+  const { flags, positional } = parseLooseArgs(args);
+  const workspaceInfo = resolveWorkflowProject(flags);
+  if (!workspaceInfo) return;
+
+  const routeInput = positional[0];
+  if (!routeInput) {
+    console.error(error('Usage: decantr task <route> ["task summary"] [--project <path>] [--json]'));
+    process.exitCode = 1;
+    return;
+  }
+
+  const route = routeInput.startsWith('/') ? routeInput : `/${routeInput}`;
+  const taskSummary = positional.slice(1).join(' ').trim();
+  const essencePath = join(workspaceInfo.appRoot, 'decantr.essence.json');
+  const essence = readJsonIfPresent<EssenceFile>(essencePath);
+  if (!essence) {
+    console.error(error('No decantr.essence.json found. Run `decantr adopt` or `decantr init` first.'));
+    process.exitCode = 1;
+    return;
+  }
+  if (!isV4(essence)) {
+    console.error(error('Task context requires Essence v4. Run `decantr migrate --to v4` first.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  const target = essence.blueprint.routes?.[route];
+  if (!target) {
+    const knownRoutes = Object.keys(essence.blueprint.routes ?? {}).sort();
+    console.error(error(`Route not found in Decantr contract: ${route}`));
+    console.error(dim(`Known routes: ${knownRoutes.join(', ') || 'none'}`));
+    process.exitCode = 1;
+    return;
+  }
+
+  const section = essence.blueprint.sections.find((entry) => entry.id === target.section);
+  const page = section?.pages.find((entry) => entry.id === target.page);
+  const contextDir = join(workspaceInfo.appRoot, '.decantr', 'context');
+  const manifest = readJsonIfPresent<{
+    scaffold?: { markdown?: string } | null;
+    pages?: Array<{ id: string; markdown: string; json: string; sectionId: string | null }>;
+    sections?: Array<{ id: string; markdown: string; json: string }>;
+  }>(join(contextDir, 'pack-manifest.json'));
+  const pagePack = manifest?.pages?.find((entry) => entry.id === target.page);
+  const sectionPack = manifest?.sections?.find((entry) => entry.id === target.section);
+  const visualManifest = readJsonIfPresent<{
+    routes?: Array<{ route: string; screenshot?: string | null }>;
+  }>(join(workspaceInfo.appRoot, '.decantr', 'evidence', 'visual-manifest.json'));
+  const screenshot = visualManifest?.routes?.find((entry) => entry.route === route)?.screenshot;
+  const localPatternsPath = join(workspaceInfo.appRoot, '.decantr', 'local-patterns.json');
+
+  const context = {
+    route,
+    task: taskSummary || null,
+    section: target.section,
+    page: target.page,
+    shell: page?.shell ?? section?.shell ?? null,
+    patterns: page?.layout?.map(extractPatternName) ?? [],
+    read: [
+      pagePack ? join('.decantr/context', pagePack.markdown) : null,
+      sectionPack ? join('.decantr/context', sectionPack.markdown) : null,
+      manifest?.scaffold?.markdown ? join('.decantr/context', manifest.scaffold.markdown) : null,
+      '.decantr/context/scaffold.md',
+      'DECANTR.md',
+      existsSync(localPatternsPath) ? '.decantr/local-patterns.json' : null,
+    ].filter(Boolean),
+    screenshot: screenshot ?? null,
+  };
+
+  if (flagBoolean(flags, 'json')) {
+    console.log(JSON.stringify(context, null, 2));
+    return;
+  }
+
+  console.log(heading('Decantr Task Context'));
+  console.log(`  Route: ${cyan(context.route)}`);
+  console.log(`  Section/page: ${context.section}/${context.page}`);
+  if (context.shell) console.log(`  Shell: ${context.shell}`);
+  if (context.patterns.length > 0) console.log(`  Patterns: ${context.patterns.join(', ')}`);
+  if (taskSummary) console.log(`  Task: ${taskSummary}`);
+  console.log('');
+  console.log(`${BOLD}Read before editing:${RESET}`);
+  for (const path of context.read) {
+    console.log(`  ${cyan(path as string)}`);
+  }
+  if (context.screenshot) {
+    console.log('');
+    console.log(`${BOLD}Visual evidence:${RESET}`);
+    console.log(`  ${cyan(context.screenshot)}`);
+  }
+  console.log('');
+  console.log(`${BOLD}LLM instruction:${RESET}`);
+  console.log(
+    '  Preserve the existing runtime and styling system. Use the route pack, section context, local patterns, and visual evidence above as the task contract before changing code.',
+  );
+}
+
+async function cmdCodifyWorkflow(args: string[]): Promise<void> {
+  const { flags } = parseLooseArgs(args);
+  const workspaceInfo = resolveWorkflowProject(flags);
+  if (!workspaceInfo) return;
+
+  const decantrDir = join(workspaceInfo.appRoot, '.decantr');
+  const proposalPathLocal = join(decantrDir, 'local-patterns.proposal.json');
+  const acceptedPath = join(decantrDir, 'local-patterns.json');
+
+  if (flagBoolean(flags, 'accept')) {
+    if (!existsSync(proposalPathLocal)) {
+      console.error(error('No .decantr/local-patterns.proposal.json found. Run `decantr codify` first.'));
+      process.exitCode = 1;
+      return;
+    }
+    writeFileSync(acceptedPath, readFileSync(proposalPathLocal, 'utf-8'), 'utf-8');
+    console.log(success(`Accepted local pattern pack: ${acceptedPath}`));
+    console.log(dim('Run `decantr verify --local-patterns` to require the pack during verification.'));
+    return;
+  }
+
+  mkdirSync(decantrDir, { recursive: true });
+  const detected = detectProject(workspaceInfo.appRoot);
+  const essence = readJsonIfPresent<EssenceFile>(join(workspaceInfo.appRoot, 'decantr.essence.json'));
+  const routes = essence && isV4(essence) ? Object.keys(essence.blueprint.routes ?? {}).sort() : [];
+  const proposal = {
+    version: 1,
+    generatedAt: new Date().toISOString(),
+    status: 'proposal',
+    source: 'decantr codify',
+    project: {
+      framework: detected.framework,
+      packageManager: detected.packageManager,
+      hasTailwind: detected.hasTailwind,
+      ruleFiles: detected.existingRuleFiles,
+      routeCount: routes.length,
+    },
+    purpose:
+      'Project-owned Brownfield UI law. Review and edit before accepting; Decantr does not treat this as authoritative until copied to .decantr/local-patterns.json.',
+    patterns: [
+      {
+        id: 'button',
+        role: 'Actions and command triggers',
+        decide: 'Define primary, secondary, tertiary, destructive, icon-only, and loading button variants from this app.',
+        evidenceToCollect: ['component wrapper path', 'allowed classes/tokens', 'forbidden raw <button> usage'],
+      },
+      {
+        id: 'surface-card',
+        role: 'Cards, panels, and content surfaces',
+        decide: 'Define the canonical card background, border, radius, shadow, padding, and hover treatment.',
+        evidenceToCollect: ['shared card component', 'token/class recipe', 'allowed density variants'],
+      },
+      {
+        id: 'page-shell',
+        role: 'Route shell, nav, spacing, and scroll ownership',
+        decide: 'Define which layout owns max width, gutters, sticky chrome, and scroll containers.',
+        evidenceToCollect: ['root layout path', 'page template path', 'responsive breakpoints'],
+      },
+      {
+        id: 'form-control',
+        role: 'Inputs, labels, validation, and form actions',
+        decide: 'Define input height, label placement, error copy, disabled state, and focus treatment.',
+        evidenceToCollect: ['form field wrapper', 'validation pattern', 'accessibility expectations'],
+      },
+    ],
+    starterRules: [
+      'Prefer project-owned wrappers for repeated primitives once they exist.',
+      'Avoid raw hex/rgb values in component templates unless explicitly documented as dynamic data.',
+      'Avoid static inline styles for reusable visual treatment.',
+      'When adding a new route, map it to an existing local pattern before inventing a new visual variant.',
+    ],
+    nextSteps: [
+      'Edit this proposal with real component paths and token/class recipes.',
+      'Run decantr codify --accept after review.',
+      'Use decantr task <route> before LLM edits so local patterns appear in the task context.',
+      'Wire mechanical enforcement through ESLint/Biome/project tests for rules Decantr cannot reliably infer.',
+    ],
+  };
+
+  writeFileSync(proposalPathLocal, JSON.stringify(proposal, null, 2) + '\n', 'utf-8');
+  console.log(success(`Wrote local pattern proposal: ${proposalPathLocal}`));
+  console.log(dim('Review it, add real component paths/token recipes, then run `decantr codify --accept`.'));
+}
+
+async function cmdContentWorkflow(args: string[]): Promise<void> {
+  const subcommand = args[1] ?? 'check';
+  if (subcommand === 'check' || subcommand === 'health') {
+    const { cmdContentHealth, parseContentHealthArgs } = await import('./commands/content-health.js');
+    await cmdContentHealth(process.cwd(), parseContentHealthArgs(['content-health', ...args.slice(2)]));
+    return;
+  }
+  if (subcommand === 'create') {
+    const type = args[2];
+    const name = args[3];
+    if (!type || !name) {
+      console.error(error('Usage: decantr content create <type> <name>'));
+      process.exitCode = 1;
+      return;
+    }
+    cmdCreate(type, name);
+    return;
+  }
+  if (subcommand === 'publish') {
+    const type = args[2];
+    const name = args[3];
+    if (!type || !name) {
+      console.error(error('Usage: decantr content publish <type> <name>'));
+      process.exitCode = 1;
+      return;
+    }
+    await cmdPublish(type, name);
+    return;
+  }
+  console.error(error('Usage: decantr content <check|create|publish>'));
+  process.exitCode = 1;
+}
+
 // ── Help ──
 
 function cmdHelp() {
@@ -3202,9 +3748,18 @@ function cmdHelp() {
 ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 
 ${BOLD}Usage:${RESET}
+  decantr setup [--project <path>]
   decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css] [--telemetry]
-  decantr magic <prompt> [--dry-run]
+  decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--yes]
+  decantr task <route> ["task summary"] [--project <path>] [--json]
+  decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
+  decantr codify [--accept] [--project <path>]
+  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
+
+${BOLD}Advanced primitives:${RESET}
   decantr init [options]
+  decantr analyze
+  decantr magic <prompt> [--dry-run]
   decantr status
   decantr sync
   decantr audit [file]
@@ -3228,8 +3783,8 @@ ${BOLD}Usage:${RESET}
   decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
   decantr workspace list [--json]
   decantr workspace health [--json] [--changed --since origin/main]
+  decantr content check [--json] [--markdown] [--ci]
   decantr content-health [--json] [--markdown] [--ci]
-  decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
   decantr telemetry status [--json]
   decantr telemetry explain [--json]
   decantr telemetry link [--enable] [--org <slug>]
@@ -3239,7 +3794,6 @@ ${BOLD}Usage:${RESET}
   decantr theme <subcommand>
   decantr create <type> <name>
   decantr publish <type> <name>
-  decantr analyze
   decantr login
   decantr logout
   decantr help
@@ -3267,14 +3821,22 @@ ${BOLD}Init Options:${RESET}
   --telemetry        Opt this project into privacy-filtered CLI product telemetry
 
 ${BOLD}Commands:${RESET}
+  ${cyan('setup')}       Detect project state and recommend the right Decantr workflow
   ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
+  ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
+  ${cyan('task')}        Prepare route/task context for an AI coding assistant
+  ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
+  ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns
+  ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
+  ${cyan('content')}     Content-author namespace: check, create, publish
+
+${BOLD}Advanced commands:${RESET}
   ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]; use health init-ci to install a GitHub Actions gate
   ${cyan('workspace')}   Discover and aggregate health across Decantr projects in a monorepo
   ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
-  ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('sync')}        Sync registry content from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
   ${cyan('migrate')}     Migrate older essence files to v4 format (with .pre-v4.backup.json backup)
@@ -3300,7 +3862,15 @@ ${BOLD}Commands:${RESET}
   ${cyan('help')}        Show this help
 
 ${BOLD}Examples:${RESET}
+  decantr setup
   decantr new my-app --blueprint=carbon-ai-portal
+  decantr adopt --base-url http://localhost:3000 --evidence --yes
+  decantr task /feed "add saved recipe actions"
+  decantr verify --brownfield --local-patterns
+  decantr verify --since-baseline
+  decantr codify
+  decantr codify --accept
+  decantr content check --ci --fail-on error
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
   decantr init
   decantr analyze
@@ -3313,13 +3883,13 @@ ${BOLD}Examples:${RESET}
   decantr rules apply
   decantr status
   decantr health
-  decantr health init-ci
-  decantr health init-ci --project apps/web
-  decantr health --ci --fail-on error
+  decantr verify init-ci
+  decantr verify init-ci --project apps/web
+  decantr verify --ci --fail-on error
   decantr health --evidence --output .decantr/evidence/latest.json
   decantr workspace list
-  decantr workspace health --changed --since origin/main
-  decantr content-health --ci --fail-on error
+  decantr verify --workspace --changed --since origin/main
+  decantr content check --ci --fail-on error
   decantr studio
   decantr studio --report decantr-health.json
   decantr telemetry status
@@ -3348,7 +3918,9 @@ ${BOLD}Examples:${RESET}
 ${BOLD}Workflow Model:${RESET}
   ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
   ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
-  ${cyan('Brownfield adoption')}    decantr analyze -> decantr init --existing --accept-proposal -> decantr health --browser --evidence
+  ${cyan('Brownfield adoption')}    decantr adopt --base-url <url> --evidence --yes
+  ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify
+  ${cyan('Project-owned law')}       decantr codify -> edit proposal -> decantr codify --accept
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
@@ -3524,9 +4096,133 @@ ${BOLD}Usage:${RESET}
 `);
 }
 
+function cmdSetupHelp() {
+  console.log(`
+${BOLD}decantr setup${RESET} — Detect the project state and recommend the right Decantr path
+
+${BOLD}Usage:${RESET}
+  decantr setup [--project <path>]
+
+${BOLD}Examples:${RESET}
+  decantr setup
+  decantr setup --project apps/web
+`);
+}
+
+function cmdAdoptHelp() {
+  console.log(`
+${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, verify, and show the next step
+
+${BOLD}Usage:${RESET}
+  decantr adopt [--project <path>] [--yes] [--dry-run]
+  decantr adopt --base-url <url> [--evidence] [--ci] [--yes]
+
+${BOLD}Options:${RESET}
+  --project           App path inside a workspace/monorepo
+  --yes, -y           Run without confirmation
+  --dry-run           Show the workflow without writing files
+  --base-url          Include browser evidence against this dev server URL
+  --evidence          Write .decantr/evidence/latest.json
+  --baseline          Save a health baseline (default)
+  --no-baseline       Skip baseline save
+  --no-verify         Skip the verification step
+  --ci, --init-ci     Install the Project Health CI gate after adoption
+  --telemetry         Opt this project into privacy-filtered CLI product telemetry
+  --merge-proposal    Merge the observed proposal into an existing essence
+  --replace-essence   Replace an existing essence with backup
+
+${BOLD}Examples:${RESET}
+  decantr adopt --yes
+  decantr adopt --base-url http://localhost:3000 --evidence --yes
+  decantr adopt --project apps/web --ci --yes
+`);
+}
+
+function cmdVerifyHelp() {
+  console.log(`
+${BOLD}decantr verify${RESET} — One reliability command for local work, CI, and LLM agent loops
+
+${BOLD}Usage:${RESET}
+  decantr verify [--project <path>] [--brownfield] [--local-patterns]
+  decantr verify --base-url <url> --evidence
+  decantr verify --since-baseline
+  decantr verify --workspace [--changed --since origin/main]
+  decantr verify init-ci [health init-ci options]
+
+${BOLD}Examples:${RESET}
+  decantr verify
+  decantr verify --brownfield --local-patterns
+  decantr verify --base-url http://localhost:3000 --evidence
+  decantr verify --workspace --changed --since origin/main
+  decantr verify init-ci --project apps/web
+`);
+}
+
+function cmdTaskHelp() {
+  console.log(`
+${BOLD}decantr task${RESET} — Prepare compact route/task context for an AI coding assistant
+
+${BOLD}Usage:${RESET}
+  decantr task <route> ["task summary"] [--project <path>] [--json]
+
+${BOLD}Examples:${RESET}
+  decantr task /feed "add saved recipe actions"
+  decantr task /profile --json
+`);
+}
+
+function cmdCodifyHelp() {
+  console.log(`
+${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI patterns
+
+${BOLD}Usage:${RESET}
+  decantr codify [--project <path>]
+  decantr codify --accept [--project <path>]
+
+${BOLD}Examples:${RESET}
+  decantr codify
+  decantr codify --accept
+  decantr verify --local-patterns
+`);
+}
+
+function cmdContentHelp() {
+  console.log(`
+${BOLD}decantr content${RESET} — Content-author namespace for registry content repositories
+
+${BOLD}Usage:${RESET}
+  decantr content check [content-health options]
+  decantr content create <type> <name>
+  decantr content publish <type> <name>
+
+${BOLD}Examples:${RESET}
+  decantr content check --ci --fail-on error
+  decantr content create pattern my-card
+  decantr content publish pattern my-card
+`);
+}
+
 function printCommandHelp(command: string, args: string[]): boolean {
   if (!isCommandHelpRequest(args)) return false;
   switch (command) {
+    case 'setup':
+      cmdSetupHelp();
+      return true;
+    case 'adopt':
+      cmdAdoptHelp();
+      return true;
+    case 'verify':
+      cmdVerifyHelp();
+      return true;
+    case 'task':
+      cmdTaskHelp();
+      return true;
+    case 'codify':
+      cmdCodifyHelp();
+      return true;
+    case 'content':
+      cmdContentHelp();
+      return true;
     case 'health':
       cmdHealthHelp();
       return true;
@@ -3597,6 +4293,36 @@ async function main() {
   }
 
   switch (command) {
+    case 'setup': {
+      await cmdSetupWorkflow(args);
+      break;
+    }
+
+    case 'adopt': {
+      await cmdAdoptWorkflow(args);
+      break;
+    }
+
+    case 'task': {
+      await cmdTaskWorkflow(args);
+      break;
+    }
+
+    case 'verify': {
+      await cmdVerifyWorkflow(args);
+      break;
+    }
+
+    case 'codify': {
+      await cmdCodifyWorkflow(args);
+      break;
+    }
+
+    case 'content': {
+      await cmdContentWorkflow(args);
+      break;
+    }
+
     case 'new': {
       const newName = args[1];
       if (!newName) {

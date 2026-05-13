@@ -62,6 +62,29 @@ describe('command help (e2e)', () => {
     expect(output).not.toContain('Decantr Studio is running');
   });
 
+  it('prints workflow command help without running workflows', () => {
+    const adopt = runHelp(testDir, ['adopt', '--help']);
+    const verify = runHelp(testDir, ['verify', '--help']);
+    const task = runHelp(testDir, ['task', '--help']);
+    const codify = runHelp(testDir, ['codify', '--help']);
+
+    expect(adopt).toContain('decantr adopt');
+    expect(adopt).toContain('--dry-run');
+    expect(verify).toContain('decantr verify');
+    expect(verify).toContain('--local-patterns');
+    expect(task).toContain('decantr task');
+    expect(codify).toContain('decantr codify');
+    expect(existsSync(join(testDir, '.decantr'))).toBe(false);
+  });
+
+  it('prints content namespace help without requiring a content repository', () => {
+    const output = runHelp(testDir, ['content', '--help']);
+
+    expect(output).toContain('decantr content');
+    expect(output).toContain('content check');
+    expect(output).not.toContain('Run this command from a decantr-content style repository');
+  });
+
   it('prints init help without writing project files', () => {
     const output = runHelp(testDir, ['init', '--help']);
 

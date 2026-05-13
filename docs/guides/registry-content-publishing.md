@@ -38,9 +38,9 @@ The hosted registry can accept community content under non-official namespaces. 
 Use Content Health for registry content repositories:
 
 ```bash
-npx @decantr/cli content-health
-npx @decantr/cli content-health --json
-npx @decantr/cli content-health --prompt <finding-id>
+npx @decantr/cli content check
+npx @decantr/cli content check --json
+npx @decantr/cli content check --prompt <finding-id>
 ```
 
 Content Health checks schema validity, references, content quality coverage, and generated guidance quality. Project Health is different: it checks an application against its accepted Decantr contract.

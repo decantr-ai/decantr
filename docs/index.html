@@ -2500,7 +2500,7 @@
         </div>
         <h3 class="path-tile-name">Brownfield adoption</h3>
         <p class="path-tile-desc">Attach Decantr to an existing app as a contract layer first. No rewrite, no CSS takeover.</p>
-        <div class="path-tile-cmd"><span class="k">$</span> decantr analyze <span class="path-tile-flag">&& decantr init --existing --accept-proposal</span></div>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr adopt <span class="path-tile-flag">--evidence --yes</span></div>
       </a>
       <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
         <div class="path-tile-head">
@@ -3116,11 +3116,11 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="cli-desc">Switch to a different theme</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name"><i data-lucide="shield" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>check</div>
-        <p class="cli-desc">Detect contract drift and guard violations</p>
+        <div class="cli-name"><i data-lucide="shield" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>verify</div>
+        <p class="cli-desc">Run the local reliability gate for humans, CI, and agents</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>health --evidence</div>
+        <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>verify --evidence</div>
         <p class="cli-desc">Write a privacy-redacted Evidence Bundle for AI repair and CI artifacts</p>
       </div>
       <div class="cli-item">
@@ -3132,8 +3132,16 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="cli-desc">Scaffold from natural language — pick archetype + theme</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name"><i data-lucide="scan-line" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>analyze</div>
-        <p class="cli-desc">Scan an existing project for framework, theme, conventions</p>
+        <div class="cli-name"><i data-lucide="scan-line" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>adopt</div>
+        <p class="cli-desc">Analyze, attach, verify, baseline, and show the next step</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="map" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>task &lt;route&gt;</div>
+        <p class="cli-desc">Prepare route-specific context before an LLM edits code</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="file-cog" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>codify</div>
+        <p class="cli-desc">Turn local buttons, cards, shells, and forms into project-owned UI law</p>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="search" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>search &lt;query&gt;</div>
@@ -3144,7 +3152,7 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="cli-desc">Full project audit — drift, packs, guard, critique</p>
       </div>
       <div class="cli-item">
-        <div class="cli-name"><i data-lucide="network" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>workspace health</div>
+        <div class="cli-name"><i data-lucide="network" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>verify --workspace</div>
         <p class="cli-desc">Aggregate Project Health across many Decantr projects</p>
       </div>
       <div class="cli-item">
@@ -3309,31 +3317,31 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="brownfield">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="layers" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Already have a project? Adopt Decantr without a rewrite.</h2>
-    <p class="section-sub reveal">Brownfield adoption is a first-class path. Decantr inventories what you have, drafts an observed contract proposal, and leaves existing code, docs, rules, and styling untouched until you accept or merge it.</p>
+    <p class="section-sub reveal">Brownfield adoption is a first-class path. Decantr inventories what you have, drafts an observed contract proposal, keeps existing code and styling authoritative, and gives your LLM a repeatable route context before it edits.</p>
 
     <div class="lane-steps">
       <div class="lane-step reveal reveal-d1">
         <div class="lane-step-num" style="--accent:var(--coral)">1</div>
         <div class="lane-step-body">
-          <h3>Analyze</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr analyze</span></div>
-          <p class="lane-step-desc">Scans the repo for framework, router, semantic route domains, existing styling systems, theme variants, project conventions, and ranked doctrine evidence. Writes <code>analysis.json</code>, <code>brownfield-intelligence.json</code>, <code>theme-inventory.json</code>, and <code>doctrine-map.json</code>.</p>
+          <h3>Adopt</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr adopt --base-url http://localhost:3000 --evidence --yes</span></div>
+          <p class="lane-step-desc">Runs the adoption workflow: analysis, observed contract proposal, deterministic acceptance or merge, Project Health, local screenshots, visual manifest, and baseline. Advanced users can still run the primitive commands one by one.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d2">
         <div class="lane-step-num" style="--accent:var(--amber)">2</div>
         <div class="lane-step-body">
-          <h3>Attach</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr init --existing --accept-proposal</span></div>
-          <p class="lane-step-desc">Drops in <code>decantr.essence.json</code>, <code>DECANTR.md</code>, and scoped context files from the observed proposal, preserving what you <em>already</em> built without requiring Decantr CSS.</p>
+          <h3>Activate</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr task /feed "add saved recipe actions"</span></div>
+          <p class="lane-step-desc">Surfaces route-local context, page and section packs, screenshot references, Brownfield intelligence, theme inventory, and accepted local patterns before the assistant edits code.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d3">
         <div class="lane-step-num" style="--accent:var(--cyan)">3</div>
         <div class="lane-step-body">
-          <h3>Guard</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr health --browser --base-url http://localhost:3000 --evidence</span></div>
-          <p class="lane-step-desc">From now on, route coverage, unsafe defaults, style drift, doctrine coverage, visual evidence, baselines, and assistant bridge gaps are scored against the contract you just captured.</p>
+          <h3>Codify and verify</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr codify &amp;&amp; decantr verify --brownfield</span></div>
+          <p class="lane-step-desc">Promote local button, card, form, and shell conventions into project-owned UI law, then keep route coverage, style drift, visual evidence, baselines, and assistant bridge gaps scored against the contract.</p>
         </div>
       </div>
     </div>
@@ -3464,8 +3472,8 @@ Start with the shell layouts, then build each section's pages.</div>
     <div class="packages-grid">
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/cli</div>
-        <p class="pkg-desc">Project scaffolding, mutation commands, Brownfield intelligence, Project Health, visual evidence, baselines, workspace health, and registry sync</p>
-        <div class="pkg-version">v2.6.0</div>
+        <p class="pkg-desc">Workflow commands, project scaffolding, Brownfield activation, local patterns, Project Health, visual evidence, baselines, workspace health, and registry sync</p>
+        <div class="pkg-version">v2.7.0</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>

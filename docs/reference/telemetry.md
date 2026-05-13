@@ -18,13 +18,13 @@ Telemetry must not answer those questions by collecting prompts, source code, ge
 
 ## Project Health Is Local Observability
 
-Project Health is separate from Decantr product telemetry. `decantr health` and `decantr studio` help an end user understand their own repository's contract health, route drift, pack state, runtime evidence, and remediation plan. They are local-only by default and do not send health reports, source code, prompts, raw paths, or project data to Decantr.
+Project Health is separate from Decantr product telemetry. `decantr verify`, `decantr health`, and `decantr studio` help an end user understand their own repository's contract health, route drift, pack state, runtime evidence, and remediation plan. They are local-only by default and do not send health reports, source code, prompts, raw paths, or project data to Decantr.
 
 If a project explicitly opts into CLI telemetry, Decantr may record privacy-filtered Project Health usage metadata: report status, score, aggregate finding counts, CI mode/fail-on settings, Studio start/refresh counts, and whether a remediation prompt was requested. It does not send finding messages, evidence, report JSON, prompts, file paths, route names, source snapshots, or environment values.
 
 Telemetry is for Decantr operators to understand privacy-filtered product adoption. Project Health is for customer and developer workflows. A future private registry or enterprise dashboard may accept a customer-controlled `ProjectHealthReport`, but the local health command does not require telemetry opt-in.
 
-`decantr content-health` follows the same privacy stance for registry content repositories. It emits a local `ContentHealthReport` for schema, reference, and quality coverage checks; it does not upload content files or health reports to Decantr. If a repository has opted into CLI telemetry, only the command-completed event is eligible for telemetry, not the report payload.
+`decantr content check` and the backward-compatible `decantr content-health` primitive follow the same privacy stance for registry content repositories. They emit a local `ContentHealthReport` for schema, reference, and quality coverage checks; they do not upload content files or health reports to Decantr. If a repository has opted into CLI telemetry, only the command-completed event is eligible for telemetry, not the report payload.
 
 ## Architecture
 
@@ -446,7 +446,7 @@ For a first-run opt-in, pass `--telemetry` during setup:
 
 ```bash
 decantr new my-app --blueprint=agent-marketplace --telemetry
-decantr init --existing --accept-proposal --telemetry
+decantr adopt --yes --telemetry
 decantr check --telemetry
 ```
 

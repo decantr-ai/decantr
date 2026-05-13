@@ -5,21 +5,16 @@ Use Decantr when an AI-built or AI-maintained frontend needs a durable product c
 ## Start
 
 ```bash
-npx @decantr/cli analyze
-npx @decantr/cli init --existing --accept-proposal
-npx @decantr/cli check --brownfield
-npx @decantr/cli health --browser --base-url http://localhost:3000 --evidence
-npx @decantr/cli health --save-baseline
+npx @decantr/cli adopt --base-url http://localhost:3000 --evidence --yes
 ```
 
 For monorepos, point Decantr at the app:
 
 ```bash
-npx @decantr/cli analyze --project apps/web
-npx @decantr/cli init --existing --accept-proposal --project apps/web
-cd apps/web
-npx @decantr/cli health
+npx @decantr/cli adopt --project apps/web --base-url http://localhost:3000 --evidence --yes
 ```
+
+`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, Project Health, optional browser evidence, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step.
 
 ## What Decantr Writes
 
@@ -32,6 +27,8 @@ npx @decantr/cli health
 - `.decantr/theme-inventory.json`: observed light/dark/variant theme selectors and token evidence. Essence V4 is unchanged; variants are reported, not promoted.
 - `.decantr/enrichment-backlog.md`: checklist for turning the first attach pass into stronger section/page directives.
 - `.decantr/evidence/visual-manifest.json`: local route-to-screenshot map when `health --browser --base-url <url> --evidence` is run.
+- `.decantr/local-patterns.proposal.json`: project-owned pattern proposal when `decantr codify` is run.
+- `.decantr/local-patterns.json`: accepted project-owned UI law when `decantr codify --accept` is run.
 
 ## What Decantr Does Not Do
 
@@ -46,5 +43,23 @@ npx @decantr/cli health
 Use brownfield attach when your app already exists and the problem is drift: AI-generated pages stop matching the intended product shape, routes grow without a coherent map, or design-system decisions get repeated differently across screens.
 
 For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_prepare_task_context` with a route and task. CLI-only workflows can use `decantr registry get-pack page --route <route>` plus the generated `.decantr/context/` files.
+
+The CLI shortcut is:
+
+```bash
+npx @decantr/cli task /feed "add saved recipe actions"
+npx @decantr/cli verify --brownfield
+```
+
+When the app has repeated local UI decisions that Decantr cannot infer from the public registry, codify them as project-owned law:
+
+```bash
+npx @decantr/cli codify
+# review .decantr/local-patterns.proposal.json
+npx @decantr/cli codify --accept
+npx @decantr/cli verify --local-patterns
+```
+
+This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer; mechanical enforcement for things like raw hex bans or wrapper-only buttons should still live in the project rule stack where it can fail CI deterministically.
 
 See also: [Workflow Model](../reference/workflow-model.md), [Project Health](../reference/project-health.md).

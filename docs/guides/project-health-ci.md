@@ -5,24 +5,24 @@ Project Health is Decantr's CI-friendly answer to: is this app still aligned wit
 ## Install The Gate
 
 ```bash
-npx @decantr/cli health init-ci
+npx @decantr/cli verify init-ci
 ```
 
 For a monorepo:
 
 ```bash
-npx @decantr/cli health init-ci --project apps/web
+npx @decantr/cli verify init-ci --project apps/web
 ```
 
-The generated workflow runs `decantr health`, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage.
+The generated workflow runs the Project Health gate, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage.
 
 ## Run Locally
 
 ```bash
-npx @decantr/cli health
-npx @decantr/cli health --ci --fail-on error
-npx @decantr/cli health --markdown --output decantr-health.md
-npx @decantr/cli health --json --output decantr-health.json
+npx @decantr/cli verify
+npx @decantr/cli verify --ci --fail-on error
+npx @decantr/cli verify --markdown --output decantr-health.md
+npx @decantr/cli verify --json --output decantr-health.json
 ```
 
 ## Repair With An AI Assistant

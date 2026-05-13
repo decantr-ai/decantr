@@ -169,7 +169,7 @@ async function BlueprintLaunchHero() {
           Find the blueprint that already knows the app.
         </h1>
         <p className="registry-home-description">
-          The registry is a launch surface for Decantr contracts: inspect the product shape, preview the live implementation, then scaffold from the exact blueprint.
+          The registry is the official launch surface for shared Decantr contracts. Brownfield teams can still keep project-owned local patterns inside their app while using the registry for reusable blueprints, archetypes, themes, shells, and patterns.
         </p>
         <div className="registry-home-hero-actions">
           <Link href="/browse/blueprints?source=official" className="d-interactive registry-home-primary-action" data-variant="primary">

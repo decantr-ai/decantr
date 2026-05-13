@@ -2,7 +2,7 @@
 
 Project Health is the end-user reliability surface for a Decantr project. It answers: is this application still aligned with its Decantr contract, where has it drifted, what should be fixed first, and what prompt or command should the developer run next?
 
-It is local-only by default. `decantr health` reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. Neither command uploads source code, prompts, raw file paths, environment variables, or customer project data.
+It is local-only by default. `decantr verify` is the user-facing reliability command; it delegates to Project Health and adds workflow conveniences such as Brownfield guard checks, evidence output defaults, workspace mode, and local-pattern requirements. `decantr health` remains the advanced primitive that reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. None of these commands uploads source code, prompts, raw file paths, environment variables, or customer project data.
 
 Projects that explicitly opt into Decantr CLI telemetry, including through `decantr new --telemetry`, `decantr init --telemetry`, or `decantr check --telemetry`, may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
 
@@ -11,6 +11,13 @@ For registry content repositories such as `decantr-content`, use [Content Health
 ## Commands
 
 ```bash
+decantr verify
+decantr verify --brownfield
+decantr verify --local-patterns
+decantr verify --base-url http://localhost:3000 --evidence
+decantr verify --since-baseline
+decantr verify --workspace --changed --since origin/main
+decantr verify init-ci --project apps/web
 decantr health
 decantr health --format text
 decantr health --json
@@ -32,7 +39,7 @@ decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
-`decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
+`decantr verify` should be the default command in local agent loops and CI. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
 
 ## What The Report Contains
 
@@ -157,7 +164,7 @@ For a new Decantr scaffold:
 decantr new my-app --blueprint=agent-marketplace
 cd my-app
 decantr refresh
-decantr health
+decantr verify
 decantr studio
 ```
 
@@ -174,9 +181,9 @@ That command prints a focused prompt; it does not apply the fix. Give the prompt
 For an existing app:
 
 ```bash
-decantr analyze
-decantr init --existing --accept-proposal
-decantr health --browser --base-url http://localhost:3000 --evidence
+decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr task /feed "add saved recipe actions"
+decantr verify --brownfield
 ```
 
 When the project workflow is `brownfield-attach`, health automatically includes route coverage and drift checks from the observed app inventory. This helps separate "the existing app has not been mapped into the contract yet" from "the implementation drifted away from an accepted Decantr contract."
@@ -185,6 +192,16 @@ Brownfield health respects existing-app authority. It reports evidence and remed
 
 `decantr analyze` writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md` alongside the original analysis/proposal/report files. Theme inventory observes light, dark, and variant theme selectors without changing Essence V4. Those artifacts are local context for agents and reviewers, not source takeover.
 
+`decantr codify` adds a project-owned pattern layer for things the official registry cannot infer from a contract-only app:
+
+```bash
+decantr codify
+decantr codify --accept
+decantr verify --local-patterns
+```
+
+The accepted `.decantr/local-patterns.json` is local context and governance. Deterministic failures such as raw hex bans or wrapper-only buttons should still be enforced through the project rule stack.
+
 ## Hybrid Composition
 
 For attached projects that add sections, pages, features, or themes over time:
@@ -192,7 +209,7 @@ For attached projects that add sections, pages, features, or themes over time:
 ```bash
 decantr add section settings-full
 decantr refresh
-decantr health --markdown --output .decantr/health.md
+decantr verify --markdown --output .decantr/health.md
 ```
 
 Project Health is useful immediately after a composition change because it checks whether generated packs, route contracts, and guard expectations still agree.
@@ -203,6 +220,7 @@ Install the default GitHub Actions gate:
 
 ```bash
 decantr health init-ci
+decantr verify init-ci
 ```
 
 This writes `.github/workflows/decantr-health.yml`. The workflow installs project dependencies, generates `decantr-health.json`, gates with markdown output, appends the report to the GitHub step summary, and uploads both report files as artifacts.
@@ -210,12 +228,12 @@ This writes `.github/workflows/decantr-health.yml`. The workflow installs projec
 Use these options to tune the generated workflow:
 
 ```bash
-decantr health init-ci --force
-decantr health init-ci --fail-on warn
-decantr health init-ci --cli-version 2.6.0
-decantr health init-ci --workflow-path .github/workflows/project-health.yml
-decantr health init-ci --project apps/registry
-decantr health init-ci --workspace
+decantr verify init-ci --force
+decantr verify init-ci --fail-on warn
+decantr verify init-ci --cli-version 2.7.0
+decantr verify init-ci --workflow-path .github/workflows/project-health.yml
+decantr verify init-ci --project apps/registry
+decantr verify init-ci --workspace
 ```
 
 For monorepos, run `init-ci` from the repository root and pass the app contract path with `--project <path>`. The generated workflow installs dependencies at the root, runs both health commands with `working-directory: <path>`, appends the project-local markdown report to the GitHub step summary, and uploads artifacts using root-relative paths such as `apps/registry/decantr-health.json`.
@@ -226,6 +244,7 @@ The generated pull request gate runs:
 
 ```bash
 decantr health --ci --fail-on error --markdown --output decantr-health.md
+decantr verify --ci --fail-on error --markdown --output decantr-health.md
 ```
 
 Use `--fail-on error` for the default enterprise-friendly gate: block only invalid audits and blocking findings. Use `--fail-on warn` for stricter repositories that want any warning to fail CI.

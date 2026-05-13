@@ -12,7 +12,7 @@ Decantr is the contract layer between product intent and AI-generated implementa
 | --- | --- | --- |
 | **[Greenfield blueprint](#greenfield-blueprint)** &nbsp;⭐ | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
 | **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
-| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr analyze`, then `decantr init --existing --accept-proposal` |
+| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr adopt --base-url http://localhost:3000 --evidence --yes` |
 | **[Hybrid composition](docs/reference/workflow-model.md#hybrid-composition)** | Layering sections, themes, or features into an attached project | `decantr add/remove`, `decantr theme switch`, `decantr registry` |
 
 ---
@@ -56,13 +56,12 @@ Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your 
 ```bash
 # Edit decantr.essence.json — add a section, swap the theme, etc.
 decantr refresh   # regenerate context files from the updated essence
-decantr check     # verify the code matches the new contract
-decantr health    # produce a local project health report for triage or CI
-decantr health --evidence --output .decantr/evidence/latest.json
+decantr verify    # run the canonical local reliability gate
+decantr verify --evidence
 decantr studio    # open the local-only health dashboard
 ```
 
-`refresh` keeps the generated context files in sync with the essence. `check` runs the guard rules and tells you exactly where the code drifted from the contract. `decantr health` is the end-user reliability surface: it combines audits, contract assertions, guard checks, route drift, optional browser evidence, design-token checks, and pack health into a structured report. `--evidence` writes the privacy-redacted Evidence Bundle that AI agents and CI can use for repair context. `decantr studio` gives the same signal in a small localhost dashboard, and `decantr studio --workspace` expands that view across many Decantr projects in a monorepo.
+`refresh` keeps the generated context files in sync with the essence. `verify` is the day-to-day reliability gate over Project Health, Brownfield checks, health baselines, and optional evidence. `--evidence` writes the privacy-redacted Evidence Bundle that AI agents and CI can use for repair context. `decantr studio` gives the same signal in a small localhost dashboard, and `decantr studio --workspace` expands that view across many Decantr projects in a monorepo.
 
 > Starting from a different point? See the full [workflow model](docs/reference/workflow-model.md).
 
@@ -83,7 +82,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Scaffold new apps, initialize existing projects, refresh derived context, search registry content, run checks/audits, write Evidence Bundles, run workspace health, install Project Health CI, inspect Studio locally, and audit registry content supply-chain health |
+| CLI | Guides users through workflow commands (`setup`, `adopt`, `task`, `verify`, `codify`), keeps advanced primitives available, writes Evidence Bundles, runs workspace health, installs Project Health CI, opens Studio locally, and audits registry content supply-chain health |
 | MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, audit, evidence bundles, workspace health, and repair prompts |
 | Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, contract assertion, and report-schema engine |
@@ -138,6 +137,7 @@ pnpm release:verify
 Intent and discovery:
 
 ```bash
+decantr setup
 decantr magic "AI chatbot with a bold terminal-inspired workspace"
 decantr search dashboard
 decantr list blueprints --blueprint-set certified
@@ -149,15 +149,17 @@ decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
 Brownfield adoption:
 
 ```bash
-decantr analyze
-decantr init --existing --accept-proposal
-decantr check --brownfield
-decantr health --browser --base-url http://localhost:3000 --evidence
-decantr health --save-baseline
-decantr health --since-baseline
+decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr task /feed "add saved recipe actions"
+decantr codify
+decantr codify --accept
+decantr verify --brownfield --local-patterns
+decantr verify --since-baseline
 ```
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.
+
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 
@@ -172,16 +174,19 @@ decantr showcase verification  --json
 Project Health and CI:
 
 ```bash
+decantr verify
+decantr verify --base-url http://localhost:3000 --evidence
+decantr verify --since-baseline
+decantr verify init-ci
 decantr health --format markdown
 decantr health --ci --fail-on error
 decantr health --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
 decantr health --design-tokens .decantr/design/figma-tokens.json
-decantr health init-ci
-decantr health init-ci --project apps/registry
-decantr health init-ci --workspace
-decantr workspace health --changed --since origin/main
+decantr verify init-ci --project apps/registry
+decantr verify init-ci --workspace
+decantr verify --workspace --changed --since origin/main
 decantr export --to figma-tokens
 decantr health --json --output decantr-health.json
 decantr studio --port 4319 --host 127.0.0.1
@@ -202,6 +207,8 @@ Telemetry stays product-level: command names, aggregate lifecycle counts, regist
 Official content supply chain:
 
 ```bash
+decantr content check
+decantr content check --ci --fail-on error
 decantr content-health
 decantr content-health --markdown --output content-health.md
 decantr content-health --ci --fail-on error
@@ -216,7 +223,7 @@ You cannot truly force an LLM to follow a spec. Decantr gives the assistant a du
 
 ```bash
 decantr refresh
-decantr check
+decantr verify
 decantr audit
 decantr health
 ```
@@ -226,7 +233,7 @@ If the product direction changes, update Decantr deliberately, then regenerate a
 ```bash
 decantr add page dashboard/reports
 decantr refresh
-decantr check
+decantr verify
 ```
 
 ### How do I open Decantr Studio?
@@ -254,7 +261,7 @@ decantr health --json --output decantr-health.json
 decantr studio --report decantr-health.json
 ```
 
-Studio is for interactive triage; `decantr health --ci --fail-on error` is still the pull-request gate.
+Studio is for interactive triage; `decantr verify --ci --fail-on error` is still the pull-request gate.
 
 See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration, CI, and drift questions.
 
