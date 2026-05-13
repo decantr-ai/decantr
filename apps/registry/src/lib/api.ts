@@ -4,6 +4,7 @@ import type {
   ContentListResponse,
   PublicContentRecord,
   PublicContentSummary,
+  PublicBlueprintSet,
   PublicUserProfile,
   RegistryIntelligenceSummaryResponse,
   SearchResponse,
@@ -1199,6 +1200,8 @@ export function listContent(
     sort?: string;
     recommended?: boolean;
     intelligenceSource?: ContentIntelligenceSource;
+    blueprintSet?: PublicBlueprintSet;
+    labs?: boolean;
     limit?: number;
     offset?: number;
   }
@@ -1218,6 +1221,8 @@ export function searchContent(
     sort?: string;
     recommended?: boolean;
     intelligenceSource?: ContentIntelligenceSource;
+    blueprintSet?: PublicBlueprintSet;
+    labs?: boolean;
     limit?: number;
     offset?: number;
   }
@@ -1231,6 +1236,8 @@ export function searchContent(
       sort: params?.sort,
       recommended: params?.recommended,
       intelligenceSource: params?.intelligenceSource,
+      blueprintSet: params?.blueprintSet,
+      labs: params?.labs,
       limit: params?.limit,
       offset: params?.offset,
     })

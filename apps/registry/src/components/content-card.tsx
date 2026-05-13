@@ -39,6 +39,13 @@ export function ContentCard({
     : showcaseUrl
     ? 'live'
     : 'pending';
+  const portfolio = isBlueprint ? item.blueprint_portfolio : null;
+  const portfolioBadges = [
+    portfolio?.visibility === 'featured' ? { label: 'Featured', status: 'featured' } : null,
+    portfolio?.artifact.status === 'certified' ? { label: 'Certified', status: 'certified' } : null,
+    portfolio?.visibility === 'labs' ? { label: 'Labs', status: 'labs' } : null,
+  ].filter(Boolean) as Array<{ label: string; status: string }>;
+
   return (
     <article
       className="lum-card-outlined registry-card d-enter-fade d-lift-hover"
@@ -69,6 +76,16 @@ export function ContentCard({
             <span>{typePresentation.singular}</span>
           </span>
         </div>
+
+        {portfolioBadges.length > 0 ? (
+          <div className="registry-card-badge-row" aria-label="Blueprint registry status">
+            {portfolioBadges.map((badge) => (
+              <span key={badge.status} className="registry-blueprint-badge" data-status={badge.status}>
+                {badge.label}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {item.description ? (
           <p className="registry-card-description">{item.description}</p>

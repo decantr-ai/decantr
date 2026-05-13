@@ -568,6 +568,96 @@ describe('POST /v1/validate', () => {
     expect(json.items.map((item: { slug: string }) => item.slug)).toEqual(['alpha', 'zeta']);
   });
 
+  it('applies public blueprint portfolio sets without exposing folded items', async () => {
+    const portfolio = (
+      visibility: 'featured' | 'public' | 'labs' | 'hidden',
+      status: 'candidate' | 'certified' = 'candidate',
+    ) => ({
+      visibility,
+      maturity: status === 'certified' ? 'certified-flagship' : visibility === 'labs' ? 'experimental' : 'supported-contract',
+      rationale: 'Test portfolio state',
+      artifact: { status },
+    });
+    mockCreateAdminClient.mockReturnValue(createListContentClient([
+      {
+        id: 'content-1',
+        type: 'blueprint',
+        slug: 'flagship',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Flagship',
+          description: 'Certified flagship',
+          blueprint_portfolio: portfolio('featured', 'certified'),
+        },
+        published_at: '2026-04-09T00:00:00.000Z',
+        owner: { display_name: 'Decantr', username: 'decantr' },
+      },
+      {
+        id: 'content-2',
+        type: 'blueprint',
+        slug: 'supported',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Supported',
+          description: 'Supported blueprint',
+          blueprint_portfolio: portfolio('public'),
+        },
+        published_at: '2026-04-08T00:00:00.000Z',
+        owner: { display_name: 'Decantr', username: 'decantr' },
+      },
+      {
+        id: 'content-3',
+        type: 'blueprint',
+        slug: 'lab',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Lab',
+          description: 'Labs blueprint',
+          blueprint_portfolio: portfolio('labs'),
+        },
+        published_at: '2026-04-07T00:00:00.000Z',
+        owner: { display_name: 'Decantr', username: 'decantr' },
+      },
+      {
+        id: 'content-4',
+        type: 'blueprint',
+        slug: 'folded',
+        namespace: '@official',
+        version: '1.0.0',
+        data: {
+          name: 'Folded',
+          description: 'Folded blueprint',
+          blueprint_portfolio: {
+            ...portfolio('hidden'),
+            maturity: 'fold-candidate',
+            recommended_alternative: 'flagship',
+          },
+        },
+        published_at: '2026-04-06T00:00:00.000Z',
+        owner: { display_name: 'Decantr', username: 'decantr' },
+      },
+    ], 4));
+
+    const defaultRes = await app.request('/v1/blueprints');
+    const defaultJson = await defaultRes.json();
+    expect(defaultJson.total).toBe(2);
+    expect(defaultJson.items.map((item: { slug: string }) => item.slug)).toEqual([
+      'flagship',
+      'supported',
+    ]);
+
+    const certifiedRes = await app.request('/v1/blueprints?blueprint_set=certified');
+    const certifiedJson = await certifiedRes.json();
+    expect(certifiedJson.items.map((item: { slug: string }) => item.slug)).toEqual(['flagship']);
+
+    const labsRes = await app.request('/v1/blueprints?blueprint_set=labs');
+    const labsJson = await labsRes.json();
+    expect(labsJson.items.map((item: { slug: string }) => item.slug)).toEqual(['lab']);
+  });
+
   it('filters public content lists down to recommended items when requested', async () => {
     mockCreateAdminClient.mockReturnValue(createListContentClient([
       {

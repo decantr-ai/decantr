@@ -167,6 +167,7 @@
         <li class="pill"><code>sort=recommended|recent|name</code></li>
         <li class="pill"><code>recommended=true</code></li>
         <li class="pill"><code>intelligence_source=authored|benchmark|hybrid</code></li>
+        <li class="pill"><code>blueprint_set=all|featured|certified|labs</code></li>
         <li class="pill"><code>limit</code></li>
         <li class="pill"><code>offset</code></li>
       </ul>
@@ -174,22 +175,25 @@
 
     <section class="panel endpoint">
       <h2>Search</h2>
-      <pre>GET /search?q=portfolio&amp;type=blueprint&amp;sort=recommended&amp;recommended=true&amp;intelligence_source=hybrid</pre>
+      <pre>GET /search?q=portfolio&amp;type=blueprint&amp;sort=recommended&amp;recommended=true&amp;intelligence_source=hybrid
+GET /search?q=studio&amp;type=blueprint&amp;blueprint_set=certified</pre>
       <div class="meta">
         <div><strong>Purpose:</strong> Full-text search across public registry content.</div>
         <div><strong>Schema:</strong> <a href="/schemas/search-response.v1.json"><code>search-response.v1.json</code></a></div>
-        <div><strong>Key fields:</strong> <code>total</code>, <code>results[]</code>, <code>results[].intelligence</code></div>
+        <div><strong>Key fields:</strong> <code>total</code>, <code>results[]</code>, <code>results[].blueprint_portfolio</code>, <code>results[].intelligence</code></div>
       </div>
     </section>
 
     <section class="panel endpoint">
       <h2>Public Lists</h2>
       <pre>GET /blueprints?namespace=@official&amp;sort=recommended&amp;recommended=true
+GET /blueprints?blueprint_set=featured
+GET /blueprints?blueprint_set=labs
 GET /patterns?namespace=@official&amp;limit=50&amp;offset=0
 GET /archetypes?namespace=@official&amp;intelligence_source=authored</pre>
       <div class="meta">
         <div><strong>Supported endpoints:</strong> <code>/patterns</code>, <code>/themes</code>, <code>/blueprints</code>, <code>/archetypes</code>, <code>/shells</code></div>
-        <div><strong>Purpose:</strong> Browse one public content type with shared ranking and intelligence filters.</div>
+        <div><strong>Purpose:</strong> Browse one public content type with shared ranking and intelligence filters. Blueprint lists exclude Labs and folded slugs by default; <code>blueprint_set</code> exposes only the public cuts.</div>
         <div><strong>Schema:</strong> <a href="/schemas/public-content-list.v1.json"><code>public-content-list.v1.json</code></a></div>
       </div>
     </section>

@@ -14,7 +14,7 @@ npm install -D @decantr/cli
 Or run it without installing:
 
 ```bash
-npx @decantr/cli new my-app --blueprint=agent-marketplace
+npx @decantr/cli new my-app --blueprint=esports-hq
 ```
 
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
@@ -68,17 +68,18 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 - produces local Project Health reports, Evidence Bundles, workspace health, and a localhost Studio dashboard for end-user drift triage
 - audits local registry content repositories with Content Health reports for schema, reference, and quality coverage
 - searches the registry and showcase benchmark corpus
+- filters blueprints through public portfolio sets: `All`, `Featured`, `Certified`, and opt-in `Labs`
 - syncs paginated hosted registry content into a full slug-keyed local cache for offline guards and context generation
 - validates, refreshes, and maintains `decantr.essence.json`
 
 ## Common Commands
 
 ```bash
-decantr new my-app --blueprint=agent-marketplace
+decantr new my-app --blueprint=esports-hq
 decantr analyze
 decantr init --existing --accept-proposal
 decantr check --brownfield
-decantr init --existing --blueprint=agent-marketplace
+decantr init --existing --blueprint=esports-hq
 decantr init --workflow=greenfield --adoption=contract-only
 decantr rules preview
 decantr rules apply
@@ -92,6 +93,9 @@ decantr telemetry explain
 decantr telemetry link --enable --org <org-slug>
 decantr content-health --ci --fail-on error
 decantr registry summary --namespace @official --json
+decantr list blueprints --blueprint-set featured
+decantr list blueprints --blueprint-set certified
+decantr search dashboard --type blueprint --blueprint-set labs
 decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
 decantr list patterns
 decantr showcase verification --json
@@ -214,7 +218,7 @@ pnpm --filter @decantr/cli certify:blueprints -- --blueprints=portfolio,legal-re
 Offline blueprint scaffolding expects a real local content source:
 
 ```bash
-DECANTR_CONTENT_DIR=/path/to/decantr-content decantr new my-app --blueprint=agent-marketplace --offline
+DECANTR_CONTENT_DIR=/path/to/decantr-content decantr new my-app --blueprint=esports-hq --offline
 ```
 
 If a requested offline blueprint, archetype, or theme cannot be resolved from local cache/custom content or `DECANTR_CONTENT_DIR`, the CLI now stops explicitly instead of silently falling back to the default scaffold.

@@ -1740,7 +1740,7 @@ describe('registry commands (e2e)', () => {
       'search portfolio --sort name --type blueprints --recommended --source hybrid',
       env,
     );
-    await runCliAsync(
+    const listOutput = await runCliAsync(
       testDir,
       'list blueprints --sort recent --recommended --source authored',
       env,
@@ -1768,5 +1768,7 @@ describe('registry commands (e2e)', () => {
           url.includes('intelligence_source=authored'),
       ),
     ).toBe(true);
+    expect(listOutput).toContain('alpha');
+    expect(listOutput).not.toContain('blueprint-1');
   });
 });

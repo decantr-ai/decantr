@@ -52,6 +52,71 @@
         "null"
       ]
     },
+    "blueprint_portfolio": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": [
+            "visibility",
+            "maturity",
+            "rationale",
+            "artifact"
+          ],
+          "properties": {
+            "visibility": {
+              "enum": [
+                "featured",
+                "public",
+                "labs",
+                "hidden"
+              ]
+            },
+            "maturity": {
+              "enum": [
+                "certified-flagship",
+                "supported-contract",
+                "experimental",
+                "fold-candidate",
+                "legacy-hidden"
+              ]
+            },
+            "rationale": {
+              "type": "string"
+            },
+            "recommended_alternative": {
+              "type": "string"
+            },
+            "artifact": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "none",
+                    "planned",
+                    "candidate",
+                    "certified"
+                  ]
+                },
+                "showcase": {
+                  "type": "string"
+                },
+                "notes": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "intelligence": {
       "anyOf": [
         {

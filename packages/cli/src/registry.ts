@@ -5,6 +5,7 @@ import type {
   Archetype,
   Blueprint,
   Pattern,
+  PublicBlueprintSet,
   Shell,
   Theme,
 } from '@decantr/registry';
@@ -121,6 +122,8 @@ async function fetchAllContent<T extends ApiContentType>(
     sort?: string;
     recommended?: boolean;
     intelligenceSource?: string;
+    blueprintSet?: PublicBlueprintSet;
+    labs?: boolean;
   } = {},
 ): Promise<{ items: RegistryContentMap[T][]; total: number; limit: number; offset: number }> {
   const items: RegistryContentMap[T][] = [];
@@ -251,6 +254,8 @@ export class RegistryClient {
     sort?: string,
     recommended?: boolean,
     intelligenceSource?: string,
+    blueprintSet?: PublicBlueprintSet,
+    labs?: boolean,
   ): Promise<FetchResult<{ items: RegistryContentMap[T][]; total: number }>> {
     let apiItems: RegistryContentMap[T][] = [];
     let source: RegistrySource = { type: 'cache' };
@@ -263,6 +268,8 @@ export class RegistryClient {
           sort,
           recommended,
           intelligenceSource,
+          blueprintSet,
+          labs,
         });
         apiItems = apiResult.items;
         source = { type: 'api', url: this.apiUrl };

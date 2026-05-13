@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getBlueprintPortfolioMetadata } from '@decantr/registry/client';
 import { createClient } from '@/lib/supabase/server';
 import { getContent } from '@/lib/api';
 import type { ContentRecord } from '@/lib/api';
@@ -430,6 +431,33 @@ function getThemeLabel(theme: BlueprintLaunchpadModel['theme']): string {
   return [theme.id, theme.mode, theme.shape].filter(Boolean).join(' / ');
 }
 
+function getBlueprintPortfolioEvidence(value: unknown): EvidenceSection | null {
+  const portfolio = getBlueprintPortfolioMetadata(value);
+  if (!portfolio) return null;
+
+  const publicSet = portfolio.visibility === 'hidden'
+    ? 'Direct link only'
+    : portfolio.artifact.status === 'certified'
+      ? 'Certified'
+      : portfolio.visibility === 'featured'
+        ? 'Featured'
+        : portfolio.visibility === 'labs'
+          ? 'Labs'
+          : 'All';
+
+  return {
+    title: 'Blueprint portfolio',
+    items: [
+      `Public set: ${publicSet}`,
+      `Artifact status: ${portfolio.artifact.status}`,
+      portfolio.rationale,
+      ...(portfolio.recommended_alternative
+        ? [`Recommended alternative: ${portfolio.recommended_alternative}`]
+        : []),
+    ],
+  };
+}
+
 function LaunchMetricCard({
   label,
   value,
@@ -697,6 +725,8 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
   const displaySourceLine = getDisplaySourceLine(content);
   const contentData = isRecord(content.data) ? content.data : {};
   const blueprintModel = singular === 'blueprint' ? getBlueprintLaunchpadModel(contentData) : null;
+  const blueprintPortfolioEvidence =
+    singular === 'blueprint' ? getBlueprintPortfolioEvidence(contentData) : null;
   const artifactDefaultTab = blueprintModel || intelligence || showcaseMeta ? 'overview' : 'json';
   const artifactCommands: ActionSpec[] = [
     ...quickStart.actions,
@@ -712,6 +742,7 @@ export default async function ContentDetailPage({ params }: DetailPageProps) {
       : []),
   ];
   const artifactEvidence: EvidenceSection[] = [
+    ...(blueprintPortfolioEvidence ? [blueprintPortfolioEvidence] : []),
     ...(intelligence
       ? [
           {

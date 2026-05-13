@@ -3,6 +3,9 @@ import {
   isContentIntelligenceSource,
   type ContentIntelligenceSource,
   CONTENT_TYPE_TO_API_CONTENT_TYPE,
+  getBlueprintPortfolioMetadata,
+  isPublicBlueprintSet,
+  type PublicBlueprintSet,
 } from '@decantr/registry';
 import type { Env } from '../types.js';
 import { PLURAL_TO_SINGULAR, isApiContentType, isContentType, parsePagination } from '../types.js';
@@ -29,6 +32,7 @@ searchRoutes.get('/search', async (c) => {
   const sort = c.req.query('sort') ?? undefined;
   const recommendedOnly = c.req.query('recommended') === 'true';
   const rawIntelligenceSource = c.req.query('intelligence_source');
+  const rawBlueprintSet = c.req.query('blueprint_set');
   const { limit, offset } = parsePagination(c.req.query('limit'), c.req.query('offset'));
 
   if (!query) {
@@ -43,6 +47,10 @@ searchRoutes.get('/search', async (c) => {
     return c.json({ error: `Invalid intelligence source: ${rawIntelligenceSource}` }, 400);
   }
 
+  if (rawBlueprintSet && !isPublicBlueprintSet(rawBlueprintSet)) {
+    return c.json({ error: `Invalid blueprint set: ${rawBlueprintSet}` }, 400);
+  }
+
   const source: PublicContentSource | undefined =
     rawSource && isPublicContentSource(rawSource)
       ? rawSource
@@ -51,6 +59,9 @@ searchRoutes.get('/search', async (c) => {
     rawIntelligenceSource && isContentIntelligenceSource(rawIntelligenceSource)
       ? rawIntelligenceSource
       : undefined;
+  const blueprintSet: PublicBlueprintSet =
+    rawBlueprintSet && isPublicBlueprintSet(rawBlueprintSet) ? rawBlueprintSet : 'all';
+  const includeLabs = c.req.query('labs') === 'true' || blueprintSet === 'labs';
 
   // Map plural type filter to singular
   let singularType: ContentType | null = null;
@@ -66,8 +77,11 @@ searchRoutes.get('/search', async (c) => {
   }
 
   const client = createAdminClient();
+  const needsPortfolioFiltering = singularType === null || singularType === 'blueprint';
   const requestedCount =
-    recommendedOnly || intelligenceSource ? 500 : Math.min(limit + offset, 500);
+    recommendedOnly || intelligenceSource || source || needsPortfolioFiltering
+      ? 500
+      : Math.min(limit + offset, 500);
 
   const { data, error } = await client.rpc('search_content', {
     search_query: query,
@@ -103,6 +117,9 @@ searchRoutes.get('/search', async (c) => {
       item.slug,
       item.data as Record<string, unknown> | null | undefined,
     ),
+    blueprint_portfolio: getBlueprintPortfolioMetadata(
+      item.data as Record<string, unknown> | null | undefined,
+    ),
     intelligence: getContentIntelligence(
       item.type as ContentType,
       item.namespace,
@@ -118,12 +135,17 @@ searchRoutes.get('/search', async (c) => {
     sort,
     recommendedOnly,
     intelligenceSource,
+    blueprintSet,
+    includeLabs,
     limit,
     offset,
   );
 
   return c.json({
-    total: recommendedOnly || intelligenceSource || source ? ordered.filteredTotal : total,
+    total:
+      recommendedOnly || intelligenceSource || source || needsPortfolioFiltering
+        ? ordered.filteredTotal
+        : total,
       limit,
       offset,
       results: ordered.items,

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { isPublicBlueprintSet, type PublicBlueprintSet } from '@decantr/registry/client';
 import { listContent, searchContent } from '@/lib/api';
 import type { ContentItem } from '@/lib/api';
 import { ContentCardGrid } from '@/components/content-card-grid';
@@ -37,6 +38,7 @@ interface BrowsePageProps {
     type?: string;
     source?: string;
     sort?: string;
+    blueprint_set?: string;
     offset?: string;
   }>;
 }
@@ -52,6 +54,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     ? params.source
     : undefined;
   const sort = normalizePublicContentSort(params.sort);
+  const blueprintSet: PublicBlueprintSet = isPublicBlueprintSet(params.blueprint_set)
+    ? params.blueprint_set
+    : 'all';
   const offset = parseInt(params.offset ?? '0', 10) || 0;
 
   let items: ContentItem[] = [];
@@ -63,6 +68,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
         type: selectedType,
         source,
         sort,
+        blueprintSet: selectedType === 'blueprints' ? blueprintSet : undefined,
         limit: LIMIT,
         offset,
       });
@@ -72,6 +78,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
       const result = await listContent(selectedType, {
         source,
         sort,
+        blueprintSet: selectedType === 'blueprints' ? blueprintSet : undefined,
         limit: LIMIT,
         offset,
       });
@@ -84,6 +91,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
           listContent(type, {
             source,
             sort,
+            blueprintSet: type === 'blueprints' ? blueprintSet : undefined,
             limit: requestedCount,
             offset: 0,
           })
@@ -106,7 +114,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   const title = selectedType ? CONTENT_TYPE_LABELS[selectedType] : 'Browse';
   const description = selectedType
-    ? CONTENT_TYPE_DESCRIPTIONS[selectedType]
+    ? selectedType === 'blueprints'
+      ? 'Browse supported blueprint contracts. Featured and Certified are the strongest default picks; Labs contains promising directions that need more proof.'
+      : CONTENT_TYPE_DESCRIPTIONS[selectedType]
     : 'Explore the full Decantr registry across patterns, themes, blueprints, archetypes, and shells.';
   const jsonLd = buildRegistryCollectionJsonLd({
     path: selectedType ? `/browse/${selectedType}` : '/browse',

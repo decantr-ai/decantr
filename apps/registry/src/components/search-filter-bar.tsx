@@ -1,6 +1,10 @@
 'use client';
 
-import { normalizePublicContentSort } from '@decantr/registry/client';
+import {
+  isPublicBlueprintSet,
+  normalizePublicContentSort,
+  type PublicBlueprintSet,
+} from '@decantr/registry/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition, type ReactNode } from 'react';
 import {
@@ -20,6 +24,13 @@ const SORT_OPTIONS = [
   { value: 'recent', label: 'Recently Published' },
   { value: 'name', label: 'Name A-Z' },
 ] as const;
+
+const BLUEPRINT_SET_OPTIONS: Array<{ value: PublicBlueprintSet; label: string }> = [
+  { value: 'all', label: 'All' },
+  { value: 'featured', label: 'Featured' },
+  { value: 'certified', label: 'Certified' },
+  { value: 'labs', label: 'Labs' },
+];
 
 interface SearchFilterBarProps {
   baseUrl?: string;
@@ -58,7 +69,11 @@ export function SearchFilterBar({
   )
     ? (searchParams.get('source') as RegistrySourceFilter)
     : 'all';
+  const currentBlueprintSet = isPublicBlueprintSet(searchParams.get('blueprint_set'))
+    ? (searchParams.get('blueprint_set') as PublicBlueprintSet)
+    : 'all';
   const [query, setQuery] = useState(currentQuery);
+  const showBlueprintSets = activeType === 'blueprints';
 
   const navigate = useCallback(
     (updates: Record<string, string>) => {
@@ -90,6 +105,9 @@ export function SearchFilterBar({
     const params = new URLSearchParams(searchParams.toString());
     params.delete('offset');
     params.delete('type');
+    if (type !== 'blueprints') {
+      params.delete('blueprint_set');
+    }
     const nextBase = type ? `/browse/${type}` : '/browse';
     const qs = params.toString();
 
@@ -104,6 +122,10 @@ export function SearchFilterBar({
 
   function handleSourceChange(source: RegistrySourceFilter) {
     navigate({ source });
+  }
+
+  function handleBlueprintSetChange(set: PublicBlueprintSet) {
+    navigate({ blueprint_set: set });
   }
 
   function renderSourceFilters(mode: 'desktop' | 'mobile') {
@@ -122,6 +144,30 @@ export function SearchFilterBar({
             data-source={option.value}
             onClick={() => handleSourceChange(option.value)}
             aria-label={`Show ${option.label.toLowerCase()} content`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  function renderBlueprintSetFilters(mode: 'desktop' | 'mobile') {
+    if (!showBlueprintSets) {
+      return null;
+    }
+
+    return (
+      <div className="registry-source-strip" data-mode={mode} role="group" aria-label="Filter blueprints">
+        {BLUEPRINT_SET_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className="d-interactive registry-source-pill"
+            data-variant={currentBlueprintSet === option.value ? 'primary' : 'ghost'}
+            data-source={option.value}
+            onClick={() => handleBlueprintSetChange(option.value)}
+            aria-label={`Show ${option.label.toLowerCase()} blueprints`}
           >
             {option.label}
           </button>
@@ -209,6 +255,7 @@ export function SearchFilterBar({
           {resultCount !== undefined ? (
             <span className="registry-search-results">{resultCount} results</span>
           ) : null}
+          {renderBlueprintSetFilters('desktop')}
           {renderSourceFilters('desktop')}
         </div>
 
@@ -246,6 +293,7 @@ export function SearchFilterBar({
 
       <div className="registry-mobile-filters" data-open={mobileFiltersOpen}>
         <div className="d-surface registry-mobile-filters-surface">
+          {renderBlueprintSetFilters('mobile')}
           {renderSourceFilters('mobile')}
           {showSort ? (
             <label className="registry-search-sort">
