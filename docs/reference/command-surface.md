@@ -7,9 +7,9 @@ This is the current command audit for the 2.x reliability layer. The goal is con
 | `setup` | primary | keep | Detect project state and recommend the right Decantr workflow without writing files. |
 | `new` | primary | keep | Greenfield workspace creation. |
 | `adopt` | primary | keep | Brownfield one-liner over analyze, proposal acceptance, Project Health, evidence, baseline, and optional CI. |
-| `task` | primary | keep | Route/task context activation for AI coding assistants. |
-| `verify` | primary | keep | One reliability gate over Project Health, optional Brownfield guard checks, baselines, evidence, local-pattern requirement, and workspace health. |
-| `codify` | primary | keep | Propose and accept project-owned Brownfield UI patterns. |
+| `task` | primary | keep | Route/task context activation for AI coding assistants, including local law and changed-file impact. |
+| `verify` | primary | keep | One reliability gate over Project Health, optional Brownfield guard checks, baselines, evidence, local law, and workspace health. |
+| `codify` | primary | keep | Propose and accept project-owned Brownfield UI patterns and rules. |
 | `studio` | primary | keep | Local Project Health and workspace triage UI. |
 | `content` | content-author | keep | Content-author namespace over check/create/publish. |
 | `magic` | advanced | keep | Intent-first greenfield path; not the primary enterprise story. |
@@ -30,9 +30,9 @@ The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered
 Brownfield intelligence is now exposed through workflows first:
 
 - `decantr adopt` runs the full adoption path and explains the underlying primitives before writing.
-- `decantr task <route>` surfaces the relevant context files, patterns, screenshot references, and local pattern pack for the next LLM edit.
-- `decantr codify` proposes `.decantr/local-patterns.proposal.json`; `decantr codify --accept` promotes it to `.decantr/local-patterns.json`.
-- `decantr verify --brownfield --local-patterns` runs the reliability gate and requires accepted local patterns when a project chooses that layer.
+- `decantr task <route>` surfaces the relevant context files, patterns, screenshot references, accepted local laws, changed files, and impacted routes for the next LLM edit.
+- `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `decantr codify --accept` promotes them to `.decantr/local-patterns.json` and `.decantr/rules.json`.
+- `decantr verify --brownfield --local-patterns` runs the reliability gate, requires accepted local patterns, and scans accepted local rules when present.
 - `decantr analyze` still writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
 - `decantr suggest` accepts `--route`, `--file`, and `--from-code` for better pattern discovery without adding a new top-level command.
 - `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface.

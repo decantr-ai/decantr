@@ -2,7 +2,7 @@
 
 Project Health is the end-user reliability surface for a Decantr project. It answers: is this application still aligned with its Decantr contract, where has it drifted, what should be fixed first, and what prompt or command should the developer run next?
 
-It is local-only by default. `decantr verify` is the user-facing reliability command; it delegates to Project Health and adds workflow conveniences such as Brownfield guard checks, evidence output defaults, workspace mode, and local-pattern requirements. `decantr health` remains the advanced primitive that reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. None of these commands uploads source code, prompts, raw file paths, environment variables, or customer project data.
+It is local-only by default. `decantr verify` is the user-facing reliability command; it delegates to Project Health and adds workflow conveniences such as Brownfield guard checks, evidence output defaults, workspace mode, local-pattern requirements, and accepted local-rule scans. `decantr health` remains the advanced primitive that reads the current project, composes a structured report, and prints it locally. `decantr studio` serves the same report from localhost for visual triage. None of these commands uploads source code, prompts, raw file paths, environment variables, or customer project data.
 
 Projects that explicitly opt into Decantr CLI telemetry, including through `decantr new --telemetry`, `decantr init --telemetry`, or `decantr check --telemetry`, may emit aggregate Project Health usage signals such as report status, score, finding counts, CI failure outcome, Studio start/refresh activity, and remediation prompt requests. The report body, finding evidence, raw routes, local paths, source files, and prompts stay local.
 
@@ -14,6 +14,7 @@ For registry content repositories such as `decantr-content`, use [Content Health
 decantr verify
 decantr verify --brownfield
 decantr verify --local-patterns
+decantr verify --brownfield --local-patterns --fail-on warn
 decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
 decantr verify --workspace --changed --since origin/main
@@ -49,6 +50,7 @@ The report composes existing Decantr evidence instead of inventing a parallel ch
 - contract assertions compiled from Essence/context
 - guard and interaction findings from `decantr check`
 - brownfield route drift when `.decantr/project.json` declares `brownfield-attach`
+- accepted local law from `.decantr/local-patterns.json` and `.decantr/rules.json` when `decantr verify --local-patterns` is used
 - built runtime evidence when a `dist/` output exists
 - optional local browser verification when Playwright is installed and `--browser --base-url <url>` is provided
 - optional Figma/Tokens Studio token comparison through `--design-tokens <path>`
@@ -192,15 +194,15 @@ Brownfield health respects existing-app authority. It reports evidence and remed
 
 `decantr analyze` writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md` alongside the original analysis/proposal/report files. Theme inventory observes light, dark, and variant theme selectors without changing Essence V4. Those artifacts are local context for agents and reviewers, not source takeover.
 
-`decantr codify` adds a project-owned pattern layer for things the official registry cannot infer from a contract-only app:
+`decantr codify --from-audit` adds a project-owned local law layer for things the official registry cannot infer from a contract-only app:
 
 ```bash
-decantr codify
+decantr codify --from-audit
 decantr codify --accept
-decantr verify --local-patterns
+decantr verify --brownfield --local-patterns
 ```
 
-The accepted `.decantr/local-patterns.json` is local context and governance. Deterministic failures such as raw hex bans or wrapper-only buttons should still be enforced through the project rule stack.
+The accepted `.decantr/local-patterns.json` is local context and governance. The accepted `.decantr/rules.json` adds narrow local scans for obvious drift. Deeper deterministic failures such as framework-specific wrapper-only rules should still be enforced through the project rule stack.
 
 ## Hybrid Composition
 
@@ -230,7 +232,7 @@ Use these options to tune the generated workflow:
 ```bash
 decantr verify init-ci --force
 decantr verify init-ci --fail-on warn
-decantr verify init-ci --cli-version 2.7.0
+decantr verify init-ci --cli-version 2.8.0
 decantr verify init-ci --workflow-path .github/workflows/project-health.yml
 decantr verify init-ci --project apps/registry
 decantr verify init-ci --workspace

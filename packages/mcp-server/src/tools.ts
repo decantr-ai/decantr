@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
@@ -94,6 +95,72 @@ function readJsonIfExists<T>(path: string): T | null {
   } catch {
     return null;
   }
+}
+
+function changedFilesForTask(projectRoot: string): string[] {
+  const changed = new Set<string>();
+  try {
+    for (const args of [
+      ['diff', '--name-only'],
+      ['diff', '--name-only', '--cached'],
+    ]) {
+      const output = execFileSync('git', args, {
+        cwd: projectRoot,
+        encoding: 'utf-8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      for (const entry of output.split(/\r?\n/)) {
+        const file = entry.trim();
+        if (file) changed.add(file);
+      }
+    }
+  } catch {
+    // MCP may run outside a git repository.
+  }
+  return [...changed].sort();
+}
+
+function impactedRoutesForFiles(projectRoot: string, files: string[]): string[] {
+  const analysis = readJsonIfExists<{ routes?: { routes?: Array<{ path?: string; file?: string }> } }>(
+    join(projectRoot, '.decantr', 'analysis.json'),
+  );
+  const routeEntries = analysis?.routes?.routes ?? [];
+  const impacted = new Set<string>();
+  for (const file of files) {
+    for (const route of routeEntries) {
+      if (route.file && (file === route.file || file.endsWith(route.file))) {
+        if (route.path) impacted.add(route.path);
+      }
+    }
+  }
+  return [...impacted].sort();
+}
+
+function localLawSummary(projectRoot: string) {
+  const patterns = readJsonIfExists<{
+    patterns?: Array<{ id?: string; role?: string; componentPaths?: string[] }>;
+  }>(join(projectRoot, '.decantr', 'local-patterns.json'));
+  const rules = readJsonIfExists<{
+    rules?: Array<{ id?: string; enabled?: boolean; severity?: string; description?: string }>;
+  }>(join(projectRoot, '.decantr', 'rules.json'));
+
+  return {
+    patterns_path: patterns ? '.decantr/local-patterns.json' : null,
+    rules_path: rules ? '.decantr/rules.json' : null,
+    patterns:
+      patterns?.patterns?.map((pattern) => ({
+        id: pattern.id ?? 'unknown',
+        role: pattern.role ?? null,
+        component_paths: pattern.componentPaths ?? [],
+      })) ?? [],
+    rules:
+      rules?.rules?.map((rule) => ({
+        id: rule.id ?? 'unknown',
+        enabled: rule.enabled ?? false,
+        severity: rule.severity ?? 'warn',
+        description: rule.description ?? null,
+      })) ?? [],
+  };
 }
 
 function extractPatternIdsFromLayoutItem(item: unknown, ids: Set<string>): void {
@@ -2860,6 +2927,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const themeInventory = readJsonIfExists<Record<string, unknown>>(
         join(process.cwd(), '.decantr', 'theme-inventory.json'),
       );
+      const localLaw = localLawSummary(process.cwd());
+      const changedFiles = changedFilesForTask(process.cwd());
+      const changedRoutes = impactedRoutesForFiles(process.cwd(), changedFiles);
       const patternIds = extractPagePatternIds(page);
       const ranked = rankPatternCandidates(
         {
@@ -2921,12 +2991,21 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
               path: '.decantr/theme-inventory.json',
             }
           : null,
+        local_law: localLaw,
+        change_impact: {
+          changed_files: changedFiles.slice(0, 40),
+          changed_file_count: changedFiles.length,
+          impacted_routes: changedRoutes,
+        },
+        verify_command: 'decantr verify --brownfield --local-patterns',
         local_files: {
           page_pack: pageManifest?.markdown ?? null,
           section_pack: sectionManifest?.markdown ?? null,
           section_context: existsSync(sectionContextPath)
             ? `.decantr/context/section-${section.id}.md`
             : null,
+          local_patterns: localLaw.patterns_path,
+          local_rules: localLaw.rules_path,
           visual_manifest: existsSync(
             join(process.cwd(), '.decantr', 'evidence', 'visual-manifest.json'),
           )

@@ -30,7 +30,8 @@ The important files are:
 - `decantr.essence.json`: the durable product and design contract.
 - `.decantr/context/scaffold.md`: app topology, route map, voice, and shared components.
 - `.decantr/context/section-*.md`: focused section/page implementation contracts.
-- `.decantr/local-patterns.json`: optional project-owned Brownfield UI law after `decantr codify --accept`.
+- `.decantr/local-patterns.json`: optional project-owned Brownfield UI standards after `decantr codify --accept`.
+- `.decantr/rules.json`: optional project-owned Brownfield rule checks after `decantr codify --accept`.
 
 ## Assistant Rule Bridge
 
@@ -50,10 +51,10 @@ CLI-only assistants should use task activation before editing Brownfield routes:
 npx @decantr/cli task /feed "improve the recipe feed loading and card layout"
 ```
 
-That output points to `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, matching page/section packs, local screenshots, and accepted local patterns when present. After the assistant edits code, run:
+That output points to `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, matching page/section packs, local screenshots, accepted local patterns, accepted local rules, changed files, and impacted routes when present. After the assistant edits code, run:
 
 ```bash
-npx @decantr/cli verify --brownfield
+npx @decantr/cli verify --brownfield --local-patterns
 ```
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md).

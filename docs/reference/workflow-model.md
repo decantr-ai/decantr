@@ -62,25 +62,25 @@ decantr init --existing --replace-essence # explicit destructive replacement wit
 
 Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
 
-Task-time activation is explicit. MCP clients should call `decantr_prepare_task_context` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use the existing pack path: `decantr registry get-pack page --route <route>` or generated `.decantr/context/page-*-pack.md` files.
+Task-time activation is explicit. MCP clients should call `decantr_prepare_task_context` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
 
 For CLI-only assistants, prefer:
 
 ```bash
 decantr task /feed "add saved recipe actions"
-decantr verify --brownfield
+decantr verify --brownfield --local-patterns
 ```
 
 Project-owned Brownfield UI law is explicit:
 
 ```bash
-decantr codify
-# review .decantr/local-patterns.proposal.json
+decantr codify --from-audit
+# review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 decantr codify --accept
-decantr verify --local-patterns
+decantr verify --brownfield --local-patterns
 ```
 
-This local pattern layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, and form controls. It complements, but does not replace, mechanical rules in ESLint, Biome, Storybook, visual regression, or project tests.
+This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
 
 ## Project Health
 

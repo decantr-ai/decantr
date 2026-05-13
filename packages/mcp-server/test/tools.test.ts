@@ -240,6 +240,29 @@ describe('MCP tool handlers', () => {
           modes: [{ mode: 'dark', evidence: ['class=dark'] }],
           variants: [{ name: 'holiday', evidence: ['data-theme=holiday'] }],
         });
+        writeJson(join(projectDir, '.decantr', 'local-patterns.json'), {
+          version: 2,
+          status: 'accepted',
+          patterns: [
+            {
+              id: 'button',
+              role: 'Actions and command triggers',
+              componentPaths: ['src/components/Button.tsx'],
+            },
+          ],
+        });
+        writeJson(join(projectDir, '.decantr', 'rules.json'), {
+          version: 1,
+          status: 'accepted',
+          rules: [
+            {
+              id: 'no-inline-style',
+              enabled: true,
+              severity: 'warn',
+              description: 'Reusable UI should not add static inline styles.',
+            },
+          ],
+        });
 
         const result = (await handleTool('decantr_prepare_task_context', {
           route: '/feed',
@@ -261,7 +284,15 @@ describe('MCP tool handlers', () => {
             changed_routes: string[];
           };
           theme_inventory: { modes: unknown[]; variants: unknown[]; path: string };
-          local_files: { visual_manifest: string };
+          local_law: {
+            patterns_path: string;
+            rules_path: string;
+            patterns: Array<{ id: string; component_paths: string[] }>;
+            rules: Array<{ id: string; severity: string }>;
+          };
+          change_impact: { changed_file_count: number; impacted_routes: string[] };
+          verify_command: string;
+          local_files: { visual_manifest: string; local_patterns: string; local_rules: string };
         };
 
         expect(result.route).toBe('/feed');
@@ -281,7 +312,15 @@ describe('MCP tool handlers', () => {
         expect(result.theme_inventory.path).toBe('.decantr/theme-inventory.json');
         expect(result.theme_inventory.modes).toHaveLength(1);
         expect(result.theme_inventory.variants).toHaveLength(1);
+        expect(result.local_law.patterns_path).toBe('.decantr/local-patterns.json');
+        expect(result.local_law.rules_path).toBe('.decantr/rules.json');
+        expect(result.local_law.patterns[0].component_paths).toContain('src/components/Button.tsx');
+        expect(result.local_law.rules[0].id).toBe('no-inline-style');
+        expect(result.change_impact.changed_file_count).toBeGreaterThanOrEqual(0);
+        expect(result.verify_command).toBe('decantr verify --brownfield --local-patterns');
         expect(result.local_files.visual_manifest).toBe('.decantr/evidence/visual-manifest.json');
+        expect(result.local_files.local_patterns).toBe('.decantr/local-patterns.json');
+        expect(result.local_files.local_rules).toBe('.decantr/rules.json');
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
       }

@@ -27,8 +27,10 @@ npx @decantr/cli adopt --project apps/web --base-url http://localhost:3000 --evi
 - `.decantr/theme-inventory.json`: observed light/dark/variant theme selectors and token evidence. Essence V4 is unchanged; variants are reported, not promoted.
 - `.decantr/enrichment-backlog.md`: checklist for turning the first attach pass into stronger section/page directives.
 - `.decantr/evidence/visual-manifest.json`: local route-to-screenshot map when `health --browser --base-url <url> --evidence` is run.
-- `.decantr/local-patterns.proposal.json`: project-owned pattern proposal when `decantr codify` is run.
+- `.decantr/local-patterns.proposal.json`: project-owned pattern proposal when `decantr codify --from-audit` is run.
+- `.decantr/rules.proposal.json`: project-owned rule proposal when `decantr codify --from-audit` is run.
 - `.decantr/local-patterns.json`: accepted project-owned UI law when `decantr codify --accept` is run.
+- `.decantr/rules.json`: accepted project-owned local rule checks when `decantr codify --accept` is run.
 
 ## What Decantr Does Not Do
 
@@ -48,18 +50,18 @@ The CLI shortcut is:
 
 ```bash
 npx @decantr/cli task /feed "add saved recipe actions"
-npx @decantr/cli verify --brownfield
+npx @decantr/cli verify --brownfield --local-patterns
 ```
 
 When the app has repeated local UI decisions that Decantr cannot infer from the public registry, codify them as project-owned law:
 
 ```bash
-npx @decantr/cli codify
-# review .decantr/local-patterns.proposal.json
+npx @decantr/cli codify --from-audit
+# review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 npx @decantr/cli codify --accept
-npx @decantr/cli verify --local-patterns
+npx @decantr/cli verify --brownfield --local-patterns
 ```
 
-This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer; mechanical enforcement for things like raw hex bans or wrapper-only buttons should still live in the project rule stack where it can fail CI deterministically.
+This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
 
 See also: [Workflow Model](../reference/workflow-model.md), [Project Health](../reference/project-health.md).

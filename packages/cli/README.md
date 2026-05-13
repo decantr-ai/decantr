@@ -20,7 +20,7 @@ npx @decantr/cli new my-app --blueprint=esports-hq
 Use `decantr setup` when you are unsure which path applies. It detects whether the repo is empty, already attached, or a Brownfield app and recommends the next command.
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, and only applies it when you explicitly accept or merge it.
-Use `decantr task` before asking an LLM to modify a route, and `decantr verify` after the edit. Use `decantr codify` when you want project-owned UI patterns such as local button/card/shell standards to appear in future task context.
+Use `decantr task` before asking an LLM to modify a route, and `decantr verify` after the edit. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification.
 Use `decantr init`, `decantr analyze`, `decantr check`, and `decantr health` as advanced primitives when you need direct control over one step.
 
 Current starter adapter availability:
@@ -39,10 +39,10 @@ Explicit workflow/adoption flags:
 ```bash
 decantr setup
 decantr adopt --base-url http://localhost:3000 --evidence --yes
-decantr task /feed "add saved recipe actions"
-decantr verify --brownfield
-decantr codify
+decantr codify --from-audit
 decantr codify --accept
+decantr task /feed "add saved recipe actions"
+decantr verify --brownfield --local-patterns
 decantr init --workflow=greenfield --adoption=contract-only
 decantr analyze
 decantr init --existing --accept-proposal
@@ -65,7 +65,7 @@ Monorepos store both `workspaceRoot` and `appRoot`. In non-interactive workspace
 
 Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
 
-Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. It also writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. Theme variants are observed in the theme inventory without changing Essence V4. `decantr verify --brownfield` uses the Brownfield guard layer to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, and unsafe defaults without treating current database migrations as stale docs.
+Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. It also writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. Theme variants are observed in the theme inventory without changing Essence V4. `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `decantr codify --accept` promotes `.decantr/local-patterns.json` and `.decantr/rules.json`. `decantr verify --brownfield --local-patterns` uses the Brownfield guard layer plus accepted local law to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, raw local-rule violations, and unsafe defaults without treating current database migrations as stale docs.
 
 ## What It Does
 
@@ -87,9 +87,10 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 decantr setup
 decantr new my-app --blueprint=esports-hq
 decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr codify --from-audit
+decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
-decantr codify
 decantr init --existing --blueprint=esports-hq
 decantr init --workflow=greenfield --adoption=contract-only
 decantr rules preview
@@ -114,13 +115,14 @@ decantr showcase verification --json
 
 ## Project Health And Studio
 
-`decantr verify` is the workflow command most users should run locally and in CI. It delegates to Project Health, can add Brownfield guard validation with `--brownfield`, requires an accepted local pattern pack with `--local-patterns`, supports workspace mode, and writes evidence to `.decantr/evidence/latest.json` by default when `--evidence` is used.
+`decantr verify` is the workflow command most users should run locally and in CI. It delegates to Project Health, can add Brownfield guard validation with `--brownfield`, requires an accepted local pattern pack with `--local-patterns`, scans `.decantr/rules.json` when present, supports workspace mode, and writes evidence to `.decantr/evidence/latest.json` by default when `--evidence` is used.
 
 `decantr health` remains the advanced project observability primitive. It composes the existing verifier audit, guard checks, brownfield route drift checks, runtime evidence, and execution-pack files into a `ProjectHealthReport` with a status, score, route summary, pack summary, findings, and AI-ready remediation prompts.
 
 ```bash
 decantr verify
 decantr verify --brownfield --local-patterns
+decantr verify --brownfield --local-patterns --fail-on warn
 decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
 decantr verify init-ci --project apps/registry

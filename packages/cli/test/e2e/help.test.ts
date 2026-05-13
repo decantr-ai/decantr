@@ -73,7 +73,9 @@ describe('command help (e2e)', () => {
     expect(verify).toContain('decantr verify');
     expect(verify).toContain('--local-patterns');
     expect(task).toContain('decantr task');
+    expect(task).toContain('--since origin/main');
     expect(codify).toContain('decantr codify');
+    expect(codify).toContain('--from-audit');
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
   });
 

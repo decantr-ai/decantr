@@ -150,16 +150,16 @@ Brownfield adoption:
 
 ```bash
 decantr adopt --base-url http://localhost:3000 --evidence --yes
-decantr task /feed "add saved recipe actions"
-decantr codify
+decantr codify --from-audit
 decantr codify --accept
+decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
 decantr verify --since-baseline
 ```
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. The primitive commands remain available for advanced and scripted workflows.
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 

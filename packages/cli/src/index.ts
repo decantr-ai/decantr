@@ -72,6 +72,19 @@ import { detectProject, formatDetection } from './detect.js';
 import { buildGuardRegistryContext } from './guard-context.js';
 // V4 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from './lib/scan-interactions.js';
+import {
+  acceptBrownfieldLocalLaw,
+  changedFiles as collectChangedFiles,
+  createBrownfieldCodifyProposal,
+  createLocalLawTaskSummary,
+  localPatternsPath,
+  localPatternsProposalPath,
+  localRulesPath,
+  localRulesProposalPath,
+  routeImpacts,
+  validateLocalLaw,
+  writeBrownfieldCodifyProposal,
+} from './local-law.js';
 import { seedOfflineRegistry } from './offline-content.js';
 import {
   confirm,
@@ -3319,8 +3332,8 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
   if (detected.existingEssence) {
     console.log(`${BOLD}Recommended path:${RESET} maintain an attached Decantr project`);
     console.log(`  ${cyan('decantr task <route> "<change>"')}  Prepare LLM context before edits`);
-    console.log(`  ${cyan('decantr verify')}                  Run local health and drift checks`);
-    console.log(`  ${cyan('decantr codify')}                  Propose project-owned UI patterns`);
+    console.log(`  ${cyan('decantr verify --brownfield')}     Run local health and drift checks`);
+    console.log(`  ${cyan('decantr codify --from-audit')}     Propose project-owned local law`);
     return;
   }
 
@@ -3330,7 +3343,7 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
     console.log(
       `  ${cyan('decantr adopt --base-url http://localhost:3000 --evidence --yes')}  Include visual evidence`,
     );
-    console.log(`  ${cyan('decantr codify')}                            Propose local UI law`);
+    console.log(`  ${cyan('decantr codify --from-audit')}               Propose local UI law`);
     return;
   }
 
@@ -3428,10 +3441,12 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   }
 
   console.log('');
-  console.log(`${BOLD}Next useful commands:${RESET}`);
-  console.log(`  ${cyan('decantr task <route> "<change>"')}  Give your LLM route-specific context`);
-  console.log(`  ${cyan('decantr codify')}                  Propose project-owned UI patterns`);
-  console.log(`  ${cyan('decantr verify --since-baseline')} Compare future work against this baseline`);
+  console.log(`${BOLD}Brownfield operating loop:${RESET}`);
+  console.log(`  ${cyan('decantr codify --from-audit')}          Discover and propose project-owned UI law`);
+  console.log(`  ${cyan('decantr codify --accept')}              Accept reviewed local patterns and rules`);
+  console.log(`  ${cyan('decantr task <route> "<change>"')}      Give your LLM route-specific context before edits`);
+  console.log(`  ${cyan('decantr verify --brownfield --local-patterns')}  Check contract, health, and local law after edits`);
+  console.log(`  ${cyan('decantr verify --since-baseline')}      Compare future work against this baseline`);
 }
 
 async function cmdVerifyWorkflow(args: string[]): Promise<void> {
@@ -3457,6 +3472,7 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
   const localPatterns = flagBoolean(flags, 'local-patterns');
   const evidence = flagBoolean(flags, 'evidence');
   const baseUrl = flagString(flags, 'base-url');
+  const failOn = flagString(flags, 'fail-on') ?? 'error';
   const healthArgs = ['health', ...withoutWorkflowOnlyFlags(args)];
   if (flagBoolean(flags, 'baseline') && !healthArgs.includes('--save-baseline')) {
     healthArgs.push('--save-baseline');
@@ -3499,16 +3515,56 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
   await cmdHealth(workspaceInfo.appRoot, parseHealthArgs(healthArgs));
 
   if (localPatterns) {
-    const localPatternsPath = join(workspaceInfo.appRoot, '.decantr', 'local-patterns.json');
-    if (!existsSync(localPatternsPath)) {
-      console.log('');
-      console.log(
-        `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan('decantr codify --accept')} after reviewing the proposal.`,
-      );
+    const validation = validateLocalLaw(workspaceInfo.appRoot);
+    if (!validation.patternPackPresent) {
+      if (!quietOutput) {
+        console.log('');
+        console.log(
+          `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan('decantr codify --from-audit')}, review the proposal, then run ${cyan('decantr codify --accept')}.`,
+        );
+      }
       process.exitCode = process.exitCode || 1;
     } else {
-      console.log('');
-      console.log(`${GREEN}Local pattern pack found:${RESET} ${localPatternsPath}`);
+      const blockingFindings =
+        failOn === 'none'
+          ? []
+          : validation.findings.filter((finding) =>
+              failOn === 'warn'
+                ? finding.severity === 'warn' || finding.severity === 'error'
+                : finding.severity === 'error',
+            );
+      const blockingWarnings = failOn === 'warn' ? validation.warnings : [];
+      if (!quietOutput) {
+        console.log('');
+        console.log(`${GREEN}Local pattern pack found:${RESET} ${validation.patternsPath}`);
+        if (validation.ruleManifestPresent) {
+          console.log(`${GREEN}Local rule manifest found:${RESET} ${validation.rulesPath}`);
+        } else {
+          console.log(
+            `${YELLOW}Local rule manifest missing.${RESET} Run ${cyan('decantr codify --from-audit')} to propose .decantr/rules.json.`,
+          );
+        }
+        for (const warning of validation.warnings.slice(0, 8)) {
+          console.log(`${YELLOW}warn${RESET} ${warning}`);
+        }
+        if (validation.findings.length > 0) {
+          console.log('');
+          console.log(`${BOLD}Local law findings:${RESET}`);
+          for (const finding of validation.findings.slice(0, 20)) {
+            console.log(
+              `  ${finding.severity.toUpperCase()} ${finding.ruleId} ${finding.file}:${finding.line}:${finding.column} ${finding.message}`,
+            );
+          }
+          if (validation.findings.length > 20) {
+            console.log(dim(`  ...${validation.findings.length - 20} more finding(s)`));
+          }
+        } else if (validation.ruleManifestPresent) {
+          console.log(`${GREEN}Local rule checks passed.${RESET}`);
+        }
+      }
+      if (blockingFindings.length > 0 || blockingWarnings.length > 0) {
+        process.exitCode = process.exitCode || 1;
+      }
     }
   }
 
@@ -3533,7 +3589,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
 
   const routeInput = positional[0];
   if (!routeInput) {
-    console.error(error('Usage: decantr task <route> ["task summary"] [--project <path>] [--json]'));
+    console.error(error('Usage: decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]'));
     process.exitCode = 1;
     return;
   }
@@ -3576,7 +3632,12 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     routes?: Array<{ route: string; screenshot?: string | null }>;
   }>(join(workspaceInfo.appRoot, '.decantr', 'evidence', 'visual-manifest.json'));
   const screenshot = visualManifest?.routes?.find((entry) => entry.route === route)?.screenshot;
-  const localPatternsPath = join(workspaceInfo.appRoot, '.decantr', 'local-patterns.json');
+  const localPatternPackPath = localPatternsPath(workspaceInfo.appRoot);
+  const localRuleManifestPath = localRulesPath(workspaceInfo.appRoot);
+  const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
+  const changedSince = flagString(flags, 'since');
+  const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince);
+  const changedRoutes = routeImpacts(workspaceInfo.appRoot, currentChangedFiles);
 
   const context = {
     route,
@@ -3591,9 +3652,14 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       manifest?.scaffold?.markdown ? join('.decantr/context', manifest.scaffold.markdown) : null,
       '.decantr/context/scaffold.md',
       'DECANTR.md',
-      existsSync(localPatternsPath) ? '.decantr/local-patterns.json' : null,
+      existsSync(localPatternPackPath) ? '.decantr/local-patterns.json' : null,
+      existsSync(localRuleManifestPath) ? '.decantr/rules.json' : null,
     ].filter(Boolean),
     screenshot: screenshot ?? null,
+    localLaw,
+    changedFiles: currentChangedFiles,
+    changedRoutes,
+    verifyCommand: 'decantr verify --brownfield --local-patterns',
   };
 
   if (flagBoolean(flags, 'json')) {
@@ -3617,11 +3683,43 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     console.log(`${BOLD}Visual evidence:${RESET}`);
     console.log(`  ${cyan(context.screenshot)}`);
   }
+  if (context.localLaw.patternCount > 0 || context.localLaw.ruleCount > 0) {
+    console.log('');
+    console.log(`${BOLD}Project-owned local law:${RESET}`);
+    if (context.localLaw.patternsPath) {
+      console.log(`  Patterns: ${cyan(context.localLaw.patternsPath)} (${context.localLaw.patternCount})`);
+    }
+    if (context.localLaw.rulesPath) {
+      console.log(`  Rules: ${cyan(context.localLaw.rulesPath)} (${context.localLaw.ruleCount})`);
+    }
+    for (const pattern of context.localLaw.patterns.slice(0, 4)) {
+      const pathHint = pattern.componentPaths.length > 0 ? ` — ${pattern.componentPaths.slice(0, 2).join(', ')}` : '';
+      console.log(`  ${pattern.id}: ${pattern.role ?? 'local pattern'}${pathHint}`);
+    }
+  } else {
+    console.log('');
+    console.log(`${BOLD}Project-owned local law:${RESET}`);
+    console.log(`  ${YELLOW}Not codified yet.${RESET} Run ${cyan('decantr codify --from-audit')} after adoption.`);
+  }
+  if (context.changedFiles.length > 0) {
+    console.log('');
+    console.log(`${BOLD}Changed-file context:${RESET}`);
+    for (const file of context.changedFiles.slice(0, 8)) {
+      console.log(`  ${file}`);
+    }
+    if (context.changedFiles.length > 8) {
+      console.log(dim(`  ...${context.changedFiles.length - 8} more changed file(s)`));
+    }
+    if (context.changedRoutes.length > 0) {
+      console.log(`  Impacted routes: ${context.changedRoutes.join(', ')}`);
+    }
+  }
   console.log('');
   console.log(`${BOLD}LLM instruction:${RESET}`);
   console.log(
-    '  Preserve the existing runtime and styling system. Use the route pack, section context, local patterns, and visual evidence above as the task contract before changing code.',
+    '  Preserve the existing runtime and styling system. Use the route pack, section context, local laws, changed-file impact, and visual evidence above as the task contract before changing code.',
   );
+  console.log(`  After editing, run ${cyan(context.verifyCommand)}.`);
 }
 
 async function cmdCodifyWorkflow(args: string[]): Promise<void> {
@@ -3629,83 +3727,45 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   const workspaceInfo = resolveWorkflowProject(flags);
   if (!workspaceInfo) return;
 
-  const decantrDir = join(workspaceInfo.appRoot, '.decantr');
-  const proposalPathLocal = join(decantrDir, 'local-patterns.proposal.json');
-  const acceptedPath = join(decantrDir, 'local-patterns.json');
-
   if (flagBoolean(flags, 'accept')) {
-    if (!existsSync(proposalPathLocal)) {
-      console.error(error('No .decantr/local-patterns.proposal.json found. Run `decantr codify` first.'));
+    if (!existsSync(localPatternsProposalPath(workspaceInfo.appRoot)) && !existsSync(localRulesProposalPath(workspaceInfo.appRoot))) {
+      console.error(
+        error('No local law proposal found. Run `decantr codify --from-audit` or `decantr codify` first.'),
+      );
       process.exitCode = 1;
       return;
     }
-    writeFileSync(acceptedPath, readFileSync(proposalPathLocal, 'utf-8'), 'utf-8');
-    console.log(success(`Accepted local pattern pack: ${acceptedPath}`));
-    console.log(dim('Run `decantr verify --local-patterns` to require the pack during verification.'));
+    const result = acceptBrownfieldLocalLaw(workspaceInfo.appRoot);
+    if (result.patternAcceptedPath) {
+      console.log(success(`Accepted local pattern pack: ${result.patternAcceptedPath}`));
+    }
+    if (result.rulesAcceptedPath) {
+      console.log(success(`Accepted local rule manifest: ${result.rulesAcceptedPath}`));
+    }
+    console.log(dim('Run `decantr verify --brownfield --local-patterns` after project edits.'));
     return;
   }
 
-  mkdirSync(decantrDir, { recursive: true });
   const detected = detectProject(workspaceInfo.appRoot);
   const essence = readJsonIfPresent<EssenceFile>(join(workspaceInfo.appRoot, 'decantr.essence.json'));
-  const routes = essence && isV4(essence) ? Object.keys(essence.blueprint.routes ?? {}).sort() : [];
-  const proposal = {
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    status: 'proposal',
-    source: 'decantr codify',
-    project: {
-      framework: detected.framework,
-      packageManager: detected.packageManager,
-      hasTailwind: detected.hasTailwind,
-      ruleFiles: detected.existingRuleFiles,
-      routeCount: routes.length,
-    },
-    purpose:
-      'Project-owned Brownfield UI law. Review and edit before accepting; Decantr does not treat this as authoritative until copied to .decantr/local-patterns.json.',
-    patterns: [
-      {
-        id: 'button',
-        role: 'Actions and command triggers',
-        decide: 'Define primary, secondary, tertiary, destructive, icon-only, and loading button variants from this app.',
-        evidenceToCollect: ['component wrapper path', 'allowed classes/tokens', 'forbidden raw <button> usage'],
-      },
-      {
-        id: 'surface-card',
-        role: 'Cards, panels, and content surfaces',
-        decide: 'Define the canonical card background, border, radius, shadow, padding, and hover treatment.',
-        evidenceToCollect: ['shared card component', 'token/class recipe', 'allowed density variants'],
-      },
-      {
-        id: 'page-shell',
-        role: 'Route shell, nav, spacing, and scroll ownership',
-        decide: 'Define which layout owns max width, gutters, sticky chrome, and scroll containers.',
-        evidenceToCollect: ['root layout path', 'page template path', 'responsive breakpoints'],
-      },
-      {
-        id: 'form-control',
-        role: 'Inputs, labels, validation, and form actions',
-        decide: 'Define input height, label placement, error copy, disabled state, and focus treatment.',
-        evidenceToCollect: ['form field wrapper', 'validation pattern', 'accessibility expectations'],
-      },
-    ],
-    starterRules: [
-      'Prefer project-owned wrappers for repeated primitives once they exist.',
-      'Avoid raw hex/rgb values in component templates unless explicitly documented as dynamic data.',
-      'Avoid static inline styles for reusable visual treatment.',
-      'When adding a new route, map it to an existing local pattern before inventing a new visual variant.',
-    ],
-    nextSteps: [
-      'Edit this proposal with real component paths and token/class recipes.',
-      'Run decantr codify --accept after review.',
-      'Use decantr task <route> before LLM edits so local patterns appear in the task context.',
-      'Wire mechanical enforcement through ESLint/Biome/project tests for rules Decantr cannot reliably infer.',
-    ],
-  };
+  const fromAudit =
+    flagBoolean(flags, 'from-audit') ||
+    flagBoolean(flags, 'discover-local-patterns') ||
+    flagBoolean(flags, 'codify-local-patterns');
+  const proposal = createBrownfieldCodifyProposal({
+    projectRoot: workspaceInfo.appRoot,
+    detected,
+    essence,
+    fromAudit,
+  });
+  const result = writeBrownfieldCodifyProposal(workspaceInfo.appRoot, proposal);
 
-  writeFileSync(proposalPathLocal, JSON.stringify(proposal, null, 2) + '\n', 'utf-8');
-  console.log(success(`Wrote local pattern proposal: ${proposalPathLocal}`));
-  console.log(dim('Review it, add real component paths/token recipes, then run `decantr codify --accept`.'));
+  console.log(success(`Wrote local pattern proposal: ${result.patternPath}`));
+  console.log(success(`Wrote local rule proposal: ${result.rulesPath}`));
+  if (fromAudit) {
+    console.log(dim('Proposal includes source-derived component candidates and starter mechanical rules.'));
+  }
+  console.log(dim('Review both files, add real component paths/token recipes, then run `decantr codify --accept`.'));
 }
 
 async function cmdContentWorkflow(args: string[]): Promise<void> {
@@ -3751,9 +3811,9 @@ ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
   decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css] [--telemetry]
   decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--yes]
-  decantr task <route> ["task summary"] [--project <path>] [--json]
+  decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
-  decantr codify [--accept] [--project <path>]
+  decantr codify [--from-audit] [--accept] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
 ${BOLD}Advanced primitives:${RESET}
@@ -3824,9 +3884,9 @@ ${BOLD}Commands:${RESET}
   ${cyan('setup')}       Detect project state and recommend the right Decantr workflow
   ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
   ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
-  ${cyan('task')}        Prepare route/task context for an AI coding assistant
+  ${cyan('task')}        Prepare route/task context, local law, evidence, and changed-file impact for an AI coding assistant
   ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
-  ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns
+  ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns and rules
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('content')}     Content-author namespace: check, create, publish
 
@@ -3868,7 +3928,7 @@ ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
   decantr verify --brownfield --local-patterns
   decantr verify --since-baseline
-  decantr codify
+  decantr codify --from-audit
   decantr codify --accept
   decantr content check --ci --fail-on error
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
@@ -3919,8 +3979,8 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
   ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
   ${cyan('Brownfield adoption')}    decantr adopt --base-url <url> --evidence --yes
-  ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify
-  ${cyan('Project-owned law')}       decantr codify -> edit proposal -> decantr codify --accept
+  ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify --brownfield --local-patterns
+  ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
 ${BOLD}Bootstrap adapters:${RESET}
@@ -4111,7 +4171,7 @@ ${BOLD}Examples:${RESET}
 
 function cmdAdoptHelp() {
   console.log(`
-${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, verify, and show the next step
+${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, verify, and show the operating loop
 
 ${BOLD}Usage:${RESET}
   decantr adopt [--project <path>] [--yes] [--dry-run]
@@ -4135,6 +4195,7 @@ ${BOLD}Examples:${RESET}
   decantr adopt --yes
   decantr adopt --base-url http://localhost:3000 --evidence --yes
   decantr adopt --project apps/web --ci --yes
+  decantr codify --from-audit
 `);
 }
 
@@ -4152,6 +4213,7 @@ ${BOLD}Usage:${RESET}
 ${BOLD}Examples:${RESET}
   decantr verify
   decantr verify --brownfield --local-patterns
+  decantr verify --brownfield --local-patterns --fail-on warn
   decantr verify --base-url http://localhost:3000 --evidence
   decantr verify --workspace --changed --since origin/main
   decantr verify init-ci --project apps/web
@@ -4163,26 +4225,28 @@ function cmdTaskHelp() {
 ${BOLD}decantr task${RESET} — Prepare compact route/task context for an AI coding assistant
 
 ${BOLD}Usage:${RESET}
-  decantr task <route> ["task summary"] [--project <path>] [--json]
+  decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
 
 ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
+  decantr task /feed "add saved recipe actions" --since origin/main
   decantr task /profile --json
 `);
 }
 
 function cmdCodifyHelp() {
   console.log(`
-${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI patterns
+${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI patterns and rules
 
 ${BOLD}Usage:${RESET}
-  decantr codify [--project <path>]
+  decantr codify [--from-audit] [--project <path>]
   decantr codify --accept [--project <path>]
 
 ${BOLD}Examples:${RESET}
   decantr codify
+  decantr codify --from-audit
   decantr codify --accept
-  decantr verify --local-patterns
+  decantr verify --brownfield --local-patterns
 `);
 }
 

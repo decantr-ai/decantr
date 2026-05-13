@@ -45,7 +45,8 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'primary',
     mutates: false,
     audience: 'ai-agent',
-    purpose: 'Prepare route/task context for an AI coding assistant before implementation.',
+    purpose:
+      'Prepare route/task context, local law, evidence references, and changed-file impact for an AI coding assistant.',
     consolidation: 'keep',
   },
   {
@@ -53,7 +54,8 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'primary',
     mutates: false,
     audience: 'app-developer',
-    purpose: 'One reliability gate over Project Health, Brownfield checks, baselines, and evidence.',
+    purpose:
+      'One reliability gate over Project Health, Brownfield checks, local law, baselines, and evidence.',
     consolidation: 'keep',
   },
   {
@@ -61,7 +63,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'primary',
     mutates: true,
     audience: 'app-developer',
-    purpose: 'Propose and accept project-owned Brownfield UI patterns.',
+    purpose: 'Propose and accept project-owned Brownfield UI patterns and rules.',
     consolidation: 'keep',
   },
   {
