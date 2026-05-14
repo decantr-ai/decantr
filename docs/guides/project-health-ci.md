@@ -14,7 +14,7 @@ For a monorepo:
 npx @decantr/cli ci init --project apps/web
 ```
 
-The generated workflow lives at the repository root, installs dependencies with the detected package manager, runs the pinned local CLI command, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage. Decantr does not generate `@latest` workflows by default.
+The generated workflow lives at the repository root, installs dependencies with the detected package manager, runs the pinned local CLI command, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage. Decantr does not generate `@latest` workflows by default; when the CLI is not pinned yet, the installer prints the package-manager command to add it first.
 
 For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment tools, generate a portable snippet instead:
 

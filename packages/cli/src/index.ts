@@ -987,23 +987,14 @@ async function printHostedExecutionPackBundle(
   jsonOutput: boolean = false,
   writeContext: boolean = false,
 ) {
-  const client = getPublicAPIClient();
-  const resolvedPath = essencePath
-    ? resolveUserPath(essencePath)
-    : join(process.cwd(), 'decantr.essence.json');
-
-  if (!existsSync(resolvedPath)) {
-    throw new Error(`Essence file not found at ${resolvedPath}`);
-  }
-
-  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
-  const bundle = await client.compileExecutionPacks(essence, namespace ? { namespace } : undefined);
-  const contextDir = join(dirname(resolvedPath), '.decantr', 'context');
+  const { resolvedPath, bundle, contextDir } = await compileHostedExecutionPackBundle(
+    essencePath,
+    namespace,
+  );
 
   let writtenContextPaths: string[] = [];
   if (writeContext) {
-    mkdirSync(contextDir, { recursive: true });
-    const written = writeExecutionPackBundleArtifacts(
+    const written = writeHostedExecutionPackContextArtifacts(
       contextDir,
       bundle as unknown as ExecutionPackBundle,
     );
@@ -1039,6 +1030,38 @@ async function printHostedExecutionPackBundle(
     const pageLabel = route.sectionId ? `${route.sectionId}/${route.pageId}` : route.pageId;
     console.log(`  ${cyan(route.path)} -> ${pageLabel} [${patterns}]`);
   }
+}
+
+async function compileHostedExecutionPackBundle(
+  essencePath?: string,
+  namespace?: string,
+): Promise<{
+  resolvedPath: string;
+  bundle: unknown;
+  contextDir: string;
+}> {
+  const client = getPublicAPIClient();
+  const resolvedPath = essencePath
+    ? resolveUserPath(essencePath)
+    : join(process.cwd(), 'decantr.essence.json');
+
+  if (!existsSync(resolvedPath)) {
+    throw new Error(`Essence file not found at ${resolvedPath}`);
+  }
+
+  const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
+  const bundle = await client.compileExecutionPacks(essence, namespace ? { namespace } : undefined);
+  const contextDir = join(dirname(resolvedPath), '.decantr', 'context');
+
+  return { resolvedPath, bundle, contextDir };
+}
+
+function writeHostedExecutionPackContextArtifacts(
+  contextDir: string,
+  bundle: ExecutionPackBundle,
+): { paths: string[] } {
+  mkdirSync(contextDir, { recursive: true });
+  return writeExecutionPackBundleArtifacts(contextDir, bundle);
 }
 
 function resolvePagePackIdForRoute(essencePath: string, route: string): string {
@@ -3299,6 +3322,11 @@ function withProject(command: string, projectArg?: string): string {
   return projectArg ? `${command} --project ${projectArg}` : command;
 }
 
+function compilePacksCommandForProject(projectArg?: string): string {
+  const essencePath = projectArg ? `${projectArg}/decantr.essence.json` : 'decantr.essence.json';
+  return `decantr registry compile-packs ${essencePath} --write-context`;
+}
+
 function firstWorkspaceCandidate(workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>): string {
   return workspaceInfo.appCandidates[0] ?? 'apps/web';
 }
@@ -3460,6 +3488,11 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   const runBrowser = flagBoolean(flags, 'browser') || Boolean(baseUrl);
   const evidence = flagBoolean(flags, 'evidence') || runBrowser;
   const saveBaseline = flagBoolean(flags, 'baseline', true) || flagBoolean(flags, 'save-baseline');
+  const hydratePacks =
+    flagBoolean(flags, 'packs', true) &&
+    !flagBoolean(flags, 'skip-packs') &&
+    !flagBoolean(flags, 'offline') &&
+    process.env.DECANTR_OFFLINE !== 'true';
   const initCi = flagBoolean(flags, 'ci') || flagBoolean(flags, 'init-ci');
   const assistantBridge = flagString(flags, 'assistant-bridge');
   const hasEssence = existsSync(join(projectRoot, 'decantr.essence.json'));
@@ -3473,6 +3506,9 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     'analyze current app and write .decantr/brownfield intelligence',
     `init --existing ${proposalFlag} as contract-only Brownfield`,
   ];
+  if (hydratePacks) {
+    steps.push('hydrate hosted execution packs into the app context');
+  }
   if (runVerify) {
     steps.push(
       runBrowser
@@ -3512,6 +3548,34 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     telemetry: flagBoolean(flags, 'telemetry'),
   });
   if (process.exitCode && process.exitCode !== 0) return;
+
+  if (hydratePacks) {
+    try {
+      const { bundle, contextDir } = await compileHostedExecutionPackBundle(
+        join(projectRoot, 'decantr.essence.json'),
+      );
+      const written = writeHostedExecutionPackContextArtifacts(
+        contextDir,
+        bundle as ExecutionPackBundle,
+      );
+      console.log(
+        success(
+          `Hydrated Decantr execution packs (${written.paths.length} files) into ${contextDir}.`,
+        ),
+      );
+    } catch (e) {
+      console.log(
+        `${YELLOW}Pack hydration skipped:${RESET} ${(e as Error).message}`,
+      );
+      console.log(
+        dim(
+          `Run ${compilePacksCommandForProject(projectArg)} after adoption if you want hosted page/review packs.`,
+        ),
+      );
+    }
+  } else if (flagBoolean(flags, 'offline') || process.env.DECANTR_OFFLINE === 'true') {
+    console.log(dim('Skipping hosted pack hydration in offline mode.'));
+  }
 
   if (runVerify) {
     const { cmdHealth } = await import('./commands/health.js');
@@ -3686,6 +3750,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const { flags, positional } = parseLooseArgs(args);
   const workspaceInfo = resolveWorkflowProject(flags, 'task');
   if (!workspaceInfo) return;
+  const projectArg = flagString(flags, 'project');
 
   const routeInput = positional[0];
   if (!routeInput) {
@@ -3765,7 +3830,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     localLaw,
     changedFiles: currentChangedFiles,
     changedRoutes,
-    verifyCommand: 'decantr verify --brownfield --local-patterns',
+    verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
   };
 
   if (flagBoolean(flags, 'json')) {
@@ -3811,7 +3876,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     console.log('');
     console.log(`${BOLD}Project-owned local law:${RESET}`);
     console.log(
-      `  ${YELLOW}Not codified yet.${RESET} Run ${cyan('decantr codify --from-audit')} after adoption.`,
+      `  ${YELLOW}Not codified yet.${RESET} Run ${cyan(withProject('decantr codify --from-audit', projectArg))} after adoption.`,
     );
   }
   if (context.changedFiles.length > 0) {
@@ -3941,7 +4006,7 @@ ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
   decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css] [--telemetry]
-  decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--yes]
+  decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
@@ -4311,11 +4376,11 @@ ${BOLD}Examples:${RESET}
 
 function cmdAdoptHelp() {
   console.log(`
-${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, verify, and show the operating loop
+${BOLD}decantr adopt${RESET} — Brownfield one-liner: analyze, attach, hydrate packs, verify, and show the operating loop
 
 ${BOLD}Usage:${RESET}
-  decantr adopt [--project <path>] [--yes] [--dry-run]
-  decantr adopt [--project <path>] --base-url <url> [--evidence] [--ci] [--yes]
+  decantr adopt [--project <path>] [--yes] [--dry-run] [--no-packs]
+  decantr adopt [--project <path>] --base-url <url> [--evidence] [--ci] [--yes] [--no-packs]
 
 ${BOLD}Options:${RESET}
   --project           App path inside a workspace/monorepo
@@ -4326,6 +4391,7 @@ ${BOLD}Options:${RESET}
   --baseline          Save a health baseline (default)
   --no-baseline       Skip baseline save
   --no-verify         Skip the verification step
+  --no-packs          Skip hosted execution-pack hydration
   --ci, --init-ci     Install the Decantr CI gate after adoption
   --telemetry         Opt this project into privacy-filtered CLI product telemetry
   --merge-proposal    Merge the observed proposal into an existing essence

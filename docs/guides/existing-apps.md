@@ -18,7 +18,7 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step.
+`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, hosted pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr registry compile-packs <app>/decantr.essence.json --write-context`.
 
 If the app is already running and you want Decantr to attach route screenshots to task context, add visual evidence after adoption:
 
@@ -102,13 +102,15 @@ Use `doctor` when you are unsure whether Decantr is attached correctly, whether 
 
 In contract-only Brownfield adoption, Decantr does not require `@decantr/css`, `css(...)`, `d-*` treatments, or generated Decantr token CSS. Critique and source audit should point you toward your project-owned design system, Tailwind/Sass/theme tokens, component variants, or accepted local rules instead.
 
+Project Health treats test, spec, story, fixture, and mock files as non-production source audit inputs. Localhost and security warnings should point at production source paths instead of colocated tests.
+
 Install CI from the monorepo root:
 
 ```bash
 pnpm exec decantr ci init --project apps/web
 ```
 
-For GitHub Actions, Decantr writes a root `.github/workflows/decantr-ci.yml` and uses the pinned local CLI command, such as `pnpm exec decantr ci --project apps/web`. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, generate a portable snippet instead:
+For GitHub Actions, Decantr writes a root `.github/workflows/decantr-ci.yml` and uses the pinned local CLI command, such as `pnpm exec decantr ci --project apps/web`. If the root package does not yet pin Decantr, `ci init` prints the exact install command, such as `pnpm add -D -w @decantr/cli`. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, generate a portable snippet instead:
 
 ```bash
 pnpm exec decantr ci init --provider generic --project apps/web

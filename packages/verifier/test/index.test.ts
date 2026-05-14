@@ -1437,6 +1437,45 @@ describe('verifier', () => {
     }
   });
 
+  it('does not treat colocated test files as production source-audit drift', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'src', 'pages'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'decantr.essence.json'),
+        JSON.stringify(validV4Essence(), null, 2),
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'route.test.ts'),
+        `
+          export async function exercisesDevEndpoints() {
+            document.write('<p>fixture</p>');
+            eval('fixture()');
+            return fetch('http://localhost:3000/api/test');
+          }
+        `,
+      );
+      writeFileSync(
+        join(projectRoot, 'src', 'pages', 'Home.tsx'),
+        `
+          export function Home() {
+            return <main id="main">Production surface</main>;
+          }
+        `,
+      );
+
+      const report = await auditProject(projectRoot);
+      expect(
+        report.findings.some(finding => finding.id === 'source-security-risk-patterns-present'),
+      ).toBe(false);
+      expect(
+        report.findings.some(finding => finding.id === 'source-localhost-endpoints-present'),
+      ).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports auth forms that default to GET semantics during project audit', async () => {
     const projectRoot = createProjectRoot();
     try {

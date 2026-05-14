@@ -138,6 +138,16 @@ function detectPackageManager(root: string): PackageManager {
   return 'unknown';
 }
 
+function hasWorkspaceMarker(root: string): boolean {
+  const pkg = readJson(join(root, 'package.json'));
+  return Boolean(
+    existsSync(join(root, 'pnpm-workspace.yaml')) ||
+      existsSync(join(root, 'turbo.json')) ||
+      existsSync(join(root, 'nx.json')) ||
+      pkg?.workspaces,
+  );
+}
+
 function installCommand(packageManager: PackageManager): string {
   switch (packageManager) {
     case 'pnpm':
@@ -150,6 +160,23 @@ function installCommand(packageManager: PackageManager): string {
       return 'npm ci';
     default:
       return 'npm install';
+  }
+}
+
+function pinCliCommand(packageManager: PackageManager, root: string): string {
+  switch (packageManager) {
+    case 'pnpm':
+      return hasWorkspaceMarker(root)
+        ? 'pnpm add -D -w @decantr/cli'
+        : 'pnpm add -D @decantr/cli';
+    case 'yarn':
+      return 'yarn add -D @decantr/cli';
+    case 'bun':
+      return 'bun add -d @decantr/cli';
+    case 'npm':
+      return 'npm install -D @decantr/cli';
+    default:
+      return 'npm install -D @decantr/cli';
   }
 }
 
@@ -342,7 +369,7 @@ function writeCiInit(root: string, options: CiOptions): void {
 
   if (!localCliPinned(outputRoot)) {
     console.log(
-      `${DIM}No @decantr/cli dependency was found in the workspace root package.json. The generated command still uses the local package-manager binary path; pin @decantr/cli in devDependencies before relying on CI.${RESET}`,
+      `${DIM}No @decantr/cli dependency was found in the workspace root package.json. Before relying on CI, pin it with: ${pinCliCommand(packageManager, outputRoot)}${RESET}`,
     );
   }
 

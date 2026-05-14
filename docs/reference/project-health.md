@@ -43,7 +43,9 @@ decantr studio --report decantr-health.json
 
 `decantr verify` should be the default command in local agent loops. `decantr ci` is the non-mutating automation gate for CI and required validation scripts; `--json` emits a `DecantrCiReport` matching `https://decantr.ai/schemas/decantr-ci-report.v1.json`. `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, CI wiring, and the next command to run. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
 
-Project Health treats `pack-manifest.json` as a manifest, not proof by itself. If the manifest references a missing section/page/review/scaffold/mutation markdown or JSON file, health and doctor report the generated context as incomplete. In monorepos, hydrate missing hosted packs with `decantr registry compile-packs apps/web/decantr.essence.json --write-context` so the bundle lands beside the selected app essence.
+Project Health treats `pack-manifest.json` as a manifest, not proof by itself. If the manifest references a missing section/page/review/scaffold/mutation markdown or JSON file, health and doctor report the generated context as incomplete. In monorepos, hydrate missing hosted packs with `decantr registry compile-packs apps/web/decantr.essence.json --write-context` so the bundle lands beside the selected app essence. Project Health remediation prompts and CI recommendations also stay project-scoped, so root runs point at `--project apps/web` instead of asking users to run app-local commands from the wrong folder.
+
+Source audit ignores test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints or unsafe rendering patterns. Those files can still exist in the project, but first-adoption health should focus users on production source paths.
 
 ## What The Report Contains
 
@@ -244,7 +246,7 @@ decantr ci init --project apps/web
 decantr ci init --workspace
 ```
 
-This writes root `.github/workflows/decantr-ci.yml`. The workflow installs dependencies with the detected package manager and runs the pinned local CLI, for example `pnpm exec decantr ci --project apps/web`. It does not generate workflows that depend on `@latest` unless a team chooses to write that by hand.
+This writes root `.github/workflows/decantr-ci.yml`. The workflow installs dependencies with the detected package manager and runs the pinned local CLI, for example `pnpm exec decantr ci --project apps/web`. It does not generate workflows that depend on `@latest` unless a team chooses to write that by hand. When Decantr is not pinned yet, the installer prints the exact package-manager command to add it before relying on CI.
 
 Use these options to tune CI integration:
 

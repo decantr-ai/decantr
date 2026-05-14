@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   auditProject,
@@ -22,6 +22,7 @@ import {
   sendProjectHealthPromptTelemetry,
   sendProjectHealthReportTelemetry,
 } from '../telemetry.js';
+import { resolveWorkspaceInfo } from '../workspace.js';
 import { type CheckIssue, collectCheckIssues } from './heal.js';
 
 const BOLD = '\x1b[1m';
@@ -90,6 +91,13 @@ interface ProjectMetadata {
   workflowMode: string | null;
   adoptionMode: string | null;
   autoBrownfield: boolean;
+}
+
+interface ProjectCommandContext {
+  projectPath: string | null;
+  compilePacksCommand: string;
+  verifyCommand: string;
+  ciCommand: string;
 }
 
 interface BrowserVerificationResult {
@@ -502,6 +510,105 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
     default:
       return ['decantr audit', 'decantr health'];
   }
+}
+
+function commandContextForProject(projectRoot: string): ProjectCommandContext {
+  const workspaceInfo = resolveWorkspaceInfo(projectRoot);
+  const relativeProjectPath = relative(workspaceInfo.workspaceRoot, projectRoot).replace(/\\/g, '/');
+  const projectPath =
+    relativeProjectPath && !relativeProjectPath.startsWith('..') && !isAbsolute(relativeProjectPath)
+      ? relativeProjectPath
+      : null;
+  const projectFlag = projectPath ? ` --project ${projectPath}` : '';
+  const essencePath = projectPath ? `${projectPath}/decantr.essence.json` : 'decantr.essence.json';
+
+  return {
+    projectPath,
+    compilePacksCommand: `decantr registry compile-packs ${essencePath} --write-context`,
+    verifyCommand: `decantr verify${projectFlag}`,
+    ciCommand: `decantr ci${projectFlag} --fail-on error`,
+  };
+}
+
+function rewriteHealthCommand(command: string, context: ProjectCommandContext): string {
+  let rewritten = command.replace(
+    /decantr registry compile-packs decantr\.essence\.json --write-context/g,
+    context.compilePacksCommand,
+  );
+
+  if (!context.projectPath) return rewritten;
+
+  rewritten = rewritten.replace(
+    /^decantr init --existing\b/,
+    `decantr init --project ${context.projectPath} --existing`,
+  );
+  rewritten = rewritten.replace(/^decantr analyze\b/, `decantr analyze --project ${context.projectPath}`);
+  rewritten = rewritten.replace(/^decantr check\b/, `decantr check --project ${context.projectPath}`);
+  rewritten = rewritten.replace(/^decantr audit\b/, context.verifyCommand);
+  rewritten = rewritten.replace(/^decantr health\b/, context.verifyCommand);
+
+  return rewritten;
+}
+
+function rewriteSuggestedFixForProject(
+  suggestedFix: string | undefined,
+  context: ProjectCommandContext,
+): string | undefined {
+  if (!suggestedFix) return suggestedFix;
+  return suggestedFix.replace(
+    /decantr registry compile-packs decantr\.essence\.json --write-context/g,
+    context.compilePacksCommand,
+  );
+}
+
+function commandsForProjectFinding(
+  finding: ProjectHealthFinding,
+  context: ProjectCommandContext,
+): string[] {
+  const isPackHydrationFinding =
+    finding.source === 'pack' ||
+    /pack-manifest|review-pack|compile-packs/i.test(
+      `${finding.id} ${finding.rule ?? ''} ${finding.suggestedFix ?? ''}`,
+    );
+
+  if (isPackHydrationFinding) {
+    return [context.compilePacksCommand, context.verifyCommand];
+  }
+
+  return [
+    ...new Set(
+      finding.remediation.commands.map((command) => rewriteHealthCommand(command, context)),
+    ),
+  ];
+}
+
+function scopeHealthFindingsToProject(
+  projectRoot: string,
+  findings: ProjectHealthFinding[],
+): ProjectHealthFinding[] {
+  const context = commandContextForProject(projectRoot);
+  return findings.map((finding) => {
+    const suggestedFix = rewriteSuggestedFixForProject(finding.suggestedFix, context);
+    const commands = commandsForProjectFinding(finding, context);
+    return {
+      ...finding,
+      suggestedFix,
+      remediation: {
+        summary: suggestedFix || finding.remediation.summary,
+        commands,
+        prompt: buildRemediationPrompt({
+          id: finding.id,
+          source: finding.source,
+          category: finding.category,
+          severity: finding.severity,
+          message: finding.message,
+          evidence: finding.evidence,
+          suggestedFix,
+          commands,
+        }),
+      },
+    };
+  });
 }
 
 function buildRemediationPrompt(input: {
@@ -1224,7 +1331,9 @@ export async function createProjectHealthReport(
   if (browserVerification?.finding && !isDuplicateFinding(seen, browserVerification.finding)) {
     findings.push(browserVerification.finding);
   }
-  const finalCounts = countFindings(findings);
+  const scopedFindings = scopeHealthFindingsToProject(projectRoot, findings);
+  const finalCounts = countFindings(scopedFindings);
+  const commandContext = commandContextForProject(projectRoot);
 
   return {
     $schema: PROJECT_HEALTH_SCHEMA_URL,
@@ -1251,7 +1360,7 @@ export async function createProjectHealthReport(
       runtimeCoverageOk: audit.summary.runtimeAuditChecked
         ? audit.runtimeAudit.routeHintsCoverageOk
         : null,
-      issues: routeIssuesFromFindings(findings),
+      issues: routeIssuesFromFindings(scopedFindings),
     },
     packs: {
       manifestPresent: Boolean(manifest),
@@ -1263,10 +1372,10 @@ export async function createProjectHealthReport(
       generatedAt: typeof manifest?.generatedAt === 'string' ? manifest.generatedAt : null,
     },
     ci: {
-      recommendedCommand: 'decantr ci --fail-on error',
+      recommendedCommand: commandContext.ciCommand,
       failOn: 'error',
     },
-    findings,
+    findings: scopedFindings,
   };
 }
 

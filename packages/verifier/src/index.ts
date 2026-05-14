@@ -940,6 +940,15 @@ function isAuditableSourceFile(filePath: string): boolean {
   return /\.(?:[cm]?[jt]sx?)$/i.test(filePath);
 }
 
+function isNonProductionSourceAuditFile(filePath: string): boolean {
+  const normalized = normalizeSourceAuditPath(filePath);
+  return (
+    /(?:^|\/)(?:__tests__|__mocks__|tests?|specs?|fixtures?|mocks?|stories?)(?:\/|$)/i.test(
+      normalized,
+    ) || /\.(?:test|spec|stories|story|fixture|mock)\.[cm]?[jt]sx?$/i.test(normalized)
+  );
+}
+
 function collectProjectSourceFiles(projectRoot: string): string[] {
   const candidates = [
     'src',
@@ -1238,14 +1247,16 @@ function isClientAuthHeaderSource(
 
 function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
   const sourceFiles = collectProjectSourceFiles(projectRoot);
-  const sourceEntries = sourceFiles.map((sourceFile) => ({
-    absolutePath: sourceFile,
-    relativePath: relative(projectRoot, sourceFile) || sourceFile,
-    code: readFileSync(sourceFile, 'utf-8'),
-  }));
+  const sourceEntries = sourceFiles
+    .map((sourceFile) => ({
+      absolutePath: sourceFile,
+      relativePath: relative(projectRoot, sourceFile) || sourceFile,
+      code: readFileSync(sourceFile, 'utf-8'),
+    }))
+    .filter((entry) => !isNonProductionSourceAuditFile(entry.relativePath));
   const clientReachableFiles = collectClientReachableSourceFiles(projectRoot, sourceEntries);
   const summary: SourceAuditSummary = {
-    filesChecked: sourceFiles.length,
+    filesChecked: sourceEntries.length,
     inlineStyles: createSourceAuditBucket(),
     componentStyleTags: createSourceAuditBucket(),
     localCssRuntimeSignals: createSourceAuditBucket(),

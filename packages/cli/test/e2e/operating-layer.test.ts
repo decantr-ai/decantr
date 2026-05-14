@@ -228,6 +228,21 @@ describe('operating layer commands', () => {
     expect(output).toContain('registry compile-packs apps/web/decantr.essence.json --write-context');
   });
 
+  it('prints monorepo-scoped pack hydration commands from health findings', () => {
+    rmSync(join(testDir, 'apps', 'web', '.decantr', 'context', 'pack-manifest.json'), {
+      force: true,
+    });
+    rmSync(join(testDir, 'apps', 'web', '.decantr', 'context', 'review-pack.json'), {
+      force: true,
+    });
+
+    const output = runCli(testDir, ['verify', '--project', 'apps/web']);
+
+    expect(output).toContain('registry compile-packs apps/web/decantr.essence.json --write-context');
+    expect(output).toContain('decantr ci --project apps/web --fail-on error');
+    expect(output).not.toContain('registry compile-packs decantr.essence.json --write-context');
+  });
+
   it('generates root GitHub CI with the pinned package-manager command', () => {
     const output = runCli(testDir, ['ci', 'init', '--project', 'apps/web']);
     const workflow = readFileSync(join(testDir, '.github', 'workflows', 'decantr-ci.yml'), 'utf-8');
@@ -236,6 +251,18 @@ describe('operating layer commands', () => {
     expect(workflow).toContain('pnpm exec decantr ci --project apps/web');
     expect(workflow).not.toContain('@decantr/cli@latest');
     expect(workflow).not.toContain('npx --yes');
+  });
+
+  it('tells monorepo users how to pin the CLI before relying on generated CI', () => {
+    writeJson(join(testDir, 'package.json'), {
+      private: true,
+      packageManager: 'pnpm@10.0.0',
+    });
+
+    const output = runCli(testDir, ['ci', 'init', '--project', 'apps/web']);
+
+    expect(output).toContain('pin it with: pnpm add -D -w @decantr/cli');
+    expect(output).toContain('Created Decantr CI workflow');
   });
 
   it('still writes monorepo CI at the workspace root when invoked inside an app', () => {

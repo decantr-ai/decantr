@@ -179,7 +179,7 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. `doctor` explains project/workspace state, generated artifacts, local law, CI wiring, and the next command. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. `doctor` explains project/workspace state, generated artifacts, local law, CI wiring, and the next command. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 
@@ -193,6 +193,8 @@ decantr showcase verification  --json
 ```
 
 When an essence path is provided, `--write-context` writes the pack bundle beside that essence file. In monorepos, that means app packs land under `apps/web/.decantr/context`, not the repository root.
+
+Project Health remediation copy follows the same rule: from a monorepo root, pack fixes point at `apps/web/decantr.essence.json` and CI prompts point at `decantr ci --project apps/web --fail-on error`.
 
 Project Health, CI, and diagnosis:
 

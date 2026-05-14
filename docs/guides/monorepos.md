@@ -12,7 +12,7 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`setup` and `workspace list` are non-mutating orientation commands. `adopt --project apps/web --yes` writes the Brownfield contract and `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root.
+`setup` and `workspace list` are non-mutating orientation commands. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates hosted packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
 
 ## Root vs App
 
@@ -46,7 +46,7 @@ pnpm exec decantr ci init --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
 
-`ci init` writes a root `.github/workflows/decantr-ci.yml`, detects the package manager, installs dependencies at the workspace root, and runs the pinned local CLI command, for example `pnpm exec decantr ci --project apps/web`. It does not generate `@latest` workflows.
+`ci init` writes a root `.github/workflows/decantr-ci.yml`, detects the package manager, installs dependencies at the workspace root, and runs the pinned local CLI command, for example `pnpm exec decantr ci --project apps/web`. It does not generate `@latest` workflows. If the root package has not pinned Decantr yet, `ci init` prints the exact command to run, such as `pnpm add -D -w @decantr/cli`.
 
 If GitHub Actions is not your authoritative CI system, generate a portable snippet:
 
@@ -94,6 +94,8 @@ pnpm exec decantr registry compile-packs apps/web/decantr.essence.json --write-c
 ```
 
 The generated `.decantr/context` directory is written beside `apps/web/decantr.essence.json`, not at the repository root.
+
+Project Health and CI remediation prompts use the same app-scoped posture. From the root, missing-pack fixes should mention `apps/web/decantr.essence.json`, and CI summaries should recommend `decantr ci --project apps/web --fail-on error`.
 
 ```bash
 cd apps/web
