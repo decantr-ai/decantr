@@ -39,9 +39,10 @@ Brownfield intelligence is now exposed through workflows first:
 - `decantr ci --project <path>` is the blessed CI command. It is non-mutating, adoption-mode aware, and emits a `DecantrCiReport`. `decantr ci init` writes root GitHub workflows or generic pipeline snippets using the pinned package-manager command instead of `@latest`.
 - `decantr analyze` still writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
 - `decantr suggest` accepts `--route`, `--file`, and `--from-code` for better pattern discovery without adding a new top-level command.
-- `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface.
+- `decantr check --brownfield --project <path>` validates the selected app from a monorepo root; app-scoped primitives should not silently fall back to the workspace root.
+- `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface. `decantr registry compile-packs apps/web/decantr.essence.json --write-context` hydrates app packs beside the provided essence path.
 - `decantr health --browser --base-url <url> --evidence` writes local screenshots and a visual manifest; `--save-baseline` / `--since-baseline` add continuity.
-- `decantr refresh --check` is the CI-safe generated-context freshness check. `decantr refresh --list-changes` prints created, updated, and removed generated files after regeneration.
+- `decantr refresh --check` is the CI-safe generated-context freshness check and fails when `pack-manifest.json` references missing files. `decantr refresh --list-changes` prints created, updated, and removed generated files after regeneration.
 
 Command help must be side-effect free. `decantr <command> --help`, `decantr <command> -h`, and `decantr <command> help` should print help and never execute command bodies or write project files.
 

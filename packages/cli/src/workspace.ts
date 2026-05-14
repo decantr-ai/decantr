@@ -50,8 +50,27 @@ function findWorkspaceRoot(startDir: string): string | null {
   }
 }
 
-function looksLikeApp(dir: string, options: { allowSourceDirs?: boolean } = {}): boolean {
+function looksLikeApp(
+  dir: string,
+  options: { allowSourceDirs?: boolean; allowPackageDeps?: boolean } = {},
+): boolean {
   const allowSourceDirs = options.allowSourceDirs ?? true;
+  const allowPackageDeps = options.allowPackageDeps ?? true;
+  const pkg = readPackageJson(dir);
+  const deps = { ...pkg?.dependencies, ...pkg?.devDependencies };
+  const hasFrontendDependency = Boolean(
+    deps.react ||
+      deps['react-dom'] ||
+      deps.next ||
+      deps.vue ||
+      deps.svelte ||
+      deps['@angular/core'] ||
+      deps.astro ||
+      deps.nuxt,
+  );
+  const hasServerOnlyDependency = Boolean(
+    deps.hono || deps.express || deps.fastify || deps.koa || deps['@hapi/hapi'],
+  );
   if (
     existsSync(join(dir, 'next.config.js')) ||
     existsSync(join(dir, 'next.config.ts')) ||
@@ -61,26 +80,23 @@ function looksLikeApp(dir: string, options: { allowSourceDirs?: boolean } = {}):
     existsSync(join(dir, 'angular.json')) ||
     existsSync(join(dir, 'svelte.config.js')) ||
     existsSync(join(dir, 'svelte.config.ts')) ||
-    existsSync(join(dir, 'astro.config.mjs')) ||
-    (allowSourceDirs &&
-      (existsSync(join(dir, 'src')) ||
-        existsSync(join(dir, 'app')) ||
-        existsSync(join(dir, 'pages'))))
+    existsSync(join(dir, 'astro.config.mjs'))
   ) {
     return true;
   }
 
-  const pkg = readPackageJson(dir);
-  const deps = { ...pkg?.dependencies, ...pkg?.devDependencies };
-  return Boolean(
-    deps.react ||
-      deps.next ||
-      deps.vue ||
-      deps.svelte ||
-      deps['@angular/core'] ||
-      deps.astro ||
-      deps.nuxt,
-  );
+  if (
+    allowSourceDirs &&
+    (existsSync(join(dir, 'src')) || existsSync(join(dir, 'app')) || existsSync(join(dir, 'pages')))
+  ) {
+    if (hasFrontendDependency) return true;
+    if (hasServerOnlyDependency) return false;
+    return true;
+  }
+
+  if (!allowPackageDeps) return false;
+
+  return hasFrontendDependency;
 }
 
 function listWorkspaceApps(workspaceRoot: string): string[] {
@@ -91,7 +107,12 @@ function listWorkspaceApps(workspaceRoot: string): string[] {
     for (const entry of readdirSync(baseDir, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
       const candidate = join(baseDir, entry.name);
-      if (looksLikeApp(candidate, { allowSourceDirs: base === 'apps' })) {
+      if (
+        looksLikeApp(candidate, {
+          allowSourceDirs: base === 'apps',
+          allowPackageDeps: base === 'apps',
+        })
+      ) {
         candidates.push(`${base}/${entry.name}`);
       }
     }

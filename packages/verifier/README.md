@@ -21,6 +21,8 @@ npm install @decantr/verifier
 - schema-backed report types for project audits, Project Health, Decantr CI reports, Evidence Bundles, Workspace Health, file critiques, and showcase verification
 - `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
 - interaction findings now include scanned file counts, file line ranges, and expected signal evidence where available, so CLI health/check output can point agents at source-grounded remediation
+- contract-only Brownfield critique avoids requiring Decantr treatments/decorators when the project keeps its own styling authority
+- project audits check that `pack-manifest.json` references real pack markdown/JSON files on disk
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:
   - root document

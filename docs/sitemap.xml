@@ -331,6 +331,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/releases/2026-05-14-brownfield-correctness-2-9-1.md</loc>
+    <lastmod>2026-05-14T18:15:00-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/runbooks/2026-04-09-hosted-public-api-rollout.md</loc>
     <lastmod>2026-05-08T09:32:43-04:00</lastmod>
     <changefreq>monthly</changefreq>

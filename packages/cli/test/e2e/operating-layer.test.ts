@@ -49,7 +49,7 @@ function writeEssence(root: string): void {
     meta: {
       archetype: 'observed-brownfield',
       target: 'react',
-      platform: { type: 'spa', routing: 'unknown' },
+      platform: { type: 'spa', routing: 'history' },
       guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
     },
   });
@@ -61,7 +61,9 @@ describe('operating layer commands', () => {
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-operating-layer-'));
     mkdirSync(join(testDir, 'apps', 'web', '.decantr', 'context'), { recursive: true });
+    mkdirSync(join(testDir, 'apps', 'platform-api', 'src'), { recursive: true });
     mkdirSync(join(testDir, 'packages', 'ui'), { recursive: true });
+    mkdirSync(join(testDir, 'packages', 'design-system'), { recursive: true });
     writeFileSync(join(testDir, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n  - packages/*\n');
     writeJson(join(testDir, 'package.json'), {
       private: true,
@@ -70,6 +72,14 @@ describe('operating layer commands', () => {
     });
     writeJson(join(testDir, 'apps', 'web', 'package.json'), {
       name: 'web',
+      dependencies: { react: '^19.0.0' },
+    });
+    writeJson(join(testDir, 'apps', 'platform-api', 'package.json'), {
+      name: 'platform-api',
+      dependencies: { hono: '^4.0.0' },
+    });
+    writeJson(join(testDir, 'packages', 'design-system', 'package.json'), {
+      name: 'design-system',
       dependencies: { react: '^19.0.0' },
     });
     writeEssence(join(testDir, 'apps', 'web'));
@@ -87,6 +97,52 @@ describe('operating layer commands', () => {
       join(testDir, 'apps', 'web', '.decantr', 'context', 'scaffold.md'),
       '# Scaffold\n',
     );
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'context', 'pack-manifest.json'), {
+      $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+      version: '1.0.0',
+      generatedAt: '2026-05-14T00:00:00.000Z',
+      scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+      review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+      sections: [
+        {
+          id: 'app',
+          markdown: 'section-app-pack.md',
+          json: 'section-app-pack.json',
+          pageIds: ['home'],
+        },
+      ],
+      pages: [
+        {
+          id: 'home',
+          markdown: 'page-home-pack.md',
+          json: 'page-home-pack.json',
+          sectionId: 'app',
+          sectionRole: 'primary',
+        },
+      ],
+      mutations: [
+        {
+          id: 'modify',
+          markdown: 'mutation-modify-pack.md',
+          json: 'mutation-modify-pack.json',
+          mutationType: 'modify',
+        },
+      ],
+    });
+    for (const file of [
+      'scaffold-pack.md',
+      'scaffold-pack.json',
+      'review-pack.md',
+      'review-pack.json',
+      'section-app-pack.md',
+      'section-app-pack.json',
+      'page-home-pack.md',
+      'page-home-pack.json',
+      'mutation-modify-pack.md',
+      'mutation-modify-pack.json',
+    ]) {
+      writeFileSync(join(testDir, 'apps', 'web', '.decantr', 'context', file), '{}\n');
+    }
   });
 
   afterEach(() => {
@@ -109,6 +165,14 @@ describe('operating layer commands', () => {
     expect(output).toContain('Attached projects: 1');
     expect(output).not.toContain('No decantr.essence.json found');
     expect(output).toContain('decantr ci init --workspace');
+  });
+
+  it('does not list React library packages as app candidates', () => {
+    const output = runCli(testDir, ['workspace', 'list']);
+
+    expect(output).toContain('apps/web');
+    expect(output).not.toContain('apps/platform-api');
+    expect(output).not.toContain('packages/design-system');
   });
 
   it('orients monorepo roots toward app-scoped doctor instead of root setup', () => {
@@ -143,6 +207,25 @@ describe('operating layer commands', () => {
       expect(output).toContain('Decantr CI init needs an app path');
       expect(output).toContain('--project apps/web');
     }
+  });
+
+  it('runs brownfield check against the selected project from a monorepo root', () => {
+    const output = runCli(testDir, ['check', '--brownfield', '--project', 'apps/web']);
+
+    expect(output).toContain('Scanning for issues');
+    expect(output).not.toContain('No decantr.essence.json found');
+  });
+
+  it('doctor catches pack manifests that reference missing context files', () => {
+    rmSync(join(testDir, 'apps', 'web', '.decantr', 'context', 'page-home-pack.md'), {
+      force: true,
+    });
+
+    const output = runCli(testDir, ['doctor', '--project', 'apps/web']);
+
+    expect(output).toContain('Manifest references: 1 missing');
+    expect(output).toContain('Generated pack manifest references 1 missing file');
+    expect(output).toContain('registry compile-packs apps/web/decantr.essence.json --write-context');
   });
 
   it('generates root GitHub CI with the pinned package-manager command', () => {

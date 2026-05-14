@@ -117,6 +117,17 @@ function writePacks(root = testDir): void {
       },
     ],
   });
+  for (const file of [
+    'scaffold-pack.md',
+    'scaffold-pack.json',
+    'review-pack.md',
+    'page-home-pack.md',
+    'page-home-pack.json',
+    'mutation.md',
+    'mutation.json',
+  ]) {
+    writeFileSync(join(root, '.decantr', 'context', file), '{}\n', 'utf-8');
+  }
   writeJson(join(root, '.decantr', 'context', 'review-pack.json'), {
     $schema: 'https://decantr.ai/schemas/review-pack.v1.json',
     packVersion: '1.0.0',

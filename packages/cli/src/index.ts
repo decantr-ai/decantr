@@ -998,10 +998,10 @@ async function printHostedExecutionPackBundle(
 
   const essence = JSON.parse(readFileSync(resolvedPath, 'utf-8')) as EssenceFile;
   const bundle = await client.compileExecutionPacks(essence, namespace ? { namespace } : undefined);
+  const contextDir = join(dirname(resolvedPath), '.decantr', 'context');
 
   let writtenContextPaths: string[] = [];
   if (writeContext) {
-    const contextDir = join(process.cwd(), '.decantr', 'context');
     mkdirSync(contextDir, { recursive: true });
     const written = writeExecutionPackBundleArtifacts(
       contextDir,
@@ -1029,7 +1029,7 @@ async function printHostedExecutionPackBundle(
   console.log(`  Sections: ${typedBundle.sections.length}`);
   console.log(`  Mutations: ${typedBundle.mutations.length}`);
   if (writeContext) {
-    console.log(`  Context bundle: ${join(process.cwd(), '.decantr', 'context')}`);
+    console.log(`  Context bundle: ${contextDir}`);
     console.log(`  Files written: ${writtenContextPaths.length}`);
   }
   console.log('');
@@ -1092,7 +1092,7 @@ async function printHostedSelectedExecutionPack(
 
   let writtenContextDir: string | null = null;
   if (writeContext) {
-    const contextDir = join(process.cwd(), '.decantr', 'context');
+    const contextDir = join(dirname(resolvedPath), '.decantr', 'context');
     mkdirSync(contextDir, { recursive: true });
     writeFileSync(
       join(contextDir, 'pack-manifest.json'),
@@ -1166,7 +1166,7 @@ async function printHostedExecutionPackManifest(
 
   let writtenContextDir: string | null = null;
   if (writeContext) {
-    const contextDir = join(process.cwd(), '.decantr', 'context');
+    const contextDir = join(dirname(resolvedPath), '.decantr', 'context');
     mkdirSync(contextDir, { recursive: true });
     writeFileSync(join(contextDir, 'pack-manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
     writtenContextDir = contextDir;
@@ -4649,9 +4649,12 @@ async function main() {
         );
       }
       const { cmdHeal } = await import('./commands/heal.js');
+      const { flags } = parseLooseArgs(args);
+      const workspaceInfo = resolveWorkflowProject(flags, 'check');
+      if (!workspaceInfo) break;
       const telemetryFlag = args.includes('--telemetry');
       const brownfieldFlag = args.includes('--brownfield');
-      await cmdHeal(process.cwd(), { telemetry: telemetryFlag, brownfield: brownfieldFlag });
+      await cmdHeal(workspaceInfo.appRoot, { telemetry: telemetryFlag, brownfield: brownfieldFlag });
       break;
     }
 

@@ -9,6 +9,44 @@ function createProjectRoot(): string {
   return mkdtempSync(join(tmpdir(), 'decantr-verifier-'));
 }
 
+function validV4Essence(): Record<string, unknown> {
+  return {
+    version: '4.0.0',
+    dna: {
+      theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+      spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '_gap4' },
+      typography: { scale: 'system', heading_weight: 600, body_weight: 400 },
+      color: { palette: 'existing', accent_count: 1, cvd_preference: 'auto' },
+      radius: { philosophy: 'rounded', base: 8 },
+      elevation: { system: 'existing', max_levels: 3 },
+      motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+      accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: false },
+      personality: ['observed brownfield app'],
+    },
+    blueprint: {
+      shell: 'observed-existing-shell',
+      features: [],
+      sections: [
+        {
+          id: 'app',
+          role: 'primary',
+          shell: 'observed-existing-shell',
+          features: [],
+          description: 'Existing app',
+          pages: [{ id: 'home', route: '/', layout: ['existing-surface'] }],
+        },
+      ],
+      routes: { '/': { section: 'app', page: 'home' } },
+    },
+    meta: {
+      archetype: 'observed-brownfield',
+      target: 'react',
+      platform: { type: 'spa', routing: 'history' },
+      guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+    },
+  };
+}
+
 describe('verifier', () => {
   it('audits project contract and reports missing review packs', async () => {
     const projectRoot = createProjectRoot();
@@ -225,6 +263,121 @@ describe('verifier', () => {
       expect(report.findings.some(finding => finding.id === 'scaffold-pack-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'review-pack-missing')).toBe(true);
       expect(report.findings.some(finding => finding.id === 'mutation-packs-missing')).toBe(true);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('reports manifest-referenced pack files that are missing on disk', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, '.decantr', 'context'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify(validV4Essence(), null, 2));
+      writeFileSync(join(projectRoot, '.decantr', 'context', 'pack-manifest.json'), JSON.stringify({
+        $schema: 'https://decantr.ai/schemas/pack-manifest.v1.json',
+        version: '1.0.0',
+        generatedAt: '2026-05-14T00:00:00.000Z',
+        scaffold: { id: 'scaffold', markdown: 'scaffold-pack.md', json: 'scaffold-pack.json' },
+        review: { id: 'review', markdown: 'review-pack.md', json: 'review-pack.json' },
+        sections: [],
+        pages: [
+          {
+            id: 'home',
+            markdown: 'page-home-pack.md',
+            json: 'page-home-pack.json',
+            sectionId: 'app',
+            sectionRole: 'primary',
+          },
+        ],
+        mutations: [],
+      }, null, 2));
+      writeFileSync(join(projectRoot, '.decantr', 'context', 'scaffold-pack.md'), '# Scaffold\n');
+      writeFileSync(join(projectRoot, '.decantr', 'context', 'scaffold-pack.json'), '{}\n');
+      writeFileSync(join(projectRoot, '.decantr', 'context', 'review-pack.md'), '# Review\n');
+      writeFileSync(join(projectRoot, '.decantr', 'context', 'review-pack.json'), JSON.stringify({
+        data: { focusAreas: ['route-topology'], routes: [] },
+        antiPatterns: [],
+        successChecks: [],
+      }, null, 2));
+
+      const report = await auditProject(projectRoot);
+
+      const finding = report.findings.find((entry) => entry.id === 'pack-manifest-referenced-files-missing');
+      expect(finding).toBeTruthy();
+      expect(finding?.evidence.join('\n')).toContain('.decantr/context/page-home-pack.md');
+      expect(finding?.evidence.join('\n')).toContain('.decantr/context/page-home-pack.json');
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('does not score contract-only critiques against Decantr treatments or decorators', () => {
+    const report = critiqueSource({
+      filePath: 'Button.tsx',
+      code: 'export function Button() { return <button className="btn btn-primary">Save</button>; }',
+      adoptionMode: 'contract-only',
+    });
+
+    expect(report.findings.some((finding) => finding.id === 'treatment-usage-missing')).toBe(false);
+    expect(report.findings.some((finding) => finding.id === 'theme-consistency-weak')).toBe(false);
+    expect(report.scores.find((score) => score.category === 'Styling Authority')?.details).toContain(
+      'Contract-only adoption',
+    );
+  });
+
+  it('does not recurse indefinitely while auditing Brownfield TSX source', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'app', 'intelligence'), { recursive: true });
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify(validV4Essence(), null, 2));
+      writeFileSync(
+        join(projectRoot, 'app', 'intelligence', 'intelligence-handoff-builder.tsx'),
+        `
+          'use client';
+          import { useEffect, useMemo, useState } from 'react';
+
+          const handoffDispositions = [
+            { id: 'ready', label: 'Ready', copy: 'Push to the next step' },
+            { id: 'hold', label: 'Hold', copy: 'Keep refining' },
+          ];
+
+          function buildQuery(params: Record<string, string>) {
+            const urlParams = new URLSearchParams({
+              ...params,
+              disposition: handoffDispositions.find((entry) => entry.id === params.mode)?.label ?? 'Ready',
+            });
+            return urlParams.toString();
+          }
+
+          export function IntelligenceHandoffBuilder() {
+            const [goal, setGoal] = useState('');
+            const selectedDisposition = handoffDispositions.find((entry) => entry.id === 'ready') ?? handoffDispositions[0];
+            const readinessChecks = useMemo(() => [
+              { id: 'goal', ready: goal.trim().length > 8 },
+              { id: 'handoff', ready: selectedDisposition.label.length > 0 },
+            ], [goal, selectedDisposition.label]);
+            const activeCheck = readinessChecks.find((entry) => !entry.ready) ?? readinessChecks[0];
+
+            useEffect(() => {
+              const handleKeyDown = (event: KeyboardEvent) => {
+                if (event.key === 'Enter') {
+                  window.location.assign('/handoff?' + buildQuery({
+                    goal,
+                    mode: selectedDisposition.id,
+                    active: activeCheck.id,
+                  }));
+                }
+              };
+              window.addEventListener('keydown', handleKeyDown);
+              return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [activeCheck.id, goal, selectedDisposition.id, selectedDisposition.label]);
+
+            return <button onClick={() => setGoal(goal + '!')}>{selectedDisposition.copy}</button>;
+          }
+        `,
+      );
+
+      await expect(auditProject(projectRoot)).resolves.toBeTruthy();
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

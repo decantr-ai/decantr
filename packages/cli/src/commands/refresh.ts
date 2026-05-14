@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { collectMissingPackManifestFiles } from '@decantr/verifier';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
@@ -99,6 +100,19 @@ function checkRefreshFreshness(projectRoot: string): RefreshSummary {
   if (!existsSync(contextDir)) reasons.push('.decantr/context is missing.');
   if (!existsSync(join(contextDir, 'scaffold.md'))) {
     reasons.push('.decantr/context/scaffold.md is missing.');
+  }
+  if (!existsSync(join(contextDir, 'pack-manifest.json'))) {
+    reasons.push('.decantr/context/pack-manifest.json is missing.');
+  } else {
+    const missingPackFiles = collectMissingPackManifestFiles(projectRoot);
+    if (missingPackFiles.length > 0) {
+      reasons.push(
+        `pack-manifest.json references missing files: ${missingPackFiles
+          .slice(0, 5)
+          .map((missing) => missing.relativePath)
+          .join(', ')}${missingPackFiles.length > 5 ? '...' : ''}`,
+      );
+    }
   }
   const newestInput = newestInputMtime(projectRoot);
   const staleFiles = generated

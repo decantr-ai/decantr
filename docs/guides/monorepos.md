@@ -85,6 +85,16 @@ pnpm exec decantr doctor --project apps/web
 
 `doctor` reports the essence version, workflow mode, adoption mode, generated context state, local pattern/rule files, design authority signals, visual evidence, CI wiring, and the next command. If an app is still on an older essence shape, run the explicit migrator:
 
+Workspace discovery favors deployable UI apps. Server-only API packages and React component libraries under `packages/*` are not suggested as Brownfield app candidates unless they expose a frontend app config such as Next, Vite, SvelteKit, Angular, or Astro.
+
+If `doctor` reports missing files referenced by `pack-manifest.json`, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
+
+```bash
+pnpm exec decantr registry compile-packs apps/web/decantr.essence.json --write-context
+```
+
+The generated `.decantr/context` directory is written beside `apps/web/decantr.essence.json`, not at the repository root.
+
 ```bash
 cd apps/web
 pnpm exec decantr migrate --to v4

@@ -3936,6 +3936,7 @@ export async function refreshDerivedFiles(
       themeMode: mode,
       voiceTone: storedVoice?.tone ? storedVoice.tone.split('.')[0] + '.' : undefined,
       spatialHints: sectionSpatialHints,
+      adoptionMode: effectiveAdoptionMode,
     });
 
     const sectionContextPath = join(contextDir, `section-${section.id}.md`);
@@ -4224,6 +4225,7 @@ export interface SectionContextInput {
   themeMode?: string;
   voiceTone?: string;
   spatialHints?: SpatialTokenHints;
+  adoptionMode?: AdoptionMode;
 }
 
 export interface ScaffoldContextInput {
@@ -4482,6 +4484,7 @@ export function generateSectionContext(input: SectionContextInput): string {
     constraints,
     shellInfo,
     spatialHints,
+    adoptionMode,
   } = input;
   const lines: string[] = [];
 
@@ -4598,9 +4601,15 @@ export function generateSectionContext(input: SectionContextInput): string {
   const totalDecoratorCount =
     (decoratorDefs && Object.keys(decoratorDefs).length) || decorators.length;
   if (totalDecoratorCount > 0) {
-    lines.push(
-      `**Theme decorators:** ${totalDecoratorCount} \`${themeName}-*\` classes — full Class/Intent/Apply-to table in \`section-${section.id}-pack.md\` (preferred) and DECANTR.md "Decorator Quick Reference". MUST apply.`,
-    );
+    if (adoptionMode === 'contract-only') {
+      lines.push(
+        `**Theme intent:** ${totalDecoratorCount} \`${themeName}-*\` decorator reference(s) exist, but this project is contract-only. Translate the intent into the app's current styling system instead of applying Decantr decorator classes directly.`,
+      );
+    } else {
+      lines.push(
+        `**Theme decorators:** ${totalDecoratorCount} \`${themeName}-*\` classes — full Class/Intent/Apply-to table in \`section-${section.id}-pack.md\` (preferred) and DECANTR.md "Decorator Quick Reference". MUST apply.`,
+      );
+    }
     lines.push('');
   }
   if (themeHints) {
@@ -4624,9 +4633,15 @@ export function generateSectionContext(input: SectionContextInput): string {
   }
   const themePrefix = themeName.split('-')[0] || themeName;
   lines.push('');
-  lines.push(
-    `Usage: \`className={css('_flex _col _gap4') + ' d-surface ${themePrefix}-glass'}\` — atoms via css(), treatments and theme decorators as plain class strings.`,
-  );
+  if (adoptionMode === 'contract-only') {
+    lines.push(
+      'Usage: implement this section through the app\'s existing styling authority (design-system components, Tailwind/Sass/theme tokens, CVA variants, or accepted local rules). Do not add `@decantr/css`, `css(...)`, `d-*` treatments, or Decantr token CSS unless adoption mode changes.',
+    );
+  } else {
+    lines.push(
+      `Usage: \`className={css('_flex _col _gap4') + ' d-surface ${themePrefix}-glass'}\` — atoms via css(), treatments and theme decorators as plain class strings.`,
+    );
+  }
   lines.push('');
   lines.push('---');
   lines.push('');

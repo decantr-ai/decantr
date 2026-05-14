@@ -83,6 +83,14 @@ export interface PackManifest {
   mutations?: Array<PackManifestEntry & { mutationType: string }>;
 }
 
+export interface MissingPackManifestFile {
+  entryId: string;
+  kind: 'scaffold' | 'review' | 'section' | 'page' | 'mutation';
+  field: 'markdown' | 'json';
+  relativePath: string;
+  absolutePath: string;
+}
+
 export interface ProjectAuditReport {
   $schema: string;
   projectRoot: string;
@@ -460,7 +468,9 @@ export function createContractAssertions(
         ? 'Compiled execution pack manifest is present.'
         : 'Compiled execution pack manifest is missing.',
       evidence: [redactEvidenceText(projectRoot, join(contextDir, 'pack-manifest.json'))],
-      suggestedFix: packManifest ? undefined : 'Run `decantr refresh` to regenerate context packs.',
+      suggestedFix: packManifest
+        ? undefined
+        : 'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate the full context pack bundle.',
     }),
   );
 
@@ -477,7 +487,7 @@ export function createContractAssertions(
       evidence: [redactEvidenceText(projectRoot, join(contextDir, 'review-pack.json'))],
       suggestedFix: audit?.reviewPack
         ? undefined
-        : 'Run `decantr refresh` or hydrate the review pack from the registry.',
+        : 'Run `decantr registry compile-packs decantr.essence.json --write-context` so critique has the compiled review contract.',
     }),
   );
 
@@ -589,6 +599,7 @@ export interface CritiqueSourceInput {
   reviewPack?: ReviewExecutionPack | null;
   packManifest?: PackManifest | null;
   treatmentsCss?: string;
+  adoptionMode?: string | null;
 }
 
 export interface ShowcaseShortlistVerificationEntry {
@@ -744,12 +755,104 @@ function loadPackManifest(projectRoot: string): PackManifest | null {
   );
 }
 
+function collectPackManifestReferences(packManifest: PackManifest): Array<{
+  entryId: string;
+  kind: MissingPackManifestFile['kind'];
+  markdown?: string;
+  json?: string;
+}> {
+  const references: Array<{
+    entryId: string;
+    kind: MissingPackManifestFile['kind'];
+    markdown?: string;
+    json?: string;
+  }> = [];
+
+  if (packManifest.scaffold) {
+    references.push({
+      entryId: packManifest.scaffold.id || 'scaffold',
+      kind: 'scaffold',
+      markdown: packManifest.scaffold.markdown,
+      json: packManifest.scaffold.json,
+    });
+  }
+  if (packManifest.review) {
+    references.push({
+      entryId: packManifest.review.id || 'review',
+      kind: 'review',
+      markdown: packManifest.review.markdown,
+      json: packManifest.review.json,
+    });
+  }
+  for (const section of packManifest.sections ?? []) {
+    references.push({
+      entryId: section.id,
+      kind: 'section',
+      markdown: section.markdown,
+      json: section.json,
+    });
+  }
+  for (const page of packManifest.pages ?? []) {
+    references.push({
+      entryId: page.id,
+      kind: 'page',
+      markdown: page.markdown,
+      json: page.json,
+    });
+  }
+  for (const mutation of packManifest.mutations ?? []) {
+    references.push({
+      entryId: mutation.id,
+      kind: 'mutation',
+      markdown: mutation.markdown,
+      json: mutation.json,
+    });
+  }
+
+  return references;
+}
+
+export function collectMissingPackManifestFiles(
+  projectRoot: string,
+  packManifest: PackManifest | null = loadPackManifest(projectRoot),
+): MissingPackManifestFile[] {
+  if (!packManifest) return [];
+
+  const contextDir = join(projectRoot, '.decantr', 'context');
+  const missing: MissingPackManifestFile[] = [];
+  for (const reference of collectPackManifestReferences(packManifest)) {
+    for (const field of ['markdown', 'json'] as const) {
+      const fileName = reference[field];
+      if (!fileName) continue;
+      const absolutePath = join(contextDir, fileName);
+      if (existsSync(absolutePath)) continue;
+      missing.push({
+        entryId: reference.entryId,
+        kind: reference.kind,
+        field,
+        relativePath: `.decantr/context/${fileName}`,
+        absolutePath,
+      });
+    }
+  }
+
+  return missing;
+}
+
 function readTextIfExists(path: string): string {
   try {
     return existsSync(path) ? readFileSync(path, 'utf-8') : '';
   } catch {
     return '';
   }
+}
+
+function readProjectAdoptionMode(projectRoot: string): string | null {
+  const projectJson = readJsonIfExists<{
+    initialized?: { adoptionMode?: unknown };
+  }>(join(projectRoot, '.decantr', 'project.json'));
+  const adoptionMode = projectJson?.initialized?.adoptionMode;
+  return typeof adoptionMode === 'string' ? adoptionMode : null;
 }
 
 function createSourceAuditBucket(): SourceAuditBucket {
@@ -2749,10 +2852,13 @@ function appendSourceAuditFindings(
   sourceAudit: SourceAuditSummary,
   essence: EssenceFile | null,
   reviewPack: ReviewExecutionPack | null,
+  adoptionMode: string | null,
 ): void {
   if (sourceAudit.filesChecked === 0) {
     return;
   }
+
+  const isContractOnly = adoptionMode === 'contract-only';
 
   if (sourceAudit.inlineStyles.count > 0) {
     findings.push(
@@ -2760,15 +2866,17 @@ function appendSourceAuditFindings(
         id: 'source-inline-styles-present',
         category: 'Source Audit',
         severity: 'warn',
-        message:
-          'Source files still contain disallowed inline style attributes, which undermines the compiled treatment contract.',
+        message: isContractOnly
+          ? 'Source files contain inline style attributes; contract-only projects should route static visual decisions through project-owned styling law.'
+          : 'Source files still contain disallowed inline style attributes, which undermines the compiled treatment contract.',
         evidence: buildSourceAuditEvidence(
           sourceAudit,
           sourceAudit.inlineStyles,
           'Disallowed inline style attributes',
         ),
-        suggestedFix:
-          'Move static visual styling into treatments, atoms, or design-token-backed classes. Inline style remains acceptable for Decantr CSS-variable writes and truly dynamic geometry.',
+        suggestedFix: isContractOnly
+          ? 'Move static visual styling into the app design system, Tailwind/theme tokens, component variants, or accepted local rules. Keep inline style only for truly dynamic geometry.'
+          : 'Move static visual styling into treatments, atoms, or design-token-backed classes. Inline style remains acceptable for Decantr CSS-variable writes and truly dynamic geometry.',
       }),
     );
   }
@@ -2779,20 +2887,22 @@ function appendSourceAuditFindings(
         id: 'source-component-style-tags-present',
         category: 'Source Audit',
         severity: 'warn',
-        message:
-          'Source files inject component-scoped style tags or dynamic style elements, which bypass the compiled Decantr layer contract.',
+        message: isContractOnly
+          ? 'Source files inject component-scoped style tags or dynamic style elements, which makes project-owned styling rules harder to enforce.'
+          : 'Source files inject component-scoped style tags or dynamic style elements, which bypass the compiled Decantr layer contract.',
         evidence: buildSourceAuditEvidence(
           sourceAudit,
           sourceAudit.componentStyleTags,
           'Component-level style tag signals',
         ),
-        suggestedFix:
-          'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so styling stays inside the reviewed Decantr layer stack.',
+        suggestedFix: isContractOnly
+          ? 'Move shared keyframes, media queries, and visual rules into the project stylesheet, component library, or accepted local pattern/rule manifest.'
+          : 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so styling stays inside the reviewed Decantr layer stack.',
       }),
     );
   }
 
-  if (sourceAudit.localCssRuntimeSignals.count > 0) {
+  if (!isContractOnly && sourceAudit.localCssRuntimeSignals.count > 0) {
     findings.push(
       makeFinding({
         id: 'source-local-css-runtime-stub-present',
@@ -4285,6 +4395,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   const findings: VerificationFinding[] = [];
   const reviewPack = loadReviewPack(projectRoot);
   const packManifest = loadPackManifest(projectRoot);
+  const adoptionMode = readProjectAdoptionMode(projectRoot);
   const runtimeAudit = emptyRuntimeAudit();
 
   if (!existsSync(essencePath)) {
@@ -4372,10 +4483,29 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
         message: 'Compiled execution pack manifest is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'pack-manifest.json')],
         suggestedFix:
-          'Run `decantr refresh` to regenerate scaffold, review, mutation, section, and page packs.',
+          'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate scaffold, review, mutation, section, and page packs.',
       }),
     );
   } else {
+    const missingPackFiles = collectMissingPackManifestFiles(projectRoot, packManifest);
+    if (missingPackFiles.length > 0) {
+      findings.push(
+        makeFinding({
+          id: 'pack-manifest-referenced-files-missing',
+          category: 'Execution Packs',
+          severity: 'warn',
+          message: 'The compiled execution pack manifest references files that are missing.',
+          evidence: missingPackFiles
+            .slice(0, 12)
+            .map(
+              (missing) =>
+                `${missing.kind}:${missing.entryId}:${missing.field} -> ${missing.relativePath}`,
+            ),
+          suggestedFix:
+            'Regenerate or hydrate the full execution pack bundle so every file named by pack-manifest.json exists beside it.',
+        }),
+      );
+    }
     if (!packManifest.scaffold) {
       findings.push(
         makeFinding({
@@ -4409,7 +4539,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
           severity: 'info',
           message: 'No mutation packs were found in the manifest.',
           evidence: ['pack-manifest.json'],
-          suggestedFix: 'Run `decantr refresh` to regenerate mutation task packs.',
+          suggestedFix:
+            'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate mutation task packs.',
         }),
       );
     }
@@ -4424,7 +4555,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
         message: 'The compiled review pack file is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
         suggestedFix:
-          'Regenerate context with `decantr refresh`, or hydrate the hosted review contract with `decantr registry get-pack review --write-context`, so critique consumers can anchor findings to the compiled review contract.',
+          'Hydrate the full hosted context bundle with `decantr registry compile-packs decantr.essence.json --write-context` so critique consumers can anchor findings to the compiled review contract.',
       }),
     );
   }
@@ -4439,7 +4570,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     summarizeTopology(essence, reviewPack),
     sourceAudit,
   );
-  appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack);
+  appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack, adoptionMode);
   appendStyleContractFindings(findings, styleAudit, essence);
 
   const summary = {
@@ -5533,6 +5664,8 @@ function getObjectLiteralPropertyExpression(
   return null;
 }
 
+const MAX_OPEN_REDIRECT_RESOLUTION_DEPTH = 40;
+
 function resolveObjectLiteralExpressionAtPropertyPath(
   expression: ts.Expression | undefined,
   sourceFile: ts.SourceFile,
@@ -5541,7 +5674,9 @@ function resolveObjectLiteralExpressionAtPropertyPath(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string>,
+  depth = 0,
 ): ResolvedObjectLiteralExpression | null {
+  if (depth > MAX_OPEN_REDIRECT_RESOLUTION_DEPTH) return null;
   let resolvedObjectLiteral = resolveObjectLiteralExpression(
     expression,
     sourceFile,
@@ -5549,6 +5684,7 @@ function resolveObjectLiteralExpressionAtPropertyPath(
     namedPropertyAliases,
     seenIdentifiers,
     seenFunctions,
+    depth + 1,
   );
   if (!resolvedObjectLiteral) return null;
 
@@ -5566,6 +5702,7 @@ function resolveObjectLiteralExpressionAtPropertyPath(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
     if (!resolvedObjectLiteral) return null;
   }
@@ -5581,7 +5718,9 @@ function resolveReturnedObjectLiteralExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string>,
+  depth = 0,
 ): ResolvedObjectLiteralExpression | null {
+  if (depth > MAX_OPEN_REDIRECT_RESOLUTION_DEPTH) return null;
   const functionKey = getFunctionLikeCacheKey(functionLike);
   if (seenFunctions.has(functionKey)) return null;
 
@@ -5595,6 +5734,7 @@ function resolveReturnedObjectLiteralExpression(
       namedPropertyAliases,
       new Set(seenIdentifiers),
       seenFunctions,
+      depth + 1,
     );
     if (objectLiteral) {
       seenFunctions.delete(functionKey);
@@ -5613,8 +5753,10 @@ function resolveObjectLiteralExpression(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string> = new Set(),
+  depth = 0,
 ): ResolvedObjectLiteralExpression | null {
   if (!expression) return null;
+  if (depth > MAX_OPEN_REDIRECT_RESOLUTION_DEPTH) return null;
 
   if (
     ts.isParenthesizedExpression(expression) ||
@@ -5629,6 +5771,7 @@ function resolveObjectLiteralExpression(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
   }
 
@@ -5648,6 +5791,7 @@ function resolveObjectLiteralExpression(
         namedPropertyAliases,
         seenIdentifiers,
         seenFunctions,
+        depth + 1,
       );
       seenIdentifiers.delete(expression.text);
       return result;
@@ -5665,6 +5809,7 @@ function resolveObjectLiteralExpression(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
     seenIdentifiers.delete(expression.text);
     return result;
@@ -5676,7 +5821,9 @@ function resolveObjectLiteralExpression(
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
-      new Set(),
+      new Set(seenIdentifiers),
+      seenFunctions,
+      depth + 1,
     );
     if (!functionResolution) return null;
     return resolveReturnedObjectLiteralExpression(
@@ -5687,6 +5834,7 @@ function resolveObjectLiteralExpression(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
   }
 
@@ -5701,6 +5849,7 @@ function resolveObjectLiteralExpression(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
   }
 
@@ -5737,7 +5886,9 @@ function resolveReturnedTrackedFunctionLike(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string>,
+  depth = 0,
 ): ResolvedTrackedFunctionLike | null {
+  if (depth > MAX_OPEN_REDIRECT_RESOLUTION_DEPTH) return null;
   const functionKey = getFunctionLikeCacheKey(functionLike);
   if (seenFunctions.has(functionKey)) return null;
 
@@ -5752,6 +5903,7 @@ function resolveReturnedTrackedFunctionLike(
       namedPropertyAliases,
       new Set(seenIdentifiers),
       nextSeenFunctions,
+      depth + 1,
     );
     if (result) return result;
   }
@@ -5766,8 +5918,10 @@ function resolveTrackedOpenRedirectFunctionLike(
   namedPropertyAliases: Map<string, NamedPropertyAlias>,
   seenIdentifiers: Set<string>,
   seenFunctions: Set<string> = new Set(),
+  depth = 0,
 ): ResolvedTrackedFunctionLike | null {
   if (!expression) return null;
+  if (depth > MAX_OPEN_REDIRECT_RESOLUTION_DEPTH) return null;
 
   const namedFunctions = getCachedNamedFunctionLikeDeclarations(sourceFile);
   const directFunctionLike = resolveFunctionLikeHandler(expression, namedFunctions);
@@ -5788,6 +5942,7 @@ function resolveTrackedOpenRedirectFunctionLike(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
   }
 
@@ -5797,8 +5952,9 @@ function resolveTrackedOpenRedirectFunctionLike(
       sourceFile,
       namedExpressions,
       namedPropertyAliases,
-      new Set(),
+      new Set(seenIdentifiers),
       seenFunctions,
+      depth + 1,
     );
     if (!functionResolution) return null;
     return resolveReturnedTrackedFunctionLike(
@@ -5809,6 +5965,7 @@ function resolveTrackedOpenRedirectFunctionLike(
       namedPropertyAliases,
       seenIdentifiers,
       seenFunctions,
+      depth + 1,
     );
   }
 
@@ -5825,6 +5982,7 @@ function resolveTrackedOpenRedirectFunctionLike(
         namedPropertyAliases,
         seenIdentifiers,
         seenFunctions,
+        depth + 1,
       );
       seenIdentifiers.delete(expression.text);
       if (result) return result;
@@ -5839,8 +5997,9 @@ function resolveTrackedOpenRedirectFunctionLike(
       propertyAlias.propertyPath.slice(0, -1),
       namedExpressions,
       namedPropertyAliases,
-      new Set(),
-      new Set(),
+      new Set(seenIdentifiers),
+      seenFunctions,
+      depth + 1,
     );
     if (!resolvedObjectLiteral) return null;
     const functionLike = findFunctionLikeOnObjectLiteral(
@@ -5864,8 +6023,9 @@ function resolveTrackedOpenRedirectFunctionLike(
     sourceFile,
     namedExpressions,
     namedPropertyAliases,
-    new Set(),
-    new Set(),
+    new Set(seenIdentifiers),
+    seenFunctions,
+    depth + 1,
   );
   if (!resolvedObjectLiteral) return null;
   const functionLike = findFunctionLikeOnObjectLiteral(
@@ -13635,6 +13795,7 @@ export function critiqueSource({
   reviewPack = null,
   packManifest = null,
   treatmentsCss = '',
+  adoptionMode = null,
 }: CritiqueSourceInput): FileCritiqueReport {
   const codeLower = code.toLowerCase();
   const astSignals = analyzeAstSignals(filePath, code);
@@ -13642,79 +13803,105 @@ export function critiqueSource({
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
   const antiPatternIds = new Set(reviewPack?.antiPatterns.map((entry) => entry.id) ?? []);
+  const isContractOnly = adoptionMode === 'contract-only';
 
   const usedTreatments = TREATMENT_CLASSES.filter((token) => code.includes(token));
-  const treatmentSuggestions = TREATMENT_CLASSES.filter((token) => !code.includes(token)).map(
-    (token) => `Consider using \`${token}\` where appropriate.`,
-  );
-  scores.push({
-    category: 'Treatment Usage',
-    focusArea: 'treatment-usage',
-    score: scoreRatio(usedTreatments.length, TREATMENT_CLASSES.length),
-    details: `${usedTreatments.length}/${TREATMENT_CLASSES.length} base treatments used: ${usedTreatments.join(', ') || 'none'}`,
-    suggestions: treatmentSuggestions,
-  });
-  if (focusAreas.includes('treatment-usage') && usedTreatments.length === 0) {
-    findings.push(
-      makeFinding({
-        id: 'treatment-usage-missing',
-        category: 'Treatment Usage',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
-          'page-pattern-contract',
-          'section-pattern-coverage',
-        ]),
-        message: 'No Decantr treatment classes were detected in the reviewed file.',
-        evidence: [
-          filePath,
-          'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.',
-        ],
-        file: filePath,
-        suggestedFix:
-          'Apply the compiled treatment vocabulary instead of hand-rolled utility styling.',
-      }),
+  if (isContractOnly) {
+    scores.push({
+      category: 'Styling Authority',
+      focusArea: 'treatment-usage',
+      score: 3,
+      details:
+        'Contract-only adoption does not require Decantr d-* treatment classes in source files.',
+      suggestions: [
+        'Codify project-owned component variants and local rules when button/card/surface drift needs mechanical enforcement.',
+      ],
+    });
+  } else {
+    const treatmentSuggestions = TREATMENT_CLASSES.filter((token) => !code.includes(token)).map(
+      (token) => `Consider using \`${token}\` where appropriate.`,
     );
+    scores.push({
+      category: 'Treatment Usage',
+      focusArea: 'treatment-usage',
+      score: scoreRatio(usedTreatments.length, TREATMENT_CLASSES.length),
+      details: `${usedTreatments.length}/${TREATMENT_CLASSES.length} base treatments used: ${usedTreatments.join(', ') || 'none'}`,
+      suggestions: treatmentSuggestions,
+    });
+    if (focusAreas.includes('treatment-usage') && usedTreatments.length === 0) {
+      findings.push(
+        makeFinding({
+          id: 'treatment-usage-missing',
+          category: 'Treatment Usage',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+            'page-pattern-contract',
+            'section-pattern-coverage',
+          ]),
+          message: 'No Decantr treatment classes were detected in the reviewed file.',
+          evidence: [
+            filePath,
+            'Expected tokens include d-interactive, d-surface, d-data, d-control, d-section, d-annotation, d-label.',
+          ],
+          file: filePath,
+          suggestedFix:
+            'Apply the compiled treatment vocabulary instead of hand-rolled utility styling.',
+        }),
+      );
+    }
   }
 
   const decoratorNames = buildDecoratorInventory(treatmentsCss);
   const usedDecorators = decoratorNames.filter((name) => code.includes(name));
   const usesCssVars = code.includes('var(--');
-  scores.push({
-    category: 'Theme Consistency',
-    focusArea: 'theme-consistency',
-    score:
-      decoratorNames.length > 0
-        ? scoreRatio((usedDecorators.length > 0 ? 1 : 0) + (usesCssVars ? 1 : 0), 2)
-        : usesCssVars
-          ? 4
-          : 2,
-    details: `Decorators used: ${usedDecorators.join(', ') || 'none'}; CSS vars: ${usesCssVars ? 'yes' : 'no'}`,
-    suggestions: [
-      ...(!usesCssVars ? ['Prefer CSS variable references over hardcoded visual values.'] : []),
-      ...(decoratorNames.length > 0 && usedDecorators.length === 0
-        ? ['Use theme decorators from treatments.css when they fit the component intent.']
-        : []),
-    ],
-  });
-  if (focusAreas.includes('theme-consistency') && !usesCssVars && usedDecorators.length === 0) {
-    findings.push(
-      makeFinding({
-        id: 'theme-consistency-weak',
-        category: 'Theme Consistency',
-        severity: resolveSeverityFromChecks(reviewPack, 'warn', [
-          'theme-consistency',
-          'mutation-theme-contract',
-        ]),
-        message:
-          'The file does not appear to use theme decorators or CSS variables from the compiled contract.',
-        evidence: [
-          filePath,
-          `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`,
-        ],
-        file: filePath,
-        suggestedFix:
-          'Anchor styling to tokens.css and treatments.css instead of local hardcoded values.',
-      }),
-    );
+  if (isContractOnly) {
+    scores.push({
+      category: 'Theme Consistency',
+      focusArea: 'theme-consistency',
+      score: usesCssVars ? 4 : 3,
+      details: `Contract-only mode: Decantr decorators are not required; CSS vars: ${usesCssVars ? 'yes' : 'no'}.`,
+      suggestions: [
+        'Use the app design system, Tailwind theme, Sass variables, component variants, or accepted local rules as the styling authority.',
+      ],
+    });
+  } else {
+    scores.push({
+      category: 'Theme Consistency',
+      focusArea: 'theme-consistency',
+      score:
+        decoratorNames.length > 0
+          ? scoreRatio((usedDecorators.length > 0 ? 1 : 0) + (usesCssVars ? 1 : 0), 2)
+          : usesCssVars
+            ? 4
+            : 2,
+      details: `Decorators used: ${usedDecorators.join(', ') || 'none'}; CSS vars: ${usesCssVars ? 'yes' : 'no'}`,
+      suggestions: [
+        ...(!usesCssVars ? ['Prefer CSS variable references over hardcoded visual values.'] : []),
+        ...(decoratorNames.length > 0 && usedDecorators.length === 0
+          ? ['Use theme decorators from treatments.css when they fit the component intent.']
+          : []),
+      ],
+    });
+    if (focusAreas.includes('theme-consistency') && !usesCssVars && usedDecorators.length === 0) {
+      findings.push(
+        makeFinding({
+          id: 'theme-consistency-weak',
+          category: 'Theme Consistency',
+          severity: resolveSeverityFromChecks(reviewPack, 'warn', [
+            'theme-consistency',
+            'mutation-theme-contract',
+          ]),
+          message:
+            'The file does not appear to use theme decorators or CSS variables from the compiled contract.',
+          evidence: [
+            filePath,
+            `Decorators available: ${decoratorNames.slice(0, 5).join(', ') || 'none'}`,
+          ],
+          file: filePath,
+          suggestedFix:
+            'Anchor styling to tokens.css and treatments.css instead of local hardcoded values.',
+        }),
+      );
+    }
   }
 
   const hasAria = codeLower.includes('aria-') || codeLower.includes('role=');
@@ -14947,7 +15134,9 @@ export function critiqueSource({
     suggestions: [
       ...(reviewPack
         ? []
-        : ['Run `decantr refresh` so critique starts from a compiled review contract.']),
+        : [
+            'Run `decantr registry compile-packs decantr.essence.json --write-context` so critique starts from a compiled review contract.',
+          ]),
       ...(placeholderNavigationTargets > 0
         ? [
             'Replace placeholder href/to targets with real route destinations from the compiled contract.',
@@ -15009,8 +15198,9 @@ export function critiqueSource({
           `Disallowed inline style attributes: ${astSignals.inlineStyleAttributeCount}`,
         ],
         file: filePath,
-        suggestedFix:
-          'Replace static inline visual values with treatments, decorators, and CSS variables from the compiled contract. Keep inline style only for Decantr CSS-variable writes and truly dynamic geometry.',
+        suggestedFix: isContractOnly
+          ? 'Replace static inline visual values with the project design system, accepted component variants, or local style rules. Keep inline style only for truly dynamic geometry.'
+          : 'Replace static inline visual values with treatments, decorators, and CSS variables from the compiled contract. Keep inline style only for Decantr CSS-variable writes and truly dynamic geometry.',
       }),
     );
   }
@@ -15029,8 +15219,9 @@ export function critiqueSource({
           'Component-scoped style tags or dynamic style elements were detected in the reviewed file.',
         evidence: [filePath, `Component style tag signals: ${componentStyleTagSignals}`],
         file: filePath,
-        suggestedFix:
-          'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so the file stays aligned with the Decantr layer contract.',
+        suggestedFix: isContractOnly
+          ? 'Move shared keyframes, media queries, and visual rules into the project stylesheet, component library, or accepted local pattern/rule manifest.'
+          : 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so the file stays aligned with the Decantr layer contract.',
       }),
     );
   }
@@ -15907,6 +16098,7 @@ export async function critiqueFile(
   const treatmentsCss = readTextIfExists(join(projectRoot, 'src', 'styles', 'treatments.css'));
   const reviewPack = loadReviewPack(projectRoot);
   const packManifest = loadPackManifest(projectRoot);
+  const adoptionMode = readProjectAdoptionMode(projectRoot);
 
   return critiqueSource({
     filePath: resolvedPath,
@@ -15914,5 +16106,6 @@ export async function critiqueFile(
     reviewPack,
     packManifest,
     treatmentsCss,
+    adoptionMode,
   });
 }

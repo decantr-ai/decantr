@@ -82,6 +82,15 @@ describe('generateSectionContext', () => {
     expect(result).not.toContain('```css');
   });
 
+  it('does not recommend Decantr CSS usage in contract-only section context', () => {
+    const result = generateSectionContext(makeSectionInput({ adoptionMode: 'contract-only' }));
+
+    expect(result).toContain('existing styling authority');
+    expect(result).toContain('Do not add `@decantr/css`');
+    expect(result).not.toContain("className={css('_flex _col _gap4')");
+    expect(result).not.toContain('d-surface midnight-glass');
+  });
+
   it('renders a compact decorator pointer that points to the section pack', () => {
     // F2 Phase 1 cold-LLM runs surfaced that the full Required-Theme-Decorators
     // table was being duplicated across the section pack (1.7.20), the section

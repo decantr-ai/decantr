@@ -186,10 +186,13 @@ Registry and verification:
 ```bash
 decantr registry summary       --namespace @official --json
 decantr registry compile-packs decantr.essence.json --write-context
+decantr registry compile-packs apps/web/decantr.essence.json --write-context
 decantr registry critique-file src/pages/Home.tsx  --namespace @official --json
 decantr registry audit-project --namespace @official --json
 decantr showcase verification  --json
 ```
+
+When an essence path is provided, `--write-context` writes the pack bundle beside that essence file. In monorepos, that means app packs land under `apps/web/.decantr/context`, not the repository root.
 
 Project Health, CI, and diagnosis:
 

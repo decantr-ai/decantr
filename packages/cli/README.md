@@ -21,6 +21,7 @@ Use `decantr setup` when you are unsure which path applies. It detects whether t
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, and only applies it when you explicitly accept or merge it.
 Use `decantr doctor` when the next step is unclear, `decantr task` before asking an LLM to modify a route, `decantr verify` after the edit, and `decantr ci` in required automation. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification.
+In monorepos, app-scoped commands accept `--project <app-path>`. Hosted pack hydration also follows the essence path: `decantr registry compile-packs apps/web/decantr.essence.json --write-context` writes into `apps/web/.decantr/context`.
 Use `decantr init`, `decantr analyze`, `decantr check`, and `decantr health` as advanced primitives when you need direct control over one step.
 
 Current starter adapter availability:

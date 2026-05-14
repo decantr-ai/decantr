@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV4 } from '@decantr/essence-spec';
+import { collectMissingPackManifestFiles } from '@decantr/verifier';
 import { ARTIFACT_README_PATH } from '../artifacts.js';
 import { detectProject } from '../detect.js';
 import { localPatternsPath, localRulesPath } from '../local-law.js';
@@ -79,6 +80,7 @@ interface DoctorReport {
     contextDirPresent: boolean;
     packManifestPresent: boolean;
     reviewPackPresent: boolean;
+    missingReferencedFiles: string[];
   };
   localLaw: {
     patternsPresent: boolean;
@@ -252,6 +254,29 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   const ciFiles = findCiFiles(workspaceRoot);
   const workflowMode = projectJson?.initialized?.workflowMode ?? null;
   const adoptionMode = projectJson?.initialized?.adoptionMode ?? null;
+  const missingPackReferences = workspaceMode
+    ? projects.flatMap((project) =>
+        collectMissingPackManifestFiles(join(workspaceRoot, project.path)).map(
+          (missing) => `${project.path}/${missing.relativePath}`,
+        ),
+      )
+    : collectMissingPackManifestFiles(appRoot).map((missing) => missing.relativePath);
+  const workspaceProjectsMissingManifest = workspaceMode
+    ? projects
+        .map((project) => project.path)
+        .filter((projectPath) => {
+          const projectContextDir = join(workspaceRoot, projectPath, '.decantr', 'context');
+          return !existsSync(join(projectContextDir, 'pack-manifest.json'));
+        })
+    : [];
+  const workspaceProjectsMissingReviewPack = workspaceMode
+    ? projects
+        .map((project) => project.path)
+        .filter((projectPath) => {
+          const projectContextDir = join(workspaceRoot, projectPath, '.decantr', 'context');
+          return !existsSync(join(projectContextDir, 'review-pack.json'));
+        })
+    : [];
 
   const issues: DoctorIssue[] = [];
   if (!essenceVersion && !workspaceMode && !workspaceInfo.requiresProjectSelection) {
@@ -306,7 +331,35 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       category: 'generated-artifact',
       severity: 'warn',
       message: 'Generated context packs are missing or incomplete.',
-      nextCommand: projectPath ? `decantr refresh --project ${projectPath}` : 'decantr refresh',
+      nextCommand: projectPath
+        ? `decantr registry compile-packs ${projectPath}/decantr.essence.json --write-context`
+        : 'decantr registry compile-packs decantr.essence.json --write-context',
+    });
+  }
+
+  if (essenceVersion === '4.0.0' && missingPackReferences.length > 0) {
+    issues.push({
+      category: 'generated-artifact',
+      severity: 'warn',
+      message: `Generated pack manifest references ${missingPackReferences.length} missing file(s).`,
+      nextCommand: projectPath
+        ? `decantr registry compile-packs ${projectPath}/decantr.essence.json --write-context`
+        : 'decantr registry compile-packs decantr.essence.json --write-context',
+    });
+  }
+
+  if (
+    workspaceMode &&
+    (workspaceProjectsMissingManifest.length > 0 ||
+      workspaceProjectsMissingReviewPack.length > 0 ||
+      missingPackReferences.length > 0)
+  ) {
+    issues.push({
+      category: 'generated-artifact',
+      severity: 'warn',
+      message:
+        'One or more attached workspace projects have missing or incomplete generated context packs.',
+      nextCommand: 'decantr registry compile-packs <app-path>/decantr.essence.json --write-context',
     });
   }
 
@@ -385,9 +438,18 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       appCandidates: candidates,
     },
     generatedArtifacts: {
-      contextDirPresent: existsSync(contextDir),
-      packManifestPresent,
-      reviewPackPresent,
+      contextDirPresent: workspaceMode
+        ? projects.some((project) =>
+            existsSync(join(workspaceRoot, project.path, '.decantr', 'context')),
+          )
+        : existsSync(contextDir),
+      packManifestPresent: workspaceMode
+        ? projects.length > 0 && workspaceProjectsMissingManifest.length === 0
+        : packManifestPresent,
+      reviewPackPresent: workspaceMode
+        ? projects.length > 0 && workspaceProjectsMissingReviewPack.length === 0
+        : reviewPackPresent,
+      missingReferencedFiles: missingPackReferences.slice(0, 25),
     },
     localLaw: {
       patternsPresent: existsSync(localPatternsPath(appRoot)),
@@ -429,6 +491,11 @@ function formatDoctorText(report: DoctorReport): string {
     `  Context directory: ${report.generatedArtifacts.contextDirPresent ? 'present' : 'missing'}`,
     `  Pack manifest: ${report.generatedArtifacts.packManifestPresent ? 'present' : 'missing'}`,
     `  Review pack: ${report.generatedArtifacts.reviewPackPresent ? 'present' : 'missing'}`,
+    `  Manifest references: ${
+      report.generatedArtifacts.missingReferencedFiles.length === 0
+        ? 'complete'
+        : `${report.generatedArtifacts.missingReferencedFiles.length} missing`
+    }`,
     `  Artifact guide: ${report.project.artifactReadmePresent ? 'present' : 'missing'}`,
     '',
     `${BOLD}Local Law:${RESET}`,

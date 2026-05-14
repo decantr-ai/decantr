@@ -513,7 +513,8 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    const essencePath = join(testDir, 'decantr.essence.json');
+    mkdirSync(join(testDir, 'apps', 'web'), { recursive: true });
+    const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
     writeFileSync(
       essencePath,
       JSON.stringify(
@@ -536,7 +537,7 @@ describe('registry commands (e2e)', () => {
 
     const output = await runCliAsync(
       testDir,
-      'registry compile-packs decantr.essence.json --namespace @official --json',
+      'registry compile-packs apps/web/decantr.essence.json --namespace @official --json',
       {
         DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
         DECANTR_API_KEY: '',
@@ -658,7 +659,8 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    const essencePath = join(testDir, 'decantr.essence.json');
+    mkdirSync(join(testDir, 'apps', 'web'), { recursive: true });
+    const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
     writeFileSync(
       essencePath,
       JSON.stringify(
@@ -681,7 +683,7 @@ describe('registry commands (e2e)', () => {
 
     const output = await runCliAsync(
       testDir,
-      'registry get-pack page home --namespace @official --json',
+      'registry get-pack page home --namespace @official --essence apps/web/decantr.essence.json --json',
       {
         DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
         DECANTR_API_KEY: '',
@@ -804,7 +806,8 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    const essencePath = join(testDir, 'decantr.essence.json');
+    mkdirSync(join(testDir, 'apps', 'web'), { recursive: true });
+    const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
     writeFileSync(
       essencePath,
       JSON.stringify(
@@ -827,7 +830,7 @@ describe('registry commands (e2e)', () => {
 
     const output = await runCliAsync(
       testDir,
-      'registry get-pack manifest --namespace @official --json',
+      'registry get-pack manifest --namespace @official --essence apps/web/decantr.essence.json --json',
       {
         DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
         DECANTR_API_KEY: '',
@@ -1324,7 +1327,8 @@ describe('registry commands (e2e)', () => {
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
     const { port } = server.address() as AddressInfo;
 
-    const essencePath = join(testDir, 'decantr.essence.json');
+    mkdirSync(join(testDir, 'apps', 'web'), { recursive: true });
+    const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
     writeFileSync(
       essencePath,
       JSON.stringify(
@@ -1347,7 +1351,7 @@ describe('registry commands (e2e)', () => {
 
     const output = await runCliAsync(
       testDir,
-      'registry compile-packs decantr.essence.json --namespace @official --write-context',
+      'registry compile-packs apps/web/decantr.essence.json --namespace @official --write-context',
       {
         DECANTR_API_URL: `http://127.0.0.1:${port}/v1`,
         DECANTR_API_KEY: '',
@@ -1358,7 +1362,8 @@ describe('registry commands (e2e)', () => {
       server.close((error) => (error ? reject(error) : resolve())),
     );
 
-    const contextDir = join(testDir, '.decantr', 'context');
+    const contextDir = join(testDir, 'apps', 'web', '.decantr', 'context');
+    const rootContextDir = join(testDir, '.decantr', 'context');
     const manifestPath = join(contextDir, 'pack-manifest.json');
     const scaffoldPackPath = join(contextDir, 'scaffold-pack.md');
     const reviewPackPath = join(contextDir, 'review-pack.md');
@@ -1374,6 +1379,7 @@ describe('registry commands (e2e)', () => {
     expect(existsSync(pagePackPath)).toBe(true);
     expect(existsSync(sectionPackPath)).toBe(true);
     expect(existsSync(mutationPackPath)).toBe(true);
+    expect(existsSync(join(rootContextDir, 'pack-manifest.json'))).toBe(false);
     expect(JSON.parse(readFileSync(manifestPath, 'utf-8')).version).toBe('1.0.0');
     expect(readFileSync(scaffoldPackPath, 'utf-8')).toContain('# Scaffold Pack');
   });
