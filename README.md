@@ -12,7 +12,7 @@ Decantr is the contract layer between product intent and AI-generated implementa
 | --- | --- | --- |
 | **[Greenfield blueprint](#greenfield-blueprint)** &nbsp;⭐ | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
 | **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
-| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr adopt --base-url http://localhost:3000 --evidence --yes` |
+| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr adopt --yes` |
 | **[Hybrid composition](docs/reference/workflow-model.md#hybrid-composition)** | Layering sections, themes, or features into an attached project | `decantr add/remove`, `decantr theme switch`, `decantr registry` |
 
 ---
@@ -149,12 +149,29 @@ decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
 Brownfield adoption:
 
 ```bash
-decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr adopt --yes
 decantr codify --from-audit
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
 decantr verify --since-baseline
+```
+
+In a monorepo, install Decantr at the workspace root, but attach it to an app:
+
+```bash
+decantr setup
+decantr workspace list
+decantr adopt --project apps/web --yes
+decantr codify --from-audit --project apps/web
+decantr task /feed "add saved recipe actions" --project apps/web
+decantr verify --brownfield --local-patterns --project apps/web
+```
+
+If the app is already running and you want local screenshots, add visual evidence later:
+
+```bash
+decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 ```
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.

@@ -16,7 +16,7 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Human-readable references for active public/runtime contracts such as Project Health, Evidence Bundles, Workspace Health, Content Health, workflow mode, telemetry, and registry API surfaces.
 - `guides/`
   - Focused public entry points for existing-app adoption, Project Health CI, AI assistant setup, registry publishing, and design contract basics.
-- Brownfield 2.8 operating-layer guidance lives in `guides/existing-apps.md`, `guides/ai-assistant-setup.md`, `reference/workflow-model.md`, `reference/project-health.md`, and `reference/command-surface.md`: `adopt`, `task`, `verify`, `codify --from-audit`, analyze artifacts, theme inventory, task-time MCP/CLI context, visual manifest, baselines, local pattern proposals, local rule proposals, and changed-file impact.
+- Brownfield 2.8 operating-layer guidance lives in `guides/existing-apps.md`, `guides/ai-assistant-setup.md`, `reference/workflow-model.md`, `reference/project-health.md`, and `reference/command-surface.md`: `adopt`, monorepo `--project` onboarding, `task`, `verify`, `codify --from-audit`, analyze artifacts, theme inventory, task-time MCP/CLI context, optional visual manifest, baselines, local pattern proposals, local rule proposals, and changed-file impact.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
 - `schemas/`

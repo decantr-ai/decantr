@@ -537,7 +537,8 @@ describe('init command', () => {
         const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
           (error as { stderr?: Buffer }).stderr?.toString() ?? ''
         }`;
-        expect(output).toContain('Use --project=<path>');
+        expect(output).toContain('decantr init needs an app path.');
+        expect(output).toContain('decantr adopt --project apps/admin --yes');
         expect(output).toContain('apps/admin');
         expect(output).toContain('apps/web');
       }

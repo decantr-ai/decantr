@@ -38,7 +38,7 @@ Explicit workflow/adoption flags:
 
 ```bash
 decantr setup
-decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr adopt --yes
 decantr codify --from-audit
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
@@ -61,7 +61,14 @@ Adoption modes:
 - `style-bridge` writes bridge tokens/files that map Decantr intent onto an existing style system without requiring `@decantr/css`.
 - `decantr-css` writes the full Decantr CSS files and runtime guidance.
 
-Monorepos store both `workspaceRoot` and `appRoot`. In non-interactive workspace-root runs with multiple app candidates, pass `--project=<path>` so Decantr attaches to the intended app.
+Monorepos store both `workspaceRoot` and `appRoot`. Install Decantr at the workspace root if that is where dependencies are managed, but attach Decantr to an app root with `--project=<path>`.
+
+```bash
+pnpm add -D -w @decantr/cli
+pnpm exec decantr setup
+pnpm exec decantr workspace list
+pnpm exec decantr adopt --project apps/web --yes
+```
 
 Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
 
@@ -86,11 +93,13 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 ```bash
 decantr setup
 decantr new my-app --blueprint=esports-hq
-decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr adopt --yes
+decantr adopt --project apps/web --yes
 decantr codify --from-audit
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
+decantr verify --base-url http://localhost:3000 --evidence
 decantr init --existing --blueprint=esports-hq
 decantr init --workflow=greenfield --adoption=contract-only
 decantr rules preview
@@ -151,7 +160,7 @@ Use `--json` for machines and schema validation, `--markdown` for CI summaries, 
 
 `decantr verify init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes JSON/markdown health artifacts, gates with the Project Health CI command, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path. Use `--workspace` to generate an aggregate gate that runs `decantr workspace health` from the repository root and uploads `.decantr/workspace-health.json` plus `.decantr/workspace-health.md`.
 
-`decantr workspace` is the monorepo reliability namespace. It discovers Decantr projects from `.decantr/workspace.json` or by finding `decantr.essence.json` files, runs projects with deterministic ordering, concurrency, per-project timeout, failure isolation, and aggregate JSON, and can limit a run to changed projects:
+`decantr workspace` is the monorepo reliability namespace. Before attach, `workspace list` shows app candidates. After attach, it also discovers Decantr projects from `.decantr/workspace.json` or by finding `decantr.essence.json` files. Workspace health runs projects with deterministic ordering, concurrency, per-project timeout, failure isolation, and aggregate JSON, and can limit a run to changed projects:
 
 ```bash
 decantr workspace list

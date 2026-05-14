@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -74,7 +74,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -86,7 +86,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -152,7 +152,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -164,13 +164,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/package-support-matrix.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -206,7 +206,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -302,13 +302,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-13-brownfield-operating-layer.md</loc>
-    <lastmod>2026-05-13T19:40:34.884Z</lastmod>
+    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-13-workflow-command-layer.md</loc>
     <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-14-brownfield-monorepo-onboarding.md</loc>
+    <lastmod>2026-05-14T17:32:44.955Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

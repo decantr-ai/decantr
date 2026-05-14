@@ -50,7 +50,8 @@ function findWorkspaceRoot(startDir: string): string | null {
   }
 }
 
-function looksLikeApp(dir: string): boolean {
+function looksLikeApp(dir: string, options: { allowSourceDirs?: boolean } = {}): boolean {
+  const allowSourceDirs = options.allowSourceDirs ?? true;
   if (
     existsSync(join(dir, 'next.config.js')) ||
     existsSync(join(dir, 'next.config.ts')) ||
@@ -61,9 +62,10 @@ function looksLikeApp(dir: string): boolean {
     existsSync(join(dir, 'svelte.config.js')) ||
     existsSync(join(dir, 'svelte.config.ts')) ||
     existsSync(join(dir, 'astro.config.mjs')) ||
-    existsSync(join(dir, 'src')) ||
-    existsSync(join(dir, 'app')) ||
-    existsSync(join(dir, 'pages'))
+    (allowSourceDirs &&
+      (existsSync(join(dir, 'src')) ||
+        existsSync(join(dir, 'app')) ||
+        existsSync(join(dir, 'pages'))))
   ) {
     return true;
   }
@@ -89,12 +91,16 @@ function listWorkspaceApps(workspaceRoot: string): string[] {
     for (const entry of readdirSync(baseDir, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name.startsWith('.')) continue;
       const candidate = join(baseDir, entry.name);
-      if (looksLikeApp(candidate)) {
+      if (looksLikeApp(candidate, { allowSourceDirs: base === 'apps' })) {
         candidates.push(`${base}/${entry.name}`);
       }
     }
   }
   return candidates.sort();
+}
+
+export function listWorkspaceAppCandidates(workspaceRoot: string): string[] {
+  return listWorkspaceApps(resolve(workspaceRoot));
 }
 
 export function resolveWorkspaceInfo(cwd: string, projectArg?: string): WorkspaceInfo {
@@ -105,7 +111,7 @@ export function resolveWorkspaceInfo(cwd: string, projectArg?: string): Workspac
   const projectScope: ProjectScope =
     workspaceRoot !== appRoot || appCandidates.length > 0 ? 'workspace-app' : 'single-app';
   const requiresProjectSelection =
-    !projectArg && workspaceRoot === absoluteCwd && appCandidates.length > 1;
+    !projectArg && workspaceRoot === absoluteCwd && appCandidates.length > 0;
 
   return {
     cwd: absoluteCwd,

@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import { createProjectHealthReport, type HealthFailOn } from './health.js';
 import type { ProjectHealthStatus } from '@decantr/verifier';
+import { listWorkspaceAppCandidates } from '../workspace.js';
+import { createProjectHealthReport, type HealthFailOn } from './health.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -94,6 +95,12 @@ export interface WorkspaceHealthOptions {
   concurrency?: number;
   timeoutMs?: number;
   browser?: boolean;
+}
+
+export interface WorkspaceAppCandidate {
+  path: string;
+  attached: boolean;
+  suggestedAdoptCommand: string;
 }
 
 export interface WorkspaceCommandOptions extends WorkspaceHealthOptions {
@@ -189,6 +196,18 @@ export function listWorkspaceProjects(root: string = process.cwd()): WorkspacePr
   return [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path));
 }
 
+export function listWorkspaceCandidates(
+  root: string = process.cwd(),
+  projects: WorkspaceProject[] = listWorkspaceProjects(root),
+): WorkspaceAppCandidate[] {
+  const attached = new Set(projects.map((project) => project.path));
+  return listWorkspaceAppCandidates(root).map((path) => ({
+    path,
+    attached: attached.has(path),
+    suggestedAdoptCommand: `decantr adopt --project ${path} --yes`,
+  }));
+}
+
 function changedPaths(root: string, since: string): Set<string> {
   try {
     const output = execFileSync('git', ['diff', '--name-only', since, '--'], {
@@ -196,7 +215,12 @@ function changedPaths(root: string, since: string): Set<string> {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore'],
     });
-    return new Set(output.split('\n').map((line) => line.trim()).filter(Boolean));
+    return new Set(
+      output
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean),
+    );
   } catch {
     return new Set();
   }
@@ -214,7 +238,10 @@ function projectChanged(project: WorkspaceProject, changed: Set<string>): boolea
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
   let timeout: NodeJS.Timeout | undefined;
   const timer = new Promise<never>((_, reject) => {
-    timeout = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs);
+    timeout = setTimeout(
+      () => reject(new Error(`${label} timed out after ${timeoutMs}ms`)),
+      timeoutMs,
+    );
   });
   try {
     return await Promise.race([promise, timer]);
@@ -384,9 +411,11 @@ export function parseWorkspaceArgs(args: string[]): WorkspaceCommandOptions {
     else if (arg.startsWith('--since=')) options.since = arg.split('=')[1];
     else if (arg === '--output' && args[index + 1]) options.output = args[++index];
     else if (arg.startsWith('--output=')) options.output = arg.split('=')[1];
-    else if (arg === '--fail-on' && args[index + 1]) options.failOn = parseHealthFailOn(args[++index]);
+    else if (arg === '--fail-on' && args[index + 1])
+      options.failOn = parseHealthFailOn(args[++index]);
     else if (arg.startsWith('--fail-on=')) options.failOn = parseHealthFailOn(arg.split('=')[1]);
-    else if (arg === '--concurrency' && args[index + 1]) options.concurrency = Number(args[++index]);
+    else if (arg === '--concurrency' && args[index + 1])
+      options.concurrency = Number(args[++index]);
     else if (arg.startsWith('--concurrency=')) options.concurrency = Number(arg.split('=')[1]);
     else if (arg === '--timeout-ms' && args[index + 1]) options.timeoutMs = Number(args[++index]);
     else if (arg.startsWith('--timeout-ms=')) options.timeoutMs = Number(arg.split('=')[1]);
@@ -403,14 +432,37 @@ export async function cmdWorkspace(
 
   if (options.subcommand === 'list') {
     const projects = listWorkspaceProjects(workspaceRoot);
-    const payload = `${JSON.stringify({ projects }, null, 2)}\n`;
+    const candidates = listWorkspaceCandidates(workspaceRoot, projects);
+    const unattachedCandidates = candidates.filter((candidate) => !candidate.attached);
+    const payload = `${JSON.stringify({ projects, candidates }, null, 2)}\n`;
     if (options.json) {
       process.stdout.write(payload);
       return;
     }
     console.log(`${BOLD}Decantr workspace projects${RESET}`);
-    for (const project of projects) {
-      console.log(`${project.path} ${DIM}${project.source}${RESET}`);
+    console.log('');
+    console.log('Attached Decantr projects:');
+    if (projects.length === 0) {
+      console.log(`  ${DIM}(none yet)${RESET}`);
+    } else {
+      for (const project of projects) {
+        console.log(`  ${project.path} ${DIM}${project.source}${RESET}`);
+      }
+    }
+    if (candidates.length > 0) {
+      console.log('');
+      console.log('App candidates:');
+      for (const candidate of candidates) {
+        const status = candidate.attached
+          ? `${GREEN}attached${RESET}`
+          : `${YELLOW}unattached${RESET}`;
+        console.log(`  ${candidate.path} ${DIM}${status}${RESET}`);
+      }
+    }
+    if (unattachedCandidates.length > 0) {
+      console.log('');
+      console.log('Start by attaching one app:');
+      console.log(`  ${unattachedCandidates[0].suggestedAdoptCommand}`);
     }
     return;
   }
@@ -425,7 +477,8 @@ export async function cmdWorkspace(
   if (options.output) {
     mkdirSync(dirname(resolve(workspaceRoot, options.output)), { recursive: true });
     writeFileSync(resolve(workspaceRoot, options.output), payload, 'utf-8');
-    if (!options.ci) console.log(`${GREEN}Wrote Decantr workspace health:${RESET} ${options.output}`);
+    if (!options.ci)
+      console.log(`${GREEN}Wrote Decantr workspace health:${RESET} ${options.output}`);
   } else {
     process.stdout.write(payload);
   }

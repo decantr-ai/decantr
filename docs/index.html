@@ -3079,7 +3079,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="network" class="tool-icon" style="color:var(--green)"></i>decantr_workspace_health</div>
-        <p class="tool-desc">Aggregate health for many Decantr projects in a monorepo</p>
+        <p class="tool-desc">Aggregate health for many attached Decantr projects in a monorepo</p>
       </div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="refresh-cw" class="tool-icon" style="color:var(--green)"></i>decantr_run_health_loop</div>
@@ -3324,8 +3324,8 @@ Start with the shell layouts, then build each section's pages.</div>
         <div class="lane-step-num" style="--accent:var(--coral)">1</div>
         <div class="lane-step-body">
           <h3>Adopt</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr adopt --base-url http://localhost:3000 --evidence --yes</span></div>
-          <p class="lane-step-desc">Runs the adoption workflow: analysis, observed contract proposal, deterministic acceptance or merge, Project Health, local screenshots, visual manifest, and baseline. Advanced users can still run the primitive commands one by one.</p>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr adopt --yes</span></div>
+          <p class="lane-step-desc">Runs the adoption workflow: analysis, observed contract proposal, deterministic acceptance or merge, Project Health, and baseline. In monorepos, start with workspace list and pass --project apps/web. Visual evidence is an optional follow-up when the app is running.</p>
         </div>
       </div>
       <div class="lane-step reveal reveal-d2">
@@ -3473,7 +3473,7 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/cli</div>
         <p class="pkg-desc">Workflow commands, project scaffolding, Brownfield activation, local law, Project Health, visual evidence, baselines, workspace health, and registry sync</p>
-        <div class="pkg-version">v2.8.0</div>
+        <div class="pkg-version">v2.8.1</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>

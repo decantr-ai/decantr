@@ -127,7 +127,8 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
-    purpose: 'Monorepo Decantr project discovery and aggregate health.',
+    purpose:
+      'Monorepo app candidate discovery, attached Decantr project listing, and aggregate health.',
     consolidation: 'keep',
   },
   {

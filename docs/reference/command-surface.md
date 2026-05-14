@@ -18,7 +18,7 @@ This is the current command audit for the 2.x reliability layer. The goal is con
 | `refresh` | advanced | keep | Regenerate derived context/style artifacts. |
 | `check` | advanced | keep | Fast contract and guard validation. |
 | `health` | advanced | keep | Canonical report, Evidence Bundle, prompt, browser/token checks, and CI spine used by `verify`. |
-| `workspace` | advanced | keep | Monorepo Decantr project discovery and aggregate health; `verify --workspace` is the user-facing shortcut. |
+| `workspace` | advanced | keep | Monorepo app candidate discovery, attached Decantr project listing, and aggregate health; `verify --workspace` is the user-facing shortcut. |
 | `heal` | deprecated-alias | soft-deprecate | Alias for `check`; no hard removal in 2.x. |
 | `audit` | advanced | keep advanced | Lower-level verifier audit/file critique. |
 | `status`, `sync`, `upgrade`, `sync-drift`, `get`, `list`, `validate`, `rules`, `export` | advanced | keep | Useful when users need direct registry, rules, export, or diagnostic control. |
@@ -29,7 +29,7 @@ The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered
 
 Brownfield intelligence is now exposed through workflows first:
 
-- `decantr adopt` runs the full adoption path and explains the underlying primitives before writing.
+- `decantr adopt --yes` runs the full adoption path and explains the underlying primitives before writing. In monorepos, use `decantr adopt --project apps/web --yes`; `--base-url` is optional visual evidence, not the default attach command.
 - `decantr task <route>` surfaces the relevant context files, patterns, screenshot references, accepted local laws, changed files, and impacted routes for the next LLM edit.
 - `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `decantr codify --accept` promotes them to `.decantr/local-patterns.json` and `.decantr/rules.json`.
 - `decantr verify --brownfield --local-patterns` runs the reliability gate, requires accepted local patterns, and scans accepted local rules when present.

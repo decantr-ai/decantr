@@ -114,7 +114,7 @@ decantr workspace health --json --output .decantr/workspace-health.json
 decantr workspace health --changed --since origin/main
 ```
 
-Projects can be listed in `.decantr/workspace.json`; otherwise Decantr discovers `decantr.essence.json` files while ignoring dependency/build folders. Workspace health runs projects in deterministic order with concurrency, per-project timeout, failure isolation, and aggregate JSON matching `https://decantr.ai/schemas/workspace-health-report.v1.json`.
+Before attach, `workspace list` shows app candidates discovered from common monorepo layouts so users know which `--project` path to pass. After attach, projects can be listed in `.decantr/workspace.json`; otherwise Decantr discovers `decantr.essence.json` files while ignoring dependency/build folders. Workspace health runs attached projects in deterministic order with concurrency, per-project timeout, failure isolation, and aggregate JSON matching `https://decantr.ai/schemas/workspace-health-report.v1.json`.
 
 Status is intentionally simple:
 
@@ -183,9 +183,17 @@ That command prints a focused prompt; it does not apply the fix. Give the prompt
 For an existing app:
 
 ```bash
-decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr adopt --yes
 decantr task /feed "add saved recipe actions"
-decantr verify --brownfield
+decantr verify --brownfield --local-patterns
+```
+
+In a monorepo, keep the app path explicit:
+
+```bash
+decantr adopt --project apps/web --yes
+decantr task /feed "add saved recipe actions" --project apps/web
+decantr verify --brownfield --local-patterns --project apps/web
 ```
 
 When the project workflow is `brownfield-attach`, health automatically includes route coverage and drift checks from the observed app inventory. This helps separate "the existing app has not been mapped into the contract yet" from "the implementation drifted away from an accepted Decantr contract."
@@ -232,7 +240,7 @@ Use these options to tune the generated workflow:
 ```bash
 decantr verify init-ci --force
 decantr verify init-ci --fail-on warn
-decantr verify init-ci --cli-version 2.8.0
+decantr verify init-ci --cli-version 2.8.1
 decantr verify init-ci --workflow-path .github/workflows/project-health.yml
 decantr verify init-ci --project apps/registry
 decantr verify init-ci --workspace

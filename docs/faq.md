@@ -24,16 +24,25 @@ Decantr creates the app contract, starter context, and available adapter files. 
 Use the Brownfield adoption workflow:
 
 ```bash
-npx @decantr/cli adopt --base-url http://localhost:3000 --evidence --yes
+npx @decantr/cli adopt --yes
 ```
 
-For monorepos, point Decantr at the app:
+For monorepos, install at the workspace root and point Decantr at the app:
 
 ```bash
-npx @decantr/cli adopt --project apps/web --base-url http://localhost:3000 --evidence --yes
+pnpm add -D -w @decantr/cli
+pnpm exec decantr setup
+pnpm exec decantr workspace list
+pnpm exec decantr adopt --project apps/web --yes
 ```
 
 Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
+
+If the app is running and you want local screenshot evidence, run:
+
+```bash
+npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --evidence
+```
 
 ## How does Decantr keep AI or agent work tied back to the original spec?
 

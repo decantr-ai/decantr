@@ -8,7 +8,7 @@ Decantr resolves an explicit workflow and adoption policy before registry, adapt
 | --- | --- | --- | --- | --- |
 | `greenfield-scaffold` | New app from a blueprint/archetype | `decantr new my-app --blueprint=<id>` | `decantr-css` | primary or cached |
 | `greenfield-contract-only` | New repo wants Decantr governance without blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` | `contract-only` | none |
-| `brownfield-attach` | Existing app wants Decantr context and checks | `decantr adopt --base-url <url> --evidence --yes` | `contract-only` | optional |
+| `brownfield-attach` | Existing app wants Decantr context and checks | `decantr adopt --yes` | `contract-only` | optional |
 | `hybrid-compose` | Attached app selectively adds/removes features, sections, themes, or packs | `decantr add/remove`, `decantr theme switch`, `decantr registry` | existing project setting | opt-in |
 
 Adoption modes:
@@ -45,10 +45,10 @@ Unsupported targets should feel intentional, not broken: Decantr writes the cont
 Brownfield starts with:
 
 ```bash
-decantr adopt --base-url http://localhost:3000 --evidence --yes
+decantr adopt --yes
 ```
 
-`adopt` is the user-facing workflow. It explains and runs the primitive chain: analyze the app, accept or merge the observed proposal, run Project Health, write optional local browser evidence, save a baseline, and optionally install CI.
+`adopt` is the user-facing workflow. It explains and runs the primitive chain: analyze the app, accept or merge the observed proposal, run Project Health, save a baseline, and optionally install CI. If the app is running and you want screenshots attached to task context, run `decantr verify --base-url <url> --evidence` after adoption.
 
 `analyze` writes `.decantr/analysis.json`, `.decantr/init-seed.json`, `.decantr/ambient-context.json`, `.decantr/doctrine-map.json`, `.decantr/observed-essence.proposal.json`, `.decantr/brownfield-report.md`, `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal is observed from routes, styling, dependencies, layout signals, features, semantic route domains, ranked doctrine sources, and ambient project context. Route observation covers Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Styling observation preserves existing systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS. Theme inventory observes light, dark, and variant selectors without changing Essence V4. It is not a Decantr scaffold.
 
@@ -104,7 +104,18 @@ Existing rule files are detected during project analysis and init. Bridge behavi
 
 ## Monorepo And Offline
 
-Workspace roots are detected from `pnpm-workspace.yaml`, package workspaces, `turbo.json`, `nx.json`, and common `apps/*` layouts. Non-interactive workspace-root init requires `--project=<path>` when multiple app candidates exist. Project Health CI uses the same explicit project-path posture through `decantr verify init-ci --project <path>`.
+Workspace roots are detected from `pnpm-workspace.yaml`, package workspaces, `turbo.json`, `nx.json`, and common `apps/*` layouts. Install Decantr at the workspace root if that is where dependencies are managed, but attach Decantr to an app root. Workspace-root Brownfield commands require `--project=<path>` whenever app candidates exist.
+
+```bash
+pnpm add -D -w @decantr/cli
+pnpm exec decantr setup
+pnpm exec decantr workspace list
+pnpm exec decantr adopt --project apps/web --yes
+pnpm exec decantr codify --from-audit --project apps/web
+pnpm exec decantr verify --brownfield --local-patterns --project apps/web
+```
+
+Project Health CI uses the same explicit project-path posture through `decantr verify init-ci --project <path>`.
 
 For monorepos with many Decantr projects, use `.decantr/workspace.json` when you want explicit project ownership/tags/concurrency, or let Decantr discover `decantr.essence.json` files automatically:
 

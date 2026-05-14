@@ -1,5 +1,13 @@
 import { execSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -90,7 +98,10 @@ describe('brownfield crap corpus', () => {
             join(projectDir, 'src', 'routes', '(app)', 'reports', '[id]', '+page.svelte'),
             '<main>Report</main>\n',
           );
-          writeFileSync(join(projectDir, 'src', 'app.css'), ':root { --brand-primary: #16a34a; }\n');
+          writeFileSync(
+            join(projectDir, 'src', 'app.css'),
+            ':root { --brand-primary: #16a34a; }\n',
+          );
         },
         framework: 'svelte',
         routeStrategy: 'sveltekit-router',
@@ -144,16 +155,25 @@ describe('brownfield crap corpus', () => {
               vue: '^3.5.0',
             },
           });
-          writeFileSync(join(projectDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({});\n');
+          writeFileSync(
+            join(projectDir, 'nuxt.config.ts'),
+            'export default defineNuxtConfig({});\n',
+          );
           mkdirp(join(projectDir, 'pages', 'settings'));
           writeFileSync(join(projectDir, 'pages', 'index.vue'), '<template><main /></template>\n');
-          writeFileSync(join(projectDir, 'pages', 'dashboard.vue'), '<template><main /></template>\n');
+          writeFileSync(
+            join(projectDir, 'pages', 'dashboard.vue'),
+            '<template><main /></template>\n',
+          );
           writeFileSync(
             join(projectDir, 'pages', 'settings', 'profile.vue'),
             '<template><main /></template>\n',
           );
           mkdirp(join(projectDir, 'assets', 'css'));
-          writeFileSync(join(projectDir, 'assets', 'css', 'main.css'), ':root { --brand-primary: #2563eb; }\n');
+          writeFileSync(
+            join(projectDir, 'assets', 'css', 'main.css'),
+            ':root { --brand-primary: #2563eb; }\n',
+          );
         },
         framework: 'nuxt',
         routeStrategy: 'nuxt-router',
@@ -177,9 +197,18 @@ describe('brownfield crap corpus', () => {
           writeFileSync(join(projectDir, 'next.config.ts'), 'export default {};\n');
           mkdirp(join(projectDir, 'src', 'app', 'dashboard'));
           mkdirp(join(projectDir, 'src', 'pages', 'admin'));
-          writeFileSync(join(projectDir, 'src', 'app', 'dashboard', 'page.tsx'), 'export default function Page() { return null; }\n');
-          writeFileSync(join(projectDir, 'src', 'pages', 'settings.tsx'), 'export default function Page() { return null; }\n');
-          writeFileSync(join(projectDir, 'src', 'pages', 'admin', 'users.tsx'), 'export default function Page() { return null; }\n');
+          writeFileSync(
+            join(projectDir, 'src', 'app', 'dashboard', 'page.tsx'),
+            'export default function Page() { return null; }\n',
+          );
+          writeFileSync(
+            join(projectDir, 'src', 'pages', 'settings.tsx'),
+            'export default function Page() { return null; }\n',
+          );
+          writeFileSync(
+            join(projectDir, 'src', 'pages', 'admin', 'users.tsx'),
+            'export default function Page() { return null; }\n',
+          );
         },
         framework: 'nextjs',
         routeStrategy: 'mixed-next-router',
@@ -259,7 +288,8 @@ describe('brownfield crap corpus', () => {
       const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
         (error as { stderr?: Buffer }).stderr?.toString() ?? ''
       }`;
-      expect(output).toContain('Use --project=<path>');
+      expect(output).toContain('decantr analyze needs an app path.');
+      expect(output).toContain('decantr adopt --project apps/admin --yes');
     }
 
     execSync(`node ${cliPath} analyze --project=apps/web`, { cwd: testDir, stdio: 'pipe' });
@@ -289,7 +319,10 @@ describe('brownfield crap corpus', () => {
     );
     writeFileSync(join(testDir, 'CLAUDE.md'), 'Next.js App Router is the current runtime.\n');
     writeFileSync(join(testDir, '.cursorrules'), 'This project is SvelteKit; use src/routes.\n');
-    writeFileSync(join(testDir, 'docs', 'architecture.md'), 'This project is Angular with Bootstrap.\n');
+    writeFileSync(
+      join(testDir, 'docs', 'architecture.md'),
+      'This project is Angular with Bootstrap.\n',
+    );
     writeJson(join(testDir, 'decantr.essence.json'), {
       version: '2.0.0',
       dna: { theme: { id: 'luminarum', mode: 'dark', shape: 'rounded' } },
@@ -312,9 +345,9 @@ describe('brownfield crap corpus', () => {
     const report = readFileSync(join(testDir, '.decantr', 'brownfield-report.md'), 'utf-8');
 
     expect(ambient.items.some((item) => item.path === 'decantr.essence.json')).toBe(true);
-    expect(ambient.conflicts.some((conflict) => conflict.includes('Multiple framework doctrines'))).toBe(
-      true,
-    );
+    expect(
+      ambient.conflicts.some((conflict) => conflict.includes('Multiple framework doctrines')),
+    ).toBe(true);
     expect(ambient.staleRisks.some((risk) => risk.includes('decantr.essence.json uses'))).toBe(
       true,
     );
@@ -325,7 +358,10 @@ describe('brownfield crap corpus', () => {
     expect(report).toContain('Doctrine Resolution Suggestions');
 
     try {
-      execSync(`node ${cliPath} init --existing --accept-proposal`, { cwd: testDir, stdio: 'pipe' });
+      execSync(`node ${cliPath} init --existing --accept-proposal`, {
+        cwd: testDir,
+        stdio: 'pipe',
+      });
       throw new Error('Expected accept-proposal to refuse an existing essence.');
     } catch (error) {
       const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${

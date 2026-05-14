@@ -5,16 +5,25 @@ Use Decantr when an AI-built or AI-maintained frontend needs a durable product c
 ## Start
 
 ```bash
-npx @decantr/cli adopt --base-url http://localhost:3000 --evidence --yes
+npx @decantr/cli adopt --yes
 ```
 
-For monorepos, point Decantr at the app:
+For monorepos, install once at the workspace root, then point Decantr at the app:
 
 ```bash
-npx @decantr/cli adopt --project apps/web --base-url http://localhost:3000 --evidence --yes
+pnpm add -D -w @decantr/cli
+pnpm exec decantr setup
+pnpm exec decantr workspace list
+pnpm exec decantr adopt --project apps/web --yes
 ```
 
-`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, Project Health, optional browser evidence, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step.
+`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step.
+
+If the app is already running and you want Decantr to attach route screenshots to task context, add visual evidence after adoption:
+
+```bash
+npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --evidence
+```
 
 ## What Decantr Writes
 
@@ -60,6 +69,15 @@ npx @decantr/cli codify --from-audit
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 npx @decantr/cli codify --accept
 npx @decantr/cli verify --brownfield --local-patterns
+```
+
+In a monorepo, keep passing the same app path:
+
+```bash
+pnpm exec decantr codify --from-audit --project apps/web
+pnpm exec decantr codify --accept --project apps/web
+pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
+pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 ```
 
 This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.

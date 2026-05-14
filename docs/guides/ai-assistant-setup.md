@@ -21,7 +21,9 @@ Use the CLI when you want files in the project that any assistant can read:
 ```bash
 npx @decantr/cli new my-app --blueprint=agent-marketplace
 # or, for an existing app
-npx @decantr/cli adopt --base-url http://localhost:3000 --evidence --yes
+npx @decantr/cli adopt --yes
+# from a monorepo root
+pnpm exec decantr adopt --project apps/web --yes
 ```
 
 The important files are:
