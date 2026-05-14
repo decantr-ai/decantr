@@ -82,7 +82,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Guides users through workflow commands (`setup`, `adopt`, `task`, `verify`, `codify`), keeps advanced primitives available, writes Evidence Bundles, runs workspace health, installs Project Health CI, opens Studio locally, and audits registry content supply-chain health |
+| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `ci`, `codify`), keeps advanced primitives available, writes Evidence Bundles, runs workspace health, installs CI, opens Studio locally, and audits registry content supply-chain health |
 | MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, audit, evidence bundles, workspace health, and repair prompts |
 | Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, contract assertion, and report-schema engine |
@@ -163,9 +163,12 @@ In a monorepo, install Decantr at the workspace root, but attach it to an app:
 decantr setup
 decantr workspace list
 decantr adopt --project apps/web --yes
+decantr doctor --project apps/web
 decantr codify --from-audit --project apps/web
 decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
+decantr ci init --project apps/web
+decantr ci --project apps/web
 ```
 
 If the app is already running and you want local screenshots, add visual evidence later:
@@ -176,7 +179,7 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. `doctor` explains project/workspace state, generated artifacts, local law, CI wiring, and the next command. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 
@@ -188,21 +191,23 @@ decantr registry audit-project --namespace @official --json
 decantr showcase verification  --json
 ```
 
-Project Health and CI:
+Project Health, CI, and diagnosis:
 
 ```bash
+decantr doctor
+decantr doctor --project apps/registry
 decantr verify
 decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
-decantr verify init-ci
+decantr ci --project apps/registry
+decantr ci --workspace --changed --since origin/main
+decantr ci init --project apps/registry
+decantr ci init --workspace
 decantr health --format markdown
-decantr health --ci --fail-on error
 decantr health --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
 decantr health --design-tokens .decantr/design/figma-tokens.json
-decantr verify init-ci --project apps/registry
-decantr verify init-ci --workspace
 decantr verify --workspace --changed --since origin/main
 decantr export --to figma-tokens
 decantr health --json --output decantr-health.json
@@ -229,7 +234,7 @@ decantr content check --ci --fail-on error
 decantr content-health
 decantr content-health --markdown --output content-health.md
 decantr content-health --ci --fail-on error
-decantr content-health --prompt <finding-id>
+decantr content check --prompt <finding-id>
 ```
 
 ## FAQ
@@ -278,7 +283,7 @@ decantr health --json --output decantr-health.json
 decantr studio --report decantr-health.json
 ```
 
-Studio is for interactive triage; `decantr verify --ci --fail-on error` is still the pull-request gate.
+Studio is for interactive triage; `decantr ci --fail-on error` is the pull-request gate.
 
 See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration, CI, and drift questions.
 
@@ -287,6 +292,7 @@ See the full [FAQ](docs/faq.md) for common setup, brownfield, Studio, migration,
 - Registry — [registry.decantr.ai](https://registry.decantr.ai)
 - Discord — [discord.gg/WeDpBd4xFU](https://discord.gg/WeDpBd4xFU)
 - FAQ — [docs/faq.md](docs/faq.md)
+- Monorepos — [docs/guides/monorepos.md](docs/guides/monorepos.md)
 - Published schemas — [decantr.ai/schemas](https://decantr.ai/schemas/)
 - Project Health — [docs/reference/project-health.md](docs/reference/project-health.md)
 - Command surface — [docs/reference/command-surface.md](docs/reference/command-surface.md)

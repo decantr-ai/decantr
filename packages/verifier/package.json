@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Shared verification, critique, Project Health, and report-schema engine for Decantr",
   "keywords": [
     "decantr",
@@ -35,6 +35,7 @@
     "./schema/verification-report.common.v1.json": "./schema/verification-report.common.v1.json",
     "./schema/project-audit-report.v1.json": "./schema/project-audit-report.v1.json",
     "./schema/project-health-report.v1.json": "./schema/project-health-report.v1.json",
+    "./schema/decantr-ci-report.v1.json": "./schema/decantr-ci-report.v1.json",
     "./schema/evidence-bundle.v1.json": "./schema/evidence-bundle.v1.json",
     "./schema/workspace-health-report.v1.json": "./schema/workspace-health-report.v1.json",
     "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",

@@ -59,6 +59,24 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     consolidation: 'keep',
   },
   {
+    command: 'ci',
+    classification: 'primary',
+    mutates: true,
+    audience: 'operator',
+    purpose:
+      'Non-mutating Decantr automation gate plus CI integration generation for projects and workspaces.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'doctor',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose:
+      'Explain Decantr project/workspace state, generated artifacts, CI wiring, local law, and the next command.',
+    consolidation: 'keep',
+  },
+  {
     command: 'codify',
     classification: 'primary',
     mutates: true,

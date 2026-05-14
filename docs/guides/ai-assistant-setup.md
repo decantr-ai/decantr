@@ -24,6 +24,7 @@ npx @decantr/cli new my-app --blueprint=agent-marketplace
 npx @decantr/cli adopt --yes
 # from a monorepo root
 pnpm exec decantr adopt --project apps/web --yes
+pnpm exec decantr doctor --project apps/web
 ```
 
 The important files are:
@@ -59,4 +60,20 @@ That output points to `.decantr/brownfield-intelligence.json`, `.decantr/theme-i
 npx @decantr/cli verify --brownfield --local-patterns
 ```
 
-See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md).
+Use `doctor` when an assistant or teammate is unsure what state the app is in:
+
+```bash
+npx @decantr/cli doctor
+pnpm exec decantr doctor --project apps/web
+```
+
+Use `ci` for the mandatory automation layer. In monorepos, generate the workflow from the repository root and keep the app path explicit:
+
+```bash
+pnpm exec decantr ci init --project apps/web
+pnpm exec decantr ci --project apps/web
+```
+
+The generated GitHub workflow runs the pinned local CLI through the detected package manager, such as `pnpm exec decantr ci --project apps/web`. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web` and paste the snippet into the authoritative pipeline.
+
+See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md), [Monorepos](monorepos.md), [Project Health CI](project-health-ci.md).

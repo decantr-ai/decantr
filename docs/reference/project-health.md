@@ -18,14 +18,15 @@ decantr verify --brownfield --local-patterns --fail-on warn
 decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
 decantr verify --workspace --changed --since origin/main
-decantr verify init-ci --project apps/web
+decantr doctor --project apps/web
+decantr ci --project apps/web
+decantr ci --workspace --changed --since origin/main
+decantr ci init --project apps/web
 decantr health
 decantr health --format text
 decantr health --json
 decantr health --markdown
 decantr health --output health.md
-decantr health --ci --fail-on error
-decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
@@ -40,7 +41,7 @@ decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
-`decantr verify` should be the default command in local agent loops and CI. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
+`decantr verify` should be the default command in local agent loops. `decantr ci` is the non-mutating automation gate for CI and required validation scripts; `--json` emits a `DecantrCiReport` matching `https://decantr.ai/schemas/decantr-ci-report.v1.json`. `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, CI wiring, and the next command to run. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
 
 ## What The Report Contains
 
@@ -226,50 +227,55 @@ Project Health is useful immediately after a composition change because it check
 
 ## CI
 
-Install the default GitHub Actions gate:
+Use `decantr ci` as the blessed automation command. It is adoption-mode aware, non-mutating, and isolates app-scoped checks in monorepos:
 
 ```bash
-decantr health init-ci
-decantr verify init-ci
+decantr ci --project apps/web
+decantr ci --workspace
+decantr ci --workspace --changed --since origin/main
 ```
 
-This writes `.github/workflows/decantr-health.yml`. The workflow installs project dependencies, generates `decantr-health.json`, gates with markdown output, appends the report to the GitHub step summary, and uploads both report files as artifacts.
-
-Use these options to tune the generated workflow:
+Install the default GitHub Actions gate from the repository root:
 
 ```bash
-decantr verify init-ci --force
-decantr verify init-ci --fail-on warn
-decantr verify init-ci --cli-version 2.8.1
-decantr verify init-ci --workflow-path .github/workflows/project-health.yml
-decantr verify init-ci --project apps/registry
-decantr verify init-ci --workspace
+decantr ci init --project apps/web
+decantr ci init --workspace
 ```
 
-For monorepos, run `init-ci` from the repository root and pass the app contract path with `--project <path>`. The generated workflow installs dependencies at the root, runs both health commands with `working-directory: <path>`, appends the project-local markdown report to the GitHub step summary, and uploads artifacts using root-relative paths such as `apps/registry/decantr-health.json`.
+This writes root `.github/workflows/decantr-ci.yml`. The workflow installs dependencies with the detected package manager and runs the pinned local CLI, for example `pnpm exec decantr ci --project apps/web`. It does not generate workflows that depend on `@latest` unless a team chooses to write that by hand.
 
-For workspace-wide gates, use `--workspace`. The generated workflow runs `decantr workspace health`, appends `.decantr/workspace-health.md` to the GitHub step summary, and uploads both aggregate workspace artifacts.
-
-The generated pull request gate runs:
+Use these options to tune CI integration:
 
 ```bash
-decantr health --ci --fail-on error --markdown --output decantr-health.md
-decantr verify --ci --fail-on error --markdown --output decantr-health.md
+decantr ci init --force
+decantr ci init --fail-on warn
+decantr ci init --project apps/registry
+decantr ci init --workspace
+decantr ci init --provider generic --project apps/registry
+```
+
+For monorepos, install `@decantr/cli` at the workspace root and pass the app contract path with `--project <path>`. The generated workflow keeps dependency installation root-scoped while Decantr evaluates only the selected app contract. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deploy tools, use `--provider generic` and paste the generated shell snippet into the authoritative pipeline.
+
+For workspace-wide gates, use `--workspace`. The generated workflow runs `decantr ci --workspace`, appends the markdown summary to the GitHub step summary, and uploads `.decantr/ci/workspace.json` plus `.decantr/ci/workspace.md`.
+
+The generated pull request gate runs a command shaped like:
+
+```bash
+pnpm exec decantr ci --project apps/web --fail-on error --json --output .decantr/ci/apps-web.json --markdown-output .decantr/ci/apps-web.md
 ```
 
 Use `--fail-on error` for the default enterprise-friendly gate: block only invalid audits and blocking findings. Use `--fail-on warn` for stricter repositories that want any warning to fail CI.
 
-Minimal GitHub Actions step:
-
-```yaml
-- name: Decantr health
-  run: npx --yes @decantr/cli@latest health --ci --fail-on error --markdown --output decantr-health.md
-```
-
-The JSON form can be validated against the published schema and consumed by future DevOps dashboards:
+Minimal custom CI step:
 
 ```bash
-decantr health --json --output decantr-health.json
+pnpm exec decantr ci --project apps/web
+```
+
+The JSON form can be validated against the published CI schema and consumed by internal dashboards:
+
+```bash
+decantr ci --project apps/web --json --output .decantr/ci/apps-web.json
 ```
 
 ## Relationship To Telemetry

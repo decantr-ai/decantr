@@ -18,7 +18,7 @@ npm install @decantr/verifier
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - `createContractAssertions()` for explicit route, shell, accessibility, context, and design-token assertions derived from Essence/context
 - `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
-- schema-backed report types for project audits, Project Health, Evidence Bundles, Workspace Health, file critiques, and showcase verification
+- schema-backed report types for project audits, Project Health, Decantr CI reports, Evidence Bundles, Workspace Health, file critiques, and showcase verification
 - `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
 - interaction findings now include scanned file counts, file line ranges, and expected signal evidence where available, so CLI health/check output can point agents at source-grounded remediation
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
@@ -56,6 +56,7 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/verification-report.common.v1.json`
 - `@decantr/verifier/schema/project-audit-report.v1.json`
 - `@decantr/verifier/schema/project-health-report.v1.json`
+- `@decantr/verifier/schema/decantr-ci-report.v1.json`
 - `@decantr/verifier/schema/evidence-bundle.v1.json`
 - `@decantr/verifier/schema/workspace-health-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`

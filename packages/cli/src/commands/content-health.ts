@@ -1,8 +1,6 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { basename, join } from 'node:path';
-import Ajv2020 from 'ajv/dist/2020.js';
-import type { ErrorObject, ValidateFunction } from 'ajv';
 import type {
   ApiContentType,
   ContentHealthFinding,
@@ -13,6 +11,8 @@ import type {
   ContentType,
   VerificationSeverity,
 } from '@decantr/registry';
+import type { ErrorObject, ValidateFunction } from 'ajv';
+import Ajv2020 from 'ajv/dist/2020.js';
 
 const BOLD = '\x1b[1m';
 const DIM = '\x1b[2m';
@@ -184,7 +184,9 @@ function buildRemediationPrompt(input: {
     input.itemId ? `Item id: ${input.itemId}` : null,
     input.file ? `File: ${input.file}` : null,
     `Message: ${input.message}`,
-    input.evidence.length > 0 ? `Evidence:\n${input.evidence.map((entry) => `- ${entry}`).join('\n')}` : null,
+    input.evidence.length > 0
+      ? `Evidence:\n${input.evidence.map((entry) => `- ${entry}`).join('\n')}`
+      : null,
     input.suggestedFix ? `Suggested fix: ${input.suggestedFix}` : null,
     '',
     'Make the smallest coherent content change that resolves this finding. Do not add new source-code runtime dependencies for content-only fixes.',
@@ -208,7 +210,8 @@ function createContentFinding(input: {
   suggestedFix?: string;
   baseId?: string;
 }): ContentHealthFinding {
-  const idBase = input.baseId || input.rule || `${input.category}-${input.file ?? ''}-${input.message}`;
+  const idBase =
+    input.baseId || input.rule || `${input.category}-${input.file ?? ''}-${input.message}`;
   const id = `${input.source}-${slugify(idBase)}`;
   const commands = commandsForFinding(input.source);
   const remediation = {
@@ -259,10 +262,16 @@ function statusFromCounts(counts: { errorCount: number; warnCount: number }): Co
   return 'healthy';
 }
 
-function scoreFromCounts(counts: { errorCount: number; warnCount: number; infoCount: number }): number {
+function scoreFromCounts(counts: {
+  errorCount: number;
+  warnCount: number;
+  infoCount: number;
+}): number {
   const warningPenalty = Math.min(counts.warnCount * 2, 75);
   const infoPenalty = Math.min(counts.infoCount * 0.5, 10);
-  return Math.round(Math.max(0, Math.min(100, 100 - counts.errorCount * 15 - warningPenalty - infoPenalty)));
+  return Math.round(
+    Math.max(0, Math.min(100, 100 - counts.errorCount * 15 - warningPenalty - infoPenalty)),
+  );
 }
 
 function percentage(count: number, total: number): number {
@@ -521,7 +530,8 @@ function addQualityFindings(item: LoadedContentItem, findings: ContentHealthFind
           type,
           itemId: id,
           rule: 'pattern-guidance-missing',
-          suggestedFix: 'Add a visual_brief or layout_hints that describes the intended composition.',
+          suggestedFix:
+            'Add a visual_brief or layout_hints that describes the intended composition.',
           baseId: `${file}-pattern-guidance-missing`,
         }),
       );
@@ -584,7 +594,8 @@ function addQualityFindings(item: LoadedContentItem, findings: ContentHealthFind
           type,
           itemId: id,
           rule: 'theme-palette-shallow',
-          suggestedFix: 'Add semantic palette entries for background, surface, text, muted text, and accent roles.',
+          suggestedFix:
+            'Add semantic palette entries for background, surface, text, muted text, and accent roles.',
           baseId: `${file}-theme-palette-shallow`,
         }),
       );
@@ -601,7 +612,8 @@ function addQualityFindings(item: LoadedContentItem, findings: ContentHealthFind
           type,
           itemId: id,
           rule: 'theme-decorators-missing',
-          suggestedFix: 'Add theme-specific decorator classes that can be rendered into DECANTR.md and section packs.',
+          suggestedFix:
+            'Add theme-specific decorator classes that can be rendered into DECANTR.md and section packs.',
           baseId: `${file}-theme-decorators-missing`,
         }),
       );
@@ -663,7 +675,8 @@ function addQualityFindings(item: LoadedContentItem, findings: ContentHealthFind
           type,
           itemId: id,
           rule: 'blueprint-personality-short',
-          suggestedFix: 'Expand personality with visual direction, tone, density, and interaction posture.',
+          suggestedFix:
+            'Expand personality with visual direction, tone, density, and interaction posture.',
           baseId: `${file}-blueprint-personality-short`,
         }),
       );
@@ -681,7 +694,8 @@ function addQualityFindings(item: LoadedContentItem, findings: ContentHealthFind
           type,
           itemId: id,
           rule: 'blueprint-voice-missing',
-          suggestedFix: 'Add voice.tone, cta_verbs, avoid words, and state copy guidance when this blueprint needs product copy consistency.',
+          suggestedFix:
+            'Add voice.tone, cta_verbs, avoid words, and state copy guidance when this blueprint needs product copy consistency.',
           baseId: `${file}-blueprint-voice-missing`,
         }),
       );
@@ -700,7 +714,8 @@ function addQualityFindings(item: LoadedContentItem, findings: ContentHealthFind
         type,
         itemId: id,
         rule: 'archetype-page-briefs-missing',
-        suggestedFix: 'Add page_briefs when route-level visual direction should be more specific than page names.',
+        suggestedFix:
+          'Add page_briefs when route-level visual direction should be more specific than page names.',
         baseId: `${file}-archetype-page-briefs-missing`,
       }),
     );
@@ -931,7 +946,9 @@ export async function createContentHealthReport(
         category: 'Content Root',
         severity: 'error',
         message: 'No Decantr registry content was found in this directory.',
-        evidence: ['Expected one or more of patterns/, themes/, blueprints/, archetypes/, shells/.'],
+        evidence: [
+          'Expected one or more of patterns/, themes/, blueprints/, archetypes/, shells/.',
+        ],
         rule: 'content-root-empty',
         suggestedFix: 'Run this command from a decantr-content style repository.',
         baseId: 'content-root-empty',
@@ -1053,13 +1070,15 @@ export async function createContentHealthReport(
         patterns.length,
       ),
       patternInteractionCoverage: percentage(
-        patterns.filter((item) => Array.isArray(item.data.interactions) && item.data.interactions.length > 0)
-          .length,
+        patterns.filter(
+          (item) => Array.isArray(item.data.interactions) && item.data.interactions.length > 0,
+        ).length,
         patterns.length,
       ),
       themeDecoratorCoverage: percentage(
-        themes.filter((item) => isRecord(item.data.decorators) && Object.keys(item.data.decorators).length > 0)
-          .length,
+        themes.filter(
+          (item) => isRecord(item.data.decorators) && Object.keys(item.data.decorators).length > 0,
+        ).length,
         themes.length,
       ),
       blueprintPersonalityCoverage: percentage(
@@ -1072,7 +1091,10 @@ export async function createContentHealthReport(
         }).length,
         blueprints.length,
       ),
-      blueprintVoiceCoverage: percentage(blueprints.filter((item) => isRecord(item.data.voice)).length, blueprints.length),
+      blueprintVoiceCoverage: percentage(
+        blueprints.filter((item) => isRecord(item.data.voice)).length,
+        blueprints.length,
+      ),
       archetypePageBriefCoverage: percentage(
         archetypes.filter((item) => isRecord(item.data.page_briefs)).length,
         archetypes.length,
@@ -1132,10 +1154,12 @@ export function formatContentHealthText(report: ContentHealthReport): string {
       );
       if (finding.file) lines.push(`    ${DIM}${finding.file}${RESET}`);
       if (finding.suggestedFix) lines.push(`    ${DIM}Fix: ${finding.suggestedFix}${RESET}`);
-      lines.push(`    ${DIM}Prompt: decantr content-health --prompt ${finding.id}${RESET}`);
+      lines.push(`    ${DIM}Prompt: decantr content check --prompt ${finding.id}${RESET}`);
     }
     if (report.findings.length > 40) {
-      lines.push(`  ${DIM}Showing first 40 of ${report.findings.length} findings. Use --json for the full report.${RESET}`);
+      lines.push(
+        `  ${DIM}Showing first 40 of ${report.findings.length} findings. Use --json for the full report.${RESET}`,
+      );
     }
   }
 
@@ -1170,10 +1194,14 @@ export function formatContentHealthMarkdown(report: ContentHealthReport): string
   lines.push('');
   lines.push('## Quality Coverage');
   lines.push('');
-  lines.push(`- Pattern visual guidance: ${percentLabel(report.quality.patternVisualBriefCoverage)}`);
+  lines.push(
+    `- Pattern visual guidance: ${percentLabel(report.quality.patternVisualBriefCoverage)}`,
+  );
   lines.push(`- Pattern interactions: ${percentLabel(report.quality.patternInteractionCoverage)}`);
   lines.push(`- Theme decorators: ${percentLabel(report.quality.themeDecoratorCoverage)}`);
-  lines.push(`- Blueprint personality: ${percentLabel(report.quality.blueprintPersonalityCoverage)}`);
+  lines.push(
+    `- Blueprint personality: ${percentLabel(report.quality.blueprintPersonalityCoverage)}`,
+  );
   lines.push(`- Blueprint voice: ${percentLabel(report.quality.blueprintVoiceCoverage)}`);
   lines.push(`- Archetype page briefs: ${percentLabel(report.quality.archetypePageBriefCoverage)}`);
   lines.push('');
@@ -1198,7 +1226,7 @@ export function formatContentHealthMarkdown(report: ContentHealthReport): string
         lines.push('- Evidence:');
         for (const evidence of finding.evidence) lines.push(`  - ${evidence}`);
       }
-      lines.push(`- Prompt: \`decantr content-health --prompt ${finding.id}\``);
+      lines.push(`- Prompt: \`decantr content check --prompt ${finding.id}\``);
       lines.push('');
     }
   }

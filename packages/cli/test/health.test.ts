@@ -213,6 +213,20 @@ describe('Project Health report', () => {
     );
   });
 
+  it('does not require Decantr token CSS for contract-only brownfield projects', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    rmSync(join(testDir, 'src', 'styles', 'tokens.css'));
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+
+    const report = await createProjectHealthReport(testDir);
+
+    expect(report.findings.some((finding) => finding.rule === 'tokens-file-present')).toBe(false);
+  });
+
   it('renders markdown and scoped remediation prompts', async () => {
     writeRegistryCache();
     writeEssence();
@@ -509,10 +523,12 @@ exports.chromium = {
       'analyze',
       'audit',
       'check',
+      'ci',
       'codify',
       'content',
       'content-health',
       'create',
+      'doctor',
       'export',
       'get',
       'heal',

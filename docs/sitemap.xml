@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -68,13 +68,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/faq.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -86,7 +86,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/guides/monorepos.md</loc>
+    <lastmod>2026-05-14T19:24:34.242Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -152,7 +158,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -164,13 +170,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/package-support-matrix.md</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -206,7 +212,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-13T15:50:49-04:00</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -314,7 +320,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-14-brownfield-monorepo-onboarding.md</loc>
-    <lastmod>2026-05-14T17:32:44.955Z</lastmod>
+    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-14-operating-layer-2-9.md</loc>
+    <lastmod>2026-05-14T19:27:43.692Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -405,6 +417,12 @@
   <url>
     <loc>https://decantr.ai/schemas/content-intelligence.v1.json</loc>
     <lastmod>2026-04-09T18:28:06-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/schemas/decantr-ci-report.v1.json</loc>
+    <lastmod>2026-05-14T19:28:42.188Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>

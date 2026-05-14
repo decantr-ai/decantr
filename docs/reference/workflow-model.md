@@ -90,7 +90,7 @@ Project Health is the local reliability layer across all workflow modes:
 - Brownfield projects automatically include route coverage and drift checks when `.decantr/project.json` declares `brownfield-attach`.
 - Hybrid projects use `decantr verify` after `add`, `remove`, `theme switch`, or registry pack changes to catch contract and pack drift before implementation continues.
 
-Use `decantr verify init-ci` to install the default GitHub Actions gate, `decantr verify --ci --fail-on error` as the default CI command, `decantr verify --evidence` for the privacy-redacted Evidence Bundle, `decantr verify --base-url <url> --evidence` for local screenshots plus `.decantr/evidence/visual-manifest.json`, `decantr verify --save-baseline` / `--since-baseline` for continuity, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. Monorepos can install the gate from the repository root with `decantr verify init-ci --project <app-path>` so dependency install remains root-scoped while health runs inside the app contract, or `decantr verify init-ci --workspace` for an aggregate workspace gate. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
+Use `decantr doctor` when the next step is unclear, `decantr verify` after local edits, `decantr ci` inside automation, `decantr verify --evidence` for the privacy-redacted Evidence Bundle, `decantr verify --base-url <url> --evidence` for local screenshots plus `.decantr/evidence/visual-manifest.json`, `decantr verify --save-baseline` / `--since-baseline` for continuity, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. Monorepos can install the gate from the repository root with `decantr ci init --project <app-path>` so dependency install remains root-scoped while CI evaluates the selected app contract, or `decantr ci init --workspace` for an aggregate workspace gate. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
 
 ## Assistant Rule Bridge
 
@@ -111,11 +111,13 @@ pnpm add -D -w @decantr/cli
 pnpm exec decantr setup
 pnpm exec decantr workspace list
 pnpm exec decantr adopt --project apps/web --yes
+pnpm exec decantr doctor --project apps/web
 pnpm exec decantr codify --from-audit --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
+pnpm exec decantr ci init --project apps/web
 ```
 
-Project Health CI uses the same explicit project-path posture through `decantr verify init-ci --project <path>`.
+CI uses the same explicit project-path posture through `decantr ci --project <path>` and `decantr ci init --project <path>`. Generated GitHub workflows live at the repository root and use the pinned local package-manager command, such as `pnpm exec decantr ci --project apps/web`, instead of `@latest`.
 
 For monorepos with many Decantr projects, use `.decantr/workspace.json` when you want explicit project ownership/tags/concurrency, or let Decantr discover `decantr.essence.json` files automatically:
 

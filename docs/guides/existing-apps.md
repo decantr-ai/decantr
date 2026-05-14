@@ -15,6 +15,7 @@ pnpm add -D -w @decantr/cli
 pnpm exec decantr setup
 pnpm exec decantr workspace list
 pnpm exec decantr adopt --project apps/web --yes
+pnpm exec decantr doctor --project apps/web
 ```
 
 `adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step.
@@ -30,12 +31,13 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 - `decantr.essence.json`: the accepted design and product contract.
 - `DECANTR.md`: the project-level assistant primer.
 - `.decantr/context/`: scoped implementation context for the AI assistant.
+- `.decantr/README.md`: artifact ownership guide that explains canonical, generated, proposal, and local-only files.
 - `.decantr/doctrine-map.json`: ranked evidence from existing docs, rules, architecture, and workflow files.
 - `.decantr/brownfield-report.md`: human-readable inventory and proposal notes.
 - `.decantr/brownfield-intelligence.json`: route, component, styling, feature, dependency, and evidence summary for task-time context.
 - `.decantr/theme-inventory.json`: observed light/dark/variant theme selectors and token evidence. Essence V4 is unchanged; variants are reported, not promoted.
 - `.decantr/enrichment-backlog.md`: checklist for turning the first attach pass into stronger section/page directives.
-- `.decantr/evidence/visual-manifest.json`: local route-to-screenshot map when `health --browser --base-url <url> --evidence` is run.
+- `.decantr/evidence/visual-manifest.json`: local route-to-screenshot map when `verify --base-url <url> --evidence` is run.
 - `.decantr/local-patterns.proposal.json`: project-owned pattern proposal when `decantr codify --from-audit` is run.
 - `.decantr/rules.proposal.json`: project-owned rule proposal when `decantr codify --from-audit` is run.
 - `.decantr/local-patterns.json`: accepted project-owned UI law when `decantr codify --accept` is run.
@@ -78,8 +80,34 @@ pnpm exec decantr codify --from-audit --project apps/web
 pnpm exec decantr codify --accept --project apps/web
 pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
+pnpm exec decantr ci --project apps/web
 ```
 
 This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
 
-See also: [Workflow Model](../reference/workflow-model.md), [Project Health](../reference/project-health.md).
+See also: [Monorepos](monorepos.md), [Workflow Model](../reference/workflow-model.md), [Project Health](../reference/project-health.md).
+
+## Wire It Into The Lifecycle
+
+Once the app is attached, the operating loop is intentionally small:
+
+```bash
+pnpm exec decantr doctor --project apps/web
+pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
+pnpm exec decantr verify --project apps/web
+pnpm exec decantr ci --project apps/web
+```
+
+Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. Use `verify` after local edits. Use `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and registry pack commands as advanced primitives only when you need direct control over a specific layer.
+
+Install CI from the monorepo root:
+
+```bash
+pnpm exec decantr ci init --project apps/web
+```
+
+For GitHub Actions, Decantr writes a root `.github/workflows/decantr-ci.yml` and uses the pinned local CLI command, such as `pnpm exec decantr ci --project apps/web`. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, generate a portable snippet instead:
+
+```bash
+pnpm exec decantr ci init --provider generic --project apps/web
+```

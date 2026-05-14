@@ -34,6 +34,7 @@ pnpm add -D -w @decantr/cli
 pnpm exec decantr setup
 pnpm exec decantr workspace list
 pnpm exec decantr adopt --project apps/web --yes
+pnpm exec decantr doctor --project apps/web
 ```
 
 Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
@@ -53,10 +54,9 @@ That is why Decantr exists. It gives the assistant a durable contract to work fr
 The normal loop is:
 
 ```bash
-npx @decantr/cli refresh
+npx @decantr/cli task /feed "describe the change"
 npx @decantr/cli verify
-npx @decantr/cli audit
-npx @decantr/cli health
+npx @decantr/cli doctor
 ```
 
 If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
@@ -79,19 +79,19 @@ You cannot guarantee that every LLM, editor, or developer action will follow Dec
 Install the default GitHub Actions gate:
 
 ```bash
-npx @decantr/cli verify init-ci
+npx @decantr/cli ci init
 ```
 
 For monorepos:
 
 ```bash
-npx @decantr/cli verify init-ci --project apps/web
+npx @decantr/cli ci init --project apps/web
 ```
 
 The generated workflow runs:
 
 ```bash
-npx @decantr/cli verify --ci --fail-on error
+npx @decantr/cli ci --fail-on error
 ```
 
 Then mark that GitHub check as required in branch protection. That makes Decantr drift unmergeable until it is fixed or the contract is deliberately updated.
@@ -102,9 +102,8 @@ For local convenience, add package scripts:
 {
   "scripts": {
     "decantr:check": "decantr verify",
-    "decantr:audit": "decantr audit",
-    "decantr:health": "decantr health",
-    "decantr:ci": "decantr verify --ci --fail-on error"
+    "decantr:doctor": "decantr doctor",
+    "decantr:ci": "decantr ci --fail-on error"
   }
 }
 ```
@@ -164,7 +163,7 @@ Studio is local-only and uses the same Project Health report as:
 npx @decantr/cli health
 ```
 
-Use Studio when you want a browser view of status, the issue to fix first, the AI prompt before copying it, manual repair guidance, verification commands, route coverage, runtime evidence, pack health, and CI readiness. Use `health --ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
+Use Studio when you want a browser view of status, the issue to fix first, the AI prompt before copying it, manual repair guidance, verification commands, route coverage, runtime evidence, pack health, and CI readiness. Use `decantr ci` for enforcement in pull requests. Stop Studio with `Ctrl+C` in the terminal that started it.
 
 ## Does Decantr automatically fix Project Health findings?
 
@@ -238,19 +237,19 @@ Pre-V4 essence files are migration inputs, not active runtime contracts.
 Install the default GitHub Actions gate:
 
 ```bash
-npx @decantr/cli verify init-ci
+npx @decantr/cli ci init
 ```
 
 For monorepos:
 
 ```bash
-npx @decantr/cli verify init-ci --project apps/web
+npx @decantr/cli ci init --project apps/web
 ```
 
 CI can then run:
 
 ```bash
-npx @decantr/cli verify --ci --fail-on error
+npx @decantr/cli ci --fail-on error
 ```
 
 ## Is Decantr a code generator?

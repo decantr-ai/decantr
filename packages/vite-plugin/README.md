@@ -32,16 +32,16 @@ By default the plugin watches `decantr.essence.json` and re-runs Decantr guard c
 Most teams should start with the CLI:
 
 ```bash
-npx @decantr/cli analyze
-npx @decantr/cli init --existing --accept-proposal
-npx @decantr/cli health
+npx @decantr/cli adopt --yes
+npx @decantr/cli doctor
+npx @decantr/cli verify
 ```
 
 The Vite plugin is a secondary local feedback surface after the project has an accepted Decantr contract.
 
 ## What It Is Not
 
-- Not a replacement for `decantr health --ci`.
+- Not a replacement for `decantr ci`.
 - Not a hosted telemetry or reporting surface.
 - Not a general Vite design-system plugin.
 - Not a stable default install for all Decantr projects yet.

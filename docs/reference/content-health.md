@@ -16,7 +16,7 @@ decantr content-health --markdown
 decantr content-health --output content-health.md
 decantr content-health --ci --fail-on error
 decantr content-health --ci --fail-on warn
-decantr content-health --prompt <finding-id>
+decantr content check --prompt <finding-id>
 ```
 
 `decantr content check` is the preferred workflow command. `decantr content-health` remains as the backward-compatible primitive. `--json` emits a `ContentHealthReport` matching `https://decantr.ai/schemas/content-health-report.v1.json`. `--markdown` is intended for GitHub Actions summaries and pull request artifacts. `--prompt <finding-id>` prints a scoped AI remediation prompt for one content issue.

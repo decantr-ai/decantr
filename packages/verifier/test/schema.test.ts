@@ -150,7 +150,7 @@ describe('verifier schema contracts', () => {
         generatedAt: '2026-05-08T14:00:00.000Z',
       },
       ci: {
-        recommendedCommand: 'decantr health --ci --fail-on error',
+        recommendedCommand: 'decantr ci --fail-on error',
         failOn: 'error',
       },
       findings: [
@@ -173,6 +173,68 @@ describe('verifier schema contracts', () => {
     };
 
     assertMatchesVerifierSchema('project-health-report.v1.json', report);
+  });
+
+  it('accepts Decantr CI reports matching the published schema', () => {
+    const report = {
+      $schema: 'https://decantr.ai/schemas/decantr-ci-report.v1.json',
+      generatedAt: '2026-05-14T14:00:00.000Z',
+      mode: 'project',
+      projectPath: 'apps/web',
+      failOn: 'error',
+      status: 'healthy',
+      health: {
+        $schema: 'https://decantr.ai/schemas/project-health-report.v1.json',
+        generatedAt: '2026-05-14T14:00:00.000Z',
+        projectRoot: '/workspace/apps/web',
+        status: 'healthy',
+        score: 100,
+        summary: {
+          errorCount: 0,
+          warnCount: 0,
+          infoCount: 0,
+          findingCount: 0,
+          workflowMode: 'brownfield-attach',
+          adoptionMode: 'contract-only',
+          essenceVersion: '4.0.0',
+          pageCount: 1,
+          runtimeAuditChecked: false,
+          runtimePassed: null,
+          packManifestPresent: true,
+          reviewPackPresent: true,
+        },
+        routes: {
+          declared: ['/'],
+          runtimeChecked: [],
+          runtimeMatched: 0,
+          runtimeCoverageOk: null,
+          issues: [],
+        },
+        packs: {
+          manifestPresent: true,
+          reviewPackPresent: true,
+          scaffoldPackPresent: true,
+          sectionPackCount: 1,
+          pagePackCount: 1,
+          mutationPackCount: 0,
+          generatedAt: '2026-05-14T14:00:00.000Z',
+        },
+        ci: {
+          recommendedCommand: 'decantr ci --fail-on error',
+          failOn: 'error',
+        },
+        findings: [],
+      },
+      localLaw: {
+        checked: false,
+        patternsPresent: false,
+        rulesPresent: false,
+        errorCount: 0,
+        warnCount: 0,
+      },
+    };
+
+    assertMatchesVerifierSchema('decantr-ci-report.v1.json', report);
   });
 
   it('accepts evidence bundles matching the published schema', () => {

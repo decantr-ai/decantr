@@ -10,8 +10,8 @@ import type {
   ContentIntelligenceMetadata,
   ContentIntelligenceSource,
   ExecutionPackBundleResponse,
-  Blueprint as RegistryBlueprint,
   PublicBlueprintSet,
+  Blueprint as RegistryBlueprint,
   RegistryIntelligenceSummaryResponse,
   SelectedExecutionPackResponse,
   ShowcaseManifestResponse,
@@ -40,6 +40,7 @@ import {
   type ProjectAuditReport,
   type VerificationFinding,
 } from '@decantr/verifier';
+import { writeArtifactReadme } from './artifacts.js';
 import {
   applyAssistantBridge,
   buildAssistantBridgeContent,
@@ -55,7 +56,9 @@ import {
 import { loadBundledContentItem, loadBundledContentList } from './bundled-content.js';
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
+import { cmdCi, cmdCiHelp } from './commands/ci.js';
 import { cmdCreate } from './commands/create.js';
+import { cmdDoctor, cmdDoctorHelp } from './commands/doctor.js';
 import type { ExportTarget } from './commands/export.js';
 import { cmdExport } from './commands/export.js';
 import { cmdMagic } from './commands/magic.js';
@@ -1959,7 +1962,7 @@ function writeBrownfieldProjectJson(input: {
       appRoot: input.workspaceInfo.appRoot,
     },
     sync: {
-      status: 'needs-sync',
+      status: 'not-required',
       lastSync: now,
       registrySource: 'cache',
       cachedContent: {
@@ -2196,6 +2199,7 @@ async function cmdInit(args: InitArgs) {
       assistantBridge: policy.assistantBridge,
     });
     if (args.telemetry) enableCliTelemetry(projectRoot);
+    writeArtifactReadme(projectRoot);
     return;
   }
 
@@ -2289,6 +2293,7 @@ async function cmdInit(args: InitArgs) {
         contentSource: policy.contentSource,
         assistantBridge: policy.assistantBridge,
       });
+      writeArtifactReadme(projectRoot);
 
       console.log(success('\nProject scaffolded (minimal/offline)!\n'));
       console.log('  Files created:');
@@ -2655,6 +2660,7 @@ async function cmdInit(args: InitArgs) {
   }
 
   if (args.telemetry) enableCliTelemetry(projectRoot);
+  writeArtifactReadme(projectRoot);
 
   // Output summary
   console.log(success('\nProject scaffolded!\n'));
@@ -3475,7 +3481,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     );
   }
   if (initCi) {
-    steps.push('install Project Health CI gate');
+    steps.push('install Decantr CI gate');
   }
   printWorkflowPlan('Decantr Adopt', steps);
 
@@ -3519,14 +3525,10 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   }
 
   if (initCi) {
-    const { cmdHealth } = await import('./commands/health.js');
-    const ciRoot = flagString(flags, 'project') ? process.cwd() : projectRoot;
-    await cmdHealth(ciRoot, {
-      initCi: {
-        projectPath: flagString(flags, 'project'),
-        failOn: 'error',
-      },
-    });
+    const ciArgs = ['ci', 'init'];
+    if (flagString(flags, 'project'))
+      ciArgs.push('--project', flagString(flags, 'project') as string);
+    await cmdCi(ciArgs, process.cwd());
   }
 
   console.log('');
@@ -3553,8 +3555,7 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
   const workspaceMode = flagBoolean(flags, 'workspace');
 
   if (args[1] === 'init-ci') {
-    const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
-    await cmdHealth(process.cwd(), parseHealthArgs(['health', ...args.slice(1)]));
+    await cmdCi(['ci', 'init', ...args.slice(2)], process.cwd());
     return;
   }
 
@@ -3943,6 +3944,8 @@ ${BOLD}Usage:${RESET}
   decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--yes]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
+  decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
+  decantr doctor [--project <path>] [--workspace] [--json]
   decantr codify [--from-audit] [--accept] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
@@ -3970,7 +3973,8 @@ ${BOLD}Advanced primitives:${RESET}
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health --evidence [--browser] [--base-url <url>] [--design-tokens <path>]
   decantr health --save-baseline | --since-baseline
-  decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on <error|warn|none>] [--cli-version <version|latest>]
+  decantr health init-ci [legacy alias for decantr ci init]
+  decantr ci init [--project <path>] [--workspace] [--provider github|generic] [--force]
   decantr workspace list [--json]
   decantr workspace health [--json] [--changed --since origin/main]
   decantr content check [--json] [--markdown] [--ci]
@@ -4016,6 +4020,8 @@ ${BOLD}Commands:${RESET}
   ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
   ${cyan('task')}        Prepare route/task context, local law, evidence, and changed-file impact for an AI coding assistant
   ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
+  ${cyan('ci')}          Non-mutating CI gate and CI integration generator
+  ${cyan('doctor')}      Explain Decantr state, artifact ownership, and the next command
   ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns and rules
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('content')}     Content-author namespace: check, create, publish
@@ -4024,7 +4030,7 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('magic')}       Greenfield-first intent flow; steers existing apps into analyze + init
   ${cyan('init')}        Attach Decantr contract/context files to an existing project or empty workspace
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
-  ${cyan('health')}      Generate a local Project Health report [--json] [--markdown] [--ci]; use health init-ci to install a GitHub Actions gate
+  ${cyan('health')}      Advanced Project Health primitive [--json] [--markdown] [--ci]; use decantr ci for automation
   ${cyan('workspace')}   Discover and aggregate health across Decantr projects in a monorepo
   ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
   ${cyan('sync')}        Sync registry content from API
@@ -4060,6 +4066,9 @@ ${BOLD}Examples:${RESET}
   decantr verify --brownfield --local-patterns
   decantr verify --base-url http://localhost:3000 --evidence
   decantr verify --since-baseline
+  decantr doctor --project apps/web
+  decantr ci --project apps/web
+  decantr ci init --project apps/web
   decantr codify --from-audit
   decantr codify --accept
   decantr content check --ci --fail-on error
@@ -4075,9 +4084,6 @@ ${BOLD}Examples:${RESET}
   decantr rules apply
   decantr status
   decantr health
-  decantr verify init-ci
-  decantr verify init-ci --project apps/web
-  decantr verify --ci --fail-on error
   decantr health --evidence --output .decantr/evidence/latest.json
   decantr workspace list
   decantr verify --workspace --changed --since origin/main
@@ -4159,7 +4165,7 @@ ${BOLD}Usage:${RESET}
   decantr health --browser --base-url <url> --evidence
   decantr health --save-baseline
   decantr health --since-baseline
-  decantr health init-ci [--force] [--project <path>] [--workspace] [--fail-on error|warn|none] [--cli-version <version|latest>]
+  decantr health init-ci [legacy alias for decantr ci init]
 
 ${BOLD}Options:${RESET}
   --format      Output format: text, json, or markdown
@@ -4180,11 +4186,11 @@ ${BOLD}Examples:${RESET}
   decantr health
   decantr health --json
   decantr health --markdown --output decantr-health.md
-  decantr health --ci --fail-on error
+  decantr ci --project apps/web
   decantr health --prompt audit-essence-missing
   decantr health --evidence --output .decantr/evidence/latest.json
-  decantr health init-ci --project apps/web
-  decantr health init-ci --workspace
+  decantr ci init --project apps/web
+  decantr ci init --workspace
 `);
 }
 
@@ -4320,7 +4326,7 @@ ${BOLD}Options:${RESET}
   --baseline          Save a health baseline (default)
   --no-baseline       Skip baseline save
   --no-verify         Skip the verification step
-  --ci, --init-ci     Install the Project Health CI gate after adoption
+  --ci, --init-ci     Install the Decantr CI gate after adoption
   --telemetry         Opt this project into privacy-filtered CLI product telemetry
   --merge-proposal    Merge the observed proposal into an existing essence
   --replace-essence   Replace an existing essence with backup
@@ -4336,14 +4342,14 @@ ${BOLD}Examples:${RESET}
 
 function cmdVerifyHelp() {
   console.log(`
-${BOLD}decantr verify${RESET} — One reliability command for local work, CI, and LLM agent loops
+${BOLD}decantr verify${RESET} — One reliability command for local work and LLM agent loops
 
 ${BOLD}Usage:${RESET}
   decantr verify [--project <path>] [--brownfield] [--local-patterns]
   decantr verify --base-url <url> --evidence
   decantr verify --since-baseline
   decantr verify --workspace [--changed --since origin/main]
-  decantr verify init-ci [health init-ci options]
+  decantr verify init-ci [legacy alias for decantr ci init]
 
 ${BOLD}Examples:${RESET}
   decantr verify
@@ -4352,7 +4358,7 @@ ${BOLD}Examples:${RESET}
   decantr verify --brownfield --local-patterns --fail-on warn
   decantr verify --base-url http://localhost:3000 --evidence
   decantr verify --workspace --changed --since origin/main
-  decantr verify init-ci --project apps/web
+  decantr ci init --project apps/web
 `);
 }
 
@@ -4413,6 +4419,12 @@ function printCommandHelp(command: string, args: string[]): boolean {
       return true;
     case 'verify':
       cmdVerifyHelp();
+      return true;
+    case 'ci':
+      cmdCiHelp();
+      return true;
+    case 'doctor':
+      cmdDoctorHelp();
       return true;
     case 'task':
       cmdTaskHelp();
@@ -4510,6 +4522,16 @@ async function main() {
 
     case 'verify': {
       await cmdVerifyWorkflow(args);
+      break;
+    }
+
+    case 'ci': {
+      await cmdCi(args, process.cwd());
+      break;
+    }
+
+    case 'doctor': {
+      await cmdDoctor(args, process.cwd());
       break;
     }
 
@@ -4958,8 +4980,16 @@ async function main() {
     }
 
     case 'refresh': {
+      const { flags } = parseLooseArgs(args);
+      const workspaceInfo = resolveWorkflowProject(flags, 'refresh');
+      if (!workspaceInfo) break;
       const refreshOffline = args.includes('--offline');
-      await cmdRefresh(process.cwd(), { offline: refreshOffline });
+      await cmdRefresh(workspaceInfo.appRoot, {
+        offline: refreshOffline,
+        check: args.includes('--check'),
+        listChanges: args.includes('--list-changes'),
+        json: args.includes('--json'),
+      });
       break;
     }
 

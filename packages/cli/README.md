@@ -20,7 +20,7 @@ npx @decantr/cli new my-app --blueprint=esports-hq
 Use `decantr setup` when you are unsure which path applies. It detects whether the repo is empty, already attached, or a Brownfield app and recommends the next command.
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, and only applies it when you explicitly accept or merge it.
-Use `decantr task` before asking an LLM to modify a route, and `decantr verify` after the edit. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification.
+Use `decantr doctor` when the next step is unclear, `decantr task` before asking an LLM to modify a route, `decantr verify` after the edit, and `decantr ci` in required automation. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification.
 Use `decantr init`, `decantr analyze`, `decantr check`, and `decantr health` as advanced primitives when you need direct control over one step.
 
 Current starter adapter availability:
@@ -39,6 +39,9 @@ Explicit workflow/adoption flags:
 ```bash
 decantr setup
 decantr adopt --yes
+decantr doctor
+decantr ci --fail-on error
+decantr ci init
 decantr codify --from-audit
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
@@ -68,6 +71,8 @@ pnpm add -D -w @decantr/cli
 pnpm exec decantr setup
 pnpm exec decantr workspace list
 pnpm exec decantr adopt --project apps/web --yes
+pnpm exec decantr doctor --project apps/web
+pnpm exec decantr ci init --project apps/web
 ```
 
 Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
@@ -77,7 +82,7 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 ## What It Does
 
 - scaffolds Decantr projects from blueprints, archetypes, or prompts
-- guides users through human workflow commands: setup, adopt, task, verify, and codify
+- guides users through human workflow commands: setup, adopt, doctor, task, verify, ci, and codify
 - supports explicit workflow lanes: greenfield blueprint, greenfield contract-only, brownfield adoption, and hybrid composition
 - generates execution-pack context files for AI coding assistants
 - audits projects against Decantr contracts
@@ -95,11 +100,16 @@ decantr setup
 decantr new my-app --blueprint=esports-hq
 decantr adopt --yes
 decantr adopt --project apps/web --yes
+decantr doctor
+decantr doctor --project apps/web
 decantr codify --from-audit
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
 decantr verify --base-url http://localhost:3000 --evidence
+decantr ci --project apps/web
+decantr ci --workspace --changed --since origin/main
+decantr ci init --project apps/web
 decantr init --existing --blueprint=esports-hq
 decantr init --workflow=greenfield --adoption=contract-only
 decantr rules preview
@@ -107,7 +117,6 @@ decantr rules apply
 decantr magic "AI-native analytics workspace"
 decantr audit
 decantr check
-decantr verify --ci --fail-on error
 decantr studio --port 4319 --host 127.0.0.1
 decantr telemetry status
 decantr telemetry explain
@@ -124,7 +133,11 @@ decantr showcase verification --json
 
 ## Project Health And Studio
 
-`decantr verify` is the workflow command most users should run locally and in CI. It delegates to Project Health, can add Brownfield guard validation with `--brownfield`, requires an accepted local pattern pack with `--local-patterns`, scans `.decantr/rules.json` when present, supports workspace mode, and writes evidence to `.decantr/evidence/latest.json` by default when `--evidence` is used.
+`decantr verify` is the workflow command most users should run locally after edits. It delegates to Project Health, can add Brownfield guard validation with `--brownfield`, requires an accepted local pattern pack with `--local-patterns`, scans `.decantr/rules.json` when present, supports workspace mode, and writes evidence to `.decantr/evidence/latest.json` by default when `--evidence` is used.
+
+`decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, visual evidence, design authority signals, CI wiring, and the next command to run. It is the command to reach for when an app is in a monorepo, has stale Decantr files, or someone is not sure what Decantr expects next.
+
+`decantr ci` is the blessed non-mutating automation gate. It runs the Project Health surface with adoption-mode-aware local law checks and emits a schema-backed CI report. `decantr ci init` writes root GitHub workflows or portable generic snippets using the detected package manager and pinned local CLI command instead of `@latest`.
 
 `decantr health` remains the advanced project observability primitive. It composes the existing verifier audit, guard checks, brownfield route drift checks, runtime evidence, and execution-pack files into a `ProjectHealthReport` with a status, score, route summary, pack summary, findings, and AI-ready remediation prompts.
 
@@ -134,12 +147,13 @@ decantr verify --brownfield --local-patterns
 decantr verify --brownfield --local-patterns --fail-on warn
 decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
-decantr verify init-ci --project apps/registry
+decantr doctor --project apps/registry
+decantr ci --project apps/registry
+decantr ci init --project apps/registry
+decantr ci init --provider generic --project apps/registry
 decantr health
 decantr health --format json
 decantr health --markdown --output health.md
-decantr health --ci --fail-on error
-decantr health --ci --fail-on warn
 decantr health --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
@@ -147,18 +161,18 @@ decantr health --save-baseline
 decantr health --since-baseline
 decantr health --design-tokens .decantr/design/figma-tokens.json
 decantr health --json --output decantr-health.json
-decantr verify init-ci
-decantr verify init-ci --fail-on warn --cli-version latest --force
-decantr verify init-ci --project apps/registry
-decantr verify init-ci --workspace
+decantr ci init
+decantr ci init --fail-on warn --force
+decantr ci init --project apps/registry
+decantr ci init --workspace
 decantr workspace list
 decantr verify --workspace --changed --since origin/main
 decantr export --to figma-tokens
 ```
 
-Use `--json` for machines and schema validation, `--markdown` for CI summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/` and write `.decantr/evidence/visual-manifest.json`; missing Playwright becomes a setup finding, not a crash. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` with changed files, route impact, finding deltas, screenshot hash drift, and contract drift. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `--ci --fail-on error` fails only when blocking errors exist; `--ci --fail-on warn` also fails on warnings.
+Use `--json` for machines and schema validation, `--markdown` for summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/` and write `.decantr/evidence/visual-manifest.json`; missing Playwright becomes a setup finding, not a crash. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` with changed files, route impact, finding deltas, screenshot hash drift, and contract drift. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `decantr ci --fail-on error` fails only when blocking errors exist; `decantr ci --fail-on warn` also fails on warnings.
 
-`decantr verify init-ci` installs `.github/workflows/decantr-health.yml` for GitHub Actions. The generated workflow installs project dependencies, writes JSON/markdown health artifacts, gates with the Project Health CI command, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow, `--fail-on warn` for stricter repositories, or `--cli-version <version|latest>` to pin the package used by CI. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while health runs inside the app contract and uploads artifacts from that project path. Use `--workspace` to generate an aggregate gate that runs `decantr workspace health` from the repository root and uploads `.decantr/workspace-health.json` plus `.decantr/workspace-health.md`.
+`decantr ci init` installs `.github/workflows/decantr-ci.yml` for GitHub Actions. The generated workflow installs dependencies at the workspace root, writes JSON/markdown CI artifacts, gates with `decantr ci`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow or `--fail-on warn` for stricter repositories. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while CI evaluates the app contract and uploads app-scoped artifacts. Use `--workspace` to generate an aggregate gate. Use `--provider generic` for Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment tools. Generated CI uses the pinned local package-manager command and does not depend on `@latest`.
 
 `decantr workspace` is the monorepo reliability namespace. Before attach, `workspace list` shows app candidates. After attach, it also discovers Decantr projects from `.decantr/workspace.json` or by finding `decantr.essence.json` files. Workspace health runs projects with deterministic ordering, concurrency, per-project timeout, failure isolation, and aggregate JSON, and can limit a run to changed projects:
 
@@ -220,7 +234,7 @@ decantr content-health --json
 decantr content-health --markdown --output content-health.md
 decantr content-health --ci --fail-on error
 decantr content-health --ci --fail-on warn
-decantr content-health --prompt <finding-id>
+decantr content check --prompt <finding-id>
 ```
 
 The report validates local `patterns/`, `themes/`, `blueprints/`, `archetypes/`, and `shells/` against the published registry schemas, checks hard references such as blueprint themes and composed archetypes, summarizes softer generation-coverage gaps such as missing pattern coverage, and emits AI-ready remediation prompts. It does not call the hosted registry by default; use the existing registry drift audits when you need live publish parity.
@@ -301,7 +315,7 @@ Recommended read order for AI-assisted scaffolding:
 
 Treat the compiled execution packs as the source of truth. Use the narrative docs as secondary explanation, start with the shell and route structure first, and run `decantr check` plus `decantr audit` after implementation.
 
-For a broader health pass, run `decantr verify` after `refresh`, before opening a pull request, or inside CI. Install the default GitHub Actions gate with `decantr verify init-ci`. Findings include remediation commands and can be turned into focused AI prompts with `decantr health --prompt <finding-id>`.
+For a broader health pass, run `decantr verify` after `refresh` or before opening a pull request, and run `decantr ci` inside CI. Install the default GitHub Actions gate with `decantr ci init`. Findings include remediation commands and can be turned into focused AI prompts with `decantr health --prompt <finding-id>`.
 
 For cold-start harness or certification runs, use only the scaffolded workspace files as the contract. If local scaffold files disagree, stop and report the mismatch rather than relying on repo-global Decantr assumptions.
 

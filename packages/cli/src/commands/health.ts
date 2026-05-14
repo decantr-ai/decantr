@@ -421,6 +421,36 @@ function sourceFromCheckIssue(issue: CheckIssue): ProjectHealthFindingSource {
   return 'check';
 }
 
+function normalizeHealthCategory(category: string, source: ProjectHealthFindingSource): string {
+  const lower = category.toLowerCase();
+  if (
+    source === 'pack' ||
+    lower.includes('execution pack') ||
+    lower.includes('review contract') ||
+    lower.includes('context')
+  ) {
+    return 'Generated Artifact';
+  }
+  if (source === 'brownfield') return 'Brownfield Contract';
+  if (source === 'design-token' || lower.includes('design-token')) return 'Design Token';
+  if (lower.includes('accessibility')) return 'Accessibility';
+  if (source === 'runtime') return 'Runtime';
+  if (source === 'browser') return 'Visual Evidence';
+  if (source === 'interaction') return 'Interaction';
+  if (source === 'assertion') return `Contract ${category}`;
+  return category;
+}
+
+function contractAssertionApplies(
+  assertion: ContractAssertion,
+  metadata: ProjectMetadata,
+): boolean {
+  if (assertion.rule === 'tokens-file-present' && metadata.adoptionMode === 'contract-only') {
+    return false;
+  }
+  return true;
+}
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -523,13 +553,14 @@ function createHealthFinding(input: {
   const idBase = input.baseId || input.rule || `${input.category}-${input.message}`;
   const id = `${input.source}-${slugify(idBase)}`;
   const commands = commandsForFinding(input.source);
+  const category = normalizeHealthCategory(input.category, input.source);
   const remediation = {
-    summary: input.suggestedFix || `Resolve ${input.category.toLowerCase()} finding.`,
+    summary: input.suggestedFix || `Resolve ${category.toLowerCase()} finding.`,
     commands,
     prompt: buildRemediationPrompt({
       id,
       source: input.source,
-      category: input.category,
+      category,
       severity: input.severity,
       message: input.message,
       evidence: input.evidence ?? [],
@@ -541,7 +572,7 @@ function createHealthFinding(input: {
   return {
     id,
     source: input.source,
-    category: input.category,
+    category,
     severity: input.severity,
     message: input.message,
     evidence: input.evidence ?? [],
@@ -1118,6 +1149,7 @@ export async function createProjectHealthReport(
   }
 
   for (const contractAssertion of createContractAssertions(projectRoot, audit)) {
+    if (!contractAssertionApplies(contractAssertion, metadata)) continue;
     if (contractAssertion.status !== 'failed') continue;
     const healthFinding = createHealthFinding({
       source: 'assertion',
@@ -1231,7 +1263,7 @@ export async function createProjectHealthReport(
       generatedAt: typeof manifest?.generatedAt === 'string' ? manifest.generatedAt : null,
     },
     ci: {
-      recommendedCommand: 'decantr health --ci --fail-on error',
+      recommendedCommand: 'decantr ci --fail-on error',
       failOn: 'error',
     },
     findings,

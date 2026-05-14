@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/decantr-ci-report.v1.json",
+  "title": "Decantr CI Report",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "$schema",
+        "generatedAt",
+        "mode",
+        "projectPath",
+        "failOn",
+        "status",
+        "health",
+        "localLaw"
+      ],
+      "properties": {
+        "$schema": {
+          "const": "https://decantr.ai/schemas/decantr-ci-report.v1.json"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mode": {
+          "const": "project"
+        },
+        "projectPath": {
+          "type": ["string", "null"]
+        },
+        "failOn": {
+          "type": "string",
+          "enum": ["error", "warn", "none"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "warning", "error"]
+        },
+        "health": {
+          "$ref": "https://decantr.ai/schemas/project-health-report.v1.json"
+        },
+        "localLaw": {
+          "$ref": "#/$defs/localLaw"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["$schema", "generatedAt", "mode", "failOn", "status", "workspace"],
+      "properties": {
+        "$schema": {
+          "const": "https://decantr.ai/schemas/decantr-ci-report.v1.json"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mode": {
+          "const": "workspace"
+        },
+        "failOn": {
+          "type": "string",
+          "enum": ["error", "warn", "none"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "warning", "error"]
+        },
+        "workspace": {
+          "$ref": "https://decantr.ai/schemas/workspace-health-report.v1.json"
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "localLaw": {
+      "type": "object",
+      "required": ["checked", "patternsPresent", "rulesPresent", "errorCount", "warnCount"],
+      "properties": {
+        "checked": {
+          "type": "boolean"
+        },
+        "patternsPresent": {
+          "type": "boolean"
+        },
+        "rulesPresent": {
+          "type": "boolean"
+        },
+        "errorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -26,6 +26,7 @@ export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
   projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
   projectHealth: 'https://decantr.ai/schemas/project-health-report.v1.json',
+  decantrCi: 'https://decantr.ai/schemas/decantr-ci-report.v1.json',
   evidenceBundle: 'https://decantr.ai/schemas/evidence-bundle.v1.json',
   workspaceHealth: 'https://decantr.ai/schemas/workspace-health-report.v1.json',
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',

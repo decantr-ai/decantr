@@ -5,25 +5,35 @@ Project Health is Decantr's CI-friendly answer to: is this app still aligned wit
 ## Install The Gate
 
 ```bash
-npx @decantr/cli verify init-ci
+npx @decantr/cli ci init
 ```
 
 For a monorepo:
 
 ```bash
-npx @decantr/cli verify init-ci --project apps/web
+npx @decantr/cli ci init --project apps/web
 ```
 
-The generated workflow runs the Project Health gate, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage.
+The generated workflow lives at the repository root, installs dependencies with the detected package manager, runs the pinned local CLI command, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage. Decantr does not generate `@latest` workflows by default.
+
+For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment tools, generate a portable snippet instead:
+
+```bash
+npx @decantr/cli ci init --provider generic --project apps/web
+```
 
 ## Run Locally
 
 ```bash
 npx @decantr/cli verify
-npx @decantr/cli verify --ci --fail-on error
+npx @decantr/cli ci --fail-on error
+npx @decantr/cli ci --project apps/web
+npx @decantr/cli ci --workspace --changed --since origin/main
 npx @decantr/cli verify --markdown --output decantr-health.md
 npx @decantr/cli verify --json --output decantr-health.json
 ```
+
+Use `verify` for the local human/agent loop and `ci` for mandatory automation. In monorepos, keep `--project <app-path>` explicit unless you intentionally want a workspace aggregate with `--workspace`.
 
 ## Repair With An AI Assistant
 

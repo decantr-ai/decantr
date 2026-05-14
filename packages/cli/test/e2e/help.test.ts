@@ -39,7 +39,7 @@ describe('command help (e2e)', () => {
     const output = runHelp(testDir, ['health', 'help']);
 
     expect(output).toContain('decantr health');
-    expect(output).toContain('decantr health --ci --fail-on error');
+    expect(output).toContain('decantr ci --project apps/web');
     expect(output).not.toContain('No decantr.essence.json');
   });
 
@@ -65,6 +65,8 @@ describe('command help (e2e)', () => {
   it('prints workflow command help without running workflows', () => {
     const adopt = runHelp(testDir, ['adopt', '--help']);
     const verify = runHelp(testDir, ['verify', '--help']);
+    const ci = runHelp(testDir, ['ci', '--help']);
+    const doctor = runHelp(testDir, ['doctor', '--help']);
     const task = runHelp(testDir, ['task', '--help']);
     const codify = runHelp(testDir, ['codify', '--help']);
 
@@ -72,6 +74,10 @@ describe('command help (e2e)', () => {
     expect(adopt).toContain('--dry-run');
     expect(verify).toContain('decantr verify');
     expect(verify).toContain('--local-patterns');
+    expect(ci).toContain('decantr ci');
+    expect(ci).toContain('ci init');
+    expect(doctor).toContain('decantr doctor');
+    expect(doctor).toContain('--workspace');
     expect(task).toContain('decantr task');
     expect(task).toContain('--since origin/main');
     expect(codify).toContain('decantr codify');
