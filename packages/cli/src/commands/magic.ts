@@ -331,6 +331,7 @@ export interface MagicOptions {
   dryRun?: boolean;
   offline?: boolean;
   registry?: string;
+  projectLabel?: string;
 }
 
 // ── Main Command ──
@@ -366,9 +367,16 @@ export async function cmdMagic(
   // 2. Check for existing essence
   const essencePath = join(projectRoot, 'decantr.essence.json');
   if (existsSync(essencePath)) {
-    console.log(error('  decantr.essence.json already exists in this directory.'));
-    console.log(dim('  Remove it first or use a different directory.'));
-    process.exitCode = 1;
+    const projectFlag = options.projectLabel ? ` --project ${options.projectLabel}` : '';
+    console.log(`${YELLOW} Decantr is already attached to this project.${RESET}`);
+    console.log(
+      dim(' decantr magic is greenfield-first; use task-time context for existing apps.'),
+    );
+    console.log('');
+    console.log(`${BOLD}Recommended next steps:${RESET}`);
+    console.log(`  ${cyan(`decantr doctor${projectFlag}`)}`);
+    console.log(`  ${cyan(`decantr task <route> "${prompt}"${projectFlag}`)}`);
+    console.log(`  ${cyan(`decantr verify --brownfield --local-patterns${projectFlag}`)}`);
     return;
   }
 
@@ -384,8 +392,9 @@ export async function cmdMagic(
       dim(' Running brownfield analysis instead so you can attach Decantr deliberately.\n'),
     );
     await cmdAnalyze(projectRoot);
+    const projectFlag = options.projectLabel ? ` --project ${options.projectLabel}` : '';
     console.log(
-      `${BOLD}Recommended next step:${RESET} ${cyan('decantr init --existing --accept-proposal')}`,
+      `${BOLD}Recommended next step:${RESET} ${cyan(`decantr init${projectFlag} --existing --accept-proposal`)}`,
     );
     console.log('');
     return;

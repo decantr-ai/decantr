@@ -18,7 +18,7 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, hosted pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr registry compile-packs <app>/decantr.essence.json --write-context`.
+`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, hosted pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr registry compile-packs <app>/decantr.essence.json --write-context`. In contract-only mode, deferred hosted packs are optional context; missing packs should show as optional/info unless a present manifest references missing files.
 
 If the app is already running and you want Decantr to attach route screenshots to task context, add visual evidence after adoption:
 
@@ -82,6 +82,21 @@ pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
+
+App-scoped primitives also honor the same path. When you add a page, switch a custom theme, export tokens, inspect status, ask for a health prompt, or ask for suggestions, keep `--project apps/web` on the command:
+
+```bash
+pnpm exec decantr add page app/settings --route /settings --project apps/web
+pnpm exec decantr theme create retro-night --project apps/web
+pnpm exec decantr export --to figma-tokens --project apps/web
+pnpm exec decantr suggest "standardize buttons" --project apps/web
+pnpm exec decantr suggest --from-code --file app/page.tsx --project apps/web
+pnpm exec decantr health --project apps/web --prompt <finding-id>
+```
+
+`add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs.
+
+If you run `decantr setup` after adoption from a monorepo root, it should show attached projects and the day-two loop (`doctor`, `task`, `verify`, `ci init`) rather than asking you to reattach the same app. If you run `decantr magic` against an already attached app, it should steer you into `decantr task <route> "<change>" --project apps/web`; `magic` remains greenfield-first.
 
 This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
 

@@ -37,12 +37,16 @@ Brownfield intelligence is now exposed through workflows first:
 - `decantr verify --brownfield --local-patterns` runs the reliability gate, requires accepted local patterns, and scans accepted local rules when present.
 - `decantr doctor --project <path>` explains whether the app is attached, whether generated context is present, whether local law exists, whether CI is wired, and which command to run next.
 - `decantr ci --project <path>` is the blessed CI command. It is non-mutating, adoption-mode aware, and emits a `DecantrCiReport`. `decantr ci init` writes root GitHub workflows or generic pipeline snippets using the pinned package-manager command instead of `@latest`, and prints the install command when `@decantr/cli` is not pinned yet.
+- `decantr health init-ci` and `decantr verify init-ci` are legacy aliases for `decantr ci init`; they should generate the same pinned `decantr-ci.yml` surface, not the old `@latest` Project Health workflow.
 - `decantr analyze` still writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
-- `decantr suggest` accepts `--route`, `--file`, and `--from-code` for better pattern discovery without adding a new top-level command.
+- `decantr setup` is stateful orientation: before adoption it shows app candidates and the attach command; after adoption it shows attached projects plus `doctor`, `task`, `verify`, and `ci init` as the day-two loop.
+- `decantr suggest` accepts `--route`, `--file`, `--from-code`, and `--project`; when accepted local law exists, project-owned patterns are shown before registry suggestions. `--from-code` may derive the query from `--route` or `--file`, and monorepo-root file paths under the selected project are normalized to app-local paths.
 - `decantr check --brownfield --project <path>` validates the selected app from a monorepo root; app-scoped primitives should not silently fall back to the workspace root.
+- `decantr add page <section>/<page> --route <route> --project <path>` writes both the page and route mapping so the page is immediately usable by `decantr task <route>`.
+- App-scoped primitives that support project state (`health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry`) should honor `--project <path>`. Unsupported flags should fail before writing proposal/generated files.
 - `decantr registry get-pack page --route <route>` is the CLI task-context path through the existing pack surface. `decantr registry compile-packs apps/web/decantr.essence.json --write-context` hydrates app packs beside the provided essence path.
 - `decantr health --browser --base-url <url> --evidence` writes local screenshots and a visual manifest; `--save-baseline` / `--since-baseline` add continuity.
-- `decantr refresh --check` is the CI-safe generated-context freshness check and fails when `pack-manifest.json` references missing files. `decantr refresh --list-changes` prints created, updated, and removed generated files after regeneration.
+- `decantr refresh --check` is the CI-safe generated-context freshness check and fails when `pack-manifest.json` references missing files. In contract-only Brownfield it should not fail solely because hosted packs were intentionally deferred. `decantr refresh --list-changes` prints created, updated, and removed generated files after regeneration, using paths that are openable from the command's current directory.
 
 Command help must be side-effect free. `decantr <command> --help`, `decantr <command> -h`, and `decantr <command> help` should print help and never execute command bodies or write project files.
 

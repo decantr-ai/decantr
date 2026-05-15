@@ -62,7 +62,7 @@ npx @decantr/cli doctor
 If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
 
 ```bash
-npx @decantr/cli add page dashboard/reports
+npx @decantr/cli add page dashboard/reports --route /dashboard/reports
 npx @decantr/cli add feature auth
 npx @decantr/cli refresh
 npx @decantr/cli verify
@@ -203,7 +203,8 @@ Use `refresh` after changing routes, sections, theme, features, or any other pro
 Examples:
 
 ```bash
-npx @decantr/cli add page dashboard/reports
+npx @decantr/cli add page dashboard/reports --route /dashboard/reports
+npx @decantr/cli add page app/settings --route /settings --project apps/web
 npx @decantr/cli add feature auth
 npx @decantr/cli theme switch auradecantism
 npx @decantr/cli refresh

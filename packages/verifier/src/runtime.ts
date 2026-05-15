@@ -393,10 +393,16 @@ function auditNextBuildOutput(projectRoot: string): RuntimeAudit {
   }
 
   const hasHtmlDocuments = htmlDocuments.length > 0;
-  const titleOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<title>[^<]+<\/title>/i.test(html));
-  const langOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<html[^>]*\slang=(["'])[^"']+\1/i.test(html));
-  const viewportOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(html));
-  const charsetOk = !hasHtmlDocuments || htmlDocuments.every((html) => /<meta[^>]+charset=/i.test(html));
+  const titleOk =
+    !hasHtmlDocuments || htmlDocuments.every((html) => /<title>[^<]+<\/title>/i.test(html));
+  const langOk =
+    !hasHtmlDocuments ||
+    htmlDocuments.every((html) => /<html[^>]*\slang=(["'])[^"']+\1/i.test(html));
+  const viewportOk =
+    !hasHtmlDocuments ||
+    htmlDocuments.every((html) => /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(html));
+  const charsetOk =
+    !hasHtmlDocuments || htmlDocuments.every((html) => /<meta[^>]+charset=/i.test(html));
   const failures: string[] = ['next-build-output'];
 
   if (!buildIdPresent) {
@@ -465,6 +471,26 @@ function normalizeRouteHint(route: string | null | undefined): string {
     return route.slice(0, dynamicIndex + 1);
   }
   return route;
+}
+
+function isNextProject(projectRoot: string): boolean {
+  if (
+    existsSync(join(projectRoot, 'next.config.js')) ||
+    existsSync(join(projectRoot, 'next.config.ts')) ||
+    existsSync(join(projectRoot, 'next.config.mjs')) ||
+    existsSync(join(projectRoot, 'next.config.cjs'))
+  ) {
+    return true;
+  }
+  try {
+    const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    return Boolean(pkg.dependencies?.next || pkg.devDependencies?.next);
+  } catch {
+    return false;
+  }
 }
 
 async function startStaticServer(
@@ -550,6 +576,7 @@ export async function auditBuiltDist(
           .filter(Boolean)
           .slice(0, 8)
       : ['/'];
+  const frameworkDocumentOutput = isNextProject(projectRoot);
   const indexHtml = readFileSync(indexPath, 'utf-8');
   const assetPaths = extractAssetPaths(indexHtml);
   const server = await startStaticServer(distDir);
@@ -557,8 +584,9 @@ export async function auditBuiltDist(
   try {
     const rootResponse = await fetch(`${server.baseUrl}/`);
     const rootHtml = await rootResponse.text();
-    const failures: string[] = [];
-    const rootDocumentOk = rootResponse.ok && /id="root"/.test(rootHtml);
+    const failures: string[] = frameworkDocumentOutput ? ['next-build-output'] : [];
+    const rootDocumentOk =
+      rootResponse.ok && (frameworkDocumentOutput || /id="root"/.test(rootHtml));
     const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
     const langOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(rootHtml);
     const viewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(rootHtml);
@@ -652,7 +680,8 @@ export async function auditBuiltDist(
     for (const routeHint of routeHints) {
       const routeResponse = await fetch(`${server.baseUrl}${routeHint}`);
       const routeHtml = await routeResponse.text();
-      const routeRootDocumentOk = routeResponse.ok && /id="root"/.test(routeHtml);
+      const routeRootDocumentOk =
+        routeResponse.ok && (frameworkDocumentOutput || /id="root"/.test(routeHtml));
       const routeTitleOk = /<title>[^<]+<\/title>/i.test(routeHtml);
       const routeLangOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(routeHtml);
       const routeViewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(routeHtml);

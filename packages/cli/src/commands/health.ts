@@ -10,6 +10,7 @@ import {
   createContractAssertions,
   createEvidenceBundle,
   type EvidenceBundle,
+  type PackManifest,
   type ProjectHealthFinding,
   type ProjectHealthFindingSource,
   type ProjectHealthReport,
@@ -98,6 +99,7 @@ interface ProjectCommandContext {
   compilePacksCommand: string;
   verifyCommand: string;
   ciCommand: string;
+  promptCommand(id: string): string;
 }
 
 interface BrowserVerificationResult {
@@ -456,6 +458,12 @@ function contractAssertionApplies(
   if (assertion.rule === 'tokens-file-present' && metadata.adoptionMode === 'contract-only') {
     return false;
   }
+  if (
+    metadata.adoptionMode === 'contract-only' &&
+    (assertion.rule === 'pack-manifest-present' || assertion.rule === 'review-pack-present')
+  ) {
+    return false;
+  }
   return true;
 }
 
@@ -514,7 +522,10 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
 
 function commandContextForProject(projectRoot: string): ProjectCommandContext {
   const workspaceInfo = resolveWorkspaceInfo(projectRoot);
-  const relativeProjectPath = relative(workspaceInfo.workspaceRoot, projectRoot).replace(/\\/g, '/');
+  const relativeProjectPath = relative(workspaceInfo.workspaceRoot, projectRoot).replace(
+    /\\/g,
+    '/',
+  );
   const projectPath =
     relativeProjectPath && !relativeProjectPath.startsWith('..') && !isAbsolute(relativeProjectPath)
       ? relativeProjectPath
@@ -527,6 +538,7 @@ function commandContextForProject(projectRoot: string): ProjectCommandContext {
     compilePacksCommand: `decantr registry compile-packs ${essencePath} --write-context`,
     verifyCommand: `decantr verify${projectFlag}`,
     ciCommand: `decantr ci${projectFlag} --fail-on error`,
+    promptCommand: (id: string) => `decantr health${projectFlag} --prompt ${id}`,
   };
 }
 
@@ -542,8 +554,14 @@ function rewriteHealthCommand(command: string, context: ProjectCommandContext): 
     /^decantr init --existing\b/,
     `decantr init --project ${context.projectPath} --existing`,
   );
-  rewritten = rewritten.replace(/^decantr analyze\b/, `decantr analyze --project ${context.projectPath}`);
-  rewritten = rewritten.replace(/^decantr check\b/, `decantr check --project ${context.projectPath}`);
+  rewritten = rewritten.replace(
+    /^decantr analyze\b/,
+    `decantr analyze --project ${context.projectPath}`,
+  );
+  rewritten = rewritten.replace(
+    /^decantr check\b/,
+    `decantr check --project ${context.projectPath}`,
+  );
   rewritten = rewritten.replace(/^decantr audit\b/, context.verifyCommand);
   rewritten = rewritten.replace(/^decantr health\b/, context.verifyCommand);
 
@@ -689,6 +707,87 @@ function createHealthFinding(input: {
     suggestedFix: input.suggestedFix,
     remediation,
   };
+}
+
+function collectContractPackConsistencyFindings(
+  projectRoot: string,
+  essence: unknown,
+  manifest: PackManifest | null,
+): ProjectHealthFinding[] {
+  if (!essence || typeof essence !== 'object') return [];
+  const record = essence as Record<string, unknown>;
+  const blueprint = record.blueprint;
+  if (!blueprint || typeof blueprint !== 'object') return [];
+  const bp = blueprint as Record<string, unknown>;
+  const routes =
+    bp.routes && typeof bp.routes === 'object' && !Array.isArray(bp.routes)
+      ? (bp.routes as Record<string, unknown>)
+      : {};
+  const routeTargets = new Set(
+    Object.values(routes)
+      .filter(
+        (entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object',
+      )
+      .map((entry) => `${String(entry.section ?? '')}/${String(entry.page ?? '')}`),
+  );
+  const pages: Array<{ section: string; page: string; route: string | null }> = [];
+  for (const section of Array.isArray(bp.sections) ? bp.sections : []) {
+    if (!section || typeof section !== 'object') continue;
+    const sectionRecord = section as Record<string, unknown>;
+    const sectionId = typeof sectionRecord.id === 'string' ? sectionRecord.id : 'unknown';
+    for (const page of Array.isArray(sectionRecord.pages) ? sectionRecord.pages : []) {
+      if (!page || typeof page !== 'object') continue;
+      const pageRecord = page as Record<string, unknown>;
+      const pageId = typeof pageRecord.id === 'string' ? pageRecord.id : 'unknown';
+      const route = typeof pageRecord.route === 'string' ? pageRecord.route : null;
+      pages.push({ section: sectionId, page: pageId, route });
+    }
+  }
+
+  const findings: ProjectHealthFinding[] = [];
+  const routeLess = pages.filter(
+    (page) => !page.route && !routeTargets.has(`${page.section}/${page.page}`),
+  );
+  if (routeLess.length > 0) {
+    findings.push(
+      createHealthFinding({
+        source: 'assertion',
+        category: 'Contract Route Topology',
+        severity: 'error',
+        message:
+          'One or more blueprint pages have no route and cannot be addressed by task-time context.',
+        evidence: routeLess
+          .slice(0, 8)
+          .map(
+            (page) => `${page.section}/${page.page} has no page.route or blueprint.routes entry`,
+          ),
+        rule: 'page-route-required',
+        suggestedFix:
+          'Add a route for each page or rerun the add-page flow with a route-aware Decantr CLI.',
+        baseId: 'page-route-required',
+      }),
+    );
+  }
+
+  const pagePackCount =
+    manifest && 'pages' in manifest && Array.isArray(manifest.pages) ? manifest.pages.length : 0;
+  if (manifest && pages.length !== pagePackCount) {
+    const context = commandContextForProject(projectRoot);
+    findings.push(
+      createHealthFinding({
+        source: 'pack',
+        category: 'Generated Artifacts',
+        severity: 'warn',
+        message: `Compiled page pack count (${pagePackCount}) does not match the contract page count (${pages.length}).`,
+        evidence: ['Page packs should be regenerated after adding, removing, or re-routing pages.'],
+        rule: 'page-pack-count-mismatch',
+        suggestedFix: context.compilePacksCommand,
+        baseId: 'page-pack-count-mismatch',
+      }),
+    );
+  }
+
+  return findings;
 }
 
 function countFindings(findings: ProjectHealthFinding[]) {
@@ -1323,6 +1422,13 @@ export async function createProjectHealthReport(
 
   const declaredRoutes = collectDeclaredRoutes(audit.essence);
   const manifest = audit.packManifest;
+  for (const consistencyFinding of collectContractPackConsistencyFindings(
+    projectRoot,
+    audit.essence,
+    manifest,
+  )) {
+    if (!isDuplicateFinding(seen, consistencyFinding)) findings.push(consistencyFinding);
+  }
   const browserVerification = await collectBrowserVerification(
     projectRoot,
     options,
@@ -1387,6 +1493,7 @@ function colorForStatus(status: ProjectHealthStatus): string {
 
 export function formatProjectHealthText(report: ProjectHealthReport): string {
   const color = colorForStatus(report.status);
+  const commandContext = commandContextForProject(report.projectRoot);
   const lines = [
     `${BOLD}Decantr Project Health${RESET}`,
     '',
@@ -1426,7 +1533,7 @@ export function formatProjectHealthText(report: ProjectHealthReport): string {
       if (finding.suggestedFix) {
         lines.push(`    ${DIM}Fix: ${finding.suggestedFix}${RESET}`);
       }
-      lines.push(`    ${DIM}Prompt: decantr health --prompt ${finding.id}${RESET}`);
+      lines.push(`    ${DIM}Prompt: ${commandContext.promptCommand(finding.id)}${RESET}`);
     }
   }
 
@@ -1436,6 +1543,7 @@ export function formatProjectHealthText(report: ProjectHealthReport): string {
 }
 
 export function formatProjectHealthMarkdown(report: ProjectHealthReport): string {
+  const commandContext = commandContextForProject(report.projectRoot);
   const lines = [
     '# Decantr Project Health',
     '',
@@ -1473,7 +1581,7 @@ export function formatProjectHealthMarkdown(report: ProjectHealthReport): string
         lines.push('- Evidence:');
         for (const evidence of finding.evidence) lines.push(`  - ${evidence}`);
       }
-      lines.push(`- Prompt: \`decantr health --prompt ${finding.id}\``);
+      lines.push(`- Prompt: \`${commandContext.promptCommand(finding.id)}\``);
       lines.push('');
     }
   }
@@ -1587,8 +1695,11 @@ export async function cmdHealth(
 
   const format = resolveFormat(options);
   const failOn = options.failOn ?? 'error';
+  const evidenceBundle = options.evidence
+    ? await createProjectEvidenceBundle(projectRoot, report, reportOptions)
+    : null;
   const basePayload = options.evidence
-    ? `${JSON.stringify(await createProjectEvidenceBundle(projectRoot, report, reportOptions), null, 2)}\n`
+    ? `${JSON.stringify(evidenceBundle, null, 2)}\n`
     : format === 'json'
       ? formatProjectHealthJson(report)
       : format === 'markdown'
@@ -1609,6 +1720,15 @@ export async function cmdHealth(
       console.log(
         `${GREEN}Wrote Decantr ${options.evidence ? 'evidence bundle' : 'health report'}:${RESET} ${options.output}`,
       );
+      if (options.browser && evidenceBundle?.browser?.status === 'unavailable') {
+        const reason =
+          evidenceBundle.browser.findings[0] ??
+          'Playwright is not available to Decantr in this project.';
+        console.log(`${YELLOW}Browser evidence unavailable:${RESET} ${reason}`);
+        console.log(
+          `${DIM}Static evidence was still written. Install Playwright or rerun without --browser if screenshots are not needed.${RESET}`,
+        );
+      }
     }
   } else {
     process.stdout.write(payload);

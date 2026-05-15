@@ -43,6 +43,16 @@ function writeEssence(essencePath: string, essence: EssenceV4): void {
   writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
 }
 
+function readFlagValue(args: string[], name: string): string | undefined {
+  const prefix = `--${name}=`;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === `--${name}` && args[index + 1]) return args[index + 1];
+    if (arg.startsWith(prefix)) return arg.slice(prefix.length);
+  }
+  return undefined;
+}
+
 /**
  * Recompute global features from all remaining sections.
  */
@@ -197,10 +207,7 @@ export async function cmdRemoveFeature(
 
   // Parse --section flag
   let sectionId: string | undefined;
-  const sectionIdx = args.indexOf('--section');
-  if (sectionIdx !== -1 && args[sectionIdx + 1]) {
-    sectionId = args[sectionIdx + 1];
-  }
+  sectionId = readFlagValue(args, 'section');
 
   if (sectionId) {
     const sections = essence.blueprint.sections;

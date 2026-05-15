@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -68,13 +68,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/faq.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T15:44:13-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -86,19 +86,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/monorepos.md</loc>
-    <lastmod>2026-05-14T19:24:34.242Z</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/project-health-ci.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -158,25 +158,25 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/content-health.md</loc>
-    <lastmod>2026-05-13T14:50:45-04:00</lastmod>
+    <lastmod>2026-05-14T15:44:13-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/package-support-matrix.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T15:44:13-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -212,7 +212,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-14T13:52:43-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -319,6 +319,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/releases/2026-05-14-brownfield-command-consistency-2-9-3.md</loc>
+    <lastmod>2026-05-15T00:53:21.485Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-14-brownfield-correctness-2-9-1.md</loc>
+    <lastmod>2026-05-14T18:31:09-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-14-brownfield-dx-2-9-2.md</loc>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/releases/2026-05-14-brownfield-monorepo-onboarding.md</loc>
     <lastmod>2026-05-14T13:52:43-04:00</lastmod>
     <changefreq>weekly</changefreq>
@@ -326,19 +344,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-14-operating-layer-2-9.md</loc>
-    <lastmod>2026-05-14T19:27:43.692Z</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://decantr.ai/releases/2026-05-14-brownfield-correctness-2-9-1.md</loc>
-    <lastmod>2026-05-14T18:15:00-04:00</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://decantr.ai/releases/2026-05-14-brownfield-dx-2-9-2.md</loc>
-    <lastmod>2026-05-14T19:00:00-04:00</lastmod>
+    <lastmod>2026-05-14T19:04:09-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -398,7 +404,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/</loc>
-    <lastmod>2026-05-11T21:15:46-04:00</lastmod>
+    <lastmod>2026-05-14T15:44:13-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -434,7 +440,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/decantr-ci-report.v1.json</loc>
-    <lastmod>2026-05-14T19:28:42.188Z</lastmod>
+    <lastmod>2026-05-14T15:44:13-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>

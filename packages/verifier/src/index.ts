@@ -1927,7 +1927,7 @@ function summarizeTopology(
   essence: EssenceFile | null,
   reviewPack: ReviewExecutionPack | null,
 ): TopologySummary {
-  const features = new Set<string>(reviewPack?.data.features ?? []);
+  const features = new Set<string>(reviewPack?.data?.features ?? []);
   const sectionRoles = new Set<string>();
   const gatewayRoutes = new Set<string>();
   const primaryRoutes = new Set<string>();
@@ -2217,7 +2217,7 @@ function appendRuntimeAuditFindings(
     return;
   }
 
-  if (runtimeAudit.rootDocumentOk === false) {
+  if (runtimeAudit.rootDocumentOk === false && !isFrameworkBuildOutput) {
     findings.push(
       makeFinding({
         id: 'runtime-root-document-invalid',
@@ -4407,6 +4407,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   const reviewPack = loadReviewPack(projectRoot);
   const packManifest = loadPackManifest(projectRoot);
   const adoptionMode = readProjectAdoptionMode(projectRoot);
+  const packHydrationOptional = adoptionMode === 'contract-only';
+  const packHydrationSeverity: VerificationSeverity = packHydrationOptional ? 'info' : 'warn';
   const runtimeAudit = emptyRuntimeAudit();
 
   if (!existsSync(essencePath)) {
@@ -4490,11 +4492,14 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
       makeFinding({
         id: 'pack-manifest-missing',
         category: 'Execution Packs',
-        severity: 'warn',
-        message: 'Compiled execution pack manifest is missing.',
+        severity: packHydrationSeverity,
+        message: packHydrationOptional
+          ? 'Compiled execution pack manifest is not hydrated yet; this is optional for contract-only Brownfield adoption.'
+          : 'Compiled execution pack manifest is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'pack-manifest.json')],
-        suggestedFix:
-          'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate scaffold, review, mutation, section, and page packs.',
+        suggestedFix: packHydrationOptional
+          ? 'Optional: run `decantr registry compile-packs decantr.essence.json --write-context` when you want hosted page packs and review packs for richer assistant context.'
+          : 'Run `decantr registry compile-packs decantr.essence.json --write-context` to hydrate scaffold, review, mutation, section, and page packs.',
       }),
     );
   } else {
@@ -4562,11 +4567,14 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
       makeFinding({
         id: 'review-pack-file-missing',
         category: 'Review Contract',
-        severity: 'warn',
-        message: 'The compiled review pack file is missing.',
+        severity: packHydrationSeverity,
+        message: packHydrationOptional
+          ? 'The compiled review pack file is not hydrated yet; contract-only Brownfield projects can continue without it.'
+          : 'The compiled review pack file is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
-        suggestedFix:
-          'Hydrate the full hosted context bundle with `decantr registry compile-packs decantr.essence.json --write-context` so critique consumers can anchor findings to the compiled review contract.',
+        suggestedFix: packHydrationOptional
+          ? 'Optional: hydrate hosted packs later if you want critique consumers to anchor findings to the compiled review contract.'
+          : 'Hydrate the full hosted context bundle with `decantr registry compile-packs decantr.essence.json --write-context` so critique consumers can anchor findings to the compiled review contract.',
       }),
     );
   }
@@ -4659,7 +4667,7 @@ function isCssWhitespace(char: string): boolean {
 }
 
 function resolveFocusAreas(reviewPack: ReviewExecutionPack | null): string[] {
-  return reviewPack?.data.focusAreas?.length ? reviewPack.data.focusAreas : DEFAULT_FOCUS_AREAS;
+  return reviewPack?.data?.focusAreas?.length ? reviewPack.data.focusAreas : DEFAULT_FOCUS_AREAS;
 }
 
 function resolveSeverityFromChecks(
@@ -4667,7 +4675,7 @@ function resolveSeverityFromChecks(
   fallback: VerificationSeverity,
   checkIds: string[],
 ): VerificationSeverity {
-  const match = reviewPack?.successChecks.find((check) => checkIds.includes(check.id));
+  const match = reviewPack?.successChecks?.find((check) => checkIds.includes(check.id));
   return match?.severity ?? fallback;
 }
 
@@ -14629,16 +14637,16 @@ export function critiqueSource({
     );
   }
 
-  const hasProtectedRouteInReview =
-    reviewPack?.data.routes.some((route) => isProtectedLikeRoute(route.path)) ?? false;
-  const hasRecoveryRouteInReview =
-    reviewPack?.data.routes.some((route) => isRecoveryLikeRoute(route.path)) ?? false;
-  const hasSignInRouteInReview =
-    reviewPack?.data.routes.some((route) => isSignInLikeRoute(route.path)) ?? false;
-  const hasRegistrationRouteInReview =
-    reviewPack?.data.routes.some((route) => isRegistrationLikeRoute(route.path)) ?? false;
-  const hasAnonymousEntryRouteInReview =
-    reviewPack?.data.routes.some((route) => isAnonymousEntryLikeRoute(route.path)) ?? false;
+  const reviewRoutes = reviewPack?.data?.routes ?? [];
+  const hasProtectedRouteInReview = reviewRoutes.some((route) => isProtectedLikeRoute(route.path));
+  const hasRecoveryRouteInReview = reviewRoutes.some((route) => isRecoveryLikeRoute(route.path));
+  const hasSignInRouteInReview = reviewRoutes.some((route) => isSignInLikeRoute(route.path));
+  const hasRegistrationRouteInReview = reviewRoutes.some((route) =>
+    isRegistrationLikeRoute(route.path),
+  );
+  const hasAnonymousEntryRouteInReview = reviewRoutes.some((route) =>
+    isAnonymousEntryLikeRoute(route.path),
+  );
   const signInFlowSignals = countSignInFlowSignals(code, filePath);
   const recoveryFlowSignals = countRecoveryFlowSignals(code, filePath);
   const signUpFlowSignals = countSignUpFlowSignals(code, filePath);
@@ -14685,7 +14693,7 @@ export function critiqueSource({
           filePath,
           `Sign-in flow signals: ${signInFlowSignals}`,
           `Reviewed recovery routes: ${
-            reviewPack?.data.routes
+            reviewRoutes
               .filter((route) => isRecoveryLikeRoute(route.path))
               .map((route) => route.path)
               .join(', ') || 'none'
@@ -14711,7 +14719,7 @@ export function critiqueSource({
           filePath,
           `Sign-in flow signals: ${signInFlowSignals}`,
           `Reviewed registration routes: ${
-            reviewPack?.data.routes
+            reviewRoutes
               .filter((route) => isRegistrationLikeRoute(route.path))
               .map((route) => route.path)
               .join(', ') || 'none'
@@ -14741,7 +14749,7 @@ export function critiqueSource({
           filePath,
           `Recovery flow signals: ${recoveryFlowSignals}`,
           `Reviewed anonymous entry routes: ${
-            reviewPack?.data.routes
+            reviewRoutes
               .filter((route) => isAnonymousEntryLikeRoute(route.path))
               .map((route) => route.path)
               .join(', ') || 'none'
@@ -14767,7 +14775,7 @@ export function critiqueSource({
           filePath,
           `Registration flow signals: ${signUpFlowSignals}`,
           `Reviewed sign-in routes: ${
-            reviewPack?.data.routes
+            reviewRoutes
               .filter((route) => isSignInLikeRoute(route.path))
               .map((route) => route.path)
               .join(', ') || 'none'
@@ -14802,7 +14810,7 @@ export function critiqueSource({
           `Auth callback exchange signals: ${authCallbackExchangeSignalCount}`,
           `Auth callback exchange error signals: ${authCallbackExchangeErrorSignalCount}`,
           `Reviewed sign-in routes: ${
-            reviewPack?.data.routes
+            reviewRoutes
               .filter((route) => isSignInLikeRoute(route.path))
               .map((route) => route.path)
               .join(', ') || 'none'
@@ -15128,7 +15136,7 @@ export function critiqueSource({
     );
   }
 
-  const knownRoutes = reviewPack?.data.routes.length ?? packManifest?.pages.length ?? 0;
+  const knownRoutes = reviewPack?.data?.routes?.length ?? packManifest?.pages.length ?? 0;
   const placeholderNavigationTargets = astSignals.placeholderNavigationTargetCount;
   scores.push({
     category: 'Topology Context',

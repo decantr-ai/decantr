@@ -23,6 +23,8 @@ npm install @decantr/verifier
 - interaction findings now include scanned file counts, file line ranges, and expected signal evidence where available, so CLI health/check output can point agents at source-grounded remediation
 - contract-only Brownfield critique avoids requiring Decantr treatments/decorators when the project keeps its own styling authority
 - project audits check that `pack-manifest.json` references real pack markdown/JSON files on disk
+- project audits tolerate partial or malformed generated review packs without crashing Project Health, so half-attached Brownfield projects still receive actionable findings
+- Next.js static/document outputs are treated as framework-rendered documents instead of requiring a Vite-style `id="root"` mount element
 - project source audits ignore test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints and unsafe rendering patterns
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:

@@ -16,6 +16,8 @@ npx @decantr/cli ci init --project apps/web
 
 The generated workflow lives at the repository root, installs dependencies with the detected package manager, runs the pinned local CLI command, writes markdown and JSON reports, appends the summary to GitHub Actions, and uploads the artifacts. It defaults to `--fail-on error`, which blocks invalid or error-level findings while keeping warning-level drift visible for triage. Decantr does not generate `@latest` workflows by default; when the CLI is not pinned yet, the installer prints the package-manager command to add it first.
 
+Older `decantr health init-ci` and `decantr verify init-ci` invocations are compatibility aliases for `decantr ci init`. New docs and scripts should use `ci init` directly.
+
 For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment tools, generate a portable snippet instead:
 
 ```bash
@@ -39,9 +41,10 @@ Use `verify` for the local human/agent loop and `ci` for mandatory automation. I
 
 ```bash
 npx @decantr/cli health --prompt <finding-id>
+npx @decantr/cli health --project apps/web --prompt <finding-id>
 ```
 
-The prompt is scoped to one finding. It does not edit files by itself. Give the prompt to the assistant doing the implementation, then rerun Project Health.
+The prompt is scoped to one finding. It does not edit files by itself. In monorepos, keep the same `--project` that produced the finding so the prompt resolves against the app, not the workspace root. Give the prompt to the assistant doing the implementation, then rerun Project Health.
 
 ## Privacy Boundary
 

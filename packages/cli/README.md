@@ -21,8 +21,10 @@ Use `decantr setup` when you are unsure which path applies. It detects whether t
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, hydrates hosted execution packs when online, and only applies the contract when you explicitly accept or merge it.
 Use `decantr doctor` when the next step is unclear, `decantr task` before asking an LLM to modify a route, `decantr verify` after the edit, and `decantr ci` in required automation. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification.
-In monorepos, app-scoped commands accept `--project <app-path>`. Hosted pack hydration also follows the essence path: `decantr registry compile-packs apps/web/decantr.essence.json --write-context` writes into `apps/web/.decantr/context`.
+In monorepos, app-scoped commands accept `--project <app-path>`. `setup` shows attach guidance before adoption and the day-two loop after adoption. Hosted pack hydration also follows the essence path: `decantr registry compile-packs apps/web/decantr.essence.json --write-context` writes into `apps/web/.decantr/context`. In contract-only/offline Brownfield, deferred hosted packs are optional context unless a present manifest references missing files.
 Use `decantr init`, `decantr analyze`, `decantr check`, and `decantr health` as advanced primitives when you need direct control over one step.
+
+App-scoped primitives now share the same `--project` posture as the primary workflow commands. From a workspace root, `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` target the selected app instead of the root. Task/read paths, local-law summaries, and refresh change summaries are printed as openable workspace paths. Nonexistent project paths fail immediately, and Brownfield adoption refuses component packages unless you intentionally pass `--force-package`.
 
 Current starter adapter availability:
 
@@ -128,6 +130,8 @@ decantr list blueprints --blueprint-set featured
 decantr list blueprints --blueprint-set certified
 decantr search dashboard --type blueprint --blueprint-set labs
 decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
+decantr suggest --from-code --file app/page.tsx --project apps/web
+decantr suggest "standardize buttons" --project apps/web
 decantr list patterns
 decantr showcase verification --json
 ```
@@ -156,6 +160,7 @@ decantr health
 decantr health --format json
 decantr health --markdown --output health.md
 decantr health --prompt <finding-id>
+decantr health --project apps/registry --prompt <finding-id>
 decantr health --evidence --output .decantr/evidence/latest.json
 decantr health --browser --base-url http://localhost:3000 --evidence
 decantr health --save-baseline
@@ -171,7 +176,7 @@ decantr verify --workspace --changed --since origin/main
 decantr export --to figma-tokens
 ```
 
-Use `--json` for machines and schema validation, `--markdown` for summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/` and write `.decantr/evidence/visual-manifest.json`; missing Playwright becomes a setup finding, not a crash. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` with changed files, route impact, finding deltas, screenshot hash drift, and contract drift. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `decantr ci --fail-on error` fails only when blocking errors exist; `decantr ci --fail-on warn` also fails on warnings.
+Use `--json` for machines and schema validation, `--markdown` for summaries, `--evidence` for the privacy-redacted Evidence Bundle, and `--prompt <finding-id>` when you want a scoped remediation prompt for an AI assistant. The prompt command prints instructions only; it does not modify source files. In monorepos, prompt commands preserve `--project <path>` so the finding resolves from the same app that produced it. `--browser` uses a project-local Playwright install and a supplied base URL to capture local route screenshots under `.decantr/evidence/screenshots/` and write `.decantr/evidence/visual-manifest.json`; missing Playwright becomes a visible setup finding/message, not a crash or silent skip. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` with changed files, route impact, finding deltas, screenshot hash drift, and contract drift. `--design-tokens <path>` compares a Tokens Studio/Figma token JSON export against Decantr CSS token names. `decantr ci --fail-on error` fails only when blocking errors exist; `decantr ci --fail-on warn` also fails on warnings.
 
 `decantr ci init` installs `.github/workflows/decantr-ci.yml` for GitHub Actions. The generated workflow installs dependencies at the workspace root, writes JSON/markdown CI artifacts, gates with `decantr ci`, appends the markdown report to the GitHub step summary, and uploads both files as artifacts. Use `--force` to replace an existing workflow or `--fail-on warn` for stricter repositories. In monorepos, add `--project <path>` from the repository root; dependency install stays at the root while CI evaluates the app contract and uploads app-scoped artifacts. Use `--workspace` to generate an aggregate gate. Use `--provider generic` for Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment tools. Generated CI uses the pinned local package-manager command and does not depend on `@latest`. Project Health remediation prompts are also monorepo-aware, so missing-pack fixes use `apps/web/decantr.essence.json` and CI recommendations include `--project apps/web`.
 

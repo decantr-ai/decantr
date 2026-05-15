@@ -150,6 +150,30 @@ describe('verifier', () => {
     }
   });
 
+  it('does not require a Vite-style root mount for Next static document output', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', '_next', 'static'), { recursive: true });
+      writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({
+        dependencies: { next: '^16.0.0', react: '^19.0.0', 'react-dom': '^19.0.0' },
+      }, null, 2));
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify(validV4Essence(), null, 2));
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>Next App</title><script src="/_next/static/app.js"></script></head><body><main>Rendered by Next</main></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', '_next', 'static', 'app.js'), 'console.log("next");\n');
+
+      const report = await auditProject(projectRoot);
+
+      expect(report.summary.runtimeAuditChecked).toBe(true);
+      expect(report.runtimeAudit.rootDocumentOk).toBe(true);
+      expect(report.findings.some((finding) => finding.id === 'runtime-root-document-invalid')).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports missing or invalid essence contracts during project audit', async () => {
     const missingEssenceRoot = createProjectRoot();
     const invalidJsonRoot = createProjectRoot();

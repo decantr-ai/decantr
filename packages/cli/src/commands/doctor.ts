@@ -104,6 +104,11 @@ function readJson<T>(path: string): T | null {
   }
 }
 
+function isContractOnlyProject(projectRoot: string): boolean {
+  const projectJson = readJson<ProjectJson>(join(projectRoot, '.decantr', 'project.json'));
+  return projectJson?.initialized?.adoptionMode === 'contract-only';
+}
+
 function readCliPackageVersion(): string {
   const packagePath = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'package.json');
   const srcPackagePath = join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
@@ -113,6 +118,7 @@ function readCliPackageVersion(): string {
 }
 
 function readPackageJson(dir: string): {
+  workspaces?: string[] | { packages?: string[] };
   packageManager?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -136,6 +142,31 @@ function detectPackageManager(root: string): PackageManager {
 function localCliDependency(root: string): string | null {
   const pkg = readPackageJson(root);
   return pkg?.devDependencies?.['@decantr/cli'] ?? pkg?.dependencies?.['@decantr/cli'] ?? null;
+}
+
+function hasWorkspaceMarker(root: string): boolean {
+  const pkg = readPackageJson(root);
+  return Boolean(
+    existsSync(join(root, 'pnpm-workspace.yaml')) ||
+      existsSync(join(root, 'turbo.json')) ||
+      existsSync(join(root, 'nx.json')) ||
+      pkg?.workspaces,
+  );
+}
+
+function pinCliCommand(packageManager: PackageManager, root: string): string {
+  switch (packageManager) {
+    case 'pnpm':
+      return hasWorkspaceMarker(root) ? 'pnpm add -D -w @decantr/cli' : 'pnpm add -D @decantr/cli';
+    case 'yarn':
+      return 'yarn add -D @decantr/cli';
+    case 'bun':
+      return 'bun add -d @decantr/cli';
+    case 'npm':
+      return 'npm install -D @decantr/cli';
+    default:
+      return 'npm install -D @decantr/cli';
+  }
 }
 
 function rel(root: string, path: string): string {
@@ -226,14 +257,20 @@ function statusFromIssues(issues: DoctorIssue[], essenceVersion: string | null):
 }
 
 function buildDoctorReport(root: string, args: string[]): DoctorReport {
-  const projectIdx = args.indexOf('--project');
-  const projectArg = projectIdx !== -1 && args[projectIdx + 1] ? args[projectIdx + 1] : undefined;
+  let projectArg: string | undefined;
+  for (let index = 1; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--project' && args[index + 1]) projectArg = args[++index];
+    else if (arg.startsWith('--project=')) projectArg = arg.slice('--project='.length);
+  }
   const workspaceMode = args.includes('--workspace');
   const workspaceInfo = resolveWorkspaceInfo(root, projectArg);
   const workspaceRoot = workspaceInfo.workspaceRoot;
   const appRoot = workspaceMode ? workspaceRoot : workspaceInfo.appRoot;
+  const projectMissing = Boolean(projectArg && !existsSync(appRoot));
   const projectPath = appRoot === workspaceRoot ? null : rel(workspaceRoot, appRoot);
   const packageManager = detectPackageManager(workspaceRoot);
+  const cliDependency = localCliDependency(workspaceRoot);
   const detected = detectProject(appRoot);
   const projectJson = readJson<ProjectJson>(join(appRoot, '.decantr', 'project.json'));
   const essence = readJson<unknown>(join(appRoot, 'decantr.essence.json'));
@@ -254,6 +291,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   const ciFiles = findCiFiles(workspaceRoot);
   const workflowMode = projectJson?.initialized?.workflowMode ?? null;
   const adoptionMode = projectJson?.initialized?.adoptionMode ?? null;
+  const packHydrationOptional = adoptionMode === 'contract-only';
   const missingPackReferences = workspaceMode
     ? projects.flatMap((project) =>
         collectMissingPackManifestFiles(join(workspaceRoot, project.path)).map(
@@ -266,7 +304,10 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
         .map((project) => project.path)
         .filter((projectPath) => {
           const projectContextDir = join(workspaceRoot, projectPath, '.decantr', 'context');
-          return !existsSync(join(projectContextDir, 'pack-manifest.json'));
+          return (
+            !isContractOnlyProject(join(workspaceRoot, projectPath)) &&
+            !existsSync(join(projectContextDir, 'pack-manifest.json'))
+          );
         })
     : [];
   const workspaceProjectsMissingReviewPack = workspaceMode
@@ -274,12 +315,22 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
         .map((project) => project.path)
         .filter((projectPath) => {
           const projectContextDir = join(workspaceRoot, projectPath, '.decantr', 'context');
-          return !existsSync(join(projectContextDir, 'review-pack.json'));
+          return (
+            !isContractOnlyProject(join(workspaceRoot, projectPath)) &&
+            !existsSync(join(projectContextDir, 'review-pack.json'))
+          );
         })
     : [];
 
   const issues: DoctorIssue[] = [];
-  if (!essenceVersion && !workspaceMode && !workspaceInfo.requiresProjectSelection) {
+  if (projectMissing) {
+    issues.push({
+      category: 'workspace',
+      severity: 'error',
+      message: `Project path does not exist: ${projectArg}`,
+      nextCommand: 'decantr workspace list',
+    });
+  } else if (!essenceVersion && !workspaceMode && !workspaceInfo.requiresProjectSelection) {
     issues.push({
       category: 'setup',
       severity: 'error',
@@ -317,6 +368,15 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     });
   }
 
+  if ((essenceVersion === '4.0.0' || workspaceMode || projects.length > 0) && !cliDependency) {
+    issues.push({
+      category: 'ci',
+      severity: 'info',
+      message: '@decantr/cli is not pinned in the workspace root package.json.',
+      nextCommand: pinCliCommand(packageManager, workspaceRoot),
+    });
+  }
+
   if (essenceVersion === '4.0.0' && !artifactReadmePresent) {
     issues.push({
       category: 'generated-artifact',
@@ -326,7 +386,11 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     });
   }
 
-  if (essenceVersion === '4.0.0' && (!existsSync(contextDir) || !packManifestPresent)) {
+  if (
+    essenceVersion === '4.0.0' &&
+    !packHydrationOptional &&
+    (!existsSync(contextDir) || !packManifestPresent)
+  ) {
     issues.push({
       category: 'generated-artifact',
       severity: 'warn',
@@ -422,7 +486,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     projectPath,
     packageManager,
     cli: {
-      localDependency: localCliDependency(workspaceRoot),
+      localDependency: cliDependency,
       runningVersion: readCliPackageVersion(),
     },
     project: {
@@ -551,7 +615,9 @@ export async function cmdDoctor(
   const report = buildDoctorReport(root, args);
   if (args.includes('--json')) {
     console.log(JSON.stringify(report, null, 2));
+    if (report.issues.some((issue) => issue.severity === 'error')) process.exitCode = 1;
     return;
   }
   process.stdout.write(formatDoctorText(report));
+  if (report.issues.some((issue) => issue.severity === 'error')) process.exitCode = 1;
 }

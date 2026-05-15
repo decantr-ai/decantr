@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 import { collectMissingPackManifestFiles } from '@decantr/verifier';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
@@ -17,6 +17,7 @@ export interface RefreshCommandOptions {
   check?: boolean;
   listChanges?: boolean;
   json?: boolean;
+  displayRoot?: string;
 }
 
 interface RefreshFileState {
@@ -92,18 +93,32 @@ function newestInputMtime(projectRoot: string): number {
   );
 }
 
+function isContractOnlyProject(projectRoot: string): boolean {
+  const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
+  if (!existsSync(projectJsonPath)) return false;
+  try {
+    const projectJson = JSON.parse(readFileSync(projectJsonPath, 'utf-8')) as {
+      initialized?: { adoptionMode?: unknown };
+    };
+    return projectJson.initialized?.adoptionMode === 'contract-only';
+  } catch {
+    return false;
+  }
+}
+
 function checkRefreshFreshness(projectRoot: string): RefreshSummary {
   const contextDir = join(projectRoot, '.decantr', 'context');
   const generated = trackedGeneratedFiles(projectRoot);
   const reasons: string[] = [];
+  const packHydrationOptional = isContractOnlyProject(projectRoot);
   if (!existsSync(join(projectRoot, 'DECANTR.md'))) reasons.push('DECANTR.md is missing.');
   if (!existsSync(contextDir)) reasons.push('.decantr/context is missing.');
   if (!existsSync(join(contextDir, 'scaffold.md'))) {
     reasons.push('.decantr/context/scaffold.md is missing.');
   }
-  if (!existsSync(join(contextDir, 'pack-manifest.json'))) {
+  if (!packHydrationOptional && !existsSync(join(contextDir, 'pack-manifest.json'))) {
     reasons.push('.decantr/context/pack-manifest.json is missing.');
-  } else {
+  } else if (existsSync(join(contextDir, 'pack-manifest.json'))) {
     const missingPackFiles = collectMissingPackManifestFiles(projectRoot);
     if (missingPackFiles.length > 0) {
       reasons.push(
@@ -167,7 +182,17 @@ function summarizeChanges(
   };
 }
 
-function printRefreshSummary(summary: RefreshSummary): void {
+function displayGeneratedPath(summary: RefreshSummary, file: string, displayRoot?: string): string {
+  if (!displayRoot) return file;
+  const absolutePath = join(summary.projectRoot, file);
+  const relativePath = relative(displayRoot, absolutePath).replace(/\\/g, '/');
+  if (relativePath && !relativePath.startsWith('..') && !isAbsolute(relativePath)) {
+    return relativePath;
+  }
+  return absolutePath;
+}
+
+function printRefreshSummary(summary: RefreshSummary, displayRoot?: string): void {
   if (summary.check) {
     if (summary.stale) {
       console.log(`${RED}Generated Decantr context is stale.${RESET}`);
@@ -187,7 +212,9 @@ function printRefreshSummary(summary: RefreshSummary): void {
   for (const [label, files] of groups) {
     if (files.length === 0) continue;
     console.log(`${GREEN}${label}:${RESET}`);
-    for (const file of files) console.log(`  ${DIM}${file}${RESET}`);
+    for (const file of files) {
+      console.log(`  ${DIM}${displayGeneratedPath(summary, file, displayRoot)}${RESET}`);
+    }
   }
   if (groups.every(([, files]) => files.length === 0)) {
     console.log(`${GREEN}Generated files were already current.${RESET}`);
@@ -229,7 +256,7 @@ export async function cmdRefresh(
     if (options.json) {
       console.log(JSON.stringify(summary, null, 2));
     } else {
-      printRefreshSummary(summary);
+      printRefreshSummary(summary, options.displayRoot);
     }
     if (summary.stale) process.exitCode = 1;
     return;
@@ -250,17 +277,19 @@ export async function cmdRefresh(
   if (options.json) {
     console.log(JSON.stringify({ ...summary, result }, null, 2));
   } else if (options.listChanges) {
-    printRefreshSummary(summary);
+    printRefreshSummary(summary, options.displayRoot);
   } else {
     console.log(`${GREEN}Regenerated:${RESET}`);
-    console.log(`  ${DIM}DECANTR.md${RESET}`);
+    console.log(
+      `  ${DIM}${displayGeneratedPath(summary, 'DECANTR.md', options.displayRoot)}${RESET}`,
+    );
     for (const css of result.cssFiles) {
       const rel = css.replace(projectRoot + '/', '');
-      console.log(`  ${DIM}${rel}${RESET}`);
+      console.log(`  ${DIM}${displayGeneratedPath(summary, rel, options.displayRoot)}${RESET}`);
     }
     for (const ctx of result.contextFiles) {
       const rel = ctx.replace(projectRoot + '/', '');
-      console.log(`  ${DIM}${rel}${RESET}`);
+      console.log(`  ${DIM}${displayGeneratedPath(summary, rel, options.displayRoot)}${RESET}`);
     }
   }
   console.log('');

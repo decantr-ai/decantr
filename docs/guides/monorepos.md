@@ -12,7 +12,7 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`setup` and `workspace list` are non-mutating orientation commands. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates hosted packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
+`setup` and `workspace list` are non-mutating orientation commands. Before adoption, `setup` shows app candidates and the one attach command. After at least one app is attached, `setup` becomes a workspace dashboard that points at `doctor`, `task`, `verify`, and `ci init` for the attached app instead of telling you to adopt again. `adopt --project apps/web --yes` writes the Brownfield contract, hydrates hosted packs when online, and keeps `.decantr/*` context inside the app, while `.github/workflows/*` and workspace package-manager commands remain rooted at the repository root. Use `--no-packs` or offline mode when pack hydration should be deferred.
 
 ## Root vs App
 
@@ -28,6 +28,8 @@ pnpm exec decantr task /settings "tighten account form validation" --project app
 pnpm exec decantr verify --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
+
+The same rule applies to advanced primitives. `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` honor `--project <path>` instead of falling back to the workspace root. Task context, local-law summaries, and refresh change summaries print paths you can open from the workspace root. If a path does not exist, Decantr fails immediately. If a path points at a component package that is not a deployable app candidate, Brownfield adoption refuses it unless you explicitly opt into that unusual package attach with `--force-package`.
 
 Use workspace mode only when you intentionally want an aggregate view:
 
@@ -87,7 +89,7 @@ pnpm exec decantr doctor --project apps/web
 
 Workspace discovery favors deployable UI apps. Server-only API packages and React component libraries under `packages/*` are not suggested as Brownfield app candidates unless they expose a frontend app config such as Next, Vite, SvelteKit, Angular, or Astro.
 
-If `doctor` reports missing files referenced by `pack-manifest.json`, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
+In contract-only Brownfield, hosted packs are optional context. If you attach with `--no-packs` or offline mode, `doctor`, `health`, and `refresh --check` should not make pack hydration the next required step. If a `pack-manifest.json` exists and references missing files, hydrate the app-scoped pack bundle from the monorepo root with the app essence path:
 
 ```bash
 pnpm exec decantr registry compile-packs apps/web/decantr.essence.json --write-context
@@ -96,6 +98,8 @@ pnpm exec decantr registry compile-packs apps/web/decantr.essence.json --write-c
 The generated `.decantr/context` directory is written beside `apps/web/decantr.essence.json`, not at the repository root.
 
 Project Health and CI remediation prompts use the same app-scoped posture. From the root, missing-pack fixes should mention `apps/web/decantr.essence.json`, and CI summaries should recommend `decantr ci --project apps/web --fail-on error`.
+
+Health prompt commands are app-scoped too. If `decantr health --project apps/web` prints `decantr health --project apps/web --prompt <finding-id>`, that prompt should resolve from the same app without requiring you to `cd` into it.
 
 ```bash
 cd apps/web

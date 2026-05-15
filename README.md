@@ -144,6 +144,8 @@ decantr list blueprints --blueprint-set certified
 decantr list blueprints --blueprint-set labs
 decantr suggest leaderboard
 decantr suggest "recipe feed with infinite scroll" --route /feed --from-code
+decantr suggest --from-code --file app/page.tsx --project apps/web
+decantr suggest "standardize buttons" --project apps/web
 ```
 
 Brownfield adoption:
@@ -169,6 +171,8 @@ decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 decantr ci init --project apps/web
 decantr ci --project apps/web
+decantr add page app/settings --route /settings --project apps/web
+decantr health --project apps/web --prompt <finding-id>
 ```
 
 If the app is already running and you want local screenshots, add visual evidence later:
@@ -179,7 +183,7 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. `doctor` explains project/workspace state, generated artifacts, local law, CI wiring, and the next command. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `doctor` explains project/workspace state, generated artifacts, local law, CI wiring, and the next command. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; after review, `codify --accept` promotes those files so `task` can feed them to LLMs and `verify --local-patterns` can check them. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 
@@ -194,7 +198,7 @@ decantr showcase verification  --json
 
 When an essence path is provided, `--write-context` writes the pack bundle beside that essence file. In monorepos, that means app packs land under `apps/web/.decantr/context`, not the repository root.
 
-Project Health remediation copy follows the same rule: from a monorepo root, pack fixes point at `apps/web/decantr.essence.json` and CI prompts point at `decantr ci --project apps/web --fail-on error`.
+Project Health remediation copy follows the same rule: from a monorepo root, pack fixes point at `apps/web/decantr.essence.json`, prompt commands keep `--project apps/web`, task/read paths include `apps/web/...`, and CI prompts point at `decantr ci --project apps/web --fail-on error`. Advanced app-scoped primitives such as `health`, `status`, `add`, `remove`, `theme`, `export`, `suggest`, and `magic` should target the selected app rather than the workspace root. `setup` becomes a post-adoption dashboard once any app is attached, so it recommends `doctor`, `task`, `verify`, and `ci init` instead of telling users to adopt the same app again.
 
 Project Health, CI, and diagnosis:
 

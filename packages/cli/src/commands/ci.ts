@@ -122,7 +122,8 @@ function parseCiArgs(args: string[]): CiOptions {
 }
 
 function parseProvider(value: string): CiProvider {
-  return value === 'generic' ? 'generic' : 'github';
+  if (value === 'github' || value === 'generic') return value;
+  throw new Error('Invalid --provider value. Use github or generic.');
 }
 
 function detectPackageManager(root: string): PackageManager {
@@ -166,9 +167,7 @@ function installCommand(packageManager: PackageManager): string {
 function pinCliCommand(packageManager: PackageManager, root: string): string {
   switch (packageManager) {
     case 'pnpm':
-      return hasWorkspaceMarker(root)
-        ? 'pnpm add -D -w @decantr/cli'
-        : 'pnpm add -D @decantr/cli';
+      return hasWorkspaceMarker(root) ? 'pnpm add -D -w @decantr/cli' : 'pnpm add -D @decantr/cli';
     case 'yarn':
       return 'yarn add -D @decantr/cli';
     case 'bun':
@@ -349,6 +348,9 @@ jobs:
 
 function writeCiInit(root: string, options: CiOptions): void {
   const workspaceInfo = resolveWorkspaceInfo(root, options.project);
+  if (options.project && !existsSync(workspaceInfo.appRoot)) {
+    throw new Error(`Project path does not exist: ${options.project}`);
+  }
   if (workspaceInfo.requiresProjectSelection && !options.workspace) {
     const candidate = workspaceInfo.appCandidates[0] ?? 'apps/web';
     throw new Error(
@@ -451,6 +453,10 @@ async function runWorkspaceCi(root: string, options: CiOptions): Promise<number>
 
 async function runProjectCi(root: string, options: CiOptions): Promise<number> {
   const workspaceInfo = resolveWorkspaceInfo(root, options.project);
+  if (options.project && !existsSync(workspaceInfo.appRoot)) {
+    console.error(`${RED}Project path does not exist: ${options.project}${RESET}`);
+    return 1;
+  }
   if (workspaceInfo.requiresProjectSelection) {
     const candidate = workspaceInfo.appCandidates[0] ?? 'apps/web';
     console.error(`${RED}Decantr CI needs an app path in this monorepo.${RESET}`);
@@ -509,8 +515,8 @@ ${BOLD}Examples:${RESET}
 }
 
 export async function cmdCi(args: string[] = ['ci'], root: string = process.cwd()): Promise<void> {
-  const options = parseCiArgs(args);
   try {
+    const options = parseCiArgs(args);
     if (options.init) {
       writeCiInit(root, options);
       return;

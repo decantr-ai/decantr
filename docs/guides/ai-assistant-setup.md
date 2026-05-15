@@ -52,13 +52,17 @@ CLI-only assistants should use task activation before editing Brownfield routes:
 
 ```bash
 npx @decantr/cli task /feed "improve the recipe feed loading and card layout"
+npx @decantr/cli task /feed "improve the recipe feed loading and card layout" --project apps/web
 ```
 
 That output points to `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, `.decantr/enrichment-backlog.md`, matching page/section packs, local screenshots, accepted local patterns, accepted local rules, changed files, and impacted routes when present. After the assistant edits code, run:
 
 ```bash
 npx @decantr/cli verify --brownfield --local-patterns
+pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 ```
+
+When an assistant asks for a Project Health repair prompt from a monorepo root, keep the app path on the prompt command: `decantr health --project apps/web --prompt <finding-id>`.
 
 Use `doctor` when an assistant or teammate is unsure what state the app is in:
 

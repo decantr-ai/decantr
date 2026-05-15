@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { scanAmbientContext } from '../ambient-context.js';
 import { scanComponents } from '../analyzers/components.js';
 import { scanDependencies } from '../analyzers/dependencies.js';
@@ -62,6 +62,15 @@ export async function cmdAnalyze(
 
   const initSeed = createBrownfieldInitSeed(project, layout, styling);
   initSeed.projectScope = workspace?.projectScope ?? 'single-app';
+  const projectLabel =
+    workspace && workspace.appRoot !== workspace.workspaceRoot
+      ? relative(workspace.workspaceRoot, workspace.appRoot).replace(/\\/g, '/')
+      : null;
+  const projectFlag = projectLabel ? ` --project ${projectLabel}` : '';
+  const reportDisplayPath = projectLabel
+    ? `${projectLabel}/.decantr/brownfield-report.md`
+    : '.decantr/brownfield-report.md';
+  const recommendedAttachCommand = `decantr init${projectFlag} --existing --accept-proposal`;
   const proposal = createBrownfieldProposal({
     project,
     routes,
@@ -103,7 +112,7 @@ export async function cmdAnalyze(
         adoptionMode: 'contract-only',
         initSeedPath: '.decantr/init-seed.json',
         proposalPath: '.decantr/observed-essence.proposal.json',
-        recommendedCommand: 'decantr init --existing --accept-proposal',
+        recommendedCommand: recommendedAttachCommand,
       },
       hybrid: {
         ownerCommands: [
@@ -211,7 +220,7 @@ export async function cmdAnalyze(
   console.log(`${DIM}Theme inventory:${RESET} ${intelligenceArtifacts.themeInventoryPath}`);
   console.log(`${DIM}Enrichment backlog:${RESET} ${intelligenceArtifacts.backlogPath}`);
   console.log(
-    `\n${YELLOW}Next step:${RESET} Review ${BOLD}.decantr/brownfield-report.md${RESET}, then run ${BOLD}decantr init --existing --accept-proposal${RESET} to attach Decantr using the observed proposal.\n`,
+    `\n${YELLOW}Next step:${RESET} Review ${BOLD}${reportDisplayPath}${RESET}, then run ${BOLD}${recommendedAttachCommand}${RESET} to attach Decantr using the observed proposal.\n`,
   );
 
   await sendAnalyzeCompletedTelemetry({

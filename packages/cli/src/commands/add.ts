@@ -44,6 +44,22 @@ function writeEssence(essencePath: string, essence: EssenceV4): void {
   writeFileSync(essencePath, JSON.stringify(essence, null, 2) + '\n');
 }
 
+function readFlagValue(args: string[], name: string): string | undefined {
+  const prefix = `--${name}=`;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === `--${name}` && args[index + 1]) return args[index + 1];
+    if (arg.startsWith(prefix)) return arg.slice(prefix.length);
+  }
+  return undefined;
+}
+
+function normalizeRoute(route: string): string {
+  const trimmed = route.trim();
+  if (!trimmed || trimmed === '/') return '/';
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+
 /**
  * `decantr add section <archetypeId>`
  */
@@ -152,14 +168,30 @@ export async function cmdAddPage(
     return;
   }
 
+  const route = normalizeRoute(readFlagValue(args, 'route') ?? pageId);
+  const routes = (essence.blueprint.routes ??= {});
+  const existingRoute = routes[route];
+  if (existingRoute) {
+    console.error(
+      `${RED}Route "${route}" already maps to ${existingRoute.section}/${existingRoute.page}.${RESET}`,
+    );
+    console.error(`${DIM}Pass a unique route with --route /some-path.${RESET}`);
+    process.exitCode = 1;
+    return;
+  }
+
   section.pages.push({
     id: pageId,
+    route,
     layout: ['hero'],
   });
+  routes[route] = { section: sectionId, page: pageId };
 
   writeEssence(essencePath, essence);
 
-  console.log(`${GREEN}Added page "${pageId}" to section "${sectionId}".${RESET}`);
+  console.log(
+    `${GREEN}Added page "${pageId}" to section "${sectionId}" at route "${route}".${RESET}`,
+  );
 
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
@@ -188,10 +220,7 @@ export async function cmdAddFeature(
 
   // Parse --section flag
   let sectionId: string | undefined;
-  const sectionIdx = args.indexOf('--section');
-  if (sectionIdx !== -1 && args[sectionIdx + 1]) {
-    sectionId = args[sectionIdx + 1];
-  }
+  sectionId = readFlagValue(args, 'section');
 
   if (sectionId) {
     const sections = essence.blueprint.sections;

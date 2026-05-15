@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 
 export type ProjectScope = 'single-app' | 'workspace-app';
 
@@ -127,7 +127,9 @@ export function listWorkspaceAppCandidates(workspaceRoot: string): string[] {
 export function resolveWorkspaceInfo(cwd: string, projectArg?: string): WorkspaceInfo {
   const absoluteCwd = resolve(cwd);
   const workspaceRoot = findWorkspaceRoot(absoluteCwd) ?? absoluteCwd;
-  const appRoot = projectArg ? resolve(absoluteCwd, projectArg) : absoluteCwd;
+  const appRoot = projectArg
+    ? resolve(isAbsolute(projectArg) ? '/' : workspaceRoot, projectArg)
+    : absoluteCwd;
   const appCandidates = listWorkspaceApps(workspaceRoot);
   const projectScope: ProjectScope =
     workspaceRoot !== appRoot || appCandidates.length > 0 ? 'workspace-app' : 'single-app';

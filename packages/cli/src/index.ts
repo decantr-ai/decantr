@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ExecutionPackBundle } from '@decantr/core';
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
@@ -84,6 +84,7 @@ import {
   localPatternsProposalPath,
   localRulesPath,
   localRulesProposalPath,
+  readLocalPatternPack,
   routeImpacts,
   validateLocalLaw,
   writeBrownfieldCodifyProposal,
@@ -1501,6 +1502,7 @@ interface SuggestOptions {
   route?: string;
   file?: string;
   fromCode?: boolean;
+  projectRoot?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -1541,17 +1543,21 @@ function patternCandidateFromRegistryItem(
   );
 }
 
-function readSuggestCodeContext(route: string | undefined, file: string | undefined): string {
+function readSuggestCodeContext(
+  projectRoot: string,
+  route: string | undefined,
+  file: string | undefined,
+): string {
   const pieces: string[] = [];
   if (file) {
-    const resolved = isAbsolute(file) ? file : join(process.cwd(), file);
+    const resolved = isAbsolute(file) ? file : join(projectRoot, file);
     if (existsSync(resolved)) {
       pieces.push(readFileSync(resolved, 'utf-8'));
     }
   }
 
   if (route) {
-    const analysisPath = join(process.cwd(), '.decantr', 'analysis.json');
+    const analysisPath = join(projectRoot, '.decantr', 'analysis.json');
     if (existsSync(analysisPath)) {
       try {
         const analysis = JSON.parse(readFileSync(analysisPath, 'utf-8')) as {
@@ -1559,7 +1565,7 @@ function readSuggestCodeContext(route: string | undefined, file: string | undefi
         };
         const routeEntry = analysis.routes?.routes?.find((entry) => entry.path === route);
         if (routeEntry?.file) {
-          const resolved = join(process.cwd(), routeEntry.file);
+          const resolved = join(projectRoot, routeEntry.file);
           if (existsSync(resolved)) {
             pieces.push(readFileSync(resolved, 'utf-8'));
           }
@@ -1571,6 +1577,43 @@ function readSuggestCodeContext(route: string | undefined, file: string | undefi
   }
 
   return pieces.join('\n\n').slice(0, 20000);
+}
+
+function localPatternMatches(
+  projectRoot: string | undefined,
+  query: string,
+): Array<{ id: string; label: string | null; role: string | null; score: number }> {
+  if (!projectRoot) return [];
+  const pack = readLocalPatternPack(projectRoot);
+  const patterns = Array.isArray(pack?.patterns) ? pack.patterns : [];
+  const queryTerms = query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length > 1);
+  if (queryTerms.length === 0) return [];
+
+  return patterns
+    .map((pattern) => {
+      const id = typeof pattern.id === 'string' ? pattern.id : 'local-pattern';
+      const label = typeof pattern.label === 'string' ? pattern.label : null;
+      const role = typeof pattern.role === 'string' ? pattern.role : null;
+      const haystack = [
+        id,
+        label,
+        role,
+        typeof pattern.decide === 'string' ? pattern.decide : null,
+        ...(Array.isArray(pattern.appliesTo) ? pattern.appliesTo : []),
+        ...(Array.isArray(pattern.componentPaths) ? pattern.componentPaths : []),
+      ]
+        .filter((entry): entry is string => typeof entry === 'string')
+        .join(' ')
+        .toLowerCase();
+      const score = queryTerms.reduce((sum, term) => sum + (haystack.includes(term) ? 1 : 0), 0);
+      return { id, label, role, score };
+    })
+    .filter((match) => match.score > 0)
+    .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
+    .slice(0, 5);
 }
 
 async function loadPatternDiscoveryCandidates(
@@ -1630,10 +1673,12 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
   }
 
   const registryClient = new RegistryClient({
-    cacheDir: join(process.cwd(), '.decantr', 'cache'),
+    cacheDir: join(options.projectRoot ?? process.cwd(), '.decantr', 'cache'),
   });
   const code =
-    options.fromCode || options.file ? readSuggestCodeContext(options.route, options.file) : '';
+    options.fromCode || options.file
+      ? readSuggestCodeContext(options.projectRoot ?? process.cwd(), options.route, options.file)
+      : '';
   const candidates = await loadPatternDiscoveryCandidates(registryClient);
   const matches = rankPatternCandidates(
     {
@@ -1667,6 +1712,16 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       `Pattern suggestions for "${query}"${contextBits.length > 0 ? ` (${contextBits.join(', ')})` : ''}`,
     ),
   );
+  const localMatches = localPatternMatches(options.projectRoot, query);
+  if (localMatches.length > 0) {
+    console.log(`${BOLD}Project-owned local law:${RESET}`);
+    for (const match of localMatches) {
+      const details = [match.label, match.role].filter(Boolean).join(' | ');
+      console.log(`  ${cyan(match.id)}${details ? `  ${dim(details)}` : ''}`);
+    }
+    console.log('');
+    console.log(`${BOLD}Registry patterns:${RESET}`);
+  }
   for (const match of matches.slice(0, 8)) {
     const candidate = match.candidate;
     const slug = candidate.slug || candidate.id;
@@ -2128,13 +2183,27 @@ async function applyAcceptedBrownfieldProposal(input: {
       : [];
 
   console.log(success('\nBrownfield proposal accepted.\n'));
+  const projectLabel =
+    input.workspaceInfo.appRoot !== input.workspaceInfo.workspaceRoot
+      ? relative(input.workspaceInfo.workspaceRoot, input.workspaceInfo.appRoot).replace(/\\/g, '/')
+      : undefined;
   console.log('  Files created/updated:');
-  console.log(`    ${cyan('decantr.essence.json')}    Observed brownfield contract`);
-  console.log(`    ${cyan('DECANTR.md')}              Reconciled assistant guidance`);
-  console.log(`    ${cyan('.decantr/project.json')}  Brownfield attach metadata`);
-  console.log(`    ${cyan('.decantr/context/')}      Generated contract context`);
+  console.log(
+    `    ${cyan(displayProjectPath(input.workspaceInfo, 'decantr.essence.json'))}    Observed brownfield contract`,
+  );
+  console.log(
+    `    ${cyan(displayProjectPath(input.workspaceInfo, 'DECANTR.md'))}              Reconciled assistant guidance`,
+  );
+  console.log(
+    `    ${cyan(displayProjectPath(input.workspaceInfo, '.decantr/project.json'))}  Brownfield attach metadata`,
+  );
+  console.log(
+    `    ${cyan(displayProjectPath(input.workspaceInfo, '.decantr/context/'))}      Generated contract context`,
+  );
   if (assistantBridgePath) {
-    console.log(`    ${cyan('.decantr/context/assistant-bridge.md')} Assistant bridge preview`);
+    console.log(
+      `    ${cyan(displayProjectPath(input.workspaceInfo, '.decantr/context/assistant-bridge.md'))} Assistant bridge preview`,
+    );
   }
   if (appliedRuleFiles.length > 0) {
     console.log(`    ${dim(`Rule bridge applied: ${appliedRuleFiles.join(', ')}`)}`);
@@ -2145,16 +2214,24 @@ async function applyAcceptedBrownfieldProposal(input: {
   console.log('');
   console.log('  Generated context:');
   for (const contextFile of refreshResult.contextFiles.slice(0, 8)) {
-    console.log(`    ${dim(contextFile.replace(`${input.projectRoot}/`, ''))}`);
+    console.log(
+      `    ${dim(displayProjectPath(input.workspaceInfo, contextFile.replace(`${input.projectRoot}/`, '')))}`,
+    );
   }
   if (refreshResult.contextFiles.length > 8) {
     console.log(`    ${dim(`(+${refreshResult.contextFiles.length - 8} more)`)}`);
   }
   console.log('');
   console.log('  Next steps:');
-  console.log(`    1. Run ${cyan('decantr check --brownfield')} to verify contract coverage`);
-  console.log(`    2. Read ${cyan('.decantr/brownfield-report.md')} for unresolved doctrine risks`);
-  console.log(`    3. Use ${cyan('decantr rules preview')} before mutating assistant rule files`);
+  console.log(
+    `    1. Run ${cyan(withProject('decantr check --brownfield', projectLabel))} to verify contract coverage`,
+  );
+  console.log(
+    `    2. Read ${cyan(displayProjectPath(input.workspaceInfo, '.decantr/brownfield-report.md'))} for unresolved doctrine risks`,
+  );
+  console.log(
+    `    3. Use ${cyan(withProject('decantr rules preview', projectLabel))} before mutating assistant rule files`,
+  );
   console.log('');
 }
 
@@ -2824,8 +2901,7 @@ async function cmdInit(args: InitArgs) {
 
 // ── Status command ──
 
-async function cmdStatus() {
-  const projectRoot = process.cwd();
+async function cmdStatus(projectRoot: string = process.cwd()) {
   const essencePath = join(projectRoot, 'decantr.essence.json');
   const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
 
@@ -3087,9 +3163,8 @@ async function cmdAudit(filePath?: string) {
 
 // ── Theme subcommand ──
 
-async function cmdTheme(args: string[]) {
+async function cmdTheme(args: string[], projectRoot: string = process.cwd()) {
   const subcommand = args[0];
-  const projectRoot = process.cwd();
 
   if (!subcommand || subcommand === 'help') {
     console.log(`
@@ -3322,6 +3397,56 @@ function withProject(command: string, projectArg?: string): string {
   return projectArg ? `${command} --project ${projectArg}` : command;
 }
 
+function displayProjectPath(
+  workspaceInfo: { cwd: string; appRoot: string },
+  projectPath: string,
+): string {
+  const absolutePath = join(workspaceInfo.appRoot, projectPath);
+  const relativePath = relative(workspaceInfo.cwd, absolutePath).replace(/\\/g, '/');
+  if (relativePath && !relativePath.startsWith('..') && !isAbsolute(relativePath)) {
+    return relativePath;
+  }
+  return absolutePath;
+}
+
+function stripProjectArgs(args: string[], startIndex = 1): string[] {
+  const stripped = [args[0]];
+  for (let index = startIndex; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--project' && args[index + 1]) {
+      index += 1;
+      continue;
+    }
+    if (arg.startsWith('--project=')) continue;
+    stripped.push(arg);
+  }
+  return stripped;
+}
+
+function normalizedProjectPath(value: string | undefined): string | null {
+  if (!value) return null;
+  return value.replace(/\\/g, '/').replace(/\/+$/g, '');
+}
+
+function printProjectNotFound(projectArg: string, commandName: string): void {
+  console.error(error(`decantr ${commandName} could not find project path: ${projectArg}`));
+  console.error(dim('Pass an existing app path, for example `--project apps/web`.'));
+}
+
+function ensureAllowedFlags(
+  flags: Record<string, string | boolean>,
+  allowed: string[],
+  commandName: string,
+): boolean {
+  const allowedSet = new Set(allowed);
+  const unknown = Object.keys(flags).filter((flag) => !allowedSet.has(flag));
+  if (unknown.length === 0) return true;
+  console.error(error(`Unsupported option for decantr ${commandName}: --${unknown[0]}`));
+  console.error(dim('Run `decantr help` or the command-specific help to see supported options.'));
+  process.exitCode = 1;
+  return false;
+}
+
 function compilePacksCommandForProject(projectArg?: string): string {
   const essencePath = projectArg ? `${projectArg}/decantr.essence.json` : 'decantr.essence.json';
   return `decantr registry compile-packs ${essencePath} --write-context`;
@@ -3358,10 +3483,48 @@ function printWorkspaceProjectSelection(
 
 function printMonorepoSetupGuidance(workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>): void {
   const candidate = firstWorkspaceCandidate(workspaceInfo);
+  const attachedProjects = workspaceInfo.appCandidates.filter((appCandidate) =>
+    existsSync(join(workspaceInfo.workspaceRoot, appCandidate, 'decantr.essence.json')),
+  );
+  const firstAttached = attachedProjects[0];
   console.log(heading('Decantr Setup'));
   console.log(`${BOLD}This looks like a monorepo.${RESET}`);
   console.log(`  Workspace root: ${workspaceInfo.workspaceRoot}`);
   console.log('');
+  if (firstAttached) {
+    console.log('Decantr is already attached to at least one app.');
+    console.log('');
+    console.log('Attached projects:');
+    for (const project of attachedProjects) {
+      console.log(`  ${project}`);
+    }
+    console.log('');
+    console.log(`${BOLD}Next:${RESET}`);
+    console.log(
+      `  ${cyan(`decantr doctor --project ${firstAttached}`)}                    Explain current state and next command`,
+    );
+    console.log(
+      `  ${cyan(`decantr task <route> "<change>" --project ${firstAttached}`)}   Prepare LLM context before edits`,
+    );
+    console.log(
+      `  ${cyan(`decantr verify --brownfield --local-patterns --project ${firstAttached}`)}  Check after edits`,
+    );
+    console.log(
+      `  ${cyan(`decantr ci init --project ${firstAttached}`)}                  Wire the app into CI`,
+    );
+    const unattached = workspaceInfo.appCandidates.filter(
+      (appCandidate) => !attachedProjects.includes(appCandidate),
+    );
+    if (unattached.length > 0) {
+      console.log('');
+      console.log('Other app candidates:');
+      for (const appCandidate of unattached) {
+        console.log(`  ${appCandidate}`);
+      }
+    }
+    return;
+  }
+
   console.log(
     'Install Decantr at the workspace root, then attach it to the app you want Decantr to govern.',
   );
@@ -3388,9 +3551,47 @@ function printMonorepoSetupGuidance(workspaceInfo: ReturnType<typeof resolveWork
   );
 }
 
-function resolveWorkflowProject(flags: Record<string, string | boolean>, commandName = 'command') {
+function resolveWorkflowProject(
+  flags: Record<string, string | boolean>,
+  commandName = 'command',
+  options: {
+    requireExisting?: boolean;
+    requireAppCandidate?: boolean;
+    allowPackageProject?: boolean;
+  } = {},
+) {
   const projectArg = flagString(flags, 'project');
   const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
+  if (projectArg && options.requireExisting !== false && !existsSync(workspaceInfo.appRoot)) {
+    printProjectNotFound(projectArg, commandName);
+    process.exitCode = 1;
+    return null;
+  }
+  if (projectArg && options.requireAppCandidate && workspaceInfo.appCandidates.length > 0) {
+    const normalizedProject = normalizedProjectPath(projectArg);
+    const knownCandidate = normalizedProject
+      ? workspaceInfo.appCandidates.includes(normalizedProject)
+      : false;
+    const forcePackage =
+      flagBoolean(flags, 'force-package') ||
+      flagBoolean(flags, 'allow-package') ||
+      flagBoolean(flags, 'force');
+    if (!knownCandidate && !forcePackage && !options.allowPackageProject) {
+      console.error(
+        error(`decantr ${commandName} is app-scoped, but "${projectArg}" is not an app candidate.`),
+      );
+      if (workspaceInfo.appCandidates.length > 0) {
+        console.error(dim(`App candidates: ${workspaceInfo.appCandidates.join(', ')}`));
+      }
+      console.error(
+        dim(
+          'Use --force-package only if you intentionally want Decantr attached to a non-app package.',
+        ),
+      );
+      process.exitCode = 1;
+      return null;
+    }
+  }
   if (workspaceInfo.requiresProjectSelection) {
     printWorkspaceProjectSelection(workspaceInfo, commandName);
     process.exitCode = 1;
@@ -3476,7 +3677,39 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
 
 async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   const { flags } = parseLooseArgs(args);
-  const workspaceInfo = resolveWorkflowProject(flags, 'adopt');
+  if (
+    !ensureAllowedFlags(
+      flags,
+      [
+        'project',
+        'dry-run',
+        'yes',
+        'y',
+        'base-url',
+        'verify',
+        'browser',
+        'evidence',
+        'baseline',
+        'save-baseline',
+        'packs',
+        'skip-packs',
+        'offline',
+        'ci',
+        'init-ci',
+        'assistant-bridge',
+        'replace-essence',
+        'merge-proposal',
+        'telemetry',
+        'force-package',
+        'allow-package',
+        'force',
+      ],
+      'adopt',
+    )
+  ) {
+    return;
+  }
+  const workspaceInfo = resolveWorkflowProject(flags, 'adopt', { requireAppCandidate: true });
   if (!workspaceInfo) return;
 
   const projectRoot = workspaceInfo.appRoot;
@@ -3564,9 +3797,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
         ),
       );
     } catch (e) {
-      console.log(
-        `${YELLOW}Pack hydration skipped:${RESET} ${(e as Error).message}`,
-      );
+      console.log(`${YELLOW}Pack hydration skipped:${RESET} ${(e as Error).message}`);
       console.log(
         dim(
           `Run ${compilePacksCommandForProject(projectArg)} after adoption if you want hosted page/review packs.`,
@@ -3616,6 +3847,38 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
 
 async function cmdVerifyWorkflow(args: string[]): Promise<void> {
   const { flags } = parseLooseArgs(args);
+  const projectArg = flagString(flags, 'project');
+  if (
+    !ensureAllowedFlags(
+      flags,
+      [
+        'project',
+        'workspace',
+        'changed',
+        'since',
+        'json',
+        'markdown',
+        'format',
+        'output',
+        'ci',
+        'fail-on',
+        'prompt',
+        'brownfield',
+        'local-patterns',
+        'evidence',
+        'browser',
+        'require-browser',
+        'base-url',
+        'design-tokens',
+        'save-baseline',
+        'since-baseline',
+        'baseline',
+      ],
+      'verify',
+    )
+  ) {
+    return;
+  }
   const workspaceMode = flagBoolean(flags, 'workspace');
 
   if (args[1] === 'init-ci') {
@@ -3684,7 +3947,7 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
       if (!quietOutput) {
         console.log('');
         console.log(
-          `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan('decantr codify --from-audit')}, review the proposal, then run ${cyan('decantr codify --accept')}.`,
+          `${YELLOW}Local pattern pack missing.${RESET} Run ${cyan(withProject('decantr codify --from-audit', projectArg))}, review the proposal, then run ${cyan(withProject('decantr codify --accept', projectArg))}.`,
         );
       }
       process.exitCode = process.exitCode || 1;
@@ -3806,6 +4069,13 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const localPatternPackPath = localPatternsPath(workspaceInfo.appRoot);
   const localRuleManifestPath = localRulesPath(workspaceInfo.appRoot);
   const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
+  const displayedLocalLaw = {
+    ...localLaw,
+    patternsPath: localLaw.patternsPath
+      ? displayProjectPath(workspaceInfo, localLaw.patternsPath)
+      : null,
+    rulesPath: localLaw.rulesPath ? displayProjectPath(workspaceInfo, localLaw.rulesPath) : null,
+  };
   const changedSince = flagString(flags, 'since');
   const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince);
   const changedRoutes = routeImpacts(workspaceInfo.appRoot, currentChangedFiles);
@@ -3818,16 +4088,28 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     shell: page?.shell ?? section?.shell ?? null,
     patterns: page?.layout?.map(extractPatternName) ?? [],
     read: [
-      pagePack ? join('.decantr/context', pagePack.markdown) : null,
-      sectionPack ? join('.decantr/context', sectionPack.markdown) : null,
-      manifest?.scaffold?.markdown ? join('.decantr/context', manifest.scaffold.markdown) : null,
-      '.decantr/context/scaffold.md',
-      'DECANTR.md',
-      existsSync(localPatternPackPath) ? '.decantr/local-patterns.json' : null,
-      existsSync(localRuleManifestPath) ? '.decantr/rules.json' : null,
+      pagePack
+        ? displayProjectPath(workspaceInfo, join('.decantr/context', pagePack.markdown))
+        : null,
+      sectionPack
+        ? displayProjectPath(workspaceInfo, join('.decantr/context', sectionPack.markdown))
+        : null,
+      manifest?.scaffold?.markdown
+        ? displayProjectPath(workspaceInfo, join('.decantr/context', manifest.scaffold.markdown))
+        : null,
+      displayProjectPath(workspaceInfo, '.decantr/context/scaffold.md'),
+      displayProjectPath(workspaceInfo, 'DECANTR.md'),
+      existsSync(localPatternPackPath)
+        ? displayProjectPath(workspaceInfo, '.decantr/local-patterns.json')
+        : null,
+      existsSync(localRuleManifestPath)
+        ? displayProjectPath(workspaceInfo, '.decantr/rules.json')
+        : null,
     ].filter(Boolean),
-    screenshot: screenshot ?? null,
-    localLaw,
+    screenshot: screenshot?.startsWith('.decantr/')
+      ? displayProjectPath(workspaceInfo, screenshot)
+      : (screenshot ?? null),
+    localLaw: displayedLocalLaw,
     changedFiles: currentChangedFiles,
     changedRoutes,
     verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
@@ -3902,6 +4184,16 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
 
 async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   const { flags } = parseLooseArgs(args);
+  const projectArg = flagString(flags, 'project');
+  if (
+    !ensureAllowedFlags(
+      flags,
+      ['project', 'from-audit', 'discover-local-patterns', 'codify-local-patterns', 'accept'],
+      'codify',
+    )
+  ) {
+    return;
+  }
   const workspaceInfo = resolveWorkflowProject(flags, 'codify');
   if (!workspaceInfo) return;
 
@@ -3925,7 +4217,11 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     if (result.rulesAcceptedPath) {
       console.log(success(`Accepted local rule manifest: ${result.rulesAcceptedPath}`));
     }
-    console.log(dim('Run `decantr verify --brownfield --local-patterns` after project edits.'));
+    console.log(
+      dim(
+        `Run \`${withProject('decantr verify --brownfield --local-patterns', projectArg)}\` after project edits.`,
+      ),
+    );
     return;
   }
 
@@ -3954,7 +4250,7 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   }
   console.log(
     dim(
-      'Review both files, add real component paths/token recipes, then run `decantr codify --accept`.',
+      `Review both files, add real component paths/token recipes, then run \`${withProject('decantr codify --accept', projectArg)}\`.`,
     ),
   );
 }
@@ -3972,6 +4268,8 @@ async function cmdContentWorkflow(args: string[]): Promise<void> {
     return;
   }
   if (subcommand === 'create') {
+    const { flags } = parseLooseArgs(args);
+    if (!ensureAllowedFlags(flags, [], 'content create')) return;
     const type = args[2];
     const name = args[3];
     if (!type || !name) {
@@ -3983,6 +4281,8 @@ async function cmdContentWorkflow(args: string[]): Promise<void> {
     return;
   }
   if (subcommand === 'publish') {
+    const { flags } = parseLooseArgs(args);
+    if (!ensureAllowedFlags(flags, [], 'content publish')) return;
     const type = args[2];
     const name = args[3];
     if (!type || !name) {
@@ -4690,7 +4990,10 @@ async function main() {
     }
 
     case 'status': {
-      await cmdStatus();
+      const { flags } = parseLooseArgs(args);
+      const workspaceInfo = resolveWorkflowProject(flags, 'status');
+      if (!workspaceInfo) break;
+      await cmdStatus(workspaceInfo.appRoot);
       break;
     }
 
@@ -4701,8 +5004,11 @@ async function main() {
 
     case 'upgrade': {
       const { cmdUpgrade } = await import('./commands/upgrade.js');
+      const { flags } = parseLooseArgs(args);
+      const workspaceInfo = resolveWorkflowProject(flags, 'upgrade');
+      if (!workspaceInfo) break;
       const applyFlag = args.includes('--apply');
-      await cmdUpgrade(process.cwd(), { apply: applyFlag });
+      await cmdUpgrade(workspaceInfo.appRoot, { apply: applyFlag });
       break;
     }
 
@@ -4720,7 +5026,10 @@ async function main() {
       if (!workspaceInfo) break;
       const telemetryFlag = args.includes('--telemetry');
       const brownfieldFlag = args.includes('--brownfield');
-      await cmdHeal(workspaceInfo.appRoot, { telemetry: telemetryFlag, brownfield: brownfieldFlag });
+      await cmdHeal(workspaceInfo.appRoot, {
+        telemetry: telemetryFlag,
+        brownfield: brownfieldFlag,
+      });
       break;
     }
 
@@ -4730,8 +5039,15 @@ async function main() {
           cmdHealthHelp();
           break;
         }
+        if (args[1] === 'init-ci') {
+          await cmdCi(['ci', 'init', ...args.slice(2)], process.cwd());
+          break;
+        }
+        const { flags } = parseLooseArgs(args);
+        const workspaceInfo = resolveWorkflowProject(flags, 'health');
+        if (!workspaceInfo) break;
         const { cmdHealth, parseHealthArgs } = await import('./commands/health.js');
-        await cmdHealth(process.cwd(), parseHealthArgs(args));
+        await cmdHealth(workspaceInfo.appRoot, parseHealthArgs(stripProjectArgs(args)));
       } catch (e) {
         console.error(error((e as Error).message));
         process.exitCode = 1;
@@ -4870,24 +5186,52 @@ async function main() {
     }
 
     case 'suggest': {
-      const query = args[1];
+      const { flags, positional } = parseLooseArgs(args);
+      if (
+        !ensureAllowedFlags(flags, ['type', 'route', 'file', 'from-code', 'project'], 'suggest')
+      ) {
+        break;
+      }
+      const projectArg = flagString(flags, 'project');
+      const route = flagString(flags, 'route');
+      let file = flagString(flags, 'file');
+      const normalizedProject = normalizedProjectPath(projectArg);
+      if (
+        file &&
+        normalizedProject &&
+        normalizedProjectPath(file)?.startsWith(`${normalizedProject}/`)
+      ) {
+        file = normalizedProjectPath(file)?.slice(normalizedProject.length + 1);
+      }
+      const fromCode = flagBoolean(flags, 'from-code');
+      let query = positional.join(' ').trim();
+      if (!query && (route || file || fromCode)) {
+        query = [
+          route ? `route ${route}` : null,
+          file ? `file ${basename(file)}` : null,
+          fromCode ? 'source code patterns' : null,
+        ]
+          .filter((entry): entry is string => Boolean(entry))
+          .join(' ');
+      }
       if (!query) {
         console.error(
           error(
-            'Usage: decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code]',
+            'Usage: decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code] [--project <path>]',
           ),
         );
         process.exitCode = 1;
         return;
       }
-      const typeIdx = args.indexOf('--type');
-      const type = typeIdx !== -1 ? args[typeIdx + 1] : undefined;
-      const routeIdx = args.indexOf('--route');
-      const route = routeIdx !== -1 ? args[routeIdx + 1] : undefined;
-      const fileIdx = args.indexOf('--file');
-      const file = fileIdx !== -1 ? args[fileIdx + 1] : undefined;
-      const fromCode = args.includes('--from-code');
-      await cmdSuggest(query, { type, route, file, fromCode });
+      const workspaceInfo = projectArg ? resolveWorkflowProject(flags, 'suggest') : null;
+      if (projectArg && !workspaceInfo) break;
+      await cmdSuggest(query, {
+        type: flagString(flags, 'type'),
+        route,
+        file,
+        fromCode,
+        projectRoot: workspaceInfo?.appRoot,
+      });
       break;
     }
 
@@ -4980,7 +5324,12 @@ async function main() {
     }
 
     case 'theme': {
-      await cmdTheme(args.slice(1));
+      const { flags } = parseLooseArgs(args);
+      const workspaceInfo = flagString(flags, 'project')
+        ? resolveWorkflowProject(flags, 'theme')
+        : null;
+      if (flagString(flags, 'project') && !workspaceInfo) break;
+      await cmdTheme(stripProjectArgs(args).slice(1), workspaceInfo?.appRoot ?? process.cwd());
       break;
     }
 
@@ -5018,11 +5367,18 @@ async function main() {
     }
 
     case 'telemetry': {
-      await cmdTelemetry(args.slice(1), process.cwd());
+      const { flags } = parseLooseArgs(args);
+      const workspaceInfo = flagString(flags, 'project')
+        ? resolveWorkflowProject(flags, 'telemetry')
+        : null;
+      if (flagString(flags, 'project') && !workspaceInfo) break;
+      await cmdTelemetry(stripProjectArgs(args).slice(1), workspaceInfo?.appRoot ?? process.cwd());
       break;
     }
 
     case 'create': {
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, [], 'create')) break;
       const type = args[1];
       const name = args[2];
       if (!type || !name) {
@@ -5036,6 +5392,8 @@ async function main() {
     }
 
     case 'publish': {
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, [], 'publish')) break;
       const type = args[1];
       const name = args[2];
       if (!type || !name) {
@@ -5058,6 +5416,7 @@ async function main() {
         check: args.includes('--check'),
         listChanges: args.includes('--list-changes'),
         json: args.includes('--json'),
+        displayRoot: workspaceInfo.cwd,
       });
       break;
     }
@@ -5163,6 +5522,10 @@ async function main() {
     }
 
     case 'add': {
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['project', 'route', 'section'], 'add')) break;
+      const workspaceInfo = resolveWorkflowProject(flags, 'add');
+      if (!workspaceInfo) break;
       const subcommand = args[1];
       if (!subcommand) {
         console.error(error('Usage: decantr add <section|page|feature> <target>'));
@@ -5177,7 +5540,7 @@ async function main() {
             process.exitCode = 1;
             break;
           }
-          await cmdAddSection(id, args, process.cwd());
+          await cmdAddSection(id, args, workspaceInfo.appRoot);
           break;
         }
         case 'page': {
@@ -5187,7 +5550,7 @@ async function main() {
             process.exitCode = 1;
             break;
           }
-          await cmdAddPage(pagePath, args, process.cwd());
+          await cmdAddPage(pagePath, args, workspaceInfo.appRoot);
           break;
         }
         case 'feature': {
@@ -5197,7 +5560,7 @@ async function main() {
             process.exitCode = 1;
             break;
           }
-          await cmdAddFeature(feature, args, process.cwd());
+          await cmdAddFeature(feature, args, workspaceInfo.appRoot);
           break;
         }
         default:
@@ -5210,6 +5573,10 @@ async function main() {
     }
 
     case 'remove': {
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['project', 'section'], 'remove')) break;
+      const workspaceInfo = resolveWorkflowProject(flags, 'remove');
+      if (!workspaceInfo) break;
       const subcommand = args[1];
       if (!subcommand) {
         console.error(error('Usage: decantr remove <section|page|feature> <target>'));
@@ -5224,7 +5591,7 @@ async function main() {
             process.exitCode = 1;
             break;
           }
-          await cmdRemoveSection(id, args, process.cwd());
+          await cmdRemoveSection(id, args, workspaceInfo.appRoot);
           break;
         }
         case 'page': {
@@ -5234,7 +5601,7 @@ async function main() {
             process.exitCode = 1;
             break;
           }
-          await cmdRemovePage(pagePath, args, process.cwd());
+          await cmdRemovePage(pagePath, args, workspaceInfo.appRoot);
           break;
         }
         case 'feature': {
@@ -5244,7 +5611,7 @@ async function main() {
             process.exitCode = 1;
             break;
           }
-          await cmdRemoveFeature(feature, args, process.cwd());
+          await cmdRemoveFeature(feature, args, workspaceInfo.appRoot);
           break;
         }
         default:
@@ -5257,20 +5624,20 @@ async function main() {
     }
 
     case 'analyze': {
-      let projectArg: string | undefined;
-      for (let i = 1; i < args.length; i++) {
-        if (args[i].startsWith('--project=')) {
-          projectArg = args[i].split('=')[1];
-        } else if (args[i] === '--project' && args[i + 1]) {
-          projectArg = args[++i];
-        }
-      }
-      const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
-      if (workspaceInfo.requiresProjectSelection) {
-        printWorkspaceProjectSelection(workspaceInfo, 'analyze');
-        process.exitCode = 1;
+      const { flags } = parseLooseArgs(args);
+      if (
+        !ensureAllowedFlags(
+          flags,
+          ['project', 'force-package', 'allow-package', 'force'],
+          'analyze',
+        )
+      ) {
         break;
       }
+      const workspaceInfo = resolveWorkflowProject(flags, 'analyze', {
+        requireAppCandidate: true,
+      });
+      if (!workspaceInfo) break;
       await cmdAnalyze(workspaceInfo.appRoot, workspaceInfo);
       break;
     }
@@ -5286,20 +5653,10 @@ async function main() {
         process.exitCode = 1;
         break;
       }
-      let projectArg: string | undefined;
-      for (let i = 2; i < args.length; i++) {
-        if (args[i].startsWith('--project=')) {
-          projectArg = args[i].split('=')[1];
-        } else if (args[i] === '--project' && args[i + 1]) {
-          projectArg = args[++i];
-        }
-      }
-      const workspaceInfo = resolveWorkspaceInfo(process.cwd(), projectArg);
-      if (workspaceInfo.requiresProjectSelection) {
-        printWorkspaceProjectSelection(workspaceInfo, 'rules');
-        process.exitCode = 1;
-        break;
-      }
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['project'], 'rules')) break;
+      const workspaceInfo = resolveWorkflowProject(flags, 'rules');
+      if (!workspaceInfo) break;
       const detected = detectProject(workspaceInfo.appRoot);
       if (subcommand === 'preview') {
         console.log(
@@ -5321,29 +5678,20 @@ async function main() {
     }
 
     case 'magic': {
-      // Collect all non-flag args after 'magic' as the prompt
-      const magicFlags: {
-        dryRun?: boolean;
-        offline?: boolean;
-        registry?: string;
-      } = {};
-      const promptParts: string[] = [];
-      for (let i = 1; i < args.length; i++) {
-        if (args[i] === '--dry-run') {
-          magicFlags.dryRun = true;
-        } else if (args[i] === '--offline') {
-          magicFlags.offline = true;
-        } else if (args[i].startsWith('--registry=')) {
-          magicFlags.registry = args[i].split('=')[1];
-        } else if (args[i].startsWith('--registry') && args[i + 1]) {
-          magicFlags.registry = args[++i];
-        } else {
-          promptParts.push(args[i]);
-        }
+      const { flags, positional } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['dry-run', 'offline', 'registry', 'project'], 'magic')) {
+        break;
       }
-      const magicPrompt = promptParts.join(' ').trim();
+      const workspaceInfo = flagString(flags, 'project')
+        ? resolveWorkflowProject(flags, 'magic')
+        : null;
+      if (flagString(flags, 'project') && !workspaceInfo) break;
+      const projectArg = flagString(flags, 'project');
+      const magicPrompt = positional.join(' ').trim();
       if (!magicPrompt) {
-        console.error(error('Usage: decantr magic <prompt> [--dry-run] [--offline]'));
+        console.error(
+          error('Usage: decantr magic <prompt> [--dry-run] [--offline] [--project <path>]'),
+        );
         console.error('');
         console.error('  Example:');
         console.error(
@@ -5352,35 +5700,33 @@ async function main() {
         process.exitCode = 1;
         break;
       }
-      await cmdMagic(magicPrompt, process.cwd(), {
-        dryRun: magicFlags.dryRun,
-        offline: magicFlags.offline,
-        registry: magicFlags.registry,
+      await cmdMagic(magicPrompt, workspaceInfo?.appRoot ?? process.cwd(), {
+        dryRun: flagBoolean(flags, 'dry-run'),
+        offline: flagBoolean(flags, 'offline'),
+        registry: flagString(flags, 'registry'),
+        projectLabel: projectArg,
       });
       break;
     }
 
     case 'export': {
-      let exportTarget: string | undefined;
-      let exportOutput: string | undefined;
-      for (let i = 1; i < args.length; i++) {
-        if (args[i] === '--to' && args[i + 1]) {
-          exportTarget = args[++i];
-        } else if (args[i].startsWith('--to=')) {
-          exportTarget = args[i].split('=')[1];
-        } else if (args[i] === '--output' && args[i + 1]) {
-          exportOutput = args[++i];
-        } else if (args[i].startsWith('--output=')) {
-          exportOutput = args[i].split('=')[1];
-        }
-      }
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['to', 'output', 'project'], 'export')) break;
+      const workspaceInfo = flagString(flags, 'project')
+        ? resolveWorkflowProject(flags, 'export')
+        : null;
+      if (flagString(flags, 'project') && !workspaceInfo) break;
+      const exportTarget = flagString(flags, 'to');
+      const exportOutput = flagString(flags, 'output');
       const validTargets = ['shadcn', 'tailwind', 'css-vars', 'figma-tokens'];
       if (!exportTarget || !validTargets.includes(exportTarget)) {
         console.error(error(`Usage: decantr export --to <${validTargets.join('|')}>`));
         process.exitCode = 1;
         break;
       }
-      await cmdExport(exportTarget as ExportTarget, process.cwd(), { output: exportOutput });
+      await cmdExport(exportTarget as ExportTarget, workspaceInfo?.appRoot ?? process.cwd(), {
+        output: exportOutput,
+      });
       break;
     }
 

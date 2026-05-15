@@ -224,6 +224,58 @@ describe('Project Health report', () => {
     );
   });
 
+  it('treats missing hosted packs as optional context for contract-only brownfield projects', async () => {
+    writeRegistryCache();
+    writeEssence();
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+
+    const report = await createProjectHealthReport(testDir);
+    const packFinding = report.findings.find(
+      (finding) => finding.id === 'pack-pack-manifest-missing',
+    );
+    const reviewFinding = report.findings.find(
+      (finding) => finding.id === 'pack-review-pack-file-missing',
+    );
+
+    expect(packFinding?.severity).toBe('info');
+    expect(packFinding?.message).toContain('optional for contract-only');
+    expect(reviewFinding?.severity).toBe('info');
+    expect(
+      report.findings.some((finding) => finding.id === 'assertion-contract-context-pack-manifest'),
+    ).toBe(false);
+    expect(
+      report.findings.some((finding) => finding.id === 'assertion-contract-context-review-pack'),
+    ).toBe(false);
+  });
+
+  it('flags route-less pages and stale page pack counts', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    const essencePath = join(testDir, 'decantr.essence.json');
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint: {
+        sections: Array<{
+          id: string;
+          pages: Array<{ id: string; route?: string; layout: string[] }>;
+        }>;
+        routes: Record<string, { section: string; page: string }>;
+      };
+    };
+    essence.blueprint.sections[0].pages.push({ id: 'settings', layout: ['hero'] });
+    writeJson(essencePath, essence);
+
+    const report = await createProjectHealthReport(testDir);
+
+    expect(report.findings.some((finding) => finding.rule === 'page-route-required')).toBe(true);
+    expect(report.findings.some((finding) => finding.rule === 'page-pack-count-mismatch')).toBe(
+      true,
+    );
+  });
+
   it('does not require Decantr token CSS for contract-only brownfield projects', async () => {
     writeRegistryCache();
     writeEssence();

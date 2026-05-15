@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join } from 'node:path';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
@@ -11,6 +11,15 @@ export type ExportTarget = 'shadcn' | 'tailwind' | 'css-vars' | 'figma-tokens';
 
 export interface ExportOptions {
   output?: string;
+}
+
+function resolveOutputPath(
+  projectRoot: string,
+  output: string | undefined,
+  fallback: string,
+): string {
+  if (!output) return fallback;
+  return isAbsolute(output) ? output : join(projectRoot, output);
 }
 
 // ── Token Mapping ──
@@ -197,17 +206,16 @@ export function generateFigmaTokens(tokens: Map<string, string>): string {
 
   for (const [key, value] of tokens) {
     const name = key.replace(/^--/, '').replace(/-/g, '.');
-    const type = /color|bg|surface|text|border|primary|secondary|accent|error|warning|success|info/.test(
-      key,
-    )
-      ? 'color'
-      : /radius/.test(key)
-        ? 'borderRadius'
-        : /shadow/.test(key)
-          ? 'shadow'
-          : /gap|space|spacing/.test(key)
-            ? 'dimension'
-            : 'string';
+    const type =
+      /color|bg|surface|text|border|primary|secondary|accent|error|warning|success|info/.test(key)
+        ? 'color'
+        : /radius/.test(key)
+          ? 'borderRadius'
+          : /shadow/.test(key)
+            ? 'shadow'
+            : /gap|space|spacing/.test(key)
+              ? 'dimension'
+              : 'string';
     out[name] = {
       $type: type,
       $value: value,
@@ -253,7 +261,11 @@ export async function cmdExport(
 
   switch (target) {
     case 'shadcn': {
-      const cssOut = options.output ?? join(projectRoot, 'src', 'styles', 'shadcn-theme.css');
+      const cssOut = resolveOutputPath(
+        projectRoot,
+        options.output,
+        join(projectRoot, 'src', 'styles', 'shadcn-theme.css'),
+      );
       const jsonOut = join(projectRoot, 'components.json');
 
       ensureDir(cssOut);
@@ -267,7 +279,11 @@ export async function cmdExport(
     }
 
     case 'tailwind': {
-      const out = options.output ?? join(projectRoot, 'tailwind.decantr.config.ts');
+      const out = resolveOutputPath(
+        projectRoot,
+        options.output,
+        join(projectRoot, 'tailwind.decantr.config.ts'),
+      );
 
       ensureDir(out);
       writeFileSync(out, generateTailwindConfig(tokens), 'utf-8');
@@ -278,7 +294,11 @@ export async function cmdExport(
     }
 
     case 'css-vars': {
-      const out = options.output ?? join(projectRoot, 'decantr-tokens.css');
+      const out = resolveOutputPath(
+        projectRoot,
+        options.output,
+        join(projectRoot, 'decantr-tokens.css'),
+      );
 
       ensureDir(out);
       writeFileSync(out, generateCSSVars(tokens), 'utf-8');
@@ -289,7 +309,11 @@ export async function cmdExport(
     }
 
     case 'figma-tokens': {
-      const out = options.output ?? join(projectRoot, '.decantr', 'design', 'figma-tokens.json');
+      const out = resolveOutputPath(
+        projectRoot,
+        options.output,
+        join(projectRoot, '.decantr', 'design', 'figma-tokens.json'),
+      );
 
       ensureDir(out);
       writeFileSync(out, generateFigmaTokens(tokens), 'utf-8');

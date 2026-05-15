@@ -82,11 +82,17 @@ describe('brownfield monorepo onboarding', () => {
   });
 
   it('keeps cold adoption local in offline mode and writes app-scoped artifacts', () => {
-    writeFileSync(join(testDir, 'apps', 'web', 'src', 'page.tsx'), 'export default function Page() { return <main />; }\n');
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'page.tsx'),
+      'export default function Page() { return <main />; }\n',
+    );
 
     const output = runCli(testDir, ['adopt', '--project', 'apps/web', '--yes']);
 
     expect(output).toContain('Skipping hosted pack hydration in offline mode.');
+    expect(output).toContain('decantr init --project apps/web --existing --accept-proposal');
+    expect(output).toContain('decantr check --brownfield --project apps/web');
+    expect(output).toContain('apps/web/.decantr/brownfield-report.md');
     expect(existsSync(join(testDir, 'apps', 'web', 'decantr.essence.json'))).toBe(true);
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'project.json'))).toBe(true);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);
