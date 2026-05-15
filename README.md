@@ -1,5 +1,6 @@
 # Decantr
 
+[![SafeSkill 48/100](https://img.shields.io/badge/SafeSkill-48%2F100_Use%20with%20Caution-orange)](https://safeskill.dev/scan/decantr-ai-decantr)
 **Evidence-backed design intelligence, governance, and verification for AI-generated UI.**
 
 Decantr is the contract layer between product intent and AI-generated implementation. It gives coding assistants three things they don't have on their own — structured design inputs, registry-backed UI knowledge, and scoped context files — so they build coherent product surfaces instead of improvising screen by screen. Think of it as OpenAPI for AI-generated UI: the model still writes the code, but Decantr defines the shape, vocabulary, and checks around it.
