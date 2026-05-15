@@ -225,6 +225,8 @@ decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
+In contract-only Brownfield projects, Decantr may not own `src/styles/tokens.css`; `export --to figma-tokens` is for Decantr CSS token exports, while project-native token exports remain the app's source of truth unless you adopt a style bridge.
+
 Opted-in product telemetry:
 
 ```bash

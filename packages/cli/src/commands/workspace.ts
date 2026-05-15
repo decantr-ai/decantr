@@ -461,7 +461,7 @@ export async function cmdWorkspace(
     }
     if (unattachedCandidates.length > 0) {
       console.log('');
-      console.log('Start by attaching one app:');
+      console.log(projects.length > 0 ? 'Attach another app:' : 'Start by attaching one app:');
       console.log(`  ${unattachedCandidates[0].suggestedAdoptCommand}`);
     }
     return;

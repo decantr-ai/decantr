@@ -96,6 +96,8 @@ pnpm exec decantr health --project apps/web --prompt <finding-id>
 
 `add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs.
 
+`export --to figma-tokens` only exports Decantr CSS tokens. In contract-only Brownfield, the app may intentionally keep Tailwind, Sass, CSS module, or design-system tokens outside Decantr; use that project token source or adopt a style bridge before treating Decantr token export as canonical.
+
 If you run `decantr setup` after adoption from a monorepo root, it should show attached projects and the day-two loop (`doctor`, `task`, `verify`, `ci init`) rather than asking you to reattach the same app. If you run `decantr magic` against an already attached app, it should steer you into `decantr task <route> "<change>" --project apps/web`; `magic` remains greenfield-first.
 
 This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.

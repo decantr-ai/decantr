@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   cmdExport,
   generateCSSVars,
@@ -286,6 +286,35 @@ describe('cmdExport', () => {
     await cmdExport('shadcn', tmpDir);
 
     expect(process.exitCode).toBe(1);
+    process.exitCode = origExitCode;
+  });
+
+  it('explains missing tokens as optional in contract-only Brownfield projects', async () => {
+    rmSync(join(tmpDir, 'src', 'styles', 'tokens.css'));
+    mkdirSync(join(tmpDir, '.decantr'), { recursive: true });
+    writeFileSync(
+      join(tmpDir, '.decantr', 'project.json'),
+      JSON.stringify({
+        initialized: {
+          workflowMode: 'brownfield-attach',
+          adoptionMode: 'contract-only',
+        },
+      }),
+      'utf-8',
+    );
+    const origExitCode = process.exitCode;
+    const errors: string[] = [];
+    const spy = vi.spyOn(console, 'error').mockImplementation((message) => {
+      errors.push(String(message));
+    });
+
+    await cmdExport('figma-tokens', tmpDir);
+
+    spy.mockRestore();
+    expect(process.exitCode).toBe(1);
+    expect(errors.join('\n')).toContain('contract-only Brownfield');
+    expect(errors.join('\n')).toContain('own Tailwind/Sass token system');
+    expect(errors.join('\n')).toContain('decantr export --to figma-tokens');
     process.exitCode = origExitCode;
   });
 });

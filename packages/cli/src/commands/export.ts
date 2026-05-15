@@ -13,6 +13,21 @@ export interface ExportOptions {
   output?: string;
 }
 
+function readAdoptionMode(projectRoot: string): string | null {
+  const projectJsonPath = join(projectRoot, '.decantr', 'project.json');
+  if (!existsSync(projectJsonPath)) return null;
+  try {
+    const parsed = JSON.parse(readFileSync(projectJsonPath, 'utf-8')) as {
+      initialized?: { adoptionMode?: unknown };
+    };
+    return typeof parsed.initialized?.adoptionMode === 'string'
+      ? parsed.initialized.adoptionMode
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function resolveOutputPath(
   projectRoot: string,
   output: string | undefined,
@@ -243,9 +258,12 @@ export async function cmdExport(
   }
 
   if (!existsSync(tokensPath)) {
-    console.error(
-      `${RED}No src/styles/tokens.css found. Run \`decantr refresh\` to generate tokens.${RESET}`,
-    );
+    const adoptionMode = readAdoptionMode(projectRoot);
+    const message =
+      adoptionMode === 'contract-only'
+        ? `No src/styles/tokens.css found. This export reads Decantr CSS tokens, but this project is contract-only Brownfield and may intentionally use its own Tailwind/Sass token system. Export from the app's token source or adopt a style bridge before using \`decantr export --to ${target}\`.`
+        : 'No src/styles/tokens.css found. Run `decantr refresh` to generate tokens.';
+    console.error(`${RED}${message}${RESET}`);
     process.exitCode = 1;
     return;
   }

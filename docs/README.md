@@ -16,10 +16,10 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Human-readable references for active public/runtime contracts such as Project Health, Evidence Bundles, Workspace Health, Content Health, workflow mode, telemetry, and registry API surfaces.
 - `guides/`
   - Focused public entry points for existing-app adoption, monorepos, Project Health CI, AI assistant setup, registry publishing, and design contract basics.
-- Brownfield 2.9 operating-layer guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `reference/workflow-model.md`, `reference/project-health.md`, and `reference/command-surface.md`: `adopt`, automatic online pack hydration, `doctor`, `ci`, monorepo `--project` onboarding, app-scoped primitives, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts, `task`, `verify`, `codify --from-audit`, analyze artifacts, theme inventory, task-time MCP/CLI context, optional visual manifest, baselines, local pattern proposals, local rule proposals, and changed-file impact.
+- Brownfield 2.9 operating-layer guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `reference/workflow-model.md`, `reference/project-health.md`, and `reference/command-surface.md`: `adopt`, automatic online pack hydration, `doctor`, `ci`, monorepo `--project` onboarding, app-scoped primitives, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts and read targets, `task`, `verify`, `codify --from-audit`, analyze artifacts, theme inventory, task-time MCP/CLI context, optional visual manifest, baselines, local pattern proposals, local rule proposals, production-UI interaction evidence, contract-only token-export copy, and changed-file impact.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
-  - Latest Brownfield polish note: `releases/2026-05-14-brownfield-command-consistency-2-9-3.md`.
+  - Latest Brownfield polish note: `releases/2026-05-15-brownfield-dogfood-2-9-4.md`.
 - `schemas/`
   - Published public schema copies and the schema index surfaced at `https://decantr.ai/schemas/`.
 - `runbooks/`

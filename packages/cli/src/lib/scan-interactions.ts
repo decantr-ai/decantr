@@ -58,6 +58,25 @@ const SKIP_DIRECTORIES = new Set([
 /** Maximum file size to scan (1MB). Larger files are usually generated. */
 const MAX_FILE_SIZE = 1024 * 1024;
 
+function isNonUiInteractionSource(relativePath: string): boolean {
+  const normalized = relativePath.replace(/\\/g, '/');
+  if (/\.d\.ts$/i.test(normalized)) return true;
+  if (
+    /(?:^|\/)(?:__tests__|__mocks__|tests?|specs?|fixtures?|mocks?|stories?)(?:\/|$)/i.test(
+      normalized,
+    )
+  ) {
+    return true;
+  }
+  if (/\.(?:test|spec|stories?|story|fixture|mock)\.(?:[cm]?[jt]sx?|mdx|html)$/i.test(normalized)) {
+    return true;
+  }
+  if (/^(?:src\/)?app\/api\//i.test(normalized)) return true;
+  if (/^(?:src\/)?pages\/api\//i.test(normalized)) return true;
+  if (/(?:^|\/)route\.[cm]?[jt]s$/i.test(normalized)) return true;
+  return false;
+}
+
 /**
  * Recursively walk a directory and collect source files for scanning.
  * Skips well-known build/cache directories. Only includes files with
@@ -84,12 +103,14 @@ function walkSourceTree(rootDir: string): Map<string, string> {
       } catch {
         continue;
       }
+      const relativePath = relative(rootDir, fullPath) || entry;
       if (s.isDirectory()) {
         walk(fullPath);
       } else if (s.isFile() && SCAN_EXTENSIONS.has(extname(entry))) {
         if (s.size > MAX_FILE_SIZE) continue;
+        if (isNonUiInteractionSource(relativePath)) continue;
         try {
-          sources.set(relative(rootDir, fullPath) || entry, readFileSync(fullPath, 'utf8'));
+          sources.set(relativePath, readFileSync(fullPath, 'utf8'));
         } catch {
           // unreadable file — skip silently
         }

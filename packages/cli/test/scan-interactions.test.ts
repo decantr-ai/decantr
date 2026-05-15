@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { scanProjectInteractions } from '../src/lib/scan-interactions.js';
 
@@ -43,7 +43,9 @@ describe('scanProjectInteractions', () => {
     const srcDir = join(projectRoot, 'src');
     mkdirSync(srcDir, { recursive: true });
     for (const [name, content] of Object.entries(opts.sourceFiles)) {
-      writeFileSync(join(srcDir, name), content);
+      const filePath = join(srcDir, name);
+      mkdirSync(dirname(filePath), { recursive: true });
+      writeFileSync(filePath, content);
     }
   }
 
@@ -125,6 +127,29 @@ describe('scanProjectInteractions', () => {
     const issues = scanProjectInteractions(projectRoot);
     expect(issues).toHaveLength(1);
     expect(issues[0]).toContain('status-pulse');
+  });
+
+  it('ignores API handlers, tests, fixtures, and stories as UI interaction evidence', () => {
+    setupProject({
+      manifestPages: [{ id: 'home', pack: [{ interactions: ['animate-on-mount'] }] }],
+      sourceFiles: {
+        'app/page.tsx': 'export default function Page() { return <main />; }',
+        'app/api/dev/actor/route.ts':
+          'export function GET() { return Response.json("d-enter-fade"); }',
+        'app/api/dev/actor/route.test.ts': 'it("mentions d-enter-fade", () => {});',
+        'components/Card.stories.tsx': '<div className="d-enter-fade" />',
+        'fixtures/example.tsx': '<div className="d-enter-fade" />',
+      },
+    });
+
+    const issues = scanProjectInteractions(projectRoot);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toContain('animate-on-mount');
+    expect(issues[0]).toContain('checked: src/app/page.tsx:1-1');
+    expect(issues[0]).not.toContain('app/api');
+    expect(issues[0]).not.toContain('route.test');
+    expect(issues[0]).not.toContain('stories');
+    expect(issues[0]).not.toContain('fixtures');
   });
 
   it('handles manifest pointing to missing pack files gracefully', () => {

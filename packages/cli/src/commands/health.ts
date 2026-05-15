@@ -96,6 +96,7 @@ interface ProjectMetadata {
 
 interface ProjectCommandContext {
   projectPath: string | null;
+  buildCommand: string;
   compilePacksCommand: string;
   verifyCommand: string;
   ciCommand: string;
@@ -520,6 +521,52 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
   }
 }
 
+type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun' | 'unknown';
+
+function detectPackageManager(root: string): PackageManager {
+  const pkg = readJsonFile<{ packageManager?: string }>(join(root, 'package.json'));
+  const declared = pkg?.packageManager?.split('@')[0];
+  if (declared === 'pnpm' || declared === 'npm' || declared === 'yarn' || declared === 'bun') {
+    return declared;
+  }
+  if (existsSync(join(root, 'pnpm-lock.yaml'))) return 'pnpm';
+  if (existsSync(join(root, 'package-lock.json'))) return 'npm';
+  if (existsSync(join(root, 'yarn.lock'))) return 'yarn';
+  if (existsSync(join(root, 'bun.lock')) || existsSync(join(root, 'bun.lockb'))) return 'bun';
+  return 'unknown';
+}
+
+function buildCommandForProject(workspaceRoot: string, projectPath: string | null): string {
+  const packageManager = detectPackageManager(workspaceRoot);
+  if (projectPath) {
+    switch (packageManager) {
+      case 'pnpm':
+        return `pnpm --dir ${projectPath} build`;
+      case 'yarn':
+        return `yarn --cwd ${projectPath} build`;
+      case 'bun':
+        return `bun --cwd ${projectPath} run build`;
+      case 'npm':
+        return `npm --prefix ${projectPath} run build`;
+      default:
+        return `cd ${projectPath} && npm run build`;
+    }
+  }
+
+  switch (packageManager) {
+    case 'pnpm':
+      return 'pnpm build';
+    case 'yarn':
+      return 'yarn build';
+    case 'bun':
+      return 'bun run build';
+    case 'npm':
+      return 'npm run build';
+    default:
+      return 'npm run build';
+  }
+}
+
 function commandContextForProject(projectRoot: string): ProjectCommandContext {
   const workspaceInfo = resolveWorkspaceInfo(projectRoot);
   const relativeProjectPath = relative(workspaceInfo.workspaceRoot, projectRoot).replace(
@@ -535,6 +582,7 @@ function commandContextForProject(projectRoot: string): ProjectCommandContext {
 
   return {
     projectPath,
+    buildCommand: buildCommandForProject(workspaceInfo.workspaceRoot, projectPath),
     compilePacksCommand: `decantr registry compile-packs ${essencePath} --write-context`,
     verifyCommand: `decantr verify${projectFlag}`,
     ciCommand: `decantr ci${projectFlag} --fail-on error`,
@@ -543,6 +591,8 @@ function commandContextForProject(projectRoot: string): ProjectCommandContext {
 }
 
 function rewriteHealthCommand(command: string, context: ProjectCommandContext): string {
+  if (command === 'npm run build') return context.buildCommand;
+
   let rewritten = command.replace(
     /decantr registry compile-packs decantr\.essence\.json --write-context/g,
     context.compilePacksCommand,
@@ -623,6 +673,7 @@ function scopeHealthFindingsToProject(
           evidence: finding.evidence,
           suggestedFix,
           commands,
+          projectPath: context.projectPath,
         }),
       },
     };
@@ -638,11 +689,19 @@ function buildRemediationPrompt(input: {
   evidence: string[];
   suggestedFix?: string;
   commands: string[];
+  projectPath?: string | null;
 }): string {
+  const prefix = input.projectPath ? `${input.projectPath}/` : '';
+  const readTargets = [
+    `${prefix}DECANTR.md`,
+    `${prefix}decantr.essence.json`,
+    `${prefix}.decantr/context/scaffold-pack.md`,
+    `${prefix}.decantr/context/scaffold.md`,
+  ];
   return [
     'You are fixing one Decantr Project Health finding in this local workspace.',
     '',
-    'Read `DECANTR.md`, `decantr.essence.json`, and `.decantr/context/scaffold-pack.md` if they exist. For route or page work, read the matching page/section packs before editing.',
+    `Read project-scoped Decantr files if they exist: ${readTargets.map((target) => `\`${target}\``).join(', ')}. For route or page work, read the matching page/section packs before editing.`,
     '',
     `Finding: ${input.id}`,
     `Source: ${input.source}`,

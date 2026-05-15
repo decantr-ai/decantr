@@ -179,6 +179,22 @@ describe('operating layer commands', () => {
     expect(output).not.toContain('packages/design-system');
   });
 
+  it('recommends attaching another app after one project is already attached', () => {
+    mkdirSync(join(testDir, 'apps', 'admin', 'src'), { recursive: true });
+    writeJson(join(testDir, 'apps', 'admin', 'package.json'), {
+      name: 'admin',
+      dependencies: { react: '^19.0.0' },
+    });
+
+    const output = runCli(testDir, ['workspace', 'list']);
+
+    expect(output).toContain('apps/web');
+    expect(output).toContain('apps/admin');
+    expect(output).toContain('Attach another app:');
+    expect(output).toContain('decantr adopt --project apps/admin --yes');
+    expect(output).not.toContain('Start by attaching one app:');
+  });
+
   it('orients monorepo roots toward app-scoped doctor instead of root setup', () => {
     const output = runCli(testDir, ['doctor']);
 
@@ -495,7 +511,21 @@ describe('operating layer commands', () => {
       match?.[1] ?? '',
     ]);
     expect(prompt).toContain(`Finding: ${match?.[1]}`);
+    expect(prompt).toContain('apps/web/DECANTR.md');
+    expect(prompt).toContain('apps/web/decantr.essence.json');
+    expect(prompt).toContain('apps/web/.decantr/context/scaffold-pack.md');
+    expect(prompt).toContain('apps/web/.decantr/context/scaffold.md');
     expect(prompt).not.toContain('No health finding found');
+
+    const runtimePrompt = runCli(testDir, [
+      'health',
+      '--project',
+      'apps/web',
+      '--prompt',
+      'runtime-runtime-dist-missing',
+    ]);
+    expect(runtimePrompt).toContain('pnpm --dir apps/web build');
+    expect(runtimePrompt).not.toContain('- npm run build');
   });
 
   it('keeps legacy health init-ci on the pinned CI workflow path', () => {
