@@ -474,6 +474,50 @@ describe('operating layer commands', () => {
     }
   });
 
+  it('resolves common app section aliases for scoped feature additions', () => {
+    const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint: {
+        sections: Array<{
+          id: string;
+          role: string;
+          features: string[];
+          pages: Array<{ id: string }>;
+        }>;
+        routes: Record<string, { section: string; page: string }>;
+        features: string[];
+      };
+    };
+    essence.blueprint.sections[0].id = 'observed-primary';
+    essence.blueprint.sections[0].role = 'primary';
+    essence.blueprint.sections[0].features = [];
+    essence.blueprint.routes['/'] = { section: 'observed-primary', page: 'home' };
+    writeJson(essencePath, essence);
+
+    const output = runCli(testDir, [
+      'add',
+      'feature',
+      'saved-recipes',
+      '--section',
+      'app',
+      '--project',
+      'apps/web',
+    ]);
+    const updated = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint: { sections: Array<{ id: string; features: string[] }>; features: string[] };
+    };
+    const section = updated.blueprint.sections.find(
+      (candidate) => candidate.id === 'observed-primary',
+    );
+
+    expect(output).toContain('Resolved section alias "app" to "observed-primary"');
+    expect(output).toContain(
+      'Added feature "saved-recipes" to section "observed-primary" and global features.',
+    );
+    expect(section?.features).toContain('saved-recipes');
+    expect(updated.blueprint.features).toContain('saved-recipes');
+  });
+
   it('rejects nonexistent project paths instead of recommending impossible adoption', () => {
     try {
       runCli(testDir, ['doctor', '--project', 'apps/does-not-exist']);

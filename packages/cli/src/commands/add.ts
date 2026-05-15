@@ -274,17 +274,24 @@ export async function cmdAddFeature(
 
   if (sectionId) {
     const sections = essence.blueprint.sections;
-    const section = sections.find((s) => s.id === sectionId);
-    if (!section) {
-      console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-      console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
+    const resolved = resolveSectionForPage(sections, sectionId);
+    if (!resolved) {
+      printSectionNotFound(sectionId, sections);
       process.exitCode = 1;
       return;
     }
+    const { section } = resolved;
+    const resolvedSectionId = section.id;
 
     if (!section.features.includes(feature)) {
       section.features.push(feature);
     }
+    if (resolved.resolvedFromAlias) {
+      console.log(
+        `${YELLOW}Resolved section alias "${sectionId}" to "${resolvedSectionId}".${RESET}`,
+      );
+    }
+    sectionId = resolvedSectionId;
   }
 
   // Add to global features
