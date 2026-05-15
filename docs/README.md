@@ -8,8 +8,10 @@ For quick setup help, showcase feedback, and live community discussion, join the
 
 - `programs/`
   - Branch-level product strategy and program structure.
+  - Current next program: `programs/2026-05-15-hybrid-fortification-plan.md`.
 - `audit/`
   - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
+  - Latest Brownfield confidence report: `audit/2026-05-15-brownfield-2-9-dogfood-confidence.md`.
 - `specs/`
   - Active implementation specs for the reset program.
 - `reference/`
@@ -17,6 +19,7 @@ For quick setup help, showcase feedback, and live community discussion, join the
 - `guides/`
   - Focused public entry points for existing-app adoption, monorepos, Project Health CI, AI assistant setup, registry publishing, and design contract basics.
 - Brownfield 2.9 operating-layer guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `reference/workflow-model.md`, `reference/project-health.md`, and `reference/command-surface.md`: `adopt`, automatic online pack hydration, `doctor`, `ci`, monorepo `--project` onboarding, app-scoped primitives, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts and read targets, `task`, `verify`, `codify --from-audit`, analyze artifacts, theme inventory, task-time MCP/CLI context, optional visual manifest, baselines, local pattern proposals, local rule proposals, production-UI interaction evidence, contract-only token-export copy, Brownfield `add page` / `add feature` section aliases, and changed-file impact.
+- Brownfield 2.9.x dogfood confidence and the remaining backlog are captured in `audit/2026-05-15-brownfield-2-9-dogfood-confidence.md`; the follow-on Hybrid work is scoped in `programs/2026-05-15-hybrid-fortification-plan.md`.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
   - Latest Brownfield polish note: `releases/2026-05-15-brownfield-feature-alias-2-9-6.md`.
