@@ -26,6 +26,7 @@ Think of Decantr as **OpenAPI for AI-generated UI**: the model still writes the 
 - Browser evidence is local-only: `decantr verify --base-url <url> --evidence` writes screenshots under `.decantr/evidence/screenshots/`, `.decantr/evidence/visual-manifest.json`, and `.decantr/evidence/latest.json`. `decantr verify --save-baseline` and `--since-baseline` provide continuity across AI sessions.
 - [Public API reference](https://decantr.ai/reference/registry-public-api.html): Registry endpoints, pack compilation, critique, audit.
 - [Package support matrix](https://decantr.ai/reference/package-support-matrix.md): Which packages are stable, beta, or experimental.
+- [Release stewardship](https://github.com/decantr-ai/decantr/blob/main/docs/runbooks/release-stewardship.md): Git + npm release closeout policy. A release is not done until `pnpm release:verify` and `pnpm release:closeout` pass.
 
 ## Packages
 

@@ -10,6 +10,7 @@ Current policy has moved on:
 - the long-lived public beta lane is being removed
 - active packages now resolve into stable public, internal-only, experimental, or retired
 - see [2026-04-21-package-graduation-consolidation-plan.md](../programs/2026-04-21-package-graduation-consolidation-plan.md) for the current package policy
+- see [release-stewardship.md](./release-stewardship.md) for the active Git + npm closeout process
 
 The sections below are preserved as historical implementation context for the old release strategy.
 

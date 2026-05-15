@@ -40,6 +40,8 @@
     "release:commands": "node scripts/release-commands.mjs",
     "release:preflight": "node scripts/publish-packages.mjs --publish-dry-run",
     "release:verify": "node scripts/verify-published-packages.mjs",
+    "release:closeout": "node scripts/audit-release-closeout.mjs",
+    "release:closeout:json": "node scripts/audit-release-closeout.mjs --json",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs",

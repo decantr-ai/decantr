@@ -28,6 +28,7 @@ For quick setup help, showcase feedback, and live community discussion, join the
 - `runbooks/`
   - Operational rollout and verification procedures for hosted surfaces.
   - Includes package release strategy and hosted rollout runbooks.
+  - Current release closeout source of truth: `runbooks/release-stewardship.md`.
   - Includes explicit runbooks for both API and registry portal deployment.
 
 Current active phase specs:

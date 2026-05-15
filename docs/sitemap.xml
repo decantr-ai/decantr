@@ -56,7 +56,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/audit/2026-05-15-brownfield-2-9-dogfood-confidence.md</loc>
-    <lastmod>2026-05-15T12:42:16.175Z</lastmod>
+    <lastmod>2026-05-15T08:43:22-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -164,7 +164,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/programs/2026-05-15-hybrid-fortification-plan.md</loc>
-    <lastmod>2026-05-15T12:42:16.175Z</lastmod>
+    <lastmod>2026-05-15T08:43:22-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -379,6 +379,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/releases/2026-05-15-release-stewardship.md</loc>
+    <lastmod>2026-05-15T13:46:26.560Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/runbooks/2026-04-09-hosted-public-api-rollout.md</loc>
     <lastmod>2026-05-08T09:32:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -429,6 +435,12 @@
   <url>
     <loc>https://decantr.ai/runbooks/enterprise-artifact-release-checklist.md</loc>
     <lastmod>2026-05-11T10:37:50-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/runbooks/release-stewardship.md</loc>
+    <lastmod>2026-05-15T13:46:26.558Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

@@ -130,7 +130,12 @@ pnpm audit:public-api
 pnpm audit:registry-dogfood
 pnpm showcase:verify:shortlist
 pnpm release:verify
+pnpm release:closeout
 ```
+
+### Release stewardship
+
+Release work is script-led. Use `pnpm release:commands` for publish handoff, `pnpm release:verify` for public npm verification, and `pnpm release:closeout` before calling a release done. Closeout verifies npm version/dist-tag parity plus git tag and release-note parity so versioned docs cannot drift away from origin tags. See [docs/runbooks/release-stewardship.md](docs/runbooks/release-stewardship.md).
 
 ## More CLI
 
