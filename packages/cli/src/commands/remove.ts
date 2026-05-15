@@ -1,12 +1,13 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
+import type { EssenceFile, EssenceSection, EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 
 const GREEN = '\x1b[32m';
 const RED = '\x1b[31m';
+const YELLOW = '\x1b[33m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
 
@@ -51,6 +52,34 @@ function readFlagValue(args: string[], name: string): string | undefined {
     if (arg.startsWith(prefix)) return arg.slice(prefix.length);
   }
   return undefined;
+}
+
+function resolveSectionAlias(
+  sections: EssenceSection[],
+  requestedSectionId: string,
+): { section: EssenceSection; resolvedFromAlias: boolean } | null {
+  const exact = sections.find((section) => section.id === requestedSectionId);
+  if (exact) return { section: exact, resolvedFromAlias: false };
+
+  const roleByAlias: Record<string, EssenceSection['role']> = {
+    app: 'primary',
+    main: 'primary',
+    primary: 'primary',
+    public: 'public',
+    marketing: 'public',
+    auth: 'gateway',
+    gateway: 'gateway',
+    auxiliary: 'auxiliary',
+  };
+  const desiredRole = roleByAlias[requestedSectionId.toLowerCase()];
+  if (!desiredRole) return null;
+
+  const roleMatches = sections.filter((section) => section.role === desiredRole);
+  if (roleMatches.length === 1) return { section: roleMatches[0], resolvedFromAlias: true };
+  if (roleMatches.length > 1) return null;
+
+  const observedMatch = sections.find((section) => section.id === `observed-${desiredRole}`);
+  return observedMatch ? { section: observedMatch, resolvedFromAlias: true } : null;
 }
 
 /**
@@ -155,17 +184,19 @@ export async function cmdRemovePage(
   const { essence, essencePath } = loaded;
 
   const sections = essence.blueprint.sections;
-  const section = sections.find((s) => s.id === sectionId);
-  if (!section) {
+  const resolved = resolveSectionAlias(sections, sectionId);
+  if (!resolved) {
     console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
     console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
   }
+  const { section } = resolved;
+  const resolvedSectionId = section.id;
 
   const pageIdx = section.pages.findIndex((p) => p.id === pageId);
   if (pageIdx === -1) {
-    console.error(`${RED}Page "${pageId}" not found in section "${sectionId}".${RESET}`);
+    console.error(`${RED}Page "${pageId}" not found in section "${resolvedSectionId}".${RESET}`);
     console.error(`${DIM}Available pages: ${section.pages.map((p) => p.id).join(', ')}${RESET}`);
     process.exitCode = 1;
     return;
@@ -174,11 +205,16 @@ export async function cmdRemovePage(
   section.pages.splice(pageIdx, 1);
 
   // Remove routes pointing to this page
-  removeRoutes(essence, sectionId, pageId);
+  removeRoutes(essence, resolvedSectionId, pageId);
 
   writeEssence(essencePath, essence);
 
-  console.log(`${GREEN}Removed page "${pageId}" from section "${sectionId}".${RESET}`);
+  if (resolved.resolvedFromAlias) {
+    console.log(
+      `${YELLOW}Resolved section alias "${sectionId}" to "${resolvedSectionId}".${RESET}`,
+    );
+  }
+  console.log(`${GREEN}Removed page "${pageId}" from section "${resolvedSectionId}".${RESET}`);
 
   const registryClient = new RegistryClient({
     cacheDir: join(projectRoot, '.decantr', 'cache'),
@@ -211,13 +247,18 @@ export async function cmdRemoveFeature(
 
   if (sectionId) {
     const sections = essence.blueprint.sections;
-    const section = sections.find((s) => s.id === sectionId);
-    if (!section) {
+    const resolved = resolveSectionAlias(sections, sectionId);
+    if (!resolved) {
       console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
       console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
       process.exitCode = 1;
       return;
     }
+    const { section } = resolved;
+    if (resolved.resolvedFromAlias) {
+      console.log(`${YELLOW}Resolved section alias "${sectionId}" to "${section.id}".${RESET}`);
+    }
+    sectionId = section.id;
 
     const fIdx = section.features.indexOf(feature);
     if (fIdx !== -1) {

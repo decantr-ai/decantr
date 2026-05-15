@@ -153,6 +153,8 @@ decantr suggest --from-code --file app/page.tsx --project apps/web
 decantr suggest "standardize buttons" --project apps/web
 ```
 
+With `--project`, source-code suggestions rank both registry patterns and accepted `.decantr/local-patterns.json` against the selected app's file contents, even when the command is run from a monorepo root.
+
 Brownfield adoption:
 
 ```bash

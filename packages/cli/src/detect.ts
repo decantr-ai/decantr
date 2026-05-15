@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 export interface DetectedProject {
   framework:
@@ -23,6 +23,7 @@ export interface DetectedProject {
 }
 
 interface PackageJson {
+  packageManager?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
 }
@@ -38,6 +39,39 @@ const RULE_FILES = [
   '.github/copilot-instructions.md',
   '.windsurfrules',
 ];
+
+function readPackageJson(dir: string): PackageJson | null {
+  const path = join(dir, 'package.json');
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as PackageJson;
+  } catch {
+    return null;
+  }
+}
+
+function packageManagerFromName(name?: string): DetectedProject['packageManager'] {
+  if (name === 'pnpm' || name === 'yarn' || name === 'bun' || name === 'npm') return name;
+  return 'unknown';
+}
+
+function detectPackageManager(projectRoot: string): DetectedProject['packageManager'] {
+  let current = projectRoot;
+  while (true) {
+    const pkg = readPackageJson(current);
+    const declared = packageManagerFromName(pkg?.packageManager?.split('@')[0]);
+    if (declared !== 'unknown') return declared;
+
+    if (existsSync(join(current, 'pnpm-lock.yaml'))) return 'pnpm';
+    if (existsSync(join(current, 'yarn.lock'))) return 'yarn';
+    if (existsSync(join(current, 'bun.lockb'))) return 'bun';
+    if (existsSync(join(current, 'package-lock.json'))) return 'npm';
+
+    const parent = dirname(current);
+    if (parent === current) return 'unknown';
+    current = parent;
+  }
+}
 
 /**
  * Detect project configuration from the file system.
@@ -64,16 +98,7 @@ export function detectProject(projectRoot: string = process.cwd()): DetectedProj
     }
   }
 
-  // Detect package manager from lock files
-  if (existsSync(join(projectRoot, 'pnpm-lock.yaml'))) {
-    result.packageManager = 'pnpm';
-  } else if (existsSync(join(projectRoot, 'yarn.lock'))) {
-    result.packageManager = 'yarn';
-  } else if (existsSync(join(projectRoot, 'bun.lockb'))) {
-    result.packageManager = 'bun';
-  } else if (existsSync(join(projectRoot, 'package-lock.json'))) {
-    result.packageManager = 'npm';
-  }
+  result.packageManager = detectPackageManager(projectRoot);
 
   // Check for TypeScript
   result.hasTypeScript = existsSync(join(projectRoot, 'tsconfig.json'));

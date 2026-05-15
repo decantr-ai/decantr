@@ -1712,7 +1712,10 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       `Pattern suggestions for "${query}"${contextBits.length > 0 ? ` (${contextBits.join(', ')})` : ''}`,
     ),
   );
-  const localMatches = localPatternMatches(options.projectRoot, query);
+  const localMatches = localPatternMatches(
+    options.projectRoot,
+    [query, code].filter(Boolean).join('\n'),
+  );
   if (localMatches.length > 0) {
     console.log(`${BOLD}Project-owned local law:${RESET}`);
     for (const match of localMatches) {
@@ -3641,16 +3644,24 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
   console.log('');
 
   if (detected.existingEssence) {
+    const hasLocalPatterns = existsSync(localPatternsPath(workspaceInfo.appRoot));
+    const hasLocalRules = existsSync(localRulesPath(workspaceInfo.appRoot));
+    const verifyCommand =
+      hasLocalPatterns || hasLocalRules
+        ? 'decantr verify --brownfield --local-patterns'
+        : 'decantr verify --brownfield';
     console.log(`${BOLD}Recommended path:${RESET} maintain an attached Decantr project`);
     console.log(
       `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}  Prepare LLM context before edits`,
     );
     console.log(
-      `  ${cyan(withProject('decantr verify --brownfield', projectArg))}     Run local health and drift checks`,
+      `  ${cyan(withProject(verifyCommand, projectArg))}     Run local health and drift checks`,
     );
-    console.log(
-      `  ${cyan(withProject('decantr codify --from-audit', projectArg))}     Propose project-owned local law`,
-    );
+    if (!hasLocalPatterns || !hasLocalRules) {
+      console.log(
+        `  ${cyan(withProject('decantr codify --from-audit', projectArg))}     Propose project-owned local law`,
+      );
+    }
     return;
   }
 

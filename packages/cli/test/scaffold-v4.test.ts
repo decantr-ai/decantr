@@ -570,6 +570,12 @@ describe('V4 scaffold', () => {
     const contextDir = join(testDir, '.decantr', 'context');
     const addPageTask = readFileSync(join(contextDir, 'task-add-page.md'), 'utf-8');
     const modifyTask = readFileSync(join(contextDir, 'task-modify.md'), 'utf-8');
+    const obsoleteMarkdownPath = join(contextDir, 'page-obsolete-pack.md');
+    const obsoleteJsonPath = join(contextDir, 'page-obsolete-pack.json');
+    writeFileSync(obsoleteMarkdownPath, '# stale page pack\n', 'utf-8');
+    writeFileSync(obsoleteJsonPath, '{}\n', 'utf-8');
+
+    await refreshDerivedFiles(testDir, essence, createMockRegistry());
 
     expect(addPageTask).toContain('## Primary Compiled Contract');
     expect(addPageTask).toContain('.decantr/context/mutation-add-page-pack.md');
@@ -579,6 +585,8 @@ describe('V4 scaffold', () => {
     expect(modifyTask).toContain('decantr_get_page_context');
     expect(modifyTask).toContain('## Strict Checks');
     expect(modifyTask).toContain('Page `home` -> `.decantr/context/page-home-pack.md`');
+    expect(existsSync(obsoleteMarkdownPath)).toBe(false);
+    expect(existsSync(obsoleteJsonPath)).toBe(false);
   });
 
   it('scaffoldProject preserves pathname routing in essence and scaffold packs for nextjs target', async () => {

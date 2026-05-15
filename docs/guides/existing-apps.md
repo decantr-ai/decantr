@@ -94,11 +94,15 @@ pnpm exec decantr suggest --from-code --file app/page.tsx --project apps/web
 pnpm exec decantr health --project apps/web --prompt <finding-id>
 ```
 
-`add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs. In observed Brownfield apps, section IDs may be `observed-public` or `observed-primary`; the common `app/settings` shorthand resolves to the single primary section when Decantr can do that safely. The same section shorthand works for scoped feature additions such as `decantr add feature saved-recipes --section app --project apps/web`.
+`suggest --from-code` reads the selected app's file and ranks accepted local patterns alongside registry patterns, so questions like "standardize these buttons/cards" can point the AI at your project-owned law without requiring Decantr registry components.
+
+`add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs. In observed Brownfield apps, section IDs may be `observed-public` or `observed-primary`; the common `app/settings` shorthand resolves to the single primary section when Decantr can do that safely. The same section shorthand works for page removal and scoped feature additions such as `decantr add feature saved-recipes --section app --project apps/web`.
 
 `export --to figma-tokens` only exports Decantr CSS tokens. In contract-only Brownfield, the app may intentionally keep Tailwind, Sass, CSS module, or design-system tokens outside Decantr; use that project token source or adopt a style bridge before treating Decantr token export as canonical.
 
 If you run `decantr setup` after adoption from a monorepo root, it should show attached projects and the day-two loop (`doctor`, `task`, `verify`, `ci init`) rather than asking you to reattach the same app. If you run `decantr magic` against an already attached app, it should steer you into `decantr task <route> "<change>" --project apps/web`; `magic` remains greenfield-first.
+
+If you run `decantr setup` from inside an attached app, Decantr should reflect the current state: apps with accepted local law get `verify --brownfield --local-patterns`, while apps without accepted local law still get the `codify --from-audit` next step.
 
 This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
 
@@ -118,6 +122,8 @@ pnpm exec decantr ci --project apps/web
 Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. Use `verify` after local edits. Use `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and registry pack commands as advanced primitives only when you need direct control over a specific layer.
 
 In contract-only Brownfield adoption, Decantr does not require `@decantr/css`, `css(...)`, `d-*` treatments, or generated Decantr token CSS. Critique and source audit should point you toward your project-owned design system, Tailwind/Sass/theme tokens, component variants, or accepted local rules instead.
+
+Contract-only Brownfield also suppresses Decantr CSS interaction-class enforcement. Use project-owned interaction rules if you want to make hover, motion, or animation behavior a CI gate.
 
 Project Health treats test, spec, story, fixture, and mock files as non-production source audit inputs. Localhost and security warnings should point at production source paths instead of colocated tests.
 

@@ -215,6 +215,24 @@ describe('operating layer commands', () => {
     expect(output).not.toContain('decantr adopt --project apps/web --yes');
   });
 
+  it('keeps setup recommendations aligned with accepted local law inside an app', () => {
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'local-patterns.json'), {
+      version: 2,
+      status: 'accepted',
+      patterns: [{ id: 'button', label: 'Button primitives' }],
+    });
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'rules.json'), {
+      version: 1,
+      status: 'accepted',
+      rules: [],
+    });
+
+    const output = runCli(join(testDir, 'apps', 'web'), ['setup']);
+
+    expect(output).toContain('decantr verify --brownfield --local-patterns');
+    expect(output).not.toContain('decantr codify --from-audit');
+  });
+
   it('requires --project for ci from a monorepo root', () => {
     try {
       runCli(testDir, ['ci']);
@@ -450,6 +468,21 @@ describe('operating layer commands', () => {
       section: 'observed-primary',
       page: 'dogfood-edge',
     });
+
+    const removeOutput = runCli(testDir, [
+      'remove',
+      'page',
+      'app/dogfood-edge',
+      '--project',
+      'apps/web',
+    ]);
+    const removed = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint: { routes: Record<string, { section: string; page: string }> };
+    };
+
+    expect(removeOutput).toContain('Resolved section alias "app" to "observed-primary"');
+    expect(removeOutput).toContain('Removed page "dogfood-edge" from section "observed-primary"');
+    expect(removed.blueprint.routes['/dogfood-edge']).toBeUndefined();
   });
 
   it('suggests a concrete section when page additions use an unknown section', () => {
@@ -516,6 +549,23 @@ describe('operating layer commands', () => {
     );
     expect(section?.features).toContain('saved-recipes');
     expect(updated.blueprint.features).toContain('saved-recipes');
+  });
+
+  it('suppresses Decantr CSS interaction-class guidance in contract-only brownfield apps', () => {
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'context', 'page-home-pack.json'), {
+      data: { patterns: [{ id: 'hero', interactions: ['animate-on-mount'] }] },
+    });
+    mkdirSync(join(testDir, 'apps', 'web', 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'page.tsx'),
+      'export function Page() { return <main>Home</main>; }\n',
+      'utf-8',
+    );
+
+    const output = runCli(testDir, ['verify', '--brownfield', '--project', 'apps/web']);
+
+    expect(output).not.toContain('Declared pattern interactions are not implemented');
+    expect(output).not.toContain('d-enter-fade');
   });
 
   it('rejects nonexistent project paths instead of recommending impossible adoption', () => {
@@ -653,6 +703,13 @@ describe('operating layer commands', () => {
           appliesTo: ['buttons', 'actions'],
           componentPaths: ['src/components/ui/button.tsx'],
         },
+        {
+          id: 'surface-card',
+          label: 'Card surfaces',
+          role: 'Reusable panels and card treatments',
+          appliesTo: ['cards', 'panels'],
+          componentPaths: ['src/components/ui/card.tsx'],
+        },
       ],
     });
 
@@ -664,6 +721,13 @@ describe('operating layer commands', () => {
       '--project',
       'apps/web',
     ]);
+    const rulesPreview = runCli(testDir, ['rules', 'preview', '--project', 'apps/web']);
+    mkdirSync(join(testDir, 'apps', 'web', 'src', 'components', 'ui'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'components', 'ui', 'button.tsx'),
+      'export function Demo() { return <button className="recipe-card">Save</button>; }\n',
+      'utf-8',
+    );
     const codeSuggestions = runCli(testDir, [
       'suggest',
       '--from-code',
@@ -696,9 +760,11 @@ describe('operating layer commands', () => {
     );
     expect(suggestions).toContain('Project-owned local law');
     expect(suggestions).toContain('button');
+    expect(rulesPreview).toContain('Package manager: pnpm');
     expect(codeSuggestions).toContain(
       'Pattern suggestions for "file button.tsx source code patterns"',
     );
+    expect(codeSuggestions).toContain('surface-card');
     expect(exported).toContain('Exported Figma/Tokens Studio tokens');
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'figma-tokens.json'))).toBe(true);
   }, 20_000);

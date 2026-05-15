@@ -136,11 +136,15 @@ decantr list patterns
 decantr showcase verification --json
 ```
 
+`suggest --from-code` uses the selected app's source file to rank both hosted registry patterns and accepted project-owned local patterns, so Brownfield button/card/form law can surface from real code instead of just the text query.
+
 ## Project Health And Studio
 
 `decantr verify` is the workflow command most users should run locally after edits. It delegates to Project Health, can add Brownfield guard validation with `--brownfield`, requires an accepted local pattern pack with `--local-patterns`, scans `.decantr/rules.json` when present, supports workspace mode, and writes evidence to `.decantr/evidence/latest.json` by default when `--evidence` is used.
 
 `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, visual evidence, design authority signals, CI wiring, and the next command to run. It is the command to reach for when an app is in a monorepo, has stale Decantr files, or someone is not sure what Decantr expects next.
+
+`decantr setup` is non-mutating orientation. In an attached Brownfield app it reflects whether local law is already accepted, so the recommended verify command includes `--local-patterns` only when the project has that layer.
 
 `decantr ci` is the blessed non-mutating automation gate. It runs the Project Health surface with adoption-mode-aware local law checks and emits a schema-backed CI report. `decantr ci init` writes root GitHub workflows or portable generic snippets using the detected package manager and pinned local CLI command instead of `@latest`; if the root manifest has not pinned Decantr yet, it prints the exact install command first.
 

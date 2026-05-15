@@ -1,4 +1,12 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type {
@@ -3243,6 +3251,30 @@ function writeExecutionPackArtifacts(
   return markdownPath;
 }
 
+function isManagedExecutionPackArtifact(fileName: string): boolean {
+  return (
+    fileName === 'pack-manifest.json' ||
+    /^(?:scaffold|review|section-.+-pack|page-.+-pack|mutation-.+-pack)\.(?:md|json)$/.test(
+      fileName,
+    )
+  );
+}
+
+function removeObsoleteExecutionPackArtifacts(contextDir: string, writtenPaths: string[]): void {
+  const expected = new Set<string>();
+  for (const path of writtenPaths) {
+    expected.add(path);
+    if (path.endsWith('.md')) expected.add(path.slice(0, -'.md'.length) + '.json');
+  }
+
+  for (const entry of readdirSync(contextDir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (!isManagedExecutionPackArtifact(entry.name)) continue;
+    const fullPath = join(contextDir, entry.name);
+    if (!expected.has(fullPath)) rmSync(fullPath, { force: true });
+  }
+}
+
 export function writeExecutionPackBundleArtifacts(
   contextDir: string,
   bundle: ExecutionPackBundle,
@@ -3290,6 +3322,7 @@ export function writeExecutionPackBundleArtifacts(
   const manifestPath = join(contextDir, 'pack-manifest.json');
   writeFileSync(manifestPath, JSON.stringify(bundle.manifest, null, 2) + '\n');
   outputPaths.push(manifestPath);
+  removeObsoleteExecutionPackArtifacts(contextDir, outputPaths);
 
   return {
     paths: outputPaths,

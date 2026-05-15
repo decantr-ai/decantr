@@ -97,7 +97,7 @@ Use `decantr doctor` when the next step is unclear, `decantr verify` after local
 Existing rule files are detected during project analysis and init. Bridge behavior is preview-first:
 
 - `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`.
-- `decantr rules preview` prints the bridge without mutating files.
+- `decantr rules preview` prints the bridge without mutating files and inherits the package manager from the selected app's workspace root in monorepos.
 - `decantr rules apply` injects idempotent marked blocks into supported rule files.
 - Cursor uses `.cursor/rules/decantr.mdc`.
 - Brownfield init never mutates rule files unless `--assistant-bridge=apply` is explicit.

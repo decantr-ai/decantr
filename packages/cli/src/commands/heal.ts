@@ -32,6 +32,19 @@ export interface CheckResult {
   missingEssence: boolean;
 }
 
+function isContractOnlyProject(projectRoot: string): boolean {
+  const metadataPath = join(projectRoot, '.decantr', 'project.json');
+  if (!existsSync(metadataPath)) return false;
+  try {
+    const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8')) as {
+      initialized?: { adoptionMode?: string };
+    };
+    return metadata.initialized?.adoptionMode === 'contract-only';
+  } catch {
+    return false;
+  }
+}
+
 export function collectCheckIssues(
   projectRoot: string = process.cwd(),
   options: CheckOptions = {},
@@ -68,10 +81,12 @@ export function collectCheckIssues(
   }
 
   let interactionIssues: string[] = [];
-  try {
-    interactionIssues = scanProjectInteractions(projectRoot);
-  } catch {
-    /* source scan is non-fatal */
+  if (!isContractOnlyProject(projectRoot)) {
+    try {
+      interactionIssues = scanProjectInteractions(projectRoot);
+    } catch {
+      /* source scan is non-fatal */
+    }
   }
 
   try {
@@ -149,12 +164,17 @@ export async function cmdHeal(
     }
   }
 
-  console.log(`\n${YELLOW}Manual fixes required. Review the issues above.${RESET}`);
-
   // V4 C5: when any issue is severity='error', exit non-zero so CI gates
   // and `npm run check` script wrappers see the failure. Warnings keep
   // exit code 0 (informational).
   const hasError = issues.some((i) => i.type === 'error');
+  if (hasError) {
+    console.log(`\n${YELLOW}Manual fixes required. Review the issues above.${RESET}`);
+  } else {
+    console.log(
+      `\n${YELLOW}Warnings found. Review the issues above or set stricter gates in CI.${RESET}`,
+    );
+  }
   if (hasError) {
     process.exitCode = 1;
   }
