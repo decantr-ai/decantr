@@ -118,7 +118,7 @@ export default async function ModerationDetailPage({
 
       {/* Hero section */}
       <div
-        className="d-section border-b border-d-border pb-6 mb-6 registry-section-flush-top"
+        className="d-section d-glow-hover border-b border-d-border pb-6 mb-6 registry-section-flush-top"
         data-density="compact"
       >
         {/* Badges */}

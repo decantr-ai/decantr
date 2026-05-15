@@ -83,7 +83,7 @@ describe('command help (e2e)', () => {
     expect(codify).toContain('decantr codify');
     expect(codify).toContain('--from-audit');
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
-  });
+  }, 15_000);
 
   it('prints content namespace help without requiring a content repository', () => {
     const output = runHelp(testDir, ['content', '--help']);

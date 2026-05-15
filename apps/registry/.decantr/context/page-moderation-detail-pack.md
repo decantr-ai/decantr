@@ -6,44 +6,31 @@
 
 ## Page Contract
 - Page: moderation-detail
-- Path: /moderation-detail/:id
+- Path: /admin/moderation/:id
 - Shell: sidebar-main
 - Section: admin-moderation (auxiliary)
 - Theme: luminarum (dark)
 - Features: auth, admin
-- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1
+- Surface: _flex _col _gap4
 
 ## Page Patterns
 - content-detail-hero -> content-detail-hero [stack | standard]
-- json-viewer -> json-viewer [stack | collapsible]
+  > Full-width detail hero with narrative content, a quick-start rail, and compact trust summaries.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] animate-on-mount
+  - [ ] stagger-children
+  - [ ] glow-hover
+- json-viewer -> json-viewer [stack | artifact]
+  > Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] hover-reveal
+  - [ ] click-select
+  - [ ] animate-on-mount
+  - [ ] keyboard-navigation
 - moderation-queue-item -> moderation-queue-item [stack | standard]
+  > Full moderation card with content preview, submitter avatar, reputation score, submission date, and approve/reject buttons.
+  **Interactions (MUST implement each — see DECANTR.md "Interaction Requirements"):**
+  - [ ] animate-on-mount
 
-## Required Setup
-- Keep the compiled route and shell contract stable for this page.
-- Treat the listed page patterns as the primary structure for this route.
-
-## Allowed Vocabulary
-- moderation-detail
-- sidebar-main
-- admin-moderation
-- auxiliary
-- luminarum
-- dark
-- auth
-- admin
-- content-detail-hero
-- stack
-- json-viewer
-- moderation-queue-item
-
-## Success Checks
-- The page keeps the compiled route, shell, and section contract intact. [error]
-- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]
-- Any declared wiring signals remain coherent with the rendered page structure. [warn]
-
-## Token Budget
-- Target: 1400
-- Max: 2200
-- Prefer route summaries over repeated prose.
-- Use compact vocabulary lists instead of large reference tables.
-- Include only task-relevant examples and checks.
+## Shared Contract
+Required setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.

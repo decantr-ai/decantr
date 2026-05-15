@@ -69,7 +69,7 @@
   },
   "data": {
     "pageId": "moderation-detail",
-    "path": "/moderation-detail/:id",
+    "path": "/admin/moderation/:id",
     "shell": "sidebar-main",
     "sectionId": "admin-moderation",
     "sectionRole": "auxiliary",
@@ -77,7 +77,7 @@
       "auth",
       "admin"
     ],
-    "surface": "_flex _col _gap_gap4 _p4 _overflow[auto] _flex1",
+    "surface": "_flex _col _gap4",
     "theme": {
       "id": "luminarum",
       "mode": "dark",
@@ -89,21 +89,38 @@
         "id": "content-detail-hero",
         "alias": "content-detail-hero",
         "preset": "standard",
-        "layout": "stack"
+        "layout": "stack",
+        "presetDescription": "Full-width detail hero with narrative content, a quick-start rail, and compact trust summaries.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "glow-hover"
+        ]
       },
       {
         "id": "json-viewer",
         "alias": "json-viewer",
-        "preset": "collapsible",
-        "layout": "stack"
+        "preset": "artifact",
+        "layout": "stack",
+        "presetDescription": "Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.",
+        "interactions": [
+          "hover-reveal",
+          "click-select",
+          "animate-on-mount",
+          "keyboard-navigation"
+        ]
       },
       {
         "id": "moderation-queue-item",
         "alias": "moderation-queue-item",
         "preset": "standard",
-        "layout": "stack"
+        "layout": "stack",
+        "presetDescription": "Full moderation card with content preview, submitter avatar, reputation score, submission date, and approve/reject buttons.",
+        "interactions": [
+          "animate-on-mount"
+        ]
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the moderation-detail route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=moderation-detail | patterns=content-detail-hero, json-viewer, moderation-queue-item\n\n## Page Contract\n- Page: moderation-detail\n- Path: /moderation-detail/:id\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap_gap4 _p4 _overflow[auto] _flex1\n\n## Page Patterns\n- content-detail-hero -> content-detail-hero [stack | standard]\n- json-viewer -> json-viewer [stack | collapsible]\n- moderation-queue-item -> moderation-queue-item [stack | standard]\n\n## Required Setup\n- Keep the compiled route and shell contract stable for this page.\n- Treat the listed page patterns as the primary structure for this route.\n\n## Allowed Vocabulary\n- moderation-detail\n- sidebar-main\n- admin-moderation\n- auxiliary\n- luminarum\n- dark\n- auth\n- admin\n- content-detail-hero\n- stack\n- json-viewer\n- moderation-queue-item\n\n## Success Checks\n- The page keeps the compiled route, shell, and section contract intact. [error]\n- The page preserves its primary compiled patterns instead of drifting into unrelated layouts. [error]\n- Any declared wiring signals remain coherent with the rendered page structure. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the moderation-detail route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=moderation-detail | patterns=content-detail-hero, json-viewer, moderation-queue-item\n\n## Page Contract\n- Page: moderation-detail\n- Path: /admin/moderation/:id\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- content-detail-hero -> content-detail-hero [stack | standard]\n  > Full-width detail hero with narrative content, a quick-start rail, and compact trust summaries.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] glow-hover\n- json-viewer -> json-viewer [stack | artifact]\n  > Premium artifact panel with a padded toolbar, segmented tab strip, syntax-highlighted JSON, and supporting summary metadata.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n- moderation-queue-item -> moderation-queue-item [stack | standard]\n  > Full moderation card with content preview, submitter avatar, reputation score, submission date, and approve/reject buttons.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

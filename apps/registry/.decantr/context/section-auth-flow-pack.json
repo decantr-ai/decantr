@@ -13,7 +13,9 @@
   "scope": {
     "appId": "app",
     "pageIds": [
-      "login"
+      "login",
+      "register",
+      "forgot-password"
     ],
     "patternIds": [
       "auth-form"
@@ -82,8 +84,26 @@
           "auth-form"
         ],
         "shell": "centered"
+      },
+      {
+        "pageId": "register",
+        "sectionId": "auth-flow",
+        "path": "/login?mode=register",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
+      },
+      {
+        "pageId": "forgot-password",
+        "sectionId": "auth-flow",
+        "path": "/login?mode=forgot-password",
+        "patternIds": [
+          "auth-form"
+        ],
+        "shell": "centered"
       }
     ]
   },
-  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the auth-flow section using the compiled centered shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=login | patterns=auth-form\n\n## Section Contract\n- Section: auth-flow\n- Role: gateway\n- Shell: centered\n- Theme: luminarum (dark)\n- Features: auth\n- Description: Login, registration, and password recovery with OAuth support\n\n## Section Routes\n- /login -> auth-flow/login @ centered [auth-form]\n\n## Theme Decorators\n\nTheme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- auth-flow\n- gateway\n- centered\n- luminarum\n- dark\n- auth\n- auth-form\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
+  "renderedMarkdown": "# Section Pack\n\n**Objective:** Implement the auth-flow section using the compiled centered shell contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=login, register, forgot-password | patterns=auth-form\n\n## Section Contract\n- Section: auth-flow\n- Role: gateway\n- Shell: centered\n- Theme: luminarum (dark)\n- Features: auth\n- Description: Login, registration, and password recovery with OAuth support\n\n## Section Routes\n- /login -> auth-flow/login @ centered [auth-form]\n- /login?mode=register -> auth-flow/register @ centered [auth-form]\n- /login?mode=forgot-password -> auth-flow/forgot-password @ centered [auth-form]\n\n## Theme Decorators\n\nTheme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under \"Required Theme Decorators\". Apply them across this section's pages — the contract is the same project-wide. See also DECANTR.md \"Decorator Quick Reference\" for the same table.\n\n## Required Setup\n- Use the declared section routes as the source of truth for this slice of the app.\n- Keep the section shell consistent unless the task explicitly changes the shell contract.\n\n## Allowed Vocabulary\n- auth-flow\n- gateway\n- centered\n- luminarum\n- dark\n- auth\n- auth-form\n\n## Success Checks\n- Section pages and routes remain coherent with the compiled topology. [error]\n- The section shell contract stays consistent across its routes. [error]\n- Primary section patterns are represented without adding off-contract filler sections. [warn]\n\n## Token Budget\n- Target: 1400\n- Max: 2200\n- Prefer route summaries over repeated prose.\n- Use compact vocabulary lists instead of large reference tables.\n- Include only task-relevant examples and checks.\n"
 }

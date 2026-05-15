@@ -239,7 +239,8 @@
               "content-detail-hero",
               "json-viewer",
               "moderation-queue-item"
-            ]
+            ],
+            "route": "/admin/moderation/:id"
           }
         ]
       },
@@ -266,7 +267,8 @@
                 "preset": "register",
                 "pattern": "auth-form"
               }
-            ]
+            ],
+            "route": "/login?mode=register"
           },
           {
             "id": "forgot-password",
@@ -275,7 +277,8 @@
                 "preset": "reset",
                 "pattern": "auth-form"
               }
-            ]
+            ],
+            "route": "/login?mode=forgot-password"
           }
         ]
       }
@@ -295,6 +298,14 @@
       "/login": {
         "section": "auth-flow",
         "page": "login"
+      },
+      "/login?mode=register": {
+        "section": "auth-flow",
+        "page": "register"
+      },
+      "/login?mode=forgot-password": {
+        "section": "auth-flow",
+        "page": "forgot-password"
       },
       "/browse": {
         "section": "registry-browser",
@@ -323,6 +334,10 @@
       "/admin/moderation": {
         "section": "admin-moderation",
         "page": "moderation-queue"
+      },
+      "/admin/moderation/:id": {
+        "section": "admin-moderation",
+        "page": "moderation-detail"
       },
       "/admin/reports": {
         "section": "admin-moderation",

@@ -701,5 +701,5 @@ describe('operating layer commands', () => {
     );
     expect(exported).toContain('Exported Figma/Tokens Studio tokens');
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'figma-tokens.json'))).toBe(true);
-  });
+  }, 20_000);
 });

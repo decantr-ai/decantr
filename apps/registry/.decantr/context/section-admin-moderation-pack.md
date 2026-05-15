@@ -2,7 +2,7 @@
 
 **Objective:** Implement the admin-moderation section using the compiled sidebar-main shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=moderation-queue, commercial-reports, organizations, organization-detail | patterns=search-filter-bar, moderation-queue-item, kpi-grid, activity-feed, content-card-grid, detail-header
+**Scope:** pages=moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail | patterns=search-filter-bar, moderation-queue-item, kpi-grid, activity-feed, content-card-grid, detail-header, content-detail-hero, json-viewer
 
 ## Section Contract
 - Section: admin-moderation
@@ -17,6 +17,7 @@
 - /admin/reports -> admin-moderation/commercial-reports @ sidebar-main [kpi-grid, activity-feed]
 - /admin/organizations -> admin-moderation/organizations @ sidebar-main [search-filter-bar, content-card-grid, activity-feed]
 - /admin/organizations/:slug -> admin-moderation/organization-detail @ sidebar-main [detail-header, kpi-grid, activity-feed, content-card-grid]
+- /admin/moderation/:id -> admin-moderation/moderation-detail @ sidebar-main [content-detail-hero, json-viewer, moderation-queue-item]
 
 ## Theme Decorators
 
@@ -40,6 +41,8 @@ Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Re
 - activity-feed
 - content-card-grid
 - detail-header
+- content-detail-hero
+- json-viewer
 
 ## Success Checks
 - Section pages and routes remain coherent with the compiled topology. [error]

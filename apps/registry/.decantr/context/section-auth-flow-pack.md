@@ -2,7 +2,7 @@
 
 **Objective:** Implement the auth-flow section using the compiled centered shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=login | patterns=auth-form
+**Scope:** pages=login, register, forgot-password | patterns=auth-form
 
 ## Section Contract
 - Section: auth-flow
@@ -14,6 +14,8 @@
 
 ## Section Routes
 - /login -> auth-flow/login @ centered [auth-form]
+- /login?mode=register -> auth-flow/register @ centered [auth-form]
+- /login?mode=forgot-password -> auth-flow/forgot-password @ centered [auth-form]
 
 ## Theme Decorators
 

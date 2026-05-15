@@ -37,10 +37,10 @@
     "search",
     "pagination",
     "blueprint-launch-hero",
-    "column",
-    "search-filter-bar",
     "stack",
+    "search-filter-bar",
     "featured-launchpad-list",
+    "grid",
     "launchpad-flow",
     "registry-link-list"
   ],
@@ -93,8 +93,15 @@
       {
         "id": "blueprint-launch-hero",
         "alias": "blueprint-launch-hero",
-        "preset": "default",
-        "layout": "column"
+        "preset": "registry",
+        "layout": "stack",
+        "presetDescription": "Product-forward registry hero with eyebrow, headline, concise value copy, primary browse/search action, secondary CLI action, and a proof row of compact metrics.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "click-select",
+          "keyboard-navigation"
+        ]
       },
       {
         "id": "search-filter-bar",
@@ -112,22 +119,43 @@
       {
         "id": "featured-launchpad-list",
         "alias": "featured-launchpad-list",
-        "preset": "default",
-        "layout": "column"
+        "preset": "curated",
+        "layout": "grid",
+        "presetDescription": "Three to six featured launchpad cards with blueprint name, target workflow, short outcome copy, tag row, and primary inspect/use action.",
+        "interactions": [
+          "lift-hover",
+          "click-select",
+          "animate-on-mount",
+          "stagger-children",
+          "keyboard-navigation"
+        ]
       },
       {
         "id": "launchpad-flow",
         "alias": "launchpad-flow",
-        "preset": "default",
-        "layout": "column"
+        "preset": "steps",
+        "layout": "grid",
+        "presetDescription": "Four-step horizontal or stacked flow: Choose, Initialize, Refresh, Verify. Each step carries a compact command or artifact reference.",
+        "interactions": [
+          "stagger-children",
+          "animate-on-mount",
+          "click-select",
+          "keyboard-navigation"
+        ]
       },
       {
         "id": "registry-link-list",
         "alias": "registry-link-list",
-        "preset": "default",
-        "layout": "column"
+        "preset": "compact",
+        "layout": "stack",
+        "presetDescription": "Single-column link list with icon, title, short helper text, and optional count or status badge.",
+        "interactions": [
+          "click-select",
+          "hover-reveal",
+          "keyboard-navigation"
+        ]
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the homepage route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=homepage | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list\n\n## Page Contract\n- Page: homepage\n- Path: /\n- Shell: top-nav-main\n- Section: registry-browser (public)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- blueprint-launch-hero -> blueprint-launch-hero [column | default]\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- featured-launchpad-list -> featured-launchpad-list [column | default]\n- launchpad-flow -> launchpad-flow [column | default]\n- registry-link-list -> registry-link-list [column | default]\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the homepage route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=homepage | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list\n\n## Page Contract\n- Page: homepage\n- Path: /\n- Shell: top-nav-main\n- Section: registry-browser (public)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- blueprint-launch-hero -> blueprint-launch-hero [stack | registry]\n  > Product-forward registry hero with eyebrow, headline, concise value copy, primary browse/search action, secondary CLI action, and a proof row of compact metrics.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] click-select\n  - [ ] keyboard-navigation\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- featured-launchpad-list -> featured-launchpad-list [grid | curated]\n  > Three to six featured launchpad cards with blueprint name, target workflow, short outcome copy, tag row, and primary inspect/use action.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] keyboard-navigation\n- launchpad-flow -> launchpad-flow [grid | steps]\n  > Four-step horizontal or stacked flow: Choose, Initialize, Refresh, Verify. Each step carries a compact command or artifact reference.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] keyboard-navigation\n- registry-link-list -> registry-link-list [stack | compact]\n  > Single-column link list with icon, title, short helper text, and optional count or status badge.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] click-select\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

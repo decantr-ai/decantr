@@ -2,7 +2,7 @@
 
 **Objective:** Execute the modify workflow against the compiled app contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=homepage, browse, browse-type, detail, profile, overview, content, content-new, api-keys, settings, billing, team, governance, private-registry, moderation-queue, commercial-reports, organizations, organization-detail, login | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list, content-card-grid, command-rail, blueprint-anatomy, contract-explorer, json-viewer, detail-header, activity-feed, kpi-grid, reputation-badge, form, api-key-row, account-settings, tier-upgrade-card, team-member-row, moderation-queue-item, auth-form
+**Scope:** pages=homepage, browse, browse-type, detail, profile, overview, content, content-new, api-keys, settings, billing, team, governance, private-registry, moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail, login, register, forgot-password | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list, content-card-grid, command-rail, blueprint-anatomy, contract-explorer, json-viewer, detail-header, activity-feed, kpi-grid, reputation-badge, form, api-key-row, account-settings, tier-upgrade-card, team-member-row, moderation-queue-item, content-detail-hero, auth-form
 
 ## Mutation Contract
 - Operation: modify
@@ -30,7 +30,10 @@
 - /admin/reports -> admin-moderation/commercial-reports @ sidebar-main [kpi-grid, activity-feed]
 - /admin/organizations -> admin-moderation/organizations @ sidebar-main [search-filter-bar, content-card-grid, activity-feed]
 - /admin/organizations/:slug -> admin-moderation/organization-detail @ sidebar-main [detail-header, kpi-grid, activity-feed, content-card-grid]
+- /admin/moderation/:id -> admin-moderation/moderation-detail @ sidebar-main [content-detail-hero, json-viewer, moderation-queue-item]
 - /login -> auth-flow/login @ centered [auth-form]
+- /login?mode=register -> auth-flow/register @ centered [auth-form]
+- /login?mode=forgot-password -> auth-flow/forgot-password @ centered [auth-form]
 
 ## Workflow
 - Read the page pack for the route you are modifying first.
@@ -71,6 +74,7 @@
 - tier-upgrade-card
 - team-member-row
 - moderation-queue-item
+- content-detail-hero
 - auth-form
 
 ## Success Checks
