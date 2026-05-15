@@ -418,6 +418,62 @@ describe('operating layer commands', () => {
     expect(task.read).toContain('apps/web/DECANTR.md');
   });
 
+  it('resolves common app section aliases for observed brownfield sections', () => {
+    const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
+    const essence = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint: {
+        sections: Array<{ id: string; role: string; pages: Array<{ id: string }> }>;
+        routes: Record<string, { section: string; page: string }>;
+      };
+    };
+    essence.blueprint.sections[0].id = 'observed-primary';
+    essence.blueprint.sections[0].role = 'primary';
+    essence.blueprint.routes['/'] = { section: 'observed-primary', page: 'home' };
+    writeJson(essencePath, essence);
+
+    const output = runCli(testDir, [
+      'add',
+      'page',
+      'app/dogfood-edge',
+      '--project',
+      'apps/web',
+      '--route',
+      '/dogfood-edge',
+    ]);
+    const updated = JSON.parse(readFileSync(essencePath, 'utf-8')) as {
+      blueprint: { routes: Record<string, { section: string; page: string }> };
+    };
+
+    expect(output).toContain('Resolved section alias "app" to "observed-primary"');
+    expect(output).toContain('route "/dogfood-edge"');
+    expect(updated.blueprint.routes['/dogfood-edge']).toEqual({
+      section: 'observed-primary',
+      page: 'dogfood-edge',
+    });
+  });
+
+  it('suggests a concrete section when page additions use an unknown section', () => {
+    try {
+      runCli(testDir, [
+        'add',
+        'page',
+        'not-a-section/settings',
+        '--project',
+        'apps/web',
+        '--route',
+        '/settings',
+      ]);
+      throw new Error('Expected add page to reject an unknown section.');
+    } catch (error) {
+      const output = `${(error as { stdout?: Buffer }).stdout?.toString() ?? ''}\n${
+        (error as { stderr?: Buffer }).stderr?.toString() ?? ''
+      }`;
+      expect(output).toContain('Section "not-a-section" not found.');
+      expect(output).toContain('Available sections: app');
+      expect(output).toContain('Try: decantr add page app/settings');
+    }
+  });
+
   it('rejects nonexistent project paths instead of recommending impossible adoption', () => {
     try {
       runCli(testDir, ['doctor', '--project', 'apps/does-not-exist']);

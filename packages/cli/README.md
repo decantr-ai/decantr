@@ -189,6 +189,8 @@ decantr workspace health --json --output .decantr/workspace-health.json
 decantr verify --workspace --changed --since origin/main
 ```
 
+In observed Brownfield projects, common section shorthands are accepted for page additions when they resolve unambiguously. For example, `decantr add page app/settings --route /settings --project apps/web` resolves `app` to the single primary section, such as `observed-primary`, so docs and LLM prompts do not have to guess generated section IDs first.
+
 `decantr studio` starts a local-only dashboard powered by the same report. It uses Node built-ins only and serves `GET /`, `GET /api/health`, and `POST /api/refresh`.
 
 ```bash

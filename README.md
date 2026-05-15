@@ -175,6 +175,8 @@ decantr add page app/settings --route /settings --project apps/web
 decantr health --project apps/web --prompt <finding-id>
 ```
 
+For observed Brownfield apps, `app/settings` can resolve to the single primary section, such as `observed-primary`, so route additions remain ergonomic after attach.
+
 If the app is already running and you want local screenshots, add visual evidence later:
 
 ```bash

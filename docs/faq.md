@@ -210,6 +210,8 @@ npx @decantr/cli theme switch auradecantism
 npx @decantr/cli refresh
 ```
 
+In observed Brownfield apps, `app/settings` can resolve to the single primary section, such as `observed-primary`, when that mapping is unambiguous.
+
 After the change, run:
 
 ```bash

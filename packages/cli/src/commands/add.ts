@@ -60,6 +60,48 @@ function normalizeRoute(route: string): string {
   return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
 }
 
+function resolveSectionForPage(
+  sections: EssenceSection[],
+  requestedSectionId: string,
+): { section: EssenceSection; resolvedFromAlias: boolean } | null {
+  const exact = sections.find((section) => section.id === requestedSectionId);
+  if (exact) return { section: exact, resolvedFromAlias: false };
+
+  const lower = requestedSectionId.toLowerCase();
+  const roleByAlias: Record<string, EssenceSection['role']> = {
+    app: 'primary',
+    main: 'primary',
+    primary: 'primary',
+    public: 'public',
+    marketing: 'public',
+    auth: 'gateway',
+    gateway: 'gateway',
+    auxiliary: 'auxiliary',
+  };
+  const desiredRole = roleByAlias[lower];
+  if (!desiredRole) return null;
+
+  const roleMatches = sections.filter((section) => section.role === desiredRole);
+  if (roleMatches.length === 1) return { section: roleMatches[0], resolvedFromAlias: true };
+  if (roleMatches.length > 1) return null;
+
+  const observedMatch = sections.find((section) => section.id === `observed-${desiredRole}`);
+  return observedMatch ? { section: observedMatch, resolvedFromAlias: true } : null;
+}
+
+function printSectionNotFound(
+  sectionId: string,
+  sections: EssenceSection[],
+  pageId?: string,
+): void {
+  console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
+  console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
+  if (pageId && sections.length > 0) {
+    const primary = sections.find((section) => section.role === 'primary') ?? sections[0];
+    console.error(`${DIM}Try: decantr add page ${primary.id}/${pageId}${RESET}`);
+  }
+}
+
 /**
  * `decantr add section <archetypeId>`
  */
@@ -154,16 +196,19 @@ export async function cmdAddPage(
   const { essence, essencePath } = loaded;
 
   const sections = essence.blueprint.sections;
-  const section = sections.find((s) => s.id === sectionId);
-  if (!section) {
-    console.error(`${RED}Section "${sectionId}" not found.${RESET}`);
-    console.error(`${DIM}Available sections: ${sections.map((s) => s.id).join(', ')}${RESET}`);
+  const resolved = resolveSectionForPage(sections, sectionId);
+  if (!resolved) {
+    printSectionNotFound(sectionId, sections, pageId);
     process.exitCode = 1;
     return;
   }
+  const { section } = resolved;
+  const resolvedSectionId = section.id;
 
   if (section.pages.find((p) => p.id === pageId)) {
-    console.error(`${RED}Page "${pageId}" already exists in section "${sectionId}".${RESET}`);
+    console.error(
+      `${RED}Page "${pageId}" already exists in section "${resolvedSectionId}".${RESET}`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -185,12 +230,17 @@ export async function cmdAddPage(
     route,
     layout: ['hero'],
   });
-  routes[route] = { section: sectionId, page: pageId };
+  routes[route] = { section: resolvedSectionId, page: pageId };
 
   writeEssence(essencePath, essence);
 
+  if (resolved.resolvedFromAlias) {
+    console.log(
+      `${YELLOW}Resolved section alias "${sectionId}" to "${resolvedSectionId}".${RESET}`,
+    );
+  }
   console.log(
-    `${GREEN}Added page "${pageId}" to section "${sectionId}" at route "${route}".${RESET}`,
+    `${GREEN}Added page "${pageId}" to section "${resolvedSectionId}" at route "${route}".${RESET}`,
   );
 
   const registryClient = new RegistryClient({

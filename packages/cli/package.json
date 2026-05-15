@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "2.9.4",
+  "version": "2.9.5",
   "description": "Decantr CLI - scaffold, audit, inspect Project Health, and maintain Decantr projects from the terminal",
   "keywords": [
     "decantr",

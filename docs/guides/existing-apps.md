@@ -94,7 +94,7 @@ pnpm exec decantr suggest --from-code --file app/page.tsx --project apps/web
 pnpm exec decantr health --project apps/web --prompt <finding-id>
 ```
 
-`add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs.
+`add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs. In observed Brownfield apps, section IDs may be `observed-public` or `observed-primary`; the common `app/settings` shorthand resolves to the single primary section when Decantr can do that safely.
 
 `export --to figma-tokens` only exports Decantr CSS tokens. In contract-only Brownfield, the app may intentionally keep Tailwind, Sass, CSS module, or design-system tokens outside Decantr; use that project token source or adopt a style bridge before treating Decantr token export as canonical.
 
