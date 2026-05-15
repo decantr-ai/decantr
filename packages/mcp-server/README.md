@@ -148,6 +148,12 @@ The server exposes Decantr registry, context, benchmark, and verification tools.
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
 
+## Security And Permissions
+
+The MCP server reads Decantr files and selected project files from the active workspace. Write access is limited to explicit write tools such as `decantr_update_essence` and `decantr_accept_drift`, and paths are contained to the active workspace root.
+
+Registry and pack-resolution tools may call the configured Decantr API. Source upload fallbacks for hosted critique/audit are disabled unless the tool call explicitly passes `allow_hosted_upload: true`. The MCP server does not emit Decantr telemetry. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## Compatibility
 
 `@decantr/mcp-server` is stable in the `2.x` line for the documented MCP tool surface.

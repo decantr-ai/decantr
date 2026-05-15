@@ -462,6 +462,7 @@ export function createLocalLawTaskSummary(projectRoot: string): LocalLawTaskSumm
 export function changedFiles(projectRoot: string, since?: string): string[] {
   const changed = new Set<string>();
   try {
+    // Security: fixed git argv, shell disabled, and cwd scoped to the selected project.
     const commands = since
       ? [
           ['diff', '--name-only', since, '--'],

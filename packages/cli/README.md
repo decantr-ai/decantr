@@ -96,6 +96,12 @@ Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-pr
 - syncs paginated hosted registry content into a full slug-keyed local cache for offline guards and context generation
 - validates, refreshes, and maintains `decantr.essence.json`
 
+## Security And Permissions
+
+The CLI is intentionally a local project inspector and artifact writer. It reads selected project/workspace files, package manifests, routing/style/config files, `.decantr` artifacts, and Decantr cache/config files. It writes `decantr.essence.json`, `DECANTR.md`, `.decantr/*`, generated context packs, optional CI workflows/snippets, optional style/export files, and auth/telemetry config only when explicitly requested.
+
+Telemetry is disabled by default. Hosted registry, hosted pack hydration, hosted critique/audit, and browser evidence are explicit command paths; screenshots and Evidence Bundles stay local unless a hosted workflow is invoked. Release audits prove the installed package with `npm pack --dry-run --json`. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## Common Commands
 
 ```bash

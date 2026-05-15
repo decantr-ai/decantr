@@ -210,6 +210,7 @@ export function listWorkspaceCandidates(
 
 function changedPaths(root: string, since: string): Set<string> {
   try {
+    // Security: fixed git argv, shell disabled, and cwd scoped to the workspace root.
     const output = execFileSync('git', ['diff', '--name-only', since, '--'], {
       cwd: root,
       encoding: 'utf-8',

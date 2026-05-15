@@ -138,6 +138,7 @@ function commandForPlatform(command: string): string {
 }
 
 function runArgvCommand(command: string, args: string[], cwd: string): void {
+  // Security: command is selected by Decantr, args are array-based, and shell execution stays off.
   const result = spawnSync(commandForPlatform(command), args, {
     cwd,
     stdio: 'inherit',

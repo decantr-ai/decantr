@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "updatedAt": "2026-05-15",
+  "packages": [
+    {
+      "name": "@decantr/essence-spec",
+      "path": "packages/essence-spec",
+      "runtimeKind": "library",
+      "ships": ["dist", "schema", "README.md", "package.json"],
+      "filesystem": {
+        "read": ["Explicit essence/schema paths passed to validation helpers"],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": [],
+        "inbound": false
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "none",
+      "hostedUpload": "not-supported",
+      "localArtifacts": [],
+      "scannerNotes": [
+        "Filesystem reads are explicit helper behavior for local validation, not background scanning."
+      ]
+    },
+    {
+      "name": "@decantr/registry",
+      "path": "packages/registry",
+      "runtimeKind": "library",
+      "ships": ["dist", "schema", "README.md", "package.json"],
+      "filesystem": {
+        "read": ["Explicit local registry JSON paths passed to resolver helpers"],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": ["Configured Decantr registry/API base URL for search, resolve, hosted packs, critique, and audit helpers"],
+        "inbound": false
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "none",
+      "hostedUpload": "caller-controlled",
+      "localArtifacts": [],
+      "scannerNotes": [
+        "Network access is the package's API client surface; callers choose the base URL and operation."
+      ]
+    },
+    {
+      "name": "@decantr/css",
+      "path": "packages/css",
+      "runtimeKind": "css-runtime",
+      "ships": ["dist", "README.md", "package.json"],
+      "filesystem": {
+        "read": [],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": [],
+        "inbound": false
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "none",
+      "hostedUpload": "not-supported",
+      "localArtifacts": [],
+      "scannerNotes": [
+        "The CSS package is a framework-agnostic atom runtime and does not inspect projects."
+      ]
+    },
+    {
+      "name": "@decantr/core",
+      "path": "packages/core",
+      "runtimeKind": "library",
+      "ships": ["dist", "schema", "README.md", "package.json"],
+      "filesystem": {
+        "read": [],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": [],
+        "inbound": false
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "none",
+      "hostedUpload": "not-supported",
+      "localArtifacts": [],
+      "scannerNotes": [
+        "Schema URLs in emitted packs are identifiers, not network calls by themselves."
+      ]
+    },
+    {
+      "name": "@decantr/telemetry",
+      "path": "packages/telemetry",
+      "runtimeKind": "library",
+      "ships": ["dist", "README.md", "package.json"],
+      "filesystem": {
+        "read": [],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": ["Caller-configured telemetry sink endpoint"],
+        "inbound": false
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "library-only; events are emitted only when a caller creates a client and captures an event",
+      "hostedUpload": "not-supported",
+      "localArtifacts": [],
+      "scannerNotes": [
+        "The package defines telemetry contracts and clients; it does not auto-start collection."
+      ]
+    },
+    {
+      "name": "@decantr/verifier",
+      "path": "packages/verifier",
+      "runtimeKind": "library",
+      "ships": ["dist", "schema", "README.md", "package.json"],
+      "filesystem": {
+        "read": ["Selected project source files", "Decantr context files", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": ["Loopback fetches to the verifier-owned temporary static server during built-output runtime audit"],
+        "inbound": true
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "none",
+      "hostedUpload": "not-supported",
+      "localArtifacts": ["Evidence Bundle objects returned to callers; file writes are owned by the CLI/MCP caller"],
+      "scannerNotes": [
+        "Runtime audit starts a local loopback server for already-built assets; it does not contact external hosts."
+      ]
+    },
+    {
+      "name": "@decantr/mcp-server",
+      "path": "packages/mcp-server",
+      "runtimeKind": "mcp-server",
+      "ships": ["dist", "README.md", "package.json"],
+      "filesystem": {
+        "read": ["Active workspace Decantr files", "selected project files for critique/audit/evidence tools", "git changed-file state for task context"],
+        "write": ["decantr.essence.json through explicit write tools", ".decantr/drift-log.json through explicit drift deferral"],
+        "delete": []
+      },
+      "network": {
+        "outbound": ["Registry/API reads", "hosted pack compilation", "hosted critique/audit only when allow_hosted_upload is true"],
+        "inbound": false
+      },
+      "process": {
+        "spawn": ["git diff with fixed argv and shell disabled for changed-file/task impact discovery"]
+      },
+      "telemetry": "none",
+      "hostedUpload": "opt-in via allow_hosted_upload=true for critique/audit source upload fallbacks",
+      "localArtifacts": ["Read/write tools are contained to the active workspace root"],
+      "scannerNotes": [
+        "MCP write tools are annotated as write tools and use workspace-root path containment.",
+        "Hosted source upload fallbacks are disabled unless allow_hosted_upload is explicitly true."
+      ]
+    },
+    {
+      "name": "@decantr/cli",
+      "path": "packages/cli",
+      "runtimeKind": "cli",
+      "ships": ["dist", "src/templates", "src/bundled", "README.md", "package.json"],
+      "filesystem": {
+        "read": ["Selected project/workspace files", "package manifests", "routing/style/config files", ".decantr artifacts", "Decantr cache/config files"],
+        "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts", "generated context packs", "optional CI workflows/snippets", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
+        "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
+      },
+      "network": {
+        "outbound": ["Hosted registry/API reads", "hosted pack hydration", "hosted critique/audit commands", "opt-in telemetry endpoints", "user-provided browser/base-url checks"],
+        "inbound": true
+      },
+      "process": {
+        "spawn": ["git diff with fixed argv", "package manager/bootstrap commands with argv arrays", "local Studio/browser/dev-server helper flows"]
+      },
+      "telemetry": "disabled by default; enabled only by --telemetry, decantr telemetry link --enable, or project.json telemetry=true",
+      "hostedUpload": "explicit command behavior; source upload is limited to hosted critique/audit flows and never required for local verify",
+      "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/evidence/*", ".decantr/local-patterns*.json", ".decantr/rules*.json"],
+      "scannerNotes": [
+        "The CLI is intentionally a local project inspector and artifact writer.",
+        "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
+        "Visual evidence screenshots remain local unless the user invokes a hosted workflow."
+      ]
+    },
+    {
+      "name": "@decantr/vite-plugin",
+      "path": "packages/vite-plugin",
+      "runtimeKind": "experimental-dev-plugin",
+      "ships": ["dist", "README.md", "package.json"],
+      "filesystem": {
+        "read": ["Vite project files during opt-in local development"],
+        "write": [],
+        "delete": []
+      },
+      "network": {
+        "outbound": [],
+        "inbound": false
+      },
+      "process": {
+        "spawn": []
+      },
+      "telemetry": "none",
+      "hostedUpload": "not-supported",
+      "localArtifacts": [],
+      "scannerNotes": [
+        "Experimental sidecar; not part of the default reliability layer or publish wave."
+      ]
+    }
+  ]
+}

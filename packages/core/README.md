@@ -73,6 +73,10 @@ This package publishes execution-pack schemas under:
 - `@decantr/core/schema/execution-pack-bundle.v1.json`
 - `@decantr/core/schema/selected-execution-pack.v1.json`
 
+## Security And Permissions
+
+`@decantr/core` is a local execution-pack compiler and type/schema package. It does not read or write project files, call the network, spawn processes, emit telemetry, or upload source by itself. Schema URLs in emitted packs are identifiers, not network calls. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## License
 
 MIT

@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-15T09:50:43-04:00</lastmod>
+    <lastmod>2026-05-15T11:15:16-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -92,7 +92,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-15T08:14:24-04:00</lastmod>
+    <lastmod>2026-05-15T11:15:16-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -205,6 +205,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/reference/security-permissions.md</loc>
+    <lastmod>2026-05-15T16:25:20.096Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/reference/showcase-host.md</loc>
     <lastmod>2026-05-05T11:22:03-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -224,7 +230,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-14T21:01:56-04:00</lastmod>
+    <lastmod>2026-05-15T11:15:16-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -380,13 +386,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-15-brownfield-hardening-2-9-7.md</loc>
-    <lastmod>2026-05-15T15:13:54.693Z</lastmod>
+    <lastmod>2026-05-15T11:15:16-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-15-release-stewardship.md</loc>
     <lastmod>2026-05-15T09:50:43-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-15-security-permissions-hardening.md</loc>
+    <lastmod>2026-05-15T16:28:42.002Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

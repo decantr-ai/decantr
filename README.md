@@ -88,6 +88,8 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
+Security review starts with the installed npm surface, not the whole monorepo. The package permission matrix documents filesystem, network, process, telemetry, hosted-upload, and MCP write-tool behavior for every public package: [docs/reference/security-permissions.md](docs/reference/security-permissions.md).
+
 ## Packages
 
 | Package | Role |
@@ -127,6 +129,7 @@ pnpm build
 pnpm test
 pnpm lint
 pnpm audit:public-api
+pnpm audit:package-permissions
 pnpm audit:registry-dogfood
 pnpm showcase:verify:shortlist
 pnpm release:verify

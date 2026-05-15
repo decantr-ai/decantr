@@ -67,6 +67,10 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 
+## Security And Permissions
+
+The verifier is a local library. It reads selected project source, Decantr context, and built `dist`/`.next` output when callers request project or runtime audits. Built-output runtime audit starts a temporary loopback static server and fetches from that local server only; it does not contact external hosts. The verifier does not write files, spawn processes, emit telemetry, or upload source by itself. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## Compatibility
 
 `@decantr/verifier` is stable in the `2.x` line for the documented verifier APIs and published report-schema exports.

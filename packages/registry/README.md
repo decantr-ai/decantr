@@ -76,6 +76,10 @@ Blueprint records can include `blueprint_portfolio` metadata. List/search summar
 - additive response fields may be introduced without breaking the stable contract
 - breaking client, schema, or path changes require a major version
 
+## Security And Permissions
+
+`@decantr/registry` provides registry schemas, content utilities, and API clients. It may read explicit local registry JSON files when resolver helpers are used, and it may call the configured Decantr API base URL when client methods are invoked. It does not write files, spawn processes, emit telemetry, or upload source by itself. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## License
 
 MIT

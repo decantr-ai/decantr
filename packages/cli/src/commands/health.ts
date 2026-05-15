@@ -1241,6 +1241,7 @@ function screenshotHashes(projectRoot: string): Array<{ path: string; hash: stri
 function changedFilesSinceBaseline(projectRoot: string): string[] {
   const changed = new Set<string>();
   try {
+    // Security: fixed git argv, shell disabled, and cwd scoped to the selected project.
     for (const args of [
       ['diff', '--name-only'],
       ['diff', '--name-only', '--cached'],

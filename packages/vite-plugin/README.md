@@ -46,6 +46,10 @@ The Vite plugin is a secondary local feedback surface after the project has an a
 - Not a general Vite design-system plugin.
 - Not a stable default install for all Decantr projects yet.
 
+## Security And Permissions
+
+`@decantr/vite-plugin` is an opt-in experimental local development sidecar. It reads Vite project files while the dev server runs, but it does not write files, call hosted services, spawn processes, emit telemetry, or upload source. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## License
 
 MIT

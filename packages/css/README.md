@@ -134,6 +134,10 @@ import './styles/treatments.css';
 import './styles/decorators.css';
 ```
 
+## Security And Permissions
+
+`@decantr/css` is a CSS atom runtime. It does not inspect projects, read or write files, call the network, spawn processes, emit telemetry, or upload source. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## License
 
 MIT

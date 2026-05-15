@@ -1,8 +1,8 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fuzzyScore, validateStringArg } from '../src/helpers.js';
+import { fuzzyScore, resolveWorkspacePath, validateStringArg } from '../src/helpers.js';
 import { handleTool, TOOLS } from '../src/tools.js';
 
 const ORIGINAL_CWD = process.cwd();
@@ -105,6 +105,35 @@ describe('MCP tool handlers', () => {
       })) as { valid: boolean; errors: string[] };
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('workspace containment', () => {
+    it('rejects relative, absolute, and symlink escapes from the active workspace root', async () => {
+      const workspaceDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-workspace-'));
+      const outsideDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-outside-'));
+      try {
+        expect(() => resolveWorkspacePath('../outside', workspaceDir)).toThrow(
+          /Path escapes the active workspace root/,
+        );
+        expect(() => resolveWorkspacePath(join(outsideDir, 'decantr.essence.json'), workspaceDir))
+          .toThrow(/Path escapes the active workspace root/);
+
+        symlinkSync(outsideDir, join(workspaceDir, 'outside-link'), 'dir');
+        expect(() => resolveWorkspacePath('outside-link/decantr.essence.json', workspaceDir))
+          .toThrow(/Path escapes the active workspace root/);
+
+        process.chdir(workspaceDir);
+        const result = (await handleTool('decantr_update_essence', {
+          operation: 'add_feature',
+          payload: { feature: 'unsafe' },
+          path: join(outsideDir, 'decantr.essence.json'),
+        })) as { error?: string };
+        expect(result.error).toContain('Path escapes the active workspace root');
+      } finally {
+        rmSync(workspaceDir, { recursive: true, force: true });
+        rmSync(outsideDir, { recursive: true, force: true });
+      }
     });
   });
 

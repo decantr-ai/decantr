@@ -100,6 +100,7 @@ function readJsonIfExists<T>(path: string): T | null {
 function changedFilesForTask(projectRoot: string): string[] {
   const changed = new Set<string>();
   try {
+    // Security: fixed argv, shell disabled, and cwd is the already-resolved project root.
     for (const args of [
       ['diff', '--name-only'],
       ['diff', '--name-only', '--cached'],
@@ -544,6 +545,7 @@ function hasExecutionPackPayload(payload: {
 }
 
 function allowsHostedUpload(args: Record<string, unknown>): boolean {
+  // Hosted critique/audit upload is explicit opt-in; local MCP critique stays local by default.
   return args.allow_hosted_upload === true;
 }
 

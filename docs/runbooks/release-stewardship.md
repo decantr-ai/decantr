@@ -18,6 +18,8 @@ pnpm release:closeout
 
 `release:verify` checks the public npm surface. `release:closeout` checks the release wrapper around it: clean git state, local/origin tag presence, tag reachability from `origin/main`, release-note parity, and npm version/dist-tag parity for publishable packages.
 
+`audit:package-surface` includes the installed permission-surface check. Use `pnpm audit:package-permissions` directly when a change touches package `files` allowlists, filesystem access, network access, process execution, telemetry, hosted upload, MCP write tools, or scanner/audit documentation.
+
 GitHub Releases are optional maintainer packaging. Git tags are not optional.
 
 ## Monorepo Release Flow
@@ -31,6 +33,7 @@ pnpm install
 pnpm build
 pnpm test
 pnpm audit:package-surface
+pnpm audit:package-permissions
 pnpm release:preflight
 pnpm release:commands
 ```

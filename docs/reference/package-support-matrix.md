@@ -5,6 +5,8 @@ Do not edit manually. Run `node scripts/sync-package-support-matrix.mjs` after p
 
 Release readiness audit: `pnpm audit:release-readiness`
 Package surface audit: `pnpm audit:package-surface`
+Package permissions audit: `pnpm audit:package-permissions`
+Security permissions reference: `docs/reference/security-permissions.md`
 
 This matrix defines which npm packages are part of the active Decantr vNext product surface on the reset branch.
 

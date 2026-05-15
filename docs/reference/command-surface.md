@@ -50,4 +50,6 @@ Brownfield intelligence is now exposed through workflows first:
 
 Command help must be side-effect free. `decantr <command> --help`, `decantr <command> -h`, and `decantr <command> help` should print help and never execute command bodies or write project files.
 
+Package and trust audits are repo scripts, not user-facing CLI commands. `pnpm audit:package-surface` verifies support-matrix drift and the installed permission surface, while `pnpm audit:package-permissions` runs the permission-only audit with `npm pack --dry-run --json`. The generated reference is `docs/reference/security-permissions.md`.
+
 `@decantr/vite-plugin` remains experimental after this audit. It may become a verifier-backed dev adapter later, but it is not part of the default reliability layer and should not be treated as a graduated 2.x surface yet.

@@ -74,6 +74,10 @@ The registry admin portal exposes `/admin/telemetry` for managing `anonymous`, `
 
 The shared client redacts sensitive keys before any sink receives an event. This includes prompts, source code, file paths, repository names, raw route names, package slugs, emails, tokens, cookies, URLs, user agents, and authorization fields, while preserving aggregate product fields such as command, duration, success, counts, workflow mode, and signal bucket metadata.
 
+## Security And Permissions
+
+This package defines telemetry contracts, redaction, clients, and optional sinks. It does not auto-start collection. Events are emitted only when a caller constructs a client and calls `capture`. The Decantr CLI remains opt-in for telemetry; use `decantr telemetry explain` for the shareable review view. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## Campaign Attribution
 
 The marketing site and registry can attach campaign attribution fields to web events: UTM source/medium/campaign/content/term/id, first and last touch variants, landing path, referrer domain, click-id provider, and whether a supported click id was present. Raw ad click ids such as `twclid`, `gclid`, `gbraid`, `wbraid`, `fbclid`, `msclkid`, `ttclid`, and `li_fat_id` are not included in Decantr telemetry.

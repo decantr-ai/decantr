@@ -53,6 +53,10 @@ This package is the lowest-level public Decantr contract and is intended to rema
 - schema export paths are part of the supported public surface
 - coordinated downstream releases should only be needed when a package explicitly adopts a newer essence-spec version
 
+## Security And Permissions
+
+`@decantr/essence-spec` is a local validation library. It may read explicitly supplied essence/schema paths through helper APIs, but it does not write files, call the network, spawn processes, emit telemetry, or upload source. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+
 ## License
 
 MIT
