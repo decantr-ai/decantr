@@ -4,7 +4,7 @@ Decantr 2.9 makes Brownfield and monorepo adoption less command-sprawly by addin
 
 ## Highlights
 
-- `decantr doctor` explains app/workspace state, Essence version, adoption mode, generated artifacts, local law, visual evidence, design authority signals, CI wiring, and the next command.
+- `decantr doctor` explains app/workspace state, Essence version, adoption mode, generated artifacts, local law, visual evidence, design authority signals, CI wiring, and the ordered next-step queue.
 - `decantr ci` is the blessed non-mutating automation gate for local required scripts and CI.
 - `decantr ci init` writes root GitHub workflows or generic pipeline snippets using the detected package manager and pinned local CLI command instead of `@latest`.
 - Monorepo roots now require explicit app targeting for app-scoped CI, so generated workflows do not silently validate the wrong directory.
@@ -29,6 +29,10 @@ Patch note: 2.9.4 closes the next dogfood paper cuts: remediation prompts now in
 Patch note: 2.9.5 makes `decantr add page app/foo --project apps/web` work for observed Brownfield contracts by resolving the common `app` shorthand to the single primary section, such as `observed-primary`, when that resolution is unambiguous. See `2026-05-15-brownfield-add-page-alias-2-9-5.md`.
 
 Patch note: 2.9.6 extends observed Brownfield section aliases to `decantr add feature --section app`, so scoped feature additions follow the same ergonomic path as page additions. See `2026-05-15-brownfield-feature-alias-2-9-6.md`.
+
+Patch note: 2.9.7 closes the release-stewardship and hardening loop around the Brownfield operating layer. It adds local release policy docs and the release engineering skill, tightens release closeout behavior, and records the current dogfood confidence sweep. See `2026-05-15-brownfield-hardening-2-9-7.md`.
+
+Patch note: 2.9.8 polishes the Brownfield cold-start path after another monorepo dogfood run. `adopt` no longer prints the nested `analyze -> init` follow-up as if the user still had to run it manually, and `doctor` now prints an ordered next-step queue instead of hiding the operating loop behind one command. See `2026-05-15-brownfield-doctor-queue-2-9-8.md`.
 
 ## Migration Notes
 

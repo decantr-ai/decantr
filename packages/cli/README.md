@@ -17,7 +17,7 @@ Or run it without installing:
 npx @decantr/cli new my-app --blueprint=esports-hq
 ```
 
-Use `decantr setup` when you are unsure which path applies. It detects whether the repo is empty, already attached, or a Brownfield app and recommends the next command.
+Use `decantr setup` when you are unsure which path applies. It detects whether the repo is empty, already attached, or a Brownfield app and recommends the right entry path.
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, hydrates hosted execution packs when online, and only applies the contract when you explicitly accept or merge it.
 Use `decantr doctor` when the next step is unclear, `decantr task` before asking an LLM to modify a route, `decantr verify` after the edit, and `decantr ci` in required automation. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification.
@@ -148,7 +148,7 @@ decantr showcase verification --json
 
 `decantr verify` is the workflow command most users should run locally after edits. It delegates to Project Health, can add Brownfield guard validation with `--brownfield`, requires an accepted local pattern pack with `--local-patterns`, scans `.decantr/rules.json` when present, supports workspace mode, and writes evidence to `.decantr/evidence/latest.json` by default when `--evidence` is used.
 
-`decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, visual evidence, design authority signals, CI wiring, and the next command to run. It is the command to reach for when an app is in a monorepo, has stale Decantr files, or someone is not sure what Decantr expects next.
+`decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, visual evidence, design authority signals, CI wiring, and an ordered next-step queue. It is the command to reach for when an app is in a monorepo, has stale Decantr files, or someone is not sure what Decantr expects next.
 
 `decantr setup` is non-mutating orientation. In an attached Brownfield app it reflects whether local law is already accepted, so the recommended verify command includes `--local-patterns` only when the project has that layer.
 

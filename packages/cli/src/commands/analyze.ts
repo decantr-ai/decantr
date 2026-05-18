@@ -29,7 +29,9 @@ const YELLOW = '\x1b[33m';
 export async function cmdAnalyze(
   projectRoot: string = process.cwd(),
   workspace?: WorkspaceInfo,
+  options: { printNextStep?: boolean } = {},
 ): Promise<void> {
+  const printNextStep = options.printNextStep ?? true;
   const startedAt = Date.now();
   console.log(`\n${BOLD}Analyzing project...${RESET}\n`);
 
@@ -219,9 +221,11 @@ export async function cmdAnalyze(
   console.log(`${DIM}Brownfield intelligence:${RESET} ${intelligenceArtifacts.intelligencePath}`);
   console.log(`${DIM}Theme inventory:${RESET} ${intelligenceArtifacts.themeInventoryPath}`);
   console.log(`${DIM}Enrichment backlog:${RESET} ${intelligenceArtifacts.backlogPath}`);
-  console.log(
-    `\n${YELLOW}Next step:${RESET} Review ${BOLD}${reportDisplayPath}${RESET}, then run ${BOLD}${recommendedAttachCommand}${RESET} to attach Decantr using the observed proposal.\n`,
-  );
+  if (printNextStep) {
+    console.log(
+      `\n${YELLOW}Next step:${RESET} Review ${BOLD}${reportDisplayPath}${RESET}, then run ${BOLD}${recommendedAttachCommand}${RESET} to attach Decantr using the observed proposal.\n`,
+    );
+  }
 
   await sendAnalyzeCompletedTelemetry({
     componentCount: components.componentCount,

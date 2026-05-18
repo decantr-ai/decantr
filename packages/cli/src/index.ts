@@ -3778,8 +3778,12 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     }
   }
 
-  await cmdAnalyze(projectRoot, workspaceInfo);
+  await cmdAnalyze(projectRoot, workspaceInfo, { printNextStep: false });
   if (process.exitCode && process.exitCode !== 0) return;
+  const initCommand = projectArg
+    ? `decantr init --project ${projectArg} --existing ${proposalFlag}`
+    : `decantr init --existing ${proposalFlag}`;
+  console.log(dim(`Analysis artifacts written; continuing with ${initCommand}.`));
 
   await cmdInit({
     existing: true,

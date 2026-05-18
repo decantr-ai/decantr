@@ -159,7 +159,7 @@ describe('operating layer commands', () => {
     expect(output).toContain('Decantr Doctor');
     expect(output).toContain('Workflow: brownfield-attach | adoption contract-only');
     expect(output).toContain('packages/ui');
-    expect(output).toContain('Next:');
+    expect(output).toContain('Next steps:');
   });
 
   it('explains workspace state without requiring an essence at the root', () => {

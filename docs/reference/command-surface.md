@@ -10,7 +10,7 @@ This is the current command audit for the 2.x reliability layer. The goal is con
 | `task` | primary | keep | Route/task context activation for AI coding assistants, including local law and changed-file impact. |
 | `verify` | primary | keep | One reliability gate over Project Health, optional Brownfield guard checks, baselines, evidence, local law, and workspace health. |
 | `ci` | primary | keep | Non-mutating CI gate plus CI integration generator for projects and workspaces. |
-| `doctor` | primary | keep | Explain project/workspace state, generated artifacts, local law, CI wiring, design authority signals, and the next command. |
+| `doctor` | primary | keep | Explain project/workspace state, generated artifacts, local law, CI wiring, design authority signals, and the ordered next-step queue. |
 | `codify` | primary | keep | Propose and accept project-owned Brownfield UI patterns and rules. |
 | `studio` | primary | keep | Local Project Health and workspace triage UI. |
 | `content` | content-author | keep | Content-author namespace over check/create/publish. |
@@ -35,7 +35,7 @@ Brownfield intelligence is now exposed through workflows first:
 - `decantr task <route>` surfaces the relevant context files, patterns, screenshot references, accepted local laws, changed files, and impacted routes for the next LLM edit.
 - `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `decantr codify --accept` promotes them to `.decantr/local-patterns.json` and `.decantr/rules.json`.
 - `decantr verify --brownfield --local-patterns` runs the reliability gate, requires accepted local patterns, and scans accepted local rules when present.
-- `decantr doctor --project <path>` explains whether the app is attached, whether generated context is present, whether local law exists, whether CI is wired, and which command to run next.
+- `decantr doctor --project <path>` explains whether the app is attached, whether generated context is present, whether local law exists, whether CI is wired, and which commands to run next.
 - `decantr ci --project <path>` is the blessed CI command. It is non-mutating, adoption-mode aware, and emits a `DecantrCiReport`. `decantr ci init` writes root GitHub workflows or generic pipeline snippets using the pinned package-manager command instead of `@latest`, and prints the install command when `@decantr/cli` is not pinned yet.
 - `decantr health init-ci` and `decantr verify init-ci` are legacy aliases for `decantr ci init`; they should generate the same pinned `decantr-ci.yml` surface, not the old `@latest` Project Health workflow.
 - `decantr analyze` still writes Brownfield intelligence, theme inventory, and enrichment backlog artifacts.
