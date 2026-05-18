@@ -1,7 +1,7 @@
 # Hybrid Fortification Plan
 
 Date: 2026-05-15
-Status: Next active product program after Brownfield 2.9.x confidence.
+Status: Active product program. The 2.10 first slice ships lane-aware `doctor`, task-time authority blocks, MCP authority context, and Hybrid local-law messaging.
 
 ## Goal
 

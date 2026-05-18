@@ -182,7 +182,19 @@ export function createBrownfieldCodifyProposal(
       routeCount: routes.length,
     },
     purpose:
-      'Project-owned Brownfield UI law. Review and edit before accepting; Decantr treats this as authoritative only after it is copied to .decantr/local-patterns.json.',
+      'Project-owned Brownfield/Hybrid UI law. Review and edit before accepting; Decantr treats this as authoritative only after it is copied to .decantr/local-patterns.json.',
+    hybrid: {
+      intent:
+        'This local pattern pack is the first Hybrid authority layer: it maps Decantr concepts onto project-owned components, tokens, classes, and rules without replacing the app runtime.',
+      authorityPrecedence: [
+        'existing production source',
+        'accepted local patterns and rules',
+        'Decantr Essence V4 contract',
+        'hosted registry patterns and execution packs as optional guidance',
+      ],
+      hostedPatternMapping:
+        'Use hosted patterns as vocabulary and review guidance. Before enforcing one, map it to a project-owned component path, class recipe, token recipe, or explicit exception here.',
+    },
     patterns: [
       {
         id: 'button',
@@ -273,12 +285,14 @@ export function createBrownfieldCodifyProposal(
       'Avoid static inline styles for reusable visual treatment.',
       'When adding a new route, map it to an existing local pattern before inventing a new visual variant.',
       'When adding a theme variant, update .decantr/theme-inventory.json and this local pattern pack.',
+      'Map hosted Decantr patterns into project-owned local law before making them enforceable.',
     ],
     nextSteps: [
       'Edit this proposal with real component paths and token/class recipes.',
       'Run decantr codify --accept after review.',
       'Use decantr task <route> before LLM edits so local law appears in task context.',
       'Run decantr verify --brownfield --local-patterns after edits.',
+      'For Hybrid adoption, start with warn-level local rules and raise severities only after the team agrees the law is stable.',
       'Wire deterministic project rules into ESLint, Biome, Storybook, visual tests, or CI where Decantr should not guess.',
     ],
   };
@@ -289,7 +303,7 @@ export function createBrownfieldCodifyProposal(
     generatedAt,
     source: input.fromAudit ? 'decantr codify --from-audit' : 'decantr codify',
     purpose:
-      'Mechanical Brownfield checks owned by this project. These rules are intentionally local and stack-agnostic; edit before accepting.',
+      'Mechanical Brownfield/Hybrid checks owned by this project. These rules are intentionally local and stack-agnostic; edit before accepting.',
     enforcement: {
       defaultSeverity: 'warn',
       mode: 'warn',

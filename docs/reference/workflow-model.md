@@ -9,7 +9,7 @@ Decantr resolves an explicit workflow and adoption policy before registry, adapt
 | `greenfield-scaffold` | New app from a blueprint/archetype | `decantr new my-app --blueprint=<id>` | `decantr-css` | primary or cached |
 | `greenfield-contract-only` | New repo wants Decantr governance without blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` | `contract-only` | none |
 | `brownfield-attach` | Existing app wants Decantr context and checks | `decantr adopt --yes` | `contract-only` | optional |
-| `hybrid-compose` | Attached app selectively adds/removes features, sections, themes, or packs | `decantr add/remove`, `decantr theme switch`, `decantr registry` | existing project setting | opt-in |
+| `hybrid-compose` | Attached app intentionally adopts selected Decantr or project-owned UI law | `decantr codify`, `decantr task`, `decantr add/remove`, `decantr theme switch` | existing project setting | opt-in guidance |
 
 Adoption modes:
 
@@ -82,13 +82,36 @@ decantr verify --brownfield --local-patterns
 
 This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
 
+## Hybrid Operating Layer
+
+Hybrid starts when an attached app moves beyond contract-only context and intentionally adopts one or more stronger authority layers:
+
+- **Hybrid local law**: accepted `.decantr/local-patterns.json` and `.decantr/rules.json` describe project-owned buttons, cards, shells, forms, tokens, theme variants, and mechanical rules.
+- **Hybrid style bridge**: Decantr intent maps through bridge tokens/files into the app's existing style system.
+- **Hybrid with Decantr CSS**: `@decantr/css` and generated Decantr CSS are active where explicitly adopted.
+- **Hybrid composition**: the app selectively adds sections, pages, features, themes, or hosted execution packs while preserving existing source authority.
+
+The authority order is explicit: existing production source first, accepted local patterns/rules next, Essence V4 contract next, and hosted registry patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the public registry owns a contract-only app.
+
+`decantr doctor` reports the active adoption lane and the next choice. `decantr task <route> "<task>"` and MCP `decantr_prepare_task_context` return a compact authority block with source authority, style authority, active authorities, runtime boundary, and warnings when a prompt asks to mix frameworks or add Decantr CSS outside `decantr-css` mode. That block is intended to be pasted into, or automatically surfaced by, the assistant before it edits.
+
+```bash
+decantr doctor --project apps/web
+decantr codify --from-audit --project apps/web
+decantr codify --accept --project apps/web
+decantr task /settings "standardize account form buttons" --project apps/web
+decantr verify --brownfield --local-patterns --project apps/web
+```
+
+Hybrid is still observe-first. It does not rewrite the app, replace project tests, or make hosted registry patterns enforceable by default.
+
 ## Project Health
 
 Project Health is the local reliability layer across all workflow modes:
 
 - Greenfield projects use `decantr verify` after `refresh` to confirm essence, context packs, routes, and runtime evidence agree.
 - Brownfield projects automatically include route coverage and drift checks when `.decantr/project.json` declares `brownfield-attach`.
-- Hybrid projects use `decantr verify` after `add`, `remove`, `theme switch`, or registry pack changes to catch contract and pack drift before implementation continues.
+- Hybrid projects use `decantr verify` after local-law acceptance, `add`, `remove`, `theme switch`, style bridge changes, Decantr CSS adoption, or registry pack changes to catch contract, rule, and pack drift before implementation continues.
 
 Use `decantr doctor` when the next step is unclear, `decantr verify` after local edits, `decantr ci` inside automation, `decantr verify --evidence` for the privacy-redacted Evidence Bundle, `decantr verify --base-url <url> --evidence` for local screenshots plus `.decantr/evidence/visual-manifest.json`, `decantr verify --save-baseline` / `--since-baseline` for continuity, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. `doctor` prints an ordered next-step queue instead of only a single command, so a Brownfield app can see pinning, local-law codification, CI setup, task-time context, verification, and automation in one short sequence. Monorepos can install the gate from the repository root with `decantr ci init --project <app-path>` so dependency install remains root-scoped while CI evaluates the selected app contract, or `decantr ci init --workspace` for an aggregate workspace gate. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
 

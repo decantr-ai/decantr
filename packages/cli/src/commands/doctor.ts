@@ -19,6 +19,16 @@ const RESET = '\x1b[0m';
 
 type DoctorStatus = 'healthy' | 'needs-setup' | 'needs-attention' | 'needs-migration';
 type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun' | 'unknown';
+type AdoptionLaneId =
+  | 'workspace'
+  | 'unattached'
+  | 'brownfield-contract-only'
+  | 'hybrid-local-law'
+  | 'hybrid-style-bridge'
+  | 'hybrid-decantr-css'
+  | 'hybrid-compose'
+  | 'greenfield-contract-only'
+  | 'greenfield-scaffold';
 
 interface DoctorIssue {
   category:
@@ -88,6 +98,14 @@ interface DoctorReport {
   };
   visualEvidence: {
     manifestPresent: boolean;
+  };
+  lane: {
+    id: AdoptionLaneId;
+    label: string;
+    sourceAuthority: string;
+    styleAuthority: string;
+    activeAuthorities: string[];
+    nextChoice: string;
   };
   designAuthority: string[];
   status: DoctorStatus;
@@ -260,6 +278,135 @@ function statusFromIssues(issues: DoctorIssue[], essenceVersion: string | null):
 function appendUnique(commands: string[], command: string | undefined): void {
   if (!command) return;
   if (!commands.includes(command)) commands.push(command);
+}
+
+function deriveAdoptionLane(input: {
+  workspaceMode: boolean;
+  essenceVersion: string | null;
+  workflowMode: string | null;
+  adoptionMode: string | null;
+  localPatternsPresent: boolean;
+  localRulesPresent: boolean;
+  designAuthority: string[];
+  packManifestPresent: boolean;
+}): DoctorReport['lane'] {
+  if (input.workspaceMode) {
+    return {
+      id: 'workspace',
+      label: 'Workspace overview',
+      sourceAuthority: 'Each attached app keeps its own Decantr contract and source authority.',
+      styleAuthority: 'Per-app adoption mode',
+      activeAuthorities: ['workspace project list', 'attached app contracts'],
+      nextChoice: 'Pick an app with --project when you want route-level or source-level guidance.',
+    };
+  }
+  if (!input.essenceVersion) {
+    return {
+      id: 'unattached',
+      label: 'Unattached app',
+      sourceAuthority: 'Existing app only',
+      styleAuthority: 'Existing app styling system',
+      activeAuthorities: ['source tree'],
+      nextChoice:
+        'Run decantr adopt to attach an observed contract before choosing Brownfield or Hybrid law.',
+    };
+  }
+
+  const hasLocalLaw = input.localPatternsPresent || input.localRulesPresent;
+  if (input.workflowMode === 'hybrid-compose') {
+    return {
+      id: 'hybrid-compose',
+      label: 'Hybrid composition',
+      sourceAuthority: 'Existing app plus selected Decantr/local law',
+      styleAuthority:
+        input.adoptionMode === 'decantr-css'
+          ? 'Decantr CSS runtime is active where adopted'
+          : input.adoptionMode === 'style-bridge'
+            ? 'Style bridge maps Decantr intent into the app styling system'
+            : 'Existing app styling system remains primary',
+      activeAuthorities: [
+        'existing source',
+        'Essence V4 contract',
+        hasLocalLaw ? 'accepted local law' : 'reviewed Hybrid choices',
+        input.packManifestPresent ? 'hosted execution packs' : 'optional hosted packs',
+      ],
+      nextChoice:
+        'Use task/verify for daily work and keep any hosted pattern adoption mapped into project-owned law.',
+    };
+  }
+  if (input.workflowMode === 'brownfield-attach') {
+    if (input.adoptionMode === 'decantr-css') {
+      return {
+        id: 'hybrid-decantr-css',
+        label: 'Hybrid with Decantr CSS',
+        sourceAuthority: 'Existing app plus explicitly adopted Decantr CSS runtime',
+        styleAuthority: 'Decantr CSS runtime is active where adopted',
+        activeAuthorities: ['existing source', 'Essence V4 contract', 'Decantr CSS runtime'],
+        nextChoice:
+          'Keep Decantr CSS usage explicit and validate route changes with task and verify.',
+      };
+    }
+    if (input.adoptionMode === 'style-bridge') {
+      return {
+        id: 'hybrid-style-bridge',
+        label: 'Hybrid style bridge',
+        sourceAuthority: 'Existing app plus Decantr intent mapped through a style bridge',
+        styleAuthority: 'Style bridge over the existing app styling system',
+        activeAuthorities: ['existing source', 'Essence V4 contract', 'style bridge'],
+        nextChoice:
+          'Use local law to decide which component families the bridge governs before making it strict.',
+      };
+    }
+    if (hasLocalLaw) {
+      return {
+        id: 'hybrid-local-law',
+        label: 'Hybrid local law',
+        sourceAuthority: 'Existing app plus accepted project-owned UI law',
+        styleAuthority:
+          input.designAuthority.length > 0
+            ? 'Existing design authority plus accepted local rules'
+            : 'Accepted local rules over the current app styling system',
+        activeAuthorities: [
+          'existing source',
+          'Essence V4 contract',
+          'accepted local patterns/rules',
+          input.packManifestPresent
+            ? 'hosted execution packs as guidance'
+            : 'optional hosted packs',
+        ],
+        nextChoice:
+          'Use task before edits and verify --local-patterns after edits; map hosted patterns into local law before enforcing them.',
+      };
+    }
+    return {
+      id: 'brownfield-contract-only',
+      label: 'Brownfield contract-only',
+      sourceAuthority: 'Existing app is authoritative',
+      styleAuthority: 'Existing app styling system',
+      activeAuthorities: ['existing source', 'Essence V4 contract'],
+      nextChoice:
+        'Stay contract-only for context, or codify local patterns/rules when you want Hybrid drift control.',
+    };
+  }
+  if (input.workflowMode === 'greenfield-contract-only') {
+    return {
+      id: 'greenfield-contract-only',
+      label: 'Greenfield contract-only',
+      sourceAuthority: 'Essence V4 contract',
+      styleAuthority: 'Project-chosen styling system',
+      activeAuthorities: ['Essence V4 contract', 'generated context'],
+      nextChoice: 'Add local rules or a style bridge only after the runtime conventions are clear.',
+    };
+  }
+  return {
+    id: 'greenfield-scaffold',
+    label: 'Greenfield scaffold',
+    sourceAuthority: 'Decantr contract and certified adapter output',
+    styleAuthority:
+      input.adoptionMode === 'contract-only' ? 'Project-chosen styling system' : 'Decantr CSS',
+    activeAuthorities: ['Essence V4 contract', 'adapter output', 'execution packs'],
+    nextChoice: 'Use task and verify to keep generated routes aligned with the compiled contract.',
+  };
 }
 
 function buildDoctorReport(root: string, args: string[]): DoctorReport {
@@ -478,6 +625,16 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     issues,
     workspaceMode || workspaceInfo.requiresProjectSelection ? '4.0.0' : essenceVersion,
   );
+  const lane = deriveAdoptionLane({
+    workspaceMode: workspaceMode || workspaceInfo.requiresProjectSelection,
+    essenceVersion,
+    workflowMode,
+    adoptionMode,
+    localPatternsPresent,
+    localRulesPresent,
+    designAuthority,
+    packManifestPresent,
+  });
   const projectFlag = projectPath ? ` --project ${projectPath}` : '';
   const verifyCommand =
     workflowMode === 'brownfield-attach'
@@ -567,6 +724,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     visualEvidence: {
       manifestPresent: existsSync(join(appRoot, '.decantr', 'evidence', 'visual-manifest.json')),
     },
+    lane,
     designAuthority,
     status,
     issues,
@@ -596,6 +754,13 @@ function formatDoctorText(report: DoctorReport): string {
     `  Essence: ${report.project.essenceVersion ?? 'missing'}`,
     `  Workflow: ${report.project.workflowMode ?? 'unknown'} | adoption ${report.project.adoptionMode ?? 'unknown'}`,
     `  Sync state: ${report.project.syncStatus ?? 'unknown'} ${DIM}(registry/cache state, not generated context freshness)${RESET}`,
+    '',
+    `${BOLD}Adoption Lane:${RESET}`,
+    `  ${report.lane.label}`,
+    `  Source authority: ${report.lane.sourceAuthority}`,
+    `  Style authority: ${report.lane.styleAuthority}`,
+    `  Active: ${report.lane.activeAuthorities.join(', ')}`,
+    `  Choice: ${report.lane.nextChoice}`,
     '',
     `${BOLD}Generated Artifacts:${RESET}`,
     `  Context directory: ${report.generatedArtifacts.contextDirPresent ? 'present' : 'missing'}`,

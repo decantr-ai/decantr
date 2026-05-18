@@ -55,7 +55,7 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 
 Use brownfield attach when your app already exists and the problem is drift: AI-generated pages stop matching the intended product shape, routes grow without a coherent map, or design-system decisions get repeated differently across screens.
 
-For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_prepare_task_context` with a route and task. CLI-only workflows can use `decantr registry get-pack page --route <route>` plus the generated `.decantr/context/` files.
+For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_prepare_task_context` with a route and task. CLI-only workflows can use `decantr task <route> "<task>"`.
 
 The CLI shortcut is:
 
@@ -72,6 +72,8 @@ npx @decantr/cli codify --from-audit
 npx @decantr/cli codify --accept
 npx @decantr/cli verify --brownfield --local-patterns
 ```
+
+Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. Hosted registry patterns are useful vocabulary and review guidance; they should not become enforceable in an existing app until they are mapped to your own components, classes, token recipes, or explicit exceptions.
 
 In a monorepo, keep passing the same app path:
 
@@ -94,7 +96,7 @@ pnpm exec decantr suggest --from-code --file app/page.tsx --project apps/web
 pnpm exec decantr health --project apps/web --prompt <finding-id>
 ```
 
-`suggest --from-code` reads the selected app's file and ranks accepted local patterns alongside registry patterns, so questions like "standardize these buttons/cards" can point the AI at your project-owned law without requiring Decantr registry components.
+`suggest --from-code` reads the selected app's file and ranks accepted local patterns alongside registry patterns, so questions like "standardize these buttons/cards" can point the AI at your project-owned law without requiring Decantr registry components. `task` prints the same authority boundary before an edit: lane, source authority, style authority, active authorities, runtime boundary, and warnings for cross-runtime requests such as adding Angular to a React app or Decantr CSS to a contract-only app.
 
 `add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs. In observed Brownfield apps, section IDs may be `observed-public` or `observed-primary`; the common `app/settings` shorthand resolves to the single primary section when Decantr can do that safely. The same section shorthand works for page removal and scoped feature additions such as `decantr add feature saved-recipes --section app --project apps/web`.
 
@@ -119,7 +121,7 @@ pnpm exec decantr verify --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
 
-Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. Use `verify` after local edits. Use `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and registry pack commands as advanced primitives only when you need direct control over a specific layer.
+Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. It now reports the active adoption lane, so a teammate can tell the difference between Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, and Greenfield modes. Use `verify` after local edits. Use `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and registry pack commands as advanced primitives only when you need direct control over a specific layer.
 
 In contract-only Brownfield adoption, Decantr does not require `@decantr/css`, `css(...)`, `d-*` treatments, or generated Decantr token CSS. Critique and source audit should point you toward your project-owned design system, Tailwind/Sass/theme tokens, component variants, or accepted local rules instead.
 

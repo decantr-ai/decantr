@@ -217,17 +217,19 @@ decantr verify --brownfield --local-patterns
 
 The accepted `.decantr/local-patterns.json` is local context and governance. The accepted `.decantr/rules.json` adds narrow local scans for obvious drift. Deeper deterministic failures such as framework-specific wrapper-only rules should still be enforced through the project rule stack.
 
-## Hybrid Composition
+## Hybrid Operating Layer
 
-For attached projects that add sections, pages, features, or themes over time:
+For attached projects that add local law, style bridges, Decantr CSS, sections, pages, features, or themes over time:
 
 ```bash
+decantr doctor --project apps/web
+decantr task /settings "standardize account form buttons" --project apps/web
 decantr add section settings-full
 decantr refresh
 decantr verify --markdown --output .decantr/health.md
 ```
 
-Project Health is useful immediately after a composition change because it checks whether generated packs, route contracts, and guard expectations still agree.
+Project Health is useful immediately after a Hybrid change because it checks whether generated packs, route contracts, accepted local rules, and guard expectations still agree. `doctor` reports the adoption lane, and `task` tells the assistant which authority is active for the route before it edits: existing app, accepted local law, style bridge, Decantr CSS, hosted packs as guidance, or Greenfield context.
 
 ## CI
 

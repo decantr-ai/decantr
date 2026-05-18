@@ -56,7 +56,7 @@ function writeEssence(root: string): void {
 }
 
 function stripAnsi(value: string): string {
-  return value.replace(/\x1b\[[0-9;]*m/g, '');
+  return value.replace(new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g'), '');
 }
 
 describe('operating layer commands', () => {
@@ -158,8 +158,30 @@ describe('operating layer commands', () => {
 
     expect(output).toContain('Decantr Doctor');
     expect(output).toContain('Workflow: brownfield-attach | adoption contract-only');
+    expect(output).toContain('Adoption Lane:');
+    expect(output).toContain('Brownfield contract-only');
+    expect(output).toContain('Existing app is authoritative');
     expect(output).toContain('packages/ui');
     expect(output).toContain('Next steps:');
+  });
+
+  it('promotes accepted local law as the first Hybrid lane', () => {
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'local-patterns.json'), {
+      version: 2,
+      status: 'accepted',
+      patterns: [{ id: 'button', role: 'Project-owned buttons' }],
+    });
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'rules.json'), {
+      version: 1,
+      status: 'accepted',
+      rules: [],
+    });
+
+    const output = runCli(testDir, ['doctor', '--project', 'apps/web']);
+
+    expect(output).toContain('Hybrid local law');
+    expect(output).toContain('accepted local patterns/rules');
+    expect(output).toContain('map hosted patterns into local law');
   });
 
   it('explains workspace state without requiring an essence at the root', () => {
@@ -199,6 +221,7 @@ describe('operating layer commands', () => {
     const output = runCli(testDir, ['doctor']);
 
     expect(output).toContain('This is a monorepo root');
+    expect(output).toContain('Workspace overview');
     expect(output).toContain('decantr doctor --project apps/web');
     expect(output).not.toContain('No decantr.essence.json found');
   });
@@ -631,13 +654,29 @@ describe('operating layer commands', () => {
     const proposalOutput = runCli(testDir, ['codify', '--project', 'apps/web', '--from-audit']);
     const acceptOutput = runCli(testDir, ['codify', '--project', 'apps/web', '--accept']);
     const task = JSON.parse(
-      runCli(testDir, ['task', '/', 'tighten buttons', '--project', 'apps/web', '--json']),
-    ) as { localLaw: { patternsPath: string | null; rulesPath: string | null } };
+      runCli(testDir, [
+        'task',
+        '/',
+        'next step: tighten buttons but do not add Angular to this React app',
+        '--project',
+        'apps/web',
+        '--json',
+      ]),
+    ) as {
+      authority: { lane: string; warnings: string[]; activeAuthorities: string[] };
+      localLaw: { patternsPath: string | null; rulesPath: string | null };
+    };
 
     expect(proposalOutput).toContain('decantr codify --accept --project apps/web');
+    expect(proposalOutput).toContain('Hybrid authority guidance');
+    expect(acceptOutput).toContain('Hybrid local law is now active');
     expect(acceptOutput).toContain(
       'decantr verify --brownfield --local-patterns --project apps/web',
     );
+    expect(task.authority.lane).toBe('Hybrid local law');
+    expect(task.authority.activeAuthorities).toContain('accepted local patterns/rules');
+    expect(task.authority.warnings.join('\n')).toContain('angular');
+    expect(task.authority.warnings.join('\n')).not.toContain('next');
     expect(task.localLaw.patternsPath).toBe('apps/web/.decantr/local-patterns.json');
     expect(task.localLaw.rulesPath).toBe('apps/web/.decantr/rules.json');
   });

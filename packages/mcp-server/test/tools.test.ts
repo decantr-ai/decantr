@@ -116,12 +116,14 @@ describe('MCP tool handlers', () => {
         expect(() => resolveWorkspacePath('../outside', workspaceDir)).toThrow(
           /Path escapes the active workspace root/,
         );
-        expect(() => resolveWorkspacePath(join(outsideDir, 'decantr.essence.json'), workspaceDir))
-          .toThrow(/Path escapes the active workspace root/);
+        expect(() =>
+          resolveWorkspacePath(join(outsideDir, 'decantr.essence.json'), workspaceDir),
+        ).toThrow(/Path escapes the active workspace root/);
 
         symlinkSync(outsideDir, join(workspaceDir, 'outside-link'), 'dir');
-        expect(() => resolveWorkspacePath('outside-link/decantr.essence.json', workspaceDir))
-          .toThrow(/Path escapes the active workspace root/);
+        expect(() =>
+          resolveWorkspacePath('outside-link/decantr.essence.json', workspaceDir),
+        ).toThrow(/Path escapes the active workspace root/);
 
         process.chdir(workspaceDir);
         const result = (await handleTool('decantr_update_essence', {
@@ -269,6 +271,12 @@ describe('MCP tool handlers', () => {
           modes: [{ mode: 'dark', evidence: ['class=dark'] }],
           variants: [{ name: 'holiday', evidence: ['data-theme=holiday'] }],
         });
+        writeJson(join(projectDir, '.decantr', 'project.json'), {
+          initialized: {
+            workflowMode: 'brownfield-attach',
+            adoptionMode: 'contract-only',
+          },
+        });
         writeJson(join(projectDir, '.decantr', 'local-patterns.json'), {
           version: 2,
           status: 'accepted',
@@ -319,6 +327,12 @@ describe('MCP tool handlers', () => {
             patterns: Array<{ id: string; component_paths: string[] }>;
             rules: Array<{ id: string; severity: string }>;
           };
+          authority: {
+            lane: string;
+            active_authorities: string[];
+            source_authority: string;
+            warnings: string[];
+          };
           change_impact: { changed_file_count: number; impacted_routes: string[] };
           verify_command: string;
           local_files: { visual_manifest: string; local_patterns: string; local_rules: string };
@@ -345,6 +359,9 @@ describe('MCP tool handlers', () => {
         expect(result.local_law.rules_path).toBe('.decantr/rules.json');
         expect(result.local_law.patterns[0].component_paths).toContain('src/components/Button.tsx');
         expect(result.local_law.rules[0].id).toBe('no-inline-style');
+        expect(result.authority.lane).toBe('Hybrid local law');
+        expect(result.authority.active_authorities).toContain('accepted local patterns/rules');
+        expect(result.authority.source_authority).toContain('accepted project-owned UI law');
         expect(result.change_impact.changed_file_count).toBeGreaterThanOrEqual(0);
         expect(result.verify_command).toBe('decantr verify --brownfield --local-patterns');
         expect(result.local_files.visual_manifest).toBe('.decantr/evidence/visual-manifest.json');

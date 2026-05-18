@@ -39,6 +39,8 @@ pnpm exec decantr doctor --project apps/web
 
 Brownfield adoption is observe-first: Decantr reads what already exists, proposes a contract, and lets you accept or merge it.
 
+After adoption, use `doctor` when you are not sure what Decantr expects next. It reports whether the app is still Brownfield contract-only or has moved into Hybrid local law, style bridge, Decantr CSS, or composition mode.
+
 If the app is running and you want local screenshot evidence, run:
 
 ```bash
@@ -58,6 +60,8 @@ npx @decantr/cli task /feed "describe the change"
 npx @decantr/cli verify
 npx @decantr/cli doctor
 ```
+
+`task` now includes the route's active authority: existing app, accepted local law, style bridge, Decantr CSS, hosted packs as guidance, or Greenfield context. If the prompt asks for a mismatched runtime or Decantr CSS in a contract-only app, the task context warns before the assistant starts coding.
 
 If product intent changes, update the Decantr contract deliberately, regenerate context, then continue:
 
@@ -122,6 +126,12 @@ For an existing app that was attached through brownfield adoption:
 
 ```bash
 npx @decantr/cli verify --brownfield
+```
+
+If you accepted local project law with `decantr codify --accept`, use:
+
+```bash
+npx @decantr/cli verify --brownfield --local-patterns
 ```
 
 For a broader report:
