@@ -85,7 +85,7 @@ When you are not sure whether an app is already attached, start with `doctor`:
 pnpm exec decantr doctor --project apps/web
 ```
 
-`doctor` reports the essence version, workflow mode, adoption mode, generated context state, local pattern/rule files, design authority signals, visual evidence, CI wiring, and the next command. If an app is still on an older essence shape, run the explicit migrator:
+`doctor` reports the essence version, workflow mode, adoption mode, generated context state, local pattern/rule files, design authority signals, visual evidence, CI wiring, and an ordered next-step queue. If an app is still on an older essence shape, run the explicit migrator:
 
 Workspace discovery favors deployable UI apps. Server-only API packages and React component libraries under `packages/*` are not suggested as Brownfield app candidates unless they expose a frontend app config such as Next, Vite, SvelteKit, Angular, or Astro.
 

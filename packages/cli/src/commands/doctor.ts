@@ -93,6 +93,7 @@ interface DoctorReport {
   status: DoctorStatus;
   issues: DoctorIssue[];
   recommendedNextCommand: string;
+  recommendedNextCommands: string[];
 }
 
 function readJson<T>(path: string): T | null {
@@ -256,6 +257,11 @@ function statusFromIssues(issues: DoctorIssue[], essenceVersion: string | null):
   return 'healthy';
 }
 
+function appendUnique(commands: string[], command: string | undefined): void {
+  if (!command) return;
+  if (!commands.includes(command)) commands.push(command);
+}
+
 function buildDoctorReport(root: string, args: string[]): DoctorReport {
   let projectArg: string | undefined;
   for (let index = 1; index < args.length; index += 1) {
@@ -292,6 +298,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   const workflowMode = projectJson?.initialized?.workflowMode ?? null;
   const adoptionMode = projectJson?.initialized?.adoptionMode ?? null;
   const packHydrationOptional = adoptionMode === 'contract-only';
+  const localPatternsPresent = existsSync(localPatternsPath(appRoot));
+  const localRulesPresent = existsSync(localRulesPath(appRoot));
   const missingPackReferences = workspaceMode
     ? projects.flatMap((project) =>
         collectMissingPackManifestFiles(join(workspaceRoot, project.path)).map(
@@ -427,7 +435,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     });
   }
 
-  if (workflowMode === 'brownfield-attach' && !existsSync(localPatternsPath(appRoot))) {
+  if (workflowMode === 'brownfield-attach' && !localPatternsPresent) {
     issues.push({
       category: 'local-law',
       severity: 'info',
@@ -470,14 +478,51 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     issues,
     workspaceMode || workspaceInfo.requiresProjectSelection ? '4.0.0' : essenceVersion,
   );
-  const recommendedNextCommand =
-    issues.find((issue) => issue.category === 'workspace' && issue.nextCommand)?.nextCommand ??
-    issues.find((issue) => issue.nextCommand)?.nextCommand ??
-    (workspaceMode
-      ? 'decantr ci --workspace'
-      : projectPath
-        ? `decantr ci --project ${projectPath}`
-        : 'decantr ci');
+  const projectFlag = projectPath ? ` --project ${projectPath}` : '';
+  const verifyCommand =
+    workflowMode === 'brownfield-attach'
+      ? `decantr verify --brownfield --local-patterns${projectFlag}`
+      : workspaceMode
+        ? 'decantr ci --workspace'
+        : `decantr verify${projectFlag}`;
+  const ciCommand = workspaceMode
+    ? 'decantr ci --workspace --fail-on error'
+    : `decantr ci${projectFlag} --fail-on error`;
+  const recommendedNextCommands: string[] = [];
+  const blockingIssue =
+    issues.find((issue) => issue.category === 'workspace' && issue.nextCommand) ??
+    issues.find(
+      (issue) =>
+        (issue.category === 'setup' || issue.category === 'migration') && issue.nextCommand,
+    );
+  if (blockingIssue) {
+    appendUnique(recommendedNextCommands, blockingIssue.nextCommand);
+  } else {
+    appendUnique(
+      recommendedNextCommands,
+      issues.find((issue) => issue.category === 'ci' && issue.message.includes('not pinned'))
+        ?.nextCommand,
+    );
+    if (workflowMode === 'brownfield-attach' && !localPatternsPresent) {
+      appendUnique(recommendedNextCommands, `decantr codify --from-audit${projectFlag}`);
+      appendUnique(recommendedNextCommands, `decantr codify --accept${projectFlag}`);
+    }
+    appendUnique(
+      recommendedNextCommands,
+      issues.find((issue) => issue.category === 'generated-artifact')?.nextCommand,
+    );
+    appendUnique(
+      recommendedNextCommands,
+      issues.find((issue) => issue.category === 'ci' && issue.message.includes('No Decantr CI'))
+        ?.nextCommand,
+    );
+    if (workflowMode === 'brownfield-attach') {
+      appendUnique(recommendedNextCommands, `decantr task <route> "<change>"${projectFlag}`);
+    }
+    appendUnique(recommendedNextCommands, verifyCommand);
+    appendUnique(recommendedNextCommands, ciCommand);
+  }
+  const recommendedNextCommand = recommendedNextCommands[0] ?? ciCommand;
 
   return {
     generatedAt: new Date().toISOString(),
@@ -516,8 +561,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       missingReferencedFiles: missingPackReferences.slice(0, 25),
     },
     localLaw: {
-      patternsPresent: existsSync(localPatternsPath(appRoot)),
-      rulesPresent: existsSync(localRulesPath(appRoot)),
+      patternsPresent: localPatternsPresent,
+      rulesPresent: localRulesPresent,
     },
     visualEvidence: {
       manifestPresent: existsSync(join(appRoot, '.decantr', 'evidence', 'visual-manifest.json')),
@@ -526,6 +571,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     status,
     issues,
     recommendedNextCommand,
+    recommendedNextCommands,
   };
 }
 
@@ -590,13 +636,20 @@ function formatDoctorText(report: DoctorReport): string {
       if (issue.nextCommand) lines.push(`    ${DIM}${issue.nextCommand}${RESET}`);
     }
   }
-  lines.push('', `${BOLD}Next:${RESET}`, `  ${report.recommendedNextCommand}`, '');
+  lines.push('', `${BOLD}Next steps:${RESET}`);
+  for (const [index, command] of report.recommendedNextCommands.entries()) {
+    lines.push(`  ${index + 1}. ${command}`);
+  }
+  if (report.recommendedNextCommands.length === 0) {
+    lines.push(`  ${report.recommendedNextCommand}`);
+  }
+  lines.push('');
   return `${lines.join('\n')}\n`;
 }
 
 export function cmdDoctorHelp(): void {
   console.log(`
-${BOLD}decantr doctor${RESET} — Explain Decantr state and the next command to run
+${BOLD}decantr doctor${RESET} — Explain Decantr state and the next commands to run
 
 ${BOLD}Usage:${RESET}
   decantr doctor [--project <path>] [--workspace] [--json]
