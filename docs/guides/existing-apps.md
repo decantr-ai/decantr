@@ -96,7 +96,7 @@ pnpm exec decantr suggest --from-code --file app/page.tsx --project apps/web
 pnpm exec decantr health --project apps/web --prompt <finding-id>
 ```
 
-`suggest --from-code` reads the selected app's file and ranks accepted local patterns alongside registry patterns, so questions like "standardize these buttons/cards" can point the AI at your project-owned law without requiring Decantr registry components. `task` prints the same authority boundary before an edit: lane, source authority, style authority, active authorities, runtime boundary, and warnings for cross-runtime requests such as adding Angular to a React app or Decantr CSS to a contract-only app.
+`suggest --from-code` reads the selected app's file and ranks accepted local patterns alongside registry patterns, so questions like "standardize these buttons/cards" can point the AI at your project-owned law without requiring Decantr registry components. From inside an app root, `decantr suggest "button" --from-code --file src/App.tsx` works without `--project`; from a workspace root, keep `--project apps/web`. `task` prints the same authority boundary before an edit: lane, source authority, style authority, active authorities, runtime boundary, and warnings for cross-runtime requests such as adding Angular to a React app or Decantr CSS to a contract-only app.
 
 `add page` records a route as part of the contract so future `task /settings` calls are addressable. If the route is omitted, Decantr derives one from the page id; use `--route` when the app's real URL differs. In observed Brownfield apps, section IDs may be `observed-public` or `observed-primary`; the common `app/settings` shorthand resolves to the single primary section when Decantr can do that safely. The same section shorthand works for page removal and scoped feature additions such as `decantr add feature saved-recipes --section app --project apps/web`.
 
@@ -106,7 +106,7 @@ If you run `decantr setup` after adoption from a monorepo root, it should show a
 
 If you run `decantr setup` from inside an attached app, Decantr should reflect the current state: apps with accepted local law get `verify --brownfield --local-patterns`, while apps without accepted local law still get the `codify --from-audit` next step.
 
-This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
+This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. `decantr ci` prints those accepted local-rule findings with file/line evidence so they appear in the same automation surface as Project Health; use `--fail-on warn` only when the team is ready to block on warnings. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
 
 See also: [Monorepos](monorepos.md), [Workflow Model](../reference/workflow-model.md), [Project Health](../reference/project-health.md).
 

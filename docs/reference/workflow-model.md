@@ -80,7 +80,7 @@ decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```
 
-This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
+This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `decantr suggest --from-code` should surface accepted local patterns from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings with file/line evidence in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
 
 ## Hybrid Operating Layer
 

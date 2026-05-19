@@ -19,11 +19,11 @@ For quick setup help, showcase feedback, and live community discussion, join the
 - `guides/`
   - Focused public entry points for existing-app adoption, monorepos, Project Health CI, AI assistant setup, registry publishing, and design contract basics.
 - Brownfield 2.9 operating-layer guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `reference/workflow-model.md`, `reference/project-health.md`, and `reference/command-surface.md`: `adopt`, automatic online pack hydration, `doctor`, `ci`, monorepo `--project` onboarding, app-scoped primitives, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts and read targets, `task`, `verify`, `codify --from-audit`, analyze artifacts, theme inventory, task-time MCP/CLI context, optional visual manifest, baselines, local pattern proposals, local rule proposals, production-UI interaction evidence, contract-only token-export copy, Brownfield `add page` / `add feature` section aliases, and changed-file impact.
-- Hybrid 2.10 operating-layer guidance extends the same docs with adoption lane reporting, Hybrid local law activation, task-time authority blocks, runtime boundary warnings, and hosted-pattern-as-guidance language. The active implementation note is `releases/2026-05-18-hybrid-operating-layer-2-10.md`; the broader program remains `programs/2026-05-15-hybrid-fortification-plan.md`.
+- Hybrid 2.11 hardening guidance extends the same docs with adoption lane reporting, Hybrid local law activation, task-time authority blocks, runtime boundary warnings, hosted-pattern-as-guidance language, app-root local-law suggestions, CI local-rule evidence, source-derived button/card hints, and cleaner theme inventory. The active implementation note is `releases/2026-05-19-hybrid-local-law-hardening-2-11.md`; the broader program remains `programs/2026-05-15-hybrid-fortification-plan.md`.
 - Installed-package security posture is captured in `reference/security-permissions.md`. It is generated from `config/package-permissions.json` and distinguishes published npm surfaces from internal monorepo scripts, showcase fixtures, and release automation.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
-  - Latest Hybrid operating-layer note: `releases/2026-05-18-hybrid-operating-layer-2-10.md`.
+  - Latest Hybrid operating-layer note: `releases/2026-05-19-hybrid-local-law-hardening-2-11.md`.
 - `schemas/`
   - Published public schema copies and the schema index surfaced at `https://decantr.ai/schemas/`.
 - `runbooks/`

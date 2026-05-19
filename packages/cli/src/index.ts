@@ -1589,7 +1589,8 @@ function localPatternMatches(
   const queryTerms = query
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((term) => term.length > 1);
+    .filter((term) => term.length > 1)
+    .flatMap((term) => (term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term]));
   if (queryTerms.length === 0) return [];
 
   return patterns
@@ -1604,6 +1605,10 @@ function localPatternMatches(
         typeof pattern.decide === 'string' ? pattern.decide : null,
         ...(Array.isArray(pattern.appliesTo) ? pattern.appliesTo : []),
         ...(Array.isArray(pattern.componentPaths) ? pattern.componentPaths : []),
+        ...(Array.isArray(pattern.tokenHints) ? pattern.tokenHints : []),
+        ...(Array.isArray(pattern.classHints) ? pattern.classHints : []),
+        ...(Array.isArray(pattern.evidence) ? pattern.evidence : []),
+        ...(Array.isArray(pattern.forbiddenAlternatives) ? pattern.forbiddenAlternatives : []),
       ]
         .filter((entry): entry is string => typeof entry === 'string')
         .join(' ')
@@ -1652,6 +1657,7 @@ async function loadPatternDiscoveryCandidates(
 
 async function cmdSuggest(query: string, options: SuggestOptions = {}) {
   const searchType = options.type || 'pattern';
+  const projectRoot = options.projectRoot ?? process.cwd();
   if (searchType !== 'pattern' && searchType !== 'patterns') {
     const apiClient = getAPIClient();
     try {
@@ -1673,12 +1679,13 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
   }
 
   const registryClient = new RegistryClient({
-    cacheDir: join(options.projectRoot ?? process.cwd(), '.decantr', 'cache'),
+    cacheDir: join(projectRoot, '.decantr', 'cache'),
   });
   const code =
     options.fromCode || options.file
-      ? readSuggestCodeContext(options.projectRoot ?? process.cwd(), options.route, options.file)
+      ? readSuggestCodeContext(projectRoot, options.route, options.file)
       : '';
+  const localMatches = localPatternMatches(projectRoot, [query, code].filter(Boolean).join('\n'));
   const candidates = await loadPatternDiscoveryCandidates(registryClient);
   const matches = rankPatternCandidates(
     {
@@ -1690,7 +1697,7 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
     candidates,
   );
 
-  if (matches.length === 0) {
+  if (matches.length === 0 && localMatches.length === 0) {
     console.log(dim(`No pattern suggestions for "${query}"`));
     console.log('');
     console.log('Try:');
@@ -1712,10 +1719,6 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       `Pattern suggestions for "${query}"${contextBits.length > 0 ? ` (${contextBits.join(', ')})` : ''}`,
     ),
   );
-  const localMatches = localPatternMatches(
-    options.projectRoot,
-    [query, code].filter(Boolean).join('\n'),
-  );
   if (localMatches.length > 0) {
     console.log(`${BOLD}Project-owned local law:${RESET}`);
     for (const match of localMatches) {
@@ -1724,6 +1727,12 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
     }
     console.log('');
     console.log(`${BOLD}Registry patterns:${RESET}`);
+  }
+  if (matches.length === 0) {
+    console.log(dim('No hosted/bundled registry patterns matched this query.'));
+    console.log('');
+    console.log(dim('Use local law first, or run "decantr list patterns" to browse registry options.'));
+    return;
   }
   for (const match of matches.slice(0, 8)) {
     const candidate = match.candidate;
@@ -1981,6 +1990,7 @@ interface InitArgs {
   'accept-proposal'?: boolean;
   'merge-proposal'?: boolean;
   'replace-essence'?: boolean;
+  internalSuppressNextSteps?: boolean;
 }
 
 function enableCliTelemetry(projectRoot: string): void {
@@ -2079,6 +2089,7 @@ async function applyAcceptedBrownfieldProposal(input: {
   workspaceInfo: ReturnType<typeof resolveWorkspaceInfo>;
   mode: 'accept' | 'merge' | 'replace';
   assistantBridge: AssistantBridgeMode;
+  suppressNextSteps?: boolean;
 }): Promise<void> {
   const proposal = readBrownfieldProposal(input.projectRoot);
   if (!proposal) {
@@ -2224,18 +2235,23 @@ async function applyAcceptedBrownfieldProposal(input: {
   if (refreshResult.contextFiles.length > 8) {
     console.log(`    ${dim(`(+${refreshResult.contextFiles.length - 8} more)`)}`);
   }
-  console.log('');
-  console.log('  Next steps:');
-  console.log(
-    `    1. Run ${cyan(withProject('decantr check --brownfield', projectLabel))} to verify contract coverage`,
-  );
-  console.log(
-    `    2. Read ${cyan(displayProjectPath(input.workspaceInfo, '.decantr/brownfield-report.md'))} for unresolved doctrine risks`,
-  );
-  console.log(
-    `    3. Use ${cyan(withProject('decantr rules preview', projectLabel))} before mutating assistant rule files`,
-  );
-  console.log('');
+  if (!input.suppressNextSteps) {
+    console.log('');
+    console.log('  Next steps:');
+    console.log(
+      `    1. Run ${cyan(withProject('decantr doctor', projectLabel))} to explain adoption state and the next command`,
+    );
+    console.log(
+      `    2. Run ${cyan(withProject('decantr codify --from-audit', projectLabel))} when you are ready to propose project-owned UI law`,
+    );
+    console.log(
+      `    3. Use ${cyan(withProject('decantr task / \"change summary\"', projectLabel))} before LLM edits`,
+    );
+    console.log(
+      `    4. Run ${cyan(withProject('decantr verify --brownfield', projectLabel))} after edits`,
+    );
+    console.log('');
+  }
 }
 
 async function cmdInit(args: InitArgs) {
@@ -2300,6 +2316,7 @@ async function cmdInit(args: InitArgs) {
       workspaceInfo,
       mode: proposalMode,
       assistantBridge: policy.assistantBridge,
+      suppressNextSteps: args.internalSuppressNextSteps,
     });
     if (args.telemetry) enableCliTelemetry(projectRoot);
     writeArtifactReadme(projectRoot);
@@ -3794,6 +3811,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
     'replace-essence': proposalFlag === '--replace-essence',
     'assistant-bridge': assistantBridge,
     telemetry: flagBoolean(flags, 'telemetry'),
+    internalSuppressNextSteps: true,
   });
   if (process.exitCode && process.exitCode !== 0) return;
 
@@ -5382,7 +5400,7 @@ async function main() {
         route,
         file,
         fromCode,
-        projectRoot: workspaceInfo?.appRoot,
+        projectRoot: workspaceInfo?.appRoot ?? process.cwd(),
       });
       break;
     }

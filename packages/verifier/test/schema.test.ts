@@ -226,11 +226,23 @@ describe('verifier schema contracts', () => {
         findings: [],
       },
       localLaw: {
-        checked: false,
-        patternsPresent: false,
-        rulesPresent: false,
+        checked: true,
+        patternsPresent: true,
+        rulesPresent: true,
+        warnings: [],
+        findings: [
+          {
+            ruleId: 'no-inline-style',
+            severity: 'warn',
+            file: 'src/App.tsx',
+            line: 12,
+            column: 9,
+            message: 'Inline style found in UI template.',
+            suggestedFix: 'Use the project-owned style system.',
+          },
+        ],
         errorCount: 0,
-        warnCount: 0,
+        warnCount: 1,
       },
     };
 

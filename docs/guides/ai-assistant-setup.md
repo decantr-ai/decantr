@@ -62,6 +62,8 @@ npx @decantr/cli verify --brownfield --local-patterns
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 ```
 
+For discovery prompts such as "standardize all buttons/cards on this page", ask the assistant to run `decantr suggest "button card" --from-code --file src/App.tsx` from the app root, or add `--project apps/web` from a monorepo root. Accepted local patterns are shown before registry patterns so the assistant starts from project-owned law.
+
 When an assistant asks for a Project Health repair prompt from a monorepo root, keep the app path on the prompt command: `decantr health --project apps/web --prompt <finding-id>`.
 
 Use `doctor` when an assistant or teammate is unsure what state the app is in:
@@ -81,5 +83,7 @@ pnpm exec decantr ci --project apps/web
 ```
 
 The generated GitHub workflow runs the pinned local CLI through the detected package manager, such as `pnpm exec decantr ci --project apps/web`. If Decantr is not pinned in the root manifest, `ci init` prints the exact install command before writing the workflow. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web` and paste the snippet into the authoritative pipeline.
+
+When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md), [Monorepos](monorepos.md), [Project Health CI](project-health-ci.md).

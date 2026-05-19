@@ -83,6 +83,20 @@ function selectorFromMatch(raw: string): string {
   return raw.replace(/\s+/g, ' ').trim().slice(0, 120);
 }
 
+function isThemeVariantClass(id: string, selector: string): boolean {
+  if (
+    /^(switcher|toggle|selector|picker|menu|button|btn|control|provider|container|panel|card|icon|label|group|actions?)$/i.test(
+      id,
+    )
+  ) {
+    return false;
+  }
+  const selectors = selector.split(',').map((entry) => entry.trim());
+  return selectors.some((entry) =>
+    /^(?::root|html|body)?(?:\.[\w-]+)*\.theme-[a-z0-9-]+(?:\s|$|:|\[|\.)/i.test(entry),
+  );
+}
+
 function createThemeInventory(projectRoot: string, styling: StylingAnalysis): ThemeInventory {
   const files = collectCssFiles(projectRoot);
   const variantMap = new Map<string, ThemeInventoryEntry>();
@@ -121,8 +135,12 @@ function createThemeInventory(projectRoot: string, styling: StylingAnalysis): Th
       const themeClass = selector.match(/\.theme-([a-z0-9-]+)/i);
       if (/dark/i.test(selector)) id = 'dark';
       if (dataTheme?.[1]) id = dataTheme[1].toLowerCase();
-      if (themeClass?.[1]) id = themeClass[1].toLowerCase();
-      if (selector.includes(':root')) id = 'base';
+      if (themeClass?.[1]) {
+        const classId = themeClass[1].toLowerCase();
+        if (!isThemeVariantClass(classId, selector)) continue;
+        id = classId;
+      }
+      if (/^:root(?:\s|$|,)/.test(selector)) id = 'base';
       ensureVariant(id, selector, rel);
     }
 
@@ -161,6 +179,8 @@ function createThemeInventory(projectRoot: string, styling: StylingAnalysis): Th
 
   const variants = [...variantMap.values()].sort((a, b) => a.id.localeCompare(b.id));
   const modes = variants.map((variant) => variant.id);
+  const darkModeDetected =
+    styling.darkMode || modes.includes('dark') || variants.some((variant) => /dark/i.test(variant.id));
   if (variants.length > 2) {
     notes.push(
       'Multiple theme variants were observed. Essence V4 remains unchanged; variants are reported here for task-time context.',
@@ -172,7 +192,7 @@ function createThemeInventory(projectRoot: string, styling: StylingAnalysis): Th
     generatedAt: new Date().toISOString(),
     localOnly: true,
     stylingApproach: styling.approach,
-    darkModeDetected: styling.darkMode,
+    darkModeDetected,
     modes,
     variants,
     tokens: {

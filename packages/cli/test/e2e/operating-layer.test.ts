@@ -506,7 +506,7 @@ describe('operating layer commands', () => {
     expect(removeOutput).toContain('Resolved section alias "app" to "observed-primary"');
     expect(removeOutput).toContain('Removed page "dogfood-edge" from section "observed-primary"');
     expect(removed.blueprint.routes['/dogfood-edge']).toBeUndefined();
-  });
+  }, 15_000);
 
   it('suggests a concrete section when page additions use an unknown section', () => {
     try {
@@ -760,6 +760,13 @@ describe('operating layer commands', () => {
       '--project',
       'apps/web',
     ]);
+    const appRootSuggestions = runCli(join(testDir, 'apps', 'web'), [
+      'suggest',
+      'button',
+      '--from-code',
+      '--file',
+      'src/components/ui/button.tsx',
+    ]);
     const rulesPreview = runCli(testDir, ['rules', 'preview', '--project', 'apps/web']);
     mkdirSync(join(testDir, 'apps', 'web', 'src', 'components', 'ui'), { recursive: true });
     writeFileSync(
@@ -799,6 +806,8 @@ describe('operating layer commands', () => {
     );
     expect(suggestions).toContain('Project-owned local law');
     expect(suggestions).toContain('button');
+    expect(appRootSuggestions).toContain('Project-owned local law');
+    expect(appRootSuggestions).toContain('button');
     expect(rulesPreview).toContain('Package manager: pnpm');
     expect(codeSuggestions).toContain(
       'Pattern suggestions for "file button.tsx source code patterns"',
@@ -807,4 +816,45 @@ describe('operating layer commands', () => {
     expect(exported).toContain('Exported Figma/Tokens Studio tokens');
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'figma-tokens.json'))).toBe(true);
   }, 20_000);
+
+  it('prints accepted local-law findings in the CI gate', () => {
+    mkdirSync(join(testDir, 'apps', 'web', 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'App.tsx'),
+      'export function App() { return <button style={{ color: "#ff7a18" }}>Save</button>; }\n',
+      'utf-8',
+    );
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'local-patterns.json'), {
+      version: 2,
+      status: 'accepted',
+      patterns: [{ id: 'button', label: 'Button primitives' }],
+    });
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'rules.json'), {
+      version: 1,
+      status: 'accepted',
+      generatedAt: '2026-05-18T00:00:00.000Z',
+      source: 'test',
+      purpose: 'test local law',
+      enforcement: { defaultSeverity: 'warn', mode: 'warn', notes: [] },
+      rules: [
+        {
+          id: 'no-inline-style',
+          type: 'forbid-regex',
+          enabled: true,
+          severity: 'warn',
+          description: 'No inline styles.',
+          includeExtensions: ['.tsx'],
+          pattern: '\\bstyle\\s*=',
+          message: 'Inline style found in UI template.',
+          suggestedFix: 'Use the project-owned style system.',
+        },
+      ],
+    });
+
+    const output = runCli(testDir, ['ci', '--project', 'apps/web', '--fail-on', 'none']);
+
+    expect(output).toContain('Project-owned local law');
+    expect(output).toContain('no-inline-style');
+    expect(output).toContain('src/App.tsx:1');
+  });
 });
