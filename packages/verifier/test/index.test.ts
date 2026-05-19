@@ -345,7 +345,7 @@ describe('verifier', () => {
     expect(report.findings.some((finding) => finding.id === 'treatment-usage-missing')).toBe(false);
     expect(report.findings.some((finding) => finding.id === 'theme-consistency-weak')).toBe(false);
     expect(report.scores.find((score) => score.category === 'Styling Authority')?.details).toContain(
-      'Contract-only adoption',
+      'Contract-only/style-bridge adoption',
     );
   });
 
