@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
 type ApplicabilityStatus = 'strong_fit' | 'partial_fit' | 'not_applicable' | 'unknown';
@@ -109,6 +109,13 @@ function severityLabel(severity: FindingSeverity) {
 
 function commandFor(report: ScanReport, fallback: string) {
   return report.recommendedCommands.find((command) => command.includes(fallback)) ?? null;
+}
+
+function styleSignalLevel(value: number) {
+  if (value <= 0) return 'is-empty';
+  if (value < 8) return 'is-low';
+  if (value < 40) return 'is-medium';
+  return 'is-high';
 }
 
 function Metric({ label, value }: { label: string; value: string | number }) {
@@ -244,11 +251,11 @@ function ReportView({ report }: { report: ScanReport }) {
           <span className="d-label registry-anchor-label">Style intelligence</span>
           <h3>{report.styling.approach}</h3>
           <div className="registry-scan-style-bars">
-            <span style={{ '--scan-bar': Math.min(report.styling.cssVariableCount, 40) } as CSSProperties}>
+            <span className={`registry-scan-style-bar ${styleSignalLevel(report.styling.cssVariableCount)}`}>
               CSS variables
               <strong>{report.styling.cssVariableCount}</strong>
             </span>
-            <span style={{ '--scan-bar': Math.min(report.styling.colorTokenCount, 40) } as CSSProperties}>
+            <span className={`registry-scan-style-bar ${styleSignalLevel(report.styling.colorTokenCount)}`}>
               Color literals
               <strong>{report.styling.colorTokenCount}</strong>
             </span>
@@ -310,13 +317,33 @@ export function ScanExperience() {
     return () => window.clearInterval(interval);
   }, [status]);
 
+  useEffect(() => {
+    if (status === 'idle') return undefined;
+    function resetScanScroll() {
+      const container = document.querySelector<HTMLElement>('.registry-public-main');
+      container?.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTo({ top: 0, behavior: 'smooth' });
+      document.body.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    const frame = window.requestAnimationFrame(resetScanScroll);
+    const timeout = window.setTimeout(resetScanScroll, 80);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [status]);
+
   const heroCompact = status !== 'idle' || Boolean(report);
-  const placeholder = useMemo(() => 'https://github.com/owner/repo or https://owner.github.io/repo/', []);
+  const placeholder = useMemo(() => 'https://github.com/owner/repo', []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextUrl = url.trim();
     if (!nextUrl) return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
     setStatus('scanning');
     setStage(0);
     setError(null);
@@ -340,10 +367,9 @@ export function ScanExperience() {
   }
 
   return (
-    <div className="registry-page-max registry-browser-shell registry-scan-page">
+    <div className="registry-scan-page">
       <section className={heroCompact ? 'registry-scan-hero registry-scan-hero-compact' : 'registry-scan-hero'} aria-labelledby="scan-heading">
         <div className="registry-scan-hero-copy">
-          <span className="d-label registry-home-eyebrow">Brownfield Scan</span>
           <h1 id="scan-heading" className="registry-home-title">
             See what Decantr can prove before you install anything.
           </h1>
@@ -351,6 +377,11 @@ export function ScanExperience() {
             Paste a public GitHub repo or GitHub Pages URL. Decantr runs static reconnaissance,
             checks the published surface with HTTP only, and returns an ephemeral report.
           </p>
+          <div className="registry-scan-trust-row" aria-label="Scan guarantees">
+            <span>No install</span>
+            <span>No build</span>
+            <span>No source execution</span>
+          </div>
         </div>
 
         <form className="registry-scan-search" onSubmit={submit}>

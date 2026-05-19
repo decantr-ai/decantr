@@ -43,93 +43,162 @@
   }
 
   .registry-scan-page {
+    position: relative;
+    isolation: isolate;
     display: grid;
-    gap: clamp(2.25rem, 5vw, 4.5rem);
+    box-sizing: border-box;
+    min-height: calc(100svh - 52px);
+    overflow: hidden;
+    overflow-anchor: none;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--d-accent) 7%, transparent) 0%, transparent 36rem),
+      linear-gradient(120deg, color-mix(in srgb, var(--d-primary) 7%, transparent) 0%, transparent 42rem),
+      var(--d-bg);
+  }
+
+  .registry-scan-page *,
+  .registry-scan-page *::before,
+  .registry-scan-page *::after {
+    box-sizing: border-box;
+  }
+
+  .registry-scan-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--d-border) 28%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--d-border) 28%, transparent) 1px, transparent 1px);
+    background-position: center top;
+    background-size: 4rem 4rem;
+    mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.9), transparent 78%);
+    pointer-events: none;
+  }
+
+  .registry-scan-page::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--d-accent) 9%, transparent) 48%, transparent 100%),
+      linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--d-primary) 10%, transparent) 55%, transparent 100%);
+    clip-path: polygon(0 10%, 100% 0, 100% 42%, 0 58%);
+    opacity: 0.76;
+    pointer-events: none;
   }
 
   .registry-scan-hero {
     position: relative;
     display: grid;
-    gap: clamp(1.2rem, 3vw, 2rem);
-    min-height: min(76vh, 42rem);
+    justify-items: center;
+    gap: 1.35rem;
+    width: min(100%, 86rem);
+    min-height: calc(100svh - 52px);
+    margin: 0 auto;
+    padding: 5rem 1.5rem 4rem;
     align-content: center;
-    padding: clamp(2rem, 5vw, 4.5rem) 0 clamp(1.5rem, 4vw, 3rem);
+    text-align: center;
     transition:
       min-height 420ms ease,
       padding 420ms ease;
   }
 
-  .registry-scan-hero::before {
-    content: '';
-    position: absolute;
-    inset: clamp(0.5rem, 2vw, 1.5rem) 0 auto;
-    height: clamp(12rem, 32vw, 24rem);
-    background:
-      linear-gradient(115deg, rgb(20 184 166 / 0.16), transparent 42%),
-      linear-gradient(35deg, rgb(244 114 182 / 0.14), transparent 38%),
-      linear-gradient(180deg, rgb(250 204 21 / 0.1), transparent 60%);
-    border: 1px solid color-mix(in srgb, var(--d-border) 45%, transparent);
-    border-radius: 0.75rem;
-    opacity: 0.86;
-    pointer-events: none;
-  }
-
   .registry-scan-hero-compact {
-    min-height: 23rem;
-    padding-block: 1.5rem 0.5rem;
+    min-height: 32rem;
+    padding-block: 3.5rem 2.5rem;
   }
 
   .registry-scan-hero-copy {
     position: relative;
     display: grid;
+    justify-items: center;
     gap: 1rem;
-    max-width: 58rem;
+    width: min(100%, 68rem);
   }
 
   .registry-scan-hero .registry-home-title {
-    max-width: 54rem;
-    font-size: 4.55rem;
+    max-width: 64rem;
+    margin: 0;
+    font-size: 5.25rem;
+    line-height: 0.94;
     letter-spacing: 0;
   }
 
   .registry-scan-hero .registry-home-description {
     max-width: 48rem;
+    margin: 0;
+    color: var(--d-text-muted);
+  }
+
+  .registry-scan-trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .registry-scan-trust-row span {
+    padding: 0.42rem 0.68rem;
+    color: color-mix(in srgb, var(--d-text) 88%, var(--d-accent));
+    background: color-mix(in srgb, var(--d-surface) 68%, transparent);
+    border: 1px solid color-mix(in srgb, var(--d-border) 66%, transparent);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
   }
 
   .registry-scan-search {
     position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.65rem;
-    max-width: 64rem;
-    padding: 0.55rem;
-    background: color-mix(in srgb, var(--d-surface) 88%, transparent);
-    border: 1px solid color-mix(in srgb, var(--d-border) 78%, transparent);
-    border-radius: 0.75rem;
-    box-shadow: var(--d-shadow-lg);
+    gap: 0.55rem;
+    width: min(calc(100% - 3rem), 66rem);
+    min-width: 0;
+    padding: 0.5rem;
+    background: color-mix(in srgb, var(--d-surface) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--d-border) 72%, transparent);
+    border-radius: var(--d-radius);
+    box-shadow:
+      0 1.25rem 4rem rgb(0 0 0 / 0.28),
+      inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
     backdrop-filter: blur(18px);
   }
 
   .registry-scan-search input {
     width: 100%;
-    min-height: 3.35rem;
-    padding: 0 1rem;
+    min-height: 3.75rem;
+    min-width: 0;
+    padding: 0 1.1rem;
     color: var(--d-text);
-    background: transparent;
-    border: 0;
-    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--d-bg) 32%, transparent);
+    border: 1px solid transparent;
+    border-radius: calc(var(--d-radius) - 2px);
     font: inherit;
     outline: none;
+    text-overflow: ellipsis;
+    transition:
+      border-color 180ms ease,
+      background 180ms ease;
   }
 
   .registry-scan-search input::placeholder {
     color: color-mix(in srgb, var(--d-text-muted) 82%, transparent);
   }
 
+  .registry-scan-search input:focus-visible {
+    background: color-mix(in srgb, var(--d-bg) 46%, transparent);
+    border-color: color-mix(in srgb, var(--d-primary) 82%, transparent);
+  }
+
   .registry-scan-search button {
     min-width: 8rem;
+    min-height: 3.75rem;
     justify-content: center;
-    border-radius: 0.5rem;
+    border-radius: calc(var(--d-radius) - 2px);
   }
 
   .registry-scan-search button:disabled {
@@ -140,14 +209,12 @@
   .registry-scan-stage {
     position: relative;
     display: grid;
-    gap: 0.35rem;
-    max-width: 34rem;
-    min-height: 4.5rem;
-    padding: 0.9rem 1rem;
+    justify-items: center;
+    gap: 0.4rem;
+    width: min(100%, 44rem);
+    min-height: 4.35rem;
+    padding: 0.35rem 1rem 0;
     color: var(--d-text-muted);
-    background: color-mix(in srgb, var(--d-surface) 72%, transparent);
-    border: 1px solid color-mix(in srgb, var(--d-border) 58%, transparent);
-    border-radius: 0.75rem;
   }
 
   .registry-scan-stage strong {
@@ -162,7 +229,7 @@
 
   .registry-scan-stage-line {
     display: block;
-    width: 100%;
+    width: min(100%, 32rem);
     height: 0.25rem;
     overflow: hidden;
     background: color-mix(in srgb, var(--d-border) 45%, transparent);
@@ -180,8 +247,13 @@
   }
 
   .registry-scan-report {
+    position: relative;
+    z-index: 1;
     display: grid;
-    gap: clamp(1.5rem, 3vw, 2.5rem);
+    gap: 1.5rem;
+    width: min(calc(100% - 2rem), 76rem);
+    margin: 0 auto;
+    padding-bottom: 5rem;
   }
 
   .registry-scan-verdict,
@@ -190,10 +262,12 @@
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 1.25rem;
     align-items: center;
-    padding: clamp(1.1rem, 3vw, 1.6rem);
-    background: color-mix(in srgb, var(--d-surface) 74%, transparent);
+    min-width: 0;
+    padding: 1.35rem;
+    background: color-mix(in srgb, var(--d-surface) 72%, transparent);
     border: 1px solid color-mix(in srgb, var(--d-border) 62%, transparent);
-    border-radius: 0.75rem;
+    border-radius: var(--d-radius);
+    backdrop-filter: blur(14px);
   }
 
   .registry-scan-verdict h2,
@@ -251,9 +325,10 @@
   .registry-scan-metric,
   .registry-scan-panel,
   .registry-scan-finding {
-    background: color-mix(in srgb, var(--d-surface) 76%, transparent);
+    background: color-mix(in srgb, var(--d-surface) 74%, transparent);
     border: 1px solid color-mix(in srgb, var(--d-border) 60%, transparent);
-    border-radius: 0.5rem;
+    border-radius: var(--d-radius);
+    backdrop-filter: blur(10px);
   }
 
   .registry-scan-metric {
@@ -289,7 +364,7 @@
     gap: 1rem;
     align-content: start;
     min-width: 0;
-    padding: clamp(1rem, 2vw, 1.25rem);
+    padding: 1.15rem;
   }
 
   .registry-scan-panel h3 {
@@ -375,9 +450,24 @@
     content: '';
     position: absolute;
     inset: auto auto 0 0;
-    width: calc((var(--scan-bar) / 40) * 100%);
     height: 0.2rem;
     background: linear-gradient(90deg, #14b8a6, #f472b6);
+  }
+
+  .registry-scan-style-bar.is-empty::before {
+    width: 0%;
+  }
+
+  .registry-scan-style-bar.is-low::before {
+    width: 18%;
+  }
+
+  .registry-scan-style-bar.is-medium::before {
+    width: 58%;
+  }
+
+  .registry-scan-style-bar.is-high::before {
+    width: 100%;
   }
 
   .registry-scan-findings {
@@ -485,12 +575,16 @@
   }
 
   .registry-scan-error {
+    position: relative;
+    z-index: 1;
     display: grid;
     gap: 0.35rem;
+    width: min(calc(100% - 2rem), 76rem);
+    margin: -2rem auto 2rem;
     padding: 1rem;
     background: rgb(225 29 72 / 0.1);
     border: 1px solid rgb(225 29 72 / 0.38);
-    border-radius: 0.75rem;
+    border-radius: var(--d-radius);
   }
 
   .registry-scan-error p {
@@ -512,7 +606,8 @@
 
   @media (max-width: 900px) {
     .registry-scan-hero .registry-home-title {
-      font-size: 3.35rem;
+      font-size: 3.6rem;
+      line-height: 0.98;
     }
 
     .registry-scan-verdict h2,
@@ -534,7 +629,7 @@
 
     .registry-scan-score {
       width: 7.25rem;
-      justify-self: start;
+      justify-self: center;
     }
 
     .registry-scan-grid {
@@ -544,12 +639,17 @@
 
   @media (max-width: 640px) {
     .registry-scan-hero {
-      min-height: auto;
-      padding-top: 2rem;
+      min-height: calc(100svh - 52px);
+      padding: 3rem 1rem 2rem;
     }
 
-    .registry-scan-hero::before {
-      height: 26rem;
+    .registry-scan-hero-compact {
+      min-height: auto;
+      padding-block: 2.5rem 1.75rem;
+    }
+
+    .registry-scan-page::before {
+      background-size: 2.75rem 2.75rem;
     }
 
     .registry-scan-hero .registry-home-title {
@@ -566,8 +666,26 @@
       font-size: 1.3rem;
     }
 
+    .registry-scan-search {
+      width: min(calc(100% - 1rem), 34rem);
+    }
+
     .registry-scan-search button {
       width: 100%;
+    }
+
+    .registry-scan-report {
+      width: min(calc(100% - 1rem), 76rem);
+      gap: 1rem;
+      padding-bottom: 3rem;
+    }
+
+    .registry-scan-verdict,
+    .registry-scan-next,
+    .registry-scan-panel,
+    .registry-scan-finding,
+    .registry-scan-metric {
+      padding: 1rem;
     }
 
     .registry-scan-grid,
@@ -2568,6 +2686,12 @@
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
+  }
+
+  .registry-public-main:has(.registry-scan-page) {
+    padding: 0;
+    overflow-x: hidden;
+    overflow-anchor: none;
   }
 
   .registry-browser-shell {
@@ -4841,6 +4965,10 @@
   @media (min-width: 768px) {
     .registry-public-main {
       padding: 1.5rem;
+    }
+
+    .registry-public-main:has(.registry-scan-page) {
+      padding: 0;
     }
 
     .registry-header-nav {
