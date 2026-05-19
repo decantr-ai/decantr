@@ -47,6 +47,7 @@ pnpm release:verify
 git tag vX.Y.Z <release-commit>
 git push origin vX.Y.Z
 pnpm release:closeout --version X.Y.Z
+pnpm release:announce -- --version X.Y.Z --send
 ```
 
 For a targeted package release, keep the same filters across planning, publishing, verification, and closeout:
@@ -56,7 +57,28 @@ pnpm release:commands --only=@decantr/cli
 node scripts/publish-packages.mjs --only=@decantr/cli
 pnpm release:verify -- --only=@decantr/cli
 pnpm release:closeout -- --only=@decantr/cli --version X.Y.Z
+pnpm release:announce -- --only=@decantr/cli --version X.Y.Z --send
 ```
+
+## Community Announcement
+
+Discord release announcements are a distribution step, not release truth. Run them only after `release:verify` and `release:closeout` pass.
+
+`pnpm release:announce` builds a `repository_dispatch` payload for `decantr-ai/community-ops`, including the version, tag, release-note path, changelog markdown, and selected package versions. It dry-runs by default:
+
+```bash
+pnpm release:announce -- --version 2.12.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --json
+```
+
+To post through the community automation, set `COMMUNITY_OPS_DISPATCH_TOKEN` to a GitHub token that can create `repository_dispatch` events on `decantr-ai/community-ops`, then send:
+
+```bash
+pnpm release:announce -- --version 2.12.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --send
+```
+
+`community-ops` owns the Discord webhook secret and message formatting. Decantr only sends the release facts after closeout.
+
+The same dispatch is also available from the `Community Release Announcement` GitHub workflow. Run it in dry-run mode first, then rerun with `send=true` after closeout has passed.
 
 ## Closeout Audit
 
