@@ -4,6 +4,16 @@ Use Decantr when an AI-built or AI-maintained frontend needs a durable product c
 
 ## Start
 
+Preview the fit before you attach anything:
+
+```bash
+npx @decantr/cli scan
+```
+
+For a public repository or GitHub Pages site, use the hosted scanner at `/scan`. It accepts `https://github.com/owner/repo` and `https://owner.github.io/repo/` URLs, clones public GitHub source into a temporary checkout, probes the Pages URL with HTML-only HTTP, returns an ephemeral report, and does not persist source or reports.
+
+When the scan says the app is a good Brownfield UI target, attach Decantr:
+
 ```bash
 npx @decantr/cli adopt --yes
 ```
@@ -18,7 +28,7 @@ pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
 ```
 
-`adopt` is the paved path. It explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, hosted pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr registry compile-packs <app>/decantr.essence.json --write-context`. In contract-only mode, deferred hosted packs are optional context; missing packs should show as optional/info unless a present manifest references missing files.
+`scan` is look-don't-touch reconnaissance. `analyze` is the local primitive that writes Brownfield intelligence and an observed proposal. `adopt` is the paved path that explains and runs the primitive flow for you: `analyze`, `init --existing --accept-proposal` or `--merge-proposal`, hosted pack hydration when online, Project Health, a baseline, and optional CI setup. Use the primitive commands only when you need to script or debug a specific step. Pass `--no-packs` when you need a fully local/offline attach and hydrate packs later with `decantr registry compile-packs <app>/decantr.essence.json --write-context`. In contract-only mode, deferred hosted packs are optional context; missing packs should show as optional/info unless a present manifest references missing files.
 
 If the app is already running and you want Decantr to attach route screenshots to task context, add visual evidence after adoption:
 
@@ -45,11 +55,20 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 
 ## What Decantr Does Not Do
 
+- `decantr scan` does not write `.decantr`, save a report, install dependencies, build the app, run scripts, upload source, or open pull requests.
 - It does not replace your router.
 - It does not take over Tailwind, Bootstrap, MUI, Chakra, plain CSS, or another existing styling system.
 - It does not mutate assistant rule files unless you explicitly use the assistant bridge apply flow.
 - It does not upload source code, prompts, or health reports.
 - It does not upload screenshots; browser evidence remains local unless you explicitly choose a hosted workflow.
+
+## Scan, Analyze, Adopt
+
+Use `scan` when you want a no-risk answer to "is this a Decantr Brownfield UI target?" It reports framework, package manager, route evidence, component/style signals, Decantr presence, assistant-rule files, GitHub Pages hints, fallback warnings, and next commands. Non-web repositories, such as Python/backend projects, return a useful "not a Brownfield UI target" result instead of failing.
+
+Use `analyze` when you are ready for local artifacts: doctrine map, Brownfield intelligence, theme inventory, enrichment backlog, report markdown, and an observed essence proposal.
+
+Use `adopt` when you want the guided attach workflow. It can write the accepted contract, generated context, optional hosted packs, local evidence, and CI guidance depending on the flags you choose.
 
 ## When To Use This Path
 

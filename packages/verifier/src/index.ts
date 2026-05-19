@@ -21,6 +21,27 @@ export {
 } from './interactions.js';
 export type { BuiltDistAuditOptions, RuntimeAudit } from './runtime.js';
 export { auditBuiltDist, emptyRuntimeAudit } from './runtime.js';
+export type {
+  GitHubScanInputResolution,
+  PublishedSiteProbeV1,
+  ScanApplicabilityStatus,
+  ScanConfidence,
+  ScanFindingSeverity,
+  ScanFindingV1,
+  ScanInputKind,
+  ScanInputV1,
+  ScanProjectOptions,
+  ScanReportV1,
+  ScanRepositoryV1,
+  ScanRouteV1,
+} from './scan.js';
+export {
+  SCAN_REPORT_SCHEMA_URL,
+  createUnavailableScanReport,
+  probePublishedSite,
+  resolveGitHubScanInput,
+  scanProject,
+} from './scan.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
@@ -28,6 +49,7 @@ export const VERIFICATION_SCHEMA_URLS = {
   projectHealth: 'https://decantr.ai/schemas/project-health-report.v1.json',
   decantrCi: 'https://decantr.ai/schemas/decantr-ci-report.v1.json',
   evidenceBundle: 'https://decantr.ai/schemas/evidence-bundle.v1.json',
+  scanReport: 'https://decantr.ai/schemas/scan-report.v1.json',
   workspaceHealth: 'https://decantr.ai/schemas/workspace-health-report.v1.json',
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
   showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',

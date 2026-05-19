@@ -25,6 +25,14 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     consolidation: 'keep',
   },
   {
+    command: 'scan',
+    classification: 'primary',
+    mutates: false,
+    audience: 'app-developer',
+    purpose: 'Read-only Brownfield reconnaissance without writing Decantr artifacts.',
+    consolidation: 'keep',
+  },
+  {
     command: 'new',
     classification: 'primary',
     mutates: true,

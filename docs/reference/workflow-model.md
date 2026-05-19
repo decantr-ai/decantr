@@ -45,8 +45,11 @@ Unsupported targets should feel intentional, not broken: Decantr writes the cont
 Brownfield starts with:
 
 ```bash
+decantr scan
 decantr adopt --yes
 ```
+
+`scan` is the read-only preview. It detects whether the app is a plausible Brownfield UI target and reports framework, route, styling, static-hosting, Decantr, assistant-rule, and GitHub Pages signals without writing files, building the app, running scripts, installing dependencies, uploading source, or saving a report.
 
 `adopt` is the user-facing workflow. It explains and runs the primitive chain: analyze the app, accept or merge the observed proposal, hydrate hosted execution packs when online, run Project Health, save a baseline, and optionally install CI. If the app is running and you want screenshots attached to task context, run `decantr verify --base-url <url> --evidence` after adoption. Use `--no-packs` or offline mode when the first attach must avoid network access.
 

@@ -9,6 +9,7 @@ interface NavHeaderProps {
 }
 
 const MOBILE_NAV_LINKS = [
+  { href: '/scan', label: 'Scan' },
   { href: '/browse', label: 'Browse' },
   { href: '/browse/patterns', label: 'Patterns' },
   { href: '/browse/themes', label: 'Themes' },

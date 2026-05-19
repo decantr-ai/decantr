@@ -36,6 +36,9 @@ import {
 import {
   auditProject,
   critiqueFile as critiqueProjectFile,
+  scanProject as scanProjectReadOnly,
+  type ScanFindingV1,
+  type ScanReportV1,
   type FileCritiqueReport,
   type ProjectAuditReport,
   type VerificationFinding,
@@ -3649,6 +3652,110 @@ function printWorkflowPlan(title: string, steps: string[]): void {
   console.log('');
 }
 
+function scanSeverityColor(finding: ScanFindingV1): string {
+  if (finding.severity === 'success') return success('ok');
+  if (finding.severity === 'error') return error('error');
+  if (finding.severity === 'warn') return `${YELLOW}warn${RESET}`;
+  return cyan('info');
+}
+
+function formatScanApplicability(status: ScanReportV1['applicability']['status']): string {
+  if (status === 'strong_fit') return success('strong fit');
+  if (status === 'partial_fit') return `${YELLOW}partial fit${RESET}`;
+  if (status === 'not_applicable') return dim('not applicable');
+  return dim('unknown');
+}
+
+function printScanReport(report: ScanReportV1): void {
+  console.log(heading('Decantr Scan'));
+  console.log(dim('Read-only Brownfield reconnaissance. No files were written.'));
+  console.log('');
+  console.log(`${BOLD}Verdict${RESET}`);
+  console.log(`  ${formatScanApplicability(report.applicability.status)}  ${report.applicability.label}`);
+  console.log(
+    `  Confidence: ${cyan(`${report.confidence.score}/100`)} (${report.confidence.level})`,
+  );
+  for (const reason of report.applicability.reasons.slice(0, 3)) {
+    console.log(`  ${dim('-')} ${reason}`);
+  }
+  console.log('');
+
+  console.log(`${BOLD}Project${RESET}`);
+  console.log(`  Framework:      ${cyan(report.project.framework)}${report.project.frameworkVersion ? ` ${report.project.frameworkVersion}` : ''}`);
+  console.log(`  Package manager:${' '} ${report.project.packageManager}`);
+  console.log(`  Language:       ${report.project.primaryLanguage}`);
+  console.log(`  TypeScript:     ${report.project.hasTypeScript ? 'yes' : 'no'}`);
+  console.log(`  Decantr:        ${report.project.hasDecantr ? 'present' : 'not attached'}`);
+  console.log('');
+
+  console.log(`${BOLD}Routes And Styling${RESET}`);
+  console.log(`  Routes:         ${report.routes.count} (${report.routes.strategy})`);
+  for (const route of report.routes.items.slice(0, 8)) {
+    console.log(`    ${cyan(route.path.padEnd(18))} ${dim(route.file)}`);
+  }
+  if (report.routes.items.length > 8) {
+    console.log(`    ${dim(`...${report.routes.items.length - 8} more route(s)`)}`);
+  }
+  console.log(`  Components:     ${report.components.componentCount}`);
+  console.log(
+    `  Styling:        ${report.styling.approach}${report.styling.configFile ? ` (${report.styling.configFile})` : ''}`,
+  );
+  console.log(`  CSS variables:  ${report.styling.cssVariableCount}`);
+  console.log(`  Dark mode:      ${report.styling.darkMode ? 'yes' : 'no'}`);
+  console.log('');
+
+  if (report.staticHosting.githubPagesLikely || report.pagesProbe) {
+    console.log(`${BOLD}Published Surface${RESET}`);
+    console.log(`  GitHub Pages:   ${report.staticHosting.githubPagesLikely ? 'likely' : 'not detected'}`);
+    if (report.source.publishedSiteUrl) {
+      console.log(`  Site URL:       ${report.source.publishedSiteUrl}`);
+    }
+    if (report.pagesProbe?.checked) {
+      console.log(
+        `  HTTP probe:     ${report.pagesProbe.reachable ? success('reachable') : `${YELLOW}unreachable${RESET}`} ${report.pagesProbe.status ?? ''}`,
+      );
+      if (report.pagesProbe.title) console.log(`  Title:          ${report.pagesProbe.title}`);
+    }
+    for (const item of report.staticHosting.evidence.slice(0, 4)) {
+      console.log(`  ${dim('-')} ${item}`);
+    }
+    console.log('');
+  }
+
+  console.log(`${BOLD}Findings${RESET}`);
+  for (const finding of report.findings.slice(0, 8)) {
+    console.log(`  [${scanSeverityColor(finding)}] ${finding.title}`);
+    console.log(`      ${finding.message}`);
+    if (finding.recommendation) console.log(`      ${dim(finding.recommendation)}`);
+  }
+  console.log('');
+
+  console.log(`${BOLD}Next Commands${RESET}`);
+  for (const command of report.recommendedCommands) {
+    console.log(`  ${cyan(command)}`);
+  }
+  console.log('');
+  console.log(dim(report.privacy.notes[0] ?? 'Scan completed without writing files.'));
+}
+
+async function cmdScanWorkflow(args: string[]): Promise<void> {
+  const { flags } = parseLooseArgs(args);
+  if (!ensureAllowedFlags(flags, ['project', 'json'], 'scan')) return;
+  const workspaceInfo = resolveWorkflowProject(flags, 'scan');
+  if (!workspaceInfo) return;
+  const jsonOutput = flagBoolean(flags, 'json');
+  const projectArg = flagString(flags, 'project');
+  const inputValue = projectArg ?? '.';
+  const report = await scanProjectReadOnly(workspaceInfo.appRoot, {
+    input: { kind: 'local', value: inputValue },
+  });
+  if (jsonOutput) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+  printScanReport(report);
+}
+
 async function cmdSetupWorkflow(args: string[]): Promise<void> {
   const { flags } = parseLooseArgs(args);
   const projectArg = flagString(flags, 'project');
@@ -4579,6 +4686,7 @@ ${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
 
 ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
+  decantr scan [--project <path>] [--json]
   decantr new <name> [--blueprint=X] [--archetype=X] [--theme=X] [--workflow=greenfield] [--adoption=decantr-css] [--telemetry]
   decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
@@ -4655,6 +4763,7 @@ ${BOLD}Init Options:${RESET}
 
 ${BOLD}Commands:${RESET}
   ${cyan('setup')}       Detect project state and recommend the right Decantr workflow
+  ${cyan('scan')}        Read-only Brownfield reconnaissance; no files written
   ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
   ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
   ${cyan('task')}        Prepare route/task context, local law, evidence, and changed-file impact for an AI coding assistant
@@ -4698,6 +4807,8 @@ ${BOLD}Advanced commands:${RESET}
 
 ${BOLD}Examples:${RESET}
   decantr setup
+  decantr scan
+  decantr scan --json
   decantr new my-app --blueprint=carbon-ai-portal
   decantr adopt --yes
   decantr adopt --project apps/web --yes
@@ -4756,6 +4867,7 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Greenfield blueprint')}   decantr new my-app --blueprint=X --workflow=greenfield --adoption=decantr-css
   ${cyan('Greenfield contract')}    decantr init --workflow=greenfield --adoption=contract-only
   ${cyan('Brownfield adoption')}    decantr adopt --yes
+  ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
   ${cyan('Brownfield monorepo')}    decantr adopt --project apps/web --yes
   ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify --brownfield --local-patterns
   ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
@@ -4783,6 +4895,29 @@ ${BOLD}Examples:${RESET}
   decantr rules preview
   decantr rules preview --project=apps/web
   decantr rules apply --project=apps/web
+`);
+}
+
+function cmdScanHelp() {
+  console.log(`
+${BOLD}decantr scan${RESET} — Read-only Brownfield reconnaissance
+
+${BOLD}Usage:${RESET}
+  decantr scan [--project <path>] [--json]
+
+${BOLD}Options:${RESET}
+  --project   App path inside a workspace/monorepo
+  --json      Emit the ScanReportV1 JSON to stdout
+
+${BOLD}Behavior:${RESET}
+  Reads local project files, detects frontend framework/routes/styling/static-hosting signals,
+  and prints a terminal report. It does not write .decantr files, install dependencies,
+  build the app, execute scripts, upload source, or open pull requests.
+
+${BOLD}Examples:${RESET}
+  decantr scan
+  decantr scan --project apps/web
+  decantr scan --json
 `);
 }
 
@@ -5056,6 +5191,9 @@ function printCommandHelp(command: string, args: string[]): boolean {
     case 'setup':
       cmdSetupHelp();
       return true;
+    case 'scan':
+      cmdScanHelp();
+      return true;
     case 'adopt':
       cmdAdoptHelp();
       return true;
@@ -5149,6 +5287,11 @@ async function main() {
   switch (command) {
     case 'setup': {
       await cmdSetupWorkflow(args);
+      break;
+    }
+
+    case 'scan': {
+      await cmdScanWorkflow(args);
       break;
     }
 

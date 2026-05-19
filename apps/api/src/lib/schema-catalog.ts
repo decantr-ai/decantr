@@ -61,6 +61,7 @@ const publicSchemaSpecs = {
   'project-audit-report.v1.json': '@decantr/verifier/schema/project-audit-report.v1.json',
   'project-health-report.v1.json': '@decantr/verifier/schema/project-health-report.v1.json',
   'file-critique-report.v1.json': '@decantr/verifier/schema/file-critique-report.v1.json',
+  'scan-report.v1.json': '@decantr/verifier/schema/scan-report.v1.json',
   'showcase-shortlist-report.v1.json': '@decantr/verifier/schema/showcase-shortlist-report.v1.json',
 } as const;
 

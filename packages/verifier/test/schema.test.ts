@@ -3,7 +3,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { auditProject, critiqueSource } from '../src/index.js';
+import { auditProject, critiqueSource, scanProject } from '../src/index.js';
 import { assertMatchesVerifierSchema } from './helpers/schema-assert.js';
 
 function createProjectRoot(): string {
@@ -107,6 +107,37 @@ describe('verifier schema contracts', () => {
 
       assertMatchesVerifierSchema('file-critique-report.v1.json', report);
       expect(report.$schema).toBe('https://decantr.ai/schemas/file-critique-report.v1.json');
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('emits Brownfield scan reports matching the published schema', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeFileSync(
+        join(projectRoot, 'package.json'),
+        JSON.stringify(
+          {
+            name: 'scan-schema-app',
+            dependencies: {
+              react: '^19.0.0',
+              'react-router-dom': '^7.0.0',
+            },
+          },
+          null,
+          2,
+        ),
+      );
+      await mkdir(join(projectRoot, 'src'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'src', 'App.tsx'),
+        'import { Route, Routes } from "react-router-dom"; export function App() { return <Routes><Route path="/" element={<main />} /></Routes>; }\n',
+      );
+
+      const report = await scanProject(projectRoot);
+      assertMatchesVerifierSchema('scan-report.v1.json', report);
+      expect(report.$schema).toBe('https://decantr.ai/schemas/scan-report.v1.json');
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

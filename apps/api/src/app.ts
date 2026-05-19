@@ -6,6 +6,7 @@ import { contentRoutes } from './routes/content.js';
 import { searchRoutes } from './routes/search.js';
 import { schemaRoutes } from './routes/schema.js';
 import { showcaseRoutes } from './routes/showcase.js';
+import { scanRoutes } from './routes/scan.js';
 import { intelligenceRoutes } from './routes/intelligence.js';
 import { packRoutes } from './routes/packs.js';
 import { critiqueRoutes } from './routes/critique.js';
@@ -144,6 +145,7 @@ export function createApp(): Hono<Env> {
   app.route('/v1', searchRoutes);
   app.route('/v1', schemaRoutes);
   app.route('/v1', showcaseRoutes);
+  app.route('/v1', scanRoutes);
   app.route('/v1', intelligenceRoutes);
   app.route('/v1', packRoutes);
   app.route('/v1', telemetryRoutes);

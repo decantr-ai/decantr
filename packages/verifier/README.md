@@ -15,6 +15,8 @@ npm install @decantr/verifier
 
 - `auditProject()` for project-level Decantr audits
 - `auditBuiltDist()` for built-output runtime verification against emitted HTML, assets, and route hints
+- `scanProject()` for read-only Brownfield reconnaissance of framework, routes, components, styling, static-hosting hints, Decantr presence, and assistant-rule files
+- `resolveGitHubScanInput()` and `probePublishedSite()` for hosted scan inputs and HTML-only published-site metadata probes
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - `createContractAssertions()` for explicit route, shell, accessibility, context, and design-token assertions derived from Essence/context
 - `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
@@ -45,9 +47,11 @@ import {
   createContractAssertions,
   createEvidenceBundle,
   critiqueFile,
+  scanProject,
   type ProjectHealthReport,
 } from '@decantr/verifier';
 
+const scan = await scanProject(process.cwd());
 const audit = await auditProject(process.cwd());
 const assertions = createContractAssertions(process.cwd(), audit);
 const critique = await critiqueFile('./src/pages/overview.tsx', process.cwd());
@@ -64,13 +68,14 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/project-health-report.v1.json`
 - `@decantr/verifier/schema/decantr-ci-report.v1.json`
 - `@decantr/verifier/schema/evidence-bundle.v1.json`
+- `@decantr/verifier/schema/scan-report.v1.json`
 - `@decantr/verifier/schema/workspace-health-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 
 ## Security And Permissions
 
-The verifier is a local library. It reads selected project source, Decantr context, and built `dist`/`.next` output when callers request project or runtime audits. Built-output runtime audit starts a temporary loopback static server and fetches from that local server only; it does not contact external hosts. The verifier does not write files, spawn processes, emit telemetry, or upload source by itself. See [security permissions](https://decantr.ai/reference/security-permissions.md).
+The verifier is a local library. It reads selected project source, Decantr context, read-only scan files, and built `dist`/`.next` output when callers request project or runtime audits. `scanProject()` returns relative evidence and does not write artifacts, install dependencies, build projects, execute scripts, or open pull requests. `probePublishedSite()` fetches HTML metadata over HTTP(S) only and does not execute JavaScript or capture screenshots. Built-output runtime audit starts a temporary loopback static server and fetches from that local server. The verifier does not write files, spawn processes, emit telemetry, or upload source by itself. See [security permissions](https://decantr.ai/reference/security-permissions.md).
 
 ## Compatibility
 

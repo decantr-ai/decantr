@@ -5,6 +5,7 @@ This is the current command audit for the 2.x reliability layer. The goal is con
 | Command | Class | Decision | Notes |
 | --- | --- | --- | --- |
 | `setup` | primary | keep | Detect project state and recommend the right Decantr workflow without writing files. |
+| `scan` | primary | keep | Read-only Brownfield reconnaissance over local files; prints `ScanReportV1` as terminal output or JSON and writes no files. |
 | `new` | primary | keep | Greenfield workspace creation. |
 | `adopt` | primary | keep | Brownfield one-liner over analyze, proposal acceptance, online pack hydration, Project Health, evidence, baseline, and optional CI. |
 | `task` | primary | keep | Route/task context activation for AI coding assistants, including authority lane, local law, runtime boundary, and changed-file impact. |
@@ -31,6 +32,7 @@ The typed metadata lives in `packages/cli/src/command-surface.ts` and is covered
 
 Brownfield intelligence is now exposed through workflows first:
 
+- `decantr scan` is the zero-commit preview. It detects frontend framework, routes, styling, static-hosting hints, Decantr presence, and assistant-rule files, then prints a terminal report without creating `.decantr`, installing dependencies, building the app, executing scripts, uploading source, or saving a report. Use `--project apps/web` from monorepos and `--json` for automation.
 - `decantr adopt --yes` runs the full adoption path and explains the underlying primitives before writing. In monorepos, use `decantr adopt --project apps/web --yes`; `--base-url` is optional visual evidence, not the default attach command. Online adoption hydrates hosted execution packs automatically; use `--no-packs` to defer that step.
 - `decantr task <route>` surfaces the relevant context files, patterns, screenshot references, accepted local laws, accepted style bridge mappings, changed files, impacted routes, and authority lane for the next LLM edit. The authority block states source authority, style authority, active authorities, runtime boundary, and warnings for cross-runtime or Decantr CSS requests.
 - `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `decantr codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`; `decantr codify --accept` promotes reviewed proposals, activating Hybrid local law or Hybrid style bridge.

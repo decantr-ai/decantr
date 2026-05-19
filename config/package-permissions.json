@@ -128,12 +128,12 @@
       "runtimeKind": "library",
       "ships": ["dist", "schema", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project source files", "Decantr context files", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
+        "read": ["Selected project source files", "Decantr context files", "read-only scan files for framework, route, styling, static-host, assistant-rule, and Decantr presence signals", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
         "write": [],
         "delete": []
       },
       "network": {
-        "outbound": ["Loopback fetches to the verifier-owned temporary static server during built-output runtime audit"],
+        "outbound": ["Loopback fetches to the verifier-owned temporary static server during built-output runtime audit", "Caller-provided published-site HTTP(S) URL when probePublishedSite is explicitly invoked"],
         "inbound": true
       },
       "process": {
@@ -143,6 +143,8 @@
       "hostedUpload": "not-supported",
       "localArtifacts": ["Evidence Bundle objects returned to callers; file writes are owned by the CLI/MCP caller"],
       "scannerNotes": [
+        "scanProject is read-only and returns relative evidence; it does not write artifacts, install dependencies, build projects, execute scripts, or open pull requests.",
+        "probePublishedSite fetches HTML metadata and asset hints over HTTP(S) only; it does not execute JavaScript or capture browser screenshots.",
         "Runtime audit starts a local loopback server for already-built assets; it does not contact external hosts."
       ]
     },
@@ -193,6 +195,7 @@
       "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/evidence/*", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json"],
       "scannerNotes": [
         "The CLI is intentionally a local project inspector and artifact writer.",
+        "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
         "Visual evidence screenshots remain local unless the user invokes a hosted workflow."
       ]

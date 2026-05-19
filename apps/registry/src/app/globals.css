@@ -29,6 +29,559 @@
   --font-family-mono: ui-monospace, "Cascadia Code", "JetBrains Mono", monospace;
 }
 
+@layer components {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .registry-scan-page {
+    display: grid;
+    gap: clamp(2.25rem, 5vw, 4.5rem);
+  }
+
+  .registry-scan-hero {
+    position: relative;
+    display: grid;
+    gap: clamp(1.2rem, 3vw, 2rem);
+    min-height: min(76vh, 42rem);
+    align-content: center;
+    padding: clamp(2rem, 5vw, 4.5rem) 0 clamp(1.5rem, 4vw, 3rem);
+    transition:
+      min-height 420ms ease,
+      padding 420ms ease;
+  }
+
+  .registry-scan-hero::before {
+    content: '';
+    position: absolute;
+    inset: clamp(0.5rem, 2vw, 1.5rem) 0 auto;
+    height: clamp(12rem, 32vw, 24rem);
+    background:
+      linear-gradient(115deg, rgb(20 184 166 / 0.16), transparent 42%),
+      linear-gradient(35deg, rgb(244 114 182 / 0.14), transparent 38%),
+      linear-gradient(180deg, rgb(250 204 21 / 0.1), transparent 60%);
+    border: 1px solid color-mix(in srgb, var(--d-border) 45%, transparent);
+    border-radius: 0.75rem;
+    opacity: 0.86;
+    pointer-events: none;
+  }
+
+  .registry-scan-hero-compact {
+    min-height: 23rem;
+    padding-block: 1.5rem 0.5rem;
+  }
+
+  .registry-scan-hero-copy {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+    max-width: 58rem;
+  }
+
+  .registry-scan-hero .registry-home-title {
+    max-width: 54rem;
+    font-size: 4.55rem;
+    letter-spacing: 0;
+  }
+
+  .registry-scan-hero .registry-home-description {
+    max-width: 48rem;
+  }
+
+  .registry-scan-search {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    max-width: 64rem;
+    padding: 0.55rem;
+    background: color-mix(in srgb, var(--d-surface) 88%, transparent);
+    border: 1px solid color-mix(in srgb, var(--d-border) 78%, transparent);
+    border-radius: 0.75rem;
+    box-shadow: var(--d-shadow-lg);
+    backdrop-filter: blur(18px);
+  }
+
+  .registry-scan-search input {
+    width: 100%;
+    min-height: 3.35rem;
+    padding: 0 1rem;
+    color: var(--d-text);
+    background: transparent;
+    border: 0;
+    border-radius: 0.5rem;
+    font: inherit;
+    outline: none;
+  }
+
+  .registry-scan-search input::placeholder {
+    color: color-mix(in srgb, var(--d-text-muted) 82%, transparent);
+  }
+
+  .registry-scan-search button {
+    min-width: 8rem;
+    justify-content: center;
+    border-radius: 0.5rem;
+  }
+
+  .registry-scan-search button:disabled {
+    cursor: progress;
+    opacity: 0.72;
+  }
+
+  .registry-scan-stage {
+    position: relative;
+    display: grid;
+    gap: 0.35rem;
+    max-width: 34rem;
+    min-height: 4.5rem;
+    padding: 0.9rem 1rem;
+    color: var(--d-text-muted);
+    background: color-mix(in srgb, var(--d-surface) 72%, transparent);
+    border: 1px solid color-mix(in srgb, var(--d-border) 58%, transparent);
+    border-radius: 0.75rem;
+  }
+
+  .registry-scan-stage strong {
+    color: var(--d-text);
+    font-size: 0.95rem;
+  }
+
+  .registry-scan-stage p {
+    margin: 0;
+    font-size: 0.88rem;
+  }
+
+  .registry-scan-stage-line {
+    display: block;
+    width: 100%;
+    height: 0.25rem;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--d-border) 45%, transparent);
+    border-radius: 999px;
+  }
+
+  .registry-scan-stage-line::after {
+    content: '';
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: linear-gradient(90deg, #14b8a6, #f472b6, #facc15);
+    border-radius: inherit;
+    animation: registry-scan-progress 1.4s ease-in-out infinite;
+  }
+
+  .registry-scan-report {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .registry-scan-verdict,
+  .registry-scan-next {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.25rem;
+    align-items: center;
+    padding: clamp(1.1rem, 3vw, 1.6rem);
+    background: color-mix(in srgb, var(--d-surface) 74%, transparent);
+    border: 1px solid color-mix(in srgb, var(--d-border) 62%, transparent);
+    border-radius: 0.75rem;
+  }
+
+  .registry-scan-verdict h2,
+  .registry-scan-next h2 {
+    margin: 0.25rem 0;
+    font-size: 2rem;
+    line-height: 1.05;
+  }
+
+  .registry-scan-verdict p,
+  .registry-scan-next p {
+    max-width: 54rem;
+    margin: 0;
+    color: var(--d-text-muted);
+  }
+
+  .registry-scan-score {
+    display: grid;
+    place-items: center;
+    width: 8.5rem;
+    aspect-ratio: 1;
+    background:
+      radial-gradient(circle at 50% 48%, var(--d-surface) 0 53%, transparent 54%),
+      conic-gradient(#14b8a6, #f472b6, #facc15, #14b8a6);
+    border-radius: 50%;
+  }
+
+  .registry-scan-score[data-status='not_applicable'],
+  .registry-scan-score[data-status='unknown'] {
+    background:
+      radial-gradient(circle at 50% 48%, var(--d-surface) 0 53%, transparent 54%),
+      conic-gradient(#94a3b8, #64748b, #94a3b8);
+  }
+
+  .registry-scan-score strong {
+    font-size: 2.05rem;
+    line-height: 1;
+  }
+
+  .registry-scan-score span {
+    max-width: 6rem;
+    color: var(--d-text-muted);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .registry-scan-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .registry-scan-metric,
+  .registry-scan-panel,
+  .registry-scan-finding {
+    background: color-mix(in srgb, var(--d-surface) 76%, transparent);
+    border: 1px solid color-mix(in srgb, var(--d-border) 60%, transparent);
+    border-radius: 0.5rem;
+  }
+
+  .registry-scan-metric {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 6.5rem;
+    padding: 1rem;
+  }
+
+  .registry-scan-metric span,
+  .registry-scan-definition-list dt {
+    color: var(--d-text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .registry-scan-metric strong {
+    align-self: end;
+    overflow-wrap: anywhere;
+    font-size: 1.55rem;
+    line-height: 1.05;
+  }
+
+  .registry-scan-two-up {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .registry-scan-panel {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+    min-width: 0;
+    padding: clamp(1rem, 2vw, 1.25rem);
+  }
+
+  .registry-scan-panel h3 {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 1.25rem;
+    line-height: 1.18;
+  }
+
+  .registry-scan-panel p {
+    margin: 0;
+    color: var(--d-text-muted);
+  }
+
+  .registry-scan-definition-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+  }
+
+  .registry-scan-definition-list div {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.45fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--d-border) 45%, transparent);
+  }
+
+  .registry-scan-definition-list div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .registry-scan-definition-list dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-weight: 700;
+  }
+
+  .registry-scan-route-list {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .registry-scan-route-row {
+    display: grid;
+    grid-template-columns: minmax(5.5rem, 0.35fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.7rem;
+    background: color-mix(in srgb, var(--d-muted) 26%, transparent);
+    border-radius: 0.45rem;
+  }
+
+  .registry-scan-route-row strong,
+  .registry-scan-route-row span {
+    overflow-wrap: anywhere;
+  }
+
+  .registry-scan-route-row span {
+    color: var(--d-text-muted);
+    font-size: 0.86rem;
+  }
+
+  .registry-scan-style-bars {
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .registry-scan-style-bars span {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow: hidden;
+    padding: 0.72rem 0.8rem;
+    background: color-mix(in srgb, var(--d-muted) 28%, transparent);
+    border-radius: 0.45rem;
+  }
+
+  .registry-scan-style-bars span::before {
+    content: '';
+    position: absolute;
+    inset: auto auto 0 0;
+    width: calc((var(--scan-bar) / 40) * 100%);
+    height: 0.2rem;
+    background: linear-gradient(90deg, #14b8a6, #f472b6);
+  }
+
+  .registry-scan-findings {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .registry-scan-finding-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .registry-scan-finding {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    min-height: 10rem;
+    padding: 1rem;
+  }
+
+  .registry-scan-finding > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: start;
+    min-width: 2.8rem;
+    padding: 0.24rem 0.5rem;
+    color: #0f172a;
+    background: #facc15;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .registry-scan-finding[data-severity='success'] > span {
+    color: #052e2b;
+    background: #5eead4;
+  }
+
+  .registry-scan-finding[data-severity='error'] > span {
+    color: #fff1f2;
+    background: #e11d48;
+  }
+
+  .registry-scan-finding[data-severity='info'] > span {
+    color: #082f49;
+    background: #7dd3fc;
+  }
+
+  .registry-scan-finding h3,
+  .registry-scan-finding p {
+    margin: 0;
+  }
+
+  .registry-scan-finding p,
+  .registry-scan-finding small {
+    color: var(--d-text-muted);
+  }
+
+  .registry-scan-next {
+    align-items: start;
+  }
+
+  .registry-scan-command-stack {
+    display: grid;
+    gap: 0.75rem;
+    min-width: min(100%, 28rem);
+  }
+
+  .registry-scan-command {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: center;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 0.85rem;
+    color: var(--d-text);
+    background: rgb(15 23 42 / 0.94);
+    border: 1px solid rgb(148 163 184 / 0.34);
+    border-radius: 0.55rem;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .registry-scan-command span {
+    color: #5eead4;
+    font-weight: 800;
+  }
+
+  .registry-scan-command code {
+    overflow: hidden;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .registry-scan-command small {
+    color: #facc15;
+    font-weight: 800;
+  }
+
+  .registry-scan-error {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem;
+    background: rgb(225 29 72 / 0.1);
+    border: 1px solid rgb(225 29 72 / 0.38);
+    border-radius: 0.75rem;
+  }
+
+  .registry-scan-error p {
+    margin: 0;
+    color: var(--d-text-muted);
+  }
+
+  @keyframes registry-scan-progress {
+    0% {
+      transform: translateX(-100%);
+    }
+    50% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(260%);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .registry-scan-hero .registry-home-title {
+      font-size: 3.35rem;
+    }
+
+    .registry-scan-verdict h2,
+    .registry-scan-next h2 {
+      font-size: 1.75rem;
+    }
+
+    .registry-scan-metric strong {
+      font-size: 1.4rem;
+    }
+
+    .registry-scan-search,
+    .registry-scan-verdict,
+    .registry-scan-next,
+    .registry-scan-two-up,
+    .registry-scan-finding-list {
+      grid-template-columns: 1fr;
+    }
+
+    .registry-scan-score {
+      width: 7.25rem;
+      justify-self: start;
+    }
+
+    .registry-scan-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .registry-scan-hero {
+      min-height: auto;
+      padding-top: 2rem;
+    }
+
+    .registry-scan-hero::before {
+      height: 26rem;
+    }
+
+    .registry-scan-hero .registry-home-title {
+      font-size: 2.85rem;
+      line-height: 1.06;
+    }
+
+    .registry-scan-verdict h2,
+    .registry-scan-next h2 {
+      font-size: 1.55rem;
+    }
+
+    .registry-scan-metric strong {
+      font-size: 1.3rem;
+    }
+
+    .registry-scan-search button {
+      width: 100%;
+    }
+
+    .registry-scan-grid,
+    .registry-scan-definition-list div,
+    .registry-scan-route-row {
+      grid-template-columns: 1fr;
+    }
+
+    .registry-scan-command code {
+      white-space: normal;
+    }
+  }
+}
+
 /* ── Light mode token overrides ── */
 @layer tokens {
   html.light {

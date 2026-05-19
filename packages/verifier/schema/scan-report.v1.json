@@ -1,0 +1,369 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/scan-report.v1.json",
+  "title": "Decantr Brownfield Scan Report",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "generatedAt",
+    "input",
+    "source",
+    "confidence",
+    "applicability",
+    "project",
+    "routes",
+    "components",
+    "styling",
+    "staticHosting",
+    "assistant",
+    "pagesProbe",
+    "findings",
+    "recommendedCommands",
+    "privacy"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/scan-report.v1.json"
+    },
+    "schemaVersion": {
+      "const": "scan-report.v1"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "input": {
+      "$ref": "#/$defs/scanInput"
+    },
+    "source": {
+      "type": "object",
+      "required": ["repository", "publishedSiteUrl"],
+      "properties": {
+        "repository": {
+          "anyOf": [
+            { "$ref": "#/$defs/repository" },
+            { "type": "null" }
+          ]
+        },
+        "publishedSiteUrl": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "confidence": {
+      "type": "object",
+      "required": ["level", "score", "reasons"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "reasons": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "applicability": {
+      "type": "object",
+      "required": ["status", "label", "reasons"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["strong_fit", "partial_fit", "not_applicable", "unknown"]
+        },
+        "label": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "reasons": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "framework",
+        "frameworkVersion",
+        "packageManager",
+        "primaryLanguage",
+        "hasTypeScript",
+        "hasTailwind",
+        "hasDecantr",
+        "packageName"
+      ],
+      "properties": {
+        "framework": { "type": "string" },
+        "frameworkVersion": { "type": ["string", "null"] },
+        "packageManager": { "type": "string" },
+        "primaryLanguage": { "type": "string" },
+        "hasTypeScript": { "type": "boolean" },
+        "hasTailwind": { "type": "boolean" },
+        "hasDecantr": { "type": "boolean" },
+        "packageName": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "routes": {
+      "type": "object",
+      "required": ["strategy", "count", "items"],
+      "properties": {
+        "strategy": { "type": "string" },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/route"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "components": {
+      "type": "object",
+      "required": ["pageCount", "componentCount", "directories"],
+      "properties": {
+        "pageCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "componentCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directories": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "styling": {
+      "type": "object",
+      "required": [
+        "approach",
+        "configFile",
+        "cssVariableCount",
+        "colorTokenCount",
+        "darkMode",
+        "themeSignals"
+      ],
+      "properties": {
+        "approach": { "type": "string" },
+        "configFile": { "type": ["string", "null"] },
+        "cssVariableCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "colorTokenCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "darkMode": { "type": "boolean" },
+        "themeSignals": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "staticHosting": {
+      "type": "object",
+      "required": ["githubPagesLikely", "evidence", "homepageUrl", "basePath", "hashRouting"],
+      "properties": {
+        "githubPagesLikely": { "type": "boolean" },
+        "evidence": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        },
+        "homepageUrl": { "type": ["string", "null"] },
+        "basePath": { "type": ["string", "null"] },
+        "hashRouting": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "assistant": {
+      "type": "object",
+      "required": ["ruleFiles"],
+      "properties": {
+        "ruleFiles": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pagesProbe": {
+      "anyOf": [
+        { "$ref": "#/$defs/publishedSiteProbe" },
+        { "type": "null" }
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "recommendedCommands": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["sourceUploaded", "persistedByDecantr", "notes"],
+      "properties": {
+        "sourceUploaded": { "type": "boolean" },
+        "persistedByDecantr": { "type": "boolean" },
+        "notes": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "scanInput": {
+      "type": "object",
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["local", "github-repo", "github-pages"]
+        },
+        "value": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "repository": {
+      "type": "object",
+      "required": ["owner", "repo", "url"],
+      "properties": {
+        "owner": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "repo": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "url": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "defaultBranch": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "publishedSiteProbe": {
+      "type": "object",
+      "required": [
+        "url",
+        "finalUrl",
+        "checked",
+        "reachable",
+        "status",
+        "title",
+        "description",
+        "canonicalUrl",
+        "assetHints",
+        "routingHints",
+        "error"
+      ],
+      "properties": {
+        "url": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "finalUrl": { "type": ["string", "null"] },
+        "checked": { "type": "boolean" },
+        "reachable": { "type": "boolean" },
+        "status": {
+          "type": ["integer", "null"],
+          "minimum": 100,
+          "maximum": 599
+        },
+        "title": { "type": ["string", "null"] },
+        "description": { "type": ["string", "null"] },
+        "canonicalUrl": { "type": ["string", "null"] },
+        "assetHints": {
+          "type": "object",
+          "required": ["rootRelative", "relative", "absolute", "samples"],
+          "properties": {
+            "rootRelative": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "relative": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "absolute": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "samples": {
+              "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+            }
+          },
+          "additionalProperties": false
+        },
+        "routingHints": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        },
+        "error": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "route": {
+      "type": "object",
+      "required": ["path", "file", "hasLayout"],
+      "properties": {
+        "path": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "file": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "hasLayout": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": ["id", "severity", "title", "message", "evidence"],
+      "properties": {
+        "id": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["success", "info", "warn", "error"]
+        },
+        "title": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "message": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "evidence": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        },
+        "recommendation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

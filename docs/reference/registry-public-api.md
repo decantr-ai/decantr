@@ -367,6 +367,36 @@ Response schema:
 - shared definitions: `verification-report.common.v1.json`
 - `https://decantr.ai/schemas/verification-report.common.v1.json`
 
+## Hosted Brownfield Scan
+
+```http
+POST /scan
+Content-Type: application/json
+
+{
+  "url": "https://github.com/owner/repo"
+}
+```
+
+Accepted input:
+- public GitHub repository URLs, such as `https://github.com/owner/repo`
+- GitHub Pages URLs, such as `https://owner.github.io/repo/`
+
+Purpose:
+- power the public `/scan` page with a look-don't-touch Brownfield report
+- resolve the repository and likely GitHub Pages counterpart when possible
+- clone public GitHub source into a temporary checkout, run the shared read-only scanner, probe the published Pages site with HTTP-only HTML metadata checks, and return an ephemeral `ScanReportV1`
+
+Trust posture:
+- no dependency install, project build, script execution, browser screenshot, report persistence, or pull request/issue creation
+- source and report data are discarded after the request completes
+- non-web repositories return `not_applicable` messaging rather than failing the request
+
+Response schema:
+- `scan-report.v1.json`
+- `https://decantr.ai/schemas/scan-report.v1.json`
+- shared definitions: `verification-report.common.v1.json`
+
 ## Showcase Benchmark Surfaces
 
 ```http
@@ -427,6 +457,7 @@ decantr registry get-pack manifest --namespace @official --json
 decantr registry get-pack page home --namespace @official --json
 decantr registry critique-file src/pages/Home.tsx --namespace @official --json
 decantr registry audit-project --namespace @official --json
+decantr scan --json
 ```
 
 ## MCP Equivalents
@@ -442,6 +473,7 @@ decantr registry audit-project --namespace @official --json
 ## Notes
 
 - These endpoints are read-only public surfaces.
+- `POST /v1/scan` is read-only from Decantr's perspective but performs a temporary public GitHub clone for the submitted repository URL.
 - `pnpm audit:public-api` now audits the full hosted surface by default, including:
   - `POST /v1/packs/select`
   - `POST /v1/critique/file`

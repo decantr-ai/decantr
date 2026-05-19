@@ -20,6 +20,7 @@ const schemaPaths = [
   new URL('../../schema/project-health-report.v1.json', import.meta.url),
   new URL('../../schema/decantr-ci-report.v1.json', import.meta.url),
   new URL('../../schema/evidence-bundle.v1.json', import.meta.url),
+  new URL('../../schema/scan-report.v1.json', import.meta.url),
   new URL('../../schema/workspace-health-report.v1.json', import.meta.url),
   new URL('../../schema/file-critique-report.v1.json', import.meta.url),
   new URL('../../schema/showcase-shortlist-report.v1.json', import.meta.url),
@@ -38,6 +39,7 @@ const schemaMap = {
   'project-health-report.v1.json': 'https://decantr.ai/schemas/project-health-report.v1.json',
   'decantr-ci-report.v1.json': 'https://decantr.ai/schemas/decantr-ci-report.v1.json',
   'evidence-bundle.v1.json': 'https://decantr.ai/schemas/evidence-bundle.v1.json',
+  'scan-report.v1.json': 'https://decantr.ai/schemas/scan-report.v1.json',
   'workspace-health-report.v1.json': 'https://decantr.ai/schemas/workspace-health-report.v1.json',
   'file-critique-report.v1.json': 'https://decantr.ai/schemas/file-critique-report.v1.json',
   'showcase-shortlist-report.v1.json':

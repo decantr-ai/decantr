@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { NavHeader } from './nav-header';
 
 const PUBLIC_NAV_LINKS = [
+  { href: '/scan', label: 'Scan' },
   { href: '/browse', label: 'Browse' },
   { href: '/browse/patterns', label: 'Patterns' },
   { href: '/browse/themes', label: 'Themes' },
@@ -118,6 +119,9 @@ export default async function PublicLayout({
               <span className="d-label">Start Building</span>
               <Link href="/" className="registry-footer-link">
                 Home
+              </Link>
+              <Link href="/scan" className="registry-footer-link">
+                Scan a repo
               </Link>
               <Link
                 href="/browse/blueprints?source=official"
