@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 
 export interface StylingAnalysis {
   approach:
@@ -30,8 +30,10 @@ const GLOBALS_CSS_PATHS = [
   'src/styles/global.css',
   'src/styles/globals.css',
   'src/styles/main.css',
+  'src/styles/themes.css',
   'src/styles.css',
   'styles/globals.css',
+  'styles/themes.css',
   'styles.css',
   'assets/css/main.css',
   'src/index.css',
@@ -96,14 +98,16 @@ function extractCSSVariables(content: string): {
  * Detect dark mode support.
  */
 function detectDarkMode(projectRoot: string, cssContents: string[]): boolean {
+  const darkSelectors = [
+    /\.dark\b/i,
+    /html\.dark\b/i,
+    /\[data-theme\s*=\s*["']dark["']\]/i,
+    /prefers-color-scheme\s*:\s*dark/i,
+    /color-scheme\s*:\s*dark/i,
+  ];
   // Check CSS for dark mode selectors
   for (const cssContent of cssContents) {
-    if (
-      cssContent.includes('.dark') ||
-      cssContent.includes('[data-theme="dark"]') ||
-      cssContent.includes('prefers-color-scheme: dark') ||
-      cssContent.includes('color-scheme: dark')
-    ) {
+    if (darkSelectors.some((selector) => selector.test(cssContent))) {
       return true;
     }
   }
@@ -164,6 +168,50 @@ function detectDarkMode(projectRoot: string, cssContents: string[]): boolean {
   }
 
   return false;
+}
+
+function collectCssFiles(projectRoot: string): string[] {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  const add = (path: string) => {
+    if (seen.has(path)) return;
+    if (!existsSync(join(projectRoot, path))) return;
+    seen.add(path);
+    ordered.push(path);
+  };
+
+  for (const rel of GLOBALS_CSS_PATHS) add(rel);
+  for (const rel of DECANTR_STYLE_PATHS) add(rel);
+
+  const roots = ['src/styles', 'styles', 'assets/css', 'src/app', 'app'];
+  const visit = (dir: string) => {
+    const absolute = join(projectRoot, dir);
+    if (!existsSync(absolute)) return;
+    let entries: string[];
+    try {
+      entries = readdirSync(absolute);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const child = join(absolute, entry);
+      let stat: ReturnType<typeof statSync>;
+      try {
+        stat = statSync(child);
+      } catch {
+        continue;
+      }
+      if (stat.isDirectory()) {
+        if (entry === 'node_modules' || entry === '.next' || entry === 'dist') continue;
+        visit(relative(projectRoot, child).replace(/\\/g, '/'));
+      } else if (stat.isFile() && /\.css$/i.test(entry)) {
+        add(relative(projectRoot, child).replace(/\\/g, '/'));
+      }
+    }
+  };
+  for (const root of roots) visit(root);
+
+  return ordered.slice(0, 80);
 }
 
 /**
@@ -236,28 +284,16 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
     configFile = decantrStyleFiles.join(' + ');
   }
 
-  // Find and parse globals CSS
+  // Find and parse app CSS. Brownfield projects often keep theme files outside
+  // canonical globals names, so include shallow style directories as evidence.
   const cssContents: string[] = [];
-  for (const rel of GLOBALS_CSS_PATHS) {
+  const cssFiles = collectCssFiles(projectRoot);
+  for (const rel of cssFiles) {
     const fullPath = join(projectRoot, rel);
-    if (existsSync(fullPath)) {
-      try {
-        cssContents.push(readFileSync(fullPath, 'utf-8'));
-      } catch {
-        // Ignore
-      }
-    }
-  }
-
-  for (const rel of DECANTR_STYLE_PATHS) {
-    if (GLOBALS_CSS_PATHS.includes(rel)) continue;
-    const fullPath = join(projectRoot, rel);
-    if (existsSync(fullPath)) {
-      try {
-        cssContents.push(readFileSync(fullPath, 'utf-8'));
-      } catch {
-        // Ignore
-      }
+    try {
+      cssContents.push(readFileSync(fullPath, 'utf-8'));
+    } catch {
+      // Ignore
     }
   }
 
@@ -276,7 +312,7 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
 
   if (approach === 'unknown' && cssContents.length > 0) {
     approach = 'css';
-    configFile = GLOBALS_CSS_PATHS.find((rel) => existsSync(join(projectRoot, rel)));
+    configFile = cssFiles[0];
   }
 
   return {

@@ -16,6 +16,7 @@ Commit these when they exist:
 - \`.decantr/project.json\` - workflow, adoption mode, detection, and initialization metadata.
 - \`.decantr/local-patterns.json\` - project-owned Brownfield UI patterns accepted by the team.
 - \`.decantr/rules.json\` - project-owned mechanical rules accepted by the team.
+- \`.decantr/style-bridge.json\` - accepted Hybrid style bridge from Decantr intent to project tokens/classes.
 
 ## Generated Context
 

@@ -2869,7 +2869,8 @@ function appendSourceAuditFindings(
     return;
   }
 
-  const isContractOnly = adoptionMode === 'contract-only';
+  const isProjectOwnedStyling =
+    adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
 
   if (sourceAudit.inlineStyles.count > 0) {
     findings.push(
@@ -2877,15 +2878,15 @@ function appendSourceAuditFindings(
         id: 'source-inline-styles-present',
         category: 'Source Audit',
         severity: 'warn',
-        message: isContractOnly
-          ? 'Source files contain inline style attributes; contract-only projects should route static visual decisions through project-owned styling law.'
+        message: isProjectOwnedStyling
+          ? 'Source files contain inline style attributes; project-owned styling projects should route static visual decisions through local law or the style bridge.'
           : 'Source files still contain disallowed inline style attributes, which undermines the compiled treatment contract.',
         evidence: buildSourceAuditEvidence(
           sourceAudit,
           sourceAudit.inlineStyles,
           'Disallowed inline style attributes',
         ),
-        suggestedFix: isContractOnly
+        suggestedFix: isProjectOwnedStyling
           ? 'Move static visual styling into the app design system, Tailwind/theme tokens, component variants, or accepted local rules. Keep inline style only for truly dynamic geometry.'
           : 'Move static visual styling into treatments, atoms, or design-token-backed classes. Inline style remains acceptable for Decantr CSS-variable writes and truly dynamic geometry.',
       }),
@@ -2898,7 +2899,7 @@ function appendSourceAuditFindings(
         id: 'source-component-style-tags-present',
         category: 'Source Audit',
         severity: 'warn',
-        message: isContractOnly
+        message: isProjectOwnedStyling
           ? 'Source files inject component-scoped style tags or dynamic style elements, which makes project-owned styling rules harder to enforce.'
           : 'Source files inject component-scoped style tags or dynamic style elements, which bypass the compiled Decantr layer contract.',
         evidence: buildSourceAuditEvidence(
@@ -2906,14 +2907,14 @@ function appendSourceAuditFindings(
           sourceAudit.componentStyleTags,
           'Component-level style tag signals',
         ),
-        suggestedFix: isContractOnly
+        suggestedFix: isProjectOwnedStyling
           ? 'Move shared keyframes, media queries, and visual rules into the project stylesheet, component library, or accepted local pattern/rule manifest.'
           : 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so styling stays inside the reviewed Decantr layer stack.',
       }),
     );
   }
 
-  if (!isContractOnly && sourceAudit.localCssRuntimeSignals.count > 0) {
+  if (!isProjectOwnedStyling && sourceAudit.localCssRuntimeSignals.count > 0) {
     findings.push(
       makeFinding({
         id: 'source-local-css-runtime-stub-present',
@@ -4407,7 +4408,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   const reviewPack = loadReviewPack(projectRoot);
   const packManifest = loadPackManifest(projectRoot);
   const adoptionMode = readProjectAdoptionMode(projectRoot);
-  const packHydrationOptional = adoptionMode === 'contract-only';
+  const packHydrationOptional =
+    adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
   const packHydrationSeverity: VerificationSeverity = packHydrationOptional ? 'info' : 'warn';
   const runtimeAudit = emptyRuntimeAudit();
 
@@ -4494,7 +4496,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
         category: 'Execution Packs',
         severity: packHydrationSeverity,
         message: packHydrationOptional
-          ? 'Compiled execution pack manifest is not hydrated yet; this is optional for contract-only Brownfield adoption.'
+          ? 'Compiled execution pack manifest is not hydrated yet; this is optional for contract-only/style-bridge Brownfield adoption.'
           : 'Compiled execution pack manifest is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'pack-manifest.json')],
         suggestedFix: packHydrationOptional
@@ -4569,7 +4571,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
         category: 'Review Contract',
         severity: packHydrationSeverity,
         message: packHydrationOptional
-          ? 'The compiled review pack file is not hydrated yet; contract-only Brownfield projects can continue without it.'
+          ? 'The compiled review pack file is not hydrated yet; contract-only/style-bridge Brownfield projects can continue without it.'
           : 'The compiled review pack file is missing.',
         evidence: [join(projectRoot, '.decantr', 'context', 'review-pack.json')],
         suggestedFix: packHydrationOptional
@@ -13822,18 +13824,19 @@ export function critiqueSource({
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
   const antiPatternIds = new Set(reviewPack?.antiPatterns.map((entry) => entry.id) ?? []);
-  const isContractOnly = adoptionMode === 'contract-only';
+  const isProjectOwnedStyling =
+    adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
 
   const usedTreatments = TREATMENT_CLASSES.filter((token) => code.includes(token));
-  if (isContractOnly) {
+  if (isProjectOwnedStyling) {
     scores.push({
       category: 'Styling Authority',
       focusArea: 'treatment-usage',
       score: 3,
       details:
-        'Contract-only adoption does not require Decantr d-* treatment classes in source files.',
+        'Contract-only/style-bridge adoption does not require Decantr d-* treatment classes in source files.',
       suggestions: [
-        'Codify project-owned component variants and local rules when button/card/surface drift needs mechanical enforcement.',
+        'Codify project-owned component variants, local rules, or a style bridge when button/card/surface drift needs stronger enforcement.',
       ],
     });
   } else {
@@ -13872,12 +13875,12 @@ export function critiqueSource({
   const decoratorNames = buildDecoratorInventory(treatmentsCss);
   const usedDecorators = decoratorNames.filter((name) => code.includes(name));
   const usesCssVars = code.includes('var(--');
-  if (isContractOnly) {
+  if (isProjectOwnedStyling) {
     scores.push({
       category: 'Theme Consistency',
       focusArea: 'theme-consistency',
       score: usesCssVars ? 4 : 3,
-      details: `Contract-only mode: Decantr decorators are not required; CSS vars: ${usesCssVars ? 'yes' : 'no'}.`,
+      details: `Contract-only/style-bridge mode: Decantr decorators are not required; CSS vars: ${usesCssVars ? 'yes' : 'no'}.`,
       suggestions: [
         'Use the app design system, Tailwind theme, Sass variables, component variants, or accepted local rules as the styling authority.',
       ],
@@ -15217,7 +15220,7 @@ export function critiqueSource({
           `Disallowed inline style attributes: ${astSignals.inlineStyleAttributeCount}`,
         ],
         file: filePath,
-        suggestedFix: isContractOnly
+        suggestedFix: isProjectOwnedStyling
           ? 'Replace static inline visual values with the project design system, accepted component variants, or local style rules. Keep inline style only for truly dynamic geometry.'
           : 'Replace static inline visual values with treatments, decorators, and CSS variables from the compiled contract. Keep inline style only for Decantr CSS-variable writes and truly dynamic geometry.',
       }),
@@ -15238,7 +15241,7 @@ export function critiqueSource({
           'Component-scoped style tags or dynamic style elements were detected in the reviewed file.',
         evidence: [filePath, `Component style tag signals: ${componentStyleTagSignals}`],
         file: filePath,
-        suggestedFix: isContractOnly
+        suggestedFix: isProjectOwnedStyling
           ? 'Move shared keyframes, media queries, and visual rules into the project stylesheet, component library, or accepted local pattern/rule manifest.'
           : 'Move shared keyframes, media queries, and visual rules into global.css or treatments.css so the file stays aligned with the Decantr layer contract.',
       }),

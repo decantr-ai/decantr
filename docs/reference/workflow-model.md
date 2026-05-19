@@ -74,20 +74,21 @@ decantr verify --brownfield --local-patterns
 Project-owned Brownfield UI law is explicit:
 
 ```bash
-decantr codify --from-audit
+decantr codify --from-audit --style-bridge
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
+# review .decantr/style-bridge.proposal.json when you want token/class mapping
 decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```
 
-This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `decantr suggest --from-code` should surface accepted local patterns from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings with file/line evidence in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
+This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `.decantr/style-bridge.json` is the optional Hybrid style bridge: it maps Decantr intent such as surfaces, actions, focus, density, and theme variants onto project-owned tokens/classes without installing Decantr CSS. `decantr suggest --from-code` should surface accepted local patterns and style bridge mappings from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings plus style bridge status in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
 
 ## Hybrid Operating Layer
 
 Hybrid starts when an attached app moves beyond contract-only context and intentionally adopts one or more stronger authority layers:
 
 - **Hybrid local law**: accepted `.decantr/local-patterns.json` and `.decantr/rules.json` describe project-owned buttons, cards, shells, forms, tokens, theme variants, and mechanical rules.
-- **Hybrid style bridge**: Decantr intent maps through bridge tokens/files into the app's existing style system.
+- **Hybrid style bridge**: accepted `.decantr/style-bridge.json` maps Decantr intent through project-owned tokens/classes into the app's existing style system.
 - **Hybrid with Decantr CSS**: `@decantr/css` and generated Decantr CSS are active where explicitly adopted.
 - **Hybrid composition**: the app selectively adds sections, pages, features, themes, or hosted execution packs while preserving existing source authority.
 
@@ -97,7 +98,7 @@ The authority order is explicit: existing production source first, accepted loca
 
 ```bash
 decantr doctor --project apps/web
-decantr codify --from-audit --project apps/web
+decantr codify --from-audit --style-bridge --project apps/web
 decantr codify --accept --project apps/web
 decantr task /settings "standardize account form buttons" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
@@ -135,7 +136,7 @@ pnpm exec decantr setup
 pnpm exec decantr workspace list
 pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
-pnpm exec decantr codify --from-audit --project apps/web
+pnpm exec decantr codify --from-audit --style-bridge --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 pnpm exec decantr ci init --project apps/web
 ```

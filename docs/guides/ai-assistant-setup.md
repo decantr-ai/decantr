@@ -12,7 +12,7 @@ npx @decantr/mcp-server
 
 The MCP server exposes Decantr tools for essence reads, registry search, pattern resolution, execution-pack access, critique, project audit, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
 
-For an existing app, ask the assistant to call `decantr_prepare_task_context` before editing a route. Provide the route and the task, for example `{ "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, and an authority block when available. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
+For an existing app, ask the assistant to call `decantr_prepare_task_context` before editing a route. Provide the route and the task, for example `{ "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, accepted style bridge mappings, and an authority block when available. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
 
 ## CLI Context
 
@@ -35,6 +35,7 @@ The important files are:
 - `.decantr/context/section-*.md`: focused section/page implementation contracts.
 - `.decantr/local-patterns.json`: optional project-owned Brownfield/Hybrid UI standards after `decantr codify --accept`.
 - `.decantr/rules.json`: optional project-owned Brownfield/Hybrid rule checks after `decantr codify --accept`.
+- `.decantr/style-bridge.json`: optional Hybrid mapping from Decantr intent to project-owned tokens/classes after `decantr codify --style-bridge` and `decantr codify --accept`.
 
 ## Assistant Rule Bridge
 
@@ -84,6 +85,6 @@ pnpm exec decantr ci --project apps/web
 
 The generated GitHub workflow runs the pinned local CLI through the detected package manager, such as `pnpm exec decantr ci --project apps/web`. If Decantr is not pinned in the root manifest, `ci init` prints the exact install command before writing the workflow. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web` and paste the snippet into the authoritative pipeline.
 
-When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
+When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence. When a style bridge is active, the same report includes bridge status, mapping count, styling approach, and theme modes so assistants can see the project-owned styling lane in automation output. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md), [Monorepos](monorepos.md), [Project Health CI](project-health-ci.md).

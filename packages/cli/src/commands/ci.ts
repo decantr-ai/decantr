@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import type { ProjectHealthReport } from '@decantr/verifier';
 import { validateLocalLaw } from '../local-law.js';
+import { createStyleBridgeTaskSummary } from '../style-bridge.js';
 import { resolveWorkspaceInfo } from '../workspace.js';
 import {
   createProjectHealthReport,
@@ -60,6 +61,16 @@ interface LocalLawCiSummary {
   warnCount: number;
 }
 
+interface StyleBridgeCiSummary {
+  checked: boolean;
+  present: boolean;
+  status: string | null;
+  mappingCount: number;
+  stylingApproach: string | null;
+  themeModes: string[];
+  warnings: string[];
+}
+
 interface ProjectCiReport {
   $schema: string;
   generatedAt: string;
@@ -69,6 +80,7 @@ interface ProjectCiReport {
   status: ProjectHealthReport['status'];
   health: ProjectHealthReport;
   localLaw: LocalLawCiSummary;
+  styleBridge: StyleBridgeCiSummary;
 }
 
 interface WorkspaceCiReport {
@@ -242,18 +254,43 @@ function summarizeLocalLaw(projectRoot: string): LocalLawCiSummary {
   };
 }
 
+function summarizeStyleBridge(projectRoot: string): StyleBridgeCiSummary {
+  const summary = createStyleBridgeTaskSummary(projectRoot);
+  const warnings: string[] = [];
+  if (summary.path && summary.mappingCount === 0) {
+    warnings.push('.decantr/style-bridge.json has no mappings.');
+  }
+  return {
+    checked: Boolean(summary.path),
+    present: Boolean(summary.path),
+    status: summary.status,
+    mappingCount: summary.mappingCount,
+    stylingApproach: summary.stylingApproach,
+    themeModes: summary.themeModes,
+    warnings,
+  };
+}
+
 function localLawFails(summary: LocalLawCiSummary, failOn: HealthFailOn): boolean {
   if (failOn === 'none' || !summary.checked) return false;
   if (summary.errorCount > 0) return true;
   return failOn === 'warn' && summary.warnCount > 0;
 }
 
+function styleBridgeFails(summary: StyleBridgeCiSummary, failOn: HealthFailOn): boolean {
+  if (failOn === 'none' || !summary.checked) return false;
+  return failOn === 'warn' && summary.warnings.length > 0;
+}
+
 function projectCiStatus(
   health: ProjectHealthReport,
   localLaw: LocalLawCiSummary,
+  styleBridge: StyleBridgeCiSummary,
 ): ProjectCiReport['status'] {
   if (health.status === 'error' || localLaw.errorCount > 0) return 'error';
-  if (health.status === 'warning' || localLaw.warnCount > 0) return 'warning';
+  if (health.status === 'warning' || localLaw.warnCount > 0 || styleBridge.warnings.length > 0) {
+    return 'warning';
+  }
   return health.status;
 }
 
@@ -285,6 +322,24 @@ function formatLocalLawText(summary: LocalLawCiSummary, health: ProjectHealthRep
   }
   if (summary.findings.length > 8) {
     lines.push(`  ${DIM}...${summary.findings.length - 8} more local-law finding(s)${RESET}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function formatStyleBridgeText(summary: StyleBridgeCiSummary): string {
+  const lines = ['', `${BOLD}Project-owned style bridge:${RESET}`];
+  if (!summary.checked) {
+    lines.push('  Not active for this project.');
+    return `${lines.join('\n')}\n`;
+  }
+  lines.push(
+    `  Present: ${summary.present ? 'yes' : 'no'} | Mappings: ${summary.mappingCount} | Styling: ${summary.stylingApproach ?? 'unknown'}`,
+  );
+  if (summary.themeModes.length > 0) {
+    lines.push(`  Theme modes: ${summary.themeModes.join(', ')}`);
+  }
+  for (const warning of summary.warnings.slice(0, 5)) {
+    lines.push(`  ${DIM}[WARN] ${warning}${RESET}`);
   }
   return `${lines.join('\n')}\n`;
 }
@@ -323,6 +378,27 @@ function formatLocalLawMarkdown(summary: LocalLawCiSummary, health: ProjectHealt
   return lines.join('\n');
 }
 
+function formatStyleBridgeMarkdown(summary: StyleBridgeCiSummary): string {
+  const lines = ['## Project-Owned Style Bridge', ''];
+  if (!summary.checked) {
+    lines.push('Style bridge is not active for this project.');
+    return lines.join('\n');
+  }
+  lines.push(
+    `Present: **${summary.present ? 'yes' : 'no'}** · Mappings: **${summary.mappingCount}** · Styling: **${summary.stylingApproach ?? 'unknown'}**`,
+  );
+  if (summary.themeModes.length > 0) {
+    lines.push('', `Theme modes: ${summary.themeModes.map((mode) => `\`${mode}\``).join(', ')}`);
+  }
+  if (summary.warnings.length > 0) {
+    lines.push('');
+    for (const warning of summary.warnings.slice(0, 5)) {
+      lines.push(`- Warning: ${warning}`);
+    }
+  }
+  return lines.join('\n');
+}
+
 function formatProjectCiMarkdown(report: ProjectCiReport): string {
   const lines = [
     '# Decantr CI',
@@ -336,10 +412,15 @@ function formatProjectCiMarkdown(report: ProjectCiReport): string {
         ? `${report.localLaw.errorCount} error(s), ${report.localLaw.warnCount} warning(s)`
         : 'not accepted yet'
     }`,
+    `- Style bridge: ${
+      report.styleBridge.checked ? `${report.styleBridge.mappingCount} mapping(s)` : 'not active'
+    }`,
     '',
     formatProjectHealthMarkdown(report.health),
     '',
     formatLocalLawMarkdown(report.localLaw, report.health),
+    '',
+    formatStyleBridgeMarkdown(report.styleBridge),
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -564,6 +645,7 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
   const failOn = options.failOn ?? 'error';
   const health = await createProjectHealthReport(workspaceInfo.appRoot);
   const localLaw = summarizeLocalLaw(workspaceInfo.appRoot);
+  const styleBridge = summarizeStyleBridge(workspaceInfo.appRoot);
   const projectPath =
     workspaceInfo.appRoot === workspaceInfo.workspaceRoot
       ? null
@@ -574,9 +656,10 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
     mode: 'project',
     projectPath,
     failOn,
-    status: projectCiStatus(health, localLaw),
+    status: projectCiStatus(health, localLaw, styleBridge),
     health,
     localLaw,
+    styleBridge,
   };
   const json = `${JSON.stringify(report, null, 2)}\n`;
   const markdown = formatProjectCiMarkdown(report);
@@ -588,10 +671,16 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
     if (options.json) process.stdout.write(json);
     else if (options.markdown) process.stdout.write(markdown);
     else
-      process.stdout.write(`${formatProjectHealthText(health)}${formatLocalLawText(localLaw, health)}`);
+      process.stdout.write(
+        `${formatProjectHealthText(health)}${formatLocalLawText(localLaw, health)}${formatStyleBridgeText(styleBridge)}`,
+      );
   }
 
-  return shouldFailHealth(health, failOn) || localLawFails(localLaw, failOn) ? 1 : 0;
+  return shouldFailHealth(health, failOn) ||
+    localLawFails(localLaw, failOn) ||
+    styleBridgeFails(styleBridge, failOn)
+    ? 1
+    : 0;
 }
 
 export function cmdCiHelp(): void {

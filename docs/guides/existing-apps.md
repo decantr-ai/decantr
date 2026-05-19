@@ -67,18 +67,19 @@ npx @decantr/cli verify --brownfield --local-patterns
 When the app has repeated local UI decisions that Decantr cannot infer from the public registry, codify them as project-owned law:
 
 ```bash
-npx @decantr/cli codify --from-audit
+npx @decantr/cli codify --from-audit --style-bridge
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
+# review .decantr/style-bridge.proposal.json if you want Decantr intent mapped to project tokens/classes
 npx @decantr/cli codify --accept
 npx @decantr/cli verify --brownfield --local-patterns
 ```
 
-Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. Hosted registry patterns are useful vocabulary and review guidance; they should not become enforceable in an existing app until they are mapped to your own components, classes, token recipes, or explicit exceptions.
+Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. Accepting a style bridge adds `.decantr/style-bridge.json`, which maps Decantr concepts like surfaces, actions, focus, density, and theme variants to your own tokens/classes without adopting Decantr CSS. Hosted registry patterns are useful vocabulary and review guidance; they should not become enforceable in an existing app until they are mapped to your own components, classes, token recipes, or explicit exceptions.
 
 In a monorepo, keep passing the same app path:
 
 ```bash
-pnpm exec decantr codify --from-audit --project apps/web
+pnpm exec decantr codify --from-audit --style-bridge --project apps/web
 pnpm exec decantr codify --accept --project apps/web
 pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
@@ -104,7 +105,7 @@ pnpm exec decantr health --project apps/web --prompt <finding-id>
 
 If you run `decantr setup` after adoption from a monorepo root, it should show attached projects and the day-two loop (`doctor`, `task`, `verify`, `ci init`) rather than asking you to reattach the same app. If you run `decantr magic` against an already attached app, it should steer you into `decantr task <route> "<change>" --project apps/web`; `magic` remains greenfield-first.
 
-If you run `decantr setup` from inside an attached app, Decantr should reflect the current state: apps with accepted local law get `verify --brownfield --local-patterns`, while apps without accepted local law still get the `codify --from-audit` next step.
+If you run `decantr setup` from inside an attached app, Decantr should reflect the current state: apps with accepted local law get `verify --brownfield --local-patterns`, while apps without accepted local law or style bridge still get the `codify --from-audit --style-bridge` next step.
 
 This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. `decantr ci` prints those accepted local-rule findings with file/line evidence so they appear in the same automation surface as Project Health; use `--fail-on warn` only when the team is ready to block on warnings. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
 
@@ -123,7 +124,7 @@ pnpm exec decantr ci --project apps/web
 
 Use `doctor` when you are unsure whether Decantr is attached correctly, whether generated context is stale, whether local law exists, or whether CI is wired. It now reports the active adoption lane, so a teammate can tell the difference between Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, and Greenfield modes. Use `verify` after local edits. Use `ci` in mandatory automation. Use `health`, `check`, `audit`, `refresh`, `workspace health`, and registry pack commands as advanced primitives only when you need direct control over a specific layer.
 
-In contract-only Brownfield adoption, Decantr does not require `@decantr/css`, `css(...)`, `d-*` treatments, or generated Decantr token CSS. Critique and source audit should point you toward your project-owned design system, Tailwind/Sass/theme tokens, component variants, or accepted local rules instead.
+In contract-only or style-bridge Brownfield adoption, Decantr does not require `@decantr/css`, `css(...)`, `d-*` treatments, or generated Decantr token CSS. Critique and source audit should point you toward your project-owned design system, Tailwind/Sass/theme tokens, component variants, accepted local rules, or accepted style bridge instead.
 
 Contract-only Brownfield also suppresses Decantr CSS interaction-class enforcement. Use project-owned interaction rules if you want to make hover, motion, or animation behavior a CI gate.
 

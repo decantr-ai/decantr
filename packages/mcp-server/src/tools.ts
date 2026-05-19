@@ -164,6 +164,35 @@ function localLawSummary(projectRoot: string) {
   };
 }
 
+function styleBridgeSummary(projectRoot: string) {
+  const bridge = readJsonIfExists<{
+    status?: string;
+    styling?: { approach?: string; themeModes?: string[] };
+    mappings?: Array<{
+      id?: string;
+      label?: string;
+      tokenHints?: string[];
+      classHints?: string[];
+      guardrails?: string[];
+    }>;
+  }>(join(projectRoot, '.decantr', 'style-bridge.json'));
+
+  return {
+    path: bridge ? '.decantr/style-bridge.json' : null,
+    status: bridge?.status ?? null,
+    styling_approach: bridge?.styling?.approach ?? null,
+    theme_modes: bridge?.styling?.themeModes ?? [],
+    mappings:
+      bridge?.mappings?.map((mapping) => ({
+        id: mapping.id ?? 'unknown',
+        label: mapping.label ?? null,
+        token_hints: mapping.tokenHints?.slice(0, 6) ?? [],
+        class_hints: mapping.classHints?.slice(0, 4) ?? [],
+        guardrails: mapping.guardrails?.slice(0, 3) ?? [],
+      })) ?? [],
+  };
+}
+
 function mentionsWord(text: string, term: string): boolean {
   const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return new RegExp(`\\b${escaped}\\b`, 'i').test(text);
@@ -173,10 +202,13 @@ function taskAuthoritySummary(input: {
   workflowMode: string | null;
   adoptionMode: string | null;
   localLaw: ReturnType<typeof localLawSummary>;
+  styleBridge: ReturnType<typeof styleBridgeSummary>;
   hasPackManifest: boolean;
   task: string;
 }) {
   const hasLocalLaw = input.localLaw.patterns.length > 0 || input.localLaw.rules.length > 0;
+  const hasStyleBridge =
+    Boolean(input.styleBridge.path) || input.adoptionMode === 'style-bridge';
   let lane = 'Brownfield contract-only';
   let sourceAuthority = 'Existing app is authoritative; Decantr supplies contract context.';
   let styleAuthority = 'Use the existing styling system.';
@@ -191,12 +223,12 @@ function taskAuthoritySummary(input: {
       'Existing app remains authoritative except where Decantr CSS is explicitly adopted.';
     styleAuthority = 'Decantr CSS runtime is active where adopted.';
     activeAuthorities.push('Decantr CSS runtime');
-  } else if (input.workflowMode === 'brownfield-attach' && input.adoptionMode === 'style-bridge') {
+  } else if (input.workflowMode === 'brownfield-attach' && hasStyleBridge) {
     lane = 'Hybrid style bridge';
     sourceAuthority =
       'Existing app remains authoritative; Decantr intent maps through the style bridge.';
     styleAuthority = 'Use bridge tokens/classes as a mapping layer onto the app styling system.';
-    activeAuthorities.push('style bridge');
+    activeAuthorities.push('accepted style bridge');
   } else if (input.workflowMode === 'brownfield-attach' && hasLocalLaw) {
     lane = 'Hybrid local law';
     sourceAuthority = 'Existing app plus accepted project-owned UI law are authoritative.';
@@ -3011,6 +3043,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         join(process.cwd(), '.decantr', 'theme-inventory.json'),
       );
       const localLaw = localLawSummary(process.cwd());
+      const styleBridge = styleBridgeSummary(process.cwd());
       const projectJson = readJsonIfExists<{
         initialized?: { workflowMode?: string; adoptionMode?: string };
       }>(join(process.cwd(), '.decantr', 'project.json'));
@@ -3078,10 +3111,12 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             }
           : null,
         local_law: localLaw,
+        style_bridge: styleBridge,
         authority: taskAuthoritySummary({
           workflowMode: projectJson?.initialized?.workflowMode ?? null,
           adoptionMode: projectJson?.initialized?.adoptionMode ?? null,
           localLaw,
+          styleBridge,
           hasPackManifest: Boolean(manifest),
           task,
         }),
@@ -3099,6 +3134,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             : null,
           local_patterns: localLaw.patterns_path,
           local_rules: localLaw.rules_path,
+          style_bridge: styleBridge.path,
           visual_manifest: existsSync(
             join(process.cwd(), '.decantr', 'evidence', 'visual-manifest.json'),
           )

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-15",
+  "updatedAt": "2026-05-19",
   "packages": [
     {
       "name": "@decantr/essence-spec",
@@ -190,7 +190,7 @@
       },
       "telemetry": "disabled by default; enabled only by --telemetry, decantr telemetry link --enable, or project.json telemetry=true",
       "hostedUpload": "explicit command behavior; source upload is limited to hosted critique/audit flows and never required for local verify",
-      "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/evidence/*", ".decantr/local-patterns*.json", ".decantr/rules*.json"],
+      "localArtifacts": [".decantr/analysis.json", ".decantr/context/*", ".decantr/evidence/*", ".decantr/local-patterns*.json", ".decantr/rules*.json", ".decantr/style-bridge*.json"],
       "scannerNotes": [
         "The CLI is intentionally a local project inspector and artifact writer.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",

@@ -75,6 +75,7 @@ import { detectProject, formatDetection } from './detect.js';
 import { buildGuardRegistryContext } from './guard-context.js';
 // V4 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from './lib/scan-interactions.js';
+import { scanStyling } from './analyzers/styling.js';
 import {
   acceptBrownfieldLocalLaw,
   changedFiles as collectChangedFiles,
@@ -90,6 +91,15 @@ import {
   writeBrownfieldCodifyProposal,
 } from './local-law.js';
 import { seedOfflineRegistry } from './offline-content.js';
+import {
+  acceptStyleBridge,
+  createStyleBridgeProposal,
+  createStyleBridgeTaskSummary,
+  styleBridgeMatches,
+  styleBridgePath,
+  styleBridgeProposalPath,
+  writeStyleBridgeProposal,
+} from './style-bridge.js';
 import {
   confirm,
   mergeWithDefaults,
@@ -1686,6 +1696,7 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       ? readSuggestCodeContext(projectRoot, options.route, options.file)
       : '';
   const localMatches = localPatternMatches(projectRoot, [query, code].filter(Boolean).join('\n'));
+  const bridgeMatches = styleBridgeMatches(projectRoot, [query, code].filter(Boolean).join('\n'));
   const candidates = await loadPatternDiscoveryCandidates(registryClient);
   const matches = rankPatternCandidates(
     {
@@ -1697,7 +1708,7 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
     candidates,
   );
 
-  if (matches.length === 0 && localMatches.length === 0) {
+  if (matches.length === 0 && localMatches.length === 0 && bridgeMatches.length === 0) {
     console.log(dim(`No pattern suggestions for "${query}"`));
     console.log('');
     console.log('Try:');
@@ -1719,6 +1730,14 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
       `Pattern suggestions for "${query}"${contextBits.length > 0 ? ` (${contextBits.join(', ')})` : ''}`,
     ),
   );
+  if (bridgeMatches.length > 0) {
+    console.log(`${BOLD}Project-owned style bridge:${RESET}`);
+    for (const match of bridgeMatches) {
+      const hints = [...match.tokenHints, ...match.classHints].slice(0, 3).join(', ');
+      console.log(`  ${cyan(match.id)}  ${match.label}${hints ? `  ${dim(hints)}` : ''}`);
+    }
+    console.log('');
+  }
   if (localMatches.length > 0) {
     console.log(`${BOLD}Project-owned local law:${RESET}`);
     for (const match of localMatches) {
@@ -3494,6 +3513,7 @@ function printWorkspaceProjectSelection(
   console.log('');
   console.log('Start by attaching one app:');
   console.log(`  ${cyan(`decantr adopt --project ${candidate} --yes`)}`);
+  console.log(`  ${cyan(`decantr codify --from-audit --style-bridge --project ${candidate}`)}`);
   console.log('');
   console.log('Optional visual evidence after the app is running:');
   console.log(
@@ -3562,7 +3582,7 @@ function printMonorepoSetupGuidance(workspaceInfo: ReturnType<typeof resolveWork
     `  ${cyan(`decantr adopt --project ${candidate} --yes`)}          Attach Decantr to one app`,
   );
   console.log(
-    `  ${cyan(`decantr codify --from-audit --project ${candidate}`)}  Propose project-owned UI law`,
+    `  ${cyan(`decantr codify --from-audit --style-bridge --project ${candidate}`)}  Propose project-owned UI law and style bridge`,
   );
   console.log('');
   console.log(`${BOLD}Optional visual evidence:${RESET}`);
@@ -3663,22 +3683,31 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
   if (detected.existingEssence) {
     const hasLocalPatterns = existsSync(localPatternsPath(workspaceInfo.appRoot));
     const hasLocalRules = existsSync(localRulesPath(workspaceInfo.appRoot));
+    const hasStyleBridge = existsSync(styleBridgePath(workspaceInfo.appRoot));
     const verifyCommand =
       hasLocalPatterns || hasLocalRules
         ? 'decantr verify --brownfield --local-patterns'
         : 'decantr verify --brownfield';
     console.log(`${BOLD}Recommended path:${RESET} maintain an attached Decantr project`);
     console.log(
+      `  ${cyan(withProject('decantr doctor', projectArg))}                   Explain current state and next command`,
+    );
+    if (!hasLocalPatterns || !hasLocalRules || !hasStyleBridge) {
+      const codifyCommand =
+        hasLocalPatterns && hasLocalRules
+          ? 'decantr codify --style-bridge'
+          : 'decantr codify --from-audit --style-bridge';
+      console.log(
+        `  ${cyan(withProject(codifyCommand, projectArg))}     Propose missing local law/style bridge`,
+      );
+    }
+    console.log(
       `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}  Prepare LLM context before edits`,
     );
     console.log(
       `  ${cyan(withProject(verifyCommand, projectArg))}     Run local health and drift checks`,
     );
-    if (!hasLocalPatterns || !hasLocalRules) {
-      console.log(
-        `  ${cyan(withProject('decantr codify --from-audit', projectArg))}     Propose project-owned local law`,
-      );
-    }
+    console.log(`  ${cyan(withProject('decantr ci init', projectArg))}              Wire the app into CI`);
     return;
   }
 
@@ -3688,7 +3717,7 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
       `  ${cyan(withProject('decantr adopt --yes', projectArg))}                       Analyze, attach, and verify`,
     );
     console.log(
-      `  ${cyan(withProject('decantr codify --from-audit', projectArg))}               Propose local UI law`,
+      `  ${cyan(withProject('decantr codify --from-audit --style-bridge', projectArg))}               Propose local UI law and style bridge`,
     );
     console.log('');
     console.log(`${BOLD}Optional visual evidence after the app is running:${RESET}`);
@@ -3862,10 +3891,10 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   console.log('');
   console.log(`${BOLD}Brownfield operating loop:${RESET}`);
   console.log(
-    `  ${cyan(withProject('decantr codify --from-audit', projectArg))}          Discover and propose project-owned UI law`,
+    `  ${cyan(withProject('decantr codify --from-audit --style-bridge', projectArg))}  Propose project-owned UI law and style bridge`,
   );
   console.log(
-    `  ${cyan(withProject('decantr codify --accept', projectArg))}              Accept reviewed local patterns and rules`,
+    `  ${cyan(withProject('decantr codify --accept', projectArg))}              Accept reviewed local patterns, rules, and bridge`,
   );
   console.log(
     `  ${cyan(withProject('decantr task <route> "<change>"', projectArg))}      Give your LLM route-specific context before edits`,
@@ -4028,6 +4057,15 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
     }
   }
 
+  const styleBridge = createStyleBridgeTaskSummary(workspaceInfo.appRoot);
+  if (!quietOutput && styleBridge.path) {
+    console.log('');
+    console.log(`${GREEN}Style bridge found:${RESET} ${styleBridge.path}`);
+    console.log(
+      `${DIM}${styleBridge.mappingCount} mapping(s), ${styleBridge.stylingApproach ?? 'unknown'} styling${styleBridge.themeModes.length > 0 ? `, themes: ${styleBridge.themeModes.join(', ')}` : ''}${RESET}`,
+    );
+  }
+
   if (guardExitCode && guardExitCode !== 0 && (!process.exitCode || process.exitCode === 0)) {
     process.exitCode = guardExitCode;
   }
@@ -4055,6 +4093,7 @@ function createTaskAuthoritySummary(input: {
   hasLocalRules: boolean;
   hasPackManifest: boolean;
   taskSummary: string;
+  hasStyleBridge: boolean;
 }): {
   lane: string;
   sourceAuthority: string;
@@ -4065,6 +4104,7 @@ function createTaskAuthoritySummary(input: {
 } {
   const detected = detectProject(input.projectRoot);
   const hasLocalLaw = input.hasLocalPatterns || input.hasLocalRules;
+  const hasStyleBridge = input.hasStyleBridge || input.adoptionMode === 'style-bridge';
   let lane = 'Brownfield contract-only';
   let sourceAuthority = 'Existing app is authoritative; Decantr supplies contract context.';
   let styleAuthority = 'Use the existing styling system.';
@@ -4079,12 +4119,12 @@ function createTaskAuthoritySummary(input: {
       'Existing app remains authoritative except where Decantr CSS is explicitly adopted.';
     styleAuthority = 'Decantr CSS runtime is active where adopted.';
     activeAuthorities.push('Decantr CSS runtime');
-  } else if (input.workflowMode === 'brownfield-attach' && input.adoptionMode === 'style-bridge') {
+  } else if (input.workflowMode === 'brownfield-attach' && hasStyleBridge) {
     lane = 'Hybrid style bridge';
     sourceAuthority =
       'Existing app remains authoritative; Decantr intent maps through the style bridge.';
     styleAuthority = 'Use bridge tokens/classes as a mapping layer onto the app styling system.';
-    activeAuthorities.push('style bridge');
+    activeAuthorities.push('accepted style bridge');
   } else if (input.workflowMode === 'brownfield-attach' && hasLocalLaw) {
     lane = 'Hybrid local law';
     sourceAuthority = 'Existing app plus accepted project-owned UI law are authoritative.';
@@ -4211,7 +4251,13 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const screenshot = visualManifest?.routes?.find((entry) => entry.route === route)?.screenshot;
   const localPatternPackPath = localPatternsPath(workspaceInfo.appRoot);
   const localRuleManifestPath = localRulesPath(workspaceInfo.appRoot);
+  const acceptedStyleBridgePath = styleBridgePath(workspaceInfo.appRoot);
   const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
+  const styleBridge = createStyleBridgeTaskSummary(workspaceInfo.appRoot);
+  const displayedStyleBridge = {
+    ...styleBridge,
+    path: styleBridge.path ? displayProjectPath(workspaceInfo, styleBridge.path) : null,
+  };
   const displayedLocalLaw = {
     ...localLaw,
     patternsPath: localLaw.patternsPath
@@ -4230,6 +4276,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     hasLocalRules: existsSync(localRuleManifestPath),
     hasPackManifest: Boolean(manifest),
     taskSummary,
+    hasStyleBridge: existsSync(acceptedStyleBridgePath),
   });
 
   const context = {
@@ -4257,12 +4304,16 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       existsSync(localRuleManifestPath)
         ? displayProjectPath(workspaceInfo, '.decantr/rules.json')
         : null,
+      existsSync(acceptedStyleBridgePath)
+        ? displayProjectPath(workspaceInfo, '.decantr/style-bridge.json')
+        : null,
     ].filter(Boolean),
     screenshot: screenshot?.startsWith('.decantr/')
       ? displayProjectPath(workspaceInfo, screenshot)
       : (screenshot ?? null),
     authority,
     localLaw: displayedLocalLaw,
+    styleBridge: displayedStyleBridge,
     changedFiles: currentChangedFiles,
     changedRoutes,
     verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
@@ -4324,6 +4375,20 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       `  ${YELLOW}Not codified yet.${RESET} Run ${cyan(withProject('decantr codify --from-audit', projectArg))} after adoption.`,
     );
   }
+  if (context.styleBridge.path) {
+    console.log('');
+    console.log(`${BOLD}Project-owned style bridge:${RESET}`);
+    console.log(
+      `  Bridge: ${cyan(context.styleBridge.path)} (${context.styleBridge.mappingCount} mappings, ${context.styleBridge.stylingApproach ?? 'unknown'} styling)`,
+    );
+    if (context.styleBridge.themeModes.length > 0) {
+      console.log(`  Theme modes: ${context.styleBridge.themeModes.join(', ')}`);
+    }
+    for (const mapping of context.styleBridge.mappings.slice(0, 4)) {
+      const hints = [...mapping.tokenHints, ...mapping.classHints].slice(0, 4).join(', ');
+      console.log(`  ${mapping.id}: ${mapping.label}${hints ? ` — ${hints}` : ''}`);
+    }
+  }
   if (context.changedFiles.length > 0) {
     console.log('');
     console.log(`${BOLD}Changed-file context:${RESET}`);
@@ -4351,7 +4416,14 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   if (
     !ensureAllowedFlags(
       flags,
-      ['project', 'from-audit', 'discover-local-patterns', 'codify-local-patterns', 'accept'],
+      [
+        'project',
+        'from-audit',
+        'discover-local-patterns',
+        'codify-local-patterns',
+        'style-bridge',
+        'accept',
+      ],
       'codify',
     )
   ) {
@@ -4363,26 +4435,33 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   if (flagBoolean(flags, 'accept')) {
     if (
       !existsSync(localPatternsProposalPath(workspaceInfo.appRoot)) &&
-      !existsSync(localRulesProposalPath(workspaceInfo.appRoot))
+      !existsSync(localRulesProposalPath(workspaceInfo.appRoot)) &&
+      !existsSync(styleBridgeProposalPath(workspaceInfo.appRoot))
     ) {
       console.error(
         error(
-          'No local law proposal found. Run `decantr codify --from-audit` or `decantr codify` first.',
+          'No codify proposal found. Run `decantr codify --from-audit`, `decantr codify --style-bridge`, or `decantr codify` first.',
         ),
       );
       process.exitCode = 1;
       return;
     }
     const result = acceptBrownfieldLocalLaw(workspaceInfo.appRoot);
+    const bridgeAcceptedPath = acceptStyleBridge(workspaceInfo.appRoot);
     if (result.patternAcceptedPath) {
       console.log(success(`Accepted local pattern pack: ${result.patternAcceptedPath}`));
     }
     if (result.rulesAcceptedPath) {
       console.log(success(`Accepted local rule manifest: ${result.rulesAcceptedPath}`));
     }
+    if (bridgeAcceptedPath) {
+      console.log(success(`Accepted style bridge: ${bridgeAcceptedPath}`));
+    }
     console.log(
       dim(
-        'Hybrid local law is now active: Decantr will treat accepted local patterns and rules as project-owned authority in task and verify flows.',
+        bridgeAcceptedPath
+          ? 'Hybrid style bridge is now active: Decantr will map design intent through accepted project tokens/classes in task, doctor, suggest, and CI flows.'
+          : 'Hybrid local law is now active: Decantr will treat accepted local patterns and rules as project-owned authority in task and verify flows.',
       ),
     );
     console.log(
@@ -4401,17 +4480,42 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     flagBoolean(flags, 'from-audit') ||
     flagBoolean(flags, 'discover-local-patterns') ||
     flagBoolean(flags, 'codify-local-patterns');
-  const proposal = createBrownfieldCodifyProposal({
-    projectRoot: workspaceInfo.appRoot,
-    detected,
-    essence,
-    fromAudit,
-  });
-  const result = writeBrownfieldCodifyProposal(workspaceInfo.appRoot, proposal);
+  const wantsStyleBridge = flagBoolean(flags, 'style-bridge');
+  const wantsLocalLaw = !wantsStyleBridge || fromAudit;
 
-  console.log(success(`Wrote local pattern proposal: ${result.patternPath}`));
-  console.log(success(`Wrote local rule proposal: ${result.rulesPath}`));
-  if (fromAudit) {
+  let localResult: { patternPath: string; rulesPath: string } | null = null;
+  if (wantsLocalLaw) {
+    const proposal = createBrownfieldCodifyProposal({
+      projectRoot: workspaceInfo.appRoot,
+      detected,
+      essence,
+      fromAudit,
+    });
+    localResult = writeBrownfieldCodifyProposal(workspaceInfo.appRoot, proposal);
+  }
+
+  let styleBridgeResult: string | null = null;
+  if (wantsStyleBridge) {
+    const styling = scanStyling(workspaceInfo.appRoot);
+    styleBridgeResult = writeStyleBridgeProposal(
+      workspaceInfo.appRoot,
+      createStyleBridgeProposal({
+        projectRoot: workspaceInfo.appRoot,
+        detected,
+        essence,
+        styling,
+      }),
+    );
+  }
+
+  if (localResult) {
+    console.log(success(`Wrote local pattern proposal: ${localResult.patternPath}`));
+    console.log(success(`Wrote local rule proposal: ${localResult.rulesPath}`));
+  }
+  if (styleBridgeResult) {
+    console.log(success(`Wrote style bridge proposal: ${styleBridgeResult}`));
+  }
+  if (fromAudit && localResult) {
     console.log(
       dim(
         'Proposal includes source-derived component candidates, starter mechanical rules, and Hybrid authority guidance.',
@@ -4420,7 +4524,7 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
   }
   console.log(
     dim(
-      `Review both files, add real component paths/token recipes, map hosted pattern ideas into project-owned law, then run \`${withProject('decantr codify --accept', projectArg)}\`.`,
+      `Review the proposal files, add real component paths/token/class recipes, map hosted pattern ideas into project-owned law, then run \`${withProject('decantr codify --accept', projectArg)}\`.`,
     ),
   );
 }
@@ -4481,7 +4585,7 @@ ${BOLD}Usage:${RESET}
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
   decantr doctor [--project <path>] [--workspace] [--json]
-  decantr codify [--from-audit] [--accept] [--project <path>]
+  decantr codify [--from-audit] [--style-bridge] [--accept] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
 ${BOLD}Advanced primitives:${RESET}
@@ -4914,15 +5018,17 @@ ${BOLD}Examples:${RESET}
 
 function cmdCodifyHelp() {
   console.log(`
-${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI patterns and rules
+${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI law and style bridges
 
 ${BOLD}Usage:${RESET}
-  decantr codify [--from-audit] [--project <path>]
+  decantr codify [--from-audit] [--style-bridge] [--project <path>]
   decantr codify --accept [--project <path>]
 
 ${BOLD}Examples:${RESET}
   decantr codify
   decantr codify --from-audit
+  decantr codify --style-bridge
+  decantr codify --from-audit --style-bridge
   decantr codify --accept
   decantr verify --brownfield --local-patterns
 `);

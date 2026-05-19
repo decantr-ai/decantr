@@ -41,7 +41,7 @@ decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
-`decantr verify` should be the default command in local agent loops. `decantr ci` is the non-mutating automation gate for CI and required validation scripts; `--json` emits a `DecantrCiReport` matching `https://decantr.ai/schemas/decantr-ci-report.v1.json`. CI reports include accepted local-rule findings from `.decantr/rules.json` with file/line evidence when Hybrid local law is active. `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, CI wiring, and the ordered next-step queue. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
+`decantr verify` should be the default command in local agent loops. `decantr ci` is the non-mutating automation gate for CI and required validation scripts; `--json` emits a `DecantrCiReport` matching `https://decantr.ai/schemas/decantr-ci-report.v1.json`. CI reports include accepted local-rule findings from `.decantr/rules.json` with file/line evidence when Hybrid local law is active, plus accepted style bridge status, mapping count, styling approach, and theme modes when `.decantr/style-bridge.json` exists. `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, CI wiring, and the ordered next-step queue. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
 
 Project Health treats `pack-manifest.json` as a manifest, not proof by itself. If the manifest references a missing section/page/review/scaffold/mutation markdown or JSON file, health and doctor report the generated context as incomplete. In contract-only Brownfield, missing hosted packs are optional context: health reports them as info, doctor does not make hydration the next required step, and `refresh --check` does not fail solely because packs were intentionally deferred. In monorepos, hydrate missing or intentionally deferred hosted packs with `decantr registry compile-packs apps/web/decantr.essence.json --write-context` so the bundle lands beside the selected app essence. Project Health remediation prompts and CI recommendations also stay project-scoped, so root runs point at `--project apps/web`, runtime prompts use root-safe app build commands such as `pnpm --dir apps/web build`, and prompt read targets point at `apps/web/DECANTR.md`, `apps/web/decantr.essence.json`, and app-local context files instead of asking users to read root files that do not own the app contract.
 
@@ -56,6 +56,7 @@ The report composes existing Decantr evidence instead of inventing a parallel ch
 - guard and interaction findings from `decantr check`
 - brownfield route drift when `.decantr/project.json` declares `brownfield-attach`
 - accepted local law from `.decantr/local-patterns.json` and `.decantr/rules.json` when `decantr verify --local-patterns` is used
+- accepted style bridge mappings from `.decantr/style-bridge.json` when Hybrid style bridge is active
 - built runtime evidence when a `dist/` output exists
 - optional local browser verification when Playwright is installed and `--browser --base-url <url>` is provided
 - optional Figma/Tokens Studio token comparison through `--design-tokens <path>`
@@ -210,7 +211,7 @@ Brownfield health respects existing-app authority. It reports evidence and remed
 `decantr codify --from-audit` adds a project-owned local law layer for things the official registry cannot infer from a contract-only app:
 
 ```bash
-decantr codify --from-audit
+decantr codify --from-audit --style-bridge
 decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```

@@ -234,8 +234,8 @@ export function renderSecurityPermissionsMarkdown(permissions, surface) {
     '',
     '## Package Permission Matrix',
     '',
-    '| Package | Runtime | Filesystem | Network | Process | Telemetry | Hosted Upload | Ships |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Package | Runtime | Filesystem | Network | Process | Telemetry | Hosted Upload | Local Artifacts | Ships |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...sorted.map((entry) => {
       const fs = [
         summarizeList('read', entry.filesystem.read),
@@ -248,7 +248,9 @@ export function renderSecurityPermissionsMarkdown(permissions, surface) {
       ].join('<br>');
       const process =
         entry.process.spawn.length > 0 ? entry.process.spawn.join('; ') : 'none';
-      return `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.runtimeKind)} | ${escapeMarkdownCell(fs)} | ${escapeMarkdownCell(network)} | ${escapeMarkdownCell(process)} | ${escapeMarkdownCell(entry.telemetry)} | ${escapeMarkdownCell(entry.hostedUpload)} | ${escapeMarkdownCell(entry.ships.join(', '))} |`;
+      const localArtifacts =
+        entry.localArtifacts.length > 0 ? entry.localArtifacts.join('; ') : 'none';
+      return `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.runtimeKind)} | ${escapeMarkdownCell(fs)} | ${escapeMarkdownCell(network)} | ${escapeMarkdownCell(process)} | ${escapeMarkdownCell(entry.telemetry)} | ${escapeMarkdownCell(entry.hostedUpload)} | ${escapeMarkdownCell(localArtifacts)} | ${escapeMarkdownCell(entry.ships.join(', '))} |`;
     }),
     '',
     '## Scanner Notes',

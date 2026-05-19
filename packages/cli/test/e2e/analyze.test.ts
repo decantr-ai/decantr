@@ -90,6 +90,7 @@ describe('analyze command', () => {
         workflow?: string;
         attach?: { recommendedCommand?: string; adoptionMode?: string };
       };
+      styling?: { darkMode?: boolean };
       retrofitPlan?: { recommendedAdoptionMode?: string; doctrineMapPath?: string };
     };
     const seed = JSON.parse(readFileSync(seedPath, 'utf-8')) as {
@@ -118,6 +119,7 @@ describe('analyze command', () => {
       'decantr init --existing --accept-proposal',
     );
     expect(analysis.decantr?.attach?.adoptionMode).toBe('contract-only');
+    expect(analysis.styling?.darkMode).toBe(true);
     expect(analysis.retrofitPlan?.recommendedAdoptionMode).toBe('contract-only');
     expect(analysis.retrofitPlan?.doctrineMapPath).toBe('.decantr/doctrine-map.json');
     expect(seed.workflow).toBe('brownfield-adoption');

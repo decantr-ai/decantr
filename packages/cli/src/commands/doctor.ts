@@ -6,6 +6,7 @@ import { collectMissingPackManifestFiles } from '@decantr/verifier';
 import { ARTIFACT_README_PATH } from '../artifacts.js';
 import { detectProject } from '../detect.js';
 import { localPatternsPath, localRulesPath } from '../local-law.js';
+import { styleBridgePath, styleBridgeProposalPath } from '../style-bridge.js';
 import { resolveWorkspaceInfo } from '../workspace.js';
 import { listWorkspaceCandidates, listWorkspaceProjects } from './workspace.js';
 
@@ -95,6 +96,8 @@ interface DoctorReport {
   localLaw: {
     patternsPresent: boolean;
     rulesPresent: boolean;
+    styleBridgePresent: boolean;
+    styleBridgeProposalPresent: boolean;
   };
   visualEvidence: {
     manifestPresent: boolean;
@@ -125,7 +128,10 @@ function readJson<T>(path: string): T | null {
 
 function isContractOnlyProject(projectRoot: string): boolean {
   const projectJson = readJson<ProjectJson>(join(projectRoot, '.decantr', 'project.json'));
-  return projectJson?.initialized?.adoptionMode === 'contract-only';
+  return (
+    projectJson?.initialized?.adoptionMode === 'contract-only' ||
+    projectJson?.initialized?.adoptionMode === 'style-bridge'
+  );
 }
 
 function readCliPackageVersion(): string {
@@ -287,6 +293,7 @@ function deriveAdoptionLane(input: {
   adoptionMode: string | null;
   localPatternsPresent: boolean;
   localRulesPresent: boolean;
+  styleBridgePresent: boolean;
   designAuthority: string[];
   packManifestPresent: boolean;
 }): DoctorReport['lane'] {
@@ -313,6 +320,7 @@ function deriveAdoptionLane(input: {
   }
 
   const hasLocalLaw = input.localPatternsPresent || input.localRulesPresent;
+  const hasStyleBridge = input.styleBridgePresent || input.adoptionMode === 'style-bridge';
   if (input.workflowMode === 'hybrid-compose') {
     return {
       id: 'hybrid-compose',
@@ -321,12 +329,13 @@ function deriveAdoptionLane(input: {
       styleAuthority:
         input.adoptionMode === 'decantr-css'
           ? 'Decantr CSS runtime is active where adopted'
-          : input.adoptionMode === 'style-bridge'
+          : hasStyleBridge
             ? 'Style bridge maps Decantr intent into the app styling system'
             : 'Existing app styling system remains primary',
       activeAuthorities: [
         'existing source',
         'Essence V4 contract',
+        hasStyleBridge ? 'accepted style bridge' : 'no style bridge',
         hasLocalLaw ? 'accepted local law' : 'reviewed Hybrid choices',
         input.packManifestPresent ? 'hosted execution packs' : 'optional hosted packs',
       ],
@@ -346,13 +355,18 @@ function deriveAdoptionLane(input: {
           'Keep Decantr CSS usage explicit and validate route changes with task and verify.',
       };
     }
-    if (input.adoptionMode === 'style-bridge') {
+    if (hasStyleBridge) {
       return {
         id: 'hybrid-style-bridge',
         label: 'Hybrid style bridge',
         sourceAuthority: 'Existing app plus Decantr intent mapped through a style bridge',
         styleAuthority: 'Style bridge over the existing app styling system',
-        activeAuthorities: ['existing source', 'Essence V4 contract', 'style bridge'],
+        activeAuthorities: [
+          'existing source',
+          'Essence V4 contract',
+          'accepted style bridge',
+          hasLocalLaw ? 'accepted local patterns/rules' : 'optional local law',
+        ],
         nextChoice:
           'Use local law to decide which component families the bridge governs before making it strict.',
       };
@@ -444,9 +458,11 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   const ciFiles = findCiFiles(workspaceRoot);
   const workflowMode = projectJson?.initialized?.workflowMode ?? null;
   const adoptionMode = projectJson?.initialized?.adoptionMode ?? null;
-  const packHydrationOptional = adoptionMode === 'contract-only';
+  const packHydrationOptional = adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
   const localPatternsPresent = existsSync(localPatternsPath(appRoot));
   const localRulesPresent = existsSync(localRulesPath(appRoot));
+  const styleBridgePresent = existsSync(styleBridgePath(appRoot));
+  const styleBridgeProposalPresent = existsSync(styleBridgeProposalPath(appRoot));
   const missingPackReferences = workspaceMode
     ? projects.flatMap((project) =>
         collectMissingPackManifestFiles(join(workspaceRoot, project.path)).map(
@@ -594,6 +610,22 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     });
   }
 
+  if (adoptionMode === 'style-bridge' && !styleBridgePresent) {
+    issues.push({
+      category: 'local-law',
+      severity: 'warn',
+      message:
+        'This app declares style-bridge adoption, but .decantr/style-bridge.json is missing.',
+      nextCommand: styleBridgeProposalPresent
+        ? projectPath
+          ? `decantr codify --accept --project ${projectPath}`
+          : 'decantr codify --accept'
+        : projectPath
+          ? `decantr codify --style-bridge --project ${projectPath}`
+          : 'decantr codify --style-bridge',
+    });
+  }
+
   if (
     (essenceVersion === '4.0.0' || (workspaceMode && projects.length > 0)) &&
     ciFiles.length === 0
@@ -632,6 +664,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     adoptionMode,
     localPatternsPresent,
     localRulesPresent,
+    styleBridgePresent,
     designAuthority,
     packManifestPresent,
   });
@@ -663,6 +696,14 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     if (workflowMode === 'brownfield-attach' && !localPatternsPresent) {
       appendUnique(recommendedNextCommands, `decantr codify --from-audit${projectFlag}`);
       appendUnique(recommendedNextCommands, `decantr codify --accept${projectFlag}`);
+    }
+    if (adoptionMode === 'style-bridge' && !styleBridgePresent) {
+      appendUnique(
+        recommendedNextCommands,
+        styleBridgeProposalPresent
+          ? `decantr codify --accept${projectFlag}`
+          : `decantr codify --style-bridge${projectFlag}`,
+      );
     }
     appendUnique(
       recommendedNextCommands,
@@ -720,6 +761,8 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
     localLaw: {
       patternsPresent: localPatternsPresent,
       rulesPresent: localRulesPresent,
+      styleBridgePresent,
+      styleBridgeProposalPresent,
     },
     visualEvidence: {
       manifestPresent: existsSync(join(appRoot, '.decantr', 'evidence', 'visual-manifest.json')),
@@ -776,6 +819,13 @@ function formatDoctorText(report: DoctorReport): string {
     `${BOLD}Local Law:${RESET}`,
     `  Local patterns: ${report.localLaw.patternsPresent ? 'present' : 'missing'}`,
     `  Local rules: ${report.localLaw.rulesPresent ? 'present' : 'missing'}`,
+    `  Style bridge: ${
+      report.localLaw.styleBridgePresent
+        ? 'present'
+        : report.localLaw.styleBridgeProposalPresent
+          ? 'proposal pending'
+          : 'missing'
+    }`,
     '',
     `${BOLD}Workspace:${RESET}`,
     `  Attached projects: ${report.workspace.attachedProjects.length}`,

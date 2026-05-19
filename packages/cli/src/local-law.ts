@@ -630,11 +630,26 @@ function collectClassHints(
     if (!UI_TEMPLATE_EXTENSIONS.has(extname(file.absolute))) continue;
     const content = readFileSync(join(projectRoot, file.relative), 'utf-8');
     if (!terms.some((term) => content.toLowerCase().includes(term))) continue;
+    if (wantsButton) {
+      const openingTags = content.matchAll(
+        /<([A-Za-z][\w.:/-]*)\b[^>]*\bclass(?:Name)?\s*=\s*["'`]([^"'`]+)["'`][^>]*>/g,
+      );
+      for (const match of openingTags) {
+        const tag = match[1];
+        const value = match[2].trim();
+        const tagLooksInteractive =
+          /^(button|a|Link)$/i.test(tag) || /(^|\.)(Button|IconButton|LinkButton|Action)$/i.test(tag);
+        const fileLooksInteractive = /button|action|link/i.test(basename(file.relative));
+        if (!tagLooksInteractive && !fileLooksInteractive) continue;
+        if (!buttonSignal.test(value) && !fileLooksInteractive) continue;
+        hints.set(value, (hints.get(value) ?? 0) + 1);
+      }
+      continue;
+    }
     const matches = content.matchAll(/\bclass(?:Name)?\s*=\s*["'`]([^"'`]+)["'`]/g);
     for (const match of matches) {
       const value = match[1].trim();
       const keep =
-        (wantsButton && buttonSignal.test(value)) ||
         (wantsSurface && surfaceSignal.test(value)) ||
         (!wantsButton && !wantsSurface && (buttonSignal.test(value) || surfaceSignal.test(value)));
       if (!keep) continue;

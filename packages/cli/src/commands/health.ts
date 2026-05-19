@@ -456,11 +456,13 @@ function contractAssertionApplies(
   assertion: ContractAssertion,
   metadata: ProjectMetadata,
 ): boolean {
-  if (assertion.rule === 'tokens-file-present' && metadata.adoptionMode === 'contract-only') {
+  const projectOwnedStyling =
+    metadata.adoptionMode === 'contract-only' || metadata.adoptionMode === 'style-bridge';
+  if (assertion.rule === 'tokens-file-present' && projectOwnedStyling) {
     return false;
   }
   if (
-    metadata.adoptionMode === 'contract-only' &&
+    projectOwnedStyling &&
     (assertion.rule === 'pack-manifest-present' || assertion.rule === 'review-pack-present')
   ) {
     return false;

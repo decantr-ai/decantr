@@ -37,7 +37,7 @@ describe('brownfield local law', () => {
     );
     writeFileSync(
       join(testDir, 'src', 'app', 'page.tsx'),
-      'export default function Page() { return <button className="primaryAction tinyGhost secondary-action" style={{ color: "#fff" }}>Save</button>; }\n',
+      'export default function Page() { return <nav className="theme-switcher actions"><button className="primaryAction tinyGhost secondary-action" style={{ color: "#fff" }}>Save</button></nav>; }\n',
       'utf-8',
     );
   });
@@ -73,6 +73,9 @@ describe('brownfield local law', () => {
     expect(patterns.patterns?.find((pattern) => pattern.id === 'button')?.classHints).toContain(
       'primaryAction tinyGhost secondary-action',
     );
+    expect(
+      patterns.patterns?.find((pattern) => pattern.id === 'button')?.classHints,
+    ).not.toContain('theme-switcher actions');
 
     const summary = createLocalLawTaskSummary(testDir);
     expect(summary.patternCount).toBeGreaterThan(0);

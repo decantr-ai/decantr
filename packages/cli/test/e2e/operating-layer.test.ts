@@ -184,6 +184,85 @@ describe('operating layer commands', () => {
     expect(output).toContain('map hosted patterns into local law');
   });
 
+  it('codifies a Hybrid style bridge and surfaces it in doctor, task, suggest, and CI', () => {
+    mkdirSync(join(testDir, 'apps', 'web', 'src', 'components'), { recursive: true });
+    mkdirSync(join(testDir, 'apps', 'web', 'src', 'styles'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'components', 'Button.tsx'),
+      'export function Button() { return <button className="btn primary action">Save</button>; }\n',
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'styles', 'themes.css'),
+      ':root { --surface: #fff; --primary: #2563eb; } [data-theme="dark"] { --surface: #111827; }\n',
+      'utf-8',
+    );
+    writeJson(join(testDir, 'apps', 'web', '.decantr', 'theme-inventory.json'), {
+      modes: ['base', 'dark'],
+      variants: [{ id: 'dark' }],
+      darkModeDetected: true,
+    });
+
+    const proposalOutput = runCli(testDir, [
+      'codify',
+      '--project',
+      'apps/web',
+      '--from-audit',
+      '--style-bridge',
+    ]);
+    const acceptOutput = runCli(testDir, ['codify', '--project', 'apps/web', '--accept']);
+    const doctor = runCli(testDir, ['doctor', '--project', 'apps/web']);
+    const setup = runCli(join(testDir, 'apps', 'web'), ['setup']);
+    const task = JSON.parse(
+      runCli(testDir, [
+        'task',
+        '/',
+        'standardize primary action styling',
+        '--project',
+        'apps/web',
+        '--json',
+      ]),
+    ) as {
+      authority: { lane: string; activeAuthorities: string[] };
+      styleBridge: { path: string | null; mappingCount: number };
+    };
+    const suggestions = runCli(testDir, [
+      'suggest',
+      'standardize actions',
+      '--project',
+      'apps/web',
+    ]);
+    const ci = JSON.parse(
+      runCli(testDir, ['ci', '--project', 'apps/web', '--fail-on', 'none', '--json']),
+    ) as {
+      health: { findings: Array<{ id: string }> };
+      styleBridge?: { present?: boolean; mappingCount?: number; themeModes?: string[] };
+    };
+
+    expect(proposalOutput).toContain('Wrote style bridge proposal');
+    expect(acceptOutput).toContain('Accepted style bridge');
+    expect(acceptOutput).toContain('Hybrid style bridge is now active');
+    expect(doctor).toContain('Hybrid style bridge');
+    expect(doctor).toContain('Style bridge: present');
+    expect(setup).toContain('decantr doctor');
+    expect(setup).toContain('decantr task <route> "<change>"');
+    expect(setup).toContain('decantr ci init');
+    expect(setup).not.toContain('codify --from-audit');
+    expect(task.authority.lane).toBe('Hybrid style bridge');
+    expect(task.authority.activeAuthorities).toContain('accepted style bridge');
+    expect(task.styleBridge.path).toBe('apps/web/.decantr/style-bridge.json');
+    expect(task.styleBridge.mappingCount).toBeGreaterThan(0);
+    expect(suggestions).toContain('Project-owned style bridge');
+    expect(suggestions).toContain('action');
+    expect(ci.styleBridge?.present).toBe(true);
+    expect(ci.styleBridge?.mappingCount).toBeGreaterThan(0);
+    expect(ci.styleBridge?.themeModes).toContain('dark');
+    const ciFindingIds = ci.health.findings.map((finding) => finding.id);
+    expect(ciFindingIds).not.toContain('assertion-contract-design-token-tokens-file');
+    expect(ciFindingIds).not.toContain('assertion-contract-context-pack-manifest');
+    expect(ciFindingIds).not.toContain('assertion-contract-context-review-pack');
+  }, 20_000);
+
   it('explains workspace state without requiring an essence at the root', () => {
     const output = runCli(testDir, ['doctor', '--workspace']);
 
@@ -253,6 +332,7 @@ describe('operating layer commands', () => {
     const output = runCli(join(testDir, 'apps', 'web'), ['setup']);
 
     expect(output).toContain('decantr verify --brownfield --local-patterns');
+    expect(output).toContain('decantr codify --style-bridge');
     expect(output).not.toContain('decantr codify --from-audit');
   });
 

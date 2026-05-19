@@ -20,7 +20,7 @@ npx @decantr/cli new my-app --blueprint=esports-hq
 Use `decantr setup` when you are unsure which path applies. It detects whether the repo is empty, already attached, or a Brownfield app and recommends the right entry path.
 Use `decantr new` for a greenfield workspace in a fresh directory. With a blueprint/archetype it uses the runnable adapter and Decantr CSS; without registry content it creates a contract-only workspace unless you explicitly pass `--adoption=decantr-css`.
 Use `decantr adopt` when you already have an app and want Decantr governance without adopting a blueprint. Brownfield attach is proposal-driven: Decantr inventories the app, writes an observed essence proposal, hydrates hosted execution packs when online, and only applies the contract when you explicitly accept or merge it.
-Use `decantr doctor` when the next step is unclear, `decantr task` before asking an LLM to modify a route, `decantr verify` after the edit, and `decantr ci` in required automation. Use `decantr codify --from-audit` when you want project-owned UI patterns and local rules such as button/card/shell/theme standards to appear in future task context and verification. Once accepted, that local law is the first Hybrid lane: the app still owns source and styling, but Decantr treats accepted local patterns and rules as project authority.
+Use `decantr doctor` when the next step is unclear, `decantr task` before asking an LLM to modify a route, `decantr verify` after the edit, and `decantr ci` in required automation. Use `decantr codify --from-audit --style-bridge` when you want project-owned UI patterns, local rules, and token/class bridge mappings such as button/card/shell/theme standards to appear in future task context and verification. Once accepted, that local law is the first Hybrid lane: the app still owns source and styling, but Decantr treats accepted local patterns, rules, and style bridge mappings as project authority.
 In monorepos, app-scoped commands accept `--project <app-path>`. `setup` shows attach guidance before adoption and the day-two loop after adoption. Hosted pack hydration also follows the essence path: `decantr registry compile-packs apps/web/decantr.essence.json --write-context` writes into `apps/web/.decantr/context`. In contract-only/offline Brownfield, deferred hosted packs are optional context unless a present manifest references missing files.
 Use `decantr init`, `decantr analyze`, `decantr check`, and `decantr health` as advanced primitives when you need direct control over one step.
 
@@ -45,7 +45,7 @@ decantr adopt --yes
 decantr doctor
 decantr ci --fail-on error
 decantr ci init
-decantr codify --from-audit
+decantr codify --from-audit --style-bridge
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
@@ -75,12 +75,13 @@ pnpm exec decantr setup
 pnpm exec decantr workspace list
 pnpm exec decantr adopt --project apps/web --yes
 pnpm exec decantr doctor --project apps/web
+pnpm exec decantr codify --from-audit --style-bridge --project apps/web
 pnpm exec decantr ci init --project apps/web
 ```
 
 Assistant rule integration is preview-first: `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`, `decantr rules preview` prints the bridge, and `--assistant-bridge=apply` or `decantr rules apply` mutates supported rule files with idempotent marked blocks.
 
-Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. It also writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. Theme variants are observed in the theme inventory without changing Essence V4. `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json` with Hybrid authority guidance and source-derived button/card class hints; after review, `decantr codify --accept` promotes `.decantr/local-patterns.json` and `.decantr/rules.json`. `decantr doctor` reports whether the app is contract-only, Hybrid local law, style bridge, Decantr CSS, or Hybrid composition. `decantr task` prints that authority block and warns before mixing runtimes or adding Decantr CSS to a non-Decantr-CSS app. `decantr suggest --from-code` surfaces accepted local patterns from the app root or selected `--project`, and `decantr ci` prints accepted local-rule findings with file/line evidence. `decantr verify --brownfield --local-patterns` uses the Brownfield guard layer plus accepted local law to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, raw local-rule violations, and unsafe defaults without treating current database migrations as stale docs.
+Brownfield analysis also writes `.decantr/doctrine-map.json`, a ranked source-precedence map across security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, stale, and unsafe-to-cite evidence. It also writes `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. The proposal groups routes into observed semantic domains such as auth, RBAC, billing, reporting, facilities, settings, and public surfaces across Next App/Pages Router, React Router, Angular Router, SvelteKit, Vue Router, and Nuxt file routes. Existing styling systems such as Tailwind, Bootstrap, MUI, Chakra, plain CSS, and Decantr CSS are observed as evidence instead of replaced. Theme variants are observed in the theme inventory without changing Essence V4. `decantr codify --from-audit` proposes `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json` with Hybrid authority guidance and source-derived button/card class hints; `decantr codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without requiring `@decantr/css`. After review, `decantr codify --accept` promotes whichever proposals exist. `decantr doctor` reports whether the app is contract-only, Hybrid local law, style bridge, Decantr CSS, or Hybrid composition. `decantr task` prints that authority block and warns before mixing runtimes or adding Decantr CSS to a non-Decantr-CSS app. `decantr suggest --from-code` surfaces accepted local patterns and style bridge mappings from the app root or selected `--project`, and `decantr ci` prints accepted local-rule findings plus style bridge status in text, markdown, and JSON reports. `decantr verify --brownfield --local-patterns` uses the Brownfield guard layer plus accepted local law to flag actionable missing doctrine coverage, unsafe context, missing assistant bridges, style drift, raw local-rule violations, and unsafe defaults without treating current database migrations as stale docs.
 
 ## What It Does
 
@@ -111,7 +112,7 @@ decantr adopt --yes
 decantr adopt --project apps/web --yes
 decantr doctor
 decantr doctor --project apps/web
-decantr codify --from-audit
+decantr codify --from-audit --style-bridge
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns

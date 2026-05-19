@@ -81,7 +81,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'primary',
     mutates: true,
     audience: 'app-developer',
-    purpose: 'Propose and accept project-owned Brownfield UI patterns and rules.',
+    purpose: 'Propose and accept project-owned Brownfield UI law and style bridges.',
     consolidation: 'keep',
   },
   {

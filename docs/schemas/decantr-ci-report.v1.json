@@ -42,6 +42,9 @@
         },
         "localLaw": {
           "$ref": "#/$defs/localLaw"
+        },
+        "styleBridge": {
+          "$ref": "#/$defs/styleBridge"
         }
       },
       "additionalProperties": false
@@ -144,6 +147,49 @@
         "warnCount": {
           "type": "integer",
           "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "styleBridge": {
+      "type": "object",
+      "required": [
+        "checked",
+        "present",
+        "status",
+        "mappingCount",
+        "stylingApproach",
+        "themeModes",
+        "warnings"
+      ],
+      "properties": {
+        "checked": {
+          "type": "boolean"
+        },
+        "present": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "mappingCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stylingApproach": {
+          "type": ["string", "null"]
+        },
+        "themeModes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
