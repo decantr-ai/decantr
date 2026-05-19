@@ -37,7 +37,7 @@ describe('brownfield local law', () => {
     );
     writeFileSync(
       join(testDir, 'src', 'app', 'page.tsx'),
-      'export default function Page() { return <button style={{ color: "#fff" }}>Save</button>; }\n',
+      'export default function Page() { return <button className="primaryAction tinyGhost secondary-action" style={{ color: "#fff" }}>Save</button>; }\n',
       'utf-8',
     );
   });
@@ -64,11 +64,14 @@ describe('brownfield local law', () => {
 
     const patterns = JSON.parse(readFileSync(localPatternsPath(testDir), 'utf-8')) as {
       status?: string;
-      patterns?: Array<{ id?: string; componentPaths?: string[] }>;
+      patterns?: Array<{ id?: string; componentPaths?: string[]; classHints?: string[] }>;
     };
     expect(patterns.status).toBe('accepted');
     expect(patterns.patterns?.find((pattern) => pattern.id === 'button')?.componentPaths).toContain(
       'src/components/Button.tsx',
+    );
+    expect(patterns.patterns?.find((pattern) => pattern.id === 'button')?.classHints).toContain(
+      'primaryAction tinyGhost secondary-action',
     );
 
     const summary = createLocalLawTaskSummary(testDir);

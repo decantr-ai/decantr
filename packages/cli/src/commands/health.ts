@@ -953,7 +953,7 @@ async function collectBrowserVerification(
       evidence: ['Expected dependency: playwright or @playwright/test'],
       rule: 'browser-playwright-missing',
       suggestedFix:
-        'Install Playwright in the project or rerun without `--browser` for static-only evidence.',
+        'Install Playwright in the project or omit browser/base-url evidence for static-only health checks.',
       baseId: 'playwright-missing',
     });
     return {
@@ -1786,7 +1786,7 @@ export async function cmdHealth(
           'Playwright is not available to Decantr in this project.';
         console.log(`${YELLOW}Browser evidence unavailable:${RESET} ${reason}`);
         console.log(
-          `${DIM}Static evidence was still written. Install Playwright or rerun without --browser if screenshots are not needed.${RESET}`,
+          `${DIM}Static evidence was still written. Install Playwright or omit --browser/--base-url evidence if screenshots are not needed.${RESET}`,
         );
       }
     }

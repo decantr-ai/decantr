@@ -91,8 +91,9 @@ describe('brownfield monorepo onboarding', () => {
 
     expect(output).toContain('Skipping hosted pack hydration in offline mode.');
     expect(output).toContain('decantr init --project apps/web --existing --accept-proposal');
-    expect(output).toContain('decantr check --brownfield --project apps/web');
-    expect(output).toContain('apps/web/.decantr/brownfield-report.md');
+    expect(output).toContain('Brownfield operating loop');
+    expect(output).toContain('decantr codify --from-audit --project apps/web');
+    expect(output).not.toContain('decantr check --brownfield --project apps/web');
     expect(existsSync(join(testDir, 'apps', 'web', 'decantr.essence.json'))).toBe(true);
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'project.json'))).toBe(true);
     expect(existsSync(join(testDir, 'decantr.essence.json'))).toBe(false);

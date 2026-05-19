@@ -43,6 +43,7 @@ describe('analyze command', () => {
       ) + '\n',
     );
     mkdirSync(join(testDir, 'src', 'components'), { recursive: true });
+    mkdirSync(join(testDir, 'src', 'styles'), { recursive: true });
     writeFileSync(
       join(testDir, 'src', 'components', 'Sidebar.tsx'),
       'export function Sidebar() { return <aside />; }\n',
@@ -50,6 +51,16 @@ describe('analyze command', () => {
     writeFileSync(
       join(testDir, 'src', 'App.tsx'),
       'export function App() { return <main>Hello</main>; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'styles', 'themes.css'),
+      [
+        ":root { --surface: #fff; }",
+        "[data-theme='dark'] { --surface: #111; }",
+        "[data-theme='holiday'] { --surface: #f6fff1; }",
+        '.theme-switcher, .actions { display: flex; }',
+        '',
+      ].join('\n'),
     );
 
     execSync(`node ${cliPath} analyze`, { cwd: testDir, stdio: 'pipe' });
@@ -97,6 +108,8 @@ describe('analyze command', () => {
     };
     const themeInventory = JSON.parse(readFileSync(themeInventoryPath, 'utf-8')) as {
       localOnly?: boolean;
+      darkModeDetected?: boolean;
+      modes?: string[];
       variants?: Array<{ id: string }>;
     };
 
@@ -119,6 +132,9 @@ describe('analyze command', () => {
     expect(intelligence.evidence?.screenshotsLocalOnly).toBe(true);
     expect(themeInventory.localOnly).toBe(true);
     expect(themeInventory.variants?.length ?? 0).toBeGreaterThan(0);
+    expect(themeInventory.darkModeDetected).toBe(true);
+    expect(themeInventory.modes).toEqual(expect.arrayContaining(['base', 'dark', 'holiday']));
+    expect(themeInventory.modes).not.toContain('switcher');
   });
 
   it('recognizes React Router and Decantr starter structure in an attached app', () => {

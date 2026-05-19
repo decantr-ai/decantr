@@ -46,6 +46,16 @@ interface LocalLawCiSummary {
   checked: boolean;
   patternsPresent: boolean;
   rulesPresent: boolean;
+  warnings: string[];
+  findings: Array<{
+    ruleId: string;
+    severity: 'info' | 'warn' | 'error';
+    file: string;
+    line: number;
+    column: number;
+    message: string;
+    suggestedFix: string;
+  }>;
   errorCount: number;
   warnCount: number;
 }
@@ -215,6 +225,16 @@ function summarizeLocalLaw(projectRoot: string): LocalLawCiSummary {
     checked: validation.patternPackPresent || validation.ruleManifestPresent,
     patternsPresent: validation.patternPackPresent,
     rulesPresent: validation.ruleManifestPresent,
+    warnings: validation.warnings,
+    findings: validation.findings.map((finding) => ({
+      ruleId: finding.ruleId,
+      severity: finding.severity,
+      file: finding.file,
+      line: finding.line,
+      column: finding.column,
+      message: finding.message,
+      suggestedFix: finding.suggestedFix,
+    })),
     errorCount: validation.findings.filter((finding) => finding.severity === 'error').length,
     warnCount:
       validation.findings.filter((finding) => finding.severity === 'warn').length +
@@ -226,6 +246,81 @@ function localLawFails(summary: LocalLawCiSummary, failOn: HealthFailOn): boolea
   if (failOn === 'none' || !summary.checked) return false;
   if (summary.errorCount > 0) return true;
   return failOn === 'warn' && summary.warnCount > 0;
+}
+
+function projectCiStatus(
+  health: ProjectHealthReport,
+  localLaw: LocalLawCiSummary,
+): ProjectCiReport['status'] {
+  if (health.status === 'error' || localLaw.errorCount > 0) return 'error';
+  if (health.status === 'warning' || localLaw.warnCount > 0) return 'warning';
+  return health.status;
+}
+
+function formatLocalLawText(summary: LocalLawCiSummary, health: ProjectHealthReport): string {
+  const lines = ['', `${BOLD}Project-owned local law:${RESET}`];
+  if (!summary.checked) {
+    const isBrownfield = health.summary.workflowMode === 'brownfield-attach';
+    lines.push(
+      isBrownfield
+        ? '  Not accepted yet. Run `decantr codify --from-audit`, review, then `decantr codify --accept`.'
+        : '  Not active for this project.',
+    );
+    return `${lines.join('\n')}\n`;
+  }
+
+  lines.push(
+    `  Patterns: ${summary.patternsPresent ? 'present' : 'missing'} | Rules: ${summary.rulesPresent ? 'present' : 'missing'}`,
+  );
+  lines.push(`  Findings: ${summary.errorCount} error(s), ${summary.warnCount} warning(s)`);
+  for (const warning of summary.warnings.slice(0, 5)) {
+    lines.push(`  ${DIM}[WARN] ${warning}${RESET}`);
+  }
+  for (const finding of summary.findings.slice(0, 8)) {
+    const label = finding.severity.toUpperCase();
+    lines.push(
+      `  [${label}] ${finding.ruleId} ${finding.file}:${finding.line}:${finding.column} ${finding.message}`,
+    );
+    lines.push(`    ${DIM}${finding.suggestedFix}${RESET}`);
+  }
+  if (summary.findings.length > 8) {
+    lines.push(`  ${DIM}...${summary.findings.length - 8} more local-law finding(s)${RESET}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function formatLocalLawMarkdown(summary: LocalLawCiSummary, health: ProjectHealthReport): string {
+  const lines = ['## Project-Owned Local Law', ''];
+  if (!summary.checked) {
+    if (health.summary.workflowMode !== 'brownfield-attach') {
+      lines.push('Local law is not active for this project.');
+      return lines.join('\n');
+    }
+    lines.push(
+      'Local law has not been accepted yet. Run `decantr codify --from-audit`, review the proposal, then run `decantr codify --accept`.',
+    );
+    return lines.join('\n');
+  }
+  lines.push(
+    `Patterns: **${summary.patternsPresent ? 'present' : 'missing'}** · Rules: **${summary.rulesPresent ? 'present' : 'missing'}**`,
+  );
+  lines.push('');
+  lines.push(`Findings: **${summary.errorCount} error(s), ${summary.warnCount} warning(s)**`);
+  if (summary.warnings.length > 0) {
+    lines.push('');
+    for (const warning of summary.warnings.slice(0, 5)) {
+      lines.push(`- Warning: ${warning}`);
+    }
+  }
+  if (summary.findings.length > 0) {
+    lines.push('');
+    for (const finding of summary.findings.slice(0, 12)) {
+      lines.push(
+        `- \`${finding.severity}\` \`${finding.ruleId}\` at \`${finding.file}:${finding.line}:${finding.column}\`: ${finding.message}`,
+      );
+    }
+  }
+  return lines.join('\n');
 }
 
 function formatProjectCiMarkdown(report: ProjectCiReport): string {
@@ -243,6 +338,8 @@ function formatProjectCiMarkdown(report: ProjectCiReport): string {
     }`,
     '',
     formatProjectHealthMarkdown(report.health),
+    '',
+    formatLocalLawMarkdown(report.localLaw, report.health),
   ];
   return `${lines.join('\n')}\n`;
 }
@@ -477,7 +574,7 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
     mode: 'project',
     projectPath,
     failOn,
-    status: health.status,
+    status: projectCiStatus(health, localLaw),
     health,
     localLaw,
   };
@@ -490,7 +587,8 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
   if (!options.output && !options.markdownOutput) {
     if (options.json) process.stdout.write(json);
     else if (options.markdown) process.stdout.write(markdown);
-    else process.stdout.write(formatProjectHealthText(health));
+    else
+      process.stdout.write(`${formatProjectHealthText(health)}${formatLocalLawText(localLaw, health)}`);
   }
 
   return shouldFailHealth(health, failOn) || localLawFails(localLaw, failOn) ? 1 : 0;

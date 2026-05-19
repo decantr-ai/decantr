@@ -210,8 +210,11 @@ export function createBrownfieldCodifyProposal(
         componentPaths: evidence.buttonComponents,
         decide:
           'Define primary, secondary, tertiary, destructive, icon-only, disabled, and loading button variants from this app.',
+        classHints: evidence.buttonClassHints,
         evidence: evidence.buttonComponents.length
           ? evidence.buttonComponents
+          : evidence.buttonClassHints.length
+            ? evidence.buttonClassHints
           : [
               'No obvious Button wrapper found yet. Add the project-owned wrapper path before strict enforcement.',
             ],
@@ -597,6 +600,16 @@ function summarizeSourceEvidence(
     formComponents: byName(['input', 'field', 'form', 'select', 'textarea']),
     shellComponents,
     themeComponents,
+    buttonClassHints: collectClassHints(projectRoot, files, [
+      'button',
+      'btn',
+      'action',
+      'primary',
+      'secondary',
+      'tertiary',
+      'ghost',
+      'link',
+    ]),
     cardClassHints: collectClassHints(projectRoot, files, ['card', 'panel', 'surface', 'tile']),
   };
 }
@@ -607,6 +620,12 @@ function collectClassHints(
   terms: string[],
 ): string[] {
   const hints = new Map<string, number>();
+  const wantsButton = terms.some((term) =>
+    /^(button|btn|action|primary|secondary|tertiary|ghost|link)$/i.test(term),
+  );
+  const wantsSurface = terms.some((term) => /^(card|panel|surface|tile)$/i.test(term));
+  const buttonSignal = /button|btn|action|primary|secondary|tertiary|ghost|link|destructive|icon/i;
+  const surfaceSignal = /card|panel|surface|tile|rounded|shadow|border|bg-|p-\d|px-|py-/i;
   for (const file of files) {
     if (!UI_TEMPLATE_EXTENSIONS.has(extname(file.absolute))) continue;
     const content = readFileSync(join(projectRoot, file.relative), 'utf-8');
@@ -614,7 +633,11 @@ function collectClassHints(
     const matches = content.matchAll(/\bclass(?:Name)?\s*=\s*["'`]([^"'`]+)["'`]/g);
     for (const match of matches) {
       const value = match[1].trim();
-      if (!/(card|panel|surface|rounded|shadow|border|bg-|p-\d|px-|py-)/i.test(value)) continue;
+      const keep =
+        (wantsButton && buttonSignal.test(value)) ||
+        (wantsSurface && surfaceSignal.test(value)) ||
+        (!wantsButton && !wantsSurface && (buttonSignal.test(value) || surfaceSignal.test(value)));
+      if (!keep) continue;
       hints.set(value, (hints.get(value) ?? 0) + 1);
     }
   }
