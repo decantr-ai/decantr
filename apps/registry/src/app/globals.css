@@ -170,11 +170,11 @@
   .registry-scan-search {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 8rem;
-    gap: 0.35rem;
-    width: min(100%, 60rem);
+    grid-template-columns: minmax(0, 1fr) 8.75rem;
+    gap: 0.75rem;
+    width: min(100%, 62rem);
     min-width: 0;
-    padding: 0.35rem;
+    padding: 0.55rem;
     background: color-mix(in srgb, var(--d-surface) 82%, transparent);
     border: 1px solid color-mix(in srgb, var(--d-border) 72%, transparent);
     border-radius: var(--d-radius);
@@ -197,9 +197,9 @@
 
   .registry-scan-search input {
     width: 100%;
-    min-height: 3.65rem;
+    min-height: 3.95rem;
     min-width: 0;
-    padding: 0 1.25rem;
+    padding: 0 1.55rem;
     color: var(--d-text);
     background: color-mix(in srgb, var(--d-bg) 28%, transparent);
     border: 0;
@@ -221,7 +221,8 @@
 
   .registry-scan-search button {
     min-width: 0;
-    min-height: 3.65rem;
+    min-height: 3.95rem;
+    padding-inline: 1.35rem;
     justify-content: center;
     border-radius: calc(var(--d-radius) - 2px);
   }
@@ -701,7 +702,9 @@
 
     .registry-scan-search {
       grid-template-columns: 1fr;
+      gap: 0.7rem;
       width: min(100%, 34rem);
+      padding: 0.55rem;
     }
 
     .registry-scan-search button {
@@ -6285,4 +6288,17 @@
       grid-template-columns: 1fr;
     }
   }
+}
+
+/* Route-local app overrides: Tailwind's reset is unlayered in this build. */
+.registry-scan-page .registry-scan-search {
+  padding: 0.55rem;
+}
+
+.registry-scan-page .registry-scan-search input {
+  padding-inline: 1.55rem;
+}
+
+.registry-scan-page .registry-scan-search button {
+  padding-inline: 1.35rem;
 }
