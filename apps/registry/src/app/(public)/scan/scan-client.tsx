@@ -369,51 +369,53 @@ export function ScanExperience() {
   return (
     <div className="registry-scan-page">
       <section className={heroCompact ? 'registry-scan-hero registry-scan-hero-compact' : 'registry-scan-hero'} aria-labelledby="scan-heading">
-        <div className="registry-scan-hero-copy">
-          <h1 id="scan-heading" className="registry-home-title">
-            See what Decantr can prove before you install anything.
-          </h1>
-          <p className="registry-home-description">
-            Paste a public GitHub repo or GitHub Pages URL. Decantr runs static reconnaissance,
-            checks the published surface with HTTP only, and returns an ephemeral report.
-          </p>
-          <div className="registry-scan-trust-row" aria-label="Scan guarantees">
-            <span>No install</span>
-            <span>No build</span>
-            <span>No source execution</span>
+        <div className="registry-scan-hero-inner">
+          <div className="registry-scan-hero-copy">
+            <h1 id="scan-heading" className="registry-home-title">
+              See what Decantr can prove before you install anything.
+            </h1>
+            <p className="registry-home-description">
+              Paste a public GitHub repo or GitHub Pages URL. Decantr runs static reconnaissance,
+              checks the published surface with HTTP only, and returns an ephemeral report.
+            </p>
+            <ul className="registry-scan-guarantees" aria-label="Scan guarantees">
+              <li>No install</li>
+              <li>No build</li>
+              <li>No source execution</li>
+            </ul>
           </div>
-        </div>
 
-        <form className="registry-scan-search" onSubmit={submit}>
-          <label htmlFor="scan-url" className="sr-only">
-            GitHub repository or GitHub Pages URL
-          </label>
-          <input
-            id="scan-url"
-            value={url}
-            onChange={(event) => setUrl(event.target.value)}
-            placeholder={placeholder}
-            type="url"
-            inputMode="url"
-          />
-          <button type="submit" className="d-interactive" data-variant="primary" disabled={status === 'scanning'}>
-            {status === 'scanning' ? 'Scanning' : 'Scan'}
-          </button>
-        </form>
+          <form className="registry-scan-search" onSubmit={submit}>
+            <label htmlFor="scan-url" className="sr-only">
+              GitHub repository or GitHub Pages URL
+            </label>
+            <input
+              id="scan-url"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder={placeholder}
+              type="url"
+              inputMode="url"
+            />
+            <button type="submit" className="d-interactive" data-variant="primary" disabled={status === 'scanning'}>
+              {status === 'scanning' ? 'Scanning' : 'Scan'}
+            </button>
+          </form>
 
-        <div className="registry-scan-stage" aria-live="polite">
-          {status === 'scanning' ? (
-            <>
-              <span className="registry-scan-stage-line" aria-hidden="true" />
-              <strong>{PROGRESS_COPY[stage]}</strong>
-              <p>No install. No build. No repo code execution.</p>
-            </>
-          ) : (
-            <>
-              <strong>Static repo evidence plus HTTP-only Pages probe.</strong>
-              <p>Built for public Brownfield triage, not source takeover.</p>
-            </>
-          )}
+          <div className="registry-scan-stage" aria-live="polite">
+            {status === 'scanning' ? (
+              <>
+                <span className="registry-scan-stage-line" aria-hidden="true" />
+                <strong>{PROGRESS_COPY[stage]}</strong>
+                <p>No install. No build. No repo code execution.</p>
+              </>
+            ) : (
+              <>
+                <strong>Static repo evidence plus HTTP-only Pages probe.</strong>
+                <p>Built for public Brownfield triage, not source takeover.</p>
+              </>
+            )}
+          </div>
         </div>
       </section>
 
