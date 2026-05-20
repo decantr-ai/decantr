@@ -6291,6 +6291,41 @@
 }
 
 /* Route-local app overrides: Tailwind's reset is unlayered in this build. */
+.registry-scan-page .registry-scan-guarantees {
+  gap: 0.45rem;
+}
+
+.registry-scan-page .registry-scan-guarantees li {
+  min-height: 2rem;
+  padding: 0.34rem 0.68rem;
+  background: color-mix(in srgb, var(--d-surface) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--d-border) 58%, transparent);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.registry-scan-page .registry-scan-guarantees li + li::before {
+  content: none;
+}
+
+.registry-scan-page .registry-scan-hero-compact {
+  min-height: auto;
+  padding-block: clamp(1.4rem, 3vw, 2.1rem) clamp(1rem, 2vw, 1.45rem);
+}
+
+.registry-scan-page .registry-scan-hero-compact .registry-scan-hero-inner {
+  gap: 0.85rem;
+}
+
+.registry-scan-page .registry-scan-hero-compact .registry-scan-hero-copy {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-0.75rem);
+}
+
 .registry-scan-page .registry-scan-search {
   padding: 0.55rem;
 }
@@ -6301,4 +6336,299 @@
 
 .registry-scan-page .registry-scan-search button {
   padding-inline: 1.35rem;
+}
+
+.registry-scan-page .registry-scan-report {
+  width: min(calc(100% - clamp(2rem, 8vw, 7rem)), 74rem);
+  gap: clamp(1rem, 1.8vw, 1.45rem);
+  margin: clamp(1rem, 2vw, 1.75rem) auto 0;
+  padding-bottom: clamp(3rem, 8vw, 6rem);
+}
+
+.registry-scan-page .registry-scan-report > * {
+  animation: registry-scan-card-rise 540ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.registry-scan-page .registry-scan-report > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.registry-scan-page .registry-scan-report > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.registry-scan-page .registry-scan-report > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.registry-scan-page .registry-scan-report > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+
+.registry-scan-page .registry-scan-report > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+
+.registry-scan-page :is(
+  .registry-scan-verdict,
+  .registry-scan-next,
+  .registry-scan-metric,
+  .registry-scan-panel,
+  .registry-scan-finding
+) {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #fff 5%, transparent), transparent 32%),
+    color-mix(in srgb, var(--d-surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--d-border) 68%, transparent);
+  border-radius: var(--d-radius);
+  box-shadow:
+    0 1.25rem 3.5rem rgb(0 0 0 / 0.24),
+    inset 0 1px 0 color-mix(in srgb, #fff 8%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.registry-scan-page :is(
+  .registry-scan-verdict,
+  .registry-scan-next,
+  .registry-scan-metric,
+  .registry-scan-panel,
+  .registry-scan-finding
+)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--d-secondary) 70%, transparent),
+    color-mix(in srgb, var(--d-primary) 62%, transparent),
+    transparent
+  );
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.registry-scan-page .registry-scan-verdict,
+.registry-scan-page .registry-scan-next {
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: clamp(1.35rem, 2.3vw, 2rem);
+}
+
+.registry-scan-page .registry-scan-verdict h2,
+.registry-scan-page .registry-scan-next h2 {
+  margin: 0.45rem 0 0.35rem;
+}
+
+.registry-scan-page .registry-scan-verdict p,
+.registry-scan-page .registry-scan-next p,
+.registry-scan-page .registry-scan-panel p,
+.registry-scan-page .registry-scan-finding p {
+  margin: 0;
+}
+
+.registry-scan-page .registry-scan-score {
+  padding: 1.55rem;
+  box-shadow:
+    0 1rem 2.5rem rgb(0 0 0 / 0.32),
+    inset 0 0 0 1px color-mix(in srgb, #fff 12%, transparent);
+  animation: registry-scan-score-pop 720ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both;
+}
+
+.registry-scan-page .registry-scan-grid {
+  gap: clamp(0.75rem, 1.3vw, 1rem);
+}
+
+.registry-scan-page .registry-scan-metric {
+  min-height: 7.5rem;
+  padding: clamp(1rem, 1.8vw, 1.35rem);
+}
+
+.registry-scan-page .registry-scan-metric span,
+.registry-scan-page .registry-scan-definition-list dt,
+.registry-scan-page .registry-anchor-label {
+  letter-spacing: 0.08em;
+}
+
+.registry-scan-page .registry-scan-two-up {
+  gap: clamp(1rem, 1.8vw, 1.35rem);
+}
+
+.registry-scan-page .registry-scan-panel {
+  gap: clamp(0.85rem, 1.3vw, 1.15rem);
+  padding: clamp(1.15rem, 2vw, 1.55rem);
+}
+
+.registry-scan-page .registry-scan-panel h3 {
+  margin: 0;
+}
+
+.registry-scan-page .registry-scan-definition-list {
+  gap: 0;
+  margin: 0.15rem 0 0;
+}
+
+.registry-scan-page .registry-scan-definition-list div {
+  gap: clamp(0.75rem, 1.4vw, 1rem);
+  padding: 0.82rem 0;
+}
+
+.registry-scan-page .registry-scan-definition-list div:first-child {
+  padding-top: 0;
+}
+
+.registry-scan-page .registry-scan-definition-list div:last-child {
+  padding-bottom: 0;
+}
+
+.registry-scan-page .registry-scan-definition-list dd {
+  margin: 0;
+}
+
+.registry-scan-page .registry-scan-route-list {
+  gap: 0.62rem;
+}
+
+.registry-scan-page .registry-scan-route-row {
+  gap: 0.8rem;
+  min-height: 2.75rem;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--d-border) 35%, transparent);
+}
+
+.registry-scan-page .registry-scan-style-bars {
+  gap: 0.72rem;
+}
+
+.registry-scan-page .registry-scan-style-bars span {
+  gap: 1rem;
+  padding: 0.82rem 0.9rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--d-border) 28%, transparent);
+}
+
+.registry-scan-page .registry-scan-findings {
+  gap: clamp(0.9rem, 1.5vw, 1.15rem);
+}
+
+.registry-scan-page .registry-scan-finding-list {
+  gap: clamp(0.85rem, 1.6vw, 1.2rem);
+}
+
+.registry-scan-page .registry-scan-finding {
+  gap: 0.65rem;
+  min-height: 11rem;
+  padding: clamp(1rem, 1.9vw, 1.35rem);
+}
+
+.registry-scan-page .registry-scan-finding > span {
+  padding: 0.28rem 0.56rem;
+}
+
+.registry-scan-page .registry-scan-command-stack {
+  gap: 0.75rem;
+}
+
+.registry-scan-page .registry-scan-command {
+  gap: 0.7rem;
+  min-height: 3.25rem;
+  padding: 0.82rem 0.92rem;
+  border-color: rgb(148 163 184 / 0.42);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.registry-scan-page .registry-scan-command:hover {
+  border-color: color-mix(in srgb, var(--d-secondary) 48%, rgb(148 163 184 / 0.42));
+  box-shadow:
+    0 0.85rem 1.8rem rgb(0 0 0 / 0.2),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  transform: translateY(-1px);
+}
+
+.registry-scan-page .registry-scan-error {
+  padding: 1rem;
+}
+
+@keyframes registry-scan-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes registry-scan-score-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .registry-scan-page .registry-scan-report {
+    width: min(calc(100% - 2rem), 42rem);
+  }
+
+  .registry-scan-page .registry-scan-verdict,
+  .registry-scan-page .registry-scan-next,
+  .registry-scan-page .registry-scan-two-up,
+  .registry-scan-page .registry-scan-finding-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .registry-scan-page .registry-scan-hero-compact {
+    padding-block: 1rem 0.9rem;
+  }
+
+  .registry-scan-page .registry-scan-report {
+    width: min(calc(100% - 1.25rem), 34rem);
+    margin-top: 0.35rem;
+  }
+
+  .registry-scan-page .registry-scan-verdict,
+  .registry-scan-page .registry-scan-next,
+  .registry-scan-page .registry-scan-panel,
+  .registry-scan-page .registry-scan-finding,
+  .registry-scan-page .registry-scan-metric {
+    padding: 1rem;
+  }
+
+  .registry-scan-page .registry-scan-grid,
+  .registry-scan-page .registry-scan-definition-list div,
+  .registry-scan-page .registry-scan-route-row {
+    grid-template-columns: 1fr;
+  }
+
+  .registry-scan-page .registry-scan-definition-list div,
+  .registry-scan-page .registry-scan-route-row,
+  .registry-scan-page .registry-scan-style-bars span {
+    padding-inline: 0.82rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .registry-scan-page .registry-scan-report > *,
+  .registry-scan-page .registry-scan-score {
+    animation: none;
+  }
+
+  .registry-scan-page .registry-scan-command {
+    transition: none;
+  }
 }
