@@ -16,6 +16,9 @@
 - `/browse/:type` -> `registry-browser/browse-type` [search-filter-bar, content-card-grid]
 - `/:type/:namespace/:slug` -> `registry-browser/detail` [blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer]
 - `/profile/:username` -> `registry-browser/profile` [detail-header, content-card-grid, activity-feed]
+- `/scan` -> `registry-browser/scan` [brownfield-scan]
+- `/privacy` -> `registry-browser/privacy` [detail-header, registry-link-list]
+- `/terms` -> `registry-browser/terms` [detail-header, registry-link-list]
 - `/dashboard` -> `user-dashboard/overview` [kpi-grid, reputation-badge, activity-feed]
 - `/dashboard/content` -> `user-dashboard/content` [content-card-grid]
 - `/dashboard/content/new` -> `user-dashboard/content-new` [form, json-viewer]
@@ -29,11 +32,16 @@
 - `/admin/reports` -> `admin-moderation/commercial-reports` [kpi-grid, activity-feed]
 - `/admin/organizations` -> `admin-moderation/organizations` [search-filter-bar, content-card-grid, activity-feed]
 - `/admin/organizations/:slug` -> `admin-moderation/organization-detail` [detail-header, kpi-grid, activity-feed, content-card-grid]
+- `/admin/moderation/:id` -> `admin-moderation/moderation-detail` [content-detail-hero, json-viewer, moderation-queue-item]
+- `/admin/telemetry` -> `admin-moderation/telemetry` [kpi-grid, search-filter-bar, activity-feed]
+- `/admin/telemetry/usage` -> `admin-moderation/telemetry-usage` [kpi-grid, activity-feed, content-card-grid]
 - `/login` -> `auth-flow/login` [auth-form]
+- `/login?mode=register` -> `auth-flow/register` [auth-form]
+- `/login?mode=forgot-password` -> `auth-flow/forgot-password` [auth-form]
 
 ### Page Packs
 
-- 19 compiled references available. Use `.decantr/context/pack-manifest.json` to resolve the exact files for this scope.
+- 27 compiled references available. Use `.decantr/context/pack-manifest.json` to resolve the exact files for this scope.
 
 ## Strict Workflow
 

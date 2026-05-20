@@ -2,7 +2,7 @@
   "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
   "packVersion": "1.0.0",
   "packType": "page",
-  "objective": "Implement the organizations route using the compiled page contract.",
+  "objective": "Implement the telemetry route using the compiled page contract.",
   "target": {
     "platform": "web",
     "framework": "nextjs",
@@ -13,11 +13,11 @@
   "scope": {
     "appId": "app",
     "pageIds": [
-      "organizations"
+      "telemetry"
     ],
     "patternIds": [
+      "kpi-grid",
       "search-filter-bar",
-      "content-card-grid",
       "activity-feed"
     ]
   },
@@ -26,7 +26,7 @@
     "Treat the listed page patterns as the primary structure for this route."
   ],
   "allowedVocabulary": [
-    "organizations",
+    "telemetry",
     "sidebar-main",
     "admin-moderation",
     "auxiliary",
@@ -34,10 +34,10 @@
     "dark",
     "auth",
     "admin",
+    "kpi-grid",
+    "grid",
     "search-filter-bar",
     "stack",
-    "content-card-grid",
-    "grid",
     "activity-feed",
     "column"
   ],
@@ -70,8 +70,8 @@
     ]
   },
   "data": {
-    "pageId": "organizations",
-    "path": "/admin/organizations",
+    "pageId": "telemetry",
+    "path": "/admin/telemetry",
     "shell": "sidebar-main",
     "sectionId": "admin-moderation",
     "sectionRole": "auxiliary",
@@ -88,6 +88,21 @@
     "wiringSignals": [],
     "patterns": [
       {
+        "id": "kpi-grid",
+        "alias": "kpi-grid",
+        "preset": "dashboard",
+        "layout": "grid",
+        "presetDescription": "4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.",
+        "interactions": [
+          "lift-hover",
+          "click-select",
+          "animate-on-mount",
+          "stagger-children",
+          "real-time-updates",
+          "hover-tooltip"
+        ]
+      },
+      {
         "id": "search-filter-bar",
         "alias": "search-filter-bar",
         "preset": "standard",
@@ -98,20 +113,6 @@
           "animate-on-mount",
           "keyboard-navigation",
           "hover-reveal"
-        ]
-      },
-      {
-        "id": "content-card-grid",
-        "alias": "content-card-grid",
-        "preset": "standard",
-        "layout": "grid",
-        "presetDescription": "Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.",
-        "interactions": [
-          "lift-hover",
-          "stagger-children",
-          "animate-on-mount",
-          "click-select",
-          "scroll-reveal"
         ]
       },
       {
@@ -130,5 +131,5 @@
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the organizations route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=organizations | patterns=search-filter-bar, content-card-grid, activity-feed\n\n## Page Contract\n- Page: organizations\n- Path: /admin/organizations\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the telemetry route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=telemetry | patterns=kpi-grid, search-filter-bar, activity-feed\n\n## Page Contract\n- Page: telemetry\n- Path: /admin/telemetry\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n- search-filter-bar -> search-filter-bar [stack | standard]\n  > Full public registry filter bar with search, type tabs, source filter, sort, and result count.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] inline-edit\n  - [ ] animate-on-mount\n  - [ ] keyboard-navigation\n  - [ ] hover-reveal\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

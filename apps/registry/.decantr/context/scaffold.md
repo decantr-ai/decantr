@@ -67,9 +67,9 @@ For local development and showcases, wire all zone transitions with mock data:
 
 | Section | Role | Shell | Pages | Features |
 |---------|------|-------|-------|----------|
-| registry-browser | public | top-nav-main | homepage, browse, browse-type, detail, profile | search, pagination |
+| registry-browser | public | top-nav-main | homepage, browse, browse-type, detail, profile, scan, privacy, terms | search, pagination |
 | user-dashboard | primary | sidebar-main | overview, content, content-new, api-keys, settings, billing, team, governance, private-registry | auth, api-keys |
-| admin-moderation | auxiliary | sidebar-main | moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail | auth, admin |
+| admin-moderation | auxiliary | sidebar-main | moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail, telemetry, telemetry-usage | auth, admin |
 | auth-flow | gateway | centered | login, register, forgot-password | auth |
 
 ## Route Map
@@ -78,16 +78,24 @@ For local development and showcases, wire all zone transitions with mock data:
 |-------|---------|------|
 | / | registry-browser | homepage |
 | /login | auth-flow | login |
+| /login?mode=register | auth-flow | register |
+| /login?mode=forgot-password | auth-flow | forgot-password |
 | /browse | registry-browser | browse |
 | /dashboard | user-dashboard | overview |
 | /browse/:type | registry-browser | browse-type |
+| /scan | registry-browser | scan |
+| /privacy | registry-browser | privacy |
+| /terms | registry-browser | terms |
 | /dashboard/team | user-dashboard | team |
 | /dashboard/governance | user-dashboard | governance |
 | /dashboard/private-registry | user-dashboard | private-registry |
 | /admin/moderation | admin-moderation | moderation-queue |
+| /admin/moderation/:id | admin-moderation | moderation-detail |
 | /admin/reports | admin-moderation | commercial-reports |
 | /admin/organizations | admin-moderation | organizations |
 | /admin/organizations/:slug | admin-moderation | organization-detail |
+| /admin/telemetry | admin-moderation | telemetry |
+| /admin/telemetry/usage | admin-moderation | telemetry-usage |
 | /dashboard/billing | user-dashboard | billing |
 | /dashboard/content | user-dashboard | content |
 | /profile/:username | registry-browser | profile |
@@ -111,14 +119,19 @@ These patterns appear on multiple pages. Consider creating shared components:
 | Pattern | Used by |
 |---------|---------|
 | blueprint-launch-hero | registry-browser/homepage, registry-browser/detail |
-| search-filter-bar | registry-browser/homepage, registry-browser/browse, registry-browser/browse-type, user-dashboard/private-registry, admin-moderation/moderation-queue, admin-moderation/organizations |
-| content-card-grid | registry-browser/browse, registry-browser/browse-type, registry-browser/profile, user-dashboard/content, user-dashboard/governance, user-dashboard/private-registry, admin-moderation/organizations, admin-moderation/organization-detail |
+| search-filter-bar | registry-browser/homepage, registry-browser/browse, registry-browser/browse-type, user-dashboard/private-registry, admin-moderation/moderation-queue, admin-moderation/organizations, admin-moderation/telemetry |
+| registry-link-list | registry-browser/homepage, registry-browser/privacy, registry-browser/terms |
+| content-card-grid | registry-browser/browse, registry-browser/browse-type, registry-browser/profile, user-dashboard/content, user-dashboard/governance, user-dashboard/private-registry, admin-moderation/organizations, admin-moderation/organization-detail, admin-moderation/telemetry-usage |
 | json-viewer | registry-browser/detail, user-dashboard/content-new, admin-moderation/moderation-detail |
-| detail-header | registry-browser/profile, admin-moderation/organization-detail |
-| activity-feed | registry-browser/profile, user-dashboard/overview, user-dashboard/governance, admin-moderation/commercial-reports, admin-moderation/organizations, admin-moderation/organization-detail |
-| kpi-grid | user-dashboard/overview, user-dashboard/billing, user-dashboard/team, user-dashboard/governance, admin-moderation/commercial-reports, admin-moderation/organization-detail |
+| detail-header | registry-browser/profile, registry-browser/privacy, registry-browser/terms, admin-moderation/organization-detail |
+| activity-feed | registry-browser/profile, user-dashboard/overview, user-dashboard/governance, admin-moderation/commercial-reports, admin-moderation/organizations, admin-moderation/organization-detail, admin-moderation/telemetry, admin-moderation/telemetry-usage |
+| kpi-grid | user-dashboard/overview, user-dashboard/billing, user-dashboard/team, user-dashboard/governance, admin-moderation/commercial-reports, admin-moderation/organization-detail, admin-moderation/telemetry, admin-moderation/telemetry-usage |
 | moderation-queue-item | admin-moderation/moderation-queue, admin-moderation/moderation-detail |
 | auth-form | auth-flow/login, auth-flow/register, auth-flow/forgot-password |
+
+## Design Constraints
+
+- **effects:** {"doctrine-security-data":"Preserve the existing Supabase auth, admin authorization, billing, API-key, telemetry attribution, privacy, and hosted-registry service boundaries unless a reviewed task explicitly changes them.","doctrine-design-system":"Preserve the registry's Luminarum token bridge, Decantr treatments, shell rhythm, and public/admin/dashboard styling contracts while evolving individual pages."}
 
 ## SEO Hints
 

@@ -1,6 +1,6 @@
 'use client';
 
-import type { FormEvent } from 'react';
+import type { CSSProperties, FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
 type ApplicabilityStatus = 'strong_fit' | 'partial_fit' | 'not_applicable' | 'unknown';
@@ -118,9 +118,16 @@ function styleSignalLevel(value: number) {
   return 'is-high';
 }
 
+function scoreState(status: ApplicabilityStatus) {
+  if (status === 'strong_fit') return 'success';
+  if (status === 'partial_fit') return 'warning';
+  if (status === 'not_applicable') return 'error';
+  return undefined;
+}
+
 function Metric({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="registry-scan-metric">
+    <div className="d-card registry-scan-metric" data-padding="compact">
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
@@ -153,16 +160,26 @@ function ReportView({ report }: { report: ScanReport }) {
   const adoptCommand = commandFor(report, 'adopt');
   const scanCommand = commandFor(report, 'scan') ?? 'npx @decantr/cli scan';
   const isGoodFit = report.applicability.status === 'strong_fit';
+  const confidenceStyle = {
+    '--d-conic-value': String(Math.max(0, Math.min(100, report.confidence.score)) / 100),
+    '--d-conic-size': '8.5rem',
+    '--d-conic-thickness': '0.7rem',
+  } as CSSProperties;
 
   return (
     <div className="registry-scan-report entrance-fade" aria-live="polite">
-      <section className="registry-scan-verdict" aria-labelledby="scan-verdict-heading">
+      <section className="d-card registry-scan-verdict" data-padding="spacious" aria-labelledby="scan-verdict-heading">
         <div>
           <span className="d-label registry-anchor-label">Scan verdict</span>
           <h2 id="scan-verdict-heading">{report.applicability.label}</h2>
           <p>{report.applicability.reasons[0] ?? 'Decantr finished the read-only scan.'}</p>
         </div>
-        <div className="registry-scan-score" data-status={report.applicability.status}>
+        <div
+          className="d-conic-ring registry-scan-score"
+          data-state={scoreState(report.applicability.status)}
+          data-status={report.applicability.status}
+          style={confidenceStyle}
+        >
           <strong>{report.confidence.score}</strong>
           <span>{statusLabel(report.applicability.status)}</span>
         </div>
@@ -176,7 +193,7 @@ function ReportView({ report }: { report: ScanReport }) {
       </section>
 
       <section className="registry-scan-two-up" aria-label="Repository and published surface evidence">
-        <article className="registry-scan-panel">
+        <article className="d-card registry-scan-panel" data-padding="spacious">
           <span className="d-label registry-anchor-label">Repository evidence</span>
           <h3>{report.source.repository ? `${report.source.repository.owner}/${report.source.repository.repo}` : 'Local scan'}</h3>
           <dl className="registry-scan-definition-list">
@@ -199,7 +216,7 @@ function ReportView({ report }: { report: ScanReport }) {
           </dl>
         </article>
 
-        <article className="registry-scan-panel">
+        <article className="d-card registry-scan-panel" data-padding="spacious">
           <span className="d-label registry-anchor-label">Published Pages evidence</span>
           <h3>{report.source.publishedSiteUrl ?? 'No published URL confirmed'}</h3>
           <dl className="registry-scan-definition-list">
@@ -230,7 +247,7 @@ function ReportView({ report }: { report: ScanReport }) {
       </section>
 
       <section className="registry-scan-two-up registry-scan-analysis-row" aria-label="Routes and styling">
-        <article className="registry-scan-panel">
+        <article className="d-card registry-scan-panel" data-padding="spacious">
           <span className="d-label registry-anchor-label">Route map</span>
           <h3>{report.routes.strategy}</h3>
           {report.routes.items.length > 0 ? (
@@ -247,7 +264,7 @@ function ReportView({ report }: { report: ScanReport }) {
           )}
         </article>
 
-        <article className="registry-scan-panel">
+        <article className="d-card registry-scan-panel" data-padding="spacious">
           <span className="d-label registry-anchor-label">Style intelligence</span>
           <h3>{report.styling.approach}</h3>
           <div className="registry-scan-style-bars">
@@ -277,7 +294,7 @@ function ReportView({ report }: { report: ScanReport }) {
         </div>
         <div className="registry-scan-finding-list">
           {report.findings.map((finding) => (
-            <article key={finding.id} className="registry-scan-finding" data-severity={finding.severity}>
+            <article key={finding.id} className="d-card registry-scan-finding" data-padding="compact" data-severity={finding.severity}>
               <span>{severityLabel(finding.severity)}</span>
               <h3>{finding.title}</h3>
               <p>{finding.message}</p>
@@ -287,7 +304,7 @@ function ReportView({ report }: { report: ScanReport }) {
         </div>
       </section>
 
-      <section className="registry-scan-next" aria-label="Recommended next commands">
+      <section className="d-card registry-scan-next" data-padding="spacious" aria-label="Recommended next commands">
         <div>
           <span className="d-label registry-anchor-label">Next step</span>
           <h2>Run the same read-only pass locally.</h2>
@@ -393,11 +410,12 @@ export function ScanExperience() {
               id="scan-url"
               value={url}
               onChange={(event) => setUrl(event.target.value)}
+              className="d-control"
               placeholder={placeholder}
               type="url"
               inputMode="url"
             />
-            <button type="submit" className="d-interactive" data-variant="primary" disabled={status === 'scanning'}>
+            <button type="submit" className="d-interactive d-ripple" data-variant="primary" disabled={status === 'scanning'}>
               {status === 'scanning' ? 'Scanning' : 'Scan'}
             </button>
           </form>

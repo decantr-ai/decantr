@@ -1,0 +1,5 @@
+/* Decantr style bridge: map these CSS variables into the existing design system. */
+:root {
+  --decantr-bridge-theme: luminarum;
+  --decantr-bridge-density: comfortable;
+}

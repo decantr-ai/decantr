@@ -1,0 +1,136 @@
+{
+  "$schema": "https://decantr.ai/schemas/pattern.v2.json",
+  "id": "brownfield-scan",
+  "version": "1.0.0",
+  "decantr_compat": ">=2.12.0",
+  "name": "Brownfield Scan",
+  "description": "A full-bleed read-only Brownfield acquisition surface with a large repository URL control, staged scan progress, evidence cards, score ring, fallback warnings, and next-command rail.",
+  "tags": [
+    "brownfield",
+    "scan",
+    "acquisition",
+    "full-bleed",
+    "report"
+  ],
+  "dependencies": {
+    "patterns": {},
+    "styles": {
+      "treatments": [
+        "d-section",
+        "d-card",
+        "d-control",
+        "d-label",
+        "d-interactive",
+        "d-conic-ring"
+      ],
+      "theme_decorators": [
+        "lum-canvas"
+      ]
+    },
+    "requires_core": {
+      "components": [
+        "Card",
+        "Input",
+        "Button",
+        "Badge"
+      ],
+      "charts": [
+        "ConicRing"
+      ]
+    }
+  },
+  "contained": false,
+  "components": [
+    "Card",
+    "Input",
+    "Button",
+    "Badge",
+    "ConicRing"
+  ],
+  "default_preset": "hosted-repo-scan",
+  "presets": {
+    "hosted-repo-scan": {
+      "description": "Centered full-bleed hero that collapses into an evidence report after a public GitHub repo or GitHub Pages URL is submitted.",
+      "components": [
+        "Input",
+        "Button",
+        "Card",
+        "Badge",
+        "ConicRing"
+      ],
+      "layout": {
+        "layout": "stack",
+        "atoms": "_grid _wfull _minh[calc(100svh-52px)] _overxhidden",
+        "slots": {
+          "hero": "Full-bleed centered headline, supporting copy, safety guarantee chips, and repository URL form.",
+          "scan-control": "Large d-control URL input paired with a primary d-interactive submit action.",
+          "progress": "Staged, polite live-region progress copy with no source-execution reassurance.",
+          "verdict": "Prominent d-card report summary with a d-conic-ring confidence score.",
+          "evidence-grid": "Responsive d-card panels for repository evidence, published-site evidence, route map, styling intelligence, findings, and next commands."
+        }
+      }
+    }
+  },
+  "default_layout": {
+    "layout": "stack",
+    "atoms": "_grid _wfull _minh[calc(100svh-52px)] _overxhidden",
+    "slots": {
+      "hero": "Full-bleed centered headline, supporting copy, safety guarantee chips, and repository URL form.",
+      "report": "Responsive evidence report composed from d-card, d-label, d-conic-ring, and command controls."
+    }
+  },
+  "visual_brief": "The scan surface should feel more like a precise product instrument than a registry catalog page: immersive full-bleed Luminarum background, centered hero, calm safety chips, a generous input dock, and report cards with unmistakable internal spacing.",
+  "composition": {
+    "desktop": "full-bleed-hero -> compact-scan-dock -> verdict + metrics -> two-up evidence panels -> findings grid -> command rail",
+    "mobile": "stacked hero -> full-width input/button -> single-column evidence cards -> compact command rail"
+  },
+  "motion": {
+    "entrance": "Hero content fades and rises subtly on mount.",
+    "scan": "Progress copy rotates while the API runs; do not show fake browser screenshots in v1.",
+    "report": "Cards stagger upward once the report is available; score ring pops after verdict."
+  },
+  "interactions": [
+    "animate-on-mount",
+    "stagger-children",
+    "ripple-click",
+    "keyboard-navigation"
+  ],
+  "responsive": {
+    "mobile": {
+      "layout": "stack",
+      "columns": 1,
+      "gap": "1rem",
+      "notes": "The input and button stack vertically, all cards keep at least 1rem internal padding, and long repository paths wrap without horizontal overflow."
+    },
+    "desktop": {
+      "layout": "grid",
+      "columns": 2,
+      "gap": "1.25rem",
+      "notes": "The background is full-bleed while report content is constrained only for readability."
+    }
+  },
+  "accessibility": {
+    "role": "form and report",
+    "aria-label": "Read-only Brownfield scan",
+    "keyboard": [
+      "URL input is reachable before the submit button.",
+      "Progress and report updates use polite live regions.",
+      "Command copy buttons expose visible copied state."
+    ],
+    "focus_management": "Return focus to the scan form after validation errors; keep report content in document order after submit."
+  },
+  "io": {
+    "consumes": [
+      "github-repository-url",
+      "github-pages-url"
+    ],
+    "produces": [
+      "scan-report-v1",
+      "recommended-decantr-commands"
+    ],
+    "actions": [
+      "submit-read-only-scan",
+      "copy-next-command"
+    ]
+  }
+}

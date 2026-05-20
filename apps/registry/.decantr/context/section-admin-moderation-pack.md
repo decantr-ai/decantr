@@ -2,7 +2,7 @@
 
 **Objective:** Implement the admin-moderation section using the compiled sidebar-main shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail | patterns=search-filter-bar, moderation-queue-item, kpi-grid, activity-feed, content-card-grid, detail-header, content-detail-hero, json-viewer
+**Scope:** pages=moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail, telemetry, telemetry-usage | patterns=search-filter-bar, moderation-queue-item, kpi-grid, activity-feed, content-card-grid, detail-header, content-detail-hero, json-viewer
 
 ## Section Contract
 - Section: admin-moderation
@@ -18,6 +18,8 @@
 - /admin/organizations -> admin-moderation/organizations @ sidebar-main [search-filter-bar, content-card-grid, activity-feed]
 - /admin/organizations/:slug -> admin-moderation/organization-detail @ sidebar-main [detail-header, kpi-grid, activity-feed, content-card-grid]
 - /admin/moderation/:id -> admin-moderation/moderation-detail @ sidebar-main [content-detail-hero, json-viewer, moderation-queue-item]
+- /admin/telemetry -> admin-moderation/telemetry @ sidebar-main [kpi-grid, search-filter-bar, activity-feed]
+- /admin/telemetry/usage -> admin-moderation/telemetry-usage @ sidebar-main [kpi-grid, activity-feed, content-card-grid]
 
 ## Theme Decorators
 

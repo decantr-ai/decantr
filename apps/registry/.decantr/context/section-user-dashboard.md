@@ -154,6 +154,12 @@ auth, api-keys
 **Personality utilities available in treatments.css:**
 - `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
 
+## Constraints
+
+- **effects:** {"doctrine-security-data":"Preserve the existing Supabase auth, admin authorization, billing, API-key, telemetry attribution, privacy, and hosted-registry service boundaries unless a reviewed task explicitly changes them.","doctrine-design-system":"Preserve the registry's Luminarum token bridge, Decantr treatments, shell rhythm, and public/admin/dashboard styling contracts while evolving individual pages."}
+
+---
+
 ## Pattern Reference
 
 Scaffold-tier rule: implement the core visual structure, states, and required slots first.

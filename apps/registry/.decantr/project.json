@@ -27,6 +27,8 @@
     "at": "2026-04-03T17:53:03.215Z",
     "via": "cli",
     "version": "1.0.0",
+    "workflowMode": "brownfield-attach",
+    "adoptionMode": "style-bridge",
     "flags": "--blueprint=registry-platform --theme=luminarum --mode=dark --guard=strict"
   },
   "blueprintId": "registry-platform",

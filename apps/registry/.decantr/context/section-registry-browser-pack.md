@@ -2,7 +2,7 @@
 
 **Objective:** Implement the registry-browser section using the compiled top-nav-main shell contract.
 **Target:** nextjs (nextjs)
-**Scope:** pages=homepage, browse, browse-type, detail, profile | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list, content-card-grid, command-rail, blueprint-anatomy, contract-explorer, json-viewer, detail-header, activity-feed
+**Scope:** pages=homepage, browse, browse-type, detail, profile, scan, privacy, terms | patterns=blueprint-launch-hero, search-filter-bar, featured-launchpad-list, launchpad-flow, registry-link-list, content-card-grid, command-rail, blueprint-anatomy, contract-explorer, json-viewer, detail-header, activity-feed, brownfield-scan
 
 ## Section Contract
 - Section: registry-browser
@@ -18,6 +18,9 @@
 - /browse/:type -> registry-browser/browse-type @ top-nav-main [search-filter-bar, content-card-grid]
 - /:type/:namespace/:slug -> registry-browser/detail @ top-nav-main [blueprint-launch-hero, command-rail, blueprint-anatomy, contract-explorer, json-viewer]
 - /profile/:username -> registry-browser/profile @ top-nav-main [detail-header, content-card-grid, activity-feed]
+- /scan -> registry-browser/scan @ full-bleed [brownfield-scan]
+- /privacy -> registry-browser/privacy @ top-nav-main [detail-header, registry-link-list]
+- /terms -> registry-browser/terms @ top-nav-main [detail-header, registry-link-list]
 
 ## Theme Decorators
 
@@ -47,6 +50,7 @@ Theme `luminarum` decorators are documented ONCE in `scaffold-pack.md` under "Re
 - json-viewer
 - detail-header
 - activity-feed
+- brownfield-scan
 
 ## Success Checks
 - Section pages and routes remain coherent with the compiled topology. [error]
