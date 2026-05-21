@@ -80,11 +80,13 @@ Project-owned Brownfield UI law is explicit:
 decantr codify --from-audit --style-bridge
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 # review .decantr/style-bridge.proposal.json when you want token/class mapping
+decantr codify --map-pattern hero
+# review the advisory hosted-pattern mapping before accepting it as local law
 decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```
 
-This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `.decantr/style-bridge.json` is the optional Hybrid style bridge: it maps Decantr intent such as surfaces, actions, focus, density, and theme variants onto project-owned tokens/classes without installing Decantr CSS. `decantr suggest --from-code` should surface accepted local patterns and style bridge mappings from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings plus style bridge status in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
+This local law layer captures what the app standardizes on, such as button variants, card surfaces, shell spacing, form controls, and theme variants. `.decantr/local-patterns.json` is the LLM-facing standard; `.decantr/rules.json` is the narrow mechanical check layer Decantr can scan locally. `codify --from-audit` records source evidence, confidence tiers, and likely variants so the proposal explains why a family was suggested. `.decantr/style-bridge.json` is the optional Hybrid style bridge: it maps Decantr intent such as surfaces, actions, focus, density, and theme variants onto project-owned tokens/classes without installing Decantr CSS. `codify --map-pattern <slug>` imports hosted or bundled registry guidance as advisory local law; it remains non-enforceable until the team fills in project-owned components, token/class recipes, variants, and exceptions. `decantr suggest --from-code` should surface accepted local patterns and style bridge mappings from an app root or selected `--project`, and `decantr ci` should include accepted local-rule findings plus style bridge status in text, markdown, and JSON reports. It complements, but does not replace, ESLint, Biome, Storybook, visual regression, or project tests.
 
 ## Hybrid Operating Layer
 
@@ -102,6 +104,7 @@ The authority order is explicit: existing production source first, accepted loca
 ```bash
 decantr doctor --project apps/web
 decantr codify --from-audit --style-bridge --project apps/web
+decantr codify --map-pattern hero --project apps/web
 decantr codify --accept --project apps/web
 decantr task /settings "standardize account form buttons" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web

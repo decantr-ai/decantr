@@ -212,11 +212,12 @@ Brownfield health respects existing-app authority. It reports evidence and remed
 
 ```bash
 decantr codify --from-audit --style-bridge
+decantr codify --map-pattern hero
 decantr codify --accept
 decantr verify --brownfield --local-patterns
 ```
 
-The accepted `.decantr/local-patterns.json` is local context and governance. The accepted `.decantr/rules.json` adds narrow local scans for obvious drift. Deeper deterministic failures such as framework-specific wrapper-only rules should still be enforced through the project rule stack.
+The accepted `.decantr/local-patterns.json` is local context and governance. `codify --from-audit` proposals include source snippets, confidence tiers, and likely variants for component families. `codify --map-pattern <slug>` can add a hosted/bundled registry pattern as advisory local law without changing source; it should be filled with project-owned component paths, token/class recipes, variants, and exceptions before acceptance. The accepted `.decantr/rules.json` adds narrow local scans for obvious drift. Deeper deterministic failures such as framework-specific wrapper-only rules should still be enforced through the project rule stack.
 
 ## Hybrid Operating Layer
 
@@ -230,7 +231,7 @@ decantr refresh
 decantr verify --markdown --output .decantr/health.md
 ```
 
-Project Health is useful immediately after a Hybrid change because it checks whether generated packs, route contracts, accepted local rules, and guard expectations still agree. `doctor` reports the adoption lane, and `task` tells the assistant which authority is active for the route before it edits: existing app, accepted local law, style bridge, Decantr CSS, hosted packs as guidance, or Greenfield context.
+Project Health is useful immediately after a Hybrid change because it checks whether generated packs, route contracts, accepted local rules, and guard expectations still agree. `doctor` reports the adoption lane, and `task` tells the assistant which authority is active for the route before it edits: existing app, accepted local law, advisory style bridge, Decantr CSS, hosted packs as guidance, or Greenfield context. `verify` and `ci` distinguish accepted local rules, which Decantr can scan, from style-bridge mappings and hosted-pattern mappings, which remain advisory until paired with project-owned rules or the project's lint/test/visual stack.
 
 ## CI
 

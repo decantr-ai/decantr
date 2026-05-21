@@ -55,10 +55,48 @@ export interface LocalPattern {
   componentPaths?: string[];
   tokenHints?: string[];
   classHints?: string[];
+  variants?: LocalPatternVariant[];
+  sourceEvidence?: LocalPatternSourceEvidence[];
+  confidence?: {
+    tier: 'low' | 'medium' | 'high';
+    score: number;
+    rationale: string[];
+  };
+  enforcement?: {
+    level: 'advisory' | 'warn' | 'strict';
+    status: 'proposal' | 'accepted' | 'needs-mapping';
+    notes: string[];
+  };
+  hostedPatternRefs?: LocalHostedPatternRef[];
   forbiddenAlternatives?: string[];
   evidence?: string[];
   evidenceToCollect?: string[];
   [key: string]: unknown;
+}
+
+export interface LocalPatternVariant {
+  id: string;
+  label: string;
+  evidence: string[];
+  confidence: 'low' | 'medium' | 'high';
+}
+
+export interface LocalPatternSourceEvidence {
+  file: string;
+  line: number;
+  excerpt: string;
+  signals: string[];
+}
+
+export interface LocalHostedPatternRef {
+  slug: string;
+  source: string;
+  name?: string;
+  description?: string;
+  tags?: string[];
+  components?: string[];
+  interactions?: string[];
+  visualBrief?: string;
 }
 
 export interface LocalRuleManifest {
@@ -118,7 +156,14 @@ export interface LocalLawTaskSummary {
   rulesPath: string | null;
   patternCount: number;
   ruleCount: number;
-  patterns: Array<{ id: string; role: string | null; componentPaths: string[] }>;
+  patterns: Array<{
+    id: string;
+    role: string | null;
+    componentPaths: string[];
+    confidenceTier: string | null;
+    enforcementLevel: string | null;
+    hostedPatternRefs: string[];
+  }>;
   rules: Array<{ id: string; severity: LocalRuleSeverity; enabled: boolean; description: string }>;
 }
 
@@ -132,6 +177,17 @@ export interface BrownfieldCodifyInput {
 export interface BrownfieldCodifyProposal {
   patternPack: LocalPatternPack;
   ruleManifest: LocalRuleManifest;
+}
+
+export interface HostedPatternMappingInput {
+  projectRoot: string;
+  hostedPattern: LocalHostedPatternRef;
+}
+
+export interface HostedPatternMappingResult {
+  patternPath: string;
+  localPatternId: string;
+  replacedExisting: boolean;
 }
 
 export function localPatternsProposalPath(projectRoot: string): string {
@@ -211,13 +267,29 @@ export function createBrownfieldCodifyProposal(
         decide:
           'Define primary, secondary, tertiary, destructive, icon-only, disabled, and loading button variants from this app.',
         classHints: evidence.buttonClassHints,
+        variants: evidence.buttonVariants,
+        sourceEvidence: evidence.buttonSourceEvidence,
+        confidence: confidenceForEvidence({
+          componentCount: evidence.buttonComponents.length,
+          classHintCount: evidence.buttonClassHints.length,
+          variantCount: evidence.buttonVariants.length,
+          sourceEvidenceCount: evidence.buttonSourceEvidence.length,
+        }),
+        enforcement: {
+          level: 'warn',
+          status: 'proposal',
+          notes: [
+            'Treat as advisory until the team confirms variant names and wrapper paths.',
+            'Raise related rules to error only after raw button usage can be fixed without churn.',
+          ],
+        },
         evidence: evidence.buttonComponents.length
           ? evidence.buttonComponents
           : evidence.buttonClassHints.length
             ? evidence.buttonClassHints
-          : [
-              'No obvious Button wrapper found yet. Add the project-owned wrapper path before strict enforcement.',
-            ],
+            : [
+                'No obvious Button wrapper found yet. Add the project-owned wrapper path before strict enforcement.',
+              ],
         forbiddenAlternatives: ['New one-off button variants without updating this manifest.'],
       },
       {
@@ -229,6 +301,22 @@ export function createBrownfieldCodifyProposal(
         decide:
           'Define the canonical card background, border, radius, shadow, padding, density, and hover treatment.',
         classHints: evidence.cardClassHints,
+        variants: evidence.cardVariants,
+        sourceEvidence: evidence.cardSourceEvidence,
+        confidence: confidenceForEvidence({
+          componentCount: evidence.cardComponents.length,
+          classHintCount: evidence.cardClassHints.length,
+          variantCount: evidence.cardVariants.length,
+          sourceEvidenceCount: evidence.cardSourceEvidence.length,
+        }),
+        enforcement: {
+          level: 'warn',
+          status: 'proposal',
+          notes: [
+            'Use this family to converge repeated surface recipes before enforcing card rules.',
+            'Document route-specific card exceptions before asking CI to block them.',
+          ],
+        },
         evidence: evidence.cardComponents.length
           ? evidence.cardComponents
           : [
@@ -244,6 +332,24 @@ export function createBrownfieldCodifyProposal(
         componentPaths: evidence.shellComponents,
         decide:
           'Define which layout owns max width, gutters, sticky chrome, responsive breakpoints, and scroll containers.',
+        sourceEvidence: collectSourceEvidence(input.projectRoot, sourceFiles, [
+          'layout',
+          'shell',
+          'nav',
+          'sidebar',
+          'container',
+        ]),
+        confidence: confidenceForEvidence({
+          componentCount: evidence.shellComponents.length,
+          sourceEvidenceCount: evidence.shellComponents.length,
+        }),
+        enforcement: {
+          level: 'advisory',
+          status: 'proposal',
+          notes: [
+            'Layout ownership is usually reviewed by humans first because route shells can legitimately differ.',
+          ],
+        },
         evidence: evidence.shellComponents.length
           ? evidence.shellComponents
           : ['Add root layout, shell, or app frame files that establish route chrome and spacing.'],
@@ -259,6 +365,20 @@ export function createBrownfieldCodifyProposal(
         componentPaths: evidence.formComponents,
         decide:
           'Define input height, label placement, error copy, disabled state, required state, and focus treatment.',
+        variants: evidence.formVariants,
+        sourceEvidence: evidence.formSourceEvidence,
+        confidence: confidenceForEvidence({
+          componentCount: evidence.formComponents.length,
+          variantCount: evidence.formVariants.length,
+          sourceEvidenceCount: evidence.formSourceEvidence.length,
+        }),
+        enforcement: {
+          level: 'warn',
+          status: 'proposal',
+          notes: [
+            'Start by mapping field wrappers, labels, error states, and disabled states from source.',
+          ],
+        },
         evidence: evidence.formComponents.length
           ? evidence.formComponents
           : ['Add form field wrapper paths and validation examples.'],
@@ -274,6 +394,20 @@ export function createBrownfieldCodifyProposal(
         componentPaths: evidence.themeComponents,
         decide:
           'Document which theme variants exist, where they are toggled, and which tokens/classes are legal per variant.',
+        variants: evidence.themeVariants,
+        sourceEvidence: evidence.themeSourceEvidence,
+        confidence: confidenceForEvidence({
+          componentCount: evidence.themeComponents.length,
+          variantCount: evidence.themeVariants.length,
+          sourceEvidenceCount: evidence.themeSourceEvidence.length,
+        }),
+        enforcement: {
+          level: 'advisory',
+          status: 'proposal',
+          notes: [
+            'Theme variant law should preserve the existing theme provider/tokens before adding any new mode.',
+          ],
+        },
         evidence: evidence.themeComponents.length
           ? evidence.themeComponents
           : ['If the app has dark/light or brand variants, add the toggles/providers here.'],
@@ -376,6 +510,124 @@ export function writeBrownfieldCodifyProposal(
   return { patternPath, rulesPath };
 }
 
+export function writeHostedPatternMappingProposal(
+  input: HostedPatternMappingInput,
+): HostedPatternMappingResult {
+  const decantrDir = join(input.projectRoot, '.decantr');
+  mkdirSync(decantrDir, { recursive: true });
+  const existing =
+    readJsonFile<LocalPatternPack>(localPatternsProposalPath(input.projectRoot)) ??
+    readJsonFile<LocalPatternPack>(localPatternsPath(input.projectRoot));
+  const generatedAt = new Date().toISOString();
+  const patternPack: LocalPatternPack = {
+    version: 2,
+    generatedAt,
+    status: 'proposal',
+    source: 'decantr codify --map-pattern',
+    purpose:
+      existing?.purpose ??
+      'Project-owned Brownfield/Hybrid UI law. Review and edit before accepting; Decantr treats this as authoritative only after it is copied to .decantr/local-patterns.json.',
+    hybrid: existing?.hybrid ?? {
+      intent:
+        'This local pattern pack maps Decantr concepts onto project-owned components, tokens, classes, and rules without replacing the app runtime.',
+      authorityPrecedence: [
+        'existing production source',
+        'accepted local patterns and rules',
+        'Decantr Essence V4 contract',
+        'hosted registry patterns and execution packs as optional guidance',
+      ],
+      hostedPatternMapping:
+        'Hosted registry patterns are advisory until mapped to project-owned component paths, token recipes, class recipes, and explicit exceptions.',
+    },
+    patterns: Array.isArray(existing?.patterns) ? [...existing.patterns] : [],
+    starterRules: Array.isArray(existing?.starterRules) ? existing.starterRules : [],
+    nextSteps: Array.isArray(existing?.nextSteps)
+      ? existing.nextSteps
+      : [
+          'Review this proposal with the team.',
+          'Add project-owned component paths, token hints, class recipes, and exceptions.',
+          'Run decantr codify --accept after review.',
+          'Use decantr task <route> before LLM edits so local law appears in task context.',
+        ],
+  };
+  const slug = input.hostedPattern.slug.trim();
+  const existingIds = new Set(
+    (patternPack.patterns ?? [])
+      .map((pattern) => (typeof pattern.id === 'string' ? pattern.id : ''))
+      .filter(Boolean),
+  );
+  const localPatternId = existingIds.has(slug) ? `${slug}-registry-map` : slug;
+  const mappedPattern: LocalPattern = {
+    id: localPatternId,
+    label: input.hostedPattern.name
+      ? `${input.hostedPattern.name} registry mapping`
+      : `${slug} registry mapping`,
+    role: 'Hosted registry guidance mapped into project-owned Hybrid law',
+    appliesTo: [
+      ...(input.hostedPattern.components ?? []),
+      ...(input.hostedPattern.interactions ?? []),
+      ...(input.hostedPattern.tags ?? []),
+    ].slice(0, 24),
+    componentPaths: [],
+    tokenHints: [],
+    classHints: [],
+    decide: `Map hosted pattern "${slug}" into this app's existing components, tokens, classes, and exceptions before treating it as enforceable.`,
+    hostedPatternRefs: [input.hostedPattern],
+    confidence: {
+      tier: 'low',
+      score: 0.25,
+      rationale: [
+        'A hosted registry pattern was selected intentionally.',
+        'No project-owned component path or token recipe has been mapped yet.',
+      ],
+    },
+    enforcement: {
+      level: 'advisory',
+      status: 'needs-mapping',
+      notes: [
+        'This proposal does not change source files.',
+        'Do not enforce this hosted pattern until project-owned implementation details are filled in.',
+        'Use accepted local rules, ESLint, Biome, Storybook, or visual regression for deterministic blocking checks.',
+      ],
+    },
+    evidence: [
+      `Hosted pattern ${input.hostedPattern.source}/${slug}${input.hostedPattern.description ? `: ${input.hostedPattern.description}` : ''}`,
+      input.hostedPattern.visualBrief
+        ? `Visual brief: ${input.hostedPattern.visualBrief}`
+        : 'Visual brief not provided by the hosted pattern.',
+    ],
+    evidenceToCollect: [
+      'Project-owned component path(s) that implement this pattern.',
+      'Allowed token/class recipe(s) for this app.',
+      'Variant names and states that are legal in this project.',
+      'Explicit exceptions where this hosted pattern should not apply.',
+    ],
+    forbiddenAlternatives: [
+      'Replacing existing app components solely because a hosted pattern exists.',
+      'Treating hosted registry guidance as enforceable without accepted local law.',
+    ],
+  };
+  const index = (patternPack.patterns ?? []).findIndex((pattern) => pattern.id === localPatternId);
+  const replacedExisting = index >= 0;
+  if (replacedExisting) {
+    patternPack.patterns![index] = mappedPattern;
+  } else {
+    patternPack.patterns = [...(patternPack.patterns ?? []), mappedPattern];
+  }
+  patternPack.nextSteps = [
+    ...new Set([
+      ...(patternPack.nextSteps ?? []),
+      'Fill the hosted mapping with project-owned component paths, token/class recipes, variants, and exceptions.',
+      'Run decantr codify --accept only after the mapping reflects the existing app.',
+      'Use decantr verify --brownfield --local-patterns after edits to keep mapped local law visible.',
+    ]),
+  ];
+
+  const patternPath = localPatternsProposalPath(input.projectRoot);
+  writeFileSync(patternPath, `${JSON.stringify(patternPack, null, 2)}\n`, 'utf-8');
+  return { patternPath, localPatternId, replacedExisting };
+}
+
 export function acceptBrownfieldLocalLaw(projectRoot: string): {
   patternAcceptedPath: string | null;
   rulesAcceptedPath: string | null;
@@ -426,9 +678,15 @@ export function validateLocalLaw(projectRoot: string): LocalLawValidation {
       const todoEvidence = Array.isArray(pattern.evidenceToCollect)
         ? pattern.evidenceToCollect
         : [];
+      const hostedRefs = Array.isArray(pattern.hostedPatternRefs) ? pattern.hostedPatternRefs : [];
       if (id && paths.length === 0 && evidence.length === 0 && todoEvidence.length > 0) {
         warnings.push(
           `Local pattern ${id} still reads like a TODO; add concrete component paths or evidence.`,
+        );
+      }
+      if (id && hostedRefs.length > 0 && paths.length === 0) {
+        warnings.push(
+          `Local pattern ${id} maps hosted registry guidance but has no project-owned component path yet.`,
         );
       }
     }
@@ -457,6 +715,23 @@ export function createLocalLawTaskSummary(projectRoot: string): LocalLawTaskSumm
     role: typeof pattern.role === 'string' ? pattern.role : null,
     componentPaths: Array.isArray(pattern.componentPaths)
       ? pattern.componentPaths.filter((entry): entry is string => typeof entry === 'string')
+      : [],
+    confidenceTier:
+      typeof pattern.confidence === 'object' &&
+      pattern.confidence !== null &&
+      typeof pattern.confidence.tier === 'string'
+        ? pattern.confidence.tier
+        : null,
+    enforcementLevel:
+      typeof pattern.enforcement === 'object' &&
+      pattern.enforcement !== null &&
+      typeof pattern.enforcement.level === 'string'
+        ? pattern.enforcement.level
+        : null,
+    hostedPatternRefs: Array.isArray(pattern.hostedPatternRefs)
+      ? pattern.hostedPatternRefs
+          .map((ref) => (typeof ref?.slug === 'string' ? ref.slug : null))
+          .filter((slug): slug is string => Boolean(slug))
       : [],
   }));
   const rules = (ruleManifest?.rules ?? []).map((rule) => ({
@@ -600,6 +875,50 @@ function summarizeSourceEvidence(
     formComponents: byName(['input', 'field', 'form', 'select', 'textarea']),
     shellComponents,
     themeComponents,
+    buttonVariants: detectVariants(projectRoot, files, {
+      family: 'button',
+      terms: ['primary', 'secondary', 'tertiary', 'ghost', 'link', 'destructive', 'icon'],
+    }),
+    cardVariants: detectVariants(projectRoot, files, {
+      family: 'surface',
+      terms: ['card', 'panel', 'surface', 'tile', 'elevated', 'interactive', 'glass'],
+    }),
+    formVariants: detectVariants(projectRoot, files, {
+      family: 'form',
+      terms: ['error', 'invalid', 'disabled', 'required', 'success', 'helper'],
+    }),
+    themeVariants: detectVariants(projectRoot, files, {
+      family: 'theme',
+      terms: ['dark', 'light', 'brand', 'tenant', 'theme', 'mode', 'density'],
+    }),
+    buttonSourceEvidence: collectSourceEvidence(projectRoot, files, [
+      'button',
+      'primary',
+      'secondary',
+      'tertiary',
+      'destructive',
+    ]),
+    cardSourceEvidence: collectSourceEvidence(projectRoot, files, [
+      'card',
+      'panel',
+      'surface',
+      'rounded',
+      'shadow',
+    ]),
+    formSourceEvidence: collectSourceEvidence(projectRoot, files, [
+      'input',
+      'label',
+      'error',
+      'field',
+      'select',
+    ]),
+    themeSourceEvidence: collectSourceEvidence(projectRoot, files, [
+      'theme',
+      'dark',
+      'light',
+      'brand',
+      'tenant',
+    ]),
     buttonClassHints: collectClassHints(projectRoot, files, [
       'button',
       'btn',
@@ -612,6 +931,98 @@ function summarizeSourceEvidence(
     ]),
     cardClassHints: collectClassHints(projectRoot, files, ['card', 'panel', 'surface', 'tile']),
   };
+}
+
+function detectVariants(
+  projectRoot: string,
+  files: Array<{ absolute: string; relative: string }>,
+  input: { family: string; terms: string[] },
+): LocalPatternVariant[] {
+  const variants = new Map<string, { evidence: Set<string>; count: number }>();
+  const termPattern = new RegExp(
+    `\\b(${input.terms.map(escapeRegExp).join('|')})(?:[-_:][a-z0-9-]+)?\\b`,
+    'gi',
+  );
+  for (const file of files) {
+    if (!UI_TEMPLATE_EXTENSIONS.has(extname(file.absolute))) continue;
+    const content = readFileSync(join(projectRoot, file.relative), 'utf-8');
+    for (const match of content.matchAll(termPattern)) {
+      const raw = (match[0] ?? '').toLowerCase();
+      const id = raw.replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+      if (!id || id.length < 3) continue;
+      const position = lineColumnAt(content, match.index ?? 0);
+      const line = lineAt(content, position.line).trim().slice(0, 160);
+      const entry = variants.get(id) ?? { evidence: new Set<string>(), count: 0 };
+      entry.count += 1;
+      entry.evidence.add(`${file.relative}:${position.line} ${line}`);
+      variants.set(id, entry);
+    }
+  }
+  return [...variants.entries()]
+    .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
+    .slice(0, 8)
+    .map(([id, value]) => ({
+      id,
+      label: `${input.family} ${id}`,
+      evidence: [...value.evidence].slice(0, 4),
+      confidence: value.count >= 4 ? 'high' : value.count >= 2 ? 'medium' : 'low',
+    }));
+}
+
+function collectSourceEvidence(
+  projectRoot: string,
+  files: Array<{ absolute: string; relative: string }>,
+  terms: string[],
+): LocalPatternSourceEvidence[] {
+  const results: LocalPatternSourceEvidence[] = [];
+  const termPattern = new RegExp(terms.map(escapeRegExp).join('|'), 'i');
+  for (const file of files) {
+    if (!UI_TEMPLATE_EXTENSIONS.has(extname(file.absolute))) continue;
+    const content = readFileSync(join(projectRoot, file.relative), 'utf-8');
+    const lines = content.split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
+      if (!termPattern.test(line)) continue;
+      const signals = terms.filter((term) => line.toLowerCase().includes(term.toLowerCase()));
+      results.push({
+        file: file.relative,
+        line: index + 1,
+        excerpt: line.trim().slice(0, 180),
+        signals: signals.slice(0, 6),
+      });
+      if (results.length >= 16) return results;
+      break;
+    }
+  }
+  return results;
+}
+
+function confidenceForEvidence(input: {
+  componentCount: number;
+  classHintCount?: number;
+  variantCount?: number;
+  sourceEvidenceCount?: number;
+}): LocalPattern['confidence'] {
+  const score = Math.min(
+    1,
+    input.componentCount * 0.28 +
+      (input.classHintCount ?? 0) * 0.08 +
+      (input.variantCount ?? 0) * 0.08 +
+      (input.sourceEvidenceCount ?? 0) * 0.05,
+  );
+  const tier = score >= 0.7 ? 'high' : score >= 0.4 ? 'medium' : 'low';
+  const rationale = [
+    input.componentCount > 0
+      ? `${input.componentCount} likely component path(s) detected`
+      : 'no likely component wrapper detected yet',
+    (input.classHintCount ?? 0) > 0
+      ? `${input.classHintCount} class recipe hint(s) detected`
+      : 'no strong class recipe hints detected yet',
+    (input.variantCount ?? 0) > 0
+      ? `${input.variantCount} possible variant signal(s) detected`
+      : 'variant names still need team confirmation',
+  ];
+  return { tier, score: Number(score.toFixed(2)), rationale };
 }
 
 function collectClassHints(
@@ -638,7 +1049,8 @@ function collectClassHints(
         const tag = match[1];
         const value = match[2].trim();
         const tagLooksInteractive =
-          /^(button|a|Link)$/i.test(tag) || /(^|\.)(Button|IconButton|LinkButton|Action)$/i.test(tag);
+          /^(button|a|Link)$/i.test(tag) ||
+          /(^|\.)(Button|IconButton|LinkButton|Action)$/i.test(tag);
         const fileLooksInteractive = /button|action|link/i.test(basename(file.relative));
         if (!tagLooksInteractive && !fileLooksInteractive) continue;
         if (!buttonSignal.test(value) && !fileLooksInteractive) continue;
@@ -726,6 +1138,10 @@ function lineColumnAt(contents: string, index: number): { line: number; column: 
     line: lines.length,
     column: lines[lines.length - 1].length + 1,
   };
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function lineAt(contents: string, line: number): string {

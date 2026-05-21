@@ -29,7 +29,7 @@ pnpm exec decantr verify --project apps/web
 pnpm exec decantr ci --project apps/web
 ```
 
-The same rule applies to advanced primitives. `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` honor `--project <path>` instead of falling back to the workspace root. Task context, local-law summaries, and refresh change summaries print paths you can open from the workspace root. If a path does not exist, Decantr fails immediately. If a path points at a component package that is not a deployable app candidate, Brownfield adoption refuses it unless you explicitly opt into that unusual package attach with `--force-package`.
+The same rule applies to advanced primitives. `health`, `status`, `upgrade`, `add`, `remove`, `theme`, `export`, `suggest`, `magic`, `rules`, and `telemetry` honor `--project <path>` instead of falling back to the workspace root. Task context, local-law summaries, and refresh change summaries print paths you can open from the workspace root. Absolute `--project` paths are resolved from the target app's workspace, not from whichever monorepo you happen to be standing in. If a path does not exist, Decantr fails immediately. If a path points at a component package that is not a deployable app candidate, Brownfield adoption refuses it unless you explicitly opt into that unusual package attach with `--force-package`.
 
 Use workspace mode only when you intentionally want an aggregate view:
 
@@ -129,8 +129,9 @@ Commit canonical Decantr files and accepted local law:
 - `.decantr/context/*`
 - `.decantr/local-patterns.json` after `decantr codify --accept`
 - `.decantr/rules.json` after `decantr codify --accept`
+- `.decantr/style-bridge.json` after accepting a reviewed style bridge
 - root `.github/workflows/decantr-ci.yml` or your edited internal pipeline hook
 
-Treat `.decantr/evidence/*`, `.decantr/ci/*`, and `.decantr/health-baseline-diff.json` as local or CI artifacts unless your team intentionally archives them.
+Treat `.decantr/local-patterns.proposal.json`, `.decantr/rules.proposal.json`, `.decantr/style-bridge.proposal.json`, `.decantr/evidence/*`, `.decantr/ci/*`, and `.decantr/health-baseline-diff.json` as review/local/CI artifacts unless your team intentionally archives them.
 
 See also: [Existing Apps](existing-apps.md), [Project Health CI](project-health-ci.md), [Workflow Model](../reference/workflow-model.md).

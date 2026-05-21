@@ -309,6 +309,11 @@ function formatLocalLawText(summary: LocalLawCiSummary, health: ProjectHealthRep
   lines.push(
     `  Patterns: ${summary.patternsPresent ? 'present' : 'missing'} | Rules: ${summary.rulesPresent ? 'present' : 'missing'}`,
   );
+  lines.push(
+    summary.rulesPresent
+      ? "  Enforcement: Decantr scans accepted .decantr/rules.json; this command's --fail-on setting controls whether findings block."
+      : '  Enforcement: advisory only until .decantr/rules.json is accepted.',
+  );
   lines.push(`  Findings: ${summary.errorCount} error(s), ${summary.warnCount} warning(s)`);
   for (const warning of summary.warnings.slice(0, 5)) {
     lines.push(`  ${DIM}[WARN] ${warning}${RESET}`);
@@ -335,6 +340,9 @@ function formatStyleBridgeText(summary: StyleBridgeCiSummary): string {
   lines.push(
     `  Present: ${summary.present ? 'yes' : 'no'} | Mappings: ${summary.mappingCount} | Styling: ${summary.stylingApproach ?? 'unknown'}`,
   );
+  lines.push(
+    '  Enforcement: advisory style-intent mapping; pair with accepted local rules, lint, tests, or visual regression when it should block.',
+  );
   if (summary.themeModes.length > 0) {
     lines.push(`  Theme modes: ${summary.themeModes.join(', ')}`);
   }
@@ -358,6 +366,11 @@ function formatLocalLawMarkdown(summary: LocalLawCiSummary, health: ProjectHealt
   }
   lines.push(
     `Patterns: **${summary.patternsPresent ? 'present' : 'missing'}** · Rules: **${summary.rulesPresent ? 'present' : 'missing'}**`,
+  );
+  lines.push(
+    summary.rulesPresent
+      ? 'Enforcement: Decantr scans accepted `.decantr/rules.json`; CI blocking depends on `--fail-on`.'
+      : 'Enforcement: advisory only until `.decantr/rules.json` is accepted.',
   );
   lines.push('');
   lines.push(`Findings: **${summary.errorCount} error(s), ${summary.warnCount} warning(s)**`);
@@ -386,6 +399,10 @@ function formatStyleBridgeMarkdown(summary: StyleBridgeCiSummary): string {
   }
   lines.push(
     `Present: **${summary.present ? 'yes' : 'no'}** · Mappings: **${summary.mappingCount}** · Styling: **${summary.stylingApproach ?? 'unknown'}**`,
+  );
+  lines.push('');
+  lines.push(
+    'Enforcement: advisory style-intent mapping; pair with accepted local rules, lint, tests, or visual regression when it should block.',
   );
   if (summary.themeModes.length > 0) {
     lines.push('', `Theme modes: ${summary.themeModes.map((mode) => `\`${mode}\``).join(', ')}`);

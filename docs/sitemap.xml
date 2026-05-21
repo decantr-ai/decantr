@@ -422,7 +422,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-19-hybrid-style-bridge-2-12.md</loc>
-    <lastmod>2026-05-18T21:53:31-04:00</lastmod>
+    <lastmod>2026-05-19T08:48:58-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-20-hybrid-local-law-v2-2-13.md</loc>
+    <lastmod>2026-05-20T17:27:54.465Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -482,13 +488,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/release-stewardship.md</loc>
-    <lastmod>2026-05-15T12:45:14-04:00</lastmod>
+    <lastmod>2026-05-19T08:48:58-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/scan.html</loc>
-    <lastmod>2026-05-19T02:16:51.515Z</lastmod>
+    <lastmod>2026-05-18T22:17:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

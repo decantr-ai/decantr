@@ -84,6 +84,7 @@ import {
   changedFiles as collectChangedFiles,
   createBrownfieldCodifyProposal,
   createLocalLawTaskSummary,
+  type LocalHostedPatternRef,
   localPatternsPath,
   localPatternsProposalPath,
   localRulesPath,
@@ -92,6 +93,7 @@ import {
   routeImpacts,
   validateLocalLaw,
   writeBrownfieldCodifyProposal,
+  writeHostedPatternMappingProposal,
 } from './local-law.js';
 import { seedOfflineRegistry } from './offline-content.js';
 import {
@@ -1553,6 +1555,37 @@ function patternCandidateFromRegistryItem(
             : undefined,
     },
     { source, slug },
+  );
+}
+
+function hostedPatternRefFromCandidate(
+  candidate: PatternDiscoveryCandidate,
+): LocalHostedPatternRef {
+  const slug = candidate.slug || candidate.id;
+  return {
+    slug,
+    source: candidate.source ?? 'registry',
+    name: candidate.name,
+    description: candidate.description,
+    tags: candidate.tags,
+    components: candidate.components,
+    interactions: candidate.interactions,
+    visualBrief: candidate.visual_brief,
+  };
+}
+
+function findPatternCandidateBySlug(
+  candidates: PatternDiscoveryCandidate[],
+  slug: string,
+): PatternDiscoveryCandidate | null {
+  const normalized = slug.toLowerCase();
+  return (
+    candidates.find(
+      (candidate) =>
+        candidate.slug?.toLowerCase() === normalized ||
+        candidate.id.toLowerCase() === normalized ||
+        candidate.name?.toLowerCase() === normalized,
+    ) ?? null
   );
 }
 
@@ -3612,8 +3645,15 @@ function resolveWorkflowProject(
   }
   if (projectArg && options.requireAppCandidate && workspaceInfo.appCandidates.length > 0) {
     const normalizedProject = normalizedProjectPath(projectArg);
+    const normalizedWorkspaceProject = normalizedProjectPath(
+      relative(workspaceInfo.workspaceRoot, workspaceInfo.appRoot),
+    );
     const knownCandidate = normalizedProject
-      ? workspaceInfo.appCandidates.includes(normalizedProject)
+      ? workspaceInfo.appCandidates.includes(normalizedProject) ||
+        Boolean(
+          normalizedWorkspaceProject &&
+            workspaceInfo.appCandidates.includes(normalizedWorkspaceProject),
+        )
       : false;
     const forcePackage =
       flagBoolean(flags, 'force-package') ||
@@ -4135,6 +4175,9 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
         console.log(`${GREEN}Local pattern pack found:${RESET} ${validation.patternsPath}`);
         if (validation.ruleManifestPresent) {
           console.log(`${GREEN}Local rule manifest found:${RESET} ${validation.rulesPath}`);
+          console.log(
+            `${DIM}Enforcement: accepted .decantr/rules.json is the Decantr-scanned layer; --fail-on controls whether findings block.${RESET}`,
+          );
         } else {
           console.log(
             `${YELLOW}Local rule manifest missing.${RESET} Run ${cyan('decantr codify --from-audit')} to propose .decantr/rules.json.`,
@@ -4170,6 +4213,9 @@ async function cmdVerifyWorkflow(args: string[]): Promise<void> {
     console.log(`${GREEN}Style bridge found:${RESET} ${styleBridge.path}`);
     console.log(
       `${DIM}${styleBridge.mappingCount} mapping(s), ${styleBridge.stylingApproach ?? 'unknown'} styling${styleBridge.themeModes.length > 0 ? `, themes: ${styleBridge.themeModes.join(', ')}` : ''}${RESET}`,
+    );
+    console.log(
+      `${DIM}Enforcement: advisory style-intent mapping; pair with accepted local rules, lint, tests, or visual regression when it should block.${RESET}`,
     );
   }
 
@@ -4467,13 +4513,24 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     }
     if (context.localLaw.rulesPath) {
       console.log(`  Rules: ${cyan(context.localLaw.rulesPath)} (${context.localLaw.ruleCount})`);
+      console.log('  Enforcement: accepted local rules are the Decantr-scanned layer.');
     }
     for (const pattern of context.localLaw.patterns.slice(0, 4)) {
       const pathHint =
         pattern.componentPaths.length > 0
           ? ` — ${pattern.componentPaths.slice(0, 2).join(', ')}`
           : '';
-      console.log(`  ${pattern.id}: ${pattern.role ?? 'local pattern'}${pathHint}`);
+      const authorityHint = [
+        pattern.role ?? 'local pattern',
+        pattern.confidenceTier ? `confidence ${pattern.confidenceTier}` : null,
+        pattern.enforcementLevel ? `${pattern.enforcementLevel}` : null,
+        pattern.hostedPatternRefs.length > 0
+          ? `maps ${pattern.hostedPatternRefs.slice(0, 2).join(', ')}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(' | ');
+      console.log(`  ${pattern.id}: ${authorityHint}${pathHint}`);
     }
   } else {
     console.log('');
@@ -4487,6 +4544,9 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     console.log(`${BOLD}Project-owned style bridge:${RESET}`);
     console.log(
       `  Bridge: ${cyan(context.styleBridge.path)} (${context.styleBridge.mappingCount} mappings, ${context.styleBridge.stylingApproach ?? 'unknown'} styling)`,
+    );
+    console.log(
+      '  Enforcement: advisory mapping layer; accepted local rules or project lint/tests do the blocking.',
     );
     if (context.styleBridge.themeModes.length > 0) {
       console.log(`  Theme modes: ${context.styleBridge.themeModes.join(', ')}`);
@@ -4529,6 +4589,8 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
         'discover-local-patterns',
         'codify-local-patterns',
         'style-bridge',
+        'map-pattern',
+        'hosted-pattern',
         'accept',
       ],
       'codify',
@@ -4588,6 +4650,48 @@ async function cmdCodifyWorkflow(args: string[]): Promise<void> {
     flagBoolean(flags, 'discover-local-patterns') ||
     flagBoolean(flags, 'codify-local-patterns');
   const wantsStyleBridge = flagBoolean(flags, 'style-bridge');
+  const mapPatternSlug = flagString(flags, 'map-pattern') ?? flagString(flags, 'hosted-pattern');
+  if (mapPatternSlug) {
+    const registryClient = new RegistryClient({
+      cacheDir: join(workspaceInfo.appRoot, '.decantr', 'cache'),
+    });
+    const candidates = await loadPatternDiscoveryCandidates(registryClient);
+    const candidate = findPatternCandidateBySlug(candidates, mapPatternSlug);
+    if (!candidate) {
+      const suggestions = rankPatternCandidates({ query: mapPatternSlug, limit: 5 }, candidates);
+      console.error(error(`Could not find pattern "${mapPatternSlug}" to map into local law.`));
+      if (suggestions.length > 0) {
+        console.error(dim('Closest registry patterns:'));
+        for (const suggestion of suggestions) {
+          const slug = suggestion.candidate.slug || suggestion.candidate.id;
+          console.error(dim(`  ${slug} - ${suggestion.candidate.name ?? slug}`));
+        }
+      }
+      process.exitCode = 1;
+      return;
+    }
+    const result = writeHostedPatternMappingProposal({
+      projectRoot: workspaceInfo.appRoot,
+      hostedPattern: hostedPatternRefFromCandidate(candidate),
+    });
+    const slug = candidate.slug || candidate.id;
+    console.log(
+      success(
+        `${result.replacedExisting ? 'Updated' : 'Wrote'} hosted pattern mapping proposal: ${result.patternPath}`,
+      ),
+    );
+    console.log(
+      dim(
+        `Mapped registry pattern "${slug}" into local pattern "${result.localPatternId}" as advisory Hybrid law. No source files were changed.`,
+      ),
+    );
+    console.log(
+      dim(
+        `Fill in project-owned component paths, token/class recipes, variants, and exceptions, then run \`${withProject('decantr codify --accept', projectArg)}\`.`,
+      ),
+    );
+    return;
+  }
   const wantsLocalLaw = !wantsStyleBridge || fromAudit;
 
   let localResult: { patternPath: string; rulesPath: string } | null = null;
@@ -4693,7 +4797,7 @@ ${BOLD}Usage:${RESET}
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
   decantr doctor [--project <path>] [--workspace] [--json]
-  decantr codify [--from-audit] [--style-bridge] [--accept] [--project <path>]
+  decantr codify [--from-audit] [--style-bridge] [--map-pattern <slug>] [--accept] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
 ${BOLD}Advanced primitives:${RESET}
@@ -4820,6 +4924,7 @@ ${BOLD}Examples:${RESET}
   decantr ci --project apps/web
   decantr ci init --project apps/web
   decantr codify --from-audit
+  decantr codify --map-pattern hero --project apps/web
   decantr codify --accept
   decantr content check --ci --fail-on error
   decantr magic "AI chatbot with dark cyber theme — bold and futuristic"
@@ -5157,6 +5262,7 @@ ${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI 
 
 ${BOLD}Usage:${RESET}
   decantr codify [--from-audit] [--style-bridge] [--project <path>]
+  decantr codify --map-pattern <registry-pattern-slug> [--project <path>]
   decantr codify --accept [--project <path>]
 
 ${BOLD}Examples:${RESET}
@@ -5164,6 +5270,7 @@ ${BOLD}Examples:${RESET}
   decantr codify --from-audit
   decantr codify --style-bridge
   decantr codify --from-audit --style-bridge
+  decantr codify --map-pattern hero --project apps/web
   decantr codify --accept
   decantr verify --brownfield --local-patterns
 `);

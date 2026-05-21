@@ -89,16 +89,19 @@ When the app has repeated local UI decisions that Decantr cannot infer from the 
 npx @decantr/cli codify --from-audit --style-bridge
 # review .decantr/local-patterns.proposal.json and .decantr/rules.proposal.json
 # review .decantr/style-bridge.proposal.json if you want Decantr intent mapped to project tokens/classes
+npx @decantr/cli codify --map-pattern hero
+# review the advisory hosted-pattern mapping before accepting it as local law
 npx @decantr/cli codify --accept
 npx @decantr/cli verify --brownfield --local-patterns
 ```
 
-Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. Accepting a style bridge adds `.decantr/style-bridge.json`, which maps Decantr concepts like surfaces, actions, focus, density, and theme variants to your own tokens/classes without adopting Decantr CSS. Hosted registry patterns are useful vocabulary and review guidance; they should not become enforceable in an existing app until they are mapped to your own components, classes, token recipes, or explicit exceptions.
+Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. `codify --from-audit` now includes source snippets, confidence tiers, and likely variants for button, card/surface, form, shell, and theme families so the proposal is less generic. Accepting a style bridge adds `.decantr/style-bridge.json`, which maps Decantr concepts like surfaces, actions, focus, density, and theme variants to your own tokens/classes without adopting Decantr CSS. Hosted registry patterns are useful vocabulary and review guidance; `codify --map-pattern <slug>` places one into the local-law proposal as advisory guidance, but it is not enforceable until you add project-owned components, classes, token recipes, variants, and exceptions.
 
 In a monorepo, keep passing the same app path:
 
 ```bash
 pnpm exec decantr codify --from-audit --style-bridge --project apps/web
+pnpm exec decantr codify --map-pattern hero --project apps/web
 pnpm exec decantr codify --accept --project apps/web
 pnpm exec decantr task /feed "add saved recipe actions" --project apps/web
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web

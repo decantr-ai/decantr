@@ -11,6 +11,7 @@ import {
   localRulesPath,
   validateLocalLaw,
   writeBrownfieldCodifyProposal,
+  writeHostedPatternMappingProposal,
 } from '../src/local-law.js';
 
 describe('brownfield local law', () => {
@@ -73,9 +74,17 @@ describe('brownfield local law', () => {
     expect(patterns.patterns?.find((pattern) => pattern.id === 'button')?.classHints).toContain(
       'primaryAction tinyGhost secondary-action',
     );
+    expect(patterns.patterns?.find((pattern) => pattern.id === 'button')?.confidence?.tier).toBe(
+      'medium',
+    );
     expect(
-      patterns.patterns?.find((pattern) => pattern.id === 'button')?.classHints,
-    ).not.toContain('theme-switcher actions');
+      patterns.patterns
+        ?.find((pattern) => pattern.id === 'button')
+        ?.variants?.map((variant) => variant.id),
+    ).toContain('secondary-action');
+    expect(patterns.patterns?.find((pattern) => pattern.id === 'button')?.classHints).not.toContain(
+      'theme-switcher actions',
+    );
 
     const summary = createLocalLawTaskSummary(testDir);
     expect(summary.patternCount).toBeGreaterThan(0);
@@ -90,5 +99,39 @@ describe('brownfield local law', () => {
     expect(
       validation.findings.some((finding) => finding.file === 'src/components/Button.tsx'),
     ).toBe(false);
+  });
+
+  it('maps a hosted registry pattern into advisory local law without source takeover', () => {
+    const result = writeHostedPatternMappingProposal({
+      projectRoot: testDir,
+      hostedPattern: {
+        slug: 'hero',
+        source: 'bundled',
+        name: 'Hero',
+        description: 'A high-signal entry section with copy and actions.',
+        tags: ['landing', 'entry'],
+        components: ['headline', 'cta'],
+        interactions: ['primary-action'],
+        visualBrief: 'Confident first-screen composition.',
+      },
+    });
+
+    expect(result.localPatternId).toBe('hero');
+    const proposal = JSON.parse(readFileSync(result.patternPath, 'utf-8')) as {
+      patterns?: Array<{
+        id?: string;
+        componentPaths?: string[];
+        hostedPatternRefs?: Array<{ slug?: string }>;
+        enforcement?: { level?: string; status?: string };
+      }>;
+    };
+    const mapped = proposal.patterns?.find((pattern) => pattern.id === 'hero');
+    expect(mapped?.componentPaths).toEqual([]);
+    expect(mapped?.hostedPatternRefs?.[0]?.slug).toBe('hero');
+    expect(mapped?.enforcement?.level).toBe('advisory');
+    expect(mapped?.enforcement?.status).toBe('needs-mapping');
+
+    const validation = validateLocalLaw(testDir);
+    expect(validation.patternPackPresent).toBe(false);
   });
 });

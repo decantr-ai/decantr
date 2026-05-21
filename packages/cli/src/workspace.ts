@@ -126,10 +126,17 @@ export function listWorkspaceAppCandidates(workspaceRoot: string): string[] {
 
 export function resolveWorkspaceInfo(cwd: string, projectArg?: string): WorkspaceInfo {
   const absoluteCwd = resolve(cwd);
-  const workspaceRoot = findWorkspaceRoot(absoluteCwd) ?? absoluteCwd;
   const appRoot = projectArg
-    ? resolve(isAbsolute(projectArg) ? '/' : workspaceRoot, projectArg)
+    ? resolve(
+        isAbsolute(projectArg)
+          ? projectArg
+          : join(findWorkspaceRoot(absoluteCwd) ?? absoluteCwd, projectArg),
+      )
     : absoluteCwd;
+  const workspaceRoot =
+    projectArg && isAbsolute(projectArg)
+      ? (findWorkspaceRoot(appRoot) ?? appRoot)
+      : (findWorkspaceRoot(absoluteCwd) ?? absoluteCwd);
   const appCandidates = listWorkspaceApps(workspaceRoot);
   const projectScope: ProjectScope =
     workspaceRoot !== appRoot || appCandidates.length > 0 ? 'workspace-app' : 'single-app';

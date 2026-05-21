@@ -63,7 +63,7 @@ npx @decantr/cli verify --brownfield --local-patterns
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 ```
 
-For discovery prompts such as "standardize all buttons/cards on this page", ask the assistant to run `decantr suggest "button card" --from-code --file src/App.tsx` from the app root, or add `--project apps/web` from a monorepo root. Accepted local patterns are shown before registry patterns so the assistant starts from project-owned law.
+For discovery prompts such as "standardize all buttons/cards on this page", ask the assistant to run `decantr suggest "button card" --from-code --file src/App.tsx` from the app root, or add `--project apps/web` from a monorepo root. Accepted local patterns are shown before registry patterns so the assistant starts from project-owned law. If a hosted registry pattern is useful vocabulary, map it first with `decantr codify --map-pattern <slug>`; that creates an advisory local-law proposal and does not change source.
 
 When an assistant asks for a Project Health repair prompt from a monorepo root, keep the app path on the prompt command: `decantr health --project apps/web --prompt <finding-id>`.
 
@@ -85,6 +85,6 @@ pnpm exec decantr ci --project apps/web
 
 The generated GitHub workflow runs the pinned local CLI through the detected package manager, such as `pnpm exec decantr ci --project apps/web`. If Decantr is not pinned in the root manifest, `ci init` prints the exact install command before writing the workflow. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web` and paste the snippet into the authoritative pipeline.
 
-When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence. When a style bridge is active, the same report includes bridge status, mapping count, styling approach, and theme modes so assistants can see the project-owned styling lane in automation output. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
+When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence. When a style bridge is active, the same report includes bridge status, mapping count, styling approach, and theme modes so assistants can see the project-owned styling lane in automation output. The output distinguishes enforceable accepted local rules from advisory style-bridge or hosted-pattern mappings. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md), [Monorepos](monorepos.md), [Project Health CI](project-health-ci.md).

@@ -163,6 +163,7 @@ Brownfield adoption:
 ```bash
 decantr adopt --yes
 decantr codify --from-audit --style-bridge
+decantr codify --map-pattern hero
 decantr codify --accept
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
@@ -177,6 +178,7 @@ decantr workspace list
 decantr adopt --project apps/web --yes
 decantr doctor --project apps/web
 decantr codify --from-audit --style-bridge --project apps/web
+decantr codify --map-pattern hero --project apps/web
 decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 decantr ci init --project apps/web
@@ -195,7 +197,7 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model. When local law, a style bridge, or Decantr CSS is accepted, Decantr calls that out as Hybrid instead of pretending every existing app is still only contract-only.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `doctor` explains project/workspace state, generated artifacts, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. The primitive commands remain available for advanced and scripted workflows.
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `doctor` explains project/workspace state, generated artifacts, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`, now with source evidence, confidence tiers, and likely variants for button/card/form/theme families; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS; `codify --map-pattern <slug>` maps a hosted or bundled registry pattern into an advisory local-law proposal without changing source. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 

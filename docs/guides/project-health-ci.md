@@ -35,7 +35,7 @@ npx @decantr/cli verify --markdown --output decantr-health.md
 npx @decantr/cli verify --json --output decantr-health.json
 ```
 
-Use `verify` for the local human/agent loop and `ci` for mandatory automation. Both commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, style bridges and Decantr CSS are only enforced where explicitly adopted, and workspace runs isolate each attached app. `ci` includes accepted local-rule findings plus style bridge status in text, markdown, and JSON reports; `--fail-on error` keeps warning-level local law visible without blocking, while `--fail-on warn` blocks on those warnings once your team has stabilized them. In monorepos, keep `--project <app-path>` explicit unless you intentionally want a workspace aggregate with `--workspace`.
+Use `verify` for the local human/agent loop and `ci` for mandatory automation. Both commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, style bridges and Decantr CSS are only enforced where explicitly adopted, and workspace runs isolate each attached app. `ci` includes accepted local-rule findings plus style bridge status in text, markdown, and JSON reports; the human output now distinguishes enforceable `.decantr/rules.json` scans from advisory style-bridge mappings. `--fail-on error` keeps warning-level local law visible without blocking, while `--fail-on warn` blocks on those warnings once your team has stabilized them. In monorepos, keep `--project <app-path>` explicit unless you intentionally want a workspace aggregate with `--workspace`.
 
 ## Repair With An AI Assistant
 

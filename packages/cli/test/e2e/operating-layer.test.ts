@@ -698,6 +698,31 @@ describe('operating layer commands', () => {
     }
   });
 
+  it('honors an absolute standalone --project outside the current monorepo cwd', () => {
+    const externalApp = mkdtempSync(join(tmpdir(), 'decantr-external-app-'));
+    try {
+      mkdirSync(join(externalApp, 'src'), { recursive: true });
+      writeJson(join(externalApp, 'package.json'), {
+        name: 'external-app',
+        private: true,
+        dependencies: { react: '^19.0.0' },
+      });
+      writeFileSync(
+        join(externalApp, 'src', 'App.tsx'),
+        'export function App() { return <button className="primaryAction">Save</button>; }\n',
+        'utf-8',
+      );
+
+      const output = runCli(testDir, ['adopt', '--project', externalApp, '--yes']);
+
+      expect(output).toContain('Decantr Adopt');
+      expect(output).not.toContain('is not an app candidate');
+      expect(existsSync(join(externalApp, 'decantr.essence.json'))).toBe(true);
+    } finally {
+      rmSync(externalApp, { recursive: true, force: true });
+    }
+  }, 20_000);
+
   it('steers magic on attached monorepo apps into task-time context', () => {
     const output = runCli(testDir, [
       'magic',
@@ -760,6 +785,31 @@ describe('operating layer commands', () => {
     expect(task.localLaw.patternsPath).toBe('apps/web/.decantr/local-patterns.json');
     expect(task.localLaw.rulesPath).toBe('apps/web/.decantr/rules.json');
   });
+
+  it('maps a registry pattern into project-owned local law as an advisory Hybrid proposal', () => {
+    const output = runCli(testDir, ['codify', '--project', 'apps/web', '--map-pattern', 'hero']);
+    const proposal = JSON.parse(
+      readFileSync(
+        join(testDir, 'apps', 'web', '.decantr', 'local-patterns.proposal.json'),
+        'utf-8',
+      ),
+    ) as {
+      patterns?: Array<{
+        id?: string;
+        hostedPatternRefs?: Array<{ slug?: string; source?: string }>;
+        enforcement?: { level?: string; status?: string };
+        evidenceToCollect?: string[];
+      }>;
+    };
+    const mapped = proposal.patterns?.find((pattern) => pattern.id === 'hero');
+
+    expect(output).toContain('hosted pattern mapping proposal');
+    expect(output).toContain('No source files were changed');
+    expect(mapped?.hostedPatternRefs?.[0]?.slug).toBe('hero');
+    expect(mapped?.enforcement?.level).toBe('advisory');
+    expect(mapped?.enforcement?.status).toBe('needs-mapping');
+    expect(mapped?.evidenceToCollect?.join(' ')).toContain('Project-owned component path');
+  }, 20_000);
 
   it('prints and resolves project-scoped health repair prompts', () => {
     rmSync(join(testDir, 'apps', 'web', '.decantr', 'context', 'pack-manifest.json'), {

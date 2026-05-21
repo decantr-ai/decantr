@@ -1,7 +1,7 @@
 # Hybrid Fortification Plan
 
 Date: 2026-05-15
-Status: Active product program. The 2.10 first slice ships lane-aware `doctor`, task-time authority blocks, MCP authority context, and Hybrid local-law messaging.
+Status: Active product program. The 2.13 slice ships richer `codify --from-audit` source evidence, advisory `codify --map-pattern <slug>` hosted-pattern mapping, and clearer enforceable-versus-advisory Hybrid output in `task`, `verify`, and `ci`.
 
 ## Goal
 
@@ -81,10 +81,10 @@ Hybrid should build on Brownfield local law rather than inventing a parallel sys
 
 Implementation candidates:
 
-- Extend `codify --from-audit` output to distinguish observed local law, recommended local rules, and hosted-pattern candidates.
+- Extend `codify --from-audit` output to distinguish observed local law, recommended local rules, source evidence, confidence tiers, variants, and hosted-pattern candidates. First shipped in 2.13.
 - Add local pattern precedence wording to `task`, `verify`, and `doctor`.
 - Improve suggestion ranking for user intents such as "standardize buttons", "standardize cards", "make every form use the same field shell", and "stop raw design tokens".
-- Add a dry-run preview for adopting a hosted pattern into a local pattern pack without applying source edits.
+- Add a proposal-only path for adopting a hosted pattern into a local pattern pack without applying source edits. First shipped in 2.13 as `decantr codify --map-pattern <slug>`.
 
 Validation scenarios:
 
