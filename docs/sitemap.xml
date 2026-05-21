@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-18T21:53:31-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -80,7 +80,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-05-18T21:53:31-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -92,19 +92,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-18T21:55:41-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/monorepos.md</loc>
-    <lastmod>2026-05-18T18:39:20-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/guides/project-health-ci.md</loc>
-    <lastmod>2026-05-18T21:53:31-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -164,13 +164,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/programs/2026-05-15-hybrid-fortification-plan.md</loc>
-    <lastmod>2026-05-18T18:39:20-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-05-18T21:55:41-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -188,7 +188,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-05-18T21:53:31-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -230,7 +230,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-18T21:55:41-04:00</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -428,7 +428,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-20-hybrid-local-law-v2-2-13.md</loc>
-    <lastmod>2026-05-20T17:27:54.465Z</lastmod>
+    <lastmod>2026-05-21T04:34:45-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-05-21-hybrid-local-law-v2-repair-2-13-1.md</loc>
+    <lastmod>2026-05-21T08:48:22.505Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
