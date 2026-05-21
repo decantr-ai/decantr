@@ -6,8 +6,8 @@
 ## Quick Start
 
 **Shell:** Horizontal navigation shell with a compact sticky header, shared content insets, and a curated page-width rhythm. Used by public browsing, editorial catalog pages, and marketing-style registry surfaces. (header: 52px)
-**Pages:** 5 (homepage, browse, browse-type, detail, profile)
-**Key patterns:** blueprint-launch-hero, search-filter-bar [moderate], featured-launchpad-list, content-card-grid [moderate], json-viewer, detail-header [moderate], activity-feed
+**Pages:** 8 (homepage, browse, browse-type, detail, profile, scan, privacy, terms)
+**Key patterns:** blueprint-launch-hero [moderate], search-filter-bar [moderate], featured-launchpad-list [moderate], launchpad-flow [moderate], registry-link-list, content-card-grid [moderate], command-rail [moderate], blueprint-anatomy [moderate], contract-explorer [moderate], json-viewer, detail-header [moderate], activity-feed, brownfield-scan [moderate]
 **Theme decorators:** 11 classes — see `section-registry-browser-pack.md` for the Class | Intent | Apply-to contract
 **Density:** comfortable
 **Voice:** Welcoming and developer-friendly.
@@ -107,6 +107,12 @@ search, pagination
 **Personality utilities available in treatments.css:**
 - `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
 
+## Constraints
+
+- **effects:** {"doctrine-security-data":"Preserve the existing Supabase auth, admin authorization, billing, API-key, telemetry attribution, privacy, and hosted-registry service boundaries unless a reviewed task explicitly changes them.","doctrine-design-system":"Preserve the registry's Luminarum token bridge, Decantr treatments, shell rhythm, and public/admin/dashboard styling contracts while evolving individual pages."}
+
+---
+
 ## Pattern Reference
 
 Scaffold-tier rule: implement the core visual structure, states, and required slots first.
@@ -114,11 +120,46 @@ Treat advanced capabilities such as drag/drop, force-layout, minimaps, or simula
 
 ### blueprint-launch-hero
 
+First-viewport registry hero for blueprint discovery pages. It introduces Decantr's blueprint catalog with a strong product signal, concise positioning, search or browse actions, and a compact proof row for counts, freshness, or workflow coverage.
 
+**Visual brief:** A confident first-viewport registry hero that feels like an enterprise product surface rather than a marketing splash. The Decantr registry and blueprint catalog should be immediately legible. Use crisp type, restrained proof metrics, and a search or command action that feels operational. Avoid decorative hero cards or vague atmospheric art; this hero should help builders decide what to inspect next.
 
-**Components:** Button, Icon, Image
+**Components:** Button, Badge, Search, KPI, icon
+
+**Composition:**
+```
+ProofRow = GridOrRail(compact) > MetricChip[]
+ActionRow = Flex(wrap) > [PrimaryBrowseOrSearch + SecondaryCommandOrDocs]
+BlueprintLaunchHero = Hero(banner) > [Eyebrow + Headline + SupportingCopy + ActionRow + ProofRow]
+```
 
 **Layout slots:**
+- `eyebrow`: Small d-label marker for the registry surface or selected namespace.
+- `headline`: Literal offer or catalog name. Keep it concrete: Blueprint Registry, Launch With Decantr, or Official Blueprints.
+- `proof-row`: Compact stat chips for blueprint count, supported workflows, update recency, or official/community split.
+- `action-row`: Primary browse/search CTA plus a secondary command or docs CTA.
+- `supporting-copy`: Two-to-three sentence value prop that explains what the blueprint helps a builder ship.
+  **Layout guidance:**
+  - proof_density: Use three to five proof metrics maximum. Metrics should validate catalog usefulness, not become dashboard chrome.
+  - first_viewport: The catalog identity must be visible in the first viewport. Do not bury the blueprint signal in an eyebrow only.
+  - action_priority: Primary action should move to browse/search. Secondary action can expose a CLI command or docs link.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Actions and proof chips may brighten on hover or focus. Keep motion short and functional. |
+| transitions | Hero content can fade in with a subtle stagger, but search and command affordances should be instantly usable. |
+
+**Responsive:**
+- **Mobile (<640px):** Single-column stack with headline first, supporting copy second, actions wrapping into full-width buttons, and proof metrics in a two-column or horizontally scrollable strip.
+- **Tablet (640-1024px):** Hero copy and actions remain stacked with a wider proof row. Search can expand to full width.
+- **Desktop (>1024px):** Wide editorial hero with actions and proof row aligned below the copy. Keep enough vertical restraint that the next registry section is visible.
+
+**Accessibility:**
+- Role: `banner`
+- Keyboard: Search and action controls should be reachable immediately after the skip link or primary navigation.
+- Announcements: Headline, supporting copy, and proof metrics should remain meaningful without visual-only badges.
+- Focus: Focus styles on search and CTAs should match hover intensity and remain visible on dark surfaces.
+
 
 ### search-filter-bar
 
@@ -164,13 +205,129 @@ SearchFilterBar = Stack > [SearchRow > SearchInput(d-control, icon: search) + Ty
 
 ### featured-launchpad-list
 
+Curated list or grid of featured blueprints, archetypes, or starter paths. Each item explains who it is for, what it scaffolds, and the next command or registry route a builder should use.
 
+**Visual brief:** A curated launchpad surface that feels selective and high-signal. Cards should read like strong product recommendations, not a generic content feed. Each item needs a clear use case, a reason to trust it, and an obvious next step. Use compact tags and command previews sparingly so the list remains scannable.
 
-**Components:** Card, Icon, Text
+**Components:** Card, Badge, Button, icon
+
+**Composition:**
+```
+TagRow = Flex(wrap) > Tag[]
+LaunchpadCard = Card > [Header(Name + NamespaceBadge) + Outcome + TagRow + CommandPreview? + ActionRow]
+FeaturedLaunchpadList = Grid(responsive) > LaunchpadCard[]
+```
 
 **Layout slots:**
-- `grid`: Grid of feature cards (icon + title + description)
-- `feature-card`: Individual feature with icon, heading, and description text
+- `item-tags`: Small tags for workflow, target framework, or adoption mode.
+- `item-action`: Inspect, launch, or copy command action.
+- `item-header`: Blueprint or launchpad name with namespace badge.
+- `item-command`: Optional install or scaffold command snippet.
+- `item-outcome`: One concise sentence describing what the builder can ship.
+  **Layout guidance:**
+  - curation: Prefer fewer, better launchpad entries over a dense catalog wall. The pattern should communicate recommendation quality.
+  - metadata: Tags should explain fit: greenfield, brownfield, hybrid, Next, Vite, registry, dashboard, or SaaS.
+  - command_preview: Use command snippets only when they accelerate action. They should be copyable or visually separate from prose.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Cards lift subtly and action rows sharpen on hover or focus. |
+| transitions | Featured items can reveal with a short stagger when the list first enters view. |
+
+**Responsive:**
+- **Mobile (<640px):** Single-column cards with full-width action rows and command snippets that wrap without overflow.
+- **Tablet (640-1024px):** Two-column card grid with equal-height cards and aligned action rows.
+- **Desktop (>1024px):** Three-column grid or split featured-plus-secondary layout. Keep the primary featured item visually stronger only when the content warrants it.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tab order should move through each card's primary action in reading order.
+- Announcements: Each launchpad should expose name, outcome, and target workflow without relying on tag color.
+- Focus: If the whole card is clickable, still expose one named primary link or button.
+
+
+### launchpad-flow
+
+Guided sequence that shows how a builder moves from selecting a Decantr blueprint to initializing, refreshing, checking, and iterating with AI-ready context.
+
+**Visual brief:** A crisp operational flow that makes Decantr feel immediately usable. The sequence should look like a product workflow, not a tutorial wall. Use clear step labels, small command blocks, and simple connective rhythm so users understand the path from registry choice to verified project health.
+
+**Components:** Card, Badge, CodeBlock, icon
+
+**Composition:**
+```
+LaunchpadFlow = OrderedList > LaunchpadStep[]
+LaunchpadStep = Card > [Marker + Title + CommandSnippet? + Outcome]
+CommandSnippet = CodeBlock(compact, copyable)
+```
+
+**Layout slots:**
+- `step-proof`: Short note about what changes after this step.
+- `step-title`: Action-oriented step heading.
+- `step-number`: Number or icon marker.
+- `step-command`: Optional CLI command or file artifact.
+  **Layout guidance:**
+  - commands: Commands should be short and copyable. Avoid large code blocks inside this pattern.
+  - outcomes: Every step should state the artifact or confidence it creates: essence, context, health report, or remediation prompt.
+  - step_count: Use three to five steps. If more detail is needed, move it into an expandable or docs link outside the core flow.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Step cards can highlight in sequence on hover or focus. |
+| transitions | Initial reveal may stagger from first step to last over 200-320ms. |
+
+**Responsive:**
+- **Mobile (<640px):** Stack steps vertically with compact command blocks and visible step numbers.
+- **Tablet (640-1024px):** Two-column grid for four steps.
+- **Desktop (>1024px):** Four-column flow with subtle connectors or aligned step markers.
+
+**Accessibility:**
+- Role: `list`
+- Keyboard: Copyable commands and links should be focusable without trapping users in the flow.
+- Announcements: Expose each step number, title, command, and outcome in source order.
+- Focus: Focused steps should show the same state as hover and should not depend on connector visuals.
+
+
+### registry-link-list
+
+Compact list of registry destinations, documentation references, namespaces, or related content links. Optimized for sidebars, detail pages, and post-hero navigation blocks.
+
+**Visual brief:** A utilitarian but polished registry navigation list. It should feel like a trustworthy map of related destinations, not a decorative card grid. Rows should be easy to scan, with clear link affordances, subtle dividers or hover states, and enough helper copy to explain why the destination matters.
+
+**Components:** Link, Badge, icon
+
+**Composition:**
+```
+RegistryLinkItem = LinkRow > [Icon + TextStack(Title + Description) + Badge? + TrailingIcon]
+RegistryLinkList = NavOrList > RegistryLinkItem[]
+```
+
+**Layout slots:**
+- `link-icon`: Small icon or type marker.
+- `link-badge`: Optional count, namespace, or status.
+- `link-title`: Destination name.
+- `link-description`: One-line helper copy.
+  **Layout guidance:**
+  - metadata: Counts and namespaces belong in a trailing badge, not mixed into the title.
+  - row_density: Keep rows compact. Avoid card-heavy treatment unless each link has substantial context.
+  - trailing_affordance: Use an arrow, external-link icon, or subtle badge so links are unmistakable.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Rows may brighten or slide their trailing icon a few pixels on hover. |
+| transitions | Filter updates should preserve list position and avoid dramatic reflow. |
+
+**Responsive:**
+- **Mobile (<640px):** Single-column full-width rows with titles and helper copy wrapping cleanly.
+- **Tablet (640-1024px):** Single or two-column layout depending on available width.
+- **Desktop (>1024px):** May use two columns or a sidebar list. Keep row height consistent.
+
+**Accessibility:**
+- Role: `navigation`
+- Keyboard: Each row should expose one clear link target with a descriptive accessible name.
+- Announcements: Destination title and helper copy should be included in the accessible label or nearby description.
+- Focus: Focused rows should show an obvious outline or background shift.
+
 
 ### content-card-grid
 
@@ -213,6 +370,134 @@ ContentCardGrid = Grid(d-data, responsive: 1/2/3-col) > ContentCard[]
 - Keyboard: Tab should move through cards and showcase CTAs in reading order.; If the whole card is clickable, expose one clear primary interaction target.
 - Announcements: Card title, source line, and showcase availability should be available to assistive technology without depending on hover.
 - Focus: Focused cards should receive an obvious treatment equivalent to hover, and nested CTAs should remain distinct from the card container.
+
+
+### command-rail
+
+Horizontal or stacked rail of short command snippets for CLI-driven workflows. Used to expose init, refresh, health, publish, or registry commands near the content they affect.
+
+**Visual brief:** A practical command surface that feels crisp and developer-native without becoming a terminal dump. The command should be the hero of each row, with labels and copy controls kept compact. This pattern should make it obvious what to run next while preserving polish and accessibility.
+
+**Components:** CodeBlock, Button, Badge, icon
+
+**Composition:**
+```
+CopyButton = Button(icon-only, aria-label, copied-status)
+CommandItem = Surface > [Label + CodeSnippet + Meta? + CopyButton]
+CommandRail = StackOrGrid > CommandItem[]
+```
+
+**Layout slots:**
+- `copy-action`: Icon button with copied state.
+- `command-meta`: Optional shell, package manager, or target context.
+- `command-label`: Short purpose label such as Init, Refresh, Health, or Publish.
+- `command-snippet`: One-line monospace command with wrapping protection.
+  **Layout guidance:**
+  - context: Use badges for shell, package manager, or project target only when they prevent ambiguity.
+  - copy_state: Copy buttons should have an accessible label and a copied confirmation state.
+  - command_length: Keep commands short enough to scan. Move long explanatory flags into docs or helper text.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Copy actions can briefly swap icon/state. Hover should sharpen the command surface without moving layout. |
+| transitions | Copied confirmation should be immediate and fade out after a short delay. |
+
+**Responsive:**
+- **Mobile (<640px):** Stack commands vertically. Commands wrap or horizontally scroll inside their own code region without forcing page overflow.
+- **Tablet (640-1024px):** Two-column command rail when commands are short.
+- **Desktop (>1024px):** Horizontal or two-column rail. Align copy buttons consistently.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Copy buttons should be reachable after each command snippet.
+- Announcements: Copied state should be announced with aria-live or an equivalent status pattern.
+- Focus: Focus should not enter decorative code tokens one by one. One command and one copy action per item is enough.
+
+
+### blueprint-anatomy
+
+Explanatory breakdown of a Decantr blueprint contract. Shows sections, routes, features, patterns, guard rules, and generated context as a coherent system rather than a flat JSON file.
+
+**Visual brief:** A contract explanation surface that makes Decantr feel like an intelligent system. It should turn blueprint JSON into a readable mental model: routes, sections, patterns, guard rules, and generated context. The UI should be polished and educational but still operational, with code previews kept tight and legible.
+
+**Components:** Card, Badge, CodeBlock, Accordion, icon
+
+**Composition:**
+```
+AnatomyList = Stack > AnatomyPart[]
+AnatomyPart = ButtonOrDisclosure > [Icon + Title + Purpose + Badges]
+ContractPreview = CodeBlockOrStructuredPanel(selectedPart)
+BlueprintAnatomy = Grid > [AnatomyList + ContractPreview]
+```
+
+**Layout slots:**
+- `explanation`: Short prose that connects the part to generated AI context.
+- `part-badges`: Small badges for route, section, feature, guard, pack, or pattern.
+- `anatomy-list`: Stack of contract parts with icon, title, and one-sentence purpose.
+- `contract-preview`: Code or structured preview focused on the selected part.
+  **Layout guidance:**
+  - part_order: Recommended order: purpose, sections, routes, patterns, features, guard rules, generated packs.
+  - mental_model: Explain relationships, not just fields. The user should understand how a blueprint feeds context, health, and implementation.
+  - preview_size: Code previews should be cropped or focused. Avoid dumping an entire essence file into this pattern.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Selecting an anatomy part can update the preview with a subtle cross-fade. |
+| transitions | Avoid complex animation in code regions; legibility wins. |
+
+**Responsive:**
+- **Mobile (<640px):** Single-column anatomy list followed by previews. Accordions are acceptable to prevent long scroll walls.
+- **Tablet (640-1024px):** Single-column or two-column if the preview remains readable.
+- **Desktop (>1024px):** Two-region layout with sticky or persistent preview when helpful.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Selectable anatomy parts should be reachable in logical order and update the preview without losing focus.
+- Announcements: Preview changes should expose the selected anatomy part name.
+- Focus: If using tabs or accordions, preserve standard keyboard behavior.
+
+
+### contract-explorer
+
+Interactive inspector for Decantr contract artifacts such as essence files, execution packs, Project Health reports, schema snippets, and remediation prompts.
+
+**Visual brief:** A small but powerful developer inspector that makes Decantr contracts feel inspectable and trustworthy. The left side should help users navigate contract structure; the right side should render selected JSON, markdown, health findings, or prompts with clear copy/open actions. It should feel like a local studio or internal developer tool, not a decorative code block.
+
+**Components:** Tabs, Tree, CodeBlock, Badge, Button, icon
+
+**Composition:**
+```
+ActionBar = Flex > [CopyButton + OpenButton? + PromptButton?]
+OutlinePane = TreeOrList > ArtifactNode[]
+PreviewPane = Panel > [SelectedTitle + Badges + CodeBlockOrMarkdown]
+ContractExplorer = InspectorShell > [ArtifactTabs + OutlinePane + PreviewPane + ActionBar]
+```
+
+**Layout slots:**
+- `preview`: Code or markdown preview of the selected artifact.
+- `action-bar`: Copy, open, download, or prompt actions.
+- `artifact-tabs`: Tabs for Essence, Packs, Health, Schema, or Prompt.
+- `artifact-tree`: Optional tree of sections, pages, findings, or schema nodes.
+  **Layout guidance:**
+  - actions: Copy and prompt actions should be icon+label or icon-only with tooltips and aria labels.
+  - artifact_scope: Keep selected artifact context visible through a title, breadcrumb, or badge.
+  - preview_containment: Code/markdown preview must scroll inside its own region and never force page overflow.
+**Motion:**
+| Interaction | Animation |
+|-------------|-----------|
+| micro | Selection changes can cross-fade preview content. Copy actions should show a brief confirmation. |
+| transitions | Avoid animated code reflow; preserve reading position when possible. |
+
+**Responsive:**
+- **Mobile (<640px):** Tabs appear first, tree collapses into a select or disclosure, preview scrolls horizontally inside its own region.
+- **Tablet (640-1024px):** Tabs plus stacked tree and preview.
+- **Desktop (>1024px):** Split-pane inspector with fixed navigation width and flexible preview region.
+
+**Accessibility:**
+- Role: `region`
+- Keyboard: Tabs and tree items should follow standard keyboard behavior.; Preview region should be focusable when it scrolls.
+- Announcements: Selection changes should announce the selected artifact title.
+- Focus: Copy/open buttons should remain reachable after the preview title and before long code content.
 
 
 ### json-viewer
@@ -351,6 +636,36 @@ ActivityFeed = Container(d-data, flex-col, full-width) > [DateGroup[] + LoadMore
 - Focus: Do not steal focus when new events arrive. Preserve the reader's current position unless they explicitly choose to jump to the latest item.
 
 
+### brownfield-scan
+
+A full-bleed read-only Brownfield acquisition surface with a large repository URL control, staged scan progress, evidence cards, score ring, fallback warnings, and next-command rail.
+
+**Visual brief:** The scan surface should feel more like a precise product instrument than a registry catalog page: immersive full-bleed Luminarum background, centered hero, calm safety chips, a generous input dock, and report cards with unmistakable internal spacing.
+
+**Components:** Card, Input, Button, Badge, ConicRing
+
+**Composition:**
+```
+desktop = full-bleed-hero -> compact-scan-dock -> verdict + metrics -> two-up evidence panels -> findings grid -> command rail
+mobile = stacked hero -> full-width input/button -> single-column evidence cards -> compact command rail
+```
+
+**Layout slots:**
+- `hero`: Full-bleed centered headline, supporting copy, safety guarantee chips, and repository URL form.
+- `scan-control`: Large d-control URL input paired with a primary d-interactive submit action.
+- `progress`: Staged, polite live-region progress copy with no source-execution reassurance.
+- `verdict`: Prominent d-card report summary with a d-conic-ring confidence score.
+- `evidence-grid`: Responsive d-card panels for repository evidence, published-site evidence, route map, styling intelligence, findings, and next commands.
+**Responsive:**
+- **Mobile (<640px):** [object Object]
+- **Desktop (>1024px):** [object Object]
+
+**Accessibility:**
+- Role: `form and report`
+- Keyboard: URL input is reachable before the submit button.; Progress and report updates use polite live regions.; Command copy buttons expose visible copied state.
+- Focus: Return focus to the scan form after validation errors; keep report content in document order after submit.
+
+
 ---
 
 ## Pages
@@ -374,3 +689,15 @@ Layout: blueprint-launch-hero → command-rail → blueprint-anatomy → contrac
 ### profile (/profile/:username)
 
 Layout: detail-header → content-card-grid → activity-feed
+
+### scan (/scan)
+
+Layout: brownfield-scan
+
+### privacy (/privacy)
+
+Layout: detail-header → registry-link-list
+
+### terms (/terms)
+
+Layout: detail-header → registry-link-list

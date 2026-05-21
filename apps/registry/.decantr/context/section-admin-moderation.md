@@ -6,7 +6,7 @@
 ## Quick Start
 
 **Shell:** Responsive sidebar shell with a desktop split layout, a compact sticky header, and an overlay drawer below the md breakpoint. Used by dashboards, account workspaces, and admin operations surfaces. (nav: 240px, header: 52px)
-**Pages:** 5 (moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail)
+**Pages:** 7 (moderation-queue, commercial-reports, organizations, organization-detail, moderation-detail, telemetry, telemetry-usage)
 **Key patterns:** search-filter-bar [moderate], moderation-queue-item [complex], kpi-grid, activity-feed, content-card-grid [moderate], detail-header [moderate], content-detail-hero [moderate], json-viewer
 **Theme decorators:** 11 classes — see `section-admin-moderation-pack.md` for the Class | Intent | Apply-to contract
 **Density:** comfortable
@@ -153,6 +153,12 @@ auth, admin
 
 **Personality utilities available in treatments.css:**
 - `status-ring` with `data-status="active|idle|error|processing"` — Color-coded status with pulse animation
+
+## Constraints
+
+- **effects:** {"doctrine-security-data":"Preserve the existing Supabase auth, admin authorization, billing, API-key, telemetry attribution, privacy, and hosted-registry service boundaries unless a reviewed task explicitly changes them.","doctrine-design-system":"Preserve the registry's Luminarum token bridge, Decantr treatments, shell rhythm, and public/admin/dashboard styling contracts while evolving individual pages."}
+
+---
 
 ## Pattern Reference
 
@@ -539,6 +545,14 @@ Layout: search-filter-bar → content-card-grid → activity-feed
 
 Layout: detail-header → kpi-grid → activity-feed → content-card-grid
 
-### moderation-detail (/admin-moderation/moderation-detail)
+### moderation-detail (/admin/moderation/:id)
 
 Layout: content-detail-hero → json-viewer → moderation-queue-item
+
+### telemetry (/admin/telemetry)
+
+Layout: kpi-grid → search-filter-bar → activity-feed
+
+### telemetry-usage (/admin/telemetry/usage)
+
+Layout: kpi-grid → activity-feed → content-card-grid

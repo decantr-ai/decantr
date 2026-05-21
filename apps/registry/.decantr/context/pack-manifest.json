@@ -1,7 +1,7 @@
 {
   "$schema": "https://decantr.ai/schemas/pack-manifest.v1.json",
   "version": "1.0.0",
-  "generatedAt": "2026-05-15T12:57:35.009Z",
+  "generatedAt": "2026-05-20T17:52:04.280Z",
   "scaffold": {
     "id": "scaffold",
     "markdown": "scaffold-pack.md",
@@ -22,7 +22,10 @@
         "browse",
         "browse-type",
         "detail",
-        "profile"
+        "profile",
+        "scan",
+        "privacy",
+        "terms"
       ]
     },
     {
@@ -50,7 +53,9 @@
         "commercial-reports",
         "organizations",
         "organization-detail",
-        "moderation-detail"
+        "moderation-detail",
+        "telemetry",
+        "telemetry-usage"
       ]
     },
     {
@@ -97,6 +102,27 @@
       "id": "profile",
       "markdown": "page-profile-pack.md",
       "json": "page-profile-pack.json",
+      "sectionId": "registry-browser",
+      "sectionRole": "public"
+    },
+    {
+      "id": "scan",
+      "markdown": "page-scan-pack.md",
+      "json": "page-scan-pack.json",
+      "sectionId": "registry-browser",
+      "sectionRole": "public"
+    },
+    {
+      "id": "privacy",
+      "markdown": "page-privacy-pack.md",
+      "json": "page-privacy-pack.json",
+      "sectionId": "registry-browser",
+      "sectionRole": "public"
+    },
+    {
+      "id": "terms",
+      "markdown": "page-terms-pack.md",
+      "json": "page-terms-pack.json",
       "sectionId": "registry-browser",
       "sectionRole": "public"
     },
@@ -195,6 +221,20 @@
       "id": "moderation-detail",
       "markdown": "page-moderation-detail-pack.md",
       "json": "page-moderation-detail-pack.json",
+      "sectionId": "admin-moderation",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "telemetry",
+      "markdown": "page-telemetry-pack.md",
+      "json": "page-telemetry-pack.json",
+      "sectionId": "admin-moderation",
+      "sectionRole": "auxiliary"
+    },
+    {
+      "id": "telemetry-usage",
+      "markdown": "page-telemetry-usage-pack.md",
+      "json": "page-telemetry-usage-pack.json",
       "sectionId": "admin-moderation",
       "sectionRole": "auxiliary"
     },

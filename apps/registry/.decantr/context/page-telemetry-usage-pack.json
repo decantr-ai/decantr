@@ -2,7 +2,7 @@
   "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
   "packVersion": "1.0.0",
   "packType": "page",
-  "objective": "Implement the organization-detail route using the compiled page contract.",
+  "objective": "Implement the telemetry-usage route using the compiled page contract.",
   "target": {
     "platform": "web",
     "framework": "nextjs",
@@ -13,10 +13,9 @@
   "scope": {
     "appId": "app",
     "pageIds": [
-      "organization-detail"
+      "telemetry-usage"
     ],
     "patternIds": [
-      "detail-header",
       "kpi-grid",
       "activity-feed",
       "content-card-grid"
@@ -27,7 +26,7 @@
     "Treat the listed page patterns as the primary structure for this route."
   ],
   "allowedVocabulary": [
-    "organization-detail",
+    "telemetry-usage",
     "sidebar-main",
     "admin-moderation",
     "auxiliary",
@@ -35,8 +34,6 @@
     "dark",
     "auth",
     "admin",
-    "detail-header",
-    "row",
     "kpi-grid",
     "grid",
     "activity-feed",
@@ -72,8 +69,8 @@
     ]
   },
   "data": {
-    "pageId": "organization-detail",
-    "path": "/admin/organizations/:slug",
+    "pageId": "telemetry-usage",
+    "path": "/admin/telemetry/usage",
     "shell": "sidebar-main",
     "sectionId": "admin-moderation",
     "sectionRole": "auxiliary",
@@ -89,19 +86,6 @@
     },
     "wiringSignals": [],
     "patterns": [
-      {
-        "id": "detail-header",
-        "alias": "detail-header",
-        "preset": "standard",
-        "layout": "row",
-        "presetDescription": "Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.",
-        "interactions": [
-          "hover-reveal",
-          "keyboard-navigation",
-          "animate-on-mount",
-          "click-select"
-        ]
-      },
       {
         "id": "kpi-grid",
         "alias": "kpi-grid",
@@ -147,5 +131,5 @@
       }
     ]
   },
-  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the organization-detail route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=organization-detail | patterns=detail-header, kpi-grid, activity-feed, content-card-grid\n\n## Page Contract\n- Page: organization-detail\n- Path: /admin/organizations/:slug\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- detail-header -> detail-header [row | standard]\n  > Title, subtitle/description, status badge, breadcrumb, and action buttons. Horizontal layout with bottom border.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] hover-reveal\n  - [ ] keyboard-navigation\n  - [ ] animate-on-mount\n  - [ ] click-select\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the telemetry-usage route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=telemetry-usage | patterns=kpi-grid, activity-feed, content-card-grid\n\n## Page Contract\n- Page: telemetry-usage\n- Path: /admin/telemetry/usage\n- Shell: sidebar-main\n- Section: admin-moderation (auxiliary)\n- Theme: luminarum (dark)\n- Features: auth, admin\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- kpi-grid -> kpi-grid [grid | dashboard]\n  > 4-column grid of stat cards with icon, label, value, and change percentage. This pattern owns the grid and cards, not the surrounding section rhythm.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] click-select\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-tooltip\n- activity-feed -> activity-feed [column | standard]\n  > Vertical timeline with avatar, user name, action text, timestamp. Grouped by date.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] real-time-updates\n  - [ ] hover-reveal\n  - [ ] scroll-reveal\n- content-card-grid -> content-card-grid [grid | standard]\n  > Registry content cards with optional 16:9 media, one type chip, a 3-line description, and a clean source/version/date footer. Grid: 1/2/3 cols at sm/md/lg.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] lift-hover\n  - [ ] stagger-children\n  - [ ] animate-on-mount\n  - [ ] click-select\n  - [ ] scroll-reveal\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
 }

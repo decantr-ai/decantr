@@ -6,7 +6,7 @@
   "target": {
     "platform": "web",
     "framework": "nextjs",
-    "runtime": "spa",
+    "runtime": "ssr",
     "adapter": "nextjs"
   },
   "preset": null,

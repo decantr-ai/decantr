@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-20T17:27:58.230Z",
+  "precedenceOrder": [
+    "security-data",
+    "architecture",
+    "design-system",
+    "workflow-ci",
+    "feature-business",
+    "assistant-specific",
+    "stale-or-historical",
+    "unknown"
+  ],
+  "sources": [
+    {
+      "path": "src/lib/supabase/middleware.ts",
+      "type": "file",
+      "area": "security-data",
+      "originalRole": "security-data",
+      "precedence": 100,
+      "confidence": 0.9,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "security, auth, schema, middleware, or data-governance evidence"
+    },
+    {
+      "path": "decantr.essence.json",
+      "type": "file",
+      "area": "architecture",
+      "originalRole": "architecture",
+      "precedence": 88,
+      "confidence": 0.82,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "existing Decantr contract evidence"
+    },
+    {
+      "path": "next.config.ts",
+      "type": "file",
+      "area": "architecture",
+      "originalRole": "architecture",
+      "precedence": 88,
+      "confidence": 0.72,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "architecture, setup, or framework configuration evidence"
+    },
+    {
+      "path": "public/showcase/thumbnails/README.md",
+      "type": "file",
+      "area": "architecture",
+      "originalRole": "unknown",
+      "precedence": 88,
+      "confidence": 0.35,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "unclassified context candidate"
+    },
+    {
+      "path": "README.md",
+      "type": "file",
+      "area": "architecture",
+      "originalRole": "architecture",
+      "precedence": 88,
+      "confidence": 0.72,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "architecture, setup, or framework configuration evidence"
+    },
+    {
+      "path": "tsconfig.json",
+      "type": "file",
+      "area": "architecture",
+      "originalRole": "architecture",
+      "precedence": 88,
+      "confidence": 0.72,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "architecture, setup, or framework configuration evidence"
+    },
+    {
+      "path": "vitest.config.ts",
+      "type": "file",
+      "area": "architecture",
+      "originalRole": "workflow-ci",
+      "precedence": 88,
+      "confidence": 0.84,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "workflow, CI, deployment, or validation command evidence"
+    },
+    {
+      "path": "package.json",
+      "type": "file",
+      "area": "workflow-ci",
+      "originalRole": "workflow-ci",
+      "precedence": 74,
+      "confidence": 0.84,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "workflow, CI, deployment, or validation command evidence"
+    },
+    {
+      "path": "AGENTS.md",
+      "type": "file",
+      "area": "assistant-specific",
+      "originalRole": "assistant-specific",
+      "precedence": 61,
+      "confidence": 0.98,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "assistant or AI-agent instruction surface"
+    },
+    {
+      "path": "CLAUDE.md",
+      "type": "file",
+      "area": "assistant-specific",
+      "originalRole": "assistant-specific",
+      "precedence": 61,
+      "confidence": 0.98,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "assistant or AI-agent instruction surface"
+    },
+    {
+      "path": ".env.example",
+      "type": "file",
+      "area": "unknown",
+      "originalRole": "unknown",
+      "precedence": 12,
+      "confidence": 0.35,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "unclassified context candidate"
+    },
+    {
+      "path": "DECANTR.md",
+      "type": "file",
+      "area": "unknown",
+      "originalRole": "unknown",
+      "precedence": 12,
+      "confidence": 0.35,
+      "currency": "current",
+      "safeToCite": true,
+      "rationale": "unclassified context candidate"
+    },
+    {
+      "path": ".env.local",
+      "type": "file",
+      "area": "unknown",
+      "originalRole": "unknown",
+      "precedence": 0,
+      "confidence": 0.35,
+      "currency": "unsafe-to-cite",
+      "safeToCite": false,
+      "rationale": "unclassified context candidate"
+    }
+  ],
+  "summary": {
+    "security-data": 1,
+    "architecture": 6,
+    "design-system": 0,
+    "workflow-ci": 1,
+    "feature-business": 0,
+    "assistant-specific": 2,
+    "stale-or-historical": 0,
+    "unknown": 3
+  },
+  "conflicts": [],
+  "staleRisks": [],
+  "resolutions": [],
+  "guidance": [
+    "Treat security/data doctrine as highest precedence for implementation safety.",
+    "Treat architecture and design-system sources as product conventions, not Decantr defaults.",
+    "Treat workflow/CI sources as validation evidence for commands and release gates.",
+    "Treat stale-risk sources as historical evidence until a current source confirms them.",
+    "Do not cite unsafe sources directly in assistant context."
+  ]
+}

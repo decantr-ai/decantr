@@ -2243,7 +2243,18 @@ This project uses Decantr as a **contract and governance layer only**.
 
 Do not install \`@decantr/css\`, rewrite the styling system, or add generated Decantr CSS files unless the task explicitly changes the adoption mode. Preserve the existing framework styling conventions and map them into the Decantr context before changing implementation files.
 
-Use \`.decantr/context/scaffold-pack.md\` and the matching section/page packs to understand visual intent, shell structure, and route contracts. Implement those contracts through the project's current CSS, component library, tokens, or design-system primitives.`;
+Use \`.decantr/context/scaffold-pack.md\` and the matching section/page packs to understand visual intent, shell structure, and route contracts. Implement those contracts through the project's current CSS, component library, tokens, or design-system primitives.
+
+### Interaction Requirements
+
+Every pattern declares its required interactions in its page-pack \`Interactions\` checklist. A declared interaction must be implemented in source through the project's existing component library, CSS, or event-handler patterns.
+
+| Declared interaction | Canonical implementation shape |
+|----------------------|--------------------------------|
+| \`animate-on-mount\` | Entrance animation class or component transition on the pattern root |
+| \`stagger-children\` | Parent stagger class or animation delay driven by child index |
+| \`keyboard-navigation\` | Arrow-key/Enter/Space handlers with visible focus state |
+| \`ripple-click\` | \`d-ripple\` or an equivalent click feedback class on the interactive surface |`;
 
 const STYLE_BRIDGE_CSS_APPROACH = `## Styling Adoption
 
@@ -2251,7 +2262,18 @@ This project uses Decantr in **style-bridge** mode.
 
 Decantr may generate lightweight bridge files such as \`src/styles/tokens.css\` and \`src/styles/decantr-bridge.css\`, but \`@decantr/css\` is not required. Treat these files as a mapping layer between Decantr context and the app's existing styling system.
 
-Preserve the current CSS framework/component library. Use Decantr tokens and bridge classes only where they clarify design intent without replacing the app's established styling conventions.`;
+Preserve the current CSS framework/component library. Use Decantr tokens and bridge classes only where they clarify design intent without replacing the app's established styling conventions.
+
+### Interaction Requirements
+
+Every pattern declares its required interactions in its page-pack \`Interactions\` checklist. A declared interaction must be implemented in source through the project's existing component library, CSS, or event-handler patterns.
+
+| Declared interaction | Canonical implementation shape |
+|----------------------|--------------------------------|
+| \`animate-on-mount\` | Entrance animation class or component transition on the pattern root |
+| \`stagger-children\` | Parent stagger class or animation delay driven by child index |
+| \`keyboard-navigation\` | Arrow-key/Enter/Space handlers with visible focus state |
+| \`ripple-click\` | \`d-ripple\` or an equivalent click feedback class on the interactive surface |`;
 
 function getCssApproachContent(adoptionMode?: AdoptionMode): string {
   if (adoptionMode === 'contract-only') return CONTRACT_ONLY_CSS_APPROACH;

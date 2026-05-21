@@ -1,0 +1,105 @@
+{
+  "$schema": "https://decantr.ai/schemas/page-pack.v1.json",
+  "packVersion": "1.0.0",
+  "packType": "page",
+  "objective": "Implement the scan route using the compiled page contract.",
+  "target": {
+    "platform": "web",
+    "framework": "nextjs",
+    "runtime": "ssr",
+    "adapter": "nextjs"
+  },
+  "preset": null,
+  "scope": {
+    "appId": "app",
+    "pageIds": [
+      "scan"
+    ],
+    "patternIds": [
+      "brownfield-scan"
+    ]
+  },
+  "requiredSetup": [
+    "Keep the compiled route and shell contract stable for this page.",
+    "Treat the listed page patterns as the primary structure for this route."
+  ],
+  "allowedVocabulary": [
+    "scan",
+    "full-bleed",
+    "registry-browser",
+    "public",
+    "luminarum",
+    "dark",
+    "search",
+    "pagination",
+    "brownfield-scan",
+    "stack"
+  ],
+  "examples": [],
+  "antiPatterns": [],
+  "successChecks": [
+    {
+      "id": "page-route-contract",
+      "label": "The page keeps the compiled route, shell, and section contract intact.",
+      "severity": "error"
+    },
+    {
+      "id": "page-pattern-contract",
+      "label": "The page preserves its primary compiled patterns instead of drifting into unrelated layouts.",
+      "severity": "error"
+    },
+    {
+      "id": "page-state-contract",
+      "label": "Any declared wiring signals remain coherent with the rendered page structure.",
+      "severity": "warn"
+    }
+  ],
+  "tokenBudget": {
+    "target": 1400,
+    "max": 2200,
+    "strategy": [
+      "Prefer route summaries over repeated prose.",
+      "Use compact vocabulary lists instead of large reference tables.",
+      "Include only task-relevant examples and checks."
+    ]
+  },
+  "data": {
+    "pageId": "scan",
+    "path": "/scan",
+    "shell": "full-bleed",
+    "sectionId": "registry-browser",
+    "sectionRole": "public",
+    "features": [
+      "search",
+      "pagination"
+    ],
+    "surface": "_flex _col _gap4",
+    "theme": {
+      "id": "luminarum",
+      "mode": "dark",
+      "shape": "rounded"
+    },
+    "wiringSignals": [],
+    "patterns": [
+      {
+        "id": "brownfield-scan",
+        "alias": "brownfield-scan",
+        "preset": "hosted-repo-scan",
+        "layout": "stack",
+        "presetDescription": "Centered full-bleed hero that collapses into an evidence report after a public GitHub repo or GitHub Pages URL is submitted.",
+        "interactions": [
+          "animate-on-mount",
+          "stagger-children",
+          "ripple-click",
+          "keyboard-navigation"
+        ]
+      }
+    ],
+    "directives": [
+      "Render as a full-bleed acquisition surface inside the public shell; do not constrain the hero to the registry browser max-width rhythm.",
+      "Use Decantr controls, cards, labels, and data-viz treatments before adding route-local CSS.",
+      "Keep the scan promise visually clear: no install, no build, no source execution."
+    ]
+  },
+  "renderedMarkdown": "# Page Pack\n\n**Objective:** Implement the scan route using the compiled page contract.\n**Target:** nextjs (nextjs)\n**Scope:** pages=scan | patterns=brownfield-scan\n\n## Page Contract\n- Page: scan\n- Path: /scan\n- Shell: full-bleed\n- Section: registry-browser (public)\n- Theme: luminarum (dark)\n- Features: search, pagination\n- Surface: _flex _col _gap4\n\n## Page Patterns\n- brownfield-scan -> brownfield-scan [stack | hosted-repo-scan]\n  > Centered full-bleed hero that collapses into an evidence report after a public GitHub repo or GitHub Pages URL is submitted.\n  **Interactions (MUST implement each — see DECANTR.md \"Interaction Requirements\"):**\n  - [ ] animate-on-mount\n  - [ ] stagger-children\n  - [ ] ripple-click\n  - [ ] keyboard-navigation\n\n## Page Directives\n\nExecution-level rules for this route. Follow exactly.\n\n- Render as a full-bleed acquisition surface inside the public shell; do not constrain the hero to the registry browser max-width rhythm.\n- Use Decantr controls, cards, labels, and data-viz treatments before adding route-local CSS.\n- Keep the scan promise visually clear: no install, no build, no source execution.\n\n## Shared Contract\nRequired setup, allowed vocabulary, success checks, anti-patterns, and token budget are shared across every page pack. The full list lives in the pack JSON sidecar (`page-<id>-pack.json`) and in the pack-manifest. Refer there instead of re-reading the same boilerplate 16 times.\n"
+}

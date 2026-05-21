@@ -40,6 +40,12 @@
       "focus_visible": true,
       "skip_nav": true
     },
+    "constraints": {
+      "effects": {
+        "doctrine-security-data": "Preserve the existing Supabase auth, admin authorization, billing, API-key, telemetry attribution, privacy, and hosted-registry service boundaries unless a reviewed task explicitly changes them.",
+        "doctrine-design-system": "Preserve the registry's Luminarum token bridge, Decantr treatments, shell rhythm, and public/admin/dashboard styling contracts while evolving individual pages."
+      }
+    },
     "personality": [
       "Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry."
     ]
@@ -102,6 +108,35 @@
               "activity-feed"
             ],
             "route": "/profile/:username"
+          },
+          {
+            "id": "scan",
+            "shell_override": "full-bleed",
+            "layout": [
+              "brownfield-scan"
+            ],
+            "route": "/scan",
+            "directives": [
+              "Render as a full-bleed acquisition surface inside the public shell; do not constrain the hero to the registry browser max-width rhythm.",
+              "Use Decantr controls, cards, labels, and data-viz treatments before adding route-local CSS.",
+              "Keep the scan promise visually clear: no install, no build, no source execution."
+            ]
+          },
+          {
+            "id": "privacy",
+            "layout": [
+              "detail-header",
+              "registry-link-list"
+            ],
+            "route": "/privacy"
+          },
+          {
+            "id": "terms",
+            "layout": [
+              "detail-header",
+              "registry-link-list"
+            ],
+            "route": "/terms"
           }
         ]
       },
@@ -241,6 +276,24 @@
               "moderation-queue-item"
             ],
             "route": "/admin/moderation/:id"
+          },
+          {
+            "id": "telemetry",
+            "layout": [
+              "kpi-grid",
+              "search-filter-bar",
+              "activity-feed"
+            ],
+            "route": "/admin/telemetry"
+          },
+          {
+            "id": "telemetry-usage",
+            "layout": [
+              "kpi-grid",
+              "activity-feed",
+              "content-card-grid"
+            ],
+            "route": "/admin/telemetry/usage"
           }
         ]
       },
@@ -319,6 +372,18 @@
         "section": "registry-browser",
         "page": "browse-type"
       },
+      "/scan": {
+        "section": "registry-browser",
+        "page": "scan"
+      },
+      "/privacy": {
+        "section": "registry-browser",
+        "page": "privacy"
+      },
+      "/terms": {
+        "section": "registry-browser",
+        "page": "terms"
+      },
       "/dashboard/team": {
         "section": "user-dashboard",
         "page": "team"
@@ -350,6 +415,14 @@
       "/admin/organizations/:slug": {
         "section": "admin-moderation",
         "page": "organization-detail"
+      },
+      "/admin/telemetry": {
+        "section": "admin-moderation",
+        "page": "telemetry"
+      },
+      "/admin/telemetry/usage": {
+        "section": "admin-moderation",
+        "page": "telemetry-usage"
       },
       "/dashboard/billing": {
         "section": "user-dashboard",
@@ -385,8 +458,8 @@
     "archetype": "registry-browser",
     "target": "nextjs",
     "platform": {
-      "type": "spa",
-      "routing": "hash"
+      "type": "ssr",
+      "routing": "pathname"
     },
     "guard": {
       "mode": "strict",

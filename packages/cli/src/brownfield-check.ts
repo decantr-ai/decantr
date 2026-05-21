@@ -45,6 +45,16 @@ function routeLabel(routes: string[]): string {
   return `${routes.slice(0, 6).join(', ')} (+${routes.length - 6} more)`;
 }
 
+function routePathname(route: string): string {
+  const queryIndex = route.indexOf('?');
+  if (queryIndex === -1) return route;
+  return route.slice(0, queryIndex) || '/';
+}
+
+function declaredRouteObserved(route: string, observedRoutes: Set<string>): boolean {
+  return observedRoutes.has(route) || (route.includes('?') && observedRoutes.has(routePathname(route)));
+}
+
 function hasDoctrineEffect(essence: EssenceV4, key: string): boolean {
   const effects = essence.dna.constraints?.effects;
   return Boolean(effects && effects[key]);
@@ -102,7 +112,9 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV4): B
   const declaredRoutes = essenceRoutes(essence);
   const observedRoutes = new Set(routes.routes.map((route) => route.path));
   const missingFromEssence = [...observedRoutes].filter((route) => !declaredRoutes.has(route));
-  const missingFromSource = [...declaredRoutes].filter((route) => !observedRoutes.has(route));
+  const missingFromSource = [...declaredRoutes].filter(
+    (route) => !declaredRouteObserved(route, observedRoutes),
+  );
 
   if (routes.routes.length > 0 && declaredRoutes.size === 0) {
     issues.push({

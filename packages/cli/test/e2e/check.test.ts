@@ -190,6 +190,96 @@ describe('check command (e2e)', () => {
     }
   });
 
+  it('treats query-string route variants as states of an observed pathname', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'query-state-routes',
+          dependencies: {
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            'react-router-dom': '^7.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    mkdirSync(join(testDir, 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'App.tsx'),
+      'import { Routes, Route } from "react-router-dom";\nexport function App() { return <Routes><Route path="/" element={<main />} /><Route path="/login" element={<main />} /></Routes>; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'decantr.essence.json'),
+      JSON.stringify(
+        {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['observed'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'auth-flow',
+                role: 'gateway',
+                shell: 'centered',
+                features: ['auth'],
+                description: 'Observed auth surface',
+                pages: [
+                  { id: 'home', route: '/', layout: ['existing-surface'] },
+                  { id: 'login', route: '/login', layout: ['existing-surface'] },
+                  {
+                    id: 'register',
+                    route: '/login?mode=register',
+                    layout: ['existing-surface'],
+                  },
+                ],
+              },
+            ],
+            features: ['auth'],
+            routes: {
+              '/': { section: 'auth-flow', page: 'home' },
+              '/login': { section: 'auth-flow', page: 'login' },
+              '/login?mode=register': { section: 'auth-flow', page: 'register' },
+            },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const output = execSync(`node ${cliPath} check --brownfield`, {
+      cwd: testDir,
+      encoding: 'utf-8',
+      timeout: 15000,
+    });
+
+    expect(output).not.toContain('[brownfield-stale-route]');
+    expect(output).not.toContain('[brownfield-route-drift]');
+  });
+
   it('reports unsafe brownfield defaults and doctrine conflicts for style-heavy apps', () => {
     writeFileSync(
       join(testDir, 'package.json'),
