@@ -18,11 +18,11 @@ function createTestApp() {
   return app;
 }
 
-function sampleReport(input: string) {
+function sampleReport(input: string, kind: 'github-repo' | 'github-pages' = 'github-repo') {
   return {
     schemaVersion: 'scan-report.v1',
     generatedAt: '2026-05-19T12:00:00.000Z',
-    input: { kind: input.includes('github.io') ? 'github-pages' : 'github-repo', value: input },
+    input: { kind, value: input },
     source: {
       repository: { owner: 'acme', repo: 'site', url: 'https://github.com/acme/site' },
       publishedSiteUrl: 'https://acme.github.io/site/',
@@ -86,7 +86,7 @@ describe('POST /v1/scan', () => {
   });
 
   it('accepts GitHub Pages URLs', async () => {
-    mockRunHostedScan.mockResolvedValue(sampleReport('https://acme.github.io/site/'));
+    mockRunHostedScan.mockResolvedValue(sampleReport('https://acme.github.io/site/', 'github-pages'));
     const app = createTestApp();
     const res = await app.request('/v1/scan', {
       method: 'POST',

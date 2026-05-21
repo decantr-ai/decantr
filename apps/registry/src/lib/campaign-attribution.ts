@@ -356,26 +356,41 @@ function normalizeValue(value: string | null | undefined): string | null {
   return normalized ? normalized.slice(0, 80) : null;
 }
 
+function hostnameLabels(hostname: string): string[] {
+  return hostname.toLowerCase().split('.').filter(Boolean);
+}
+
+function hostnameHasLabel(hostname: string, label: string): boolean {
+  return hostnameLabels(hostname).includes(label);
+}
+
+function hostnameMatchesDomain(hostname: string, domain: string): boolean {
+  const labels = hostnameLabels(hostname);
+  const domainLabels = hostnameLabels(domain);
+  if (labels.length < domainLabels.length) return false;
+  return domainLabels.every((label, index) => labels[labels.length - domainLabels.length + index] === label);
+}
+
 function normalizeReferrerSource(domain: string): string {
   const normalized = normalizeValue(domain) ?? 'referral';
-  if (normalized.includes('google.')) return 'google';
-  if (normalized.includes('bing.')) return 'bing';
-  if (normalized.includes('duckduckgo.')) return 'duckduckgo';
-  if (normalized.includes('yahoo.')) return 'yahoo';
-  if (normalized.includes('chatgpt.') || normalized.includes('openai.')) return 'chatgpt';
-  if (normalized.includes('perplexity.')) return 'perplexity';
-  if (normalized.includes('claude.') || normalized.includes('anthropic.')) return 'claude';
-  if (normalized.includes('gemini.') || normalized.includes('bard.google.')) return 'gemini';
-  if (normalized.includes('github.')) return 'github';
-  if (normalized.includes('npmjs.')) return 'npm';
-  if (normalized.includes('jsr.')) return 'jsr';
-  if (normalized.includes('x.com') || normalized.includes('twitter.')) return 'x';
-  if (normalized.includes('linkedin.')) return 'linkedin';
-  if (normalized.includes('reddit.')) return 'reddit';
-  if (normalized.includes('news.ycombinator.')) return 'news.ycombinator';
-  if (normalized.includes('stackoverflow.')) return 'stackoverflow';
-  if (normalized.includes('discord.')) return 'discord';
-  if (normalized.includes('youtube.')) return 'youtube';
+  if (hostnameHasLabel(normalized, 'google')) return 'google';
+  if (hostnameHasLabel(normalized, 'bing')) return 'bing';
+  if (hostnameHasLabel(normalized, 'duckduckgo')) return 'duckduckgo';
+  if (hostnameHasLabel(normalized, 'yahoo')) return 'yahoo';
+  if (hostnameHasLabel(normalized, 'chatgpt') || hostnameHasLabel(normalized, 'openai')) return 'chatgpt';
+  if (hostnameHasLabel(normalized, 'perplexity')) return 'perplexity';
+  if (hostnameHasLabel(normalized, 'claude') || hostnameHasLabel(normalized, 'anthropic')) return 'claude';
+  if (hostnameHasLabel(normalized, 'gemini') || hostnameMatchesDomain(normalized, 'bard.google.com')) return 'gemini';
+  if (hostnameHasLabel(normalized, 'github')) return 'github';
+  if (hostnameHasLabel(normalized, 'npmjs')) return 'npm';
+  if (hostnameHasLabel(normalized, 'jsr')) return 'jsr';
+  if (hostnameMatchesDomain(normalized, 'x.com') || hostnameHasLabel(normalized, 'twitter')) return 'x';
+  if (hostnameHasLabel(normalized, 'linkedin')) return 'linkedin';
+  if (hostnameHasLabel(normalized, 'reddit')) return 'reddit';
+  if (hostnameMatchesDomain(normalized, 'news.ycombinator.com')) return 'news.ycombinator';
+  if (hostnameHasLabel(normalized, 'stackoverflow')) return 'stackoverflow';
+  if (hostnameHasLabel(normalized, 'discord')) return 'discord';
+  if (hostnameHasLabel(normalized, 'youtube')) return 'youtube';
   return normalized.slice(0, 80);
 }
 
@@ -485,7 +500,7 @@ function getCookieDomain(): string | null {
 }
 
 function isDecantrHostname(hostname: string): boolean {
-  return hostname === 'decantr.ai' || hostname.endsWith('.decantr.ai');
+  return hostnameMatchesDomain(hostname, 'decantr.ai');
 }
 
 function isBrowser(): boolean {

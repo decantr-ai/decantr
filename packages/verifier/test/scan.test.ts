@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { resolveGitHubScanInput, scanProject } from '../src/index.js';
+import { probePublishedSite, resolveGitHubScanInput, scanProject } from '../src/index.js';
 
 describe('scanProject', () => {
   let projectRoot: string;
@@ -119,6 +119,26 @@ describe('scanProject', () => {
     expect(report.project.framework).toBe('html');
     expect(report.findings.some((finding) => finding.id === 'package-manifest-invalid')).toBe(true);
   });
+
+  it('does not treat a homepage query string as GitHub Pages hosting evidence', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          homepage: 'https://example.com/launch?next=https://acme.github.io/site/',
+          dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0' },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(join(projectRoot, 'index.html'), '<!doctype html><div id="root"></div>\n');
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.staticHosting.githubPagesLikely).toBe(false);
+    expect(report.staticHosting.basePath).toBeNull();
+  });
 });
 
 describe('resolveGitHubScanInput', () => {
@@ -130,5 +150,33 @@ describe('resolveGitHubScanInput', () => {
     expect(resolveGitHubScanInput('https://acme.github.io/site/docs').publishedSiteUrl).toBe(
       'https://acme.github.io/site/',
     );
+  });
+
+  it('rejects invalid GitHub repository path segments', () => {
+    expect(() => resolveGitHubScanInput('https://github.com/acme/site%2Fadmin')).toThrow(/valid owner and repository/);
+    expect(() => resolveGitHubScanInput('https://acme.github.io/site%2Fadmin/')).toThrow(/valid owner and repository/);
+  });
+});
+
+describe('probePublishedSite', () => {
+  it('decodes published page metadata with an entity parser', async () => {
+    const html = [
+      '<!doctype html>',
+      '<title>R&amp;D Lab</title>',
+      '<meta name="description" content="Static &amp; read-only">',
+      '<link rel="canonical" href="https://acme.github.io/site/?ref=scan&amp;mode=public">',
+    ].join('');
+
+    const probe = await probePublishedSite('https://acme.github.io/site/', {
+      fetchImpl: async () =>
+        new Response(html, {
+          status: 200,
+          headers: { 'content-type': 'text/html' },
+        }),
+    });
+
+    expect(probe.title).toBe('R&D Lab');
+    expect(probe.description).toBe('Static & read-only');
+    expect(probe.canonicalUrl).toBe('https://acme.github.io/site/?ref=scan&mode=public');
   });
 });

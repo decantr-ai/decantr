@@ -423,26 +423,44 @@
     return normalized ? normalized.slice(0, 80) : null;
   }
 
+  function hostnameLabels(hostname) {
+    return (hostname || '').toLowerCase().split('.').filter(Boolean);
+  }
+
+  function hostnameHasLabel(hostname, label) {
+    return hostnameLabels(hostname).indexOf(label) !== -1;
+  }
+
+  function hostnameMatchesDomain(hostname, domain) {
+    var labels = hostnameLabels(hostname);
+    var domainLabels = hostnameLabels(domain);
+    if (labels.length < domainLabels.length) return false;
+    for (var index = 1; index <= domainLabels.length; index += 1) {
+      if (labels[labels.length - index] !== domainLabels[domainLabels.length - index]) return false;
+    }
+    return true;
+  }
+
   function normalizeReferrerSource(domain) {
     var normalized = normalizeValue(domain) || 'referral';
-    if (normalized.indexOf('google.') !== -1) return 'google';
-    if (normalized.indexOf('bing.') !== -1) return 'bing';
-    if (normalized.indexOf('duckduckgo.') !== -1) return 'duckduckgo';
-    if (normalized.indexOf('yahoo.') !== -1) return 'yahoo';
-    if (normalized.indexOf('chatgpt.') !== -1 || normalized.indexOf('openai.') !== -1) return 'chatgpt';
-    if (normalized.indexOf('perplexity.') !== -1) return 'perplexity';
-    if (normalized.indexOf('claude.') !== -1 || normalized.indexOf('anthropic.') !== -1) return 'claude';
-    if (normalized.indexOf('gemini.') !== -1 || normalized.indexOf('bard.google.') !== -1) return 'gemini';
-    if (normalized.indexOf('github.') !== -1) return 'github';
-    if (normalized.indexOf('npmjs.') !== -1) return 'npm';
-    if (normalized.indexOf('jsr.') !== -1) return 'jsr';
-    if (normalized.indexOf('x.com') !== -1 || normalized.indexOf('twitter.') !== -1) return 'x';
-    if (normalized.indexOf('linkedin.') !== -1) return 'linkedin';
-    if (normalized.indexOf('reddit.') !== -1) return 'reddit';
-    if (normalized.indexOf('news.ycombinator.') !== -1) return 'news.ycombinator';
-    if (normalized.indexOf('stackoverflow.') !== -1) return 'stackoverflow';
-    if (normalized.indexOf('discord.') !== -1) return 'discord';
-    if (normalized.indexOf('youtube.') !== -1) return 'youtube';
+    if (hostnameHasLabel(normalized, 'google')) return 'google';
+    if (hostnameHasLabel(normalized, 'bing')) return 'bing';
+    if (hostnameHasLabel(normalized, 'duckduckgo')) return 'duckduckgo';
+    if (hostnameHasLabel(normalized, 'yahoo')) return 'yahoo';
+    if (hostnameHasLabel(normalized, 'chatgpt') || hostnameHasLabel(normalized, 'openai')) return 'chatgpt';
+    if (hostnameHasLabel(normalized, 'perplexity')) return 'perplexity';
+    if (hostnameHasLabel(normalized, 'claude') || hostnameHasLabel(normalized, 'anthropic')) return 'claude';
+    if (hostnameHasLabel(normalized, 'gemini') || hostnameMatchesDomain(normalized, 'bard.google.com')) return 'gemini';
+    if (hostnameHasLabel(normalized, 'github')) return 'github';
+    if (hostnameHasLabel(normalized, 'npmjs')) return 'npm';
+    if (hostnameHasLabel(normalized, 'jsr')) return 'jsr';
+    if (hostnameMatchesDomain(normalized, 'x.com') || hostnameHasLabel(normalized, 'twitter')) return 'x';
+    if (hostnameHasLabel(normalized, 'linkedin')) return 'linkedin';
+    if (hostnameHasLabel(normalized, 'reddit')) return 'reddit';
+    if (hostnameMatchesDomain(normalized, 'news.ycombinator.com')) return 'news.ycombinator';
+    if (hostnameHasLabel(normalized, 'stackoverflow')) return 'stackoverflow';
+    if (hostnameHasLabel(normalized, 'discord')) return 'discord';
+    if (hostnameHasLabel(normalized, 'youtube')) return 'youtube';
     return normalized.slice(0, 80);
   }
 
@@ -600,13 +618,13 @@
   }
 
   function isDecantrHostname(hostname) {
-    return hostname === 'decantr.ai' || /\.decantr\.ai$/.test(hostname);
+    return hostnameMatchesDomain(hostname, 'decantr.ai');
   }
 
   function isDecantrDeployHostname(hostname) {
     return isDecantrHostname(hostname) ||
       hostname === 'decantr-ai.github.io' ||
-      /\.vercel\.app$/.test(hostname);
+      hostnameMatchesDomain(hostname, 'vercel.app');
   }
 
   function classifyPageSurface() {
@@ -639,7 +657,7 @@
     if (host === 'registry.decantr.ai') return 'registry';
     if (host === 'github.com') return 'github';
     if (host === 'npmjs.com') return 'npm';
-    if (host.indexOf('discord') !== -1) return 'discord';
+    if (hostnameHasLabel(host, 'discord')) return 'discord';
     if (host === window.location.hostname.replace(/^www\./, '')) {
       if (url.pathname.indexOf('/reference/') === 0) return 'reference';
       return 'internal';

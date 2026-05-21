@@ -62,6 +62,7 @@
   "dependencies": {
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
+    "entities": "^8.0.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

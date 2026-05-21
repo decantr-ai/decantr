@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { decodeXML } from 'entities';
 
 const DEFAULT_KEY = '24d33581c24e009daf33a15d040ef127';
 const DEFAULT_SITEMAPS = [
@@ -115,12 +116,7 @@ async function fetchText(url) {
 }
 
 function decodeXml(value) {
-  return value
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'");
+  return decodeXML(value);
 }
 
 function parseArgs(rawArgs) {

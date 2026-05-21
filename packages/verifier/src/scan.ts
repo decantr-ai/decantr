@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, isAbsolute, join, relative } from 'node:path';
+import { decodeHTML, decodeHTMLAttribute } from 'entities';
 
 export type ScanInputKind = 'local' | 'github-repo' | 'github-pages';
 export type ScanConfidence = 'high' | 'medium' | 'low';
@@ -205,6 +206,31 @@ const RULE_FILES = [
   'copilot-instructions.md',
   '.windsurfrules',
 ];
+
+const GITHUB_OWNER_RE = /^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?$/i;
+const GITHUB_REPO_RE = /^[a-z0-9._-]{1,100}$/i;
+
+function parseHttpUrl(value: string): URL | null {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+function githubPagesOwnerFromHostname(hostname: string): string | null {
+  const [owner, domain, tld, ...extra] = hostname.toLowerCase().split('.');
+  if (extra.length > 0 || domain !== 'github' || tld !== 'io' || !owner) return null;
+  return GITHUB_OWNER_RE.test(owner) ? owner : null;
+}
+
+function normalizeGitHubPathSegment(segment: string | undefined, kind: 'owner' | 'repo'): string | null {
+  if (!segment) return null;
+  const normalized = kind === 'repo' ? segment.replace(/\.git$/i, '') : segment;
+  const pattern = kind === 'owner' ? GITHUB_OWNER_RE : GITHUB_REPO_RE;
+  return pattern.test(normalized) ? normalized : null;
+}
 
 const WEB_FRAMEWORKS = new Set([
   'angular',
@@ -603,14 +629,10 @@ function scanStaticHosting(projectRoot: string, detection: ProjectDetection): Sc
   let basePath: string | null = null;
   let hashRouting = false;
 
-  if (homepageUrl?.includes('github.io')) {
+  const homepage = homepageUrl ? parseHttpUrl(homepageUrl) : null;
+  if (homepage && githubPagesOwnerFromHostname(homepage.hostname)) {
     evidence.push('package.json homepage points at GitHub Pages');
-    try {
-      const url = new URL(homepageUrl);
-      basePath = url.pathname && url.pathname !== '/' ? url.pathname : null;
-    } catch {
-      // Ignore invalid homepage URLs.
-    }
+    basePath = homepage.pathname && homepage.pathname !== '/' ? homepage.pathname : null;
   }
 
   if (detection.dependencies['gh-pages'] || pkg?.scripts?.deploy?.includes('gh-pages')) {
@@ -1000,19 +1022,17 @@ export function createUnavailableScanReport(input: {
   };
 }
 
-function decodeHtml(value: string): string {
-  return value
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .trim();
+function decodeHtmlText(value: string): string {
+  return decodeHTML(value).replace(/\s+/g, ' ').trim();
+}
+
+function decodeHtmlAttributeValue(value: string): string {
+  return decodeHTMLAttribute(value).trim();
 }
 
 function extractHtmlAttribute(tag: string, attr: string): string | null {
   const match = tag.match(new RegExp(`${attr}\\s*=\\s*["']([^"']+)["']`, 'i'));
-  return match?.[1] ? decodeHtml(match[1]) : null;
+  return match?.[1] ? decodeHtmlAttributeValue(match[1]) : null;
 }
 
 export async function probePublishedSite(url: string, options: { timeoutMs?: number; fetchImpl?: typeof fetch } = {}): Promise<PublishedSiteProbeV1> {
@@ -1049,7 +1069,7 @@ export async function probePublishedSite(url: string, options: { timeoutMs?: num
       checked: true,
       reachable: response.ok,
       status: response.status,
-      title: titleMatch?.[1] ? decodeHtml(titleMatch[1].replace(/\s+/g, ' ')) : null,
+      title: titleMatch?.[1] ? decodeHtmlText(titleMatch[1]) : null,
       description: descriptionTag ? extractHtmlAttribute(descriptionTag, 'content') : null,
       canonicalUrl: canonicalTag ? extractHtmlAttribute(canonicalTag, 'href') : null,
       assetHints: {
@@ -1081,24 +1101,22 @@ export async function probePublishedSite(url: string, options: { timeoutMs?: num
 }
 
 export function resolveGitHubScanInput(input: string): GitHubScanInputResolution {
-  let url: URL;
-  try {
-    url = new URL(input.trim());
-  } catch {
+  const url = parseHttpUrl(input);
+  if (!url) {
     throw new Error('Enter a valid GitHub repository URL or GitHub Pages URL.');
-  }
-
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') {
-    throw new Error('Scan URLs must use http or https.');
   }
 
   const host = url.hostname.toLowerCase();
   if (host === 'github.com' || host === 'www.github.com') {
-    const [owner, repoSegment] = url.pathname.split('/').filter(Boolean);
+    const [ownerSegment, repoSegment] = url.pathname.split('/').filter(Boolean);
+    const owner = normalizeGitHubPathSegment(ownerSegment, 'owner');
+    const repo = normalizeGitHubPathSegment(repoSegment, 'repo');
     if (!owner || !repoSegment) {
       throw new Error('GitHub repository URLs must include owner and repository.');
     }
-    const repo = repoSegment.replace(/\.git$/, '');
+    if (!repo) {
+      throw new Error('GitHub repository URLs must include a valid owner and repository.');
+    }
     return {
       inputKind: 'github-repo',
       normalizedInput: `https://github.com/${owner}/${repo}`,
@@ -1112,18 +1130,21 @@ export function resolveGitHubScanInput(input: string): GitHubScanInputResolution
     };
   }
 
-  if (host.endsWith('.github.io')) {
-    const owner = host.slice(0, -'.github.io'.length);
+  const pagesOwner = githubPagesOwnerFromHostname(host);
+  if (pagesOwner) {
     const segments = url.pathname.split('/').filter(Boolean);
-    const repo = segments[0] ?? `${owner}.github.io`;
-    const publishedSiteUrl = segments[0] ? `https://${owner}.github.io/${repo}/` : `https://${owner}.github.io/`;
+    const repo = segments[0] ? normalizeGitHubPathSegment(segments[0], 'repo') : `${pagesOwner}.github.io`;
+    if (!repo) {
+      throw new Error('GitHub Pages URLs must include a valid owner and repository path.');
+    }
+    const publishedSiteUrl = segments[0] ? `https://${pagesOwner}.github.io/${repo}/` : `https://${pagesOwner}.github.io/`;
     return {
       inputKind: 'github-pages',
       normalizedInput: publishedSiteUrl,
       repository: {
-        owner,
+        owner: pagesOwner,
         repo,
-        url: `https://github.com/${owner}/${repo}`,
+        url: `https://github.com/${pagesOwner}/${repo}`,
       },
       publishedSiteUrl,
       warnings: segments.length > 1 ? ['Only the first GitHub Pages path segment was used to infer the repository.'] : [],
