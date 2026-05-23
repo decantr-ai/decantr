@@ -103,7 +103,37 @@ pnpm release:announce -- --version 3.0.0-next.0 --only=@decantr/cli,@decantr/mcp
 
 `community-ops` owns the Discord webhook secret and message formatting. Decantr only sends the release facts after closeout.
 
-The same dispatch is also available from the `Community Release Announcement` GitHub workflow. Run it in dry-run mode first, then rerun with `send=true` after closeout has passed.
+The same dispatch is also available from the `Community Release Announcement` GitHub workflow. Prefer this workflow when the dispatch token lives in GitHub Actions secrets instead of the local shell:
+
+```bash
+gh workflow run community-release-announcement.yml \
+  --repo decantr-ai/decantr \
+  --ref main \
+  -f version=3.0.0-next.0 \
+  -f only_packages=@decantr/cli,@decantr/mcp-server,@decantr/verifier \
+  -f release_note=docs/releases/2026-05-23-decantr-3-next-foundation-draft.md \
+  -f target_repo=decantr-ai/community-ops \
+  -f send=false
+```
+
+Run it in dry-run mode first, then rerun with `send=true` after closeout has passed. If that workflow fails with `403 Resource not accessible by personal access token`, the `COMMUNITY_OPS_DISPATCH_TOKEN` secret exists but does not have cross-repo `repository_dispatch` access to `decantr-ai/community-ops`.
+
+When cross-repo dispatch is blocked, trigger the receiver workflow directly from `community-ops`:
+
+```bash
+gh workflow run discord-release.yml \
+  --repo decantr-ai/community-ops \
+  --ref main \
+  -f version=3.0.0-next.0 \
+  -f tag=v3.0.0-next.0 \
+  -f repo=decantr-ai/decantr \
+  -f release_note_path=docs/releases/2026-05-23-decantr-3-next-foundation-draft.md \
+  -f release_url=https://github.com/decantr-ai/decantr/releases/tag/v3.0.0-next.0 \
+  -f packages='@decantr/cli@3.0.0-next.0,@decantr/mcp-server@3.0.0-next.0,@decantr/verifier@3.0.0-next.0' \
+  -f dry_run=false
+```
+
+That direct receiver path uses `community-ops` repository secrets, including `DISCORD_RELEASE_WEBHOOK_URL`, and does not require the source repo dispatch token.
 
 ## Closeout Audit
 
