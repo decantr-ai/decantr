@@ -13,11 +13,64 @@
         "type": "string"
       }
     },
+    "graphAnchor": {
+      "type": "object",
+      "required": [
+        "snapshot_id",
+        "source_hash",
+        "node_id",
+        "node_type",
+        "confidence",
+        "reason"
+      ],
+      "properties": {
+        "snapshot_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "source_hash": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "node_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "node_type": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "route": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["exact", "inferred", "fallback"]
+        },
+        "reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "repairAction": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
     "verificationFinding": {
       "type": "object",
       "required": ["id", "category", "severity", "message", "evidence"],
       "properties": {
         "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "code": {
           "$ref": "#/$defs/nonEmptyString"
         },
         "category": {
@@ -44,6 +97,12 @@
         },
         "suggestedFix": {
           "type": "string"
+        },
+        "graph": {
+          "$ref": "#/$defs/graphAnchor"
+        },
+        "repair": {
+          "$ref": "#/$defs/repairAction"
         }
       },
       "additionalProperties": false

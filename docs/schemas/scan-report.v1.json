@@ -200,6 +200,9 @@
       },
       "additionalProperties": false
     },
+    "graphPreview": {
+      "$ref": "#/$defs/graphPreview"
+    },
     "pagesProbe": {
       "anyOf": [
         { "$ref": "#/$defs/publishedSiteProbe" },
@@ -336,6 +339,125 @@
           "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
         },
         "hasLayout": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "graphPreview": {
+      "type": "object",
+      "required": [
+        "status",
+        "canPreview",
+        "readOnly",
+        "message",
+        "nextCommand",
+        "staleArtifacts",
+        "snapshot",
+        "capsule",
+        "diff"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["not_attached", "current", "stale", "needs_migration", "unavailable"]
+        },
+        "canPreview": { "type": "boolean" },
+        "readOnly": { "const": true },
+        "message": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "nextCommand": { "type": ["string", "null"] },
+        "staleArtifacts": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        },
+        "snapshot": {
+          "anyOf": [
+            { "$ref": "#/$defs/graphPreviewSnapshot" },
+            { "type": "null" }
+          ]
+        },
+        "capsule": {
+          "anyOf": [
+            { "$ref": "#/$defs/graphPreviewCapsule" },
+            { "type": "null" }
+          ]
+        },
+        "diff": {
+          "anyOf": [
+            { "$ref": "#/$defs/graphPreviewDiff" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "graphPreviewSnapshot": {
+      "type": "object",
+      "required": [
+        "id",
+        "schemaVersion",
+        "sourceHash",
+        "nodes",
+        "edges",
+        "findings",
+        "evidence",
+        "sourceArtifacts"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "schemaVersion": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "sourceHash": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "nodes": { "type": "integer", "minimum": 0 },
+        "edges": { "type": "integer", "minimum": 0 },
+        "findings": { "type": "integer", "minimum": 0 },
+        "evidence": { "type": "integer", "minimum": 0 },
+        "sourceArtifacts": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "graphPreviewDiff": {
+      "type": "object",
+      "required": ["ops", "findingsAdded", "findingsResolved", "evidenceAdded"],
+      "properties": {
+        "ops": { "type": "integer", "minimum": 0 },
+        "findingsAdded": { "type": "integer", "minimum": 0 },
+        "findingsResolved": { "type": "integer", "minimum": 0 },
+        "evidenceAdded": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "graphPreviewCapsule": {
+      "type": "object",
+      "required": [
+        "cacheKey",
+        "routes",
+        "components",
+        "tokens",
+        "localRules",
+        "styleBridge",
+        "sourceArtifacts",
+        "sourceArtifactLimit",
+        "sourceArtifactsTruncated",
+        "openFindings"
+      ],
+      "properties": {
+        "cacheKey": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "routes": { "type": "integer", "minimum": 0 },
+        "components": { "type": "integer", "minimum": 0 },
+        "tokens": { "type": "integer", "minimum": 0 },
+        "localRules": { "type": "integer", "minimum": 0 },
+        "styleBridge": { "type": "integer", "minimum": 0 },
+        "sourceArtifacts": { "type": "integer", "minimum": 0 },
+        "sourceArtifactLimit": { "type": "integer", "minimum": 0 },
+        "sourceArtifactsTruncated": { "type": "boolean" },
+        "openFindings": { "type": "integer", "minimum": 0 }
       },
       "additionalProperties": false
     },

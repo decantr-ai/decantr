@@ -56,6 +56,7 @@ for (const [support, count] of Object.entries(supportCounts)) {
   console.log(`- ${support}: ${count}`);
 }
 console.log(`Stable public packages: ${readiness.stablePackages.join(', ') || 'none'}`);
+console.log(`Prerelease public packages: ${readiness.prereleasePackages.join(', ') || 'none'}`);
 console.log(`Internal packages: ${readiness.internalPackages.join(', ') || 'none'}`);
 console.log(`Experimental packages: ${readiness.experimentalPackages.join(', ') || 'none'}`);
 for (const [wave, packages] of Object.entries(readiness.releaseWaves)) {

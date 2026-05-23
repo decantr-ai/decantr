@@ -1,7 +1,14 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ExecutionPackBundle } from '@decantr/core';
+import {
+  buildGraphImpactContext,
+  buildGraphRouteContext,
+  graphPayloadString,
+  summarizeGraphDiff,
+  type ExecutionPackBundle,
+  type GraphSnapshot,
+} from '@decantr/core';
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
@@ -38,6 +45,7 @@ import {
   critiqueFile as critiqueProjectFile,
   scanProject as scanProjectReadOnly,
   type ScanFindingV1,
+  type ScanGraphPreviewV1,
   type ScanReportV1,
   type FileCritiqueReport,
   type ProjectAuditReport,
@@ -64,6 +72,7 @@ import { cmdCreate } from './commands/create.js';
 import { cmdDoctor, cmdDoctorHelp } from './commands/doctor.js';
 import type { ExportTarget } from './commands/export.js';
 import { cmdExport } from './commands/export.js';
+import { buildGraphArtifacts, cmdGraph, cmdGraphHelp } from './commands/graph.js';
 import { cmdMagic } from './commands/magic.js';
 import { cmdMigrate } from './commands/migrate.js';
 import { cmdNewProject } from './commands/new-project.js';
@@ -3451,6 +3460,46 @@ function displayProjectPath(
   return absolutePath;
 }
 
+function projectRelativeGraphPath(projectRoot: string, filePath: string): string | null {
+  const relativePath = relative(projectRoot, isAbsolute(filePath) ? filePath : resolve(filePath));
+  if (relativePath && !relativePath.startsWith('..') && !isAbsolute(relativePath)) {
+    return relativePath.replace(/\\/g, '/');
+  }
+  return null;
+}
+
+function graphSourceNodeIdForTaskFile(
+  projectRoot: string,
+  snapshot: GraphSnapshot,
+  filePath: string,
+): string | null {
+  const trimmed = filePath.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('src:') && snapshot.nodes.some((node) => node.id === trimmed)) {
+    return trimmed;
+  }
+
+  const candidates = new Set<string>();
+  candidates.add(trimmed.replace(/\\/g, '/').replace(/^\.\//, ''));
+  const cwdRelative = projectRelativeGraphPath(projectRoot, trimmed);
+  if (cwdRelative) candidates.add(cwdRelative);
+  const projectRelative = projectRelativeGraphPath(projectRoot, join(projectRoot, trimmed));
+  if (projectRelative) candidates.add(projectRelative);
+
+  for (const candidate of candidates) {
+    const nodeId = `src:${candidate}`;
+    if (snapshot.nodes.some((node) => node.id === nodeId)) return nodeId;
+  }
+
+  return (
+    snapshot.nodes.find((node) => {
+      if (node.type !== 'SourceArtifact') return false;
+      const path = graphPayloadString(node.payload, 'path');
+      return Boolean(path && (path === trimmed || candidates.has(path)));
+    })?.id ?? null
+  );
+}
+
 function stripProjectArgs(args: string[], startIndex = 1): string[] {
   const stripped = [args[0]];
   for (let index = startIndex; index < args.length; index += 1) {
@@ -3666,6 +3715,150 @@ function formatScanApplicability(status: ScanReportV1['applicability']['status']
   return dim('unknown');
 }
 
+function formatScanGraphPreviewStatus(status: ScanGraphPreviewV1['status']): string {
+  if (status === 'current') return success('current');
+  if (status === 'stale') return `${YELLOW}stale or missing${RESET}`;
+  if (status === 'needs_migration') return `${YELLOW}needs migration${RESET}`;
+  if (status === 'not_attached') return dim('not attached');
+  return dim('unavailable');
+}
+
+function relativeGraphArtifactPath(projectRoot: string, artifactPath: string): string {
+  return relative(projectRoot, artifactPath).replace(/\\/g, '/');
+}
+
+function buildScanGraphPreview(
+  workspaceInfo: { cwd: string; appRoot: string },
+  projectArg?: string,
+): ScanGraphPreviewV1 {
+  let artifacts: ReturnType<typeof buildGraphArtifacts>;
+  try {
+    artifacts = buildGraphArtifacts(workspaceInfo.appRoot);
+  } catch (error) {
+    const message = (error as Error).message;
+    const needsMigration = message.includes('Essence v4');
+    return {
+      status: needsMigration ? 'needs_migration' : 'unavailable',
+      canPreview: false,
+      readOnly: true,
+      message: needsMigration
+        ? 'Existing Decantr contract needs Essence v4 before a typed Contract graph can be previewed.'
+        : message,
+      nextCommand: needsMigration ? withProject('decantr migrate --to v4', projectArg) : null,
+      staleArtifacts: [],
+      snapshot: null,
+      capsule: null,
+      diff: null,
+    };
+  }
+
+  if (!artifacts) {
+    return {
+      status: 'not_attached',
+      canPreview: false,
+      readOnly: true,
+      message:
+        'No decantr.essence.json found. Adopt the project to create the first typed Contract graph baseline.',
+      nextCommand: withProject('decantr adopt --yes', projectArg),
+      staleArtifacts: [],
+      snapshot: null,
+      capsule: null,
+      diff: null,
+    };
+  }
+
+  const stale = artifacts.staleArtifacts.length > 0;
+  const diffSummary = summarizeGraphDiff(artifacts.diff);
+  return {
+    status: stale ? 'stale' : 'current',
+    canPreview: true,
+    readOnly: true,
+    message: stale
+      ? 'A typed Contract graph can be derived now, but saved graph artifacts are missing or stale.'
+      : 'Typed Contract graph artifacts are current with the project-owned contract sources.',
+    nextCommand: stale ? withProject('decantr graph', projectArg) : null,
+    staleArtifacts: artifacts.staleArtifacts.map((path) =>
+      displayProjectPath(workspaceInfo, relativeGraphArtifactPath(artifacts.projectRoot, path)),
+    ),
+    snapshot: {
+      id: artifacts.snapshot.id,
+      schemaVersion: artifacts.snapshot.schema_version,
+      sourceHash: artifacts.snapshot.source_hash,
+      nodes: artifacts.snapshot.summary.nodes,
+      edges: artifacts.snapshot.summary.edges,
+      findings: artifacts.snapshot.summary.findings,
+      evidence: artifacts.snapshot.summary.evidence,
+      sourceArtifacts: artifacts.snapshot.nodes.filter((node) => node.type === 'SourceArtifact')
+        .length,
+    },
+    capsule: {
+      cacheKey: artifacts.capsule.cache_key,
+      routes: artifacts.capsule.summary.routes,
+      components: artifacts.capsule.summary.components,
+      tokens: artifacts.capsule.summary.tokens,
+      localRules: artifacts.capsule.summary.local_rules,
+      styleBridge: artifacts.capsule.summary.style_bridge,
+      sourceArtifacts: artifacts.capsule.summary.source_artifacts,
+      sourceArtifactLimit: artifacts.capsule.source_artifact_limit,
+      sourceArtifactsTruncated: artifacts.capsule.source_artifacts_truncated,
+      openFindings: artifacts.capsule.summary.open_findings,
+    },
+    diff: {
+      ops: diffSummary.total,
+      findingsAdded: diffSummary.findings.added,
+      findingsResolved: diffSummary.findings.resolved,
+      evidenceAdded: diffSummary.evidence.added,
+    },
+  };
+}
+
+function printScanGraphPreview(preview?: ScanGraphPreviewV1): void {
+  if (!preview) return;
+  console.log(`${BOLD}Typed Contract Graph${RESET}`);
+  console.log(`  Status:         ${formatScanGraphPreviewStatus(preview.status)}`);
+  console.log(`  Read-only:      ${preview.readOnly ? 'yes' : 'no'}`);
+  if (preview.snapshot && preview.capsule) {
+    console.log(
+      `  Snapshot:       ${preview.snapshot.nodes} nodes, ${preview.snapshot.edges} edges`,
+    );
+    console.log(
+      `  Evidence:       ${preview.snapshot.findings} finding nodes, ${preview.snapshot.evidence} evidence nodes, ${preview.snapshot.sourceArtifacts} sources`,
+    );
+    console.log(
+      `  Capsule:        ${preview.capsule.routes} routes, ${preview.capsule.localRules} local rules, ${preview.capsule.styleBridge} style bridge mappings`,
+    );
+    const sourceArtifactIndex = preview.capsule.sourceArtifactsTruncated
+      ? `${preview.capsule.sourceArtifactLimit}/${preview.capsule.sourceArtifacts} source handles`
+      : `${preview.capsule.sourceArtifacts} source handles`;
+    console.log(`  Source handles: ${sourceArtifactIndex}`);
+    if (preview.diff) {
+      const diffHints = [
+        preview.diff.findingsAdded > 0 ? `${preview.diff.findingsAdded} finding added` : null,
+        preview.diff.findingsResolved > 0
+          ? `${preview.diff.findingsResolved} finding resolved`
+          : null,
+        preview.diff.evidenceAdded > 0 ? `${preview.diff.evidenceAdded} evidence added` : null,
+      ].filter(Boolean);
+      console.log(
+        `  Diff:           ${preview.diff.ops} ops${
+          diffHints.length > 0 ? ` (${diffHints.join(', ')})` : ''
+        }`,
+      );
+    }
+  }
+  console.log(`  ${dim(preview.message)}`);
+  if (preview.staleArtifacts.length > 0) {
+    console.log(`  Stale artifacts:${' '} ${preview.staleArtifacts.slice(0, 3).join(', ')}`);
+    if (preview.staleArtifacts.length > 3) {
+      console.log(`                  ${dim(`...${preview.staleArtifacts.length - 3} more`)}`);
+    }
+  }
+  if (preview.nextCommand) {
+    console.log(`  Next:           ${cyan(preview.nextCommand)}`);
+  }
+  console.log('');
+}
+
 function printScanReport(report: ScanReportV1): void {
   console.log(heading('Decantr Scan'));
   console.log(dim('Read-only Brownfield reconnaissance. No files were written.'));
@@ -3687,6 +3880,8 @@ function printScanReport(report: ScanReportV1): void {
   console.log(`  TypeScript:     ${report.project.hasTypeScript ? 'yes' : 'no'}`);
   console.log(`  Decantr:        ${report.project.hasDecantr ? 'present' : 'not attached'}`);
   console.log('');
+
+  printScanGraphPreview(report.graphPreview);
 
   console.log(`${BOLD}Routes And Styling${RESET}`);
   console.log(`  Routes:         ${report.routes.count} (${report.routes.strategy})`);
@@ -3749,11 +3944,13 @@ async function cmdScanWorkflow(args: string[]): Promise<void> {
   const report = await scanProjectReadOnly(workspaceInfo.appRoot, {
     input: { kind: 'local', value: inputValue },
   });
+  const graphPreview = buildScanGraphPreview(workspaceInfo, projectArg);
+  const reportWithGraph: ScanReportV1 = { ...report, graphPreview };
   if (jsonOutput) {
-    console.log(JSON.stringify(report, null, 2));
+    console.log(JSON.stringify(reportWithGraph, null, 2));
     return;
   }
-  printScanReport(report);
+  printScanReport(reportWithGraph);
 }
 
 async function cmdSetupWorkflow(args: string[]): Promise<void> {
@@ -3906,6 +4103,7 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   if (hydratePacks) {
     steps.push('hydrate hosted execution packs into the app context');
   }
+  steps.push('write typed Contract graph baseline');
   if (runVerify) {
     steps.push(
       runBrowser
@@ -3976,6 +4174,9 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   } else if (flagBoolean(flags, 'offline') || process.env.DECANTR_OFFLINE === 'true') {
     console.log(dim('Skipping hosted pack hydration in offline mode.'));
   }
+
+  await cmdGraph(projectRoot, { displayRoot: process.cwd() });
+  if (process.exitCode && process.exitCode !== 0) return;
 
   if (runVerify) {
     const { cmdHealth } = await import('./commands/health.js');
@@ -4359,6 +4560,30 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const localPatternPackPath = localPatternsPath(workspaceInfo.appRoot);
   const localRuleManifestPath = localRulesPath(workspaceInfo.appRoot);
   const acceptedStyleBridgePath = styleBridgePath(workspaceInfo.appRoot);
+  const graphDir = join(workspaceInfo.appRoot, '.decantr', 'graph');
+  const contractCapsulePath = join(graphDir, 'contract-capsule.json');
+  const graphSnapshotPath = join(graphDir, 'graph.snapshot.json');
+  const contractCapsule = readJsonIfPresent<{
+    snapshot_id?: string;
+    cache_key?: string;
+    contract_hash?: string;
+    contract_cache_key?: string;
+    summary?: {
+      routes?: number;
+      local_rules?: number;
+      style_bridge?: number;
+      source_artifacts?: number;
+      open_findings?: number;
+    };
+  }>(contractCapsulePath);
+  const graphSnapshot = readJsonIfPresent<
+    {
+      id?: string;
+      source_hash?: string;
+      summary?: { nodes?: number; edges?: number; findings?: number; evidence?: number };
+    } & GraphSnapshot
+  >(graphSnapshotPath);
+  const routeGraphContext = buildGraphRouteContext(graphSnapshot, route, { task: taskSummary });
   const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
   const styleBridge = createStyleBridgeTaskSummary(workspaceInfo.appRoot);
   const displayedStyleBridge = {
@@ -4375,6 +4600,29 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const changedSince = flagString(flags, 'since');
   const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince);
   const changedRoutes = routeImpacts(workspaceInfo.appRoot, currentChangedFiles);
+  const changedFileSourceNodes = graphSnapshot
+    ? currentChangedFiles.map((file) => ({
+        file,
+        nodeId: graphSourceNodeIdForTaskFile(workspaceInfo.appRoot, graphSnapshot, file),
+      }))
+    : [];
+  const changedFileSourceNodeIds = [
+    ...new Set(
+      changedFileSourceNodes
+        .map((entry) => entry.nodeId)
+        .filter((nodeId): nodeId is string => Boolean(nodeId)),
+    ),
+  ];
+  const changedFileMissingFiles = graphSnapshot
+    ? changedFileSourceNodes.filter((entry) => !entry.nodeId).map((entry) => entry.file)
+    : currentChangedFiles;
+  const changedFileGraphContext =
+    graphSnapshot && changedFileSourceNodeIds.length > 0
+      ? buildGraphImpactContext(graphSnapshot, changedFileSourceNodeIds, {
+          task: taskSummary,
+          limit: 120,
+        })
+      : null;
   const authority = createTaskAuthoritySummary({
     projectRoot: workspaceInfo.appRoot,
     workflowMode: projectJson?.initialized?.workflowMode ?? null,
@@ -4414,7 +4662,66 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       existsSync(acceptedStyleBridgePath)
         ? displayProjectPath(workspaceInfo, '.decantr/style-bridge.json')
         : null,
+      contractCapsule
+        ? displayProjectPath(workspaceInfo, '.decantr/graph/contract-capsule.json')
+        : null,
+      routeGraphContext && !contractCapsule
+        ? displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json')
+        : null,
     ].filter(Boolean),
+    graph:
+      contractCapsule || graphSnapshot
+        ? {
+            capsule: contractCapsule
+              ? {
+                  path: displayProjectPath(workspaceInfo, '.decantr/graph/contract-capsule.json'),
+                  snapshotId: contractCapsule.snapshot_id ?? null,
+                  cacheKey: contractCapsule.cache_key ?? null,
+                  contractHash: contractCapsule.contract_hash ?? null,
+                  contractCacheKey: contractCapsule.contract_cache_key ?? null,
+                  summary: contractCapsule.summary ?? null,
+                }
+              : null,
+            snapshot: graphSnapshot
+              ? {
+                  path: displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json'),
+                  id: graphSnapshot.id ?? null,
+                  sourceHash: graphSnapshot.source_hash ?? null,
+                  summary: graphSnapshot.summary ?? null,
+                }
+              : null,
+            routeContext: routeGraphContext
+              ? {
+                  path: displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json'),
+                  ...routeGraphContext,
+                }
+              : null,
+            changedFileContext:
+              currentChangedFiles.length > 0
+                ? {
+                    path: displayProjectPath(
+                      workspaceInfo,
+                      '.decantr/graph/graph.snapshot.json',
+                    ),
+                    changedFiles: currentChangedFiles.slice(0, 40),
+                    resolvedNodeIds: changedFileSourceNodeIds,
+                    missingFiles: changedFileMissingFiles.slice(0, 40),
+                    impact: changedFileGraphContext
+                      ? {
+                          snapshotId: changedFileGraphContext.snapshotId,
+                          sourceHash: changedFileGraphContext.sourceHash,
+                          ranking: changedFileGraphContext.ranking,
+                          summary: changedFileGraphContext.summary,
+                          ids: changedFileGraphContext.ids,
+                          ranked: changedFileGraphContext.ranked.slice(0, 24),
+                          nodes: changedFileGraphContext.nodes,
+                          edges: changedFileGraphContext.edges,
+                        }
+                      : null,
+                  }
+                : null,
+          }
+        : null,
     screenshot: screenshot?.startsWith('.decantr/')
       ? displayProjectPath(workspaceInfo, screenshot)
       : (screenshot ?? null),
@@ -4446,6 +4753,75 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     console.log('');
     console.log(`${BOLD}Visual evidence:${RESET}`);
     console.log(`  ${cyan(context.screenshot)}`);
+  }
+  if (context.graph?.capsule || context.graph?.snapshot) {
+    console.log('');
+    console.log(`${BOLD}Typed contract graph:${RESET}`);
+    if (context.graph.capsule) {
+      console.log(`  Capsule: ${cyan(context.graph.capsule.path)}`);
+      if (context.graph.capsule.cacheKey) {
+        console.log(`  Cache key: ${context.graph.capsule.cacheKey}`);
+      }
+      if (
+        context.graph.capsule.contractCacheKey &&
+        context.graph.capsule.contractCacheKey !== context.graph.capsule.cacheKey
+      ) {
+        console.log(`  Contract cache key: ${context.graph.capsule.contractCacheKey}`);
+      }
+    }
+    if (context.graph.snapshot) {
+      const summary = context.graph.snapshot.summary;
+      const counts =
+        summary && typeof summary.nodes === 'number' && typeof summary.edges === 'number'
+          ? ` (${summary.nodes} nodes, ${summary.edges} edges)`
+          : '';
+      console.log(`  Snapshot: ${cyan(context.graph.snapshot.path)}${counts}`);
+    }
+    if (context.graph.routeContext) {
+      const routeSummary = context.graph.routeContext.summary;
+      const routeFindings = context.graph.routeContext.nodes
+        .filter((node) => node.type === 'Finding')
+        .map((node) => graphPayloadString(node.payload, 'code') ?? node.id)
+        .slice(0, 4);
+      const routeSources = context.graph.routeContext.nodes
+        .filter((node) => node.type === 'SourceArtifact')
+        .map((node) => graphPayloadString(node.payload, 'path') ?? node.id.replace(/^src:/, ''))
+        .slice(0, 4);
+      const routeHints = [
+        context.graph.routeContext.ids.patterns.length > 0
+          ? `patterns ${context.graph.routeContext.ids.patterns.join(', ')}`
+          : null,
+        routeSummary.openFindings > 0 ? `${routeSummary.openFindings} finding(s)` : null,
+        routeSummary.evidence > 0 ? `${routeSummary.evidence} evidence node(s)` : null,
+        routeSummary.sourceArtifacts > 0
+          ? `${routeSummary.sourceArtifacts} source artifact(s)`
+          : null,
+      ].filter(Boolean);
+      console.log(
+        `  Route subgraph: ${routeSummary.nodes} nodes, ${routeSummary.edges} edges${
+          routeHints.length > 0 ? `; ${routeHints.join('; ')}` : ''
+        }`,
+      );
+      if (routeFindings.length > 0) {
+        console.log(`  Route findings: ${routeFindings.join(', ')}`);
+      }
+      if (routeSources.length > 0) {
+        console.log(`  Route sources: ${routeSources.join(', ')}`);
+      }
+    }
+    if (context.graph.changedFileContext?.impact) {
+      const impact = context.graph.changedFileContext.impact;
+      const impactHints = [
+        impact.ids.routes.length > 0 ? `routes ${impact.ids.routes.join(', ')}` : null,
+        impact.summary.pages > 0 ? `${impact.summary.pages} page(s)` : null,
+        impact.summary.openFindings > 0 ? `${impact.summary.openFindings} finding(s)` : null,
+      ].filter(Boolean);
+      console.log(
+        `  Changed-file impact: ${impact.summary.nodes} nodes, ${impact.summary.edges} edges${
+          impactHints.length > 0 ? `; ${impactHints.join('; ')}` : ''
+        }`,
+      );
+    }
   }
   console.log('');
   console.log(`${BOLD}Authority for this task:${RESET}`);
@@ -4512,7 +4888,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
   console.log('');
   console.log(`${BOLD}LLM instruction:${RESET}`);
   console.log(
-    '  Preserve the active authority above. Use the route pack, section context, local laws, changed-file impact, and visual evidence as the task contract before changing code.',
+    '  Preserve the active authority above. Use the route pack, section context, typed route graph, local laws, changed-file impact, and visual evidence as the task contract before changing code.',
   );
   console.log(`  After editing, run ${cyan(context.verifyCommand)}.`);
 }
@@ -4682,7 +5058,7 @@ async function cmdContentWorkflow(args: string[]): Promise<void> {
 
 function cmdHelp() {
   console.log(`
-${BOLD}decantr${RESET} — Design intelligence for AI-generated UI
+${BOLD}decantr${RESET} — AI Frontend Governance for codebases touched by AI agents
 
 ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
@@ -4691,6 +5067,7 @@ ${BOLD}Usage:${RESET}
   decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
+  decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
   decantr doctor [--project <path>] [--workspace] [--json]
   decantr codify [--from-audit] [--style-bridge] [--accept] [--project <path>]
@@ -4707,6 +5084,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr check
   decantr check --brownfield
   decantr sync-drift
+  decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
   decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code]
   decantr get <type> <id>
@@ -4719,6 +5097,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr registry audit-project [--namespace <namespace>] [--json] [--essence <path>] [--dist <path>] [--sources <dir>]
   decantr health [--format text|json|markdown] [--ci] [--fail-on error|warn|none]
   decantr health --evidence [--browser] [--base-url <url>] [--design-tokens <path>]
+  decantr health --diagnostics [--json|--markdown]
   decantr health --save-baseline | --since-baseline
   decantr health init-ci [legacy alias for decantr ci init]
   decantr ci init [--project <path>] [--workspace] [--provider github|generic] [--force]
@@ -4768,6 +5147,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
   ${cyan('task')}        Prepare route/task context, local law, evidence, and changed-file impact for an AI coding assistant
   ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
+  ${cyan('graph')}       Build typed Contract graph artifacts and the agent cache capsule
   ${cyan('ci')}          Non-mutating CI gate and CI integration generator
   ${cyan('doctor')}      Explain Decantr state, artifact ownership, and the next command
   ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns and rules
@@ -4780,21 +5160,22 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('status')}      Show project status, DNA axioms, and blueprint info
   ${cyan('health')}      Advanced Project Health primitive [--json] [--markdown] [--ci]; use decantr ci for automation
   ${cyan('workspace')}   Discover and aggregate health across Decantr projects in a monorepo
-  ${cyan('content-health')} Generate a local registry content health report [--json] [--markdown] [--ci]
-  ${cyan('sync')}        Sync registry content from API
+  ${cyan('content-health')} Generate a local official-vocabulary health report [--json] [--markdown] [--ci]
+  ${cyan('sync')}        Sync official vocabulary from API
   ${cyan('audit')}       Audit the project or critique a specific file against compiled packs
   ${cyan('migrate')}     Migrate older essence files to v4 format (with .pre-v4.backup.json backup)
   ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry] [--brownfield]
   ${cyan('sync-drift')}  Review and resolve drift log entries
-  ${cyan('search')}      Search the registry
+  ${cyan('graph')}       Generate .decantr/graph snapshot, history, manifest, diff, and contract capsule
+  ${cyan('search')}      Search official/community vocabulary
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
-  ${cyan('get')}         Get full details of a registry item
+  ${cyan('get')}         Get full details of a vocabulary item
   ${cyan('list')}        List items by type
   ${cyan('showcase')}    Inspect audited showcase benchmark metadata
   ${cyan('validate')}    Validate an Essence v4 file
   ${cyan('theme')}       Manage custom themes (create, list, validate, delete, import)
   ${cyan('create')}      Create a custom content item (pattern, theme, blueprint, etc.)
-  ${cyan('publish')}     Publish a custom content item to the community registry
+  ${cyan('publish')}     Publish a custom vocabulary item to the community content service
   ${cyan('login')}       Authenticate with the Decantr registry
   ${cyan('logout')}      Remove stored credentials
   ${cyan('analyze')}     Brownfield entrypoint: scan an existing project and emit attach guidance
@@ -4814,6 +5195,11 @@ ${BOLD}Examples:${RESET}
   decantr adopt --project apps/web --yes
   decantr task /feed "add saved recipe actions"
   decantr verify --brownfield --local-patterns
+  decantr graph --project apps/web
+  decantr graph --project apps/web --route /feed --task "improve loading" --json
+  decantr graph --project apps/web --file src/app/page.tsx --impact --json
+  decantr graph --project apps/web --compare-to graph:previous --include-diff-ops --json
+  decantr graph --check --json
   decantr verify --base-url http://localhost:3000 --evidence
   decantr verify --since-baseline
   decantr doctor --project apps/web
@@ -4870,6 +5256,7 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
   ${cyan('Brownfield monorepo')}    decantr adopt --project apps/web --yes
   ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify --brownfield --local-patterns
+  ${cyan('Typed contract graph')}    decantr graph -> agent session loads .decantr/graph/contract-capsule.json
   ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
 
@@ -4936,6 +5323,7 @@ ${BOLD}Usage:${RESET}
   decantr health --ci [--fail-on error|warn|none]
   decantr health --prompt <finding-id>
   decantr health --evidence [--browser] [--design-tokens <path>]
+  decantr health --diagnostics [--json|--markdown]
   decantr health --browser --base-url <url> --evidence
   decantr health --save-baseline
   decantr health --since-baseline
@@ -4950,6 +5338,7 @@ ${BOLD}Options:${RESET}
   --fail-on     CI threshold: error, warn, or none
   --prompt      Print an AI-ready remediation prompt for a finding
   --evidence    Emit a local Evidence Bundle JSON artifact
+  --diagnostics Print the stable diagnostic code and repair ID catalog
   --browser     Include optional rendered-browser setup/evidence checks
   --base-url    Base URL for rendered route checks when --browser is enabled
   --save-baseline Save the current health state for later comparison
@@ -4962,6 +5351,7 @@ ${BOLD}Examples:${RESET}
   decantr health --markdown --output decantr-health.md
   decantr ci --project apps/web
   decantr health --prompt audit-essence-missing
+  decantr health --diagnostics --markdown
   decantr health --evidence --output .decantr/evidence/latest.json
   decantr ci init --project apps/web
   decantr ci init --workspace
@@ -4988,7 +5378,7 @@ ${BOLD}Examples:${RESET}
 
 function cmdContentHealthHelp() {
   console.log(`
-${BOLD}decantr content-health${RESET} — Generate a local registry content health report
+${BOLD}decantr content-health${RESET} — Generate a local official-vocabulary health report
 
 ${BOLD}Usage:${RESET}
   decantr content-health [--format text|json|markdown] [--output <file>]
@@ -5144,6 +5534,10 @@ ${BOLD}decantr task${RESET} — Prepare compact route/task context for an AI cod
 ${BOLD}Usage:${RESET}
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
 
+${BOLD}Behavior:${RESET}
+  Includes the typed contract capsule path when .decantr/graph exists. Run decantr graph first
+  when you want graph-backed agent context in CLI-only workflows.
+
 ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
   decantr task /feed "add saved recipe actions" --since origin/main
@@ -5171,7 +5565,7 @@ ${BOLD}Examples:${RESET}
 
 function cmdContentHelp() {
   console.log(`
-${BOLD}decantr content${RESET} — Content-author namespace for registry content repositories
+${BOLD}decantr content${RESET} — Content-author namespace for official-vocabulary repositories
 
 ${BOLD}Usage:${RESET}
   decantr content check [content-health options]
@@ -5199,6 +5593,9 @@ function printCommandHelp(command: string, args: string[]): boolean {
       return true;
     case 'verify':
       cmdVerifyHelp();
+      return true;
+    case 'graph':
+      cmdGraphHelp();
       return true;
     case 'ci':
       cmdCiHelp();
@@ -5307,6 +5704,54 @@ async function main() {
 
     case 'verify': {
       await cmdVerifyWorkflow(args);
+      break;
+    }
+
+    case 'graph': {
+      const { flags } = parseLooseArgs(args);
+      if (
+        !ensureAllowedFlags(
+          flags,
+          [
+            'project',
+            'route',
+            'node',
+            'file',
+            'task',
+            'snapshot-id',
+            'compare-to',
+            'include-diff-ops',
+            'impact',
+            'limit',
+            'capsule-source-limit',
+            'check',
+            'json',
+          ],
+          'graph',
+        )
+      )
+        break;
+      const workspaceInfo = resolveWorkflowProject(flags, 'graph');
+      if (!workspaceInfo) break;
+      const limitArg = flagString(flags, 'limit');
+      const limit = limitArg ? Number(limitArg) : undefined;
+      const capsuleSourceLimitArg = flagString(flags, 'capsule-source-limit');
+      const capsuleSourceLimit = capsuleSourceLimitArg ? Number(capsuleSourceLimitArg) : undefined;
+      await cmdGraph(workspaceInfo.appRoot, {
+        check: flagBoolean(flags, 'check'),
+        json: flagBoolean(flags, 'json'),
+        route: flagString(flags, 'route'),
+        node: flagString(flags, 'node'),
+        file: flagString(flags, 'file'),
+        impact: flagBoolean(flags, 'impact'),
+        task: flagString(flags, 'task'),
+        snapshotId: flagString(flags, 'snapshot-id'),
+        compareTo: flagString(flags, 'compare-to'),
+        includeDiffOps: flagBoolean(flags, 'include-diff-ops'),
+        limit,
+        capsuleSourceLimit,
+        displayRoot: workspaceInfo.cwd,
+      });
       break;
     }
 

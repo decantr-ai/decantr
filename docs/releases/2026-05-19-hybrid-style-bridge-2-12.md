@@ -1,4 +1,4 @@
-# Hybrid Style Bridge 2.12
+# Hybrid Style Bridge 2.12.0
 
 Release target: `@decantr/cli@2.12.0`, `@decantr/mcp-server@2.5.0`, and `@decantr/verifier@2.5.0`.
 

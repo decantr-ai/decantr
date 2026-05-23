@@ -4,7 +4,7 @@
 - **Theme:** luminarum (dark mode, pill shape)
 - **Workflow:** greenfield-scaffold
 - **Adoption mode:** decantr-css
-- **Personality:** Vibrant design intelligence registry. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero — outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like sharing art. The Decantr dogfood app — built with its own system, proudly showing what the platform produces. Think Figma Community meets shadcn/ui registry.
+- **Personality:** Vibrant official vocabulary browser for AI Frontend Governance. Warm coral and amber accents on a rich dark canvas (or crisp warm-white in light mode). Content cards are the hero - outlined with colored type borders, hovering with purpose. Search is instant and faceted. Publishing feels like maintaining a trusted contract corpus. The Decantr dogfood app demonstrates how certified vocabulary feeds project-owned Contracts without overriding local law. Think Figma Community meets shadcn/ui registry, but framed as governance vocabulary rather than a marketplace.
 - **Sections:** 4 (registry-browser [public], user-dashboard [primary], admin-moderation [auxiliary], auth-flow [gateway])
 - **Features:** search, pagination, auth, api-keys, admin
 - **Guard mode:** strict
@@ -52,13 +52,13 @@ The essence file (`decantr.essence.json`) is the source of truth for your projec
 ---
 # DECANTR.md
 
-This project uses **Decantr** for design intelligence. Read this file before generating any UI code.
+This project uses **Decantr** for AI Frontend Governance. Read this file before generating any UI code.
 
 ---
 
 ## What is Decantr?
 
-Decantr is a design intelligence layer that sits between you (the AI code generator) and the code you produce. It provides structured schemas, guard rules, and a two-layer model (DNA + Blueprint) that ensures consistent, production-quality output.
+Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It provides structured contracts, guard rules, scoped context, and evidence so generated or edited UI stays coherent with the product's standards.
 
 **Decantr does NOT generate code.** You generate the code. Decantr ensures it remains coherent and consistent.
 

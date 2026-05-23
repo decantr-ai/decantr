@@ -1,8 +1,8 @@
 # Decantr
 
-**Evidence-backed design intelligence, governance, and verification for AI-generated UI.**
+**AI Frontend Governance for production codebases touched by AI agents.**
 
-Decantr is the contract layer between product intent and AI-generated implementation. It gives coding assistants three things they don't have on their own — structured design inputs, registry-backed UI knowledge, and scoped context files — so they build coherent product surfaces instead of improvising screen by screen. Think of it as OpenAPI for AI-generated UI: the model still writes the code, but Decantr defines the shape, vocabulary, and checks around it.
+Decantr is the governance layer between product intent and AI-edited frontend code. It gives coding assistants three things they don't have on their own: typed contracts, route-scoped context, and machine-actionable evidence, so UI changes stay coherent instead of drifting prompt by prompt. The model still writes the code; Decantr defines the contract, context, and verification loop around it.
 
 > AI generates the interface. Decantr proves, with local evidence, whether the outcome stayed aligned.
 
@@ -10,14 +10,14 @@ Decantr is the contract layer between product intent and AI-generated implementa
 
 | Path | Use when | Start with |
 | --- | --- | --- |
-| **[Greenfield blueprint](#greenfield-blueprint)** &nbsp;⭐ | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
-| **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
-| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr adopt --yes` |
+| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** &nbsp;⭐ | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr adopt --yes` |
 | **[Hybrid operating layer](docs/reference/workflow-model.md#hybrid-operating-layer)** | An attached app wants selected Decantr or project-owned UI law, without source takeover | `decantr codify`, `decantr doctor`, `decantr task` |
+| **[Greenfield starter kit](#greenfield-blueprint)** | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
+| **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
 
 ---
 
-## Greenfield blueprint
+## Greenfield Starter Kits
 
 ### 1. Scaffold from a blueprint
 
@@ -26,7 +26,7 @@ npx @decantr/cli new my-app --blueprint=esports-hq
 cd my-app
 ```
 
-A blueprint is a published app composition — theme, sections, pages, layouts, voice, and personality. The public registry now keeps blueprint discovery intentionally small: **Featured** and **Certified** are the strongest default picks, **All** shows supported contracts, and **Labs** is opt-in for promising but less-proven directions. Try `esports-hq`, `agent-studio`, or `registry-platform` to start, or run `decantr list blueprints --blueprint-set featured` to browse the curated set.
+A starter kit is a published app composition — theme, sections, pages, layouts, voice, and personality. It is a starting point, not the product center. The public registry now keeps blueprint discovery intentionally small: **Featured** and **Certified** are the strongest default picks, **All** shows supported contracts, and **Labs** is opt-in for promising but less-proven directions. Try `esports-hq`, `agent-studio`, or `registry-platform` to start, or run `decantr list blueprints --blueprint-set featured` to browse the curated set.
 
 > **Adapter availability.** `react-vite`, `next-app`, `vanilla-vite`, `vue-vite`, `sveltekit`, `angular`, and `solid-vite` are certified runnable starter adapters. Other contract targets remain valid Decantr targets but initialize through `generic-web` contract-only mode — Decantr writes the contract, you own the runtime.
 
@@ -56,12 +56,13 @@ Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your 
 ```bash
 # Edit decantr.essence.json — add a section, swap the theme, etc.
 decantr refresh   # regenerate context files from the updated essence
+decantr graph     # generate the typed Contract graph, source index, and contract capsule
 decantr verify    # run the canonical local reliability gate
 decantr verify --evidence
 decantr studio    # open the local-only health dashboard
 ```
 
-`refresh` keeps the generated context files in sync with the essence. `verify` is the day-to-day reliability gate over Project Health, Brownfield checks, health baselines, and optional evidence. `--evidence` writes the privacy-redacted Evidence Bundle that AI agents and CI can use for repair context. `decantr studio` gives the same signal in a small localhost dashboard, and `decantr studio --workspace` expands that view across many Decantr projects in a monorepo.
+`refresh` keeps the generated context files in sync with the essence. `graph` writes `.decantr/graph/graph.snapshot.json`, `.decantr/graph/snapshots/<snapshot-id>.json`, `graph.manifest.json`, `graph.diff.json`, and `contract-capsule.json` for typed agent context and replayable local history. `verify` is the day-to-day reliability gate over Project Health, Brownfield checks, health baselines, and optional evidence; health findings include stable diagnostic codes, typed repair IDs, component reuse drift such as `COMP001` when an agent reimplements a project-owned primitive, and accepted style bridge drift such as `TOKEN010` when arbitrary Tailwind, inline style, or stylesheet values bypass project-owned style authority. When a graph snapshot exists, findings also include graph anchors back to the contract node they came from. `--evidence` writes the privacy-redacted Evidence Bundle that AI agents and CI can use for repair context, including those codes, repair IDs, and graph anchors when available. `decantr studio` gives the same signal in a small localhost dashboard, and `decantr studio --workspace` expands that view across many Decantr projects in a monorepo.
 
 > Starting from a different point? See the full [workflow model](docs/reference/workflow-model.md).
 
@@ -82,10 +83,10 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `ci`, `codify`), keeps advanced primitives available, writes Evidence Bundles, runs workspace health, installs CI, opens Studio locally, and audits registry content supply-chain health |
-| MCP server | Exposes Decantr directly to AI tools — essence reads, registry resolution, context reads, pack compilation, drift checks, critique, audit, evidence bundles, workspace health, and repair prompts |
-| Hosted registry/API | Browse and search public content, read intelligence summaries, compile execution packs, critique files, and audit projects |
-| Verifier | Shared audit, critique, Project Health, Evidence Bundle, contract assertion, and report-schema engine |
+| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `ci`, `codify`), keeps advanced primitives available, writes Evidence Bundles, runs workspace health, installs CI, opens Studio locally, and audits official-vocabulary supply-chain health |
+| MCP server | Exposes Decantr directly to AI tools - essence reads, vocabulary resolution, context reads, pack compilation, drift checks, critique, audit, evidence bundles, workspace health, and repair prompts |
+| Hosted registry/API | Certified vocabulary and hosted pack compilation for teams that want official content context, without overriding repo-owned local law |
+| Verifier | Shared audit, critique, Project Health, Evidence Bundle, component reuse drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
 
 Security review starts with the installed npm surface, not the whole monorepo. The package permission matrix documents filesystem, network, process, telemetry, hosted-upload, and MCP write-tool behavior for every public package: [docs/reference/security-permissions.md](docs/reference/security-permissions.md).
@@ -95,10 +96,10 @@ Security review starts with the installed npm surface, not the whole monorepo. T
 | Package | Role |
 | --- | --- |
 | `@decantr/essence-spec` | Essence schemas, validation, migration, and TypeScript types |
-| `@decantr/registry` | Registry contracts, schemas, content utilities, and API client surfaces |
+| `@decantr/registry` | Certified vocabulary contracts, schemas, content utilities, and API client surfaces |
 | `@decantr/css` | Framework-agnostic CSS atom runtime |
-| `@decantr/core` | Execution-pack compiler primitives and shared Decantr utilities |
-| `@decantr/verifier` | Shared audit, critique, Evidence Bundle, contract assertion, and report-schema engine |
+| `@decantr/core` | Execution-pack compiler primitives, typed Contract graph builders, graph diffs, snapshot history, and Contract capsules |
+| `@decantr/verifier` | Shared audit, critique, Evidence Bundle, component reuse drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
 | `@decantr/cli` | Local scaffold, registry, Project Health CI/Studio, audit, and maintenance workflows |
 | `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
@@ -138,7 +139,7 @@ pnpm release:closeout
 
 ### Release stewardship
 
-Release work is script-led. Use `pnpm release:commands` for publish handoff, `pnpm release:verify` for public npm verification, and `pnpm release:closeout` before calling a release done. Closeout verifies npm version/dist-tag parity plus git tag and release-note parity so versioned docs cannot drift away from origin tags. See [docs/runbooks/release-stewardship.md](docs/runbooks/release-stewardship.md).
+Release work is script-led. Use `pnpm release:commands` for publish handoff, `pnpm release:verify` for public npm verification, and `pnpm release:closeout` before calling a release done. Closeout verifies npm version/dist-tag parity plus git tag and release-note parity so versioned docs cannot drift away from origin tags. After closeout, `pnpm release:announce -- --version X.Y.Z --send` can dispatch the changelog to `community-ops` for Discord posting. See [docs/runbooks/release-stewardship.md](docs/runbooks/release-stewardship.md).
 
 ## More CLI
 
@@ -164,6 +165,8 @@ Brownfield adoption:
 decantr adopt --yes
 decantr codify --from-audit --style-bridge
 decantr codify --accept
+decantr graph
+decantr graph --file src/app/page.tsx --impact --json
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
 decantr verify --since-baseline
@@ -177,6 +180,8 @@ decantr workspace list
 decantr adopt --project apps/web --yes
 decantr doctor --project apps/web
 decantr codify --from-audit --style-bridge --project apps/web
+decantr graph --project apps/web
+decantr graph --project apps/web --file src/app/page.tsx --impact --json
 decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 decantr ci init --project apps/web
@@ -195,7 +200,7 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model. When local law, a style bridge, or Decantr CSS is accepted, Decantr calls that out as Hybrid instead of pretending every existing app is still only contract-only.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `doctor` explains project/workspace state, generated artifacts, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. The primitive commands remain available for advanced and scripted workflows.
+`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `doctor` explains project/workspace state, generated artifacts, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. When typed graph artifacts exist, `task` and MCP task context rank route graph nodes with the task text so matching components, findings, evidence, and source artifacts rise before the edit. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 

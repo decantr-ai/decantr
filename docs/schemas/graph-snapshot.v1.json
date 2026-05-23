@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/graph-snapshot.v1.json",
+  "title": "Decantr Typed Graph Snapshot",
+  "type": "object",
+  "required": [
+    "id",
+    "schema_version",
+    "project_id",
+    "created_at",
+    "source_hash",
+    "nodes",
+    "edges",
+    "summary"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/graph-snapshot.v1.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "schema_version": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/schemaVersion"
+    },
+    "project_id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "created_at": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "parent_id": {
+      "type": "string"
+    },
+    "source_hash": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "commit": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "dirty": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/graphNode"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/graphEdge"
+      }
+    },
+    "summary": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/graphSummary"
+    }
+  },
+  "additionalProperties": false
+}

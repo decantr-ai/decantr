@@ -1,6 +1,6 @@
 {
   "name": "@decantr/css",
-  "version": "2.0.0",
+  "version": "3.0.0-next.0",
   "description": "Framework-agnostic CSS atom runtime for Decantr projects",
   "author": "Decantr AI",
   "bugs": {
@@ -47,7 +47,7 @@
     "design-intelligence",
     "design-system",
     "design-tokens",
-    "ai-generated-ui"
+    "ai-frontend-governance"
   ],
   "license": "MIT",
   "devDependencies": {

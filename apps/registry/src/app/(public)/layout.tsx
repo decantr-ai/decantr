@@ -9,7 +9,7 @@ const PUBLIC_NAV_LINKS = [
   { href: '/browse', label: 'Browse' },
   { href: '/browse/patterns', label: 'Patterns' },
   { href: '/browse/themes', label: 'Themes' },
-  { href: '/browse/blueprints', label: 'Blueprints' },
+  { href: '/browse/blueprints', label: 'Starter Kits' },
 ];
 
 export default async function PublicLayout({
@@ -94,7 +94,7 @@ export default async function PublicLayout({
               <span className="font-semibold lum-brand">decantr</span>
             </div>
             <p className="registry-footer-copy">
-              Design Intelligence API for AI-native applications.
+              Certified vocabulary for AI Frontend Governance.
             </p>
           </div>
 
@@ -105,7 +105,7 @@ export default async function PublicLayout({
                 Browse
               </Link>
               <Link href="/browse/blueprints" className="registry-footer-link">
-                Blueprints
+                Starter kits
               </Link>
               <Link href="/browse/patterns" className="registry-footer-link">
                 Patterns
@@ -127,10 +127,10 @@ export default async function PublicLayout({
                 href="/browse/blueprints?source=official"
                 className="registry-footer-link"
               >
-                Official blueprints
+                Official starter kits
               </Link>
               <Link href="/browse" className="registry-footer-link">
-                All registry content
+                All vocabulary
               </Link>
             </div>
 

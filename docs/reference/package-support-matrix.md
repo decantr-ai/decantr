@@ -12,17 +12,17 @@ This matrix defines which npm packages are part of the active Decantr vNext prod
 
 ## Active Packages
 
-| Package | Support status | Surface class | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Essence schemas, validation, migration, and TypeScript types. |
-| `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | Registry contracts, schemas, Content Health report types, API client, and public content utilities. |
-| `@decantr/css` | core-supported | `public-foundation` | stable | `foundation` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Framework-agnostic CSS atom runtime for Decantr projects. |
-| `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `latest` | `true` | `true` | `0` | `stable-public` | Execution-pack compiler primitives and shared Decantr core utilities for advanced package consumers. |
-| `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `latest` | `true` | `true` | `0` | `stable-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
-| `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `latest` | `true` | `true` | `0` | `stable-public` | Shared read-only Brownfield scan engine, verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Decantr CI report, Workspace Health, and report-schema engine. |
-| `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `latest` | `true` | `true` | `0` | `stable-public` | MCP delivery surface for Decantr design intelligence, packs, Brownfield and Hybrid task context with authority, local law, change impact, evidence bundles, workspace health, and repair prompts. |
-| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `latest` | `true` | `true` | `0` | `stable-public` | Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, read-only Brownfield scan previews, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance. |
-| `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development; remains a verification-adjacent sidecar, not a default reliability adapter. |
+| Package | Support status | Surface class | Maturity | Release wave | Release channel | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `@decantr/essence-spec` | core-supported | `public-foundation` | stable | `foundation` (`10`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Essence schemas, validation, migration, and TypeScript types. |
+| `@decantr/registry` | core-supported | `public-foundation` | stable | `foundation` (`20`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Certified vocabulary contracts, schemas, Content Health report types, API client, and public content utilities. |
+| `@decantr/css` | core-supported | `public-foundation` | stable | `foundation` (`30`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Framework-agnostic CSS atom runtime for Decantr projects. |
+| `@decantr/core` | core-supported | `public-foundation` | stable | `foundation` (`40`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Execution-pack compiler primitives, typed graph builders, Contract capsule helpers, and shared Decantr core utilities for advanced package consumers. |
+| `@decantr/telemetry` | core-supported | `public-foundation` | stable | `foundation` (`50`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Privacy-preserving telemetry event contracts, clients, and analytics sinks. |
+| `@decantr/verifier` | core-supported | `public-operator` | stable | `delivery` (`10`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Shared read-only Brownfield scan engine, verification, critique, source-grounded interaction evidence, contract assertions, Evidence Bundle, Project Health, Decantr CI report, Workspace Health, and report-schema engine. |
+| `@decantr/mcp-server` | core-supported | `public-operator` | stable | `delivery` (`20`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | MCP delivery surface for Decantr Contract context, typed graph artifacts, packs, Brownfield and Hybrid task context with authority, local law, change impact, evidence bundles, workspace health, and repair prompts. |
+| `@decantr/cli` | core-supported | `public-delivery` | stable | `delivery` (`30`) | `prerelease` | `next` | `true` | `true` | `0` | `prerelease-public` | Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, read-only Brownfield scan previews, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance. |
+| `@decantr/vite-plugin` | supported-secondary | `experimental` | experimental | `experimental` (`10`) | `stable` | `-` | `false` | `false` | `2` | `experimental-hold` | Experimental Vite-specific overlay for Decantr guard feedback during local development; remains a verification-adjacent sidecar, not a default reliability adapter. |
 
 ## Adapter Capability Matrix
 
@@ -53,30 +53,37 @@ Unsupported framework targets are still valid Decantr contract targets. They sho
 - `public-operator` means stable public operator-facing package for advanced delivery, verification, or agent workflows.
 - `internal` means internal package used inside Decantr implementation and not part of the public release promise.
 - `experimental` means opt-in package outside the default supported public surface.
-- `stable` means intended to publish under npm `latest`.
+- `stable` means intended to publish under npm `latest` on the stable channel or npm `next` on an explicit prerelease channel.
 - `internal` means not part of the public npm release promise.
 - `experimental` means opt-in and not part of the default publish wave.
+- release channel `stable` means normal public release channel; publishable packages default to npm `latest`.
+- release channel `prerelease` means major-line preview channel; publishable packages use prerelease semver and default to npm `next`.
 - `release wave` defines the intended publish order for coordinated npm releases.
 - `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.
 - `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.
-- `release lane` is the operator-facing bucket for release planning: `stable-public`, `internal-only`, or `experimental-hold`.
+- `release lane` is the operator-facing bucket for release planning: `stable-public`, `prerelease-public`, `internal-only`, or `experimental-hold`.
 
 ## Surface Snapshot
 
-- Stable public: 8
+- Stable public: 0
+- Prerelease public: 8
 - Internal only: 0
 - Experimental hold: 1
 
 ### Stable Public
 
-- `@decantr/essence-spec` in `foundation` wave
-- `@decantr/registry` in `foundation` wave
-- `@decantr/css` in `foundation` wave
-- `@decantr/core` in `foundation` wave
-- `@decantr/telemetry` in `foundation` wave
-- `@decantr/verifier` in `delivery` wave
-- `@decantr/mcp-server` in `delivery` wave
-- `@decantr/cli` in `delivery` wave
+- none
+
+### Prerelease Public
+
+- `@decantr/essence-spec` in `foundation` wave on npm `next`
+- `@decantr/registry` in `foundation` wave on npm `next`
+- `@decantr/css` in `foundation` wave on npm `next`
+- `@decantr/core` in `foundation` wave on npm `next`
+- `@decantr/telemetry` in `foundation` wave on npm `next`
+- `@decantr/verifier` in `delivery` wave on npm `next`
+- `@decantr/mcp-server` in `delivery` wave on npm `next`
+- `@decantr/cli` in `delivery` wave on npm `next`
 
 ### Internal Only
 
@@ -123,4 +130,4 @@ Any future public package change should update all of:
 4. the relevant package README
 5. publish/deprecation workflow behavior
 
-Public stable packages must keep `releaseReadiness.blockers` empty, while internal or experimental packages must be clearly classified instead of drifting into long-lived public prerelease states.
+Public stable packages must keep `releaseReadiness.blockers` empty. Public prerelease work must use `releaseChannel: "prerelease"`, prerelease semver, and npm `next` instead of quietly moving the stable channel.

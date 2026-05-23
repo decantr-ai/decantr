@@ -12,6 +12,7 @@
     "summary",
     "routes",
     "packs",
+    "graph",
     "ci",
     "findings"
   ],
@@ -167,6 +168,48 @@
       },
       "additionalProperties": false
     },
+    "graph": {
+      "type": "object",
+      "required": [
+        "present",
+        "ready",
+        "current",
+        "snapshotPresent",
+        "manifestPresent",
+        "diffPresent",
+        "capsulePresent",
+        "snapshotId",
+        "sourceHash",
+        "contractHash",
+        "contractCacheKey",
+        "sourceArtifactCount",
+        "capsuleSourceArtifactLimit",
+        "capsuleSourceArtifactsTruncated",
+        "staleArtifacts",
+        "error"
+      ],
+      "properties": {
+        "present": { "type": "boolean" },
+        "ready": { "type": "boolean" },
+        "current": { "type": ["boolean", "null"] },
+        "snapshotPresent": { "type": "boolean" },
+        "manifestPresent": { "type": "boolean" },
+        "diffPresent": { "type": "boolean" },
+        "capsulePresent": { "type": "boolean" },
+        "snapshotId": { "type": ["string", "null"] },
+        "sourceHash": { "type": ["string", "null"] },
+        "contractHash": { "type": ["string", "null"] },
+        "contractCacheKey": { "type": ["string", "null"] },
+        "sourceArtifactCount": { "type": "integer", "minimum": 0 },
+        "capsuleSourceArtifactLimit": { "type": ["integer", "null"], "minimum": 0 },
+        "capsuleSourceArtifactsTruncated": { "type": ["boolean", "null"] },
+        "staleArtifacts": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/stringArray"
+        },
+        "error": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
     "ci": {
       "type": "object",
       "required": ["recommendedCommand", "failOn"],
@@ -205,6 +248,9 @@
         "id": {
           "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
         },
+        "code": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
         "source": {
           "type": "string",
           "enum": [
@@ -214,6 +260,8 @@
             "check",
             "brownfield",
             "design-token",
+            "style-bridge",
+            "graph",
             "runtime",
             "pack",
             "interaction"
@@ -244,6 +292,13 @@
         "suggestedFix": {
           "type": "string"
         },
+        "graph": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor"
+        },
+        "repair": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/repairAction"
+        },
+        "repairPlan": { "$ref": "#/$defs/repairPlan" },
         "remediation": {
           "type": "object",
           "required": ["summary", "prompt", "commands"],
@@ -260,6 +315,80 @@
           },
           "additionalProperties": false
         }
+      },
+      "additionalProperties": false
+    },
+    "repairPlan": {
+      "type": "object",
+      "required": [
+        "id",
+        "findingId",
+        "severity",
+        "source",
+        "category",
+        "actions",
+        "evidence",
+        "readTargets",
+        "preserve",
+        "avoid",
+        "commands"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "findingId": { "type": "string" },
+        "diagnosticCode": { "type": ["string", "null"] },
+        "repairId": { "type": ["string", "null"] },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "source": {
+          "type": "string",
+          "enum": [
+            "audit",
+            "assertion",
+            "browser",
+            "check",
+            "brownfield",
+            "design-token",
+            "style-bridge",
+            "graph",
+            "runtime",
+            "pack",
+            "interaction"
+          ]
+        },
+        "category": { "type": "string" },
+        "graphAnchor": {
+          "anyOf": [
+            { "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor" },
+            { "type": "null" }
+          ]
+        },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/repairPlanAction" } },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/repairPlanEvidence" } },
+        "readTargets": { "type": "array", "items": { "type": "string" } },
+        "preserve": { "type": "array", "items": { "type": "string" } },
+        "avoid": { "type": "array", "items": { "type": "string" } },
+        "commands": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "repairPlanAction": {
+      "type": "object",
+      "required": ["id", "kind", "description"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "type": "string" },
+        "target": { "type": ["string", "null"] },
+        "description": { "type": "string" },
+        "payload": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    "repairPlanEvidence": {
+      "type": "object",
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" }
       },
       "additionalProperties": false
     }

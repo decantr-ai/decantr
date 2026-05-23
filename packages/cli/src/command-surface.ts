@@ -54,7 +54,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     mutates: false,
     audience: 'ai-agent',
     purpose:
-      'Prepare route/task context, local law, evidence references, and changed-file impact for an AI coding assistant.',
+      'Prepare route/task context, typed graph capsule references, local law, evidence references, and changed-file impact for an AI coding assistant.',
     consolidation: 'keep',
   },
   {
@@ -129,7 +129,16 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
-    purpose: 'Regenerate derived context and style artifacts from Essence and registry content.',
+    purpose: 'Regenerate derived context and style artifacts from Essence and optional vocabulary content.',
+    consolidation: 'keep',
+  },
+  {
+    command: 'graph',
+    classification: 'advanced',
+    mutates: true,
+    audience: 'ai-agent',
+    purpose:
+      'Generate typed Contract graph artifacts, inspect replayable snapshot history, compare local graph snapshots, inspect node impact, and write the cache-friendly contract capsule.',
     consolidation: 'keep',
   },
   {
@@ -242,7 +251,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
-    purpose: 'Sync official registry content into the local cache.',
+    purpose: 'Sync official vocabulary content into the local cache.',
     consolidation: 'advanced-namespace',
   },
   {
@@ -250,7 +259,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
-    purpose: 'Check and optionally apply registry-backed content updates.',
+    purpose: 'Check and optionally apply official-vocabulary content updates.',
     consolidation: 'advanced-namespace',
   },
   {
@@ -266,7 +275,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'operator',
     mutates: true,
     audience: 'operator',
-    purpose: 'Registry intelligence, hosted pack hydration, critique, audit, and mirroring.',
+    purpose: 'Vocabulary intelligence, hosted pack hydration, critique, audit, and mirroring.',
     consolidation: 'keep',
   },
   {
@@ -274,7 +283,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
-    purpose: 'Registry content discovery shortcut.',
+    purpose: 'Vocabulary content discovery shortcut.',
     consolidation: 'keep',
   },
   {
@@ -282,7 +291,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
-    purpose: 'Registry pattern suggestion shortcut.',
+    purpose: 'Vocabulary pattern suggestion shortcut.',
     consolidation: 'keep',
   },
   {
@@ -290,7 +299,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
-    purpose: 'Fetch full registry item details.',
+    purpose: 'Fetch full vocabulary item details.',
     consolidation: 'advanced-namespace',
   },
   {
@@ -298,7 +307,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: false,
     audience: 'app-developer',
-    purpose: 'List registry items by type.',
+    purpose: 'List vocabulary items by type.',
     consolidation: 'advanced-namespace',
   },
   {
@@ -322,7 +331,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'content-author',
     mutates: false,
     audience: 'content-author',
-    purpose: 'Local registry content repository health report.',
+    purpose: 'Local official-vocabulary repository health report.',
     consolidation: 'keep',
   },
   {
@@ -330,7 +339,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'content-author',
     mutates: true,
     audience: 'content-author',
-    purpose: 'Create a custom registry content item scaffold.',
+    purpose: 'Create a custom vocabulary content item scaffold.',
     consolidation: 'advanced-namespace',
   },
   {
@@ -338,7 +347,7 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'content-author',
     mutates: false,
     audience: 'content-author',
-    purpose: 'Publish a custom content item to the community registry.',
+    purpose: 'Publish a custom vocabulary content item to the community content service.',
     consolidation: 'advanced-namespace',
   },
   {

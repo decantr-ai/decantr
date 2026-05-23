@@ -42,6 +42,8 @@ describe('scan command', () => {
 
     expect(output).toContain('Decantr Scan');
     expect(output).toContain('Read-only Brownfield reconnaissance');
+    expect(output).toContain('Typed Contract Graph');
+    expect(output).toContain('not attached');
     expect(output).toContain('strong fit');
     expect(output).toContain('npx @decantr/cli adopt --yes');
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
@@ -67,11 +69,21 @@ describe('scan command', () => {
       schemaVersion?: string;
       input?: { value?: string };
       project?: { framework?: string };
+      graphPreview?: {
+        status?: string;
+        canPreview?: boolean;
+        nextCommand?: string | null;
+        diff?: unknown;
+      };
     };
 
     expect(report.schemaVersion).toBe('scan-report.v1');
     expect(report.input?.value).toBe('apps/web');
     expect(report.project?.framework).toBe('react');
+    expect(report.graphPreview?.status).toBe('not_attached');
+    expect(report.graphPreview?.canPreview).toBe(false);
+    expect(report.graphPreview?.nextCommand).toBe('decantr adopt --yes --project apps/web');
+    expect(report.graphPreview?.diff).toBeNull();
     expect(existsSync(join(testDir, 'apps', 'web', '.decantr'))).toBe(false);
   });
 

@@ -7,6 +7,30 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/architecture/decisions/2026-05-21-code-graph-extraction.md</loc>
+    <lastmod>2026-05-21T13:32:39.674Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/architecture/decisions/2026-05-21-contract-capsule-context-architecture.md</loc>
+    <lastmod>2026-05-22T16:52:48.505Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/architecture/decisions/2026-05-21-graph-storage-adapter.md</loc>
+    <lastmod>2026-05-21T13:31:50.334Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/architecture/decisions/2026-05-21-temporal-provenance-model.md</loc>
+    <lastmod>2026-05-22T15:28:09.349Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/architecture/scaffolding-flow.md</loc>
     <lastmod>2026-05-08T16:33:24-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -115,6 +139,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/guides/typed-graph-agent-playbook.md</loc>
+    <lastmod>2026-05-22T21:38:33.415Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/programs/2026-04-08-decantr-vnext-master-program.md</loc>
     <lastmod>2026-04-13T15:10:15-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -169,6 +199,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/programs/2026-05-21-ai-frontend-governance-reset-plan.md</loc>
+    <lastmod>2026-05-23T15:12:31.947Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
     <lastmod>2026-05-18T21:55:41-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -177,6 +213,12 @@
   <url>
     <loc>https://decantr.ai/reference/content-health.md</loc>
     <lastmod>2026-05-14T15:44:13-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/reference/diagnostic-codes.md</loc>
+    <lastmod>2026-05-22T15:34:29.145Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -427,6 +469,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/releases/2026-05-23-decantr-3-next-foundation-draft.md</loc>
+    <lastmod>2026-05-23T15:12:16.837Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/research/2026-05-21-graph-ai-governance-competitive-research.md</loc>
+    <lastmod>2026-05-21T13:26:20.768Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/research/2026-05-21-retrieval-architecture-research.md</loc>
+    <lastmod>2026-05-21T13:40:17.236Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/runbooks/2026-04-09-hosted-public-api-rollout.md</loc>
     <lastmod>2026-05-08T09:32:43-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -475,6 +535,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/runbooks/decantr-3-prerelease.md</loc>
+    <lastmod>2026-05-23T15:12:16.836Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/runbooks/enterprise-artifact-release-checklist.md</loc>
     <lastmod>2026-05-11T10:37:50-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -488,7 +554,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/scan.html</loc>
-    <lastmod>2026-05-19T02:16:51.515Z</lastmod>
+    <lastmod>2026-05-18T22:17:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -525,6 +591,12 @@
   <url>
     <loc>https://decantr.ai/schemas/content-intelligence.v1.json</loc>
     <lastmod>2026-04-09T18:28:06-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/schemas/contract-capsule.v1.json</loc>
+    <lastmod>2026-05-22T21:36:12.815Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -573,6 +645,30 @@
   <url>
     <loc>https://decantr.ai/schemas/file-critique-report.v1.json</loc>
     <lastmod>2026-04-08T22:50:32-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/schemas/graph-diff.v1.json</loc>
+    <lastmod>2026-05-22T21:36:12.815Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/schemas/graph-manifest.v1.json</loc>
+    <lastmod>2026-05-22T21:36:12.815Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/schemas/graph-snapshot.v1.json</loc>
+    <lastmod>2026-05-22T21:36:12.815Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/schemas/graph.common.v1.json</loc>
+    <lastmod>2026-05-22T21:36:12.815Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -771,6 +867,12 @@
   <url>
     <loc>https://decantr.ai/specs/2026-04-08-vnext-phase-6-hosted-commercial-platform-design.md</loc>
     <lastmod>2026-04-08T20:56:05-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/specs/2026-05-21-v3-typed-graph-foundation-design.md</loc>
+    <lastmod>2026-05-22T21:38:21.830Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

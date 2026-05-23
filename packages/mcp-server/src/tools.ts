@@ -1,7 +1,28 @@
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { basename, dirname, join, relative } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative } from 'node:path';
+import {
+  GRAPH_NODE_TYPES,
+  GRAPH_RELATIONS,
+  buildGraphImpactContext,
+  buildGraphRouteContext,
+  createMemoryGraphStore,
+  diffGraphSnapshots,
+  graphPayloadString,
+  sortGraphEdges,
+  sortGraphNodes,
+  summarizeGraphDiff,
+  type GraphDiff,
+  type GraphEdge,
+  type GraphManifest,
+  type GraphNode,
+  type GraphNodeType,
+  type GraphRelation,
+  type GraphSnapshot,
+  type GraphTraverseDirection,
+} from '@decantr/core';
 import type { BlueprintPage, EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import type {
@@ -16,16 +37,21 @@ import {
   rankPatternCandidates,
   resolvePatternPreset,
 } from '@decantr/registry';
-import type {
-  ContractAssertion,
-  EvidenceBundle,
-  ProjectAuditReport,
-  ProjectHealthFinding,
-  ProjectHealthFindingSource,
-  ProjectHealthReport,
-  ProjectHealthStatus,
-  VerificationFinding,
-  VerificationSeverity,
+import {
+  anchorFindingsToGraph,
+  buildProjectHealthRepairPlan,
+  type ContractAssertion,
+  deriveVerificationDiagnostic,
+  type EvidenceBundle,
+  KNOWN_VERIFICATION_DIAGNOSTICS,
+  type ProjectAuditReport,
+  type ProjectHealthFinding,
+  type ProjectHealthFindingSource,
+  type ProjectHealthReport,
+  type ProjectHealthStatus,
+  type VerificationFinding,
+  type VerificationRepairAction,
+  type VerificationSeverity,
 } from '@decantr/verifier';
 import type { DriftLogEntry } from './helpers.js';
 import {
@@ -95,6 +121,779 @@ function readJsonIfExists<T>(path: string): T | null {
   } catch {
     return null;
   }
+}
+
+function graphProjectRoot(args: Record<string, unknown>): string {
+  const projectPath = args.project_path;
+  return typeof projectPath === 'string' && projectPath.trim()
+    ? resolveWorkspacePath(projectPath)
+    : process.cwd();
+}
+
+function graphArtifactPath(projectRoot: string, file: string): string {
+  return join(projectRoot, '.decantr', 'graph', file);
+}
+
+function graphSnapshotHistoryFileName(snapshotId: string): string {
+  return `${snapshotId.replace(/[^a-zA-Z0-9_.-]+/g, '-')}.json`;
+}
+
+function graphSnapshotHistoryPath(projectRoot: string, snapshotId: string): string {
+  return graphArtifactPath(
+    projectRoot,
+    join('snapshots', graphSnapshotHistoryFileName(snapshotId)),
+  );
+}
+
+function graphSnapshotHistoryCount(projectRoot: string): number {
+  const snapshotsDir = graphArtifactPath(projectRoot, 'snapshots');
+  if (!existsSync(snapshotsDir)) return 0;
+  try {
+    return readdirSync(snapshotsDir).filter((entry) => entry.endsWith('.json')).length;
+  } catch {
+    return 0;
+  }
+}
+
+function readGraphSnapshotHistory(projectRoot: string, limit = 20) {
+  const snapshotsDir = graphArtifactPath(projectRoot, 'snapshots');
+  if (!existsSync(snapshotsDir)) return [];
+  try {
+    return readdirSync(snapshotsDir)
+      .filter((entry) => entry.endsWith('.json'))
+      .map((entry) => {
+        const absolutePath = join(snapshotsDir, entry);
+        const snapshot = readJsonIfExists<GraphSnapshot>(absolutePath);
+        if (!snapshot) return null;
+        return {
+          id: snapshot.id,
+          path: displayWorkspacePath(absolutePath),
+          created_at: snapshot.created_at,
+          source_hash: snapshot.source_hash,
+          parent_id: snapshot.parent_id ?? null,
+          summary: snapshot.summary,
+        };
+      })
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+      .sort(
+        (a, b) =>
+          b.created_at.localeCompare(a.created_at) ||
+          a.id.localeCompare(b.id),
+      )
+      .slice(0, Math.max(1, Math.min(100, limit)));
+  } catch {
+    return [];
+  }
+}
+
+function readGraphSnapshotById(
+  projectRoot: string,
+  snapshotId: string | undefined,
+): { snapshot: GraphSnapshot | null; path: string } {
+  const currentPath = graphArtifactPath(projectRoot, 'graph.snapshot.json');
+  const currentSnapshot = readJsonIfExists<GraphSnapshot>(currentPath);
+  if (!snapshotId || snapshotId === 'current' || currentSnapshot?.id === snapshotId) {
+    return { snapshot: currentSnapshot, path: currentPath };
+  }
+  const path = graphSnapshotHistoryPath(projectRoot, snapshotId);
+  return { snapshot: readJsonIfExists<GraphSnapshot>(path), path };
+}
+
+function readMcpGraphSnapshot(projectRoot: string): GraphSnapshot | null {
+  return readJsonIfExists<GraphSnapshot>(graphArtifactPath(projectRoot, 'graph.snapshot.json'));
+}
+
+function mcpAnchorHealthFindings(
+  projectRoot: string,
+  findings: ProjectHealthFinding[],
+): ProjectHealthFinding[] {
+  return anchorFindingsToGraph(readMcpGraphSnapshot(projectRoot), findings);
+}
+
+function displayWorkspacePath(path: string): string {
+  const rel = relative(process.cwd(), path).replace(/\\/g, '/');
+  return rel && !rel.startsWith('..') ? rel : path;
+}
+
+function displayProjectFile(projectRoot: string, path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (/^[a-z]+:\/\//i.test(path)) return path;
+  if (isAbsolute(path)) return displayWorkspacePath(path);
+  return displayWorkspacePath(join(projectRoot, path));
+}
+
+function graphAvailableRoutes(snapshot: GraphSnapshot): string[] {
+  return snapshot.nodes
+    .filter((node) => node.type === 'Route')
+    .map((node) => graphPayloadString(node.payload, 'path') ?? node.id.replace(/^rt:/, ''))
+    .sort();
+}
+
+function graphProjectRelativePath(projectRoot: string, value: string | undefined): string | null {
+  if (!value) return null;
+  const absolutePath = isAbsolute(value) ? value : join(projectRoot, value);
+  const relativePath = relative(projectRoot, absolutePath).replace(/\\/g, '/');
+  if (!relativePath || relativePath.startsWith('..') || isAbsolute(relativePath)) {
+    return null;
+  }
+  return relativePath;
+}
+
+function graphSourceNodeIdForFile(
+  projectRoot: string,
+  snapshot: GraphSnapshot,
+  filePath: string | undefined,
+): string | null {
+  if (!filePath) return null;
+  const trimmed = filePath.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('src:') && snapshot.nodes.some((node) => node.id === trimmed)) {
+    return trimmed;
+  }
+
+  const candidates = new Set<string>();
+  const projectRelative = graphProjectRelativePath(projectRoot, trimmed);
+  if (projectRelative) candidates.add(projectRelative);
+  try {
+    const workspaceRelative = graphProjectRelativePath(projectRoot, resolveWorkspacePath(trimmed));
+    if (workspaceRelative) candidates.add(workspaceRelative);
+  } catch {
+    // Workspace-relative resolution is a convenience; project-relative matching is authoritative.
+  }
+
+  for (const candidate of candidates) {
+    const nodeId = `src:${candidate}`;
+    if (snapshot.nodes.some((node) => node.id === nodeId)) return nodeId;
+  }
+
+  return (
+    snapshot.nodes.find((node) => {
+      if (node.type !== 'SourceArtifact') return false;
+      const path = graphPayloadString(node.payload, 'path');
+      return Boolean(path && (path === trimmed || candidates.has(path)));
+    })?.id ?? null
+  );
+}
+
+function graphAvailableSourceArtifacts(snapshot: GraphSnapshot) {
+  return snapshot.nodes
+    .filter((node) => node.type === 'SourceArtifact')
+    .map((node) => ({
+      id: node.id,
+      path: graphPayloadString(node.payload, 'path') ?? node.id.replace(/^src:/, ''),
+      kind: graphPayloadString(node.payload, 'kind') ?? null,
+    }))
+    .sort((a, b) => a.path.localeCompare(b.path));
+}
+
+function readProjectEssence(projectRoot: string): EssenceFile | null {
+  return readJsonIfExists<EssenceFile>(join(projectRoot, 'decantr.essence.json'));
+}
+
+function readProjectPackManifest(projectRoot: string): PackManifest | null {
+  return readJsonIfExists<PackManifest>(
+    join(projectRoot, '.decantr', 'context', 'pack-manifest.json'),
+  );
+}
+
+function mcpHashFile(path: string): string | null {
+  if (!existsSync(path)) return null;
+  return `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+}
+
+function mcpStableJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => mcpStableJson(item)).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .filter((key) => record[key] !== undefined)
+      .map((key) => `${JSON.stringify(key)}:${mcpStableJson(record[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function mcpHashJson(value: unknown): string {
+  return `sha256:${createHash('sha256').update(mcpStableJson(value)).digest('hex')}`;
+}
+
+function mcpVisualManifestSourceHash(path: string): string | null {
+  const manifest = readJsonIfExists<{
+    version?: number;
+    localOnly?: boolean;
+    baseUrl?: string | null;
+    routes?: Array<{
+      route?: string;
+      url?: string;
+      screenshot?: string | null;
+      screenshotHash?: string | null;
+      status?: string;
+      error?: string;
+    }>;
+  }>(path);
+  if (!manifest) return null;
+  return mcpHashJson({
+    version: manifest.version,
+    localOnly: manifest.localOnly,
+    baseUrl: manifest.baseUrl ?? null,
+    routes: (manifest.routes ?? []).map((route) => ({
+      route: route.route,
+      url: route.url,
+      screenshot: route.screenshot,
+      screenshotHash: route.screenshotHash ?? null,
+      status: route.status,
+      error: route.error,
+    })),
+  });
+}
+
+function mcpStableFindingGraphAnchor(finding: {
+  graph?: {
+    node_id?: string;
+    node_type?: string;
+    route?: string;
+    confidence?: string;
+    reason?: string;
+  };
+}) {
+  if (!finding.graph) return undefined;
+  return {
+    node_id: finding.graph.node_id,
+    node_type: finding.graph.node_type,
+    route: finding.graph.route,
+    confidence: finding.graph.confidence,
+    reason: finding.graph.reason,
+  };
+}
+
+function mcpEvidenceBundleSourceHash(path: string): string | null {
+  const bundle = readJsonIfExists<{
+    health?: {
+      status?: string;
+      score?: number;
+      errorCount?: number;
+      warnCount?: number;
+      infoCount?: number;
+      findingCount?: number;
+    };
+    provenance?: Record<
+      string,
+      { path?: string; present?: boolean; hash?: string | null; generatedAt?: string | null }
+    >;
+    findings?: Array<{
+      id?: string;
+      code?: string;
+      source?: string;
+      category?: string;
+      severity?: string;
+      message?: string;
+      target?: string;
+      rule?: string;
+      suggestedFix?: string;
+      graph?: {
+        node_id?: string;
+        node_type?: string;
+        route?: string;
+        confidence?: string;
+        reason?: string;
+      };
+      repair?: { id?: string };
+      repairPlan?: {
+        id?: string;
+        actions?: unknown[];
+        readTargets?: string[];
+        commands?: string[];
+      };
+      evidence?: string[];
+      commands?: string[];
+    }>;
+  }>(path);
+  if (!bundle) return null;
+  return mcpHashJson({
+    health: bundle.health
+      ? {
+          status: bundle.health.status,
+          score: bundle.health.score,
+          errorCount: bundle.health.errorCount,
+          warnCount: bundle.health.warnCount,
+          infoCount: bundle.health.infoCount,
+          findingCount: bundle.health.findingCount,
+        }
+      : null,
+    provenance: Object.entries(bundle.provenance ?? {})
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => ({
+        key,
+        path: entry.path,
+        present: entry.present,
+        hash: entry.hash ?? null,
+      })),
+    findings: (bundle.findings ?? []).map((finding) => ({
+      id: finding.id,
+      code: finding.code,
+      source: finding.source,
+      category: finding.category,
+      severity: finding.severity,
+      message: finding.message,
+      target: finding.target,
+      rule: finding.rule,
+      suggestedFix: finding.suggestedFix,
+      graph: mcpStableFindingGraphAnchor(finding),
+      repair: finding.repair?.id,
+      repairPlan: finding.repairPlan
+        ? {
+            id: finding.repairPlan.id,
+            actions: finding.repairPlan.actions,
+            readTargets: finding.repairPlan.readTargets,
+            commands: finding.repairPlan.commands,
+          }
+        : undefined,
+      evidence: finding.evidence,
+      commands: finding.commands,
+    })),
+  });
+}
+
+function mcpAnalysisSourceHash(path: string): string | null {
+  const analysis = readJsonIfExists<{
+    project?: {
+      framework?: string;
+      frameworkVersion?: string | null;
+      packageManager?: string;
+      hasTypeScript?: boolean;
+      hasTailwind?: boolean;
+      projectScope?: string;
+    };
+    routes?: {
+      strategy?: string;
+      routes?: Array<{ path?: string; file?: string; hasLayout?: boolean }>;
+    };
+    styling?: {
+      approach?: string;
+      configFile?: string | null;
+      darkMode?: boolean;
+      cssVariables?: string[];
+    };
+    layout?: { shellPattern?: string };
+    features?: { detected?: string[] };
+  }>(path);
+  if (!analysis) return null;
+  return mcpHashJson({
+    project: {
+      framework: analysis.project?.framework,
+      frameworkVersion: analysis.project?.frameworkVersion,
+      packageManager: analysis.project?.packageManager,
+      hasTypeScript: analysis.project?.hasTypeScript,
+      hasTailwind: analysis.project?.hasTailwind,
+      projectScope: analysis.project?.projectScope,
+    },
+    routes: {
+      strategy: analysis.routes?.strategy,
+      routes: (analysis.routes?.routes ?? []).map((route) => ({
+        path: route.path,
+        file: route.file,
+        hasLayout: route.hasLayout,
+      })),
+    },
+    styling: {
+      approach: analysis.styling?.approach,
+      configFile: analysis.styling?.configFile,
+      darkMode: analysis.styling?.darkMode,
+      cssVariables: analysis.styling?.cssVariables,
+    },
+    layout: {
+      shellPattern: analysis.layout?.shellPattern,
+    },
+    features: {
+      detected: analysis.features?.detected,
+    },
+  });
+}
+
+function mcpHealthBaselineDiffSourceHash(path: string): string | null {
+  const diff = readJsonIfExists<{
+    savedAt?: string | null;
+    statusChanged?: boolean;
+    scoreDelta?: number | null;
+    addedFindings?: string[];
+    resolvedFindings?: string[];
+    changedFiles?: string[];
+    changedRoutes?: string[];
+    changedScreenshots?: string[];
+    contractDrift?: string[];
+  }>(path);
+  if (!diff) return null;
+  return mcpHashJson({
+    savedAt: diff.savedAt ?? null,
+    statusChanged: diff.statusChanged ?? false,
+    scoreDelta: diff.scoreDelta ?? null,
+    addedFindings: diff.addedFindings ?? [],
+    resolvedFindings: diff.resolvedFindings ?? [],
+    changedFiles: diff.changedFiles ?? [],
+    changedRoutes: diff.changedRoutes ?? [],
+    changedScreenshots: diff.changedScreenshots ?? [],
+    contractDrift: diff.contractDrift ?? [],
+  });
+}
+
+function mcpHashGraphSource(
+  projectRoot: string,
+  source: GraphManifest['sources'][number],
+): string | null {
+  if (!source.path) return null;
+  const path = join(projectRoot, String(source.path));
+  if (source.kind === 'brownfield-analysis') return mcpAnalysisSourceHash(path);
+  if (source.kind === 'health-baseline-diff') return mcpHealthBaselineDiffSourceHash(path);
+  if (source.kind === 'visual-manifest') return mcpVisualManifestSourceHash(path);
+  if (source.kind === 'evidence-bundle') return mcpEvidenceBundleSourceHash(path);
+  return mcpHashFile(path);
+}
+
+function inspectMcpGraphFreshness(projectRoot: string): {
+  manifest: GraphManifest | null;
+  current: boolean | null;
+  staleSources: Array<{ path: string; expected_hash?: string; actual_hash: string | null }>;
+} {
+  const manifest = readJsonIfExists<GraphManifest>(
+    graphArtifactPath(projectRoot, 'graph.manifest.json'),
+  );
+  if (!manifest) {
+    return { manifest: null, current: null, staleSources: [] };
+  }
+  const staleSources = (manifest.sources ?? [])
+    .filter((source) => source.path && source.hash)
+    .map((source) => {
+      const actualHash = mcpHashGraphSource(projectRoot, source);
+      return {
+        path: String(source.path),
+        expected_hash: source.hash,
+        actual_hash: actualHash,
+      };
+    })
+    .filter((source) => source.actual_hash !== source.expected_hash);
+  return {
+    manifest,
+    current: staleSources.length === 0,
+    staleSources,
+  };
+}
+
+function mcpInspectProjectHealthGraph(projectRoot: string): ProjectHealthReport['graph'] {
+  const graphDir = join(projectRoot, '.decantr', 'graph');
+  const snapshotPath = graphArtifactPath(projectRoot, 'graph.snapshot.json');
+  const manifestPath = graphArtifactPath(projectRoot, 'graph.manifest.json');
+  const diffPath = graphArtifactPath(projectRoot, 'graph.diff.json');
+  const capsulePath = graphArtifactPath(projectRoot, 'contract-capsule.json');
+  const graphDirPresent = existsSync(graphDir);
+  const projectMetadataPresent = existsSync(join(projectRoot, '.decantr', 'project.json'));
+  const snapshot = readJsonIfExists<GraphSnapshot>(snapshotPath);
+  const capsule = readJsonIfExists<{
+    contract_hash?: string;
+    contract_cache_key?: string;
+    source_artifact_limit?: number;
+    source_artifacts_truncated?: boolean;
+    summary?: { source_artifacts?: number };
+  }>(capsulePath);
+  const freshness = inspectMcpGraphFreshness(projectRoot);
+  const requiredArtifactPaths = [snapshotPath, manifestPath, diffPath, capsulePath];
+  const missingArtifacts = requiredArtifactPaths
+    .filter((path) => !existsSync(path))
+    .map((path) => relative(projectRoot, path).replace(/\\/g, '/'));
+  const current =
+    graphDirPresent || projectMetadataPresent
+      ? missingArtifacts.length === 0 && freshness.current === true
+      : null;
+
+  return {
+    present: graphDirPresent,
+    ready: current === true && Boolean(snapshot) && Boolean(capsule),
+    current,
+    snapshotPresent: existsSync(snapshotPath),
+    manifestPresent: existsSync(manifestPath),
+    diffPresent: existsSync(diffPath),
+    capsulePresent: existsSync(capsulePath),
+    snapshotId: snapshot?.id ?? null,
+    sourceHash: snapshot?.source_hash ?? null,
+    contractHash: capsule?.contract_hash ?? null,
+    contractCacheKey: capsule?.contract_cache_key ?? null,
+    sourceArtifactCount:
+      snapshot?.nodes.filter((node) => node.type === 'SourceArtifact').length ??
+      capsule?.summary?.source_artifacts ??
+      0,
+    capsuleSourceArtifactLimit: capsule?.source_artifact_limit ?? null,
+    capsuleSourceArtifactsTruncated: capsule?.source_artifacts_truncated ?? null,
+    staleArtifacts:
+      current === false
+        ? [
+            ...missingArtifacts,
+            ...freshness.staleSources.map(
+              (source) => `${source.path} changed since graph manifest generation`,
+            ),
+          ]
+        : [],
+    error: null,
+  };
+}
+
+const MCP_GRAPH_NODE_TYPES = new Set<string>(GRAPH_NODE_TYPES);
+const MCP_GRAPH_RELATIONS = new Set<string>(GRAPH_RELATIONS);
+const MCP_GRAPH_DEFAULT_LIMIT = 200;
+const MCP_GRAPH_MAX_LIMIT = 500;
+
+function mcpGraphEdgeKey(edge: Pick<GraphEdge, 'src' | 'dst' | 'relation' | 'idx'>): string {
+  return [edge.src, edge.relation, edge.dst, String(edge.idx ?? '')].join('\0');
+}
+
+function graphToolLimit(args: Record<string, unknown>): number {
+  if (typeof args.limit !== 'number' || !Number.isFinite(args.limit)) {
+    return MCP_GRAPH_DEFAULT_LIMIT;
+  }
+  return Math.max(1, Math.min(MCP_GRAPH_MAX_LIMIT, Math.floor(args.limit)));
+}
+
+function stringListArg(
+  args: Record<string, unknown>,
+  key: string,
+): { values?: string[]; error?: string } {
+  const value = args[key];
+  if (value === undefined) return {};
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? { values: [trimmed] } : { values: [] };
+  }
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) {
+    return { error: `Optional parameter "${key}" must be a string or an array of strings.` };
+  }
+  return {
+    values: value.map((item) => item.trim()).filter(Boolean),
+  };
+}
+
+function graphNodeTypeArg(
+  args: Record<string, unknown>,
+  key: string,
+): { value?: GraphNodeType; error?: string } {
+  const value = args[key];
+  if (value === undefined) return {};
+  if (typeof value !== 'string' || !MCP_GRAPH_NODE_TYPES.has(value)) {
+    return {
+      error: `Optional parameter "${key}" must be one of: ${GRAPH_NODE_TYPES.join(', ')}.`,
+    };
+  }
+  return { value: value as GraphNodeType };
+}
+
+function graphNodeTypesArg(
+  args: Record<string, unknown>,
+  key: string,
+): { values?: GraphNodeType[]; error?: string } {
+  const parsed = stringListArg(args, key);
+  if (parsed.error) return { error: parsed.error };
+  if (!parsed.values) return {};
+  const invalid = parsed.values.find((value) => !MCP_GRAPH_NODE_TYPES.has(value));
+  if (invalid) {
+    return {
+      error: `Optional parameter "${key}" contains invalid node type "${invalid}". Expected one of: ${GRAPH_NODE_TYPES.join(', ')}.`,
+    };
+  }
+  return { values: parsed.values as GraphNodeType[] };
+}
+
+function graphRelationArg(
+  args: Record<string, unknown>,
+  key: string,
+): { value?: GraphRelation; error?: string } {
+  const value = args[key];
+  if (value === undefined) return {};
+  if (typeof value !== 'string' || !MCP_GRAPH_RELATIONS.has(value)) {
+    return {
+      error: `Optional parameter "${key}" must be one of: ${GRAPH_RELATIONS.join(', ')}.`,
+    };
+  }
+  return { value: value as GraphRelation };
+}
+
+function graphRelationsArg(
+  args: Record<string, unknown>,
+  key: string,
+): { values?: GraphRelation[]; error?: string } {
+  const parsed = stringListArg(args, key);
+  if (parsed.error) return { error: parsed.error };
+  if (!parsed.values) return {};
+  const invalid = parsed.values.find((value) => !MCP_GRAPH_RELATIONS.has(value));
+  if (invalid) {
+    return {
+      error: `Optional parameter "${key}" contains invalid relation "${invalid}". Expected one of: ${GRAPH_RELATIONS.join(', ')}.`,
+    };
+  }
+  return { values: parsed.values as GraphRelation[] };
+}
+
+function graphTraverseDirectionArg(
+  args: Record<string, unknown>,
+): { value?: GraphTraverseDirection; error?: string } {
+  const value = args.direction;
+  if (value === undefined) return {};
+  if (value !== 'out' && value !== 'in' && value !== 'both') {
+    return { error: 'Optional parameter "direction" must be one of: out, in, both.' };
+  }
+  return { value };
+}
+
+function graphTraverseDepthArg(args: Record<string, unknown>): { value: number; error?: string } {
+  const value = args.depth;
+  if (value === undefined) return { value: 1 };
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return { value: 1, error: 'Optional parameter "depth" must be a number.' };
+  }
+  return { value: Math.max(0, Math.min(4, Math.floor(value))) };
+}
+
+function dedupeGraphNodes(nodes: GraphNode[]): GraphNode[] {
+  return sortGraphNodes([...new Map(nodes.map((node) => [node.id, node])).values()]);
+}
+
+function dedupeGraphEdges(edges: GraphEdge[]): GraphEdge[] {
+  return sortGraphEdges([...new Map(edges.map((edge) => [mcpGraphEdgeKey(edge), edge])).values()]);
+}
+
+function graphPayloadFilterArgs(args: Record<string, unknown>): {
+  key?: string;
+  value?: string;
+  contains?: string;
+  error?: string;
+} {
+  const key = args.payload_key;
+  const value = args.payload_value;
+  const contains = args.payload_contains;
+  if (key !== undefined && typeof key !== 'string') {
+    return { error: 'Optional parameter "payload_key" must be a string.' };
+  }
+  if (value !== undefined && typeof value !== 'string') {
+    return { error: 'Optional parameter "payload_value" must be a string.' };
+  }
+  if (contains !== undefined && typeof contains !== 'string') {
+    return { error: 'Optional parameter "payload_contains" must be a string.' };
+  }
+  if (value !== undefined && (typeof key !== 'string' || !key.trim())) {
+    return { error: 'Optional parameter "payload_value" requires "payload_key".' };
+  }
+  return {
+    key: typeof key === 'string' && key.trim() ? key.trim() : undefined,
+    value: typeof value === 'string' ? value : undefined,
+    contains: typeof contains === 'string' && contains.trim() ? contains.trim() : undefined,
+  };
+}
+
+function limitGraphSubgraph(nodes: GraphNode[], edges: GraphEdge[], limit: number) {
+  const limitedNodes = nodes.slice(0, limit);
+  const allowedNodeIds = new Set(limitedNodes.map((node) => node.id));
+  const limitedEdges = edges
+    .filter((edge) => allowedNodeIds.has(edge.src) && allowedNodeIds.has(edge.dst))
+    .slice(0, limit);
+  return {
+    nodes: limitedNodes,
+    edges: limitedEdges,
+    truncated: nodes.length > limitedNodes.length || edges.length > limitedEdges.length,
+  };
+}
+
+function buildTaskTypedGraphContext(
+  projectRoot: string,
+  route: string | null,
+  task = '',
+  changedFiles: string[] = [],
+) {
+  const snapshotPath = graphArtifactPath(projectRoot, 'graph.snapshot.json');
+  const snapshot = readJsonIfExists<GraphSnapshot>(snapshotPath);
+  if (!snapshot) return null;
+
+  const capsule = readJsonIfExists<{
+    cache_key?: string;
+    contract_hash?: string;
+    contract_cache_key?: string;
+    summary?: unknown;
+  }>(graphArtifactPath(projectRoot, 'contract-capsule.json'));
+  const freshness = inspectMcpGraphFreshness(projectRoot);
+  const routeContext = route ? buildGraphRouteContext(snapshot, route, { task }) : null;
+  const limitedRouteContext = routeContext
+    ? limitGraphSubgraph(routeContext.nodes, routeContext.edges, 120)
+    : null;
+  const changedFileNodeIds = [
+    ...new Set(
+      changedFiles
+        .map((file) => graphSourceNodeIdForFile(projectRoot, snapshot, file))
+        .filter((nodeId): nodeId is string => Boolean(nodeId)),
+    ),
+  ];
+  const changedFileImpact =
+    changedFileNodeIds.length > 0
+      ? buildGraphImpactContext(snapshot, changedFileNodeIds, { task, limit: 120 })
+      : null;
+  const limitedChangedFileImpact = changedFileImpact
+    ? limitGraphSubgraph(changedFileImpact.nodes, changedFileImpact.edges, 120)
+    : null;
+
+  return {
+    source: 'local_graph',
+    artifact_path: displayWorkspacePath(snapshotPath),
+    snapshot_id: snapshot.id,
+    schema_version: snapshot.schema_version,
+    project_id: snapshot.project_id,
+    source_hash: snapshot.source_hash,
+    current: freshness.current,
+    stale_sources: freshness.staleSources,
+    contract: capsule
+      ? {
+          cache_key: capsule.cache_key ?? null,
+          contract_hash: capsule.contract_hash ?? null,
+          contract_cache_key: capsule.contract_cache_key ?? null,
+          summary: capsule.summary ?? null,
+        }
+      : null,
+    route_context: routeContext
+      ? {
+          route,
+          ranking: routeContext.ranking,
+          summary: routeContext.summary,
+          ids: routeContext.ids,
+          ranked: routeContext.ranked.slice(0, 24),
+          nodes: limitedRouteContext?.nodes ?? [],
+          edges: limitedRouteContext?.edges ?? [],
+          truncated: limitedRouteContext?.truncated ?? false,
+        }
+      : route
+        ? {
+            route,
+            error: 'Route not found in graph snapshot.',
+            available_routes: graphAvailableRoutes(snapshot),
+          }
+        : null,
+    changed_file_context:
+      changedFiles.length > 0
+        ? {
+            changed_files: changedFiles.slice(0, 40),
+            resolved_node_ids: changedFileNodeIds,
+            missing_files: changedFiles
+              .filter((file) => !changedFileNodeIds.includes(`src:${file}`))
+              .slice(0, 40),
+            impact: changedFileImpact
+              ? {
+                  ranking: changedFileImpact.ranking,
+                  summary: changedFileImpact.summary,
+                  ids: changedFileImpact.ids,
+                  ranked: changedFileImpact.ranked.slice(0, 24),
+                  nodes: limitedChangedFileImpact?.nodes ?? [],
+                  edges: limitedChangedFileImpact?.edges ?? [],
+                  truncated: limitedChangedFileImpact?.truncated ?? false,
+                }
+              : null,
+          }
+        : null,
+  };
 }
 
 function changedFilesForTask(projectRoot: string): string[] {
@@ -207,8 +1006,7 @@ function taskAuthoritySummary(input: {
   task: string;
 }) {
   const hasLocalLaw = input.localLaw.patterns.length > 0 || input.localLaw.rules.length > 0;
-  const hasStyleBridge =
-    Boolean(input.styleBridge.path) || input.adoptionMode === 'style-bridge';
+  const hasStyleBridge = Boolean(input.styleBridge.path) || input.adoptionMode === 'style-bridge';
   let lane = 'Brownfield contract-only';
   let sourceAuthority = 'Existing app is authoritative; Decantr supplies contract context.';
   let styleAuthority = 'Use the existing styling system.';
@@ -864,6 +1662,10 @@ function mcpCommandsForFinding(source: ProjectHealthFindingSource): string[] {
       return ['decantr check', 'decantr health'];
     case 'design-token':
       return ['decantr export --to figma-tokens', 'decantr health --evidence'];
+    case 'style-bridge':
+      return ['decantr codify --style-bridge', 'decantr verify --evidence'];
+    case 'graph':
+      return ['decantr graph', 'decantr health --evidence'];
     case 'interaction':
       return ['decantr check --strict', 'decantr health'];
     case 'pack':
@@ -900,6 +1702,9 @@ function mcpSourceFromFinding(finding: VerificationFinding): ProjectHealthFindin
   ) {
     return 'interaction';
   }
+  if (category.includes('style bridge') || id.includes('style-bridge') || rule.includes('style-bridge')) {
+    return 'style-bridge';
+  }
   return 'audit';
 }
 
@@ -909,8 +1714,10 @@ function mcpBuildRepairPrompt(input: {
   category: string;
   severity: VerificationSeverity;
   message: string;
+  code?: string;
   evidence: string[];
   suggestedFix?: string;
+  repair?: VerificationRepairAction;
   commands: string[];
 }): string {
   return [
@@ -922,7 +1729,9 @@ function mcpBuildRepairPrompt(input: {
     `Source: ${input.source}`,
     `Severity: ${input.severity}`,
     `Category: ${input.category}`,
+    input.code ? `Code: ${input.code}` : null,
     `Message: ${input.message}`,
+    input.repair ? `Repair: ${input.repair.id}` : null,
     input.evidence.length > 0
       ? `Evidence:\n${input.evidence.map((entry) => `- ${entry}`).join('\n')}`
       : null,
@@ -947,12 +1756,28 @@ function mcpHealthFinding(input: {
   file?: string;
   rule?: string;
   suggestedFix?: string;
+  code?: string;
+  repair?: VerificationRepairAction;
   baseId?: string;
 }): ProjectHealthFinding {
   const id = `${input.source}-${mcpSlug(input.baseId || input.rule || `${input.category}-${input.message}`)}`;
   const commands = mcpCommandsForFinding(input.source);
+  const diagnostic = deriveVerificationDiagnostic({
+    id,
+    source: input.source,
+    category: input.category,
+    message: input.message,
+    rule: input.rule,
+    target: input.target,
+    file: input.file,
+    suggestedFix: input.suggestedFix,
+    evidence: input.evidence,
+  });
+  const code = input.code ?? diagnostic.code;
+  const repair = input.repair ?? diagnostic.repair;
   return {
     id,
+    code,
     source: input.source,
     category: input.category,
     severity: input.severity,
@@ -962,6 +1787,7 @@ function mcpHealthFinding(input: {
     file: input.file,
     rule: input.rule,
     suggestedFix: input.suggestedFix,
+    repair,
     remediation: {
       summary: input.suggestedFix || `Resolve ${input.category.toLowerCase()} finding.`,
       commands,
@@ -971,12 +1797,77 @@ function mcpHealthFinding(input: {
         category: input.category,
         severity: input.severity,
         message: input.message,
+        code,
         evidence: input.evidence ?? [],
         suggestedFix: input.suggestedFix,
+        repair,
         commands,
       }),
     },
   };
+}
+
+function mcpCollectGraphArtifactFindings(projectRoot: string): ProjectHealthFinding[] {
+  const graphDirPresent = existsSync(join(projectRoot, '.decantr', 'graph'));
+  const projectMetadataPresent = existsSync(join(projectRoot, '.decantr', 'project.json'));
+  if (!graphDirPresent && !projectMetadataPresent) {
+    return [];
+  }
+
+  const essence = readProjectEssence(projectRoot);
+  if (essence && !isV4(essence)) {
+    return [
+      mcpHealthFinding({
+        source: 'graph',
+        category: 'Typed Contract Graph',
+        severity: 'warn',
+        message: 'Typed Contract graph could not be derived: active graph workflows require Essence v4.0.0.',
+        evidence: [
+          'Graph derivation reads decantr.essence.json, local rules, style bridge, visual manifest, and saved evidence bundle artifacts.',
+        ],
+        target: '.decantr/graph',
+        rule: 'typed-graph-current',
+        suggestedFix: 'Run `decantr migrate --to v4`, then run `decantr graph`.',
+        baseId: 'typed-graph-current',
+      }),
+    ];
+  }
+
+  const graphDir = join(projectRoot, '.decantr', 'graph');
+  const requiredArtifacts = [
+    'graph.snapshot.json',
+    'graph.manifest.json',
+    'graph.diff.json',
+    'contract-capsule.json',
+  ];
+  const missingArtifacts = requiredArtifacts
+    .map((file) => join(graphDir, file))
+    .filter((path) => !existsSync(path))
+    .map((path) => relative(projectRoot, path).replace(/\\/g, '/'));
+  const graphFreshness = inspectMcpGraphFreshness(projectRoot);
+  const staleSources = graphFreshness.staleSources.map((source) => source.path);
+
+  if (!missingArtifacts.length && !staleSources.length) {
+    return [];
+  }
+
+  return [
+    mcpHealthFinding({
+      source: 'graph',
+      category: 'Typed Contract Graph',
+      severity: 'warn',
+      message: 'Typed Contract graph artifacts are missing or stale.',
+      evidence: [
+        ...missingArtifacts,
+        ...staleSources.map((path) => `${path} changed since graph manifest generation`),
+      ].slice(0, 8),
+      target: '.decantr/graph',
+      rule: 'typed-graph-current',
+      suggestedFix:
+        'Run `decantr graph` to regenerate graph snapshot, history, diff, manifest, and capsule.',
+      baseId: 'typed-graph-current',
+    }),
+  ];
 }
 
 function mcpCollectDeclaredRoutes(essence: EssenceFile | null): string[] {
@@ -1010,6 +1901,8 @@ function mcpReportFromAudit(
         file: finding.file,
         rule: finding.rule,
         suggestedFix: finding.suggestedFix,
+        code: finding.code,
+        repair: finding.repair,
         baseId: finding.id,
       }),
     );
@@ -1046,10 +1939,18 @@ function mcpReportFromAudit(
     );
   }
 
+  for (const finding of mcpCollectGraphArtifactFindings(projectRoot)) {
+    pushUnique(finding);
+  }
+
+  const anchoredFindings = mcpAnchorHealthFindings(projectRoot, findings).map((finding) => ({
+    ...finding,
+    repairPlan: buildProjectHealthRepairPlan(projectRoot, finding),
+  }));
   const counts = {
-    errorCount: findings.filter((finding) => finding.severity === 'error').length,
-    warnCount: findings.filter((finding) => finding.severity === 'warn').length,
-    infoCount: findings.filter((finding) => finding.severity === 'info').length,
+    errorCount: anchoredFindings.filter((finding) => finding.severity === 'error').length,
+    warnCount: anchoredFindings.filter((finding) => finding.severity === 'warn').length,
+    infoCount: anchoredFindings.filter((finding) => finding.severity === 'info').length,
   };
   const manifest = audit.packManifest;
 
@@ -1061,7 +1962,7 @@ function mcpReportFromAudit(
     score: mcpScoreFromCounts(counts),
     summary: {
       ...counts,
-      findingCount: findings.length,
+      findingCount: anchoredFindings.length,
       workflowMode: null,
       adoptionMode: null,
       essenceVersion: audit.summary.essenceVersion,
@@ -1078,7 +1979,7 @@ function mcpReportFromAudit(
       runtimeCoverageOk: audit.summary.runtimeAuditChecked
         ? audit.runtimeAudit.routeHintsCoverageOk
         : null,
-      issues: findings
+      issues: anchoredFindings
         .filter(
           (finding) =>
             finding.category.toLowerCase().includes('route') ||
@@ -1096,11 +1997,12 @@ function mcpReportFromAudit(
       mutationPackCount: manifest?.mutations?.length ?? 0,
       generatedAt: typeof manifest?.generatedAt === 'string' ? manifest.generatedAt : null,
     },
+    graph: mcpInspectProjectHealthGraph(projectRoot),
     ci: {
       recommendedCommand: 'decantr health --ci --fail-on error',
       failOn: 'error',
     },
-    findings,
+    findings: anchoredFindings,
   };
 }
 
@@ -1134,6 +2036,197 @@ async function getMcpHealthState(projectRoot: string): Promise<{
       : null,
   });
   return { audit, assertions, report, evidence };
+}
+
+function compactMcpFinding(finding: ProjectHealthFinding, includePrompt: boolean) {
+  return {
+    id: finding.id,
+    code: finding.code,
+    source: finding.source,
+    category: finding.category,
+    severity: finding.severity,
+    message: finding.message,
+    evidence: finding.evidence,
+    target: finding.target,
+    file: finding.file,
+    rule: finding.rule,
+    suggestedFix: finding.suggestedFix,
+    graph: finding.graph,
+    repair: finding.repair,
+    repairPlan: finding.repairPlan,
+    remediation: {
+      summary: finding.remediation.summary,
+      commands: finding.remediation.commands,
+      prompt: includePrompt ? finding.remediation.prompt : undefined,
+    },
+  };
+}
+
+function selectMcpRepairFinding(
+  report: ProjectHealthReport,
+  options: { findingId?: string; code?: string } = {},
+): ProjectHealthFinding | null {
+  return (
+    (options.findingId
+      ? report.findings.find((entry) => entry.id === options.findingId)
+      : undefined) ??
+    (options.code ? report.findings.find((entry) => entry.code === options.code) : undefined) ??
+    report.findings.find((entry) => entry.severity === 'error') ??
+    report.findings.find((entry) => entry.severity === 'warn') ??
+    report.findings[0] ??
+    null
+  );
+}
+
+function mcpRepairPlanAction(finding: ProjectHealthFinding) {
+  const repairId = finding.repair?.id ?? 'manual-repair';
+  if (repairId === 'regenerate-typed-graph' || finding.source === 'graph') {
+    return {
+      id: repairId,
+      kind: 'regenerate_artifact',
+      target: '.decantr/graph',
+      description: 'Regenerate the typed Contract graph artifacts from the current project sources.',
+      payload: finding.repair?.payload ?? {},
+    };
+  }
+  if (repairId === 'import-existing-component') {
+    return {
+      id: repairId,
+      kind: 'replace_duplicate_with_import',
+      target: finding.file ?? finding.target ?? null,
+      description:
+        'Remove the locally redeclared UI primitive and import the existing project-owned component.',
+      payload: finding.repair?.payload ?? {},
+    };
+  }
+  if (repairId === 'replace-raw-control-with-local-component') {
+    return {
+      id: repairId,
+      kind: 'replace_raw_control_with_component',
+      target: finding.file ?? finding.target ?? null,
+      description:
+        'Replace the raw JSX control with the existing project-owned primitive component.',
+      payload: finding.repair?.payload ?? {},
+    };
+  }
+  if (repairId === 'replace-arbitrary-style-with-bridge-token') {
+    return {
+      id: repairId,
+      kind: 'replace_arbitrary_style_with_bridge_token',
+      target: finding.file ?? finding.target ?? null,
+      description:
+        'Replace the arbitrary Tailwind value with an accepted project token/class from the style bridge, or update the bridge if the value is approved.',
+      payload: finding.repair?.payload ?? {},
+    };
+  }
+  return {
+    id: repairId,
+    kind: 'manual_repair',
+    target: finding.file ?? finding.target ?? null,
+    description: finding.suggestedFix ?? finding.remediation.summary,
+    payload: finding.repair?.payload ?? {},
+  };
+}
+
+function mcpRepairReadTargets(finding: ProjectHealthFinding): string[] {
+  const targets = new Set<string>(['DECANTR.md', 'decantr.essence.json']);
+  if (finding.source === 'graph') {
+    targets.add('.decantr/graph/graph.manifest.json');
+    targets.add('.decantr/graph/graph.snapshot.json');
+    targets.add('.decantr/graph/graph.diff.json');
+    targets.add('.decantr/graph/snapshots/');
+  }
+  if (finding.source === 'style-bridge') {
+    targets.add('.decantr/style-bridge.json');
+  }
+  if (finding.source === 'pack' || finding.source === 'assertion') {
+    targets.add('.decantr/context/pack-manifest.json');
+  }
+  if (finding.graph?.node_id) {
+    targets.add('.decantr/graph/contract-capsule.json');
+  }
+  if (finding.file) {
+    targets.add(finding.file);
+  }
+  if (finding.target && !finding.target.startsWith('http')) {
+    targets.add(finding.target);
+  }
+  return [...targets];
+}
+
+function mcpRepairImpactContext(projectRoot: string, finding: ProjectHealthFinding) {
+  const nodeId = finding.graph?.node_id;
+  if (!nodeId) return null;
+  const impact = buildGraphImpactContext(readMcpGraphSnapshot(projectRoot), nodeId, {
+    task: finding.message,
+    limit: 120,
+  });
+  if (!impact) return null;
+  return {
+    snapshot_id: impact.snapshotId,
+    source_hash: impact.sourceHash,
+    seed_nodes: impact.seedNodes,
+    summary: impact.summary,
+    ids: impact.ids,
+    ranked: impact.ranked,
+    nodes: impact.nodes,
+    edges: impact.edges,
+  };
+}
+
+function buildMcpRepairPlan(input: {
+  evidence: EvidenceBundle;
+  finding: ProjectHealthFinding | null;
+  projectRoot: string;
+  includePrompt?: boolean;
+}) {
+  if (!input.finding) {
+    return {
+      project: input.evidence.project,
+      health: input.evidence.health,
+      finding: null,
+      plan: null,
+      message: 'No Project Health findings require repair.',
+      commands: ['decantr health --evidence'],
+    };
+  }
+
+  const finding = input.finding;
+  const action = mcpRepairPlanAction(finding);
+  return {
+    project: input.evidence.project,
+    health: input.evidence.health,
+    finding: compactMcpFinding(finding, false),
+    plan: {
+      id: `repair-plan:${finding.id}`,
+      finding_id: finding.id,
+      diagnostic_code: finding.code ?? null,
+      repair_id: finding.repair?.id ?? null,
+      severity: finding.severity,
+      source: finding.source,
+      category: finding.category,
+      graph_anchor: finding.graph ?? null,
+      impact_context: mcpRepairImpactContext(input.projectRoot, finding),
+      actions: [action],
+      evidence: finding.evidence.map((entry, index) => ({
+        id: `evidence:${finding.id}:${index + 1}`,
+        text: entry,
+      })),
+      read_targets: mcpRepairReadTargets(finding),
+      preserve: [
+        'existing framework, routing, and styling system',
+        'existing production behavior unrelated to this finding',
+        'accepted local law, style bridge mappings, and graph anchors',
+      ],
+      avoid: [
+        'rewriting unrelated routes',
+        'replacing the app styling system',
+        'regenerating Decantr artifacts unless the finding is about generated context or graph freshness',
+      ],
+      commands: finding.remediation.commands,
+      prompt: input.includePrompt === true ? finding.remediation.prompt : undefined,
+    },
+  };
 }
 
 function discoverMcpWorkspaceProjects(
@@ -1277,9 +2370,9 @@ export const TOOLS = [
   // 3. decantr_search_registry — network
   {
     name: 'decantr_search_registry',
-    title: 'Search Registry',
+    title: 'Search Vocabulary',
     description:
-      'Search the Decantr community content registry for patterns, archetypes, themes, and shells.',
+      'Search Decantr official/community vocabulary for patterns, archetypes, themes, and shells.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -1583,7 +2676,25 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 16. decantr_prepare_task_context — local read
+  // 16. decantr_get_project_state — local read
+  {
+    name: 'decantr_get_project_state',
+    title: 'Get Project State',
+    description:
+      'Read a compact typed summary of the active Decantr project: Essence version, routes, generated packs, typed graph artifacts, local law, style bridge, diagnostic catalog, and recommended next MCP tools.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 17. decantr_prepare_task_context — local read
   {
     name: 'decantr_prepare_task_context',
     title: 'Prepare Task Context',
@@ -1592,6 +2703,11 @@ export const TOOLS = [
     inputSchema: {
       type: 'object' as const,
       properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
         route: {
           type: 'string',
           description: 'Route being edited, for example "/feed". Preferred when known.',
@@ -1608,7 +2724,242 @@ export const TOOLS = [
     },
     annotations: READ_ONLY,
   },
-  // 17. decantr_get_execution_pack — local read
+  // 17. decantr_get_contract_capsule — local typed graph read
+  {
+    name: 'decantr_get_contract_capsule',
+    title: 'Get Contract Capsule',
+    description:
+      'Read the Decantr typed Contract capsule generated by `decantr graph`. This is the compact, cache-friendly Contract summary agents should load near session start.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 18. decantr_get_graph_snapshot — local typed graph read
+  {
+    name: 'decantr_get_graph_snapshot',
+    title: 'Get Graph Snapshot',
+    description:
+      'Read the Decantr typed graph snapshot generated by `decantr graph`. By default returns snapshot metadata and available routes; pass route for a scoped route subgraph, include_history for a compact local timeline, or include_full for the full snapshot.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        route: {
+          type: 'string' as const,
+          description: 'Optional route path, for example "/settings", to return a scoped subgraph.',
+        },
+        node_id: {
+          type: 'string' as const,
+          description:
+            'Optional graph node ID, for example "cmp:button" or "tkn:surface", to return dependency impact context.',
+        },
+        file_path: {
+          type: 'string' as const,
+          description:
+            'Optional project-relative source file path, for example "src/app/page.tsx", to return dependency impact context for its SourceArtifact node.',
+        },
+        snapshot_id: {
+          type: 'string' as const,
+          description:
+            'Optional graph snapshot id to read from .decantr/graph/snapshots. Use "current" or omit for graph.snapshot.json.',
+        },
+        compare_to: {
+          type: 'string' as const,
+          description:
+            'Optional snapshot id to diff against the selected snapshot. Use "current" for graph.snapshot.json.',
+        },
+        include_diff_ops: {
+          type: 'boolean' as const,
+          description:
+            'Include diff operation details when compare_to is provided. Defaults to false.',
+        },
+        limit: {
+          type: 'number' as const,
+          description:
+            'Maximum diff operations or impact nodes to return. Defaults to 200, maximum 500.',
+        },
+        include_full: {
+          type: 'boolean' as const,
+          description: 'Return the full graph snapshot instead of metadata. Defaults to false.',
+        },
+        include_history: {
+          type: 'boolean' as const,
+          description:
+            'Include a compact index of local snapshot history entries from .decantr/graph/snapshots. Defaults to false.',
+        },
+        task: {
+          type: 'string' as const,
+          description:
+            'Optional task description used to boost matching nodes in route-scoped or impact ranked context.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 19. decantr_query_graph — local typed graph read
+  {
+    name: 'decantr_query_graph',
+    title: 'Query Graph',
+    description:
+      'Run a narrow typed query against the local Decantr graph snapshot generated by `decantr graph`. Use for direct node/type/relation lookups instead of reading the full graph.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        snapshot_id: {
+          type: 'string' as const,
+          description:
+            'Optional snapshot id from local graph history, or "current". Defaults to current.',
+        },
+        node_ids: {
+          type: 'array' as const,
+          items: { type: 'string' as const },
+          description: 'Optional exact graph node IDs to return, for example ["rt:/feed"].',
+        },
+        file_path: {
+          type: 'string' as const,
+          description:
+            'Optional project-relative source file path, for example "src/app/page.tsx", resolved to a SourceArtifact node selector.',
+        },
+        node_type: {
+          type: 'string' as const,
+          enum: [...GRAPH_NODE_TYPES],
+          description: 'Optional single node type selector, for example "Route" or "Component".',
+        },
+        node_types: {
+          type: 'array' as const,
+          items: { type: 'string' as const, enum: [...GRAPH_NODE_TYPES] },
+          description: 'Optional node type selectors.',
+        },
+        payload_key: {
+          type: 'string' as const,
+          description:
+            'Optional node payload key or dotted path filter, for example "code" for Finding nodes.',
+        },
+        payload_value: {
+          type: 'string' as const,
+          description:
+            'Optional exact stringified payload value used with payload_key, for example "COMP010".',
+        },
+        payload_contains: {
+          type: 'string' as const,
+          description:
+            'Optional case-insensitive substring filter over the node payload JSON.',
+        },
+        edge_src: {
+          type: 'string' as const,
+          description: 'Optional edge source node ID selector.',
+        },
+        edge_dst: {
+          type: 'string' as const,
+          description: 'Optional edge destination node ID selector.',
+        },
+        relation: {
+          type: 'string' as const,
+          enum: [...GRAPH_RELATIONS],
+          description:
+            'Optional single edge relation selector, for example "PAGE_COMPOSES_PATTERN".',
+        },
+        relations: {
+          type: 'array' as const,
+          items: { type: 'string' as const, enum: [...GRAPH_RELATIONS] },
+          description: 'Optional edge relation selectors.',
+        },
+        include_edges: {
+          type: 'boolean' as const,
+          description:
+            'When querying nodes, include incident edges and their opposite endpoint nodes. Defaults to false unless edge selectors are present.',
+        },
+        include_impact: {
+          type: 'boolean' as const,
+          description:
+            'When querying nodes, also return the dependency impact context for the matched node IDs.',
+        },
+        task: {
+          type: 'string' as const,
+          description:
+            'Optional task description used to boost matching nodes in the impact ranking when include_impact is true.',
+        },
+        limit: {
+          type: 'number' as const,
+          description: 'Maximum nodes and edges to return. Defaults to 200, maximum 500.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 20. decantr_traverse_graph — local typed graph read
+  {
+    name: 'decantr_traverse_graph',
+    title: 'Traverse Graph',
+    description:
+      'Traverse the local Decantr graph from one or more node IDs or a source file by relation, direction, and depth. Use for questions like which pages use this token or which graph nodes point at this source file.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        snapshot_id: {
+          type: 'string' as const,
+          description:
+            'Optional snapshot id from local graph history, or "current". Defaults to current.',
+        },
+        from: {
+          type: 'string' as const,
+          description: 'Start node ID, for example "rt:/feed" or "tkn:color.primary".',
+        },
+        from_ids: {
+          type: 'array' as const,
+          items: { type: 'string' as const },
+          description: 'Optional start node IDs. Used when traversing from multiple anchors.',
+        },
+        file_path: {
+          type: 'string' as const,
+          description:
+            'Optional project-relative source file path, for example "src/app/page.tsx", resolved to a SourceArtifact start node.',
+        },
+        relations: {
+          type: 'array' as const,
+          items: { type: 'string' as const, enum: [...GRAPH_RELATIONS] },
+          description: 'Optional relation allow-list. When omitted, all relations are traversed.',
+        },
+        direction: {
+          type: 'string' as const,
+          enum: ['out', 'in', 'both'],
+          description: 'Traversal direction. Defaults to out.',
+        },
+        depth: {
+          type: 'number' as const,
+          description: 'Traversal depth. Defaults to 1, maximum 4.',
+        },
+        limit: {
+          type: 'number' as const,
+          description: 'Maximum nodes and edges to return. Defaults to 200, maximum 500.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 21. decantr_get_execution_pack — local read
   {
     name: 'decantr_get_execution_pack',
     title: 'Get Execution Pack',
@@ -1784,7 +3135,91 @@ export const TOOLS = [
     },
     annotations: READ_ONLY_NETWORK,
   },
-  // 22. decantr_get_evidence_bundle — local reliability artifact
+  // 24. decantr_get_findings — local typed findings read
+  {
+    name: 'decantr_get_findings',
+    title: 'Get Findings',
+    description:
+      'Return typed Project Health findings for the current Decantr project, with stable codes, repair IDs, graph anchors when available, and optional repair prompts.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        severity: {
+          type: 'string' as const,
+          enum: ['error', 'warn', 'info'],
+          description: 'Optional severity filter.',
+        },
+        source: {
+          type: 'string' as const,
+          enum: [
+            'audit',
+            'assertion',
+            'browser',
+            'check',
+            'brownfield',
+            'design-token',
+            'style-bridge',
+            'graph',
+            'runtime',
+            'pack',
+            'interaction',
+          ],
+          description: 'Optional finding source filter.',
+        },
+        code: {
+          type: 'string' as const,
+          description: 'Optional stable diagnostic code filter, for example "TOKEN010".',
+        },
+        include_prompts: {
+          type: 'boolean' as const,
+          description:
+            'Include full repair prompts on each finding. Defaults to false to keep context compact.',
+        },
+        limit: {
+          type: 'number' as const,
+          description: 'Maximum findings to return. Defaults to 50, maximum 200.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 25. decantr_get_repair_plan — local structured repair loop
+  {
+    name: 'decantr_get_repair_plan',
+    title: 'Get Repair Plan',
+    description:
+      'Return a typed repair plan for one Project Health finding: diagnostic code, repair ID, graph anchor, action payload, evidence, read targets, preserve/avoid constraints, rerun commands, and optional prompt text.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        project_path: {
+          type: 'string' as const,
+          description:
+            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
+        },
+        finding_id: {
+          type: 'string' as const,
+          description:
+            'Optional finding id. Defaults to the first error or warning, then the first finding.',
+        },
+        code: {
+          type: 'string' as const,
+          description: 'Optional stable diagnostic code selector, for example "GRAPH001".',
+        },
+        include_prompt: {
+          type: 'boolean' as const,
+          description: 'Include the human-readable repair prompt alongside the typed plan.',
+        },
+      },
+    },
+    annotations: READ_ONLY,
+  },
+  // 26. decantr_get_evidence_bundle — local reliability artifact
   {
     name: 'decantr_get_evidence_bundle',
     title: 'Get Evidence Bundle',
@@ -2553,6 +3988,670 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
     }
 
+    case 'decantr_get_project_state': {
+      try {
+        const projectRoot = graphProjectRoot(args);
+        const essence = readProjectEssence(projectRoot);
+        const packManifest = readProjectPackManifest(projectRoot);
+        const graphDir = join(projectRoot, '.decantr', 'graph');
+        const snapshotPath = graphArtifactPath(projectRoot, 'graph.snapshot.json');
+        const manifestPath = graphArtifactPath(projectRoot, 'graph.manifest.json');
+        const diffPath = graphArtifactPath(projectRoot, 'graph.diff.json');
+        const capsulePath = graphArtifactPath(projectRoot, 'contract-capsule.json');
+        const snapshot = readJsonIfExists<GraphSnapshot>(snapshotPath);
+        const graphDiff = readJsonIfExists<GraphDiff>(diffPath);
+        const snapshotHistoryPath = snapshot
+          ? graphSnapshotHistoryPath(projectRoot, snapshot.id)
+          : null;
+        const snapshotHistoryPresent = snapshotHistoryPath ? existsSync(snapshotHistoryPath) : false;
+        const snapshotHistoryCount = graphSnapshotHistoryCount(projectRoot);
+        const capsule = readJsonIfExists<{
+          cache_key?: string;
+          contract_hash?: string;
+          contract_cache_key?: string;
+          source_artifact_limit?: number;
+          source_artifacts_truncated?: boolean;
+          summary?: {
+            source_artifacts?: number;
+          };
+        }>(capsulePath);
+        const graphFreshness = inspectMcpGraphFreshness(projectRoot);
+        const projectConfig = readJsonIfExists<{
+          workflowMode?: string;
+          adoptionMode?: string;
+          telemetry?: boolean;
+        }>(join(projectRoot, '.decantr', 'project.json'));
+        const localPatternsPresent = existsSync(join(projectRoot, '.decantr', 'local-patterns.json'));
+        const localRulesPresent = existsSync(join(projectRoot, '.decantr', 'rules.json'));
+        const styleBridgePresent = existsSync(join(projectRoot, '.decantr', 'style-bridge.json'));
+        const hasGraphArtifacts =
+          existsSync(snapshotPath) &&
+          snapshotHistoryPresent &&
+          existsSync(manifestPath) &&
+          existsSync(diffPath) &&
+          existsSync(capsulePath);
+        const graphReady = Boolean(snapshot) && hasGraphArtifacts && graphFreshness.current === true;
+
+        return {
+          source: 'local_workspace',
+          project_root: displayWorkspacePath(projectRoot),
+          essence: essence
+            ? {
+                present: true,
+                version:
+                  typeof (essence as { version?: unknown }).version === 'string'
+                    ? (essence as { version: string }).version
+                    : null,
+                active_v4: isV4(essence),
+                routes: isV4(essence) ? Object.keys(essence.blueprint.routes ?? {}).sort() : [],
+                sections: isV4(essence)
+                  ? essence.blueprint.sections.map((section) => ({
+                      id: section.id,
+                      role: section.role,
+                      pages: section.pages.length,
+                    }))
+                  : [],
+                features: isV4(essence) ? essence.blueprint.features : [],
+                guard: isV4(essence) ? essence.meta.guard : null,
+              }
+            : {
+                present: false,
+                version: null,
+                active_v4: false,
+                routes: [],
+                sections: [],
+                features: [],
+                guard: null,
+              },
+          project_config: {
+            present: Boolean(projectConfig),
+            workflow_mode: projectConfig?.workflowMode ?? null,
+            adoption_mode: projectConfig?.adoptionMode ?? null,
+            telemetry_enabled: projectConfig?.telemetry === true,
+          },
+          context: {
+            manifest_present: Boolean(packManifest),
+            scaffold_pack_present: Boolean(packManifest?.scaffold),
+            review_pack_present: Boolean(packManifest?.review),
+            section_pack_count: packManifest?.sections.length ?? 0,
+            page_pack_count: packManifest?.pages.length ?? 0,
+            mutation_pack_count: packManifest?.mutations?.length ?? 0,
+            generated_at:
+              packManifest && typeof packManifest.generatedAt === 'string'
+                ? packManifest.generatedAt
+                : null,
+          },
+          graph: {
+            graph_dir_present: existsSync(graphDir),
+            manifest_present: Boolean(graphFreshness.manifest),
+            snapshot_present: Boolean(snapshot),
+            snapshot_history_present: snapshotHistoryPresent,
+            snapshot_history_path: snapshotHistoryPath
+              ? displayWorkspacePath(snapshotHistoryPath)
+              : null,
+            snapshot_history_count: snapshotHistoryCount,
+            capsule_present: existsSync(capsulePath),
+            diff_present: existsSync(diffPath),
+            ready: graphReady,
+            current: graphFreshness.current,
+            stale_sources: graphFreshness.staleSources,
+            snapshot_id: snapshot?.id ?? null,
+            schema_version: snapshot?.schema_version ?? null,
+            source_hash: snapshot?.source_hash ?? null,
+            cache_key: capsule?.cache_key ?? null,
+            contract_hash: capsule?.contract_hash ?? null,
+            contract_cache_key: capsule?.contract_cache_key ?? null,
+            capsule_source_artifact_count: capsule?.summary?.source_artifacts ?? null,
+            capsule_source_artifact_limit: capsule?.source_artifact_limit ?? null,
+            capsule_source_artifacts_truncated: capsule?.source_artifacts_truncated ?? null,
+            summary: snapshot?.summary ?? null,
+            diff_summary: graphDiff ? summarizeGraphDiff(graphDiff) : null,
+            available_routes: snapshot ? graphAvailableRoutes(snapshot) : [],
+            source_artifact_count: snapshot
+              ? snapshot.nodes.filter((node) => node.type === 'SourceArtifact').length
+              : 0,
+            available_source_artifacts: snapshot
+              ? graphAvailableSourceArtifacts(snapshot).slice(0, 40)
+              : [],
+          },
+          local_authority: {
+            local_patterns_present: localPatternsPresent,
+            local_rules_present: localRulesPresent,
+            style_bridge_present: styleBridgePresent,
+          },
+          diagnostics: {
+            known_count: KNOWN_VERIFICATION_DIAGNOSTICS.length,
+            families: [
+              ...new Set(KNOWN_VERIFICATION_DIAGNOSTICS.map((entry) => entry.family)),
+            ].sort(),
+            codes: KNOWN_VERIFICATION_DIAGNOSTICS.map((entry) => ({
+              code: entry.code,
+              rule: entry.rule,
+              repair_id: entry.repairId,
+              family: entry.family,
+            })).sort((a, b) => a.code.localeCompare(b.code) || a.rule.localeCompare(b.rule)),
+          },
+          recommended_next_tools: [
+            graphReady ? 'decantr_get_contract_capsule' : 'decantr_get_findings',
+            graphReady ? null : 'decantr_get_repair_plan',
+            snapshot ? 'decantr_get_graph_snapshot' : null,
+            'decantr_prepare_task_context',
+            'decantr_get_findings',
+            'decantr_get_evidence_bundle',
+          ].filter((tool): tool is string => Boolean(tool)),
+        };
+      } catch (e) {
+        return { error: `Could not read project state: ${(e as Error).message}` };
+      }
+    }
+
+    case 'decantr_get_contract_capsule': {
+      try {
+        const projectRoot = graphProjectRoot(args);
+        const capsulePath = graphArtifactPath(projectRoot, 'contract-capsule.json');
+        const capsule = readJsonIfExists<unknown>(capsulePath);
+        if (!capsule) {
+          return {
+            error:
+              'Contract capsule not found. Run `decantr graph` from the project root, or `decantr graph --project <path>` from a workspace root.',
+            expected_path: displayWorkspacePath(capsulePath),
+          };
+        }
+        return {
+          source: 'local_graph',
+          artifact_path: displayWorkspacePath(capsulePath),
+          capsule,
+        };
+      } catch (e) {
+        return { error: `Could not read contract capsule: ${(e as Error).message}` };
+      }
+    }
+
+    case 'decantr_get_graph_snapshot': {
+      try {
+        const projectRoot = graphProjectRoot(args);
+        const snapshotPath = graphArtifactPath(projectRoot, 'graph.snapshot.json');
+        const diffPath = graphArtifactPath(projectRoot, 'graph.diff.json');
+        const currentSnapshot = readJsonIfExists<GraphSnapshot>(snapshotPath);
+        const graphDiff = readJsonIfExists<GraphDiff>(diffPath);
+        if (!currentSnapshot) {
+          return {
+            error:
+              'Graph snapshot not found. Run `decantr graph` from the project root, or `decantr graph --project <path>` from a workspace root.',
+            expected_path: displayWorkspacePath(snapshotPath),
+          };
+        }
+        const snapshotId = typeof args.snapshot_id === 'string' ? args.snapshot_id.trim() : '';
+        if (args.snapshot_id !== undefined && typeof args.snapshot_id !== 'string') {
+          return { error: 'Optional parameter "snapshot_id" must be a string.' };
+        }
+        const selected = readGraphSnapshotById(projectRoot, snapshotId || undefined);
+        if (!selected.snapshot) {
+          return {
+            error: `Graph snapshot not found in local history: ${snapshotId}`,
+            expected_path: displayWorkspacePath(selected.path),
+            current_snapshot_id: currentSnapshot.id,
+            history: readGraphSnapshotHistory(projectRoot),
+          };
+        }
+        const snapshot = selected.snapshot;
+        const snapshotHistoryPath = graphSnapshotHistoryPath(projectRoot, snapshot.id);
+        let comparison:
+          | {
+              from: string;
+              to: string;
+              summary: ReturnType<typeof summarizeGraphDiff>;
+              ops?: GraphDiff['ops'];
+              ops_truncated?: boolean;
+              limit?: number;
+            }
+          | null = null;
+        if (args.compare_to !== undefined && typeof args.compare_to !== 'string') {
+          return { error: 'Optional parameter "compare_to" must be a string.' };
+        }
+        const compareTo = typeof args.compare_to === 'string' ? args.compare_to.trim() : '';
+        if (compareTo) {
+          const baseline = readGraphSnapshotById(projectRoot, compareTo);
+          if (!baseline.snapshot) {
+            return {
+              error: `Comparison graph snapshot not found in local history: ${compareTo}`,
+              expected_path: displayWorkspacePath(baseline.path),
+              current_snapshot_id: currentSnapshot.id,
+              selected_snapshot_id: snapshot.id,
+              history: readGraphSnapshotHistory(projectRoot),
+            };
+          }
+          const diff = diffGraphSnapshots(baseline.snapshot, snapshot);
+          const limit = graphToolLimit(args);
+          comparison = {
+            from: baseline.snapshot.id,
+            to: snapshot.id,
+            summary: summarizeGraphDiff(diff),
+            ...(args.include_diff_ops === true
+              ? {
+                  ops: diff.ops.slice(0, limit),
+                  ops_truncated: diff.ops.length > limit,
+                  limit,
+                }
+              : {}),
+          };
+        }
+
+        const route = typeof args.route === 'string' ? args.route : undefined;
+        const task = typeof args.task === 'string' ? args.task : '';
+        if (args.node_id !== undefined && typeof args.node_id !== 'string') {
+          return { error: 'Optional parameter "node_id" must be a string.' };
+        }
+        if (args.file_path !== undefined && typeof args.file_path !== 'string') {
+          return { error: 'Optional parameter "file_path" must be a string.' };
+        }
+        const nodeId = typeof args.node_id === 'string' ? args.node_id.trim() : '';
+        const filePath = typeof args.file_path === 'string' ? args.file_path.trim() : '';
+        const fileNodeId = graphSourceNodeIdForFile(projectRoot, snapshot, filePath || undefined);
+        if (filePath && !fileNodeId) {
+          return {
+            error: `Source file not found in graph snapshot: ${filePath}`,
+            snapshot_id: snapshot.id,
+            available_routes: graphAvailableRoutes(snapshot),
+            available_source_artifacts: graphAvailableSourceArtifacts(snapshot),
+          };
+        }
+        if (route) {
+          const subgraph = buildGraphRouteContext(snapshot, route, { task });
+          if (!subgraph) {
+            return {
+              error: `Route not found in graph snapshot: ${route}`,
+              snapshot_id: snapshot.id,
+              available_routes: graphAvailableRoutes(snapshot),
+            };
+          }
+          return {
+            source: 'local_graph',
+            artifact_path: displayWorkspacePath(selected.path),
+            current_snapshot_id: currentSnapshot.id,
+            snapshot_id: snapshot.id,
+            schema_version: snapshot.schema_version,
+            project_id: snapshot.project_id,
+            source_hash: snapshot.source_hash,
+            route,
+            comparison,
+            ranking: subgraph.ranking,
+            summary: subgraph.summary,
+            route_node: subgraph.routeNode,
+            ids: subgraph.ids,
+            ranked: subgraph.ranked,
+            nodes: subgraph.nodes,
+            edges: subgraph.edges,
+          };
+        }
+
+        const impactSeedIds = [
+          ...new Set([nodeId, fileNodeId].filter((value): value is string => Boolean(value))),
+        ];
+        if (impactSeedIds.length > 0) {
+          const limit = graphToolLimit(args);
+          const impact = buildGraphImpactContext(snapshot, impactSeedIds, { task, limit });
+          if (!impact) {
+            return {
+              error: `Impact seed not found in graph snapshot: ${impactSeedIds.join(', ')}`,
+              snapshot_id: snapshot.id,
+              available_routes: graphAvailableRoutes(snapshot),
+              available_source_artifacts: graphAvailableSourceArtifacts(snapshot),
+            };
+          }
+          return {
+            source: 'local_graph',
+            artifact_path: displayWorkspacePath(selected.path),
+            current_snapshot_id: currentSnapshot.id,
+            snapshot_id: snapshot.id,
+            schema_version: snapshot.schema_version,
+            project_id: snapshot.project_id,
+            source_hash: snapshot.source_hash,
+            node_id: nodeId || undefined,
+            file_path: filePath || undefined,
+            resolved_node_ids: impactSeedIds,
+            comparison,
+            ranking: impact.ranking,
+            summary: impact.summary,
+            seed_nodes: impact.seedNodes,
+            missing_node_ids: impact.missingNodeIds,
+            ids: impact.ids,
+            ranked: impact.ranked,
+            nodes: impact.nodes,
+            edges: impact.edges,
+          };
+        }
+
+        if (args.include_full === true) {
+          return {
+            source: 'local_graph',
+            artifact_path: displayWorkspacePath(selected.path),
+            current_snapshot_id: currentSnapshot.id,
+            comparison,
+            snapshot,
+          };
+        }
+
+        return {
+          source: 'local_graph',
+          artifact_path: displayWorkspacePath(selected.path),
+          snapshot_history_path: displayWorkspacePath(snapshotHistoryPath),
+          snapshot_history_present: existsSync(snapshotHistoryPath),
+          snapshot_history_count: graphSnapshotHistoryCount(projectRoot),
+          current_snapshot_id: currentSnapshot.id,
+          snapshot_id: snapshot.id,
+          schema_version: snapshot.schema_version,
+          project_id: snapshot.project_id,
+          created_at: snapshot.created_at,
+          source_hash: snapshot.source_hash,
+          summary: snapshot.summary,
+          history: args.include_history === true ? readGraphSnapshotHistory(projectRoot) : undefined,
+          diff_summary:
+            !snapshotId || snapshot.id === currentSnapshot.id
+              ? graphDiff
+                ? summarizeGraphDiff(graphDiff)
+                : null
+              : null,
+          comparison,
+          available_routes: graphAvailableRoutes(snapshot),
+        };
+      } catch (e) {
+        return { error: `Could not read graph snapshot: ${(e as Error).message}` };
+      }
+    }
+
+    case 'decantr_query_graph': {
+      try {
+        const projectRoot = graphProjectRoot(args);
+        const snapshotId = typeof args.snapshot_id === 'string' ? args.snapshot_id.trim() : '';
+        if (args.snapshot_id !== undefined && typeof args.snapshot_id !== 'string') {
+          return { error: 'Optional parameter "snapshot_id" must be a string.' };
+        }
+        const selected = readGraphSnapshotById(projectRoot, snapshotId || undefined);
+        const snapshotPath = selected.path;
+        const snapshot = selected.snapshot;
+        if (!snapshot) {
+          return {
+            error:
+              snapshotId && snapshotId !== 'current'
+                ? `Graph snapshot not found: ${snapshotId}. Run \`decantr graph\` to generate snapshot history.`
+                : 'Graph snapshot not found. Run `decantr graph` from the project root, or `decantr graph --project <path>` from a workspace root.',
+            expected_path: displayWorkspacePath(snapshotPath),
+          };
+        }
+        const currentSnapshot = readMcpGraphSnapshot(projectRoot);
+
+        const nodeIds = stringListArg(args, 'node_ids');
+        if (nodeIds.error) return { error: nodeIds.error };
+        if (args.file_path !== undefined && typeof args.file_path !== 'string') {
+          return { error: 'Optional parameter "file_path" must be a string.' };
+        }
+        const filePath = typeof args.file_path === 'string' ? args.file_path.trim() : '';
+        const fileNodeId = graphSourceNodeIdForFile(projectRoot, snapshot, filePath || undefined);
+        if (filePath && !fileNodeId) {
+          return {
+            error: `Source file not found in graph snapshot: ${filePath}`,
+            snapshot_id: snapshot.id,
+            available_routes: graphAvailableRoutes(snapshot),
+            available_source_artifacts: graphAvailableSourceArtifacts(snapshot),
+          };
+        }
+        const resolvedNodeIds = [
+          ...new Set([...(nodeIds.values ?? []), ...(fileNodeId ? [fileNodeId] : [])]),
+        ];
+        const nodeType = graphNodeTypeArg(args, 'node_type');
+        if (nodeType.error) return { error: nodeType.error };
+        const nodeTypes = graphNodeTypesArg(args, 'node_types');
+        if (nodeTypes.error) return { error: nodeTypes.error };
+        const relation = graphRelationArg(args, 'relation');
+        if (relation.error) return { error: relation.error };
+        const relations = graphRelationsArg(args, 'relations');
+        if (relations.error) return { error: relations.error };
+        const payloadFilter = graphPayloadFilterArgs(args);
+        if (payloadFilter.error) return { error: payloadFilter.error };
+        if (args.task !== undefined && typeof args.task !== 'string') {
+          return { error: 'Optional parameter "task" must be a string.' };
+        }
+
+        const edgeSrc = typeof args.edge_src === 'string' ? args.edge_src.trim() : undefined;
+        const edgeDst = typeof args.edge_dst === 'string' ? args.edge_dst.trim() : undefined;
+        if (args.edge_src !== undefined && typeof args.edge_src !== 'string') {
+          return { error: 'Optional parameter "edge_src" must be a string.' };
+        }
+        if (args.edge_dst !== undefined && typeof args.edge_dst !== 'string') {
+          return { error: 'Optional parameter "edge_dst" must be a string.' };
+        }
+
+        const hasNodeSelector =
+          resolvedNodeIds.length > 0 ||
+          !!nodeType.value ||
+          !!nodeTypes.values?.length ||
+          !!payloadFilter.key ||
+          !!payloadFilter.contains;
+        const hasEdgeSelector = !!edgeSrc || !!edgeDst || !!relation.value || !!relations.values?.length;
+        if (!hasNodeSelector && !hasEdgeSelector) {
+          return {
+            error:
+              'Provide at least one graph selector: node_ids, file_path, node_type, node_types, payload_key, payload_contains, edge_src, edge_dst, relation, or relations.',
+          };
+        }
+
+        const store = createMemoryGraphStore({
+          nodes: snapshot.nodes,
+          edges: snapshot.edges,
+          snapshots: [snapshot],
+        });
+        const limit = graphToolLimit(args);
+
+        let nodes: GraphNode[] = [];
+        let edges: GraphEdge[] = [];
+        if (hasNodeSelector) {
+          nodes = await store.queryNodes({
+            ids: resolvedNodeIds.length > 0 ? resolvedNodeIds : undefined,
+            type: nodeType.value,
+            types: nodeTypes.values,
+            payloadKey: payloadFilter.key,
+            payloadValue: payloadFilter.value,
+            payloadContains: payloadFilter.contains,
+          });
+        }
+
+        if (hasEdgeSelector) {
+          edges = await store.queryEdges({
+            src: edgeSrc,
+            dst: edgeDst,
+            relation: relation.value,
+            relations: relations.values,
+          });
+        }
+
+        const shouldIncludeEdges = args.include_edges === true || hasEdgeSelector;
+        const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+        if (shouldIncludeEdges && hasNodeSelector) {
+          const selectedIds = new Set(nodeMap.keys());
+          edges = dedupeGraphEdges([
+            ...edges,
+            ...snapshot.edges.filter(
+              (edge) => selectedIds.has(edge.src) || selectedIds.has(edge.dst),
+            ),
+          ]);
+        }
+
+        for (const edge of edges) {
+          const srcNode = snapshot.nodes.find((node) => node.id === edge.src);
+          const dstNode = snapshot.nodes.find((node) => node.id === edge.dst);
+          if (srcNode) nodeMap.set(srcNode.id, srcNode);
+          if (dstNode) nodeMap.set(dstNode.id, dstNode);
+        }
+
+        nodes = dedupeGraphNodes([...nodeMap.values()]);
+        edges = dedupeGraphEdges(edges);
+        const limited = limitGraphSubgraph(nodes, edges, limit);
+        const impact =
+          args.include_impact === true && limited.nodes.length > 0
+            ? buildGraphImpactContext(
+                snapshot,
+                limited.nodes.map((node) => node.id),
+                {
+                  task: typeof args.task === 'string' ? args.task : undefined,
+                  limit,
+                },
+              )
+            : null;
+
+        return {
+          source: 'local_graph',
+          artifact_path: displayWorkspacePath(snapshotPath),
+          current_snapshot_id: currentSnapshot?.id ?? null,
+          snapshot_id: snapshot.id,
+          schema_version: snapshot.schema_version,
+          project_id: snapshot.project_id,
+          source_hash: snapshot.source_hash,
+          query: {
+            node_ids: resolvedNodeIds.length > 0 ? resolvedNodeIds : nodeIds.values,
+            file_path: filePath || undefined,
+            node_type: nodeType.value,
+            node_types: nodeTypes.values,
+            payload_key: payloadFilter.key,
+            payload_value: payloadFilter.value,
+            payload_contains: payloadFilter.contains,
+            edge_src: edgeSrc,
+            edge_dst: edgeDst,
+            relation: relation.value,
+            relations: relations.values,
+            include_edges: shouldIncludeEdges,
+            include_impact: args.include_impact === true,
+            task: typeof args.task === 'string' ? args.task : undefined,
+            limit,
+          },
+          summary: {
+            nodes: limited.nodes.length,
+            edges: limited.edges.length,
+            total_nodes: nodes.length,
+            total_edges: edges.length,
+            truncated: limited.truncated,
+          },
+          nodes: limited.nodes,
+          edges: limited.edges,
+          impact,
+        };
+      } catch (e) {
+        return { error: `Could not query graph snapshot: ${(e as Error).message}` };
+      }
+    }
+
+    case 'decantr_traverse_graph': {
+      try {
+        const projectRoot = graphProjectRoot(args);
+        const snapshotId = typeof args.snapshot_id === 'string' ? args.snapshot_id.trim() : '';
+        if (args.snapshot_id !== undefined && typeof args.snapshot_id !== 'string') {
+          return { error: 'Optional parameter "snapshot_id" must be a string.' };
+        }
+        const selected = readGraphSnapshotById(projectRoot, snapshotId || undefined);
+        const snapshotPath = selected.path;
+        const snapshot = selected.snapshot;
+        if (!snapshot) {
+          return {
+            error:
+              snapshotId && snapshotId !== 'current'
+                ? `Graph snapshot not found: ${snapshotId}. Run \`decantr graph\` to generate snapshot history.`
+                : 'Graph snapshot not found. Run `decantr graph` from the project root, or `decantr graph --project <path>` from a workspace root.',
+            expected_path: displayWorkspacePath(snapshotPath),
+          };
+        }
+        const currentSnapshot = readMcpGraphSnapshot(projectRoot);
+
+        const fromIds = stringListArg(args, 'from_ids');
+        if (fromIds.error) return { error: fromIds.error };
+        const from = typeof args.from === 'string' && args.from.trim() ? [args.from.trim()] : [];
+        if (args.from !== undefined && typeof args.from !== 'string') {
+          return { error: 'Optional parameter "from" must be a string.' };
+        }
+        if (args.file_path !== undefined && typeof args.file_path !== 'string') {
+          return { error: 'Optional parameter "file_path" must be a string.' };
+        }
+        const filePath = typeof args.file_path === 'string' ? args.file_path.trim() : '';
+        const fileNodeId = graphSourceNodeIdForFile(projectRoot, snapshot, filePath || undefined);
+        if (filePath && !fileNodeId) {
+          return {
+            error: `Source file not found in graph snapshot: ${filePath}`,
+            snapshot_id: snapshot.id,
+            available_routes: graphAvailableRoutes(snapshot),
+            available_source_artifacts: graphAvailableSourceArtifacts(snapshot),
+          };
+        }
+        const startIds = [
+          ...new Set([...from, ...(fromIds.values ?? []), ...(fileNodeId ? [fileNodeId] : [])]),
+        ];
+        if (!startIds.length) {
+          return { error: 'Provide a graph start node with "from", "from_ids", or "file_path".' };
+        }
+
+        const missingStartIds = startIds.filter(
+          (id) => !snapshot.nodes.some((node) => node.id === id),
+        );
+        if (missingStartIds.length) {
+          return {
+            error: `Start node not found in graph snapshot: ${missingStartIds.join(', ')}`,
+            snapshot_id: snapshot.id,
+            available_routes: graphAvailableRoutes(snapshot),
+            available_source_artifacts: graphAvailableSourceArtifacts(snapshot),
+          };
+        }
+
+        const relations = graphRelationsArg(args, 'relations');
+        if (relations.error) return { error: relations.error };
+        const direction = graphTraverseDirectionArg(args);
+        if (direction.error) return { error: direction.error };
+        const depth = graphTraverseDepthArg(args);
+        if (depth.error) return { error: depth.error };
+
+        const store = createMemoryGraphStore({
+          nodes: snapshot.nodes,
+          edges: snapshot.edges,
+          snapshots: [snapshot],
+        });
+        const result = await store.traverse({
+          from: startIds,
+          relations: relations.values,
+          direction: direction.value,
+          depth: depth.value,
+        });
+        const limit = graphToolLimit(args);
+        const limited = limitGraphSubgraph(result.nodes, result.edges, limit);
+
+        return {
+          source: 'local_graph',
+          artifact_path: displayWorkspacePath(snapshotPath),
+          current_snapshot_id: currentSnapshot?.id ?? null,
+          snapshot_id: snapshot.id,
+          schema_version: snapshot.schema_version,
+          project_id: snapshot.project_id,
+          source_hash: snapshot.source_hash,
+          traversal: {
+            from: startIds,
+            file_path: filePath || undefined,
+            resolved_node_ids: startIds,
+            relations: relations.values,
+            direction: direction.value ?? 'out',
+            depth: depth.value,
+            limit,
+          },
+          summary: {
+            nodes: limited.nodes.length,
+            edges: limited.edges.length,
+            total_nodes: result.nodes.length,
+            total_edges: result.edges.length,
+            truncated: limited.truncated,
+          },
+          nodes: limited.nodes,
+          edges: limited.edges,
+        };
+      } catch (e) {
+        return { error: `Could not traverse graph snapshot: ${(e as Error).message}` };
+      }
+    }
+
     case 'decantr_get_scaffold_context': {
       const contextDir = join(process.cwd(), '.decantr', 'context');
       const manifestPath = join(contextDir, 'pack-manifest.json');
@@ -2954,6 +5053,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
     }
 
     case 'decantr_prepare_task_context': {
+      const projectRoot = graphProjectRoot(args);
+      const projectArg =
+        typeof args.project_path === 'string' && args.project_path.trim()
+          ? args.project_path.trim()
+          : null;
       const routeArg = typeof args.route === 'string' ? args.route : undefined;
       const pageArg = typeof args.page_id === 'string' ? args.page_id : undefined;
       const task = typeof args.task === 'string' ? args.task : '';
@@ -2963,7 +5067,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       let essence: EssenceFile;
       try {
-        const result = await readEssenceFile();
+        const result = await readEssenceFile(join(projectRoot, 'decantr.essence.json'));
         essence = result.essence;
       } catch {
         return { error: 'No valid essence file found. Run decantr init first.' };
@@ -2992,8 +5096,16 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           ),
         };
       }
+      const resolvedRoute =
+        routeArg ??
+        (typeof (page as { route?: unknown }).route === 'string'
+          ? ((page as { route: string }).route)
+          : Object.entries(essence.blueprint.routes ?? {}).find(
+              ([, entry]) => entry.section === section.id && entry.page === pageId,
+            )?.[0]) ??
+        null;
 
-      const contextDir = join(process.cwd(), '.decantr', 'context');
+      const contextDir = join(projectRoot, '.decantr', 'context');
       const manifest = readJsonIfExists<PackManifest>(join(contextDir, 'pack-manifest.json'));
       const pageManifest = manifest?.pages.find((entry) => entry.id === pageId) ?? null;
       const sectionManifest = manifest?.sections.find((entry) => entry.id === section.id) ?? null;
@@ -3021,11 +5133,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           status?: string;
           error?: string;
         }>;
-      }>(join(process.cwd(), '.decantr', 'evidence', 'visual-manifest.json'));
+      }>(join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json'));
       const visualRoute =
-        visualManifest?.routes?.find((entry) => entry.route === routeArg) ??
+        visualManifest?.routes?.find((entry) => entry.route === resolvedRoute) ??
         visualManifest?.routes?.find((entry) =>
-          entry.screenshot?.includes(routeSlug(routeArg ?? pageId)),
+          entry.screenshot?.includes(routeSlug(resolvedRoute ?? pageId)),
         ) ??
         null;
       const health = readJsonIfExists<{
@@ -3038,17 +5150,26 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         changedRoutes?: string[];
         changedScreenshots?: string[];
         contractDrift?: string[];
-      }>(join(process.cwd(), '.decantr', 'health-baseline-diff.json'));
+      }>(join(projectRoot, '.decantr', 'health-baseline-diff.json'));
       const themeInventory = readJsonIfExists<Record<string, unknown>>(
-        join(process.cwd(), '.decantr', 'theme-inventory.json'),
+        join(projectRoot, '.decantr', 'theme-inventory.json'),
       );
-      const localLaw = localLawSummary(process.cwd());
-      const styleBridge = styleBridgeSummary(process.cwd());
+      const localLaw = localLawSummary(projectRoot);
+      const styleBridge = styleBridgeSummary(projectRoot);
+      const displayedLocalLaw = {
+        ...localLaw,
+        patterns_path: displayProjectFile(projectRoot, localLaw.patterns_path),
+        rules_path: displayProjectFile(projectRoot, localLaw.rules_path),
+      };
+      const displayedStyleBridge = {
+        ...styleBridge,
+        path: displayProjectFile(projectRoot, styleBridge.path),
+      };
       const projectJson = readJsonIfExists<{
         initialized?: { workflowMode?: string; adoptionMode?: string };
-      }>(join(process.cwd(), '.decantr', 'project.json'));
-      const changedFiles = changedFilesForTask(process.cwd());
-      const changedRoutes = impactedRoutesForFiles(process.cwd(), changedFiles);
+      }>(join(projectRoot, '.decantr', 'project.json'));
+      const changedFiles = changedFilesForTask(projectRoot);
+      const changedRoutes = impactedRoutesForFiles(projectRoot, changedFiles);
       const patternIds = extractPagePatternIds(page);
       const ranked = rankPatternCandidates(
         {
@@ -3061,7 +5182,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       );
 
       return {
-        route: routeArg ?? null,
+        route: resolvedRoute,
         page_id: pageId,
         section_id: section.id,
         section_role: section.role,
@@ -3084,20 +5205,22 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         page_pack_excerpt: pagePackMarkdown ? pagePackMarkdown.slice(0, 12000) : null,
         health_evidence: health
           ? {
-              baseline_path: health.baselinePath,
+              baseline_path: displayProjectFile(projectRoot, health.baselinePath),
               saved_at: health.savedAt,
               status_changed: health.statusChanged,
               score_delta: health.scoreDelta,
               added_findings: health.addedFindings?.slice(0, 8) ?? [],
               resolved_findings: health.resolvedFindings?.slice(0, 8) ?? [],
               changed_routes: health.changedRoutes ?? [],
-              changed_screenshots: health.changedScreenshots ?? [],
+              changed_screenshots: (health.changedScreenshots ?? [])
+                .map((path) => displayProjectFile(projectRoot, path))
+                .filter((path): path is string => Boolean(path)),
               contract_drift: health.contractDrift ?? [],
             }
           : null,
         visual_evidence: visualRoute
           ? {
-              screenshot: visualRoute.screenshot ?? null,
+              screenshot: displayProjectFile(projectRoot, visualRoute.screenshot),
               screenshot_hash: visualRoute.screenshotHash ?? null,
               status: visualRoute.status ?? null,
               error: visualRoute.error ?? null,
@@ -3107,11 +5230,11 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           ? {
               modes: themeInventory.modes,
               variants: themeInventory.variants,
-              path: '.decantr/theme-inventory.json',
+              path: displayProjectFile(projectRoot, '.decantr/theme-inventory.json'),
             }
           : null,
-        local_law: localLaw,
-        style_bridge: styleBridge,
+        local_law: displayedLocalLaw,
+        style_bridge: displayedStyleBridge,
         authority: taskAuthoritySummary({
           workflowMode: projectJson?.initialized?.workflowMode ?? null,
           adoptionMode: projectJson?.initialized?.adoptionMode ?? null,
@@ -3125,20 +5248,32 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           changed_file_count: changedFiles.length,
           impacted_routes: changedRoutes,
         },
-        verify_command: 'decantr verify --brownfield --local-patterns',
+        typed_graph: buildTaskTypedGraphContext(projectRoot, resolvedRoute, task, changedFiles),
+        verify_command: projectArg
+          ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
+          : 'decantr verify --brownfield --local-patterns',
         local_files: {
-          page_pack: pageManifest?.markdown ?? null,
-          section_pack: sectionManifest?.markdown ?? null,
-          section_context: existsSync(sectionContextPath)
-            ? `.decantr/context/section-${section.id}.md`
+          page_pack: displayProjectFile(
+            projectRoot,
+            pageManifest ? join('.decantr', 'context', pageManifest.markdown) : null,
+          ),
+          section_pack: displayProjectFile(
+            projectRoot,
+            sectionManifest ? join('.decantr', 'context', sectionManifest.markdown) : null,
+          ),
+          graph_snapshot: existsSync(join(projectRoot, '.decantr', 'graph', 'graph.snapshot.json'))
+            ? displayProjectFile(projectRoot, '.decantr/graph/graph.snapshot.json')
             : null,
-          local_patterns: localLaw.patterns_path,
-          local_rules: localLaw.rules_path,
-          style_bridge: styleBridge.path,
+          section_context: existsSync(sectionContextPath)
+            ? displayProjectFile(projectRoot, `.decantr/context/section-${section.id}.md`)
+            : null,
+          local_patterns: displayedLocalLaw.patterns_path,
+          local_rules: displayedLocalLaw.rules_path,
+          style_bridge: displayedStyleBridge.path,
           visual_manifest: existsSync(
-            join(process.cwd(), '.decantr', 'evidence', 'visual-manifest.json'),
+            join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json'),
           )
-            ? '.decantr/evidence/visual-manifest.json'
+            ? displayProjectFile(projectRoot, '.decantr/evidence/visual-manifest.json')
             : null,
         },
       };
@@ -3429,6 +5564,122 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       return auditProject(projectRoot);
     }
 
+    case 'decantr_get_findings': {
+      if (
+        args.severity != null &&
+        args.severity !== 'error' &&
+        args.severity !== 'warn' &&
+        args.severity !== 'info'
+      ) {
+        return { error: 'Invalid severity. Must be one of: error, warn, info.' };
+      }
+      const findingSources: ProjectHealthFindingSource[] = [
+        'audit',
+        'assertion',
+        'browser',
+        'check',
+        'brownfield',
+        'design-token',
+        'style-bridge',
+        'graph',
+        'runtime',
+        'pack',
+        'interaction',
+      ];
+      if (
+        args.source != null &&
+        (typeof args.source !== 'string' ||
+          !findingSources.includes(args.source as ProjectHealthFindingSource))
+      ) {
+        return { error: `Invalid source. Must be one of: ${findingSources.join(', ')}.` };
+      }
+      if (args.code != null && typeof args.code !== 'string') {
+        return { error: 'Invalid code. Must be a string when provided.' };
+      }
+      if (args.include_prompts != null && typeof args.include_prompts !== 'boolean') {
+        return { error: 'Invalid include_prompts. Must be a boolean when provided.' };
+      }
+      if (
+        args.limit != null &&
+        (typeof args.limit !== 'number' || !Number.isFinite(args.limit))
+      ) {
+        return { error: 'Invalid limit. Must be a finite number when provided.' };
+      }
+
+      try {
+        const projectRoot = resolveMcpProjectRoot(args.project_path);
+        const state = await getMcpHealthState(projectRoot);
+        const severity = args.severity as VerificationSeverity | undefined;
+        const source = args.source as ProjectHealthFindingSource | undefined;
+        const code = typeof args.code === 'string' ? args.code : undefined;
+        const includePrompts = args.include_prompts === true;
+        const limit =
+          typeof args.limit === 'number'
+            ? Math.max(1, Math.min(200, Math.floor(args.limit)))
+            : 50;
+        const filtered = state.report.findings.filter((finding) => {
+          if (severity && finding.severity !== severity) return false;
+          if (source && finding.source !== source) return false;
+          if (code && finding.code !== code) return false;
+          return true;
+        });
+        const findings = filtered
+          .slice(0, limit)
+          .map((finding) => compactMcpFinding(finding, includePrompts));
+
+        return {
+          project: state.evidence.project,
+          health: state.evidence.health,
+          filters: {
+            severity,
+            source,
+            code,
+            include_prompts: includePrompts,
+            limit,
+          },
+          summary: {
+            status: state.report.status,
+            score: state.report.score,
+            total_findings: state.report.findings.length,
+            matched_findings: filtered.length,
+            returned_findings: findings.length,
+            truncated: filtered.length > findings.length,
+          },
+          findings,
+        };
+      } catch (error) {
+        return { error: (error as Error).message };
+      }
+    }
+
+    case 'decantr_get_repair_plan': {
+      if (args.finding_id != null && typeof args.finding_id !== 'string') {
+        return { error: 'Invalid finding_id. Must be a string when provided.' };
+      }
+      if (args.code != null && typeof args.code !== 'string') {
+        return { error: 'Invalid code. Must be a string when provided.' };
+      }
+      if (args.include_prompt != null && typeof args.include_prompt !== 'boolean') {
+        return { error: 'Invalid include_prompt. Must be a boolean when provided.' };
+      }
+      try {
+        const projectRoot = resolveMcpProjectRoot(args.project_path);
+        const state = await getMcpHealthState(projectRoot);
+        const finding = selectMcpRepairFinding(state.report, {
+          findingId: typeof args.finding_id === 'string' ? args.finding_id : undefined,
+          code: typeof args.code === 'string' ? args.code : undefined,
+        });
+        return buildMcpRepairPlan({
+          evidence: state.evidence,
+          finding,
+          projectRoot,
+          includePrompt: args.include_prompt === true,
+        });
+      } catch (error) {
+        return { error: (error as Error).message };
+      }
+    }
+
     case 'decantr_get_evidence_bundle': {
       try {
         const projectRoot = resolveMcpProjectRoot(args.project_path);
@@ -3463,14 +5714,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       try {
         const projectRoot = resolveMcpProjectRoot(args.project_path);
         const state = await getMcpHealthState(projectRoot);
-        const finding =
-          (typeof args.finding_id === 'string'
-            ? state.report.findings.find((entry) => entry.id === args.finding_id)
-            : undefined) ??
-          state.report.findings.find((entry) => entry.severity === 'error') ??
-          state.report.findings.find((entry) => entry.severity === 'warn') ??
-          state.report.findings[0] ??
-          null;
+        const finding = selectMcpRepairFinding(state.report, {
+          findingId: typeof args.finding_id === 'string' ? args.finding_id : undefined,
+        });
         if (!finding) {
           return {
             project: state.evidence.project,
@@ -3505,19 +5751,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       try {
         const projectRoot = resolveMcpProjectRoot(args.project_path);
         const state = await getMcpHealthState(projectRoot);
-        const finding =
-          (typeof args.finding_id === 'string'
-            ? state.report.findings.find((entry) => entry.id === args.finding_id)
-            : undefined) ??
-          state.report.findings.find((entry) => entry.severity === 'error') ??
-          state.report.findings.find((entry) => entry.severity === 'warn') ??
-          state.report.findings[0] ??
-          null;
+        const finding = selectMcpRepairFinding(state.report, {
+          findingId: typeof args.finding_id === 'string' ? args.finding_id : undefined,
+        });
         return {
           project: state.evidence.project,
           health: state.evidence.health,
           report: state.report,
           evidence: state.evidence,
+          repair_plan: buildMcpRepairPlan({
+            evidence: state.evidence,
+            finding,
+            projectRoot,
+          }),
           repair:
             finding === null
               ? {

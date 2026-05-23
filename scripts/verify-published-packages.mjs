@@ -22,7 +22,7 @@ const jsonOutput = args.has('--json');
 const noWebhook = args.has('--no-webhook');
 const sendWebhook = args.has('--send-webhook') || process.env.RELEASE_VERIFICATION_WEBHOOK_ALWAYS === 'true';
 const onlyWave = readArgValue(rawArgs, 'wave');
-const tagOverride = readArgValue(rawArgs, 'tag-override');
+const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
 const retries = readPositiveInteger(readArgValue(rawArgs, 'retries'), 3);
 const retryDelayMs = readPositiveInteger(readArgValue(rawArgs, 'retry-delay'), 5_000);
 const onlyNames = new Set(

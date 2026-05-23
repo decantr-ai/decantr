@@ -13,7 +13,7 @@ const dryRun = args.has('--dry-run');
 const publishDryRun = args.has('--publish-dry-run');
 const ciProvenance = process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true';
 const shouldCheckPublishedVersions = publishDryRun || !dryRun;
-const tagOverride = readArgValue(rawArgs, 'tag-override');
+const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
 const onlyWave = readArgValue(rawArgs, 'wave');
 const onlyNames = new Set(
   readArgValue(rawArgs, 'only')

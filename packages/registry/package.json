@@ -1,17 +1,17 @@
 {
   "name": "@decantr/registry",
-  "version": "2.2.0",
-  "description": "Registry contracts, schemas, API client, and content utilities for Decantr",
+  "version": "3.0.0-next.0",
+  "description": "Certified vocabulary contracts, schemas, API client, and content utilities for Decantr",
   "keywords": [
     "decantr",
     "decantr-ai",
     "registry",
-    "design-registry",
+    "certified-vocabulary",
     "ui-patterns",
-    "blueprints",
+    "starter-kits",
     "archetypes",
-    "design-intelligence",
-    "ai-generated-ui",
+    "ai-frontend-governance",
+    "design-contracts",
     "content-health"
   ],
   "author": "Decantr AI",

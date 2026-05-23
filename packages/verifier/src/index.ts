@@ -6,8 +6,53 @@ import type { ReviewExecutionPack } from '@decantr/core';
 import type { EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import * as ts from 'typescript';
+import {
+  auditComponentReuse,
+  COMPONENT_REUSE_RULE_ID,
+  RAW_CONTROL_REUSE_RULE_ID,
+  type ComponentReuseAudit,
+} from './component-reuse.js';
+import type { VerificationRepairAction } from './diagnostics.js';
+import type { VerificationGraphAnchor } from './graph-anchors.js';
 import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.js';
+import {
+  auditStyleBridgeDrift,
+  STYLE_BRIDGE_ARBITRARY_VALUE_RULE_ID,
+  type StyleBridgeDriftAudit,
+} from './style-bridge-drift.js';
 
+export {
+  auditComponentReuse,
+  COMPONENT_REUSE_RULE_ID,
+  RAW_CONTROL_REUSE_RULE_ID,
+  type CodeImportReference,
+  type CodeComponentDeclaration,
+  type ComponentReuseAudit,
+  type ComponentReuseFinding,
+  type RawControlReuseFinding,
+} from './component-reuse.js';
+export {
+  auditStyleBridgeDrift,
+  STYLE_BRIDGE_ARBITRARY_VALUE_RULE_ID,
+  type StyleBridgeDriftAudit,
+  type StyleBridgeDriftFinding,
+} from './style-bridge-drift.js';
+export type {
+  VerificationDiagnosticCatalogEntry,
+  VerificationDiagnosticInput,
+  VerificationDiagnosticMetadata,
+  VerificationRepairAction,
+} from './diagnostics.js';
+export { deriveVerificationDiagnostic, KNOWN_VERIFICATION_DIAGNOSTICS } from './diagnostics.js';
+export type {
+  GraphAnchorEdge,
+  GraphAnchorFindingInput,
+  GraphAnchorNode,
+  GraphAnchorSnapshot,
+  VerificationGraphAnchor,
+  VerificationGraphAnchorConfidence,
+} from './graph-anchors.js';
+export { anchorFindingsToGraph, resolveGraphAnchorForFinding } from './graph-anchors.js';
 export type {
   InteractionMissingFinding,
   InteractionRequirement,
@@ -36,10 +81,10 @@ export type {
   ScanRouteV1,
 } from './scan.js';
 export {
-  SCAN_REPORT_SCHEMA_URL,
   createUnavailableScanReport,
   probePublishedSite,
   resolveGitHubScanInput,
+  SCAN_REPORT_SCHEMA_URL,
   scanProject,
 } from './scan.js';
 
@@ -64,12 +109,15 @@ export type ProjectHealthFindingSource =
   | 'check'
   | 'brownfield'
   | 'design-token'
+  | 'style-bridge'
+  | 'graph'
   | 'runtime'
   | 'pack'
   | 'interaction';
 
 export interface VerificationFinding {
   id: string;
+  code?: string;
   category: string;
   severity: VerificationSeverity;
   message: string;
@@ -78,6 +126,8 @@ export interface VerificationFinding {
   file?: string;
   rule?: string;
   suggestedFix?: string;
+  graph?: VerificationGraphAnchor;
+  repair?: VerificationRepairAction;
 }
 
 export interface VerificationScore {
@@ -141,8 +191,34 @@ export interface ProjectHealthRemediation {
   commands: string[];
 }
 
+export interface EvidenceRepairPlanAction {
+  id: string;
+  kind: string;
+  target?: string | null;
+  description: string;
+  payload?: Record<string, unknown>;
+}
+
+export interface EvidenceRepairPlan {
+  id: string;
+  findingId: string;
+  diagnosticCode?: string | null;
+  repairId?: string | null;
+  severity: VerificationSeverity;
+  source: ProjectHealthFindingSource;
+  category: string;
+  graphAnchor?: VerificationGraphAnchor | null;
+  actions: EvidenceRepairPlanAction[];
+  evidence: Array<{ id: string; text: string }>;
+  readTargets: string[];
+  preserve: string[];
+  avoid: string[];
+  commands: string[];
+}
+
 export interface ProjectHealthFinding {
   id: string;
+  code?: string;
   source: ProjectHealthFindingSource;
   category: string;
   severity: VerificationSeverity;
@@ -152,6 +228,9 @@ export interface ProjectHealthFinding {
   file?: string;
   rule?: string;
   suggestedFix?: string;
+  graph?: VerificationGraphAnchor;
+  repair?: VerificationRepairAction;
+  repairPlan?: EvidenceRepairPlan;
   remediation: ProjectHealthRemediation;
 }
 
@@ -171,6 +250,25 @@ export interface ProjectHealthPackSummary {
   pagePackCount: number;
   mutationPackCount: number;
   generatedAt: string | null;
+}
+
+export interface ProjectHealthGraphSummary {
+  present: boolean;
+  ready: boolean;
+  current: boolean | null;
+  snapshotPresent: boolean;
+  manifestPresent: boolean;
+  diffPresent: boolean;
+  capsulePresent: boolean;
+  snapshotId: string | null;
+  sourceHash: string | null;
+  contractHash: string | null;
+  contractCacheKey: string | null;
+  sourceArtifactCount: number;
+  capsuleSourceArtifactLimit: number | null;
+  capsuleSourceArtifactsTruncated: boolean | null;
+  staleArtifacts: string[];
+  error: string | null;
 }
 
 export interface ProjectHealthReport {
@@ -195,6 +293,7 @@ export interface ProjectHealthReport {
   };
   routes: ProjectHealthRouteSummary;
   packs: ProjectHealthPackSummary;
+  graph: ProjectHealthGraphSummary;
   ci: {
     recommendedCommand: string;
     failOn: 'error' | 'warn' | 'none';
@@ -258,12 +357,17 @@ export interface EvidenceBundle {
     essence: EvidenceProvenanceEntry;
     packManifest: EvidenceProvenanceEntry;
     reviewPack: EvidenceProvenanceEntry;
+    graphSnapshot: EvidenceProvenanceEntry;
+    graphManifest: EvidenceProvenanceEntry;
+    graphDiff: EvidenceProvenanceEntry;
+    contractCapsule: EvidenceProvenanceEntry;
     workspaceConfig?: EvidenceProvenanceEntry;
     designTokens?: EvidenceProvenanceEntry;
   };
   assertions: ContractAssertion[];
   findings: Array<{
     id: string;
+    code?: string;
     source: ProjectHealthFindingSource;
     category: string;
     severity: VerificationSeverity;
@@ -272,6 +376,9 @@ export interface EvidenceBundle {
     target?: string;
     rule?: string;
     suggestedFix?: string;
+    graph?: VerificationGraphAnchor;
+    repair?: VerificationRepairAction;
+    repairPlan?: EvidenceRepairPlan;
     remediationSummary: string;
     commands: string[];
     promptCommand: string;
@@ -361,6 +468,146 @@ function redactEvidenceText(projectRoot: string, value: string): string {
 
 function redactEvidenceList(projectRoot: string, evidence: string[]): string[] {
   return evidence.map((entry) => redactEvidenceText(projectRoot, entry));
+}
+
+function redactEvidenceValue(projectRoot: string, value: unknown): unknown {
+  if (typeof value === 'string') return redactEvidenceText(projectRoot, value);
+  if (Array.isArray(value)) return value.map((entry) => redactEvidenceValue(projectRoot, entry));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+        key,
+        redactEvidenceValue(projectRoot, entry),
+      ]),
+    );
+  }
+  return value;
+}
+
+function redactRepairAction(
+  projectRoot: string,
+  repair: VerificationRepairAction | undefined,
+): VerificationRepairAction | undefined {
+  if (!repair) return undefined;
+  return {
+    id: repair.id,
+    ...(repair.payload
+      ? { payload: redactEvidenceValue(projectRoot, repair.payload) as Record<string, unknown> }
+      : {}),
+  };
+}
+
+function evidenceRepairPlanAction(
+  projectRoot: string,
+  finding: ProjectHealthFinding,
+): EvidenceRepairPlanAction {
+  const repair = redactRepairAction(projectRoot, finding.repair);
+  const repairId = repair?.id ?? 'manual-repair';
+  if (repairId === 'regenerate-typed-graph' || finding.source === 'graph') {
+    return {
+      id: repairId,
+      kind: 'regenerate_artifact',
+      target: '.decantr/graph',
+      description: 'Regenerate typed Contract graph artifacts from current project sources.',
+      ...(repair?.payload ? { payload: repair.payload } : {}),
+    };
+  }
+  if (repairId === 'import-existing-component') {
+    return {
+      id: repairId,
+      kind: 'replace_duplicate_with_import',
+      target: finding.file
+        ? redactEvidenceText(projectRoot, finding.file)
+        : finding.target
+          ? redactEvidenceText(projectRoot, finding.target)
+          : null,
+      description:
+        'Remove the locally redeclared UI primitive and import the existing project-owned component.',
+      ...(repair?.payload ? { payload: repair.payload } : {}),
+    };
+  }
+  if (repairId === 'replace-raw-control-with-local-component') {
+    return {
+      id: repairId,
+      kind: 'replace_raw_control_with_component',
+      target: finding.file
+        ? redactEvidenceText(projectRoot, finding.file)
+        : finding.target
+          ? redactEvidenceText(projectRoot, finding.target)
+          : null,
+      description:
+        'Replace the raw JSX control with the existing project-owned primitive component.',
+      ...(repair?.payload ? { payload: repair.payload } : {}),
+    };
+  }
+  return {
+    id: repairId,
+    kind: 'manual_repair',
+    target: finding.file
+      ? redactEvidenceText(projectRoot, finding.file)
+      : finding.target
+        ? redactEvidenceText(projectRoot, finding.target)
+        : null,
+    description: finding.suggestedFix ?? finding.remediation.summary,
+    ...(repair?.payload ? { payload: repair.payload } : {}),
+  };
+}
+
+function evidenceRepairReadTargets(projectRoot: string, finding: ProjectHealthFinding): string[] {
+  const targets = new Set<string>(['DECANTR.md', 'decantr.essence.json']);
+  if (finding.source === 'graph') {
+    targets.add('.decantr/graph/graph.manifest.json');
+    targets.add('.decantr/graph/graph.snapshot.json');
+    targets.add('.decantr/graph/graph.diff.json');
+    targets.add('.decantr/graph/snapshots/');
+  }
+  if (finding.source === 'style-bridge') {
+    targets.add('.decantr/style-bridge.json');
+  }
+  if (finding.source === 'pack' || finding.source === 'assertion') {
+    targets.add('.decantr/context/pack-manifest.json');
+  }
+  if (finding.graph?.node_id) {
+    targets.add('.decantr/graph/contract-capsule.json');
+  }
+  if (finding.file) targets.add(redactEvidenceText(projectRoot, finding.file));
+  if (finding.target && !finding.target.startsWith('http')) {
+    targets.add(redactEvidenceText(projectRoot, finding.target));
+  }
+  return [...targets];
+}
+
+export function buildProjectHealthRepairPlan(
+  projectRoot: string,
+  finding: ProjectHealthFinding,
+): EvidenceRepairPlan {
+  return {
+    id: `repair-plan:${finding.id}`,
+    findingId: finding.id,
+    diagnosticCode: finding.code ?? null,
+    repairId: finding.repair?.id ?? null,
+    severity: finding.severity,
+    source: finding.source,
+    category: finding.category,
+    graphAnchor: finding.graph ?? null,
+    actions: [evidenceRepairPlanAction(projectRoot, finding)],
+    evidence: redactEvidenceList(projectRoot, finding.evidence).map((entry, index) => ({
+      id: `evidence:${finding.id}:${index + 1}`,
+      text: entry,
+    })),
+    readTargets: evidenceRepairReadTargets(projectRoot, finding),
+    preserve: [
+      'existing framework, routing, and styling system',
+      'existing production behavior unrelated to this finding',
+      'accepted local law, style bridge mappings, and graph anchors',
+    ],
+    avoid: [
+      'rewriting unrelated routes',
+      'replacing the app styling system',
+      'regenerating Decantr artifacts unless the finding is about generated context or graph freshness',
+    ],
+    commands: finding.remediation.commands,
+  };
 }
 
 function assertion(
@@ -578,6 +825,10 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
       essence: provenanceEntry(input.projectRoot, 'decantr.essence.json'),
       packManifest: provenanceEntry(input.projectRoot, '.decantr/context/pack-manifest.json'),
       reviewPack: provenanceEntry(input.projectRoot, '.decantr/context/review-pack.json'),
+      graphSnapshot: provenanceEntry(input.projectRoot, '.decantr/graph/graph.snapshot.json'),
+      graphManifest: provenanceEntry(input.projectRoot, '.decantr/graph/graph.manifest.json'),
+      graphDiff: provenanceEntry(input.projectRoot, '.decantr/graph/graph.diff.json'),
+      contractCapsule: provenanceEntry(input.projectRoot, '.decantr/graph/contract-capsule.json'),
       ...(input.workspaceConfigPath
         ? { workspaceConfig: provenanceForPath(input.projectRoot, input.workspaceConfigPath) }
         : {}),
@@ -588,6 +839,7 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
     assertions,
     findings: input.report.findings.map((finding) => ({
       id: finding.id,
+      code: finding.code,
       source: finding.source,
       category: finding.category,
       severity: finding.severity,
@@ -596,6 +848,9 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
       target: finding.target ? redactEvidenceText(input.projectRoot, finding.target) : undefined,
       rule: finding.rule,
       suggestedFix: finding.suggestedFix,
+      graph: finding.graph,
+      repair: redactRepairAction(input.projectRoot, finding.repair),
+      repairPlan: buildProjectHealthRepairPlan(input.projectRoot, finding),
       remediationSummary: finding.remediation.summary,
       commands: finding.remediation.commands,
       promptCommand: `decantr health --prompt ${finding.id}`,
@@ -971,7 +1226,7 @@ function isNonProductionSourceAuditFile(filePath: string): boolean {
   );
 }
 
-function collectProjectSourceFiles(projectRoot: string): string[] {
+export function collectProjectSourceFiles(projectRoot: string): string[] {
   const candidates = [
     'src',
     'app',
@@ -1267,8 +1522,10 @@ function isClientAuthHeaderSource(
   return /(?:^|\/)(?:components|routes|pages|hooks|providers)\//i.test(normalized);
 }
 
-function auditProjectSourceTree(projectRoot: string): SourceAuditSummary {
-  const sourceFiles = collectProjectSourceFiles(projectRoot);
+function auditProjectSourceTree(
+  projectRoot: string,
+  sourceFiles = collectProjectSourceFiles(projectRoot),
+): SourceAuditSummary {
   const sourceEntries = sourceFiles
     .map((sourceFile) => ({
       absolutePath: sourceFile,
@@ -2891,8 +3148,7 @@ function appendSourceAuditFindings(
     return;
   }
 
-  const isProjectOwnedStyling =
-    adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
+  const isProjectOwnedStyling = adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
 
   if (sourceAudit.inlineStyles.count > 0) {
     findings.push(
@@ -4380,6 +4636,98 @@ function appendSourceAuditFindings(
   }
 }
 
+function appendComponentReuseFindings(
+  findings: VerificationFinding[],
+  audit: ComponentReuseAudit,
+): void {
+  for (const finding of audit.findings.slice(0, 8)) {
+    findings.push(
+      makeFinding({
+        id: COMPONENT_REUSE_RULE_ID,
+        code: 'COMP001',
+        category: 'Component Reuse',
+        severity: 'warn',
+        message: `${finding.name} is reimplemented locally even though a reusable ${finding.name} component already exists.`,
+        evidence: finding.evidence,
+        target: finding.name,
+        file: finding.file,
+        rule: COMPONENT_REUSE_RULE_ID,
+        suggestedFix: `Import ${finding.name} from ${finding.canonicalFile} instead of redefining it in ${finding.file}.`,
+        repair: {
+          id: 'import-existing-component',
+          payload: {
+            component: finding.name,
+            file: finding.file,
+            canonical_file: finding.canonicalFile,
+          },
+        },
+      }),
+    );
+  }
+
+  for (const finding of audit.rawControlFindings.slice(0, 8)) {
+    findings.push(
+      makeFinding({
+        id: RAW_CONTROL_REUSE_RULE_ID,
+        code: 'COMP010',
+        category: 'Component Reuse',
+        severity: 'warn',
+        message: `${finding.file} renders raw <${finding.element}> even though the project has a reusable ${finding.component} component.`,
+        evidence: finding.evidence,
+        target: finding.component,
+        file: finding.file,
+        rule: RAW_CONTROL_REUSE_RULE_ID,
+        suggestedFix: `Use ${finding.component} from ${finding.canonicalFile} instead of raw <${finding.element}> in ${finding.file}.`,
+        repair: {
+          id: 'replace-raw-control-with-local-component',
+          payload: {
+            component: finding.component,
+            element: finding.element,
+            file: finding.file,
+            canonical_file: finding.canonicalFile,
+          },
+        },
+      }),
+    );
+  }
+}
+
+function appendStyleBridgeDriftFindings(
+  findings: VerificationFinding[],
+  audit: StyleBridgeDriftAudit,
+): void {
+  for (const finding of audit.findings.slice(0, 8)) {
+    findings.push(
+      makeFinding({
+        id: STYLE_BRIDGE_ARBITRARY_VALUE_RULE_ID,
+        code: 'TOKEN010',
+        category: 'Style Bridge',
+        severity: 'warn',
+        message: `${finding.file} uses arbitrary styling even though an accepted style bridge defines project-owned token/class authority.`,
+        evidence: finding.evidence,
+        target: finding.value,
+        file: finding.file,
+        rule: STYLE_BRIDGE_ARBITRARY_VALUE_RULE_ID,
+        suggestedFix:
+          'Replace the arbitrary Tailwind value with an accepted project token or class from .decantr/style-bridge.json, or update the style bridge if this value is now approved design authority.',
+        repair: {
+          id: 'replace-arbitrary-style-with-bridge-token',
+          payload: {
+            file: finding.file,
+            line: finding.line,
+            value: finding.value,
+            source: finding.source,
+            property: finding.property,
+            bridge_mappings: finding.bridgeMappingIds,
+            token_hints: finding.tokenHints,
+            class_hints: finding.classHints,
+          },
+        },
+      }),
+    );
+  }
+}
+
 function appendStyleContractFindings(
   findings: VerificationFinding[],
   styleAudit: StyleAuditSummary,
@@ -4430,8 +4778,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
   const reviewPack = loadReviewPack(projectRoot);
   const packManifest = loadPackManifest(projectRoot);
   const adoptionMode = readProjectAdoptionMode(projectRoot);
-  const packHydrationOptional =
-    adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
+  const packHydrationOptional = adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
   const packHydrationSeverity: VerificationSeverity = packHydrationOptional ? 'info' : 'warn';
   const runtimeAudit = emptyRuntimeAudit();
 
@@ -4603,7 +4950,10 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     );
   }
 
-  const sourceAudit = auditProjectSourceTree(projectRoot);
+  const projectSourceFiles = collectProjectSourceFiles(projectRoot);
+  const sourceAudit = auditProjectSourceTree(projectRoot, projectSourceFiles);
+  const componentReuseAudit = auditComponentReuse(projectRoot, projectSourceFiles);
+  const styleBridgeDriftAudit = auditStyleBridgeDrift(projectRoot, projectSourceFiles);
   const styleAudit = auditProjectStyleContracts(projectRoot);
   const checkedRuntimeAudit = await runRuntimeAudit(projectRoot, essence);
   appendRuntimeAuditFindings(
@@ -4614,6 +4964,8 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     sourceAudit,
   );
   appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack, adoptionMode);
+  appendComponentReuseFindings(findings, componentReuseAudit);
+  appendStyleBridgeDriftFindings(findings, styleBridgeDriftAudit);
   appendStyleContractFindings(findings, styleAudit, essence);
 
   const summary = {
@@ -13846,8 +14198,7 @@ export function critiqueSource({
   const findings: VerificationFinding[] = [];
   const scores: VerificationScore[] = [];
   const antiPatternIds = new Set(reviewPack?.antiPatterns.map((entry) => entry.id) ?? []);
-  const isProjectOwnedStyling =
-    adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
+  const isProjectOwnedStyling = adoptionMode === 'contract-only' || adoptionMode === 'style-bridge';
 
   const usedTreatments = TREATMENT_CLASSES.filter((token) => code.includes(token));
   if (isProjectOwnedStyling) {

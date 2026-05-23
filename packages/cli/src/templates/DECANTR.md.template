@@ -1,14 +1,14 @@
 # DECANTR.md
 
-This project uses **Decantr** for design intelligence. Read this file before generating any UI code.
+This project uses **Decantr** for AI Frontend Governance. Read this file before generating or editing UI code.
 
 ---
 
 ## What is Decantr?
 
-Decantr is a design intelligence layer that sits between you (the AI code generator) and the code you produce. It provides structured schemas, guard rules, and a two-layer model (DNA + Blueprint) that ensures consistent, production-quality output.
+Decantr is a Contract / Context / Evidence layer that sits between you (the AI coding agent) and the code you produce. It provides structured schemas, guard rules, and a two-layer model (DNA + Blueprint) that keeps UI changes aligned with project standards.
 
-**Decantr does NOT generate code.** You generate the code. Decantr ensures it remains coherent and consistent.
+**Decantr does NOT generate code.** You generate or edit the code. Decantr keeps the result coherent, consistent, and repairable.
 
 ---
 

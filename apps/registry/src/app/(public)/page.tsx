@@ -66,9 +66,9 @@ function getBlueprintMeta(item: ContentItem) {
 
 function getBlueprintSignals(item: ContentItem, showcaseUrl?: string | null) {
   const signals = [
-    item.namespace === '@official' ? 'Official contract' : 'Community contract',
+    item.namespace === '@official' ? 'Official vocabulary' : 'Community vocabulary',
     showcaseUrl ? 'Live showcase' : 'Contract preview',
-    'CLI ready',
+    'Starter-kit ready',
   ];
 
   return signals;
@@ -102,7 +102,7 @@ function BlueprintPreviewFallback({ name }: { name: string }) {
       </div>
       <div className="registry-home-stage-fallback-hero">
         <span>{name}</span>
-        <strong>Blueprint launchpad</strong>
+        <strong>Vocabulary preview</strong>
       </div>
       <div className="registry-home-stage-fallback-grid">
         <span />
@@ -146,44 +146,44 @@ async function BlueprintLaunchHero() {
   const proofPoints = [
     {
       label: 'Inspect',
-      title: 'Readable contract',
-      copy: 'Routes, shells, theme, and voice are visible before you scaffold.',
+      title: 'Readable vocabulary',
+      copy: 'Routes, shells, theme, and voice stay visible before anything touches source.',
     },
     {
       label: 'Preview',
-      title: 'Live product surface',
-      copy: 'Open the showcase to judge the blueprint as an app, not a document.',
+      title: 'Live proof surface',
+      copy: 'Open the showcase to judge a starter kit as an app-shaped contract, not a document.',
     },
     {
-      label: 'Ship',
-      title: 'CLI-ready command',
-      copy: 'Copy the blueprint into a new Decantr project with one command.',
+      label: 'Adopt',
+      title: 'Repo-owned Contract',
+      copy: 'Use shared vocabulary as input while your app keeps the final authority.',
     },
   ];
 
   return (
     <section className="registry-home-hero registry-home-hero-cinematic entrance-fade" aria-labelledby="registry-home-heading">
       <div className="registry-home-hero-copy">
-        <span className="d-label registry-home-eyebrow">Blueprint Launchpad</span>
+        <span className="d-label registry-home-eyebrow">Certified Vocabulary</span>
         <h1 id="registry-home-heading" className="registry-home-title">
-          Find the blueprint that already knows the app.
+          Browse the shared vocabulary behind governed Decantr contracts.
         </h1>
         <p className="registry-home-description">
-          The registry is the official launch surface for shared Decantr contracts. Brownfield teams can still keep project-owned local patterns inside their app while using the registry for reusable blueprints, archetypes, themes, shells, and patterns.
+          The registry is a vocabulary source for reusable starter kits, archetypes, themes, shells, and patterns. Brownfield teams keep project-owned local law inside the app; Decantr treats registry content as guidance until it is mapped into the Contract.
         </p>
         <div className="registry-home-hero-actions">
           <Link href="/browse/blueprints?source=official" className="d-interactive registry-home-primary-action" data-variant="primary">
-            Browse blueprints
+            Browse starter kits
             <ArrowIcon />
           </Link>
-          <Link href={href} className="registry-home-section-link" aria-label="Open featured launchpad">
-            Open featured launchpad
+          <Link href={href} className="registry-home-section-link" aria-label="Open featured starter kit">
+            Open featured starter
             <ArrowIcon />
           </Link>
         </div>
       </div>
 
-      <div className="registry-home-hero-proof-grid" aria-label="Launchpad capabilities">
+      <div className="registry-home-hero-proof-grid" aria-label="Vocabulary capabilities">
         {proofPoints.map((proof) => (
           <div key={proof.label} className="registry-home-hero-proof-item">
             <span>{proof.label}</span>
@@ -193,11 +193,11 @@ async function BlueprintLaunchHero() {
         ))}
       </div>
 
-      <div className="registry-home-launch-stage registry-home-hero-stage" aria-label={`${name} launchpad preview`}>
+      <div className="registry-home-launch-stage registry-home-hero-stage" aria-label={`${name} starter-kit preview`}>
         <div className="registry-home-stage-canvas">
           <div className="registry-home-stage-preview">
             {item?.thumbnail_url ? (
-              <img src={item.thumbnail_url} alt={`${name} blueprint preview`} />
+              <img src={item.thumbnail_url} alt={`${name} starter-kit preview`} />
             ) : showcaseUrl ? (
               <iframe
                 src={showcaseUrl}
@@ -213,7 +213,7 @@ async function BlueprintLaunchHero() {
 
           <div className="registry-home-stage-contract">
             <div className="registry-home-stage-contract-head">
-              <span className="d-label">Blueprint contract</span>
+              <span className="d-label">Starter-kit contract</span>
               <strong>{name}</strong>
             </div>
 
@@ -225,7 +225,7 @@ async function BlueprintLaunchHero() {
               ))}
             </div>
 
-            <div className="registry-home-stage-command registry-home-stage-command-composer" aria-label={`Blueprint scaffold command: ${command}`}>
+            <div className="registry-home-stage-command registry-home-stage-command-composer" aria-label={`Starter-kit scaffold command: ${command}`}>
               <span className="registry-home-command-prompt">$</span>
               <code>
                 <span className="registry-home-command-base">decantr new my-app</span>
@@ -236,7 +236,7 @@ async function BlueprintLaunchHero() {
 
             <div className="registry-home-stage-actions">
               <Link href={href} className="d-interactive" data-variant="primary">
-                Open launchpad
+                Open starter
                 <ArrowIcon />
               </Link>
               {showcaseUrl ? (
@@ -256,9 +256,9 @@ async function BlueprintLaunchHero() {
 function RegistryHomeFlow() {
   const steps = [
     {
-      label: 'Blueprint',
-      title: 'Choose the product shape',
-      copy: 'Start from app topology, not a pile of components.',
+      label: 'Starter',
+      title: 'Start from product shape',
+      copy: 'Use starter kits for topology, not as the center of the product.',
     },
     {
       label: 'Contract',
@@ -271,9 +271,9 @@ function RegistryHomeFlow() {
       copy: 'Open a live runtime before you commit to an implementation path.',
     },
     {
-      label: 'Scaffold',
-      title: 'Ship from the contract',
-      copy: 'Run the command, then tune from a known Decantr foundation.',
+      label: 'Govern',
+      title: 'Keep authority local',
+      copy: 'Map useful vocabulary into the repo-owned Contract and verify it there.',
     },
   ];
 
@@ -321,7 +321,7 @@ function RegistryHomeSecondaryLinks() {
       label: 'Archetypes',
       href: '/browse/archetypes?source=official',
       role: 'Product section',
-      copy: 'Product-section foundations for composing custom blueprints.',
+      copy: 'Product-section foundations for composing custom Contracts.',
     },
   ];
 
@@ -374,7 +374,7 @@ async function FeaturedBlueprintLaunchpads() {
   if (items.length === 0) {
     return (
       <div className="registry-home-empty">
-        <p>No featured blueprints are available yet.</p>
+        <p>No featured starter kits are available yet.</p>
       </div>
     );
   }
@@ -399,7 +399,7 @@ async function FeaturedBlueprintLaunchpads() {
         </Link>
 
         <div className="registry-home-feature-copy">
-          <span className="d-label registry-home-feature-eyebrow">Featured blueprint</span>
+          <span className="d-label registry-home-feature-eyebrow">Featured starter kit</span>
           <h3>
             <Link
               href={getContentHref(primary)}
@@ -417,14 +417,14 @@ async function FeaturedBlueprintLaunchpads() {
           </div>
         </div>
 
-        <div className="registry-home-feature-command" aria-label="Blueprint scaffold command">
+        <div className="registry-home-feature-command" aria-label="Starter-kit scaffold command">
           <span>$</span>
           <code>{getBlueprintCommand(primary)}</code>
         </div>
 
         <div className="registry-home-feature-actions">
           <Link href={getContentHref(primary)} className="d-interactive" data-variant="primary">
-            Open launchpad
+            Open starter
             <ArrowIcon />
           </Link>
           {primaryShowcaseUrl ? (
@@ -492,12 +492,13 @@ async function FeaturedBlueprintLaunchpads() {
 export default function HomePage() {
   const searchHints = [
     'registry platform',
-    'agent marketplace',
+    'agent workspace',
+    'governance dashboard',
     'portfolio',
     'knowledge base',
   ];
   const searchLanes = [
-    ['Blueprints', 'Full app contracts'],
+    ['Starter kits', 'Full app contracts'],
     ['Themes', 'Visual systems'],
     ['Patterns', 'Page sections'],
   ];
@@ -514,15 +515,15 @@ export default function HomePage() {
             <span id="registry-home-search-heading" className="d-label registry-anchor-label">
               Find a starting point
             </span>
-            <h2 className="registry-home-section-title">Search by product intent, not registry taxonomy.</h2>
-            <p>Start with the app shape you want. Blueprints stay first, and lower-level pieces are one filter away when you need to tune the contract.</p>
+            <h2 className="registry-home-section-title">Search by product intent, then map to your Contract.</h2>
+            <p>Start with the app shape you want. Starter kits and lower-level vocabulary stay useful only when your project-owned Contract decides what applies.</p>
           </div>
           <div className="registry-home-search-hints" aria-label="Suggested searches">
             {searchHints.map((hint) => (
               <Link
                 key={hint}
                 href={`/browse/blueprints?source=official&q=${encodeURIComponent(hint)}`}
-                aria-label={`Browse ${hint} blueprints`}
+                aria-label={`Browse ${hint} starter kits`}
               >
                 {hint}
               </Link>
@@ -551,15 +552,15 @@ export default function HomePage() {
         <div className="registry-home-section-head registry-home-section-head-row">
           <div>
             <span id="registry-home-featured" className="d-label registry-anchor-label">
-              Featured launchpads
+              Featured starter kits
             </span>
-            <h2 className="registry-home-section-title">Open the blueprints that already behave like products.</h2>
+            <h2 className="registry-home-section-title">Open starter kits that already behave like products.</h2>
             <p className="registry-home-section-copy">
-              A blueprint-first shortlist with live showcase context and scaffold commands close to the decision.
+              A small official shortlist with live showcase context and scaffold commands close to the decision.
             </p>
           </div>
           <Link href="/browse/blueprints?source=official" className="registry-home-section-link">
-            View all blueprints
+            View starter kits
             <ArrowIcon />
           </Link>
         </div>
@@ -571,11 +572,11 @@ export default function HomePage() {
       <section className="d-section registry-home-flow-section" data-density="comfortable" aria-labelledby="registry-home-flow">
         <div className="registry-home-section-head">
           <span id="registry-home-flow" className="d-label registry-anchor-label">
-            How launchpads work
+            How vocabulary works
           </span>
-          <h2 className="registry-home-section-title">Move from curiosity to scaffold confidence.</h2>
+          <h2 className="registry-home-section-title">Move from browsing to governed adoption.</h2>
           <p className="registry-home-section-copy">
-            Each launchpad keeps the decision path tight: choose the product shape, inspect the contract, preview the runtime, then scaffold.
+            Each item keeps the decision path tight: choose the product shape, inspect the contract, preview the runtime, then let the app-owned Contract govern.
           </p>
         </div>
         <RegistryHomeFlow />
@@ -584,7 +585,7 @@ export default function HomePage() {
       <section className="d-section registry-home-secondary-section" data-density="comfortable" aria-labelledby="registry-home-secondary">
         <div className="registry-home-section-head">
           <span id="registry-home-secondary" className="d-label registry-anchor-label">
-            Build below the blueprint
+            Browse below the starter kit
           </span>
           <h2 className="registry-home-section-title">Drop into the contract layers when you need more control.</h2>
           <p className="registry-home-section-copy">

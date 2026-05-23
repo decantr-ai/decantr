@@ -1,0 +1,82 @@
+name: Community Release Announcement
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version, for example 3.0.0-next.0
+        required: true
+      only_packages:
+        description: Optional comma-separated package names to announce
+        required: false
+        default: ""
+      release_note:
+        description: Optional release note path
+        required: false
+        default: ""
+      target_repo:
+        description: community-ops repository owner/name
+        required: false
+        default: "decantr-ai/community-ops"
+      send:
+        description: Dispatch to community-ops. Leave false for payload preview.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  announce:
+    name: Build or dispatch community release announcement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build or send dispatch payload
+        env:
+          COMMUNITY_OPS_DISPATCH_TOKEN: ${{ secrets.COMMUNITY_OPS_DISPATCH_TOKEN }}
+          ONLY_PACKAGES: ${{ inputs.only_packages }}
+          RELEASE_NOTE: ${{ inputs.release_note }}
+          SEND: ${{ inputs.send }}
+          TARGET_REPO: ${{ inputs.target_repo }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          args=(--version "$VERSION" --target-repo "$TARGET_REPO")
+          if [ -n "$ONLY_PACKAGES" ]; then
+            args+=(--only "$ONLY_PACKAGES")
+          fi
+          if [ -n "$RELEASE_NOTE" ]; then
+            args+=(--release-note "$RELEASE_NOTE")
+          fi
+          if [ "$SEND" = "true" ]; then
+            args+=(--send)
+          else
+            args+=(--json)
+          fi
+
+          node scripts/dispatch-community-release.mjs "${args[@]}" | tee community-release-dispatch.log
+          {
+            echo "# Community Release Announcement"
+            echo
+            echo "- Version: \`$VERSION\`"
+            echo "- Target repo: \`$TARGET_REPO\`"
+            echo "- Mode: $([ "$SEND" = "true" ] && echo "dispatch" || echo "dry run")"
+            echo
+            echo '```text'
+            cat community-release-dispatch.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

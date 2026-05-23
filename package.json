@@ -1,7 +1,7 @@
 {
   "name": "decantr",
   "private": true,
-  "description": "Design intelligence layer for AI-generated web applications",
+  "description": "AI Frontend Governance for codebases touched by AI agents",
   "license": "MIT",
   "homepage": "https://decantr.ai",
   "repository": {
@@ -44,6 +44,7 @@
     "release:verify": "node scripts/verify-published-packages.mjs",
     "release:closeout": "node scripts/audit-release-closeout.mjs",
     "release:closeout:json": "node scripts/audit-release-closeout.mjs --json",
+    "release:announce": "node scripts/dispatch-community-release.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "package:retire:dry-run": "node scripts/deprecate-retired-packages.mjs --dry-run",
     "audit:public-api": "node scripts/audit-public-api.mjs",

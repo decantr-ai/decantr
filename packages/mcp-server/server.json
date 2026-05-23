@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.decantr-ai/mcp-server",
-  "description": "Design intelligence for AI-generated UI. Essence spec, registry, drift detection, and critique.",
+  "description": "AI Frontend Governance for codebases touched by AI agents. Serves Contract context, typed graph artifacts, drift evidence, and repair prompts.",
   "repository": {
     "url": "https://github.com/decantr-ai/decantr",
     "source": "github"
   },
-  "version": "2.2.0",
+  "version": "3.0.0-next.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@decantr/mcp-server",
-      "version": "2.2.0",
+      "version": "3.0.0-next.0",
       "transport": {
         "type": "stdio"
       }

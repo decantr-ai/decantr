@@ -13,7 +13,7 @@ const MOBILE_NAV_LINKS = [
   { href: '/browse', label: 'Browse' },
   { href: '/browse/patterns', label: 'Patterns' },
   { href: '/browse/themes', label: 'Themes' },
-  { href: '/browse/blueprints', label: 'Blueprints' },
+  { href: '/browse/blueprints', label: 'Starter Kits' },
 ];
 
 export function NavHeader({ user }: NavHeaderProps) {

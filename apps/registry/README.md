@@ -2,7 +2,7 @@
 
 Next.js portal for `registry.decantr.ai`.
 
-This app is the public browse and detail surface for Decantr registry content, plus the authenticated dashboard/admin flows that sit on top of the hosted API and Supabase auth.
+This app is the public browse and detail surface for Decantr certified vocabulary: starter kits, patterns, themes, archetypes, and shells that can feed project-owned Contracts. It also contains the authenticated dashboard/admin flows that sit on top of the hosted API and Supabase auth.
 
 ## Local Development
 

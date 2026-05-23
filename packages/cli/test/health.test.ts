@@ -8,12 +8,14 @@ import {
   cmdHealth,
   createProjectEvidenceBundle,
   createProjectHealthReport,
+  formatDiagnosticCatalogJson,
   formatProjectHealthMarkdown,
   parseHealthArgs,
   renderProjectHealthCiWorkflow,
   shouldFailHealth,
   writeProjectHealthCiWorkflow,
 } from '../src/commands/health.js';
+import { buildGraphArtifacts } from '../src/commands/graph.js';
 import { createWorkspaceHealthReport, listWorkspaceProjects } from '../src/commands/workspace.js';
 
 let testDir = '';
@@ -156,6 +158,36 @@ function writePacks(root = testDir): void {
   });
 }
 
+function writeGraph(root = testDir): void {
+  mkdirSync(join(root, '.decantr', 'graph'), { recursive: true });
+  writeJson(join(root, '.decantr', 'graph', 'graph.snapshot.json'), {
+    id: 'graph:test',
+    schema_version: '3.0.0-draft',
+    project_id: 'proj:test',
+    created_at: '2026-05-21T12:00:00.000Z',
+    source_hash: 'hash:test',
+    nodes: [
+      { id: 'proj:test', type: 'Project', payload: { name: 'Test project' } },
+      { id: 'pg:marketing:home', type: 'Page', payload: { id: 'home', section: 'marketing' } },
+      { id: 'rt:/', type: 'Route', payload: { path: '/' } },
+    ],
+    edges: [{ src: 'pg:marketing:home', dst: 'rt:/', relation: 'PAGE_ROUTED_AT_ROUTE' }],
+    summary: { nodes: 3, edges: 1, findings: 0, evidence: 0 },
+  });
+}
+
+function writeCurrentGraph(root = testDir): void {
+  const artifacts = buildGraphArtifacts(root);
+  if (!artifacts) throw new Error('Expected graph artifacts to be buildable.');
+  mkdirSync(artifacts.paths.graphDir, { recursive: true });
+  mkdirSync(artifacts.paths.snapshotsDir, { recursive: true });
+  writeJson(artifacts.paths.snapshot, artifacts.snapshot);
+  writeJson(artifacts.paths.snapshotHistory, artifacts.snapshot);
+  writeJson(artifacts.paths.manifest, artifacts.manifest);
+  writeJson(artifacts.paths.diff, artifacts.diff);
+  writeJson(artifacts.paths.capsule, artifacts.capsule);
+}
+
 describe('Project Health report', () => {
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-health-'));
@@ -222,6 +254,280 @@ describe('Project Health report', () => {
     expect(report.findings.some((finding) => finding.id === 'pack-pack-manifest-missing')).toBe(
       true,
     );
+  });
+
+  it('warns when attached typed Contract graph artifacts are missing', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+
+    const report = await createProjectHealthReport(testDir);
+    const finding = report.findings.find((entry) => entry.rule === 'typed-graph-current');
+
+    expect(finding).toMatchObject({
+      source: 'graph',
+      category: 'Typed Contract Graph',
+      code: 'GRAPH001',
+      repair: { id: 'regenerate-typed-graph' },
+    });
+    expect(finding?.evidence).toContain('.decantr/graph/graph.snapshot.json');
+    expect(finding?.remediation.commands).toContain('decantr graph');
+    expect(report.graph).toMatchObject({
+      present: false,
+      ready: false,
+      current: false,
+      snapshotPresent: false,
+      capsulePresent: false,
+      capsuleSourceArtifactLimit: 200,
+      capsuleSourceArtifactsTruncated: false,
+    });
+    expect(report.graph.staleArtifacts).toContain('.decantr/graph/graph.snapshot.json');
+  });
+
+  it('passes graph freshness once attached graph artifacts are current', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    writeJson(join(testDir, '.decantr', 'project.json'), {
+      initialized: { workflowMode: 'brownfield-attach', adoptionMode: 'contract-only' },
+    });
+    writeCurrentGraph();
+
+    const report = await createProjectHealthReport(testDir);
+    const evidence = await createProjectEvidenceBundle(testDir, report);
+
+    expect(report.graph).toMatchObject({
+      present: true,
+      ready: true,
+      current: true,
+      snapshotPresent: true,
+      capsulePresent: true,
+      capsuleSourceArtifactLimit: 200,
+      capsuleSourceArtifactsTruncated: false,
+    });
+    expect(report.graph.snapshotId).toMatch(/^graph:/);
+    expect(report.graph.contractCacheKey).toMatch(/^decantr-contract:fnv1a32:/);
+    expect(report.graph.sourceArtifactCount).toBeGreaterThan(0);
+    expect(report.findings.some((finding) => finding.rule === 'typed-graph-current')).toBe(false);
+    expect(evidence.provenance.graphSnapshot).toMatchObject({
+      path: '.decantr/graph/graph.snapshot.json',
+      present: true,
+    });
+    expect(evidence.provenance.graphManifest.present).toBe(true);
+    expect(evidence.provenance.graphDiff.present).toBe(true);
+    expect(evidence.provenance.contractCapsule.present).toBe(true);
+    expect(evidence.provenance.contractCapsule.hash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('attaches typed graph anchors to health findings and evidence bundles', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writeGraph();
+
+    const report = await createProjectHealthReport(testDir);
+    const finding = report.findings.find((entry) => entry.graph);
+    const evidence = await createProjectEvidenceBundle(testDir, report);
+    const markdown = formatProjectHealthMarkdown(report);
+
+    expect(finding?.graph).toMatchObject({
+      snapshot_id: 'graph:test',
+      node_id: 'proj:test',
+      node_type: 'Project',
+      confidence: 'fallback',
+    });
+    expect(finding?.code).toBe('CTX002');
+    expect(finding?.repair?.id).toBe('hydrate-execution-packs');
+    expect(finding?.remediation.prompt).toContain('Code: CTX002');
+    expect(finding?.remediation.prompt).toContain('Repair: hydrate-execution-packs');
+    expect(finding?.remediation.prompt).toContain('Graph anchor: Project proj:test');
+    expect(markdown).toContain('- Code: CTX002');
+    expect(markdown).toContain('- Repair: `hydrate-execution-packs`');
+    expect(markdown).toContain('- Graph: `Project proj:test`');
+    expect(evidence.findings.some((entry) => entry.graph?.snapshot_id === 'graph:test')).toBe(true);
+    expect(evidence.findings.some((entry) => entry.repair?.id === 'hydrate-execution-packs')).toBe(
+      true,
+    );
+    expect(evidence.provenance.graphSnapshot).toMatchObject({
+      path: '.decantr/graph/graph.snapshot.json',
+      present: true,
+    });
+    expect(evidence.provenance.graphManifest.present).toBe(false);
+    expect(evidence.provenance.contractCapsule.present).toBe(false);
+  });
+
+  it('preserves component reuse repair payloads in health and evidence output', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    mkdirSync(join(testDir, 'src', 'components', 'ui'), { recursive: true });
+    mkdirSync(join(testDir, 'src', 'app', 'dashboard'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'components', 'ui', 'Button.tsx'),
+      'export function Button() { return <button />; }\n',
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'page.tsx'),
+      'function Button() { return <button />; }\nexport function DashboardPage() { return <Button />; }\n',
+      'utf-8',
+    );
+
+    const report = await createProjectHealthReport(testDir);
+    const finding = report.findings.find(
+      (entry) => entry.rule === 'component-reuse-primitive-reimplemented',
+    );
+    const evidence = await createProjectEvidenceBundle(testDir, report);
+    const evidenceFinding = evidence.findings.find((entry) => entry.id === finding?.id);
+
+    expect(finding).toMatchObject({
+      code: 'COMP001',
+      repair: {
+        id: 'import-existing-component',
+        payload: {
+          component: 'Button',
+          file: 'src/app/dashboard/page.tsx',
+          canonical_file: 'src/components/ui/Button.tsx',
+        },
+      },
+    });
+    expect(evidenceFinding?.repair).toMatchObject({
+      id: 'import-existing-component',
+      payload: {
+        component: 'Button',
+        file: 'src/app/dashboard/page.tsx',
+        canonical_file: 'src/components/ui/Button.tsx',
+      },
+    });
+  });
+
+  it('preserves raw control repair plans in health and evidence output', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    mkdirSync(join(testDir, 'src', 'components', 'ui'), { recursive: true });
+    mkdirSync(join(testDir, 'src', 'app', 'dashboard'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'components', 'ui', 'Button.tsx'),
+      'export function Button() { return <button />; }\n',
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'page.tsx'),
+      'export function DashboardPage() { return <button type="button">Save</button>; }\n',
+      'utf-8',
+    );
+
+    const report = await createProjectHealthReport(testDir);
+    const finding = report.findings.find(
+      (entry) => entry.rule === 'component-reuse-raw-control',
+    );
+    const evidence = await createProjectEvidenceBundle(testDir, report);
+    const evidenceFinding = evidence.findings.find((entry) => entry.id === finding?.id);
+
+    expect(finding).toMatchObject({
+      code: 'COMP010',
+      repair: {
+        id: 'replace-raw-control-with-local-component',
+        payload: {
+          component: 'Button',
+          element: 'button',
+          file: 'src/app/dashboard/page.tsx',
+          canonical_file: 'src/components/ui/Button.tsx',
+        },
+      },
+      repairPlan: {
+        actions: [
+          {
+            kind: 'replace_raw_control_with_component',
+            target: 'src/app/dashboard/page.tsx',
+          },
+        ],
+      },
+    });
+    expect(evidenceFinding?.repairPlan?.actions[0]).toMatchObject({
+      kind: 'replace_raw_control_with_component',
+      target: 'src/app/dashboard/page.tsx',
+    });
+  });
+
+  it('preserves accepted style bridge drift repair plans in health and evidence output', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    mkdirSync(join(testDir, 'src', 'app', 'dashboard'), { recursive: true });
+    writeJson(join(testDir, '.decantr', 'style-bridge.json'), {
+      version: 1,
+      status: 'accepted',
+      mappings: [
+        {
+          id: 'bridge:surface',
+          tokenHints: ['--color-surface', '--color-foreground'],
+          classHints: ['bg-background', 'text-foreground'],
+        },
+      ],
+    });
+    writeFileSync(
+      join(testDir, 'src', 'app', 'dashboard', 'page.tsx'),
+      'export function DashboardPage() { return <main className="bg-[#0f172a]">Dashboard</main>; }\n',
+      'utf-8',
+    );
+
+    const report = await createProjectHealthReport(testDir);
+    const finding = report.findings.find(
+      (entry) => entry.rule === 'style-bridge-arbitrary-value',
+    );
+    const evidence = await createProjectEvidenceBundle(testDir, report);
+    const evidenceFinding = evidence.findings.find((entry) => entry.id === finding?.id);
+
+    expect(finding).toMatchObject({
+      source: 'style-bridge',
+      category: 'Style Bridge',
+      code: 'TOKEN010',
+      repair: {
+        id: 'replace-arbitrary-style-with-bridge-token',
+        payload: {
+          file: 'src/app/dashboard/page.tsx',
+          value: 'bg-[#0f172a]',
+          bridge_mappings: ['bridge:surface'],
+          token_hints: ['--color-surface', '--color-foreground'],
+        },
+      },
+    });
+    expect(finding?.remediation.commands).toContain('decantr codify --style-bridge');
+    expect(finding?.repairPlan?.readTargets).toContain('.decantr/style-bridge.json');
+    expect(evidenceFinding?.source).toBe('style-bridge');
+    expect(evidenceFinding?.repairPlan?.readTargets).toContain('.decantr/style-bridge.json');
+  });
+
+  it('renders the stable diagnostic catalog without requiring a project audit', async () => {
+    const json = JSON.parse(formatDiagnosticCatalogJson()) as {
+      diagnostics: Array<{ code: string; rule: string; repairId: string }>;
+    };
+
+    expect(json.diagnostics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'TOKEN010',
+          rule: 'style-bridge-arbitrary-value',
+          repairId: 'replace-arbitrary-style-with-bridge-token',
+        }),
+      ]),
+    );
+
+    const parsed = parseHealthArgs(['health', '--diagnostics', '--json']);
+    expect(parsed).toMatchObject({ diagnostics: true, json: true });
+
+    await cmdHealth(testDir, { diagnostics: true, format: 'json', output: 'diagnostics.json' });
+    const written = JSON.parse(readFileSync(join(testDir, 'diagnostics.json'), 'utf-8')) as {
+      diagnostics: Array<{ code: string }>;
+    };
+    expect(written.diagnostics.some((entry) => entry.code === 'GRAPH001')).toBe(true);
   });
 
   it('treats missing hosted packs as optional context for contract-only brownfield projects', async () => {
@@ -318,6 +624,8 @@ describe('Project Health report', () => {
 
     expect(evidence.$schema).toBe('https://decantr.ai/schemas/evidence-bundle.v1.json');
     expect(firstHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(evidence.provenance.graphSnapshot.present).toBe(false);
+    expect(evidence.provenance.contractCapsule.present).toBe(false);
     expect(JSON.stringify(evidence)).not.toContain(testDir);
 
     const essencePath = join(testDir, 'decantr.essence.json');
@@ -576,6 +884,28 @@ exports.chromium = {
     expect(diff.changedRoutes).toContain('/');
     expect(diff.changedScreenshots).toContain('.decantr/evidence/screenshots/root.png');
     expect(diff.scoreDelta).not.toBeNull();
+
+    const nextReport = JSON.parse(readFileSync(join(testDir, 'health-next.json'), 'utf-8')) as {
+      findings: Array<{
+        code?: string;
+        rule?: string;
+        repair?: { id?: string; payload?: Record<string, unknown> };
+        repairPlan?: { actions?: Array<{ id?: string }> };
+      }>;
+    };
+    const finding = nextReport.findings.find(
+      (entry) => entry.rule === 'visual-baseline-screenshot-drift',
+    );
+    expect(finding).toMatchObject({
+      code: 'VISUAL010',
+      repair: {
+        id: 'review-visual-baseline-drift',
+        payload: {
+          changed_screenshots: ['.decantr/evidence/screenshots/root.png'],
+        },
+      },
+    });
+    expect(finding?.repairPlan?.actions?.[0]?.id).toBe('review-visual-baseline-drift');
   });
 
   it('tracks the audited CLI command surface', () => {

@@ -1,4 +1,6 @@
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -16,10 +18,226 @@ function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
 }
 
+function hashFile(path: string): string {
+  return `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+}
+
+function stableJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJson(item)).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .filter((key) => record[key] !== undefined)
+      .map((key) => `${JSON.stringify(key)}:${stableJson(record[key])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function hashJson(value: unknown): string {
+  return `sha256:${createHash('sha256').update(stableJson(value)).digest('hex')}`;
+}
+
+function visualManifestSourceHash(manifest: {
+  version?: number;
+  localOnly?: boolean;
+  baseUrl?: string | null;
+  routes?: Array<{
+    route?: string;
+    url?: string;
+    screenshot?: string | null;
+    screenshotHash?: string | null;
+    status?: string;
+    error?: string;
+  }>;
+}): string {
+  return hashJson({
+    version: manifest.version,
+    localOnly: manifest.localOnly,
+    baseUrl: manifest.baseUrl ?? null,
+    routes: (manifest.routes ?? []).map((route) => ({
+      route: route.route,
+      url: route.url,
+      screenshot: route.screenshot,
+      screenshotHash: route.screenshotHash ?? null,
+      status: route.status,
+      error: route.error,
+    })),
+  });
+}
+
+function evidenceBundleSourceHash(bundle: {
+  health?: {
+    status?: string;
+    score?: number;
+    errorCount?: number;
+    warnCount?: number;
+    infoCount?: number;
+    findingCount?: number;
+  };
+  provenance?: Record<
+    string,
+    { path?: string; present?: boolean; hash?: string | null; generatedAt?: string | null }
+  >;
+  findings?: Array<{
+    id?: string;
+    code?: string;
+    source?: string;
+    category?: string;
+    severity?: string;
+    message?: string;
+    target?: string;
+    rule?: string;
+    suggestedFix?: string;
+    graph?: {
+      node_id?: string;
+      node_type?: string;
+      route?: string;
+      confidence?: string;
+      reason?: string;
+    };
+    repair?: { id?: string };
+    repairPlan?: {
+      id?: string;
+      actions?: unknown[];
+      readTargets?: string[];
+      commands?: string[];
+    };
+    evidence?: string[];
+    commands?: string[];
+  }>;
+}): string {
+  return hashJson({
+    health: bundle.health
+      ? {
+          status: bundle.health.status,
+          score: bundle.health.score,
+          errorCount: bundle.health.errorCount,
+          warnCount: bundle.health.warnCount,
+          infoCount: bundle.health.infoCount,
+          findingCount: bundle.health.findingCount,
+      }
+    : null,
+    provenance: Object.entries(bundle.provenance ?? {})
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => ({
+        key,
+        path: entry.path,
+        present: entry.present,
+        hash: entry.hash ?? null,
+      })),
+    findings: (bundle.findings ?? []).map((finding) => ({
+      id: finding.id,
+      code: finding.code,
+      source: finding.source,
+      category: finding.category,
+      severity: finding.severity,
+      message: finding.message,
+      target: finding.target,
+      rule: finding.rule,
+      suggestedFix: finding.suggestedFix,
+      graph: finding.graph
+        ? {
+            node_id: finding.graph.node_id,
+            node_type: finding.graph.node_type,
+            route: finding.graph.route,
+            confidence: finding.graph.confidence,
+            reason: finding.graph.reason,
+          }
+        : undefined,
+      repair: finding.repair?.id,
+      repairPlan: finding.repairPlan
+        ? {
+            id: finding.repairPlan.id,
+            actions: finding.repairPlan.actions,
+            readTargets: finding.repairPlan.readTargets,
+            commands: finding.repairPlan.commands,
+          }
+        : undefined,
+      evidence: finding.evidence,
+      commands: finding.commands,
+    })),
+  });
+}
+
+function analysisSourceHash(analysis: {
+  project?: {
+    framework?: string;
+    frameworkVersion?: string | null;
+    packageManager?: string;
+    hasTypeScript?: boolean;
+    hasTailwind?: boolean;
+    projectScope?: string;
+  };
+  routes?: { strategy?: string; routes?: Array<{ path?: string; file?: string; hasLayout?: boolean }> };
+  styling?: {
+    approach?: string;
+    configFile?: string | null;
+    darkMode?: boolean;
+    cssVariables?: string[];
+  };
+  layout?: { shellPattern?: string };
+  features?: { detected?: string[] };
+}): string {
+  return hashJson({
+    project: {
+      framework: analysis.project?.framework,
+      frameworkVersion: analysis.project?.frameworkVersion,
+      packageManager: analysis.project?.packageManager,
+      hasTypeScript: analysis.project?.hasTypeScript,
+      hasTailwind: analysis.project?.hasTailwind,
+      projectScope: analysis.project?.projectScope,
+    },
+    routes: {
+      strategy: analysis.routes?.strategy,
+      routes: (analysis.routes?.routes ?? []).map((route) => ({
+        path: route.path,
+        file: route.file,
+        hasLayout: route.hasLayout,
+      })),
+    },
+    styling: {
+      approach: analysis.styling?.approach,
+      configFile: analysis.styling?.configFile,
+      darkMode: analysis.styling?.darkMode,
+      cssVariables: analysis.styling?.cssVariables,
+    },
+    layout: { shellPattern: analysis.layout?.shellPattern },
+    features: { detected: analysis.features?.detected },
+  });
+}
+
+function healthBaselineDiffSourceHash(diff: {
+  savedAt?: string | null;
+  statusChanged?: boolean;
+  scoreDelta?: number | null;
+  addedFindings?: string[];
+  resolvedFindings?: string[];
+  changedFiles?: string[];
+  changedRoutes?: string[];
+  changedScreenshots?: string[];
+  contractDrift?: string[];
+}): string {
+  return hashJson({
+    savedAt: diff.savedAt ?? null,
+    statusChanged: diff.statusChanged ?? false,
+    scoreDelta: diff.scoreDelta ?? null,
+    addedFindings: diff.addedFindings ?? [],
+    resolvedFindings: diff.resolvedFindings ?? [],
+    changedFiles: diff.changedFiles ?? [],
+    changedRoutes: diff.changedRoutes ?? [],
+    changedScreenshots: diff.changedScreenshots ?? [],
+    contractDrift: diff.contractDrift ?? [],
+  });
+}
+
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
     it('should define the full MCP tool surface', () => {
-      expect(TOOLS).toHaveLength(25);
+      expect(TOOLS).toHaveLength(32);
     });
 
     it('should have unique tool names', () => {
@@ -75,8 +293,15 @@ describe('MCP tool handlers', () => {
         'decantr_check_drift',
         'decantr_get_scaffold_context',
         'decantr_get_page_context',
+        'decantr_get_project_state',
         'decantr_prepare_task_context',
+        'decantr_get_contract_capsule',
+        'decantr_get_graph_snapshot',
+        'decantr_query_graph',
+        'decantr_traverse_graph',
         'decantr_get_execution_pack',
+        'decantr_get_findings',
+        'decantr_get_repair_plan',
         'decantr_get_evidence_bundle',
         'decantr_workspace_health',
         'decantr_get_repair_prompt',
@@ -105,6 +330,805 @@ describe('MCP tool handlers', () => {
       })) as { valid: boolean; errors: string[] };
       expect(result.valid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('typed graph tools', () => {
+    it('reads the contract capsule and route-scoped graph subgraph', async () => {
+      const projectDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-graph-'));
+      try {
+        process.chdir(projectDir);
+        mkdirSync(join(projectDir, '.decantr', 'graph'), { recursive: true });
+        writeJson(join(projectDir, '.decantr', 'graph', 'contract-capsule.json'), {
+          schema_version: '3.0.0-draft',
+          snapshot_id: 'graph:test',
+          project_id: 'proj:default',
+          created_at: '2026-05-21T00:00:00.000Z',
+          source_hash: 'sha256:test',
+          contract_hash: 'fnv1a32:test',
+          cache_key: 'decantr-contract:sha256:test',
+          contract_cache_key: 'decantr-contract:fnv1a32:test',
+          summary: {
+            routes: 1,
+            components: 1,
+            tokens: 0,
+            local_rules: 1,
+            style_bridge: 1,
+            source_artifacts: 1,
+            open_findings: 0,
+          },
+          source_artifact_limit: 200,
+          source_artifacts_truncated: false,
+          routes: [{ id: 'rt:/feed', path: '/feed', page_id: 'pg:app:feed' }],
+          components: [{ id: 'cmp:recipecard', label: 'RecipeCard' }],
+          tokens: [],
+          local_rules: [{ id: 'rule:no-raw-button' }],
+          style_bridge: [{ id: 'bridge:surface' }],
+          source_artifacts: [
+            {
+              id: 'src:src/app/feed/page.tsx',
+              path: 'src/app/feed/page.tsx',
+              kind: 'route-source',
+            },
+          ],
+          open_findings: [],
+        });
+        writeJson(join(projectDir, '.decantr', 'graph', 'graph.snapshot.json'), {
+          id: 'graph:test',
+          schema_version: '3.0.0-draft',
+          project_id: 'proj:default',
+          created_at: '2026-05-21T00:00:00.000Z',
+          source_hash: 'sha256:test',
+          nodes: [
+            { id: 'rt:/feed', type: 'Route', payload: { path: '/feed' } },
+            { id: 'pg:app:feed', type: 'Page', payload: { id: 'feed' } },
+            { id: 'sh:app', type: 'Shell', payload: { id: 'app' } },
+            { id: 'pat:content-feed', type: 'Pattern', payload: { id: 'content-feed' } },
+            { id: 'cmp:recipecard', type: 'Component', payload: { name: 'RecipeCard' } },
+            { id: 'rule:no-raw-button', type: 'LocalRule', payload: { id: 'no-raw-button' } },
+            { id: 'bridge:surface', type: 'StyleBridge', payload: { id: 'surface' } },
+            {
+              id: 'src:src/app/feed/page.tsx',
+              type: 'SourceArtifact',
+              payload: {
+                id: 'src:src/app/feed/page.tsx',
+                kind: 'route-source',
+                path: 'src/app/feed/page.tsx',
+              },
+            },
+            {
+              id: 'find:check-no-raw-button',
+              type: 'Finding',
+              payload: {
+                code: 'RULE001',
+                severity: 'warn',
+                message: 'Raw button usage violates local law.',
+              },
+            },
+          ],
+          edges: [
+            { src: 'pg:app:feed', dst: 'rt:/feed', relation: 'PAGE_ROUTED_AT_ROUTE' },
+            { src: 'pg:app:feed', dst: 'sh:app', relation: 'PAGE_USES_SHELL' },
+            { src: 'pg:app:feed', dst: 'pat:content-feed', relation: 'PAGE_COMPOSES_PATTERN' },
+            { src: 'pat:content-feed', dst: 'cmp:recipecard', relation: 'PATTERN_NEEDS_COMPONENT' },
+            { src: 'rule:no-raw-button', dst: 'proj:default', relation: 'LOCAL_RULE_APPLIES_TO' },
+            { src: 'bridge:surface', dst: 'proj:default', relation: 'STYLE_BRIDGE_MAPS_TO' },
+            {
+              src: 'rt:/feed',
+              dst: 'src:src/app/feed/page.tsx',
+              relation: 'NODE_DERIVED_FROM_SOURCE',
+            },
+            {
+              src: 'pg:app:feed',
+              dst: 'src:src/app/feed/page.tsx',
+              relation: 'NODE_DERIVED_FROM_SOURCE',
+            },
+            {
+              src: 'find:check-no-raw-button',
+              dst: 'rule:no-raw-button',
+              relation: 'FINDING_ANCHORED_AT',
+            },
+          ],
+          summary: { nodes: 9, edges: 9, findings: 1, evidence: 0 },
+        });
+
+        writeJson(join(projectDir, 'decantr.essence.json'), {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'light' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
+            typography: { scale: 'system', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'existing', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'existing', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['focused'],
+          },
+          blueprint: {
+            features: ['feed'],
+            sections: [
+              {
+                id: 'app',
+                role: 'primary',
+                shell: 'app',
+                features: ['feed'],
+                description: 'App',
+                pages: [{ id: 'feed', route: '/feed', layout: ['content-feed'] }],
+              },
+            ],
+            routes: { '/feed': { section: 'app', page: 'feed' } },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+          },
+        });
+        mkdirSync(join(projectDir, 'src', 'app', 'feed'), { recursive: true });
+        writeFileSync(
+          join(projectDir, 'src', 'app', 'feed', 'page.tsx'),
+          'export default function FeedPage() { return <main />; }\n',
+          'utf-8',
+        );
+        const analysis = {
+          version: 1,
+          analyzedAt: '2026-05-21T14:00:00.000Z',
+          project: {
+            framework: 'next',
+            packageManager: 'pnpm',
+            hasTypeScript: true,
+            hasTailwind: true,
+            projectScope: 'single-app',
+          },
+          routes: {
+            strategy: 'app-router',
+            routes: [{ path: '/feed', file: 'src/app/feed/page.tsx', hasLayout: false }],
+          },
+          styling: { approach: 'tailwind', cssVariables: [] },
+          layout: { shellPattern: 'app-router' },
+          features: { detected: ['feed'] },
+        };
+        writeJson(join(projectDir, '.decantr', 'analysis.json'), {
+          ...analysis,
+          analyzedAt: '2026-05-21T14:01:00.000Z',
+        });
+        mkdirSync(join(projectDir, '.decantr', 'evidence'), { recursive: true });
+        const visualManifest = {
+          version: 1,
+          generatedAt: '2026-05-21T14:00:00.000Z',
+          localOnly: true,
+          baseUrl: 'http://127.0.0.1:3000',
+          routes: [
+            {
+              route: '/feed',
+              url: 'http://127.0.0.1:3000/feed',
+              screenshot: null,
+              screenshotHash: null,
+              status: 'captured',
+            },
+          ],
+        };
+        writeJson(join(projectDir, '.decantr', 'evidence', 'visual-manifest.json'), {
+          ...visualManifest,
+          generatedAt: '2026-05-21T14:01:00.000Z',
+        });
+        const evidenceBundle = {
+          generatedAt: '2026-05-21T14:00:00.000Z',
+          health: {
+            status: 'warning',
+            score: 95,
+            errorCount: 0,
+            warnCount: 1,
+            infoCount: 0,
+            findingCount: 1,
+          },
+          provenance: {
+            graphSnapshot: {
+              path: '.decantr/graph/graph.snapshot.json',
+              present: true,
+              hash: 'sha256:snapshot',
+              generatedAt: '2026-05-21T14:00:00.000Z',
+            },
+            contractCapsule: {
+              path: '.decantr/graph/contract-capsule.json',
+              present: true,
+              hash: 'sha256:capsule',
+              generatedAt: '2026-05-21T14:00:00.000Z',
+            },
+          },
+          findings: [
+            {
+              id: 'check-no-raw-button',
+              code: 'RULE001',
+              source: 'check',
+              category: 'Local law',
+              severity: 'warn',
+              message: 'Raw button usage violates local law.',
+              evidence: ['src/App.tsx:12 uses <button>'],
+              rule: 'no-raw-button',
+              suggestedFix: 'Import Button.',
+              graph: {
+                snapshot_id: 'graph:test',
+                source_hash: 'sha256:test',
+                node_id: 'rule:no-raw-button',
+                node_type: 'LocalRule',
+                confidence: 'exact',
+                reason: 'rule id matched a LocalRule node',
+              },
+              repair: {
+                id: 'replace-raw-control-with-local-component',
+              },
+              repairPlan: {
+                id: 'repair-plan:check-no-raw-button',
+                actions: [{ id: 'replace-raw-control-with-local-component' }],
+                readTargets: ['src/app/feed/page.tsx'],
+                commands: ['decantr health'],
+              },
+              commands: ['decantr health'],
+            },
+          ],
+        };
+        writeJson(join(projectDir, '.decantr', 'evidence', 'latest.json'), {
+          ...evidenceBundle,
+          generatedAt: '2026-05-21T14:01:00.000Z',
+          provenance: {
+            graphSnapshot: {
+              ...evidenceBundle.provenance.graphSnapshot,
+              generatedAt: '2026-05-21T14:01:00.000Z',
+            },
+            contractCapsule: {
+              ...evidenceBundle.provenance.contractCapsule,
+              generatedAt: '2026-05-21T14:01:00.000Z',
+            },
+          },
+        });
+        const healthBaselineDiff = {
+          savedAt: '2026-05-21T14:00:00.000Z',
+          statusChanged: false,
+          scoreDelta: -1,
+          addedFindings: ['check-no-raw-button'],
+          resolvedFindings: [],
+          changedFiles: ['src/app/feed/page.tsx'],
+          changedRoutes: ['/feed'],
+          changedScreenshots: [],
+          contractDrift: [],
+        };
+        writeJson(join(projectDir, '.decantr', 'health-baseline-diff.json'), {
+          ...healthBaselineDiff,
+          baselinePath: '.decantr/health-baseline.json',
+        });
+        writeJson(join(projectDir, '.decantr', 'graph', 'graph.manifest.json'), {
+          schema_version: '3.0.0-draft',
+          snapshot_id: 'graph:test',
+          project_id: 'proj:default',
+          generated_at: '2026-05-21T00:00:00.000Z',
+          sources: [
+            {
+              id: 'src:decantr.essence.json',
+              kind: 'essence',
+              path: 'decantr.essence.json',
+              hash: hashFile(join(projectDir, 'decantr.essence.json')),
+            },
+            {
+              id: 'src:.decantr/analysis.json',
+              kind: 'brownfield-analysis',
+              path: '.decantr/analysis.json',
+              hash: analysisSourceHash(analysis),
+            },
+            {
+              id: 'src:src/app/feed/page.tsx',
+              kind: 'route-source',
+              path: 'src/app/feed/page.tsx',
+              hash: hashFile(join(projectDir, 'src', 'app', 'feed', 'page.tsx')),
+            },
+            {
+              id: 'src:.decantr/evidence/visual-manifest.json',
+              kind: 'visual-manifest',
+              path: '.decantr/evidence/visual-manifest.json',
+              hash: visualManifestSourceHash(visualManifest),
+            },
+            {
+              id: 'src:.decantr/evidence/latest.json',
+              kind: 'evidence-bundle',
+              path: '.decantr/evidence/latest.json',
+              hash: evidenceBundleSourceHash(evidenceBundle),
+            },
+            {
+              id: 'src:.decantr/health-baseline-diff.json',
+              kind: 'health-baseline-diff',
+              path: '.decantr/health-baseline-diff.json',
+              hash: healthBaselineDiffSourceHash(healthBaselineDiff),
+            },
+          ],
+          outputs: {
+            snapshot: '.decantr/graph/graph.snapshot.json',
+            history: '.decantr/graph/snapshots',
+            diff: '.decantr/graph/graph.diff.json',
+          },
+          warnings: [],
+        });
+        mkdirSync(join(projectDir, '.decantr', 'graph', 'snapshots'), { recursive: true });
+        writeJson(join(projectDir, '.decantr', 'graph', 'snapshots', 'graph-test.json'), {
+          $schema: 'https://decantr.ai/schemas/graph-snapshot.v1.json',
+          id: 'graph:test',
+          schema_version: '3.0.0-draft',
+          project_id: 'proj:default',
+          created_at: '2026-05-21T00:00:00.000Z',
+          source_hash: 'sha256:test',
+          nodes: [],
+          edges: [],
+          summary: { nodes: 0, edges: 0, findings: 0, evidence: 0 },
+        });
+        writeJson(join(projectDir, '.decantr', 'graph', 'snapshots', 'graph-older.json'), {
+          $schema: 'https://decantr.ai/schemas/graph-snapshot.v1.json',
+          id: 'graph:older',
+          schema_version: '3.0.0-draft',
+          project_id: 'proj:default',
+          created_at: '2026-05-20T00:00:00.000Z',
+          source_hash: 'sha256:older',
+          nodes: [],
+          edges: [],
+          summary: { nodes: 0, edges: 0, findings: 0, evidence: 0 },
+        });
+        writeJson(join(projectDir, '.decantr', 'graph', 'graph.diff.json'), {
+          id: 'diff:empty:graph:test',
+          to: 'graph:test',
+          ops: [
+            {
+              op: 'finding.added',
+              id: 'find:check-no-raw-button',
+              type: 'Finding',
+            },
+            {
+              op: 'evidence.added',
+              id: 'ev:visual:feed',
+              type: 'Evidence',
+            },
+          ],
+        });
+
+        const state = (await handleTool('decantr_get_project_state', {})) as {
+          essence?: { routes?: string[]; active_v4?: boolean };
+          graph?: {
+            ready?: boolean;
+            current?: boolean | null;
+            stale_sources?: Array<{ path: string }>;
+            available_routes?: string[];
+            contract_hash?: string | null;
+            contract_cache_key?: string | null;
+            snapshot_history_present?: boolean;
+            snapshot_history_count?: number;
+            diff_summary?: {
+              total: number;
+              findings: { added: number; resolved: number };
+              evidence: { added: number };
+            } | null;
+            source_artifact_count?: number;
+            capsule_source_artifact_count?: number | null;
+            capsule_source_artifact_limit?: number | null;
+            capsule_source_artifacts_truncated?: boolean | null;
+            available_source_artifacts?: Array<{ id: string; path: string; kind: string | null }>;
+          };
+          diagnostics?: {
+            known_count?: number;
+            families?: string[];
+            codes?: Array<{ code: string; rule: string; repair_id: string; family: string }>;
+          };
+          recommended_next_tools?: string[];
+        };
+        expect(state.essence?.active_v4).toBe(true);
+        expect(state.essence?.routes).toEqual(['/feed']);
+        expect(state.graph?.ready).toBe(true);
+        expect(state.graph?.current).toBe(true);
+        expect(state.graph?.available_routes).toEqual(['/feed']);
+        expect(state.graph?.contract_hash).toBe('fnv1a32:test');
+        expect(state.graph?.contract_cache_key).toBe('decantr-contract:fnv1a32:test');
+        expect(state.graph?.snapshot_history_present).toBe(true);
+        expect(state.graph?.snapshot_history_count).toBe(2);
+        expect(state.graph?.diff_summary).toMatchObject({
+          total: 2,
+          findings: { added: 1, resolved: 0 },
+          evidence: { added: 1 },
+        });
+        expect(state.graph?.source_artifact_count).toBe(1);
+        expect(state.graph?.capsule_source_artifact_count).toBe(1);
+        expect(state.graph?.capsule_source_artifact_limit).toBe(200);
+        expect(state.graph?.capsule_source_artifacts_truncated).toBe(false);
+        expect(state.graph?.available_source_artifacts).toEqual([
+          {
+            id: 'src:src/app/feed/page.tsx',
+            path: 'src/app/feed/page.tsx',
+            kind: 'route-source',
+          },
+        ]);
+        expect(state.diagnostics?.families).toContain('TOKEN');
+        expect(state.diagnostics?.codes).toEqual(
+          expect.arrayContaining([
+            {
+              code: 'TOKEN010',
+              rule: 'style-bridge-arbitrary-value',
+              repair_id: 'replace-arbitrary-style-with-bridge-token',
+              family: 'TOKEN',
+            },
+          ]),
+        );
+        expect(state.recommended_next_tools).toContain('decantr_get_contract_capsule');
+
+        const capsule = (await handleTool('decantr_get_contract_capsule', {})) as {
+          capsule?: {
+            cache_key?: string;
+            source_artifact_limit?: number;
+            source_artifacts_truncated?: boolean;
+            summary?: { source_artifacts?: number };
+            source_artifacts?: Array<{ id: string; path: string; kind?: string }>;
+          };
+        };
+        expect(capsule.capsule?.cache_key).toBe('decantr-contract:sha256:test');
+        expect(capsule.capsule?.source_artifact_limit).toBe(200);
+        expect(capsule.capsule?.source_artifacts_truncated).toBe(false);
+        expect(capsule.capsule?.summary?.source_artifacts).toBe(1);
+        expect(capsule.capsule?.source_artifacts).toEqual([
+          {
+            id: 'src:src/app/feed/page.tsx',
+            path: 'src/app/feed/page.tsx',
+            kind: 'route-source',
+          },
+        ]);
+
+        const metadata = (await handleTool('decantr_get_graph_snapshot', {
+          include_history: true,
+        })) as {
+          available_routes?: string[];
+          snapshot_history_present?: boolean;
+          snapshot_history_count?: number;
+          history?: Array<{ id: string; source_hash: string }>;
+          diff_summary?: {
+            total: number;
+            findings: { added: number; resolved: number };
+            evidence: { added: number };
+          } | null;
+        };
+        expect(metadata.available_routes).toEqual(['/feed']);
+        expect(metadata.snapshot_history_present).toBe(true);
+        expect(metadata.snapshot_history_count).toBe(2);
+        expect(metadata.history?.map((entry) => entry.id)).toEqual(['graph:test', 'graph:older']);
+        expect(metadata.history?.[0]).toMatchObject({ source_hash: 'sha256:test' });
+        expect(metadata.diff_summary).toMatchObject({
+          total: 2,
+          findings: { added: 1, resolved: 0 },
+          evidence: { added: 1 },
+        });
+
+        const olderSnapshot = (await handleTool('decantr_get_graph_snapshot', {
+          snapshot_id: 'graph:older',
+          include_full: true,
+        })) as {
+          current_snapshot_id?: string;
+          snapshot?: { id: string };
+        };
+        expect(olderSnapshot.current_snapshot_id).toBe('graph:test');
+        expect(olderSnapshot.snapshot?.id).toBe('graph:older');
+
+        const comparedSnapshot = (await handleTool('decantr_get_graph_snapshot', {
+          compare_to: 'graph:older',
+          include_diff_ops: true,
+          limit: 3,
+        })) as {
+          current_snapshot_id?: string;
+          snapshot_id?: string;
+          comparison?: {
+            from: string;
+            to: string;
+            summary: {
+              total: number;
+              nodes: { added: number };
+              edges: { added: number };
+              findings: { added: number };
+            };
+            ops?: unknown[];
+            ops_truncated?: boolean;
+            limit?: number;
+          };
+        };
+        expect(comparedSnapshot.current_snapshot_id).toBe('graph:test');
+        expect(comparedSnapshot.snapshot_id).toBe('graph:test');
+        expect(comparedSnapshot.comparison).toMatchObject({
+          from: 'graph:older',
+          to: 'graph:test',
+          summary: {
+            findings: { added: 1 },
+          },
+        });
+        expect(comparedSnapshot.comparison?.summary.nodes.added).toBeGreaterThanOrEqual(8);
+        expect(comparedSnapshot.comparison?.summary.edges.added).toBeGreaterThanOrEqual(9);
+        expect(comparedSnapshot.comparison?.summary.total).toBeGreaterThan(0);
+        expect(comparedSnapshot.comparison?.ops).toHaveLength(3);
+        expect(comparedSnapshot.comparison?.ops_truncated).toBe(true);
+        expect(comparedSnapshot.comparison?.limit).toBe(3);
+
+        const routeGraph = (await handleTool('decantr_get_graph_snapshot', {
+          route: '/feed',
+        })) as {
+          nodes?: Array<{ id: string }>;
+          ranked?: Array<{ id: string; type: string; score: number; reason: string }>;
+          summary?: { nodes: number };
+        };
+        expect(routeGraph.nodes?.map((node) => node.id)).toEqual(
+          expect.arrayContaining([
+            'rt:/feed',
+            'pg:app:feed',
+            'pat:content-feed',
+            'cmp:recipecard',
+            'rule:no-raw-button',
+            'bridge:surface',
+          ]),
+        );
+        expect(routeGraph.summary?.nodes).toBeGreaterThanOrEqual(6);
+        expect(routeGraph.ranked?.[0]).toEqual({
+          id: 'rt:/feed',
+          type: 'Route',
+          score: 1,
+          reason: 'requested_route',
+        });
+
+        const taskRankedRouteGraph = (await handleTool('decantr_get_graph_snapshot', {
+          route: '/feed',
+          task: 'Repair raw button local law drift.',
+        })) as {
+          ranking?: { method?: string; task_keywords?: string[] };
+          ranked?: Array<{ id: string; reason: string; matched_terms?: string[] }>;
+        };
+        expect(taskRankedRouteGraph.ranking).toMatchObject({
+          method: 'weighted_traversal_with_task_boost',
+          task_keywords: ['repair', 'raw', 'button', 'local', 'law', 'drift'],
+        });
+        expect(
+          taskRankedRouteGraph.ranked?.find((node) => node.id === 'find:check-no-raw-button'),
+        ).toMatchObject({
+          reason: 'open_finding+task_match',
+          matched_terms: ['raw', 'button', 'local', 'law'],
+        });
+
+        const nodeImpactGraph = (await handleTool('decantr_get_graph_snapshot', {
+          node_id: 'cmp:recipecard',
+          task: 'change recipe card surface',
+        })) as {
+          node_id?: string;
+          ranking?: { method?: string; seed?: string[]; task_keywords?: string[] };
+          ids?: { routes?: string[]; pages?: string[]; patterns?: string[]; components?: string[] };
+          ranked?: Array<{ id: string; reason: string; matched_terms?: string[] }>;
+        };
+        expect(nodeImpactGraph.node_id).toBe('cmp:recipecard');
+        expect(nodeImpactGraph.ranking).toMatchObject({
+          method: 'impact_traversal_with_task_boost',
+          seed: ['cmp:recipecard'],
+          task_keywords: ['change', 'recipe', 'card', 'surface'],
+        });
+        expect(nodeImpactGraph.ids?.routes).toEqual(['rt:/feed']);
+        expect(nodeImpactGraph.ids?.pages).toEqual(['pg:app:feed']);
+        expect(nodeImpactGraph.ids?.patterns).toEqual(['pat:content-feed']);
+        expect(nodeImpactGraph.ids?.components).toEqual(['cmp:recipecard']);
+        expect(nodeImpactGraph.ranked?.[0]).toMatchObject({
+          id: 'cmp:recipecard',
+          reason: 'seed_node+task_match',
+          matched_terms: ['recipe', 'card'],
+        });
+
+        const fileImpactGraph = (await handleTool('decantr_get_graph_snapshot', {
+          file_path: 'src/app/feed/page.tsx',
+          task: 'edit feed source',
+        })) as {
+          file_path?: string;
+          resolved_node_ids?: string[];
+          ranking?: { method?: string; seed?: string[]; task_keywords?: string[] };
+          ids?: { routes?: string[]; pages?: string[]; sourceArtifacts?: string[] };
+          ranked?: Array<{ id: string; reason: string; matched_terms?: string[] }>;
+        };
+        expect(fileImpactGraph.file_path).toBe('src/app/feed/page.tsx');
+        expect(fileImpactGraph.resolved_node_ids).toEqual(['src:src/app/feed/page.tsx']);
+        expect(fileImpactGraph.ranking).toMatchObject({
+          method: 'impact_traversal_with_task_boost',
+          seed: ['src:src/app/feed/page.tsx'],
+          task_keywords: ['edit', 'feed', 'source'],
+        });
+        expect(fileImpactGraph.ids?.routes).toEqual(['rt:/feed']);
+        expect(fileImpactGraph.ids?.pages).toEqual(['pg:app:feed']);
+        expect(fileImpactGraph.ids?.sourceArtifacts).toEqual(['src:src/app/feed/page.tsx']);
+        expect(fileImpactGraph.ranked?.[0]).toMatchObject({
+          id: 'src:src/app/feed/page.tsx',
+          reason: 'seed_node+task_match',
+          matched_terms: ['feed', 'source'],
+        });
+
+        const query = (await handleTool('decantr_query_graph', {
+          node_type: 'Route',
+          include_edges: true,
+        })) as {
+          current_snapshot_id?: string;
+          snapshot_id?: string;
+          nodes?: Array<{ id: string }>;
+          edges?: Array<{ relation: string }>;
+        };
+        expect(query.current_snapshot_id).toBe('graph:test');
+        expect(query.snapshot_id).toBe('graph:test');
+        expect(query.nodes?.map((node) => node.id)).toEqual(
+          expect.arrayContaining(['rt:/feed', 'pg:app:feed']),
+        );
+        expect(query.edges?.map((edge) => edge.relation)).toContain('PAGE_ROUTED_AT_ROUTE');
+
+        const historicalQuery = (await handleTool('decantr_query_graph', {
+          snapshot_id: 'graph:older',
+          node_type: 'Route',
+        })) as {
+          current_snapshot_id?: string;
+          snapshot_id?: string;
+          summary?: { nodes: number };
+          nodes?: Array<{ id: string }>;
+        };
+        expect(historicalQuery.current_snapshot_id).toBe('graph:test');
+        expect(historicalQuery.snapshot_id).toBe('graph:older');
+        expect(historicalQuery.summary?.nodes).toBe(0);
+        expect(historicalQuery.nodes).toEqual([]);
+
+        const relationQuery = (await handleTool('decantr_query_graph', {
+          relation: 'PATTERN_NEEDS_COMPONENT',
+        })) as { nodes?: Array<{ id: string }>; edges?: Array<{ src: string; dst: string }> };
+        expect(relationQuery.edges).toEqual([
+          { src: 'pat:content-feed', dst: 'cmp:recipecard', relation: 'PATTERN_NEEDS_COMPONENT' },
+        ]);
+        expect(relationQuery.nodes?.map((node) => node.id)).toEqual(
+          expect.arrayContaining(['pat:content-feed', 'cmp:recipecard']),
+        );
+
+        const impactQuery = (await handleTool('decantr_query_graph', {
+          node_ids: ['cmp:recipecard'],
+          include_impact: true,
+          task: 'change recipe card surface',
+        })) as {
+          impact?: {
+            ranking?: { method?: string; seed?: string[]; task_keywords?: string[] };
+            ids?: { routes?: string[]; pages?: string[]; patterns?: string[]; components?: string[] };
+            ranked?: Array<{ id: string; reason: string; matched_terms?: string[] }>;
+          } | null;
+        };
+        expect(impactQuery.impact?.ranking).toMatchObject({
+          method: 'impact_traversal_with_task_boost',
+          seed: ['cmp:recipecard'],
+          task_keywords: ['change', 'recipe', 'card', 'surface'],
+        });
+        expect(impactQuery.impact?.ids?.routes).toEqual(['rt:/feed']);
+        expect(impactQuery.impact?.ids?.pages).toEqual(['pg:app:feed']);
+        expect(impactQuery.impact?.ids?.patterns).toEqual(['pat:content-feed']);
+        expect(impactQuery.impact?.ids?.components).toEqual(['cmp:recipecard']);
+        expect(impactQuery.impact?.ranked?.[0]).toMatchObject({
+          id: 'cmp:recipecard',
+          reason: 'seed_node+task_match',
+          matched_terms: ['recipe', 'card'],
+        });
+
+        const fileImpactQuery = (await handleTool('decantr_query_graph', {
+          file_path: 'src/app/feed/page.tsx',
+          include_impact: true,
+          task: 'edit feed source',
+        })) as {
+          query?: { file_path?: string; node_ids?: string[] };
+          nodes?: Array<{ id: string }>;
+          impact?: {
+            ranking?: { seed?: string[]; task_keywords?: string[] };
+            ids?: { routes?: string[]; sourceArtifacts?: string[] };
+          } | null;
+        };
+        expect(fileImpactQuery.query?.file_path).toBe('src/app/feed/page.tsx');
+        expect(fileImpactQuery.query?.node_ids).toEqual(['src:src/app/feed/page.tsx']);
+        expect(fileImpactQuery.nodes?.map((node) => node.id)).toEqual([
+          'src:src/app/feed/page.tsx',
+        ]);
+        expect(fileImpactQuery.impact?.ranking).toMatchObject({
+          seed: ['src:src/app/feed/page.tsx'],
+          task_keywords: ['edit', 'feed', 'source'],
+        });
+        expect(fileImpactQuery.impact?.ids?.routes).toEqual(['rt:/feed']);
+        expect(fileImpactQuery.impact?.ids?.sourceArtifacts).toEqual(['src:src/app/feed/page.tsx']);
+
+        const payloadQuery = (await handleTool('decantr_query_graph', {
+          node_type: 'Finding',
+          payload_key: 'code',
+          payload_value: 'RULE001',
+        })) as { nodes?: Array<{ id: string }>; summary?: { nodes: number } };
+        expect(payloadQuery.summary?.nodes).toBe(1);
+        expect(payloadQuery.nodes?.map((node) => node.id)).toEqual(['find:check-no-raw-button']);
+
+        const payloadContainsQuery = (await handleTool('decantr_query_graph', {
+          payload_contains: 'raw button',
+        })) as { nodes?: Array<{ id: string }>; summary?: { nodes: number } };
+        expect(payloadContainsQuery.summary?.nodes).toBe(1);
+        expect(payloadContainsQuery.nodes?.map((node) => node.id)).toEqual([
+          'find:check-no-raw-button',
+        ]);
+
+        const traversal = (await handleTool('decantr_traverse_graph', {
+          from: 'rt:/feed',
+          direction: 'in',
+          relations: ['PAGE_ROUTED_AT_ROUTE'],
+        })) as {
+          current_snapshot_id?: string;
+          snapshot_id?: string;
+          nodes?: Array<{ id: string }>;
+          summary?: { edges: number };
+        };
+        expect(traversal.current_snapshot_id).toBe('graph:test');
+        expect(traversal.snapshot_id).toBe('graph:test');
+        expect(traversal.nodes?.map((node) => node.id)).toEqual(
+          expect.arrayContaining(['rt:/feed', 'pg:app:feed']),
+        );
+        expect(traversal.summary?.edges).toBe(1);
+
+        const fileTraversal = (await handleTool('decantr_traverse_graph', {
+          file_path: 'src/app/feed/page.tsx',
+          direction: 'in',
+          relations: ['NODE_DERIVED_FROM_SOURCE'],
+        })) as {
+          traversal?: { file_path?: string; resolved_node_ids?: string[]; direction?: string };
+          nodes?: Array<{ id: string }>;
+          edges?: Array<{ src: string; dst: string; relation: string }>;
+        };
+        expect(fileTraversal.traversal).toMatchObject({
+          file_path: 'src/app/feed/page.tsx',
+          resolved_node_ids: ['src:src/app/feed/page.tsx'],
+          direction: 'in',
+        });
+        expect(fileTraversal.nodes?.map((node) => node.id)).toEqual(
+          expect.arrayContaining(['src:src/app/feed/page.tsx', 'rt:/feed', 'pg:app:feed']),
+        );
+        expect(fileTraversal.edges).toEqual(
+          expect.arrayContaining([
+            {
+              src: 'rt:/feed',
+              dst: 'src:src/app/feed/page.tsx',
+              relation: 'NODE_DERIVED_FROM_SOURCE',
+            },
+            {
+              src: 'pg:app:feed',
+              dst: 'src:src/app/feed/page.tsx',
+              relation: 'NODE_DERIVED_FROM_SOURCE',
+            },
+          ]),
+        );
+
+        const historicalTraversal = (await handleTool('decantr_traverse_graph', {
+          snapshot_id: 'graph:older',
+          from: 'rt:/feed',
+        })) as { error?: string; snapshot_id?: string; available_routes?: string[] };
+        expect(historicalTraversal.error).toContain('Start node not found');
+        expect(historicalTraversal.snapshot_id).toBe('graph:older');
+        expect(historicalTraversal.available_routes).toEqual([]);
+
+        writeJson(join(projectDir, '.decantr', 'evidence', 'latest.json'), {
+          ...evidenceBundle,
+          findings: evidenceBundle.findings.map((finding) => ({
+            ...finding,
+            repairPlan: {
+              ...finding.repairPlan,
+              readTargets: ['src/app/feed/other-page.tsx'],
+            },
+          })),
+          generatedAt: '2026-05-21T14:02:00.000Z',
+        });
+        const staleState = (await handleTool('decantr_get_project_state', {})) as {
+          graph?: {
+            current?: boolean | null;
+            stale_sources?: Array<{ path: string }>;
+          };
+        };
+        expect(staleState.graph?.current).toBe(false);
+        expect(staleState.graph?.stale_sources?.map((source) => source.path)).toContain(
+          '.decantr/evidence/latest.json',
+        );
+      } finally {
+        rmSync(projectDir, { recursive: true, force: true });
+      }
     });
   });
 
@@ -146,6 +1170,71 @@ describe('MCP tool handlers', () => {
       });
 
       expect(result).toHaveProperty('error');
+    });
+
+    it('prepares task context for a project_path from the workspace root', async () => {
+      const workspaceDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-context-workspace-'));
+      try {
+        const projectDir = join(workspaceDir, 'apps', 'web');
+        mkdirSync(projectDir, { recursive: true });
+        process.chdir(workspaceDir);
+        writeJson(join(projectDir, 'decantr.essence.json'), {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'light' },
+            spacing: { base_unit: 4, scale: 'linear', density: 'comfortable', content_gap: '4' },
+            typography: { scale: 'system', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'existing', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'existing', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['focused'],
+          },
+          blueprint: {
+            features: ['home'],
+            sections: [
+              {
+                id: 'app',
+                role: 'primary',
+                shell: 'app',
+                features: ['home'],
+                description: 'App',
+                pages: [{ id: 'home', route: '/', layout: ['content-feed'] }],
+              },
+            ],
+            routes: { '/': { section: 'app', page: 'home' } },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+          },
+        });
+
+        const result = (await handleTool('decantr_prepare_task_context', {
+          project_path: 'apps/web',
+          route: '/',
+          task: 'tighten home loading',
+        })) as {
+          route?: string | null;
+          page_id?: string;
+          section_id?: string;
+          typed_graph?: unknown;
+          verify_command?: string;
+        };
+
+        expect(result.route).toBe('/');
+        expect(result.page_id).toBe('home');
+        expect(result.section_id).toBe('app');
+        expect(result.typed_graph).toBeNull();
+        expect(result.verify_command).toBe(
+          'decantr verify --project apps/web --brownfield --local-patterns',
+        );
+      } finally {
+        rmSync(workspaceDir, { recursive: true, force: true });
+      }
     });
 
     it('prepares compact task context with packs, evidence, health, and theme inventory', async () => {
@@ -300,6 +1389,109 @@ describe('MCP tool handlers', () => {
             },
           ],
         });
+        mkdirSync(join(projectDir, 'src', 'app', 'feed'), { recursive: true });
+        writeFileSync(
+          join(projectDir, 'src', 'app', 'feed', 'page.tsx'),
+          'export default function FeedPage() { return <main>Feed</main>; }\n',
+          'utf-8',
+        );
+        execFileSync('git', ['init'], { cwd: projectDir, stdio: 'ignore' });
+        execFileSync('git', ['config', 'user.email', 'test@example.com'], {
+          cwd: projectDir,
+          stdio: 'ignore',
+        });
+        execFileSync('git', ['config', 'user.name', 'Decantr Test'], {
+          cwd: projectDir,
+          stdio: 'ignore',
+        });
+        execFileSync('git', ['add', '.'], { cwd: projectDir, stdio: 'ignore' });
+        execFileSync('git', ['commit', '-m', 'baseline'], { cwd: projectDir, stdio: 'ignore' });
+        writeFileSync(
+          join(projectDir, 'src', 'app', 'feed', 'page.tsx'),
+          'export default function FeedPage() { return <main>Feed changed</main>; }\n',
+          'utf-8',
+        );
+        mkdirSync(join(projectDir, '.decantr', 'graph'), { recursive: true });
+        writeJson(join(projectDir, '.decantr', 'graph', 'contract-capsule.json'), {
+          schema_version: '3.0.0-draft',
+          snapshot_id: 'graph:task',
+          project_id: 'proj:default',
+          created_at: '2026-05-21T00:00:00.000Z',
+          source_hash: 'sha256:task',
+          contract_hash: 'fnv1a32:task',
+          cache_key: 'decantr-contract:fnv1a32:task',
+          contract_cache_key: 'decantr-contract:fnv1a32:task',
+          summary: {
+            routes: 1,
+            components: 1,
+            tokens: 0,
+            local_rules: 1,
+            style_bridge: 0,
+            source_artifacts: 1,
+            open_findings: 0,
+          },
+          source_artifact_limit: 200,
+          source_artifacts_truncated: false,
+          routes: [{ id: 'rt:/feed', path: '/feed', page_id: 'pg:app:feed' }],
+          components: [{ id: 'cmp:recipecard', label: 'RecipeCard' }],
+          tokens: [],
+          local_rules: [{ id: 'rule:no-inline-style' }],
+          style_bridge: [],
+          source_artifacts: [
+            {
+              id: 'src:src/app/feed/page.tsx',
+              path: 'src/app/feed/page.tsx',
+              kind: 'route-source',
+            },
+          ],
+          open_findings: [],
+        });
+        writeJson(join(projectDir, '.decantr', 'graph', 'graph.snapshot.json'), {
+          id: 'graph:task',
+          schema_version: '3.0.0-draft',
+          project_id: 'proj:default',
+          created_at: '2026-05-21T00:00:00.000Z',
+          source_hash: 'sha256:task',
+          nodes: [
+            { id: 'rt:/feed', type: 'Route', payload: { path: '/feed' } },
+            { id: 'pg:app:feed', type: 'Page', payload: { id: 'feed' } },
+            { id: 'sh:top-nav-footer', type: 'Shell', payload: { id: 'top-nav-footer' } },
+            { id: 'pat:content-feed', type: 'Pattern', payload: { id: 'content-feed' } },
+            { id: 'cmp:recipecard', type: 'Component', payload: { name: 'RecipeCard' } },
+            {
+              id: 'src:src/app/feed/page.tsx',
+              type: 'SourceArtifact',
+              payload: {
+                id: 'src:src/app/feed/page.tsx',
+                kind: 'route-source',
+                path: 'src/app/feed/page.tsx',
+              },
+            },
+            {
+              id: 'rule:no-inline-style',
+              type: 'LocalRule',
+              payload: { id: 'no-inline-style' },
+            },
+          ],
+          edges: [
+            { src: 'pg:app:feed', dst: 'rt:/feed', relation: 'PAGE_ROUTED_AT_ROUTE' },
+            { src: 'pg:app:feed', dst: 'sh:top-nav-footer', relation: 'PAGE_USES_SHELL' },
+            { src: 'pg:app:feed', dst: 'pat:content-feed', relation: 'PAGE_COMPOSES_PATTERN' },
+            { src: 'pat:content-feed', dst: 'cmp:recipecard', relation: 'PATTERN_NEEDS_COMPONENT' },
+            {
+              src: 'rt:/feed',
+              dst: 'src:src/app/feed/page.tsx',
+              relation: 'NODE_DERIVED_FROM_SOURCE',
+            },
+            {
+              src: 'pg:app:feed',
+              dst: 'src:src/app/feed/page.tsx',
+              relation: 'NODE_DERIVED_FROM_SOURCE',
+            },
+            { src: 'rule:no-inline-style', dst: 'proj:default', relation: 'LOCAL_RULE_APPLIES_TO' },
+          ],
+          summary: { nodes: 7, edges: 7, findings: 0, evidence: 0 },
+        });
 
         const result = (await handleTool('decantr_prepare_task_context', {
           route: '/feed',
@@ -334,8 +1526,31 @@ describe('MCP tool handlers', () => {
             warnings: string[];
           };
           change_impact: { changed_file_count: number; impacted_routes: string[] };
+          typed_graph: {
+            snapshot_id: string;
+            contract: { contract_cache_key: string };
+            route_context: {
+              ranking: { method: string; task_keywords: string[] };
+              ids: { patterns: string[]; components: string[] };
+              ranked: Array<{ id: string; reason: string; matched_terms?: string[] }>;
+              summary: { nodes: number };
+            };
+            changed_file_context: {
+              changed_files: string[];
+              resolved_node_ids: string[];
+              impact: {
+                ids: { routes: string[]; sourceArtifacts: string[] };
+                ranked: Array<{ id: string; reason: string; matched_terms?: string[] }>;
+              } | null;
+            };
+          };
           verify_command: string;
-          local_files: { visual_manifest: string; local_patterns: string; local_rules: string };
+          local_files: {
+            graph_snapshot: string;
+            visual_manifest: string;
+            local_patterns: string;
+            local_rules: string;
+          };
         };
 
         expect(result.route).toBe('/feed');
@@ -363,10 +1578,452 @@ describe('MCP tool handlers', () => {
         expect(result.authority.active_authorities).toContain('accepted local patterns/rules');
         expect(result.authority.source_authority).toContain('accepted project-owned UI law');
         expect(result.change_impact.changed_file_count).toBeGreaterThanOrEqual(0);
+        expect(result.typed_graph.snapshot_id).toBe('graph:task');
+        expect(result.typed_graph.contract.contract_cache_key).toBe(
+          'decantr-contract:fnv1a32:task',
+        );
+        expect(result.typed_graph.route_context.ids.patterns).toContain('pat:content-feed');
+        expect(result.typed_graph.route_context.ids.components).toContain('cmp:recipecard');
+        expect(result.typed_graph.route_context.ranking).toMatchObject({
+          method: 'weighted_traversal_with_task_boost',
+          task_keywords: ['improve', 'recipe', 'feed', 'loading'],
+        });
+        expect(result.typed_graph.route_context.ranked[0]).toMatchObject({
+          id: 'rt:/feed',
+          reason: 'requested_route+task_match',
+          matched_terms: ['feed'],
+        });
+        expect(result.typed_graph.changed_file_context.changed_files).toContain(
+          'src/app/feed/page.tsx',
+        );
+        expect(result.typed_graph.changed_file_context.resolved_node_ids).toEqual([
+          'src:src/app/feed/page.tsx',
+        ]);
+        expect(result.typed_graph.changed_file_context.impact?.ids.routes).toEqual(['rt:/feed']);
+        expect(result.typed_graph.changed_file_context.impact?.ids.sourceArtifacts).toEqual([
+          'src:src/app/feed/page.tsx',
+        ]);
         expect(result.verify_command).toBe('decantr verify --brownfield --local-patterns');
+        expect(result.local_files.graph_snapshot).toBe('.decantr/graph/graph.snapshot.json');
         expect(result.local_files.visual_manifest).toBe('.decantr/evidence/visual-manifest.json');
         expect(result.local_files.local_patterns).toBe('.decantr/local-patterns.json');
         expect(result.local_files.local_rules).toBe('.decantr/rules.json');
+      } finally {
+        rmSync(projectDir, { recursive: true, force: true });
+      }
+    });
+
+    it('preserves component reuse repair payloads in evidence bundles', async () => {
+      const projectDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-component-reuse-'));
+      try {
+        process.chdir(projectDir);
+        writeJson(join(projectDir, 'decantr.essence.json'), {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'system', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'existing', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'existing', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: false },
+            personality: ['observed app'],
+          },
+          blueprint: {
+            features: [],
+            sections: [
+              {
+                id: 'app',
+                role: 'primary',
+                shell: 'observed-existing-shell',
+                features: [],
+                description: 'Existing app',
+                pages: [{ id: 'home', route: '/', layout: ['existing-surface'] }],
+              },
+            ],
+            routes: { '/': { section: 'app', page: 'home' } },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+          },
+        });
+        mkdirSync(join(projectDir, 'src', 'components', 'ui'), { recursive: true });
+        mkdirSync(join(projectDir, 'src', 'app', 'dashboard'), { recursive: true });
+        mkdirSync(join(projectDir, 'src', 'app', 'settings'), { recursive: true });
+        writeFileSync(
+          join(projectDir, 'src', 'components', 'ui', 'Button.tsx'),
+          'export function Button() { return <button />; }\n',
+          'utf-8',
+        );
+        writeFileSync(
+          join(projectDir, 'src', 'app', 'dashboard', 'page.tsx'),
+          'function Button() { return <button />; }\nexport function DashboardPage() { return <Button />; }\n',
+          'utf-8',
+        );
+        writeFileSync(
+          join(projectDir, 'src', 'app', 'settings', 'page.tsx'),
+          'export function SettingsPage() { return <button type="button">Save</button>; }\n',
+          'utf-8',
+        );
+
+        const evidence = (await handleTool('decantr_get_evidence_bundle', {})) as {
+          provenance?: {
+            graphSnapshot?: { present?: boolean; path?: string };
+            contractCapsule?: { present?: boolean; path?: string };
+          };
+          findings: Array<{
+            code?: string;
+            repair?: { id: string; payload?: Record<string, unknown> };
+          }>;
+        };
+        const finding = evidence.findings.find((entry) => entry.code === 'COMP001');
+
+        expect(finding?.repair).toMatchObject({
+          id: 'import-existing-component',
+          payload: {
+            component: 'Button',
+            file: 'src/app/dashboard/page.tsx',
+            canonical_file: 'src/components/ui/Button.tsx',
+          },
+        });
+        expect(evidence.provenance?.graphSnapshot).toMatchObject({
+          path: '.decantr/graph/graph.snapshot.json',
+          present: false,
+        });
+        expect(evidence.provenance?.contractCapsule).toMatchObject({
+          path: '.decantr/graph/contract-capsule.json',
+          present: false,
+        });
+
+        const findings = (await handleTool('decantr_get_findings', {
+          code: 'COMP001',
+        })) as {
+          findings: Array<{
+            code?: string;
+            remediation?: { prompt?: string; commands?: string[] };
+            repair?: { id: string };
+          }>;
+          summary?: { matched_findings: number };
+        };
+        expect(findings.summary?.matched_findings).toBe(1);
+        expect(findings.findings[0]).toMatchObject({
+          code: 'COMP001',
+          repair: { id: 'import-existing-component' },
+        });
+        expect(findings.findings[0]?.remediation?.prompt).toBeUndefined();
+        expect(findings.findings[0]?.remediation?.commands?.length).toBeGreaterThan(0);
+
+        const repairPlan = (await handleTool('decantr_get_repair_plan', {
+          code: 'COMP001',
+        })) as {
+          finding?: { code?: string };
+          plan?: {
+            repair_id?: string | null;
+            actions?: Array<{ kind?: string; payload?: Record<string, unknown> }>;
+            read_targets?: string[];
+            prompt?: string;
+          };
+        };
+        expect(repairPlan.finding?.code).toBe('COMP001');
+        expect(repairPlan.plan?.repair_id).toBe('import-existing-component');
+        expect(repairPlan.plan?.actions?.[0]).toMatchObject({
+          kind: 'replace_duplicate_with_import',
+          payload: {
+            component: 'Button',
+            file: 'src/app/dashboard/page.tsx',
+            canonical_file: 'src/components/ui/Button.tsx',
+          },
+        });
+        expect(repairPlan.plan?.read_targets).toEqual(
+          expect.arrayContaining(['DECANTR.md', 'decantr.essence.json', 'src/app/dashboard/page.tsx']),
+        );
+        expect(repairPlan.plan?.prompt).toBeUndefined();
+
+        const rawControlRepairPlan = (await handleTool('decantr_get_repair_plan', {
+          code: 'COMP010',
+        })) as {
+          plan?: {
+            repair_id?: string | null;
+            actions?: Array<{ kind?: string; payload?: Record<string, unknown> }>;
+          };
+        };
+        expect(rawControlRepairPlan.plan?.repair_id).toBe(
+          'replace-raw-control-with-local-component',
+        );
+        expect(rawControlRepairPlan.plan?.actions?.[0]).toMatchObject({
+          kind: 'replace_raw_control_with_component',
+          payload: {
+            component: 'Button',
+            element: 'button',
+            file: 'src/app/settings/page.tsx',
+            canonical_file: 'src/components/ui/Button.tsx',
+          },
+        });
+      } finally {
+        rmSync(projectDir, { recursive: true, force: true });
+      }
+    });
+
+    it('returns style bridge drift findings and typed repair plans', async () => {
+      const projectDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-style-bridge-'));
+      try {
+        process.chdir(projectDir);
+        writeJson(join(projectDir, 'decantr.essence.json'), {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'system', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'existing', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'existing', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: false },
+            personality: ['observed app'],
+          },
+          blueprint: {
+            features: [],
+            sections: [
+              {
+                id: 'app',
+                role: 'primary',
+                shell: 'observed-existing-shell',
+                features: [],
+                description: 'Existing app',
+                pages: [{ id: 'home', route: '/', layout: ['existing-surface'] }],
+              },
+            ],
+            routes: { '/': { section: 'app', page: 'home' } },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+          },
+        });
+        mkdirSync(join(projectDir, '.decantr'), { recursive: true });
+        writeJson(join(projectDir, '.decantr', 'style-bridge.json'), {
+          version: 1,
+          status: 'accepted',
+          mappings: [
+            {
+              id: 'bridge:surface',
+              tokenHints: ['--color-surface', '--color-foreground'],
+              classHints: ['bg-background', 'text-foreground'],
+            },
+          ],
+        });
+        mkdirSync(join(projectDir, '.decantr', 'graph'), { recursive: true });
+        writeJson(join(projectDir, '.decantr', 'graph', 'graph.snapshot.json'), {
+          id: 'graph:style-bridge',
+          schema_version: '3.0.0-draft',
+          project_id: 'proj:default',
+          created_at: '2026-05-21T00:00:00.000Z',
+          source_hash: 'sha256:style-bridge',
+          nodes: [
+            { id: 'proj:default', type: 'Project', payload: { id: 'default' } },
+            { id: 'rt:/', type: 'Route', payload: { path: '/' } },
+            { id: 'pg:app:home', type: 'Page', payload: { id: 'home', section: 'app' } },
+            { id: 'sh:observed-existing-shell', type: 'Shell', payload: { id: 'observed-existing-shell' } },
+            { id: 'pat:existing-surface', type: 'Pattern', payload: { id: 'existing-surface' } },
+            { id: 'bridge:surface', type: 'StyleBridge', payload: { id: 'bridge:surface' } },
+            { id: 'tkn:color-surface', type: 'Token', payload: { name: '--color-surface' } },
+          ],
+          edges: [
+            { src: 'pg:app:home', dst: 'rt:/', relation: 'PAGE_ROUTED_AT_ROUTE' },
+            { src: 'pg:app:home', dst: 'sh:observed-existing-shell', relation: 'PAGE_USES_SHELL' },
+            { src: 'pg:app:home', dst: 'pat:existing-surface', relation: 'PAGE_COMPOSES_PATTERN' },
+            { src: 'bridge:surface', dst: 'proj:default', relation: 'STYLE_BRIDGE_MAPS_TO' },
+            { src: 'bridge:surface', dst: 'tkn:color-surface', relation: 'STYLE_BRIDGE_MAPS_TO' },
+          ],
+          summary: { nodes: 7, edges: 5, findings: 0, evidence: 0 },
+        });
+        mkdirSync(join(projectDir, 'src', 'app', 'dashboard'), { recursive: true });
+        writeFileSync(
+          join(projectDir, 'src', 'app', 'dashboard', 'page.tsx'),
+          'import { cn } from "@/lib/utils";\nexport function DashboardPage() { return <main className={cn("bg-[#0f172a]")}>Dashboard</main>; }\n',
+          'utf-8',
+        );
+
+        const findings = (await handleTool('decantr_get_findings', {
+          source: 'style-bridge',
+          code: 'TOKEN010',
+        })) as {
+          findings: Array<{
+            code?: string;
+            source?: string;
+            repair?: { id?: string; payload?: Record<string, unknown> };
+          }>;
+          summary?: { matched_findings: number };
+        };
+
+        expect(findings.summary?.matched_findings).toBe(1);
+        expect(findings.findings[0]).toMatchObject({
+          code: 'TOKEN010',
+          source: 'style-bridge',
+          repair: {
+            id: 'replace-arbitrary-style-with-bridge-token',
+            payload: {
+              file: 'src/app/dashboard/page.tsx',
+              value: 'bg-[#0f172a]',
+              bridge_mappings: ['bridge:surface'],
+            },
+          },
+        });
+
+        const repairPlan = (await handleTool('decantr_get_repair_plan', {
+          code: 'TOKEN010',
+        })) as {
+          plan?: {
+            repair_id?: string | null;
+            graph_anchor?: { node_id?: string };
+            impact_context?: {
+              summary?: { routes?: number; tokens?: number };
+              ids?: { routes?: string[]; tokens?: string[]; styleBridge?: string[] };
+            } | null;
+            actions?: Array<{ kind?: string; payload?: Record<string, unknown> }>;
+            read_targets?: string[];
+            commands?: string[];
+          };
+        };
+        expect(repairPlan.plan?.repair_id).toBe('replace-arbitrary-style-with-bridge-token');
+        expect(repairPlan.plan?.graph_anchor?.node_id).toBe('bridge:surface');
+        expect(repairPlan.plan?.impact_context?.ids?.routes).toEqual(['rt:/']);
+        expect(repairPlan.plan?.impact_context?.ids?.tokens).toEqual(['tkn:color-surface']);
+        expect(repairPlan.plan?.impact_context?.ids?.styleBridge).toEqual(['bridge:surface']);
+        expect(repairPlan.plan?.impact_context?.summary).toMatchObject({ routes: 1, tokens: 1 });
+        expect(repairPlan.plan?.actions?.[0]).toMatchObject({
+          kind: 'replace_arbitrary_style_with_bridge_token',
+          payload: {
+            file: 'src/app/dashboard/page.tsx',
+            value: 'bg-[#0f172a]',
+            bridge_mappings: ['bridge:surface'],
+          },
+        });
+        expect(repairPlan.plan?.read_targets).toEqual(
+          expect.arrayContaining([
+            'DECANTR.md',
+            'decantr.essence.json',
+            '.decantr/style-bridge.json',
+            'src/app/dashboard/page.tsx',
+          ]),
+        );
+        expect(repairPlan.plan?.commands).toContain('decantr codify --style-bridge');
+      } finally {
+        rmSync(projectDir, { recursive: true, force: true });
+      }
+    });
+
+    it('surfaces missing typed graph artifacts as typed MCP findings and repair plans', async () => {
+      const projectDir = mkdtempSync(join(tmpdir(), 'decantr-mcp-graph-health-'));
+      try {
+        process.chdir(projectDir);
+        mkdirSync(join(projectDir, '.decantr'), { recursive: true });
+        writeJson(join(projectDir, '.decantr', 'project.json'), {
+          workflowMode: 'brownfield-attach',
+          adoptionMode: 'contract-only',
+        });
+        writeJson(join(projectDir, 'decantr.essence.json'), {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'system', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'existing', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'existing', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: false },
+            personality: ['observed app'],
+          },
+          blueprint: {
+            features: [],
+            sections: [
+              {
+                id: 'app',
+                role: 'primary',
+                shell: 'observed-existing-shell',
+                features: [],
+                description: 'Existing app',
+                pages: [{ id: 'home', route: '/', layout: ['existing-surface'] }],
+              },
+            ],
+            routes: { '/': { section: 'app', page: 'home' } },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+          },
+        });
+
+        const findings = (await handleTool('decantr_get_findings', {
+          code: 'GRAPH001',
+        })) as {
+          findings: Array<{
+            code?: string;
+            repair?: { id?: string };
+            source?: string;
+          }>;
+          summary?: { matched_findings: number };
+        };
+
+        expect(findings.summary?.matched_findings).toBe(1);
+        expect(findings.findings[0]).toMatchObject({
+          code: 'GRAPH001',
+          source: 'graph',
+          repair: { id: 'regenerate-typed-graph' },
+        });
+
+        const evidence = (await handleTool('decantr_get_evidence_bundle', {})) as {
+          provenance?: {
+            graphSnapshot?: { present?: boolean };
+            graphManifest?: { present?: boolean };
+            graphDiff?: { present?: boolean };
+            contractCapsule?: { present?: boolean };
+          };
+        };
+        expect(evidence.provenance?.graphSnapshot?.present).toBe(false);
+        expect(evidence.provenance?.graphManifest?.present).toBe(false);
+        expect(evidence.provenance?.graphDiff?.present).toBe(false);
+        expect(evidence.provenance?.contractCapsule?.present).toBe(false);
+
+        const repairPlan = (await handleTool('decantr_get_repair_plan', {
+          code: 'GRAPH001',
+        })) as {
+          plan?: {
+            repair_id?: string | null;
+            actions?: Array<{ kind?: string; target?: string }>;
+            commands?: string[];
+          };
+        };
+        expect(repairPlan.plan?.repair_id).toBe('regenerate-typed-graph');
+        expect(repairPlan.plan?.actions?.[0]).toMatchObject({
+          kind: 'regenerate_artifact',
+          target: '.decantr/graph',
+        });
+        expect(repairPlan.plan?.commands).toContain('decantr graph');
       } finally {
         rmSync(projectDir, { recursive: true, force: true });
       }

@@ -71,6 +71,15 @@ function classifyEntry(entry, npmResult) {
     };
   }
 
+  if (entry.recommendedAction === 'publish-next') {
+    return {
+      status: npmFindings.length > 0 ? 'prerelease-needs-npm-normalization' : 'prerelease-live',
+      nextStep: npmFindings.length > 0
+        ? describeNpmFinding(npmResult, npmFindings[0])
+        : 'Continue publishing preview builds under npm `next` until the major line is ready to graduate.',
+    };
+  }
+
   if (entry.maturity === 'stable') {
     return {
       status: npmFindings.length > 0 ? 'stable-needs-npm-normalization' : 'stable-live',
@@ -157,6 +166,7 @@ function escapeMarkdownCell(value) {
 }
 
 const stableNow = packages.filter((entry) => entry.graduationStatus === 'stable-live' || entry.graduationStatus === 'stable-needs-npm-normalization');
+const prereleaseNow = packages.filter((entry) => entry.graduationStatus === 'prerelease-live' || entry.graduationStatus === 'prerelease-needs-npm-normalization');
 const internalOnly = packages.filter((entry) => entry.graduationStatus === 'internal-only');
 const blocked = packages.filter((entry) => entry.graduationStatus === 'blocked-contract' || entry.graduationStatus === 'blocked-contract-and-npm' || entry.graduationStatus === 'blocked-npm' || entry.graduationStatus === 'policy-review');
 const experimentalOrRetired = packages.filter((entry) => entry.graduationStatus === 'experimental-hold' || entry.graduationStatus === 'retired');
@@ -166,6 +176,7 @@ const markdownLines = [
   '',
   `- Generated at: ${output.generatedAt}`,
   `- Stable now: ${stableNow.length}`,
+  `- Prerelease now: ${prereleaseNow.length}`,
   `- Internal only: ${internalOnly.length}`,
   `- Still blocked: ${blocked.length}`,
   `- Experimental or retired: ${experimentalOrRetired.length}`,
@@ -193,6 +204,18 @@ if (stableNow.length === 0) {
   for (const entry of stableNow) {
     markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
     markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
+    markdownLines.push(`  - next step: ${entry.nextStep}`);
+  }
+}
+
+markdownLines.push('', '## Prerelease Now');
+if (prereleaseNow.length === 0) {
+  markdownLines.push('- none');
+} else {
+  for (const entry of prereleaseNow) {
+    markdownLines.push(`- \`${entry.name}\` (${entry.graduationStatus})`);
+    markdownLines.push(`  - current version: ${entry.version ?? 'unknown'}`);
+    markdownLines.push(`  - channel: ${entry.releaseChannel ?? 'unknown'}`);
     markdownLines.push(`  - next step: ${entry.nextStep}`);
   }
 }

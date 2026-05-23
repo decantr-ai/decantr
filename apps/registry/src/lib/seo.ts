@@ -74,7 +74,7 @@ export function getContentDescription(content: Pick<ContentItem, 'description'> 
   if (isRecord(content.data) && typeof content.data.description === 'string') {
     return content.data.description;
   }
-  return 'A Decantr registry contract for AI-generated UI workflows.';
+  return 'A Decantr vocabulary contract for AI Frontend Governance workflows.';
 }
 
 export function buildRegistrySiteJsonLd() {

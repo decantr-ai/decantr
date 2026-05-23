@@ -1,14 +1,16 @@
 {
   "name": "@decantr/core",
-  "version": "2.1.0",
-  "description": "Decantr core — execution-pack compiler primitives and shared Decantr utilities",
+  "version": "3.0.0-next.0",
+  "description": "Decantr core — execution-pack, typed graph, and Contract capsule primitives",
   "keywords": [
     "decantr",
     "decantr-ai",
     "ai-coding",
-    "ai-generated-ui",
-    "design-intelligence",
+    "frontend-governance",
+    "ai-frontend-governance",
     "design-contracts",
+    "typed-graph",
+    "contract-capsule",
     "execution-packs",
     "ui-generation",
     "scaffolding"
@@ -40,7 +42,12 @@
     "./schema/review-pack.v1.json": "./schema/review-pack.v1.json",
     "./schema/pack-manifest.v1.json": "./schema/pack-manifest.v1.json",
     "./schema/execution-pack-bundle.v1.json": "./schema/execution-pack-bundle.v1.json",
-    "./schema/selected-execution-pack.v1.json": "./schema/selected-execution-pack.v1.json"
+    "./schema/selected-execution-pack.v1.json": "./schema/selected-execution-pack.v1.json",
+    "./schema/graph.common.v1.json": "./schema/graph.common.v1.json",
+    "./schema/graph-snapshot.v1.json": "./schema/graph-snapshot.v1.json",
+    "./schema/graph-manifest.v1.json": "./schema/graph-manifest.v1.json",
+    "./schema/graph-diff.v1.json": "./schema/graph-diff.v1.json",
+    "./schema/contract-capsule.v1.json": "./schema/contract-capsule.v1.json"
   },
   "files": [
     "dist",
