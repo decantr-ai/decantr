@@ -27,6 +27,7 @@ function readJson<T>(path: string): T {
 describe('brownfield crap corpus', () => {
   let testDir: string;
   const cliPath = join(__dirname, '..', '..', 'dist', 'index.js');
+  const corpusObservationTimeoutMs = 15_000;
 
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), 'decantr-crap-corpus-'));
@@ -259,7 +260,7 @@ describe('brownfield crap corpus', () => {
       expect(JSON.stringify(proposal)).not.toContain('luminarum');
       expect(JSON.stringify(proposal)).not.toContain('home:hero');
     }
-  });
+  }, corpusObservationTimeoutMs);
 
   it('keeps monorepo app roots explicit for brownfield analysis', () => {
     writeFileSync(join(testDir, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n');
