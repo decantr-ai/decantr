@@ -49,7 +49,7 @@
     "schema"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19.0"
   },
   "publishConfig": {
     "access": "public"
@@ -64,7 +64,7 @@
   "dependencies": {
     "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
-    "entities": "^6.0.1",
+    "entities": "^8.0.0",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

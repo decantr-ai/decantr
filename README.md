@@ -122,7 +122,7 @@ Showcase capsule architecture is documented in [docs/reference/showcase-host.md]
 
 ## Development
 
-Requires **Node.js `>=20`** and **pnpm `>=9`**.
+Requires **Node.js `>=20.19.0`** and **pnpm `>=9`**.
 
 ```bash
 pnpm install
