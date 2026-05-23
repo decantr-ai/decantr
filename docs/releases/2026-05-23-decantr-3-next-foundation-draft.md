@@ -1,10 +1,11 @@
-# Decantr 3 Next Foundation Draft
+# Decantr 3 Next Foundation
 
 Date: 2026-05-23
-Status: Draft only; not published
-Intended channel: `3.0.0-next.0` on npm `next`
+Status: Published prerelease
+Version: `3.0.0-next.0`
+Channel: npm `next`
 
-This is the draft release note for the Decantr 3 typed graph foundation. It records the local release structure and expected package channel, but it is not evidence of a completed release.
+Decantr `3.0.0-next.0` is the first published Decantr 3 foundation prerelease. It ships the typed graph substrate and governance-first product framing while keeping the 2.x line on npm `latest`.
 
 ## Positioning
 
@@ -22,10 +23,21 @@ Decantr 3 is the AI Frontend Governance line for existing applications. It cente
 ## Release Guardrails
 
 - 2.x remains the live `latest` line until explicit flip criteria are met.
-- Decantr 3 preview packages should publish under npm `next`.
-- Publishing, tags, pushes, hosted deployment, and live registry sync remain blocked until maintainer approval.
+- Decantr 3 preview packages are published under npm `next`.
+- Live registry sync remains separate from npm package publishing and still requires explicit maintainer approval.
 
-## Validation Required Before Publish
+## Published Packages
+
+- `@decantr/essence-spec@3.0.0-next.0`
+- `@decantr/registry@3.0.0-next.0`
+- `@decantr/css@3.0.0-next.0`
+- `@decantr/core@3.0.0-next.0`
+- `@decantr/telemetry@3.0.0-next.0`
+- `@decantr/verifier@3.0.0-next.0`
+- `@decantr/mcp-server@3.0.0-next.0`
+- `@decantr/cli@3.0.0-next.0`
+
+## Verification
 
 ```bash
 pnpm run build:packages
@@ -35,12 +47,18 @@ pnpm audit:docs-marketing
 pnpm audit:package-surface
 pnpm audit:public-api
 pnpm seo:docs-sitemap
-git diff --check
+pnpm release:preflight -- --tag next
+pnpm release:verify -- --tag next
+pnpm release:closeout -- --tag next --version 3.0.0-next.0
 ```
 
 For `decantr-content`:
 
 ```bash
 npm run validate
-git diff --check
+npm run registry:v2-certify
+npm run content:health:json
+npm run content:health:suppressions
+npm run registry:audit -- --report-json=./registry-drift-report.json --summary-markdown=./registry-drift-summary.md
+npm run release:closeout
 ```
