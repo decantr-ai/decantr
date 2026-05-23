@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/graph-manifest.v1.json",
+  "title": "Decantr Typed Graph Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "project_id",
+    "generated_at",
+    "sources",
+    "outputs",
+    "warnings"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/graph-manifest.v1.json"
+    },
+    "schema_version": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/schemaVersion"
+    },
+    "snapshot_id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "project_id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "generated_at": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/sourceArtifact"
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["snapshot"],
+      "properties": {
+        "sqlite": {
+          "type": "string"
+        },
+        "snapshot": {
+          "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+        },
+        "history": {
+          "type": "string"
+        },
+        "diff": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "message": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

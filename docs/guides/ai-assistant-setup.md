@@ -1,6 +1,6 @@
 # Decantr With AI Coding Assistants
 
-Decantr gives AI coding assistants a contract, scoped context, registry-backed UI knowledge, and verification commands. The assistant still writes the code; Decantr gives it better inputs and a way to check drift.
+Decantr gives AI coding assistants a contract, scoped context, optional certified vocabulary, and verification commands. The assistant still writes the code; Decantr gives it better inputs and a way to check drift.
 
 ## MCP Server
 
@@ -10,7 +10,7 @@ Use the MCP server when your editor or agent supports MCP tools:
 npx @decantr/mcp-server
 ```
 
-The MCP server exposes Decantr tools for essence reads, registry search, pattern resolution, execution-pack access, critique, project audit, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
+The MCP server exposes Decantr tools for essence reads, vocabulary search, pattern resolution, execution-pack access, critique, project audit, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
 
 For an existing app, ask the assistant to call `decantr_prepare_task_context` before editing a route. Provide the route and the task, for example `{ "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, accepted style bridge mappings, and an authority block when available. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
 

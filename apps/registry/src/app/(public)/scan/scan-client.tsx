@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
 type ApplicabilityStatus = 'strong_fit' | 'partial_fit' | 'not_applicable' | 'unknown';

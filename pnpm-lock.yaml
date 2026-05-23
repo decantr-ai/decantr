@@ -230,6 +230,9 @@ importers:
 
   packages/mcp-server:
     dependencies:
+      '@decantr/core':
+        specifier: workspace:*
+        version: link:../core
       '@decantr/essence-spec':
         specifier: workspace:*
         version: link:../essence-spec

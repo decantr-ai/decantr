@@ -55,6 +55,50 @@ export interface ScanFindingV1 {
   recommendation?: string;
 }
 
+export type ScanGraphPreviewStatus =
+  | 'not_attached'
+  | 'current'
+  | 'stale'
+  | 'needs_migration'
+  | 'unavailable';
+
+export interface ScanGraphPreviewV1 {
+  status: ScanGraphPreviewStatus;
+  canPreview: boolean;
+  readOnly: true;
+  message: string;
+  nextCommand: string | null;
+  staleArtifacts: string[];
+  snapshot: {
+    id: string;
+    schemaVersion: string;
+    sourceHash: string;
+    nodes: number;
+    edges: number;
+    findings: number;
+    evidence: number;
+    sourceArtifacts: number;
+  } | null;
+  capsule: {
+    cacheKey: string;
+    routes: number;
+    components: number;
+    tokens: number;
+    localRules: number;
+    styleBridge: number;
+    sourceArtifacts: number;
+    sourceArtifactLimit: number;
+    sourceArtifactsTruncated: boolean;
+    openFindings: number;
+  } | null;
+  diff: {
+    ops: number;
+    findingsAdded: number;
+    findingsResolved: number;
+    evidenceAdded: number;
+  } | null;
+}
+
 export interface ScanReportV1 {
   $schema: typeof SCAN_REPORT_SCHEMA_URL;
   schemaVersion: 'scan-report.v1';
@@ -112,6 +156,7 @@ export interface ScanReportV1 {
   assistant: {
     ruleFiles: string[];
   };
+  graphPreview?: ScanGraphPreviewV1;
   pagesProbe: PublishedSiteProbeV1 | null;
   findings: ScanFindingV1[];
   recommendedCommands: string[];

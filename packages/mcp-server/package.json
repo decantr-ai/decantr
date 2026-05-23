@@ -1,8 +1,8 @@
 {
   "name": "@decantr/mcp-server",
-  "version": "2.5.0",
+  "version": "3.0.0-next.0",
   "mcpName": "io.github.decantr-ai/mcp-server",
-  "description": "MCP server for Decantr — exposes design intelligence, packs, and verification to AI coding assistants",
+  "description": "MCP server for Decantr — exposes Contract context, typed graph artifacts, and verification evidence to AI coding assistants",
   "keywords": [
     "decantr",
     "decantr-ai",
@@ -16,9 +16,11 @@
     "cursor",
     "windsurf",
     "design-system",
-    "design-intelligence",
+    "ai-frontend-governance",
+    "typed-graph",
+    "contract-capsule",
     "project-health",
-    "ui-generation",
+    "ui-governance",
     "drift-detection"
   ],
   "author": "Decantr AI",
@@ -55,6 +57,7 @@
     "preversion": "pnpm build && pnpm test"
   },
   "dependencies": {
+    "@decantr/core": "workspace:*",
     "@decantr/essence-spec": "workspace:*",
     "@decantr/registry": "workspace:*",
     "@decantr/verifier": "workspace:*",

@@ -43,13 +43,13 @@ function ArrowRightIcon() {
 
 const DISCOVERY_PATHS = [
   {
-    eyebrow: 'Start with blueprints',
+    eyebrow: 'Start with starter kits',
     title: 'Pick a full app starting point',
     description:
-      'Browse official blueprints first when you want the fastest path from Decantr contract to scaffolded application.',
+      'Browse official starter kits when you want a fast path from Decantr vocabulary to a governed application Contract.',
     href: '/browse/blueprints?source=official',
-    cta: 'Browse blueprints',
-    hint: 'Official compositions ready to scaffold',
+    cta: 'Browse starter kits',
+    hint: 'Official compositions ready to inspect',
     tone: 'blueprint',
     icon: getTypePresentation('blueprints').icon,
   },
@@ -68,10 +68,10 @@ const DISCOVERY_PATHS = [
     eyebrow: 'Build your own stack',
     title: 'Mix patterns, themes, shells, and archetypes',
     description:
-      'When you already know the workflow shape, browse the lower-level building blocks and compose your own system.',
+      'When you already know the workflow shape, browse lower-level vocabulary and map useful pieces into your own Contract.',
     href: '/browse',
-    cta: 'Browse the registry',
-    hint: 'Explore the full Decantr catalog',
+    cta: 'Browse vocabulary',
+    hint: 'Explore the full Decantr vocabulary',
     tone: 'catalog',
     icon: getAllTypesIcon(),
   },

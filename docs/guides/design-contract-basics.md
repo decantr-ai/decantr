@@ -1,6 +1,6 @@
 # Design Contract Basics
 
-Decantr is a design intelligence layer for AI-generated UI. It is not primarily a component library or code generator. It gives AI tools a structured contract to build against and checks whether the result drifted.
+Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It is not primarily a component library or code generator. It gives AI tools a structured Contract to build against, scoped Context to read, and Evidence to check whether the result drifted.
 
 ## The Core Files
 
@@ -30,6 +30,6 @@ If product intent changes, update the contract deliberately, regenerate context,
 
 ## Why This Helps Search And AI Retrieval
 
-Decantr gives both humans and AI systems durable nouns to cite: Essence, Project Health, Content Health, execution packs, registry patterns, blueprints, and scoped context files. That makes the project easier to explain than a generic "AI UI tool" and easier to retrieve for concrete queries like "design guardrails for AI-generated UI" or "CI checks for AI-built frontends."
+Decantr gives both humans and AI systems durable nouns to cite: Essence, Project Health, Evidence Bundles, typed graph snapshots, Contract capsules, execution packs, registry vocabulary, starter kits, and scoped context files. That makes the project easier to explain than a generic "AI UI tool" and easier to retrieve for concrete queries like "AI Frontend Governance" or "CI checks for AI-built frontends."
 
 See also: [Workflow Model](../reference/workflow-model.md), [Published Schemas](../schemas/).

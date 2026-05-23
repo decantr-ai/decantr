@@ -42,34 +42,25 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
           }}
         />
         <div className="registry-page-intro">
-          <h3 className="text-lg font-semibold">Private Registry</h3>
+          <h3 className="text-lg font-semibold">Private Vocabulary Preview</h3>
           <p className="registry-muted-copy text-sm">
-            Private registry workspaces are available on Enterprise for organizations that need a dedicated internal catalog.
+            Private vocabulary workspaces are parked until customer pull is clear. Enterprise and design-partner organizations can preview the internal catalog model without changing the public Decantr workflow.
           </p>
         </div>
 
         <section className="d-section" data-density="compact">
           <div className="d-surface flex flex-col gap-3">
             <p className="registry-muted-copy text-sm">
-              Upgrade to Enterprise to browse an internal org registry with dedicated discovery and governance controls.
+              Use this as a readiness surface for dedicated internal vocabulary, policy packs, and governed public releases. The open-source verifier loop remains the product center.
             </p>
             <div className="flex items-center gap-2">
-              <PrivateRegistryTelemetryLink
-                action="open_billing"
-                href="/dashboard/billing"
-                orgScoped={false}
-                plan={workspace?.tier ?? 'unknown'}
-                surface="dashboard_private_registry_gate"
-                variant="primary"
-              >
-                Review plans
-              </PrivateRegistryTelemetryLink>
               <PrivateRegistryTelemetryLink
                 action="open_team"
                 href="/dashboard/team"
                 orgScoped={false}
                 plan={workspace?.tier ?? 'unknown'}
                 surface="dashboard_private_registry_gate"
+                variant="primary"
               >
                 Open team workspace
               </PrivateRegistryTelemetryLink>
@@ -112,9 +103,9 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
         }}
       />
       <div className="registry-page-intro">
-        <h3 className="text-lg font-semibold">Private Registry</h3>
+        <h3 className="text-lg font-semibold">Private Vocabulary Preview</h3>
         <p className="registry-muted-copy text-sm">
-          Browse the internal package catalog for your enterprise organization, including private packages and governed public releases.
+          Browse the internal vocabulary catalog for your organization, including private items and governed public releases.
         </p>
       </div>
 
@@ -159,7 +150,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
                 <option value="">All types</option>
                 <option value="pattern">Patterns</option>
                 <option value="theme">Themes</option>
-                <option value="blueprint">Blueprints</option>
+                <option value="blueprint">Starter Kits</option>
                 <option value="archetype">Archetypes</option>
                 <option value="shell">Shells</option>
               </select>
@@ -192,7 +183,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
 
           <div className="registry-inline-actions">
             <button type="submit" className="d-interactive" data-variant="primary">
-              Filter registry
+              Filter vocabulary
             </button>
             <Link href="/dashboard/content" className="d-interactive" data-variant="ghost">
               Manage content
@@ -203,7 +194,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
 
       <section className="d-section" data-density="compact">
         <span className="d-label registry-anchor-label">
-          {activeOrg.name} Registry ({items.length})
+          {activeOrg.name} Vocabulary ({items.length})
         </span>
 
         {items.length > 0 ? (
@@ -211,7 +202,7 @@ export default async function PrivateRegistryPage({ searchParams }: PrivateRegis
         ) : (
           <div className="d-surface">
             <p className="registry-muted-copy text-sm">
-              No packages matched the current internal registry filters.
+              No items matched the current internal vocabulary filters.
             </p>
           </div>
         )}

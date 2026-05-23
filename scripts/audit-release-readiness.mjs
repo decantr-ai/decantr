@@ -16,6 +16,7 @@ if (findings.length > 0) {
 
 console.log('Release readiness audit passed.');
 console.log(`Stable public packages: ${readiness.stablePackages.join(', ') || 'none'}`);
+console.log(`Prerelease public packages: ${readiness.prereleasePackages.join(', ') || 'none'}`);
 console.log(`Internal packages: ${readiness.internalPackages.join(', ') || 'none'}`);
 console.log(`Experimental packages: ${readiness.experimentalPackages.join(', ') || 'none'}`);
 console.log('Release waves:');

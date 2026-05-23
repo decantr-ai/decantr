@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/contract-capsule.v1.json",
+  "title": "Decantr Contract Capsule",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "project_id",
+    "created_at",
+    "source_hash",
+    "cache_key",
+    "summary",
+    "source_artifact_limit",
+    "source_artifacts_truncated",
+    "routes",
+    "components",
+    "tokens",
+    "local_rules",
+    "style_bridge",
+    "source_artifacts",
+    "open_findings"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/contract-capsule.v1.json"
+    },
+    "schema_version": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/schemaVersion"
+    },
+    "snapshot_id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "project_id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "created_at": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "source_hash": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "contract_hash": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "cache_key": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "contract_cache_key": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "routes",
+        "components",
+        "tokens",
+        "local_rules",
+        "style_bridge",
+        "source_artifacts",
+        "open_findings"
+      ],
+      "properties": {
+        "routes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "components": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "local_rules": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "style_bridge": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_artifacts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "open_findings": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "source_artifact_limit": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "source_artifacts_truncated": {
+      "type": "boolean"
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "path": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "page_id": {
+            "type": "string"
+          },
+          "shell_id": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "components": {
+      "$ref": "#/$defs/vocabularyItems"
+    },
+    "tokens": {
+      "$ref": "#/$defs/vocabularyItems"
+    },
+    "local_rules": {
+      "$ref": "#/$defs/vocabularyItems"
+    },
+    "style_bridge": {
+      "$ref": "#/$defs/vocabularyItems"
+    },
+    "source_artifacts": {
+      "$ref": "#/$defs/sourceArtifacts"
+    },
+    "open_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "code": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "anchored_at": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "vocabularyItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "label": {
+            "type": "string"
+          },
+          "payload": true
+        },
+        "additionalProperties": false
+      }
+    },
+    "sourceArtifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path"],
+        "properties": {
+          "id": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "path": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "payload": true
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

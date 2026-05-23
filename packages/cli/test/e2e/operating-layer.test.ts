@@ -162,7 +162,100 @@ describe('operating layer commands', () => {
     expect(output).toContain('Brownfield contract-only');
     expect(output).toContain('Existing app is authoritative');
     expect(output).toContain('packages/ui');
+    expect(output).toContain('Typed graph: stale or missing');
+    expect(output).toContain('Typed Contract graph artifacts are missing or stale');
+    expect(output).toContain('decantr graph --project apps/web');
     expect(output).toContain('Next steps:');
+  });
+
+  it('reports current typed Contract graph artifacts in doctor after graph generation', () => {
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+
+    const output = runCli(testDir, ['doctor', '--project', 'apps/web']);
+
+    expect(output).toContain('Typed graph: current');
+    expect(output).toContain('Graph capsule: present');
+    expect(output).not.toContain('Typed Contract graph artifacts are missing or stale');
+  });
+
+  it('carries typed Contract graph readiness through CI JSON after graph generation', () => {
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+
+    const report = JSON.parse(
+      runCli(testDir, ['ci', '--project', 'apps/web', '--fail-on', 'none', '--json']),
+    ) as {
+      health: {
+        graph: {
+          present: boolean;
+          ready: boolean;
+          current: boolean | null;
+          capsulePresent: boolean;
+          snapshotId: string | null;
+          contractCacheKey: string | null;
+          sourceArtifactCount: number;
+        };
+        findings: Array<{ rule?: string }>;
+      };
+    };
+
+    expect(report.health.graph).toMatchObject({
+      present: true,
+      ready: true,
+      current: true,
+      capsulePresent: true,
+    });
+    expect(report.health.graph.snapshotId).toMatch(/^graph:/);
+    expect(report.health.graph.contractCacheKey).toMatch(/^decantr-contract:fnv1a32:/);
+    expect(report.health.graph.sourceArtifactCount).toBeGreaterThan(0);
+    expect(report.health.findings.some((finding) => finding.rule === 'typed-graph-current')).toBe(
+      false,
+    );
+  });
+
+  it('previews the typed Contract graph during read-only scan without writing artifacts', () => {
+    const output = runCli(testDir, ['scan', '--project', 'apps/web', '--json']);
+    const report = JSON.parse(output) as {
+      graphPreview?: {
+        status?: string;
+        canPreview?: boolean;
+        snapshot?: { nodes?: number; edges?: number; sourceArtifacts?: number } | null;
+        capsule?: {
+          routes?: number;
+          sourceArtifacts?: number;
+          sourceArtifactLimit?: number;
+          sourceArtifactsTruncated?: boolean;
+        } | null;
+        diff?: {
+          ops?: number;
+          findingsAdded?: number;
+          findingsResolved?: number;
+          evidenceAdded?: number;
+        } | null;
+        staleArtifacts?: string[];
+        nextCommand?: string | null;
+      };
+    };
+
+    expect(report.graphPreview?.status).toBe('stale');
+    expect(report.graphPreview?.canPreview).toBe(true);
+    expect(report.graphPreview?.snapshot?.nodes).toBeGreaterThan(0);
+    expect(report.graphPreview?.snapshot?.edges).toBeGreaterThan(0);
+    expect(report.graphPreview?.snapshot?.sourceArtifacts).toBeGreaterThan(0);
+    expect(report.graphPreview?.capsule?.routes).toBe(1);
+    expect(report.graphPreview?.capsule?.sourceArtifacts).toBeGreaterThan(0);
+    expect(report.graphPreview?.capsule?.sourceArtifactLimit).toBe(200);
+    expect(report.graphPreview?.capsule?.sourceArtifactsTruncated).toBe(false);
+    expect(report.graphPreview?.diff).toMatchObject({
+      ops: 0,
+      findingsAdded: 0,
+      findingsResolved: 0,
+      evidenceAdded: 0,
+    });
+    expect(report.graphPreview?.staleArtifacts).toContain(
+      'apps/web/.decantr/graph/graph.snapshot.json',
+    );
+    expect(report.graphPreview?.nextCommand).toBe('decantr graph --project apps/web');
+    expect(existsSync(join(testDir, 'apps', 'web', '.decantr', 'graph'))).toBe(false);
   });
 
   it('promotes accepted local law as the first Hybrid lane', () => {
@@ -738,6 +831,69 @@ describe('operating layer commands', () => {
     );
     expect(output).toContain('decantr verify --brownfield --local-patterns --project apps/web');
     expect(output).not.toContain('Remove it first');
+  });
+
+  it('includes route-scoped typed graph context in task JSON when graph artifacts exist', () => {
+    const appRoot = join(testDir, 'apps', 'web');
+    mkdirSync(join(appRoot, 'src', 'app'), { recursive: true });
+    writeFileSync(
+      join(appRoot, 'src', 'app', 'page.tsx'),
+      'export default function Page() { return <main>Home</main>; }\n',
+      'utf-8',
+    );
+    writeJson(join(appRoot, '.decantr', 'analysis.json'), {
+      version: 1,
+      analyzedAt: '2026-05-21T14:00:00.000Z',
+      project: {
+        framework: 'next',
+        packageManager: 'pnpm',
+        hasTypeScript: true,
+        hasTailwind: true,
+        projectScope: 'single-app',
+      },
+      routes: {
+        strategy: 'app-router',
+        routes: [{ path: '/', file: 'src/app/page.tsx', hasLayout: false }],
+      },
+      styling: { approach: 'tailwind', cssVariables: [] },
+      layout: { shellPattern: 'app-router' },
+      features: { detected: [] },
+    });
+    execFileSync('git', ['init'], { cwd: appRoot, stdio: 'ignore' });
+    execFileSync('git', ['config', 'user.email', 'test@example.com'], {
+      cwd: appRoot,
+      stdio: 'ignore',
+    });
+    execFileSync('git', ['config', 'user.name', 'Decantr Test'], {
+      cwd: appRoot,
+      stdio: 'ignore',
+    });
+    execFileSync('git', ['add', '.'], { cwd: appRoot, stdio: 'ignore' });
+    execFileSync('git', ['commit', '-m', 'baseline'], { cwd: appRoot, stdio: 'ignore' });
+    runCli(testDir, ['graph', '--project', 'apps/web']);
+    writeFileSync(
+      join(appRoot, 'src', 'app', 'page.tsx'),
+      'export default function Page() { return <main>Home changed</main>; }\n',
+      'utf-8',
+    );
+
+    const task = JSON.parse(
+      runCli(testDir, ['task', '/', 'tighten the home surface', '--project', 'apps/web', '--json']),
+    );
+
+    expect(task.graph.capsule.cacheKey).toContain('decantr-contract:fnv1a32:');
+    expect(task.graph.capsule.contractHash).toMatch(/^fnv1a32:/);
+    expect(task.graph.capsule.contractCacheKey).toBe(task.graph.capsule.cacheKey);
+    expect(task.graph.routeContext.routeNode.id).toBe('rt:/');
+    expect(task.graph.routeContext.ids.patterns).toContain('pat:existing-surface');
+    expect(task.graph.routeContext.summary).toMatchObject({
+      pages: 1,
+      patterns: 1,
+    });
+    expect(task.graph.changedFileContext.changedFiles).toContain('src/app/page.tsx');
+    expect(task.graph.changedFileContext.resolvedNodeIds).toContain('src:src/app/page.tsx');
+    expect(task.graph.changedFileContext.impact.ids.routes).toContain('rt:/');
+    expect(task.read).toContain('apps/web/.decantr/graph/contract-capsule.json');
   });
 
   it('rejects unsupported flags on codify before writing proposals', () => {

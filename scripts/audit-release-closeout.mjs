@@ -15,6 +15,7 @@ const skipNpm = args.has('--skip-npm');
 const noFetch = args.has('--no-fetch');
 const includeExperimental = args.has('--include-experimental');
 const onlyWave = readArgValue(rawArgs, 'wave');
+const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
 const onlyNames = new Set(
   readArgValue(rawArgs, 'only')
     ? readArgValue(rawArgs, 'only')
@@ -112,7 +113,7 @@ if (!skipNpm) {
     const version = readPackageVersionAtPath(entry.path);
     const versions = readNpmVersions(entry.name);
     const tags = readNpmDistTags(entry.name);
-    const distTag = entry.defaultDistTag || 'latest';
+    const distTag = tagOverride || entry.defaultDistTag || 'latest';
 
     addCheck(
       'npm',
@@ -146,6 +147,7 @@ const output = {
     only: [...onlyNames],
     skipGit,
     skipNpm,
+    tagOverride,
     wave: onlyWave,
   },
   summary: {
@@ -269,13 +271,15 @@ function addCheck(scope, name, status, detail) {
 }
 
 function renderMarkdown(report) {
+  const skippedFinalChecks = report.filters.skipGit || report.filters.skipNpm;
+  const status = report.summary.failed > 0 ? 'failed' : skippedFinalChecks ? 'partial' : 'passed';
   const lines = [
     '# Release Closeout Audit',
     '',
     `- Generated at: ${report.generatedAt}`,
     `- Release version: ${report.releaseVersion ?? 'unknown'}`,
     `- Release tag: ${report.releaseTag ?? 'unknown'}`,
-    `- Status: ${report.summary.failed > 0 ? 'failed' : 'passed'}`,
+    `- Status: ${status}`,
     `- Checks: ${report.summary.passed}/${report.summary.total} passed`,
     '',
     '| Scope | Check | Status | Detail |',
@@ -291,6 +295,8 @@ function renderMarkdown(report) {
   lines.push('');
   if (report.summary.failed > 0) {
     lines.push('Closeout is not complete. Fix the failed checks, then rerun `pnpm release:closeout`.');
+  } else if (skippedFinalChecks) {
+    lines.push('Partial closeout checks passed. This is not final release evidence because git and/or npm closeout checks were skipped.');
   } else {
     lines.push('Release closeout is complete: git tags, release notes, and npm state are aligned.');
   }

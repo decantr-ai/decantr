@@ -11,23 +11,23 @@ export const metadata: Metadata = {
     template: '%s — Decantr Registry',
   },
   description:
-    'Browse patterns, themes, blueprints, archetypes, and shells in the Decantr design intelligence registry.',
+    'Browse Decantr certified vocabulary for AI Frontend Governance: starter kits, patterns, themes, archetypes, and shells.',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Decantr Registry — Design Intelligence for AI-Generated UI',
+    title: 'Decantr Registry — Certified Vocabulary for AI Frontend Governance',
     description:
-      'Browse patterns, themes, blueprints, archetypes, and shells in the Decantr design intelligence registry.',
+      'Browse Decantr certified vocabulary for AI Frontend Governance: starter kits, patterns, themes, archetypes, and shells.',
     url: '/',
     siteName: 'Decantr Registry',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'Decantr Registry — Design Intelligence for AI-Generated UI',
+    title: 'Decantr Registry — Certified Vocabulary for AI Frontend Governance',
     description:
-      'Browse patterns, themes, blueprints, archetypes, and shells in the Decantr design intelligence registry.',
+      'Browse Decantr certified vocabulary for AI Frontend Governance: starter kits, patterns, themes, archetypes, and shells.',
   },
 };
 

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/graph-diff.v1.json",
+  "title": "Decantr Typed Graph Diff",
+  "type": "object",
+  "required": ["id", "to", "ops"],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/graph-diff.v1.json"
+    },
+    "id": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "from": {
+      "type": "string"
+    },
+    "to": {
+      "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/nonEmptyString"
+    },
+    "ops": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["op"],
+        "properties": {
+          "op": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/graphDiffOpType"
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/graphNodeType"
+          },
+          "src": {
+            "type": "string"
+          },
+          "dst": {
+            "type": "string"
+          },
+          "relation": {
+            "$ref": "https://decantr.ai/schemas/graph.common.v1.json#/$defs/graphRelation"
+          },
+          "before": true,
+          "after": true
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

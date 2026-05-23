@@ -25,6 +25,7 @@ const MATURITY_VALUES = new Set(['stable', 'internal', 'experimental']);
 const RELEASE_WAVE_VALUES = ['foundation', 'delivery', 'internal', 'experimental'];
 const RELEASE_WAVE_VALUE_SET = new Set(RELEASE_WAVE_VALUES);
 const RELEASE_WAVE_RANK = new Map(RELEASE_WAVE_VALUES.map((wave, index) => [wave, index]));
+const RELEASE_CHANNEL_VALUES = new Set(['stable', 'prerelease']);
 const RETIREMENT_STATUS_VALUES = new Set(['retired', 'deprecated']);
 const SUPPORT_DESCRIPTIONS = {
   'core-supported': 'part of the product nucleus and expected to track the vNext architecture closely',
@@ -41,9 +42,13 @@ const SURFACE_CLASS_DESCRIPTIONS = {
   experimental: 'opt-in package outside the default supported public surface',
 };
 const MATURITY_DESCRIPTIONS = {
-  stable: 'intended to publish under npm `latest`',
+  stable: 'intended to publish under npm `latest` on the stable channel or npm `next` on an explicit prerelease channel',
   internal: 'not part of the public npm release promise',
   experimental: 'opt-in and not part of the default publish wave',
+};
+const RELEASE_CHANNEL_DESCRIPTIONS = {
+  stable: 'normal public release channel; publishable packages default to npm `latest`',
+  prerelease: 'major-line preview channel; publishable packages use prerelease semver and default to npm `next`',
 };
 
 function isPrereleaseVersion(version) {
@@ -59,6 +64,8 @@ function toStableTargetVersion(version) {
 }
 
 function describeGraduationLane(entry) {
+  const releaseChannel = entry.releaseChannel ?? 'stable';
+
   if (entry.surfaceClass === 'internal' || entry.maturity === 'internal') {
     return 'internal-only';
   }
@@ -68,6 +75,9 @@ function describeGraduationLane(entry) {
   }
 
   if (PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass) && entry.maturity === 'stable') {
+    if (releaseChannel === 'prerelease') {
+      return 'prerelease-public';
+    }
     return 'stable-public';
   }
 
@@ -154,6 +164,10 @@ export function validatePackageSurface(surface, publicPackages) {
     if (!RELEASE_WAVE_VALUE_SET.has(entry.releaseWave)) {
       findings.push(`Unsupported releaseWave value for ${entry.name}: ${entry.releaseWave}`);
     }
+    const releaseChannel = entry.releaseChannel ?? 'stable';
+    if (entry.releaseChannel != null && !RELEASE_CHANNEL_VALUES.has(entry.releaseChannel)) {
+      findings.push(`Unsupported releaseChannel value for ${entry.name}: ${entry.releaseChannel}`);
+    }
     if (!Number.isInteger(entry.publishOrder) || entry.publishOrder < 1) {
       findings.push(`Package ${entry.name} publishOrder must be a positive integer.`);
     }
@@ -218,13 +232,19 @@ export function validatePackageSurface(surface, publicPackages) {
         findings.push(`Package ${entry.name} exposes a bin but does not include dist in files.`);
       }
     }
-    if (entry.maturity === 'stable' && isPrereleaseVersion(pkg.version)) {
+    if (entry.maturity === 'stable' && releaseChannel === 'stable' && isPrereleaseVersion(pkg.version)) {
       findings.push(`Stable package ${entry.name} must not use a prerelease semver version (${pkg.version}).`);
+    }
+    if (entry.maturity === 'stable' && releaseChannel === 'prerelease' && !isPrereleaseVersion(pkg.version)) {
+      findings.push(`Stable package ${entry.name} on the prerelease channel must use a prerelease semver version (${pkg.version}).`);
     }
     if (entry.maturity === 'internal' && isPrereleaseVersion(pkg.version)) {
       findings.push(`Internal package ${entry.name} should use a normal semver version rather than a prerelease (${pkg.version}).`);
     }
-    if (entry.publish === true && entry.defaultDistTag !== 'latest' && !(entry.maturity === 'experimental' && entry.defaultDistTag === 'next')) {
+    if (entry.publish === true && releaseChannel === 'prerelease' && entry.defaultDistTag !== 'next') {
+      findings.push(`Prerelease package ${entry.name} must default to npm dist-tag next.`);
+    }
+    if (entry.publish === true && releaseChannel !== 'prerelease' && entry.defaultDistTag !== 'latest' && !(entry.maturity === 'experimental' && entry.defaultDistTag === 'next')) {
       findings.push(`Published package ${entry.name} must default to the expected dist-tag for its maturity.`);
     }
     if (entry.publish !== true && entry.defaultDistTag != null) {
@@ -301,6 +321,7 @@ export function validatePackageSurface(surface, publicPackages) {
 export function summarizeReleaseReadiness(surface) {
   const summary = {
     stablePackages: [],
+    prereleasePackages: [],
     publicPackages: [],
     internalPackages: [],
     experimentalPackages: [],
@@ -316,6 +337,10 @@ export function summarizeReleaseReadiness(surface) {
 
     if (entry.maturity === 'stable' && PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass)) {
       summary.stablePackages.push(entry.name);
+    }
+
+    if ((entry.releaseChannel ?? 'stable') === 'prerelease' && PUBLIC_SURFACE_CLASS_VALUES.has(entry.surfaceClass)) {
+      summary.prereleasePackages.push(entry.name);
     }
 
     if (entry.surfaceClass === 'internal') {
@@ -346,6 +371,7 @@ export function renderPackageSupportMatrix(surface, retirements) {
   const nucleusPackages = activePackages.filter((entry) => entry.support === 'core-supported' && entry.surfaceClass !== 'experimental');
   const retiredPackages = [...(retirements?.packages ?? [])].sort((left, right) => left.name.localeCompare(right.name));
   const stablePublic = activePackages.filter((entry) => describeGraduationLane(entry) === 'stable-public');
+  const prereleasePublic = activePackages.filter((entry) => describeGraduationLane(entry) === 'prerelease-public');
   const internalOnly = activePackages.filter((entry) => describeGraduationLane(entry) === 'internal-only');
   const experimentalHold = activePackages.filter((entry) => describeGraduationLane(entry) === 'experimental-hold');
 
@@ -364,10 +390,10 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '',
     '## Active Packages',
     '',
-    '| Package | Support status | Surface class | Maturity | Release wave | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Package | Support status | Surface class | Maturity | Release wave | Release channel | Default npm tag | Publish default | Stable candidate | Blockers | Release lane | Summary |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
     ...activePackages.map((entry) => (
-      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | \`${escapeMarkdownCell(entry.surfaceClass)}\` | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.defaultDistTag ?? '-')}\` | \`${entry.publish === true ? 'true' : 'false'}\` | \`${entry.releaseReadiness?.stableCandidate === true ? 'true' : 'false'}\` | \`${escapeMarkdownCell((entry.releaseReadiness?.blockers ?? []).length)}\` | \`${describeGraduationLane(entry)}\` | ${escapeMarkdownCell(entry.summary)} |`
+      `| \`${escapeMarkdownCell(entry.name)}\` | ${escapeMarkdownCell(entry.support)} | \`${escapeMarkdownCell(entry.surfaceClass)}\` | ${escapeMarkdownCell(entry.maturity)} | \`${escapeMarkdownCell(entry.releaseWave)}\` (\`${escapeMarkdownCell(entry.publishOrder)}\`) | \`${escapeMarkdownCell(entry.releaseChannel ?? 'stable')}\` | \`${escapeMarkdownCell(entry.defaultDistTag ?? '-')}\` | \`${entry.publish === true ? 'true' : 'false'}\` | \`${entry.releaseReadiness?.stableCandidate === true ? 'true' : 'false'}\` | \`${escapeMarkdownCell((entry.releaseReadiness?.blockers ?? []).length)}\` | \`${describeGraduationLane(entry)}\` | ${escapeMarkdownCell(entry.summary)} |`
     )),
     '',
     '## Adapter Capability Matrix',
@@ -392,14 +418,16 @@ export function renderPackageSupportMatrix(surface, retirements) {
     ...Object.entries(SUPPORT_DESCRIPTIONS).map(([support, description]) => `- \`${support}\` means ${description}.`),
     ...Object.entries(SURFACE_CLASS_DESCRIPTIONS).map(([surfaceClass, description]) => `- \`${surfaceClass}\` means ${description}.`),
     ...Object.entries(MATURITY_DESCRIPTIONS).map(([maturity, description]) => `- \`${maturity}\` means ${description}.`),
+    ...Object.entries(RELEASE_CHANNEL_DESCRIPTIONS).map(([channel, description]) => `- release channel \`${channel}\` means ${description}.`),
     '- `release wave` defines the intended publish order for coordinated npm releases.',
     '- `publish default` reflects whether the package participates in the default publish flow without opt-in overrides.',
     '- `stable candidate` means the package is intended to be eligible for stable graduation once its blockers reach zero.',
-    '- `release lane` is the operator-facing bucket for release planning: `stable-public`, `internal-only`, or `experimental-hold`.',
+    '- `release lane` is the operator-facing bucket for release planning: `stable-public`, `prerelease-public`, `internal-only`, or `experimental-hold`.',
     '',
     '## Surface Snapshot',
     '',
     `- Stable public: ${stablePublic.length}`,
+    `- Prerelease public: ${prereleasePublic.length}`,
     `- Internal only: ${internalOnly.length}`,
     `- Experimental hold: ${experimentalHold.length}`,
     '',
@@ -407,6 +435,12 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '',
     ...(stablePublic.length > 0
       ? stablePublic.map((entry) => `- \`${entry.name}\` in \`${entry.releaseWave}\` wave`)
+      : ['- none']),
+    '',
+    '### Prerelease Public',
+    '',
+    ...(prereleasePublic.length > 0
+      ? prereleasePublic.map((entry) => `- \`${entry.name}\` in \`${entry.releaseWave}\` wave on npm \`next\``)
       : ['- none']),
     '',
     '### Internal Only',
@@ -449,7 +483,7 @@ export function renderPackageSupportMatrix(surface, retirements) {
     '4. the relevant package README',
     '5. publish/deprecation workflow behavior',
     '',
-    'Public stable packages must keep `releaseReadiness.blockers` empty, while internal or experimental packages must be clearly classified instead of drifting into long-lived public prerelease states.',
+    'Public stable packages must keep `releaseReadiness.blockers` empty. Public prerelease work must use `releaseChannel: "prerelease"`, prerelease semver, and npm `next` instead of quietly moving the stable channel.',
     '',
   ];
 
@@ -464,6 +498,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
   for (const entry of surface.packages) {
     const pkg = publicByName.get(entry.name) ?? null;
     const blockers = entry.releaseReadiness?.blockers ?? [];
+    const releaseChannel = entry.releaseChannel ?? 'stable';
     let recommendedAction = 'hold';
     let releaseTag = null;
 
@@ -480,6 +515,9 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       }
     } else if (entry.publish === false) {
       recommendedAction = 'hold-experimental';
+    } else if (entry.maturity === 'stable' && releaseChannel === 'prerelease') {
+      recommendedAction = 'publish-next';
+      releaseTag = 'next';
     } else if (entry.maturity === 'stable') {
       recommendedAction = 'publish-latest';
       releaseTag = 'latest';
@@ -495,6 +533,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       maturity: entry.maturity,
       publish: entry.publish === true,
       releaseWave: entry.releaseWave,
+      releaseChannel,
       publishOrder: entry.publishOrder,
       defaultDistTag: entry.defaultDistTag,
       summary: entry.summary,
@@ -521,6 +560,7 @@ export function createReleasePlan(surface, publicPackages, retirements) {
       maturity: 'retired',
       publish: false,
       releaseWave: 'retired',
+      releaseChannel: null,
       publishOrder: Number.MAX_SAFE_INTEGER,
       defaultDistTag: null,
       summary: retirement.message,

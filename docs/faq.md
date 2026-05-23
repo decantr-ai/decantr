@@ -267,7 +267,7 @@ npx @decantr/cli ci --fail-on error
 
 ## Is Decantr a code generator?
 
-Not primarily. Decantr is a design-intelligence and governance layer for AI-generated UI. It gives AI tools a clearer contract, better UI context, registry-backed guidance, and drift checks. The assistant still writes the code.
+Not primarily. Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It gives AI tools a clearer Contract, better route-scoped Context, registry-backed vocabulary when useful, and drift evidence with repair guidance. The assistant still writes the code.
 
 ## What should I do when Decantr flags drift?
 

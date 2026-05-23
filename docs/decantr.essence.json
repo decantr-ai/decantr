@@ -54,7 +54,7 @@
           "marketing",
           "seo"
         ],
-        "description": "Public marketing landing that pitches Decantr as the contract layer for AI-generated UI, surfaces the three adoption paths, and funnels readers to the CLI + MCP install.",
+        "description": "Public marketing landing that pitches Decantr as AI Frontend Governance for codebases touched by AI agents, surfaces the adoption paths, and funnels readers to the CLI + MCP install.",
         "pages": [
           {
             "id": "home",

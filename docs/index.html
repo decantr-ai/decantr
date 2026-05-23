@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decantr — Design Intelligence for AI-Generated UI</title>
-  <meta name="description" content="Decantr is OpenAPI for AI-generated UI: a contract, evidence, and repair layer that helps AI-generated interfaces match product intent, design rules, accessibility baselines, and org policy.">
+  <title>Decantr — AI Frontend Governance</title>
+  <meta name="description" content="Decantr is the AI Frontend Governance layer for existing applications. When AI coding agents edit your UI, Decantr keeps changes inside your product standards with typed contracts, route-scoped context, and machine-actionable evidence.">
   <link rel="canonical" href="https://decantr.ai/">
-  <meta property="og:title" content="Decantr — Design Intelligence for AI-Generated UI">
-  <meta property="og:description" content="We don't care what you build with. We care what you build.">
+  <meta property="og:title" content="Decantr — AI Frontend Governance">
+  <meta property="og:description" content="Typed contracts, route-scoped context, and evidence-backed verification for AI-edited frontend codebases.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai/">
   <meta property="og:image" content="https://decantr.ai/logo.svg">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Decantr — Design Intelligence for AI-Generated UI">
-  <meta name="twitter:description" content="OpenAPI for AI-generated UI. Decantr gives AI coding assistants structured design contracts, evidence bundles, workspace health, and repair prompts.">
+  <meta name="twitter:title" content="Decantr — AI Frontend Governance">
+  <meta name="twitter:description" content="Decantr gives AI coding assistants typed contracts, route-scoped context, evidence bundles, graph anchors, and repair prompts.">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <script type="application/ld+json">
   {
@@ -48,7 +48,7 @@
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Cross-platform",
         "url": "https://decantr.ai/",
-        "description": "Evidence-backed design intelligence, governance, and verification for AI-generated UI.",
+        "description": "AI Frontend Governance for existing applications: typed contracts, route-scoped agent context, and evidence-backed verification for AI-edited UI.",
         "sameAs": "https://github.com/decantr-ai/decantr",
         "offers": {
           "@type": "Offer",
@@ -221,51 +221,6 @@
       z-index: 1;
       background: #060610;
       overflow: hidden;
-    }
-
-    /* Breathing gradient orbs behind hero */
-    .hero-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .hero-orb-1 {
-      width: 700px;
-      height: 700px;
-      background: radial-gradient(circle, rgba(254,68,116,0.22), transparent 65%);
-      top: -15%;
-      left: -15%;
-      animation: orbBreathe1 8s ease-in-out infinite;
-    }
-    .hero-orb-2 {
-      width: 550px;
-      height: 550px;
-      background: radial-gradient(circle, rgba(10,243,235,0.16), transparent 65%);
-      bottom: -10%;
-      right: -10%;
-      animation: orbBreathe2 10s ease-in-out infinite;
-    }
-    .hero-orb-3 {
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(circle, rgba(253,163,3,0.14), transparent 65%);
-      top: 20%;
-      right: 20%;
-      animation: orbBreathe3 12s ease-in-out infinite;
-    }
-    @keyframes orbBreathe1 {
-      0%, 100% { opacity: 0.7; transform: scale(1) translate(0, 0); }
-      50% { opacity: 1; transform: scale(1.2) translate(50px, -30px); }
-    }
-    @keyframes orbBreathe2 {
-      0%, 100% { opacity: 0.6; transform: scale(1) translate(0, 0); }
-      50% { opacity: 1; transform: scale(1.15) translate(-40px, 25px); }
-    }
-    @keyframes orbBreathe3 {
-      0%, 100% { opacity: 0.5; transform: scale(1) translate(0, 0); }
-      50% { opacity: 0.9; transform: scale(1.25) translate(35px, 35px); }
     }
 
     .hero-split {
@@ -2024,7 +1979,7 @@
     .install-tab-content { display: none; }
     .install-tab-content.active { display: block; }
 
-    /* -- Tool bands (grouping the 25 tools) -- */
+    /* -- Tool bands (grouping the MCP tools) -- */
     .tool-band-label {
       display: flex;
       align-items: center;
@@ -2455,19 +2410,16 @@
 
 <!-- ==================== HERO ==================== -->
 <section class="hero">
-  <div class="hero-orb hero-orb-1"></div>
-  <div class="hero-orb hero-orb-2"></div>
-  <div class="hero-orb hero-orb-3"></div>
   <div class="hero-split">
     <div class="hero-left">
       <img src="logo.svg" alt="Decantr" class="hero-logo">
     </div>
     <div class="hero-right">
       <h1 class="hero-title">decantr<span class="accent-dot">.</span>a<span class="accent-dot">i</span></h1>
-      <p class="hero-body-highlight">We don't care what you build <span class="hero-accent-2">with</span>.</p>
-      <p class="hero-body-highlight"> We care <span class="hero-accent underline">what</span> you build.</p>
-      <p class="hero-body">Decantr is the evidence-backed reliability layer for AI-generated web applications.</p>
-      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> A contract the AI <span class="hero-positioning-emph">checks, proves, and repairs against</span>.</p>
+      <p class="hero-body-highlight">AI Frontend <span class="hero-accent underline">Governance</span></p>
+      <p class="hero-body-highlight">for production codebases.</p>
+      <p class="hero-body">When AI coding agents edit your UI, Decantr keeps every change inside your product standards.</p>
+      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> Typed contracts, route-scoped context, and evidence the agent can <span class="hero-positioning-emph">repair against</span>.</p>
       <div class="hero-ctas">
         <a href="#quickstart" class="btn-primary">Get Started</a>
         <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
@@ -2484,23 +2436,23 @@
   <div class="container">
     <p class="paths-eyebrow reveal">How are you starting?</p>
     <div class="paths-row">
-      <a href="#quickstart" class="path-tile path-tile-1 card-decorated reveal reveal-d1">
+      <a href="#brownfield" class="path-tile path-tile-1 card-decorated reveal reveal-d1">
         <div class="path-tile-head">
-          <i data-lucide="sparkles" class="path-tile-icon" style="color:var(--cyan)"></i>
+          <i data-lucide="layers" class="path-tile-icon" style="color:var(--cyan)"></i>
           <span class="path-tile-badge">⭐ Recommended</span>
         </div>
-        <h3 class="path-tile-name">Greenfield blueprint</h3>
-        <p class="path-tile-desc">New project from a published app composition — theme, sections, voice, and personality baked in.</p>
-        <div class="path-tile-cmd"><span class="k">$</span> decantr new my-app <span class="path-tile-flag">--blueprint=X --adoption=decantr-css</span></div>
-      </a>
-      <a href="#brownfield" class="path-tile path-tile-2 card-decorated reveal reveal-d2">
-        <div class="path-tile-head">
-          <i data-lucide="layers" class="path-tile-icon" style="color:var(--coral)"></i>
-          <span class="path-tile-badge">Existing app</span>
-        </div>
         <h3 class="path-tile-name">Brownfield adoption</h3>
-        <p class="path-tile-desc">Attach Decantr to an existing app as a contract layer first. No rewrite, no CSS takeover.</p>
+        <p class="path-tile-desc">Attach Decantr to an existing app as a contract and evidence layer. No rewrite, no CSS takeover.</p>
         <div class="path-tile-cmd"><span class="k">$</span> decantr adopt <span class="path-tile-flag">--yes</span></div>
+      </a>
+      <a href="#quickstart" class="path-tile path-tile-2 card-decorated reveal reveal-d2">
+        <div class="path-tile-head">
+          <i data-lucide="sparkles" class="path-tile-icon" style="color:var(--coral)"></i>
+          <span class="path-tile-badge">Starter kit</span>
+        </div>
+        <h3 class="path-tile-name">Greenfield starter</h3>
+        <p class="path-tile-desc">Start from a certified app kit, then own the contract as it evolves.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr new my-app <span class="path-tile-flag">--blueprint=X</span></div>
       </a>
       <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
         <div class="path-tile-head">
@@ -2530,8 +2482,8 @@
 <!-- ==================== PROBLEM ==================== -->
 <section id="problem" class="section">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="alert-triangle" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Every AI-generated app has an expiration date</h2>
-    <p class="section-sub reveal">AI coding assistants have no memory of design intent. Every prompt is a fresh start. By prompt 10, your app looks like it was built by 10 different people.</p>
+    <h2 class="section-heading reveal"><i data-lucide="alert-triangle" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>AI edits create frontend drift</h2>
+    <p class="section-sub reveal">The first AI pass can look good. The tenth pass is where teams lose coherence: duplicated components, inconsistent shells, route drift, stale docs, and visual decisions no one can audit.</p>
 
     <div class="problem-grid">
       <div class="reveal">
@@ -2681,31 +2633,32 @@
 <!-- ==================== SHOWCASE ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal">One command. You'll never go back.</h2>
-    <p class="section-sub reveal">Scaffold a complete design system, then paste one prompt. The AI reads the context files and builds a visually stunning, production-quality app.</p>
+    <h2 class="section-heading reveal">One governance loop. Repeat it every edit.</h2>
+    <p class="section-sub reveal">Adopt the app, load typed route context, let the agent edit, then verify with evidence before the change lands.</p>
 
     <div class="showcase-steps">
 
       <div class="showcase-step reveal reveal-d1">
         <div class="showcase-step-num showcase-step-num-1">1</div>
         <div class="showcase-step-body">
-          <h3>Initialize</h3>
-          <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli new my-app --blueprint=esports-hq</span></div>
+          <h3>Attach</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli adopt --yes</span></div>
         </div>
       </div>
 
       <div class="showcase-step reveal reveal-d2">
         <div class="showcase-step-num showcase-step-num-2">2</div>
         <div class="showcase-step-body">
-          <h3>Paste the prompt</h3>
-          <div class="showcase-prompt"><strong>Build this application using the Decantr design system.</strong>
+          <h3>Prepare the task</h3>
+          <div class="showcase-prompt"><strong>Use Decantr route context before editing this UI.</strong>
 
-Read DECANTR.md for the design spec, CSS approach, and guard rules.
-Read .decantr/context/scaffold.md for the app overview, topology, routes, and voice guidance.
-Read each .decantr/context/section-*.md file before building that section's pages.
-Import src/styles/global.css, src/styles/tokens.css, and src/styles/treatments.css.
+Load .decantr/graph/contract-capsule.json when present.
+Use .decantr/graph/snapshots for replayable graph history when debugging drift.
+Run decantr task /feed "add saved recipe actions".
+Preserve existing app authority, accepted local law, and style bridge mappings.
+Use Project Health findings as repair instructions.
 
-Start with the shell layouts, then build each section's pages.</div>
+Make the smallest coherent change, then rerun decantr verify.</div>
         </div>
       </div>
 
@@ -2716,26 +2669,26 @@ Start with the shell layouts, then build each section's pages.</div>
           <div class="tier-flow">
             <div class="tier-flow-node" style="--accent:var(--pink)">
               <div class="tier-flow-icon"><i data-lucide="ruler" style="width:24px;height:24px;color:var(--accent)"></i></div>
-              <div class="tier-flow-label">DECANTR.md</div>
-              <div class="tier-flow-detail">Guard rules · CSS atoms · Layout rules · Motion philosophy · Interactivity</div>
+              <div class="tier-flow-label">Contract</div>
+              <div class="tier-flow-detail">Essence · Local law · Style bridge · Typed graph</div>
             </div>
             <div class="tier-flow-arrow">→</div>
             <div class="tier-flow-node" style="--accent:var(--cyan)">
               <div class="tier-flow-icon"><i data-lucide="map" style="width:24px;height:24px;color:var(--accent)"></i></div>
-              <div class="tier-flow-label">scaffold.md</div>
-              <div class="tier-flow-detail">Topology · Routes · Voice & copy · Shared components · Dev mode</div>
+              <div class="tier-flow-label">Context</div>
+              <div class="tier-flow-detail">Route subgraph · Task authority · Page packs · Changed-file impact</div>
             </div>
             <div class="tier-flow-arrow">→</div>
             <div class="tier-flow-node" style="--accent:var(--amber)">
               <div class="tier-flow-icon"><i data-lucide="zap" style="width:24px;height:24px;color:var(--accent)"></i></div>
-              <div class="tier-flow-label">section-*.md</div>
-              <div class="tier-flow-detail">Shell layout · Decorators · Tokens · Composition · Motion · Responsive</div>
+              <div class="tier-flow-label">Evidence</div>
+              <div class="tier-flow-detail">Stable codes · Repair IDs · Graph anchors · Evidence Bundles</div>
             </div>
             <div class="tier-flow-arrow">→</div>
             <div class="tier-flow-result" style="--accent:var(--green)">
               <div class="tier-flow-icon"><i data-lucide="sparkles" style="width:24px;height:24px;color:var(--accent)"></i></div>
-              <div class="tier-flow-label">Production UI</div>
-              <div class="tier-flow-detail">Visually stunning, consistent, production-ready code</div>
+              <div class="tier-flow-label">Verified UI</div>
+              <div class="tier-flow-detail">Agent edits stay inside product standards and are auditable after the fact</div>
             </div>
           </div>
         </div>
@@ -2751,51 +2704,49 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== THREE-TIER MODEL ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal">How Decantr works</h2>
-    <p class="section-sub reveal">Three tiers of context, each more specific than the last. The AI gets everything it needs to build every page correctly.</p>
+    <h2 class="section-heading reveal">Contract / Context / Evidence</h2>
+    <p class="section-sub reveal">Decantr gives agents a typed model of the frontend they are editing, scoped context for the current route, and findings they can repair without parsing prose.</p>
 
     <div class="tier-grid">
 
       <div class="tier-card tier-card-1 card-decorated reveal reveal-d1">
         <div class="tier-card-icon"><i data-lucide="shield" style="width:22px;height:22px;color:var(--pink)"></i></div>
-        <div class="tier-label">DECANTR.md</div>
+        <div class="tier-label">Contract</div>
         <ul class="tier-items">
-          <li>Design rules</li>
-          <li>Guard system</li>
-          <li>CSS approach</li>
-          <li>Layout rules</li>
-          <li>Motion philosophy</li>
-          <li>Interactivity philosophy</li>
-          <li>Development workflow</li>
+          <li>Essence V4</li>
+          <li>Typed graph snapshot</li>
+          <li>Route topology</li>
+          <li>Local UI law</li>
+          <li>Style bridge</li>
+          <li>Design tokens</li>
+          <li>Component vocabulary</li>
         </ul>
       </div>
 
       <div class="tier-card tier-card-2 card-decorated reveal reveal-d2">
         <div class="tier-card-icon"><i data-lucide="map" style="width:22px;height:22px;color:var(--cyan)"></i></div>
-        <div class="tier-label">scaffold.md</div>
+        <div class="tier-label">Context</div>
         <ul class="tier-items">
-          <li>App topology</li>
-          <li>Route map</li>
-          <li>Voice &amp; copy guidance</li>
-          <li>Shared components</li>
-          <li>Zone transitions</li>
-          <li>Development mode</li>
+          <li>Contract capsule</li>
+          <li>Route-scoped subgraph</li>
+          <li>Task-time authority</li>
+          <li>Changed-file impact</li>
+          <li>Accepted local patterns</li>
+          <li>Visual evidence references</li>
         </ul>
       </div>
 
       <div class="tier-card tier-card-3 card-decorated reveal reveal-d3">
         <div class="tier-card-icon"><i data-lucide="layers" style="width:22px;height:22px;color:var(--amber)"></i></div>
-        <div class="tier-label">section-*.md</div>
+        <div class="tier-label">Evidence</div>
         <ul class="tier-items">
-          <li>Shell implementation specs</li>
-          <li>Quick start guide</li>
-          <li>Spacing guide</li>
-          <li>Decorator tables</li>
-          <li>Token palette</li>
-          <li>Visual briefs</li>
-          <li>Composition algebra</li>
-          <li>Motion specs</li>
-          <li>Responsive strategies</li>
+          <li>Stable diagnostic codes</li>
+          <li>Typed repair IDs</li>
+          <li>Graph anchors</li>
+          <li>Evidence Bundles</li>
+          <li>Component reuse findings</li>
+          <li>CI health artifacts</li>
+          <li>Repair prompts</li>
         </ul>
       </div>
 
@@ -2809,13 +2760,13 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== WHAT THE AI READS ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal">Rich, actionable context -- not vague instructions</h2>
-    <p class="section-sub reveal">Every section context is self-contained. The AI gets everything it needs for each page in one file.</p>
+    <h2 class="section-heading reveal">Typed graph context -- not prompt soup</h2>
+    <p class="section-sub reveal">Markdown remains readable for humans. Agents get graph snapshots, contract capsules, and route-scoped context that point to the exact pages, shells, patterns, rules, and evidence in play.</p>
 
     <div class="reveal context-tabs-wrap">
       <div class="ctx-tabs">
-        <button class="ctx-tab-btn active" data-ctx="section">section-*.md</button>
-        <button class="ctx-tab-btn" data-ctx="scaffold">scaffold.md</button>
+        <button class="ctx-tab-btn active" data-ctx="section">route graph</button>
+        <button class="ctx-tab-btn" data-ctx="scaffold">contract capsule</button>
         <button class="ctx-tab-btn" data-ctx="pattern">pattern spec</button>
       </div>
 
@@ -2910,8 +2861,8 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== MCP TOOLS ==================== -->
 <section class="section" id="tools">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>25 tools for your AI assistant</h2>
-    <p class="section-sub reveal">Install once. Every prompt gets smarter.</p>
+    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>32 tools for your AI assistant</h2>
+    <p class="section-sub reveal">MCP-native governance: agents can read the contract graph, prepare route-scoped work, verify findings, and request repair prompts.</p>
 
     <!-- MCP INSTALL -->
     <div class="mcp-install reveal">
@@ -2967,6 +2918,26 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="tool-desc">Read the current design spec</p>
       </div>
       <div class="tool-item">
+        <div class="tool-name"><i data-lucide="activity" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_project_state</div>
+        <p class="tool-desc">Compact project readiness, pack, graph, and local-authority state</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="brain-circuit" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_contract_capsule</div>
+        <p class="tool-desc">Load the cache-friendly typed Contract capsule for an agent session</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="git-fork" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_graph_snapshot</div>
+        <p class="tool-desc">Read graph metadata, route subgraphs, history snapshots, or typed snapshot diffs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="search-code" class="tool-icon" style="color:var(--cyan)"></i>decantr_query_graph</div>
+        <p class="tool-desc">Query current or historical typed graph nodes, relations, and endpoints</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="workflow" class="tool-icon" style="color:var(--cyan)"></i>decantr_traverse_graph</div>
+        <p class="tool-desc">Traverse current or historical graph relationships from route, token, component, or rule nodes</p>
+      </div>
+      <div class="tool-item">
         <div class="tool-name"><i data-lucide="layout-grid" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_scaffold_context</div>
         <p class="tool-desc">Top-level scaffold context for the whole app</p>
       </div>
@@ -2995,13 +2966,13 @@ Start with the shell layouts, then build each section's pages.</div>
     <!-- REASON band -->
     <div class="tool-band-label reveal">
       <span class="tool-band-dot" style="background:var(--amber)"></span>
-      <span class="tool-band-name">Reason</span>
-      <span class="tool-band-sub">Resolve registry content into concrete structural specs</span>
+      <span class="tool-band-name">Vocabulary</span>
+      <span class="tool-band-sub">Resolve certified vocabulary when the project asks for it</span>
     </div>
     <div class="tools-list reveal">
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="search" class="tool-icon" style="color:var(--amber)"></i>decantr_search_registry</div>
-        <p class="tool-desc">Search patterns, archetypes, themes, blueprints, shells</p>
+        <p class="tool-desc">Search patterns, archetypes, themes, starter kits, shells</p>
       </div>
       <div class="tool-item">
         <div class="tool-name"><i data-lucide="puzzle" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_pattern</div>
@@ -3070,11 +3041,19 @@ Start with the shell layouts, then build each section's pages.</div>
         <p class="tool-desc">Schema-backed project audit against packs, guards, and drift</p>
       </div>
       <div class="tool-item">
+        <div class="tool-name"><i data-lucide="list-checks" class="tool-icon" style="color:var(--green)"></i>decantr_get_findings</div>
+        <p class="tool-desc">Typed findings with stable codes, repair IDs, graph anchors, and optional prompts</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="wrench" class="tool-icon" style="color:var(--green)"></i>decantr_get_repair_plan</div>
+        <p class="tool-desc">Structured repair plan with action payload, evidence, read targets, constraints, and rerun commands</p>
+      </div>
+      <div class="tool-item">
         <div class="tool-name"><i data-lucide="folder-check" class="tool-icon" style="color:var(--green)"></i>decantr_get_evidence_bundle</div>
         <p class="tool-desc">Local evidence bundle for AI repair loops and CI artifacts</p>
       </div>
       <div class="tool-item">
-        <div class="tool-name"><i data-lucide="wrench" class="tool-icon" style="color:var(--green)"></i>decantr_get_repair_prompt</div>
+        <div class="tool-name"><i data-lucide="file-pen-line" class="tool-icon" style="color:var(--green)"></i>decantr_get_repair_prompt</div>
         <p class="tool-desc">Scoped repair prompt with exact finding evidence and rerun commands</p>
       </div>
       <div class="tool-item">
@@ -3102,6 +3081,10 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="refresh-cw" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>refresh</div>
         <p class="cli-desc">Regenerate context files from the essence</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="git-fork" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>graph</div>
+        <p class="cli-desc">Generate the typed Contract graph, graph diff, manifest, and contract capsule</p>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="plus-circle" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>add page</div>
@@ -3153,7 +3136,7 @@ Start with the shell layouts, then build each section's pages.</div>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="search" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>search &lt;query&gt;</div>
-        <p class="cli-desc">Search the registry across patterns, themes, blueprints</p>
+        <p class="cli-desc">Search certified vocabulary across patterns, themes, shells, and starter kits</p>
       </div>
       <div class="cli-item">
         <div class="cli-name"><i data-lucide="clipboard-check" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>audit</div>
@@ -3178,46 +3161,23 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="quickstart">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="rocket" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Get started</h2>
-    <p class="section-sub reveal">Pick a blueprint, scaffold, build. Three steps to a production-quality app.</p>
+    <p class="section-sub reveal">Attach Decantr to the app you already have, give the agent route-scoped context, then verify the change before it lands.</p>
 
     <div class="reveal">
-      <h3 style="text-align:center; color:var(--coral); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 1: Pick a blueprint</h3>
-      <div class="blueprint-grid">
-        <div class="blueprint-card blueprint-card-1 card-decorated reveal reveal-d1">
-          <div class="blueprint-icon"><i data-lucide="bot" style="width:22px;height:22px;color:var(--cyan)"></i></div>
-          <div class="blueprint-name" style="color:var(--cyan)">agent-studio</div>
-          <div class="blueprint-theme">certified flagship</div>
-          <p class="blueprint-desc">AI agent ops and eval workspace</p>
-        </div>
-        <div class="blueprint-card blueprint-card-2 card-decorated reveal reveal-d2">
-          <div class="blueprint-icon"><i data-lucide="database" style="width:22px;height:22px;color:var(--coral)"></i></div>
-          <div class="blueprint-name" style="color:var(--coral)">registry-platform</div>
-          <div class="blueprint-theme">certified flagship</div>
-          <p class="blueprint-desc">Design intelligence registry</p>
-        </div>
-        <div class="blueprint-card blueprint-card-3 card-decorated reveal reveal-d3">
-          <div class="blueprint-icon"><i data-lucide="activity" style="width:22px;height:22px;color:var(--green)"></i></div>
-          <div class="blueprint-name" style="color:var(--green)">observability-platform</div>
-          <div class="blueprint-theme">certified flagship</div>
-          <p class="blueprint-desc">Incident and telemetry command center</p>
-        </div>
-        <div class="blueprint-card blueprint-card-4 card-decorated reveal reveal-d4">
-          <div class="blueprint-icon"><i data-lucide="trophy" style="width:22px;height:22px;color:var(--amber)"></i></div>
-          <div class="blueprint-name" style="color:var(--amber)">esports-hq</div>
-          <div class="blueprint-theme">certified flagship</div>
-          <p class="blueprint-desc">Matchday operations and VOD review</p>
-        </div>
-      </div>
+      <h3 style="text-align:center; color:var(--coral); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 1: Adopt</h3>
+      <div class="showcase-code" style="max-width:780px; margin:0 auto 20px;"><span class="k">$</span> <span class="s">npx @decantr/cli adopt --yes</span></div>
+      <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:640px; margin:0 auto 40px;">Decantr inventories routes, framework, style signals, local docs, and existing UI patterns, then writes an observed contract you own.</p>
     </div>
 
     <div class="reveal" style="max-width:780px; margin:0 auto 40px;">
-      <h3 style="text-align:center; color:var(--cyan); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 2: Scaffold</h3>
-      <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli new my-app --blueprint=esports-hq</span></div>
+      <h3 style="text-align:center; color:var(--cyan); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 2: Activate context</h3>
+      <div class="showcase-code"><span class="k">$</span> <span class="s">decantr graph &amp;&amp; decantr task /feed "add saved recipe actions"</span></div>
     </div>
 
     <div class="reveal" style="max-width:780px; margin:0 auto;">
-      <h3 style="text-align:center; color:var(--amber); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 3: Build</h3>
-      <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:580px; margin:0 auto;">Paste the generated prompt into Claude Code, Cursor, or any AI coding assistant. The AI reads your context files and builds a production-quality app.</p>
+      <h3 style="text-align:center; color:var(--amber); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 3: Verify</h3>
+      <div class="showcase-code"><span class="k">$</span> <span class="s">decantr verify --evidence</span></div>
+      <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:580px; margin:20px auto 0;">Project Health emits stable codes, typed repair IDs, graph anchors, and evidence bundles; graph snapshots give the assistant replayable history to fix drift.</p>
     </div>
   </div>
 </section>
@@ -3228,8 +3188,8 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== CRITIQUE PROOF ==================== -->
 <section class="section" id="critique">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="star" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>The AI scores its own work.</h2>
-    <p class="section-sub reveal"><code>decantr_critique</code> grades generated code against the essence — treatments, decorators, personality alignment, motion, a11y, responsive. The AI iterates until the score is green.</p>
+    <h2 class="section-heading reveal"><i data-lucide="star" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>The verifier turns drift into repair work.</h2>
+    <p class="section-sub reveal">Project Health and MCP tools emit stable codes, typed repair IDs, graph anchors, and source evidence. The agent gets a precise finding instead of a vague review comment.</p>
 
     <div class="critique-panel reveal">
       <div class="critique-side critique-before card-decorated">
@@ -3244,21 +3204,21 @@ Start with the shell layouts, then build each section's pages.</div>
             <i data-lucide="x-circle" class="critique-icon" style="color:var(--pink)"></i>
             <div>
               <div class="critique-item-name">Treatments</div>
-              <div class="critique-item-note">6 of 18 components use <code>d-surface</code>. Raw Tailwind everywhere else.</div>
+              <div class="critique-item-note"><code>COMP001</code>: local <code>Button</code> reimplemented instead of importing the project-owned primitive.</div>
             </div>
           </li>
           <li class="critique-item critique-fail">
             <i data-lucide="x-circle" class="critique-icon" style="color:var(--pink)"></i>
             <div>
-              <div class="critique-item-name">Decorators</div>
-              <div class="critique-item-note">0 theme decorators applied. Personality says "luminous glass" — not visible.</div>
+              <div class="critique-item-name">Context</div>
+              <div class="critique-item-note"><code>CTX002</code>: execution packs are missing, so agent context may be stale.</div>
             </div>
           </li>
           <li class="critique-item critique-warn">
             <i data-lucide="alert-triangle" class="critique-icon" style="color:var(--amber)"></i>
             <div>
-              <div class="critique-item-name">Motion</div>
-              <div class="critique-item-note">No entrance transitions. Essence spec requires staggered reveals.</div>
+              <div class="critique-item-name">Route</div>
+              <div class="critique-item-note"><code>ROUTE001</code>: observed route is not represented in the contract.</div>
             </div>
           </li>
           <li class="critique-item critique-pass">
@@ -3287,22 +3247,22 @@ Start with the shell layouts, then build each section's pages.</div>
           <li class="critique-item critique-pass">
             <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
             <div>
-              <div class="critique-item-name">Treatments</div>
-              <div class="critique-item-note">17 of 18 components on <code>d-surface</code> / <code>d-interactive</code>.</div>
+              <div class="critique-item-name">Component reuse</div>
+              <div class="critique-item-note">Repair imports the canonical <code>Button</code> and removes the duplicate local primitive.</div>
             </div>
           </li>
           <li class="critique-item critique-pass">
             <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
             <div>
-              <div class="critique-item-name">Decorators</div>
-              <div class="critique-item-note"><code>luminarum-glass</code> applied to cards. <code>luminarum-glow</code> on primary CTAs.</div>
+              <div class="critique-item-name">Context</div>
+              <div class="critique-item-note">Packs are regenerated and the Contract capsule points at the current graph snapshot.</div>
             </div>
           </li>
           <li class="critique-item critique-pass">
             <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
             <div>
-              <div class="critique-item-name">Motion</div>
-              <div class="critique-item-note">50ms staggered fade-in on every list. Respects <code>prefers-reduced-motion</code>.</div>
+              <div class="critique-item-name">Route</div>
+              <div class="critique-item-note">Observed route is reconciled into Essence and can receive route-scoped task context.</div>
             </div>
           </li>
           <li class="critique-item critique-pass">
@@ -3397,11 +3357,11 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ===== DIVIDER ===== -->
 <div class="section-divider"><span class="divider-dot" style="background:var(--yellow)"></span></div>
 
-<!-- ==================== REGISTRY ==================== -->
+<!-- ==================== VOCABULARY ==================== -->
 <section class="section">
   <div class="container">
-    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>225+ patterns. 30+ themes. Curated blueprint sets.</h2>
-    <p class="section-sub reveal">Browse Featured, Certified, All, and Labs blueprint cuts without exposing internal maintainer labels — or publish your own patterns, themes, and blueprints for others to use.</p>
+    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Certified vocabulary, not a marketplace dependency.</h2>
+    <p class="section-sub reveal">The public registry is a vocabulary source for patterns, themes, shells, archetypes, and starter kits. Your repo-owned Contract decides what applies; registry content never overrides local law.</p>
 
     <div class="stats-grid">
       <a href="https://registry.decantr.ai/browse/patterns" target="_blank" rel="noopener" class="stat-card stat-card-1 reveal reveal-d1">
@@ -3419,7 +3379,7 @@ Start with the shell layouts, then build each section's pages.</div>
       <a href="https://registry.decantr.ai/browse/blueprints" target="_blank" rel="noopener" class="stat-card stat-card-3 reveal reveal-d3">
         <div class="stat-icon"><i data-lucide="layout-template" style="width:24px;height:24px;color:var(--cyan)"></i></div>
         <div class="stat-number">40+</div>
-        <div class="stat-label">Blueprints</div>
+        <div class="stat-label">Starter Kits</div>
         <div class="stat-action">Browse →</div>
       </a>
       <a href="https://registry.decantr.ai/browse/archetypes" target="_blank" rel="noopener" class="stat-card stat-card-4 reveal reveal-d4">
@@ -3431,9 +3391,9 @@ Start with the shell layouts, then build each section's pages.</div>
     </div>
 
     <div style="text-align:center; margin-top:3rem; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;" class="reveal">
-      <a href="https://registry.decantr.ai" target="_blank" rel="noopener" class="btn-primary" style="font-size:1.05rem; padding:14px 32px;">Browse the Registry →</a>
-      <a href="/reference/registry-public-api.html" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Read the Public API</a>
-      <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" target="_blank" rel="noopener" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Read Project Health</a>
+      <a href="/reference/project-health.md" class="btn-primary" style="font-size:1.05rem; padding:14px 32px;">Read Project Health</a>
+      <a href="https://registry.decantr.ai" target="_blank" rel="noopener" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Browse Vocabulary</a>
+      <a href="/reference/registry-public-api.html" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Read the Registry API</a>
     </div>
   </div>
 </section>
@@ -3445,34 +3405,34 @@ Start with the shell layouts, then build each section's pages.</div>
 <section class="section" id="packages">
   <div class="container">
     <h2 class="section-heading reveal"><i data-lucide="package" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Open source. MIT licensed.</h2>
-    <p class="section-sub reveal">Eight packages, one mission: make AI-generated UI reliable enough to govern.</p>
+    <p class="section-sub reveal">Eight packages, one mission: make AI-edited frontend code reliable enough to govern.</p>
 
     <div class="pkg-band-label reveal"><span class="pkg-band-dot" style="background:var(--cyan)"></span>Foundation</div>
     <div class="packages-grid">
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/essence-spec</div>
         <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
-        <div class="pkg-version">v2.0.1</div>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
       <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/registry</div>
-        <p class="pkg-desc">Content resolver and discovery helpers for patterns, archetypes, themes, blueprints, and shells</p>
-        <div class="pkg-version">v2.2.0</div>
+        <p class="pkg-desc">Certified vocabulary contracts and discovery helpers for patterns, archetypes, themes, starter kits, and shells</p>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/css</div>
-        <p class="pkg-desc">Framework-agnostic CSS atoms runtime for layout utilities</p>
-        <div class="pkg-version">v2.0.0</div>
+        <p class="pkg-desc">Optional framework-agnostic CSS atoms runtime for starter kits and Decantr CSS adoption lanes</p>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d4">
         <div class="pkg-name">@decantr/core</div>
-        <p class="pkg-desc">Design Pipeline IR engine -- the brain behind intent-to-composition</p>
-        <div class="pkg-version">v2.1.0</div>
+        <p class="pkg-desc">Execution-pack compiler primitives, typed Contract graph builders, graph diffs, and Contract capsules</p>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d5">
         <div class="pkg-name">@decantr/telemetry</div>
         <p class="pkg-desc">Privacy-preserving event contracts, clients, and analytics sinks</p>
-        <div class="pkg-version">v2.2.1</div>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
     </div>
 
@@ -3481,17 +3441,17 @@ Start with the shell layouts, then build each section's pages.</div>
       <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
         <div class="pkg-name">@decantr/cli</div>
         <p class="pkg-desc">Workflow commands, project scaffolding, Brownfield activation, Hybrid authority lanes, doctor, CI, local law, style bridges, visual evidence, baselines, workspace health, and registry sync</p>
-        <div class="pkg-version">v2.13.1</div>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
       <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
         <div class="pkg-name">@decantr/mcp-server</div>
-        <p class="pkg-desc">MCP server exposing design intelligence and reliability tools to AI assistants, including task-time Brownfield/Hybrid context with authority, local law, style bridges, and change impact</p>
-        <div class="pkg-version">v2.5.0</div>
+        <p class="pkg-desc">MCP server exposing typed graph context, Brownfield/Hybrid authority, local law, style bridges, Evidence Bundles, and repair prompts to AI assistants</p>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
       <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
         <div class="pkg-name">@decantr/verifier</div>
-        <p class="pkg-desc">Shared audit, critique, source-grounded interaction evidence, Evidence Bundle, CI report schema with style bridge summaries, and Project Health engine</p>
-        <div class="pkg-version">v2.5.1</div>
+        <p class="pkg-desc">Project Health, structured diagnostics, graph-anchored findings, component reuse drift, Evidence Bundles, CI schemas, and repair payloads</p>
+        <div class="pkg-version">v3.0.0-next.0</div>
       </div>
     </div>
     <p class="section-sub reveal" style="margin-top:28px">Security reviews should inspect the installed npm surface, not internal release scripts or showcase fixtures. See the <a href="/reference/security-permissions.md">security and permissions matrix</a> for filesystem, network, process, telemetry, hosted upload, and MCP write-tool behavior.</p>
@@ -3504,8 +3464,8 @@ Start with the shell layouts, then build each section's pages.</div>
 <!-- ==================== WORKS WITH ==================== -->
 <section class="works-section" id="works">
   <div class="container">
-    <h2 class="section-heading reveal" style="margin-bottom:16px">Works with your stack</h2>
-    <p class="section-sub reveal" style="margin-bottom:32px">Patterns are framework-agnostic. Your AI assistant writes the code in whatever you're already using.</p>
+    <h2 class="section-heading reveal" style="margin-bottom:16px">Deep where verification matters</h2>
+    <p class="section-sub reveal" style="margin-bottom:32px">Decantr stays useful across web stacks, but the governance path is getting deepest first for React, TypeScript, Tailwind, and shadcn-style component systems.</p>
 
     <div class="works-group reveal">
       <div class="works-group-label"><i data-lucide="bot" style="width:14px;height:14px"></i>AI assistants</div>
@@ -3545,8 +3505,8 @@ Start with the shell layouts, then build each section's pages.</div>
 
 <!-- ==================== BOTTOM CTA ==================== -->
 <div class="bottom-cta">
-  <h2>Stop generating UI slop.</h2>
-  <p>Add Decantr to your AI assistant in 30 seconds.</p>
+  <h2>Put governance in the agent loop.</h2>
+  <p>Adopt a project, load route context, verify the edit, and keep the evidence.</p>
   <a href="#quickstart" class="btn-cta-dark">Get Started</a>
 </div>
 
@@ -3564,9 +3524,10 @@ Start with the shell layouts, then build each section's pages.</div>
     <a href="/guides/monorepos.md">Monorepos</a>
     <a href="/guides/project-health-ci.md">Project Health CI</a>
     <a href="/guides/ai-assistant-setup.md">AI Tools</a>
+    <a href="/guides/typed-graph-agent-playbook.md">Graph Playbook</a>
     <a href="https://github.com/decantr-ai/decantr/blob/main/docs/runbooks/release-stewardship.md" target="_blank" rel="noopener">Release Stewardship</a>
     <a href="/reference/security-permissions.md">Security &amp; Permissions</a>
-    <a href="/reference/registry-public-api.html">Public API</a>
+    <a href="/reference/registry-public-api.html">Registry API</a>
     <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" target="_blank" rel="noopener">Project Health</a>
     <a href="#tools">MCP Tools</a>
   </div>

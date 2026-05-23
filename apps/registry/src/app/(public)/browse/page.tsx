@@ -24,7 +24,7 @@ export const revalidate = 300; // ISR: revalidate every 5 minutes
 export const metadata: Metadata = {
   title: 'Browse',
   description:
-    'Explore the Decantr registry across patterns, themes, blueprints, archetypes, and shells.',
+    'Explore Decantr certified vocabulary across patterns, themes, starter kits, archetypes, and shells.',
   alternates: {
     canonical: '/browse',
   },
@@ -115,9 +115,9 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const title = selectedType ? CONTENT_TYPE_LABELS[selectedType] : 'Browse';
   const description = selectedType
     ? selectedType === 'blueprints'
-      ? 'Browse supported blueprint contracts. Featured and Certified are the strongest default picks; Labs contains promising directions that need more proof.'
+      ? 'Browse supported starter-kit contracts. Featured and Certified are the strongest default picks; Labs contains promising directions that need more proof.'
       : CONTENT_TYPE_DESCRIPTIONS[selectedType]
-    : 'Explore the full Decantr registry across patterns, themes, blueprints, archetypes, and shells.';
+    : 'Explore Decantr certified vocabulary across patterns, themes, starter kits, archetypes, and shells.';
   const jsonLd = buildRegistryCollectionJsonLd({
     path: selectedType ? `/browse/${selectedType}` : '/browse',
     name: selectedType ? `Decantr ${CONTENT_TYPE_LABELS[selectedType]}` : 'Decantr Registry Browse',

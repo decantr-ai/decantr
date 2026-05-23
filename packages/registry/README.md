@@ -3,7 +3,7 @@
 Support status: `core-supported`  
 Release channel: `stable`
 
-Registry contracts, schemas, API client, ranking helpers, and content utilities for Decantr.
+Certified vocabulary contracts, schemas, API client, ranking helpers, and content utilities for Decantr.
 
 ## Install
 
@@ -13,12 +13,12 @@ npm install @decantr/registry
 
 ## What It Exports
 
-- strong types for patterns, themes, blueprints, archetypes, shells, and intelligence metadata
-- `ContentHealthReport` types for registry content supply-chain health artifacts
+- strong types for patterns, themes, starter-kit blueprints, archetypes, shells, and intelligence metadata
+- `ContentHealthReport` types for vocabulary supply-chain health artifacts
 - `RegistryAPIClient` for server-side and tool-side registry access
 - `@decantr/registry/client` for web-safe API usage
-- public schema exports for registry content, content health, and summary responses
-- ranking and sorting helpers for public registry content
+- public schema exports for vocabulary content, content health, and summary responses
+- ranking and sorting helpers for public vocabulary content
 - Brownfield-aware pattern discovery helpers: `patternToDiscoveryCandidate()`, `scorePatternCandidate()`, and `rankPatternCandidates()`
 - blueprint portfolio metadata helpers for public `All`, `Featured`, `Certified`, and `Labs` registry cuts
 
@@ -63,9 +63,9 @@ This package owns the canonical registry schemas published under `@decantr/regis
 
 Blueprint records can include `blueprint_portfolio` metadata. List/search summaries expose that metadata so clients can show public-facing blueprint sets without leaking internal maturity labels:
 
-- `all` — supported public blueprints, excluding Labs and folded slugs by default
+- `all` — supported public starter-kit blueprints, excluding Labs and folded slugs by default
 - `featured` — curated default discovery picks
-- `certified` — blueprints with certified artifact metadata
+- `certified` — starter kits with certified artifact metadata
 - `labs` — opt-in experimental directions
 
 ## Compatibility

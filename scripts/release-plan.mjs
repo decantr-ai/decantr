@@ -84,15 +84,15 @@ const markdownLines = [
     ? `- authenticated${npmAuth.username ? ` as ${npmAuth.username}` : ''}`
     : `- not authenticated: ${npmAuth.error}`,
   '',
-  '| Package | Wave | Order | Current version | Stable target | Maturity | Action | Dist-tag | Notes |',
-  '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+  '| Package | Wave | Order | Current version | Stable target | Maturity | Channel | Action | Dist-tag | Notes |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   ...output.packages.map((entry) => {
     const note = entry.recommendedAction === 'retired'
       ? (entry.retirement?.replacement ? `Replacement: ${entry.retirement.replacement}` : entry.summary)
       : entry.blockers.length > 0
         ? entry.blockers[0]
         : entry.summary;
-    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${escapeMarkdownCell(note)} |`;
+    return `| ${entry.name} | ${entry.releaseWave} | ${entry.publishOrder} | ${entry.version ?? '-'} | ${entry.stableTargetVersion ?? '-'} | ${entry.maturity} | ${entry.releaseChannel ?? '-'} | ${entry.recommendedAction} | ${entry.releaseTag ?? '-'} | ${escapeMarkdownCell(note)} |`;
   }),
   '',
 ];

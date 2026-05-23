@@ -109,7 +109,7 @@ export default async function BrowseTypePage({ params, searchParams }: BrowseTyp
     items,
   });
   const pageDescription = type === 'blueprints'
-    ? 'Browse supported blueprint contracts. Featured and Certified are the strongest default picks; Labs contains promising directions that need more proof.'
+    ? 'Browse supported starter-kit contracts. Featured and Certified are the strongest default picks; Labs contains promising directions that need more proof.'
     : CONTENT_TYPE_DESCRIPTIONS[type];
 
   return (

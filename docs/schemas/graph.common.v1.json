@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/graph.common.v1.json",
+  "title": "Decantr Typed Graph Common Definitions",
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schemaVersion": {
+      "const": "3.0.0-draft"
+    },
+    "graphNodeType": {
+      "type": "string",
+      "enum": [
+        "Project",
+        "Section",
+        "Page",
+        "Route",
+        "Shell",
+        "Region",
+        "Pattern",
+        "Component",
+        "Token",
+        "Theme",
+        "Decorator",
+        "Feature",
+        "LocalRule",
+        "StyleBridge",
+        "SourceArtifact",
+        "Finding",
+        "Evidence",
+        "Repair",
+        "Test",
+        "AgentRun"
+      ]
+    },
+    "graphRelation": {
+      "type": "string",
+      "enum": [
+        "PROJECT_CONTAINS_SECTION",
+        "PROJECT_ENABLES_FEATURE",
+        "PROJECT_USES_THEME",
+        "SECTION_CONTAINS_PAGE",
+        "PAGE_ROUTED_AT_ROUTE",
+        "PAGE_USES_SHELL",
+        "SHELL_HAS_REGION",
+        "PAGE_COMPOSES_PATTERN",
+        "PATTERN_NEEDS_COMPONENT",
+        "COMPONENT_STYLED_WITH_TOKEN",
+        "THEME_DEFINES_TOKEN",
+        "THEME_DEFINES_DECORATOR",
+        "COMPONENT_DECORATED_WITH_DECORATOR",
+        "LOCAL_RULE_APPLIES_TO",
+        "STYLE_BRIDGE_MAPS_TO",
+        "NODE_DERIVED_FROM_SOURCE",
+        "SOURCE_IMPORTS_SOURCE",
+        "FINDING_VIOLATES_RULE",
+        "FINDING_ANCHORED_AT",
+        "EVIDENCE_SUPPORTS_FINDING",
+        "EVIDENCE_CAPTURED_FOR",
+        "REPAIR_FIXES_FINDING",
+        "TEST_COVERS_NODE",
+        "AGENT_RUN_CHANGED_NODE"
+      ]
+    },
+    "graphDiffOpType": {
+      "type": "string",
+      "enum": [
+        "node.added",
+        "node.removed",
+        "node.changed",
+        "edge.added",
+        "edge.removed",
+        "edge.changed",
+        "finding.added",
+        "finding.resolved",
+        "evidence.added"
+      ]
+    },
+    "graphNode": {
+      "type": "object",
+      "required": ["id", "type", "payload"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "type": {
+          "$ref": "#/$defs/graphNodeType"
+        },
+        "payload": true,
+        "created_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "graphEdge": {
+      "type": "object",
+      "required": ["src", "dst", "relation"],
+      "properties": {
+        "src": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "dst": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "$ref": "#/$defs/graphRelation"
+        },
+        "payload": true,
+        "idx": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "sourceArtifact": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "kind": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "path": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "graphSummary": {
+      "type": "object",
+      "required": ["nodes", "edges", "findings", "evidence"],
+      "properties": {
+        "nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "edges": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "repairAction": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

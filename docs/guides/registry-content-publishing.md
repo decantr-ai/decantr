@@ -1,6 +1,6 @@
 # Registry And Content Publishing
 
-The Decantr registry is the public catalog of blueprints, archetypes, patterns, themes, and shells that AI assistants can use as design intelligence.
+The Decantr registry is the public catalog of certified vocabulary: starter kits, archetypes, patterns, themes, and shells that can feed project-owned Contracts. It is supporting infrastructure, not the product center.
 
 ## Public Surfaces
 
@@ -11,7 +11,7 @@ The Decantr registry is the public catalog of blueprints, archetypes, patterns, 
 
 ## Official Content
 
-The `decantr-content` repository is the source of truth for the `@official` namespace. It contains patterns, themes, blueprints, archetypes, and shells. Changes are validated in CI and published by maintainers after they land on `main`.
+The `decantr-content` repository is the source of truth for the `@official` namespace. It contains patterns, themes, starter-kit blueprints, archetypes, and shells. Changes are validated in CI and published by maintainers after they land on `main`.
 
 Blueprints also carry `blueprint_portfolio` metadata. This lets maintainers keep the public registry simple while preserving compatibility:
 
@@ -35,7 +35,7 @@ The hosted registry can accept community content under non-official namespaces. 
 
 ## Content Health
 
-Use Content Health for registry content repositories:
+Use Content Health for vocabulary repositories:
 
 ```bash
 npx @decantr/cli content check

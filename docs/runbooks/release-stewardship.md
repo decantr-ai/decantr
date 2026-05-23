@@ -60,6 +60,31 @@ pnpm release:closeout -- --only=@decantr/cli --version X.Y.Z
 pnpm release:announce -- --only=@decantr/cli --version X.Y.Z --send
 ```
 
+## Prerelease Channel
+
+Major-line previews, including Decantr 3, use npm `next` and an explicit package-surface channel. Do not repurpose the stable package lane silently.
+
+For a prerelease package line:
+
+1. package versions use prerelease semver, such as `3.0.0-next.0`
+2. `config/package-surface.json` sets `releaseChannel: "prerelease"` for the affected publishable packages
+3. those package-surface entries set `defaultDistTag: "next"`
+4. `pnpm audit:package-surface` passes before any publish dry-run
+5. `latest` remains on the previous stable line until the flip criteria are met
+
+Use a single tag override consistently when previewing or verifying a prerelease:
+
+```bash
+pnpm release:commands -- --tag next
+pnpm release:preflight -- --tag next
+pnpm release:verify -- --tag next
+pnpm release:closeout -- --tag next --version 3.0.0-next.0
+```
+
+`--tag next` is shorthand for `--tag-override=next` in the release scripts. The package-surface `defaultDistTag` should still be updated to `next` before a real prerelease so closeout evidence describes the intended channel without relying on memory.
+
+See [Decantr 3 Prerelease Runbook](decantr-3-prerelease.md) for the hard-cut release structure.
+
 ## Community Announcement
 
 Discord release announcements are a distribution step, not release truth. Run them only after `release:verify` and `release:closeout` pass.
@@ -67,13 +92,13 @@ Discord release announcements are a distribution step, not release truth. Run th
 `pnpm release:announce` builds a `repository_dispatch` payload for `decantr-ai/community-ops`, including the version, tag, release-note path, changelog markdown, and selected package versions. It dry-runs by default:
 
 ```bash
-pnpm release:announce -- --version 2.12.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --json
+pnpm release:announce -- --version 3.0.0-next.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --json
 ```
 
 To post through the community automation, set `COMMUNITY_OPS_DISPATCH_TOKEN` to a GitHub token that can create `repository_dispatch` events on `decantr-ai/community-ops`, then send:
 
 ```bash
-pnpm release:announce -- --version 2.12.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --send
+pnpm release:announce -- --version 3.0.0-next.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --send
 ```
 
 `community-ops` owns the Discord webhook secret and message formatting. Decantr only sends the release facts after closeout.

@@ -85,8 +85,8 @@ export const CONTENT_TYPE_PRESENTATION: Record<RegistryContentType, ContentTypeP
     tone: 'theme',
   },
   blueprints: {
-    singular: 'blueprint',
-    plural: 'Blueprints',
+    singular: 'starter kit',
+    plural: 'Starter Kits',
     icon: <IconLayers className="registry-type-icon" />,
     tone: 'blueprint',
   },

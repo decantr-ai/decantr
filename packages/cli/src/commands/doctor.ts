@@ -8,6 +8,7 @@ import { detectProject } from '../detect.js';
 import { localPatternsPath, localRulesPath } from '../local-law.js';
 import { styleBridgePath, styleBridgeProposalPath } from '../style-bridge.js';
 import { resolveWorkspaceInfo } from '../workspace.js';
+import { buildGraphArtifacts } from './graph.js';
 import { listWorkspaceCandidates, listWorkspaceProjects } from './workspace.js';
 
 const BOLD = '\x1b[1m';
@@ -37,6 +38,7 @@ interface DoctorIssue {
     | 'migration'
     | 'ci'
     | 'generated-artifact'
+    | 'graph'
     | 'local-law'
     | 'visual-evidence'
     | 'design-authority'
@@ -92,6 +94,11 @@ interface DoctorReport {
     packManifestPresent: boolean;
     reviewPackPresent: boolean;
     missingReferencedFiles: string[];
+    graphSnapshotPresent: boolean;
+    graphCapsulePresent: boolean;
+    graphArtifactsCurrent: boolean | null;
+    graphStaleArtifacts: string[];
+    graphError: string | null;
   };
   localLaw: {
     patternsPresent: boolean;
@@ -423,6 +430,37 @@ function deriveAdoptionLane(input: {
   };
 }
 
+function inspectGraphArtifacts(appRoot: string, workspaceRoot: string): {
+  snapshotPresent: boolean;
+  capsulePresent: boolean;
+  artifactsCurrent: boolean | null;
+  staleArtifacts: string[];
+  error: string | null;
+} {
+  const snapshotPath = join(appRoot, '.decantr', 'graph', 'graph.snapshot.json');
+  const capsulePath = join(appRoot, '.decantr', 'graph', 'contract-capsule.json');
+  try {
+    const artifacts = buildGraphArtifacts(appRoot);
+    return {
+      snapshotPresent: existsSync(snapshotPath),
+      capsulePresent: existsSync(capsulePath),
+      artifactsCurrent: artifacts ? artifacts.staleArtifacts.length === 0 : null,
+      staleArtifacts: artifacts
+        ? artifacts.staleArtifacts.map((path) => rel(workspaceRoot, path))
+        : [],
+      error: null,
+    };
+  } catch (error) {
+    return {
+      snapshotPresent: existsSync(snapshotPath),
+      capsulePresent: existsSync(capsulePath),
+      artifactsCurrent: false,
+      staleArtifacts: [],
+      error: (error as Error).message,
+    };
+  }
+}
+
 function buildDoctorReport(root: string, args: string[]): DoctorReport {
   let projectArg: string | undefined;
   for (let index = 1; index < args.length; index += 1) {
@@ -463,6 +501,7 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   const localRulesPresent = existsSync(localRulesPath(appRoot));
   const styleBridgePresent = existsSync(styleBridgePath(appRoot));
   const styleBridgeProposalPresent = existsSync(styleBridgeProposalPath(appRoot));
+  const graphArtifacts = inspectGraphArtifacts(appRoot, workspaceRoot);
   const missingPackReferences = workspaceMode
     ? projects.flatMap((project) =>
         collectMissingPackManifestFiles(join(workspaceRoot, project.path)).map(
@@ -584,6 +623,21 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
   }
 
   if (
+    essenceVersion === '4.0.0' &&
+    (Boolean(projectJson) || graphArtifacts.snapshotPresent || graphArtifacts.capsulePresent) &&
+    (graphArtifacts.error || graphArtifacts.artifactsCurrent === false)
+  ) {
+    issues.push({
+      category: 'graph',
+      severity: 'warn',
+      message: graphArtifacts.error
+        ? `Typed Contract graph could not be derived: ${graphArtifacts.error}`
+        : 'Typed Contract graph artifacts are missing or stale.',
+      nextCommand: projectPath ? `decantr graph --project ${projectPath}` : 'decantr graph',
+    });
+  }
+
+  if (
     workspaceMode &&
     (workspaceProjectsMissingManifest.length > 0 ||
       workspaceProjectsMissingReviewPack.length > 0 ||
@@ -693,6 +747,10 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
       issues.find((issue) => issue.category === 'ci' && issue.message.includes('not pinned'))
         ?.nextCommand,
     );
+    appendUnique(
+      recommendedNextCommands,
+      issues.find((issue) => issue.category === 'graph')?.nextCommand,
+    );
     if (workflowMode === 'brownfield-attach' && !localPatternsPresent) {
       appendUnique(recommendedNextCommands, `decantr codify --from-audit${projectFlag}`);
       appendUnique(recommendedNextCommands, `decantr codify --accept${projectFlag}`);
@@ -757,6 +815,11 @@ function buildDoctorReport(root: string, args: string[]): DoctorReport {
         ? projects.length > 0 && workspaceProjectsMissingReviewPack.length === 0
         : reviewPackPresent,
       missingReferencedFiles: missingPackReferences.slice(0, 25),
+      graphSnapshotPresent: graphArtifacts.snapshotPresent,
+      graphCapsulePresent: graphArtifacts.capsulePresent,
+      graphArtifactsCurrent: graphArtifacts.artifactsCurrent,
+      graphStaleArtifacts: graphArtifacts.staleArtifacts.slice(0, 25),
+      graphError: graphArtifacts.error,
     },
     localLaw: {
       patternsPresent: localPatternsPresent,
@@ -815,6 +878,16 @@ function formatDoctorText(report: DoctorReport): string {
         : `${report.generatedArtifacts.missingReferencedFiles.length} missing`
     }`,
     `  Artifact guide: ${report.project.artifactReadmePresent ? 'present' : 'missing'}`,
+    `  Typed graph: ${
+      report.generatedArtifacts.graphError
+        ? 'error'
+        : report.generatedArtifacts.graphArtifactsCurrent === true
+          ? 'current'
+          : report.generatedArtifacts.graphArtifactsCurrent === false
+            ? 'stale or missing'
+            : 'not generated'
+    }`,
+    `  Graph capsule: ${report.generatedArtifacts.graphCapsulePresent ? 'present' : 'missing'}`,
     '',
     `${BOLD}Local Law:${RESET}`,
     `  Local patterns: ${report.localLaw.patternsPresent ? 'present' : 'missing'}`,

@@ -9,7 +9,7 @@ const args = new Set(rawArgs);
 const jsonOutput = args.has('--json');
 const includeExperimental = args.has('--include-experimental');
 const onlyWave = readArgValue(rawArgs, 'wave');
-const tagOverride = readArgValue(rawArgs, 'tag-override');
+const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
 const onlyNames = new Set(
   readArgValue(rawArgs, 'only')
     ? readArgValue(rawArgs, 'only')
