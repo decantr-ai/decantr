@@ -24,7 +24,7 @@ Decantr 3 is the AI Frontend Governance line for existing applications. It cente
 
 - 2.x remains the live `latest` line until explicit flip criteria are met.
 - Decantr 3 preview packages are published under npm `next`.
-- Live registry sync remains separate from npm package publishing and still requires explicit maintainer approval.
+- Live registry sync remains separate from npm package publishing and still requires explicit maintainer approval for each future sync or prune.
 
 ## Published Packages
 
@@ -36,6 +36,14 @@ Decantr 3 is the AI Frontend Governance line for existing applications. It cente
 - `@decantr/verifier@3.0.0-next.0`
 - `@decantr/mcp-server@3.0.0-next.0`
 - `@decantr/cli@3.0.0-next.0`
+
+## Post-Publish Operations
+
+- Git tag and GitHub prerelease: `v3.0.0-next.0`.
+- Live official registry sync: 567 records synced, 0 pruned, 0 failed.
+- Content drift audit after sync: 567 matched, 0 missing, 0 extra, 0 changed.
+- Community announcement: dispatched through `decantr-ai/community-ops`.
+- Security follow-up: patched `qs` and `ws` dependency advisories, verified 0 open Dependabot alerts, and re-ran CI, CodeQL, Code Quality, and Project Health on `main`.
 
 ## Verification
 

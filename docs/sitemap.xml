@@ -481,8 +481,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://decantr.ai/releases/2026-05-23-decantr-3-next-foundation-draft.md</loc>
-    <lastmod>2026-05-23T11:36:51-04:00</lastmod>
+    <loc>https://decantr.ai/releases/2026-05-23-decantr-3-next-foundation.md</loc>
+    <lastmod>2026-05-23T16:32:51.702Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -560,7 +560,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/release-stewardship.md</loc>
-    <lastmod>2026-05-23T11:19:37-04:00</lastmod>
+    <lastmod>2026-05-23T12:19:22-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

@@ -7,7 +7,7 @@ Owner: Founder + Codex
 Relationship to existing docs:
 
 - This document supersedes the older vNext and Hybrid plans as the strategic planning source for the Decantr 3.x reset.
-- It does not supersede shipped 2.x operational docs until a 3.x implementation branch, prerelease package line, public docs cutover, and release note exist.
+- It is now the active strategic source for the Decantr 3.x prerelease line. Shipped 2.x operational docs remain valid for users intentionally staying on npm `latest` / `@decantr/*@2`.
 - When this document conflicts with current 2.x commands or package behavior, treat the 2.x docs as describing today's product and this document as describing the target operating model.
 
 ## Executive Decision
@@ -43,13 +43,17 @@ Current live facts as of 2026-05-21:
 
 This means 3.0 should be a new major line, not a slow rewording of 2.x.
 
-Implementation status as of 2026-05-23:
+Implementation status after the first 2026-05-23 prerelease closeout:
 
 - Research gate inputs were created and folded into the architecture direction.
-- Local `2.x-maintenance` branch pointers exist in both repositories.
-- The monorepo reset work lives on `decantr-3-typed-graph-foundation`.
-- The content-doc alignment work lives on `decantr-3-governance-content-docs`.
-- No npm publish, git tag, push, hosted deployment, or live registry sync has been performed.
+- The first Decantr 3 foundation package line was published as `3.0.0-next.0` under npm `next`; npm `latest` remains on the 2.x line.
+- Git tag and GitHub prerelease: `v3.0.0-next.0`.
+- Public docs and package READMEs now lead with AI Frontend Governance, Contract / Context / Evidence, typed graph artifacts, and Brownfield/Hybrid governance.
+- The monorepo reset work landed on `main`; historical implementation branches are no longer the release authority.
+- The content-doc alignment work landed on `main` in `decantr-content`.
+- The official registry was synced after maintainer approval: 567 records synced, 0 pruned, 0 failed; the follow-up drift audit reported 567 matched, 0 missing, 0 extra, and 0 changed.
+- Community announcement dispatch completed through `decantr-ai/community-ops`.
+- Post-publish security hardening patched the `qs` and `ws` advisories, left 0 open Dependabot alerts, and passed CI, CodeQL, Code Quality, and Project Health on `main`.
 - The prerelease runbook is [Decantr 3 Prerelease Runbook](../runbooks/decantr-3-prerelease.md).
 
 ## Compatibility Policy

@@ -111,7 +111,7 @@ gh workflow run community-release-announcement.yml \
   --ref main \
   -f version=3.0.0-next.0 \
   -f only_packages=@decantr/cli,@decantr/mcp-server,@decantr/verifier \
-  -f release_note=docs/releases/2026-05-23-decantr-3-next-foundation-draft.md \
+  -f release_note=docs/releases/2026-05-23-decantr-3-next-foundation.md \
   -f target_repo=decantr-ai/community-ops \
   -f send=false
 ```
@@ -127,7 +127,7 @@ gh workflow run discord-release.yml \
   -f version=3.0.0-next.0 \
   -f tag=v3.0.0-next.0 \
   -f repo=decantr-ai/decantr \
-  -f release_note_path=docs/releases/2026-05-23-decantr-3-next-foundation-draft.md \
+  -f release_note_path=docs/releases/2026-05-23-decantr-3-next-foundation.md \
   -f release_url=https://github.com/decantr-ai/decantr/releases/tag/v3.0.0-next.0 \
   -f packages='@decantr/cli@3.0.0-next.0,@decantr/mcp-server@3.0.0-next.0,@decantr/verifier@3.0.0-next.0' \
   -f dry_run=false
