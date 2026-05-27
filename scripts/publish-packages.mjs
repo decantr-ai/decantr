@@ -154,6 +154,11 @@ function createPublishEnv(mode) {
   const env = { ...process.env };
 
   if (mode !== 'token') {
+    // GitHub OIDC trusted publishing must not inherit classic token auth.
+    // When NODE_AUTH_TOKEN is present, npm can prefer the token path and ask for OTP
+    // even though the command is running with provenance enabled.
+    delete env.NODE_AUTH_TOKEN;
+    delete env.NPM_TOKEN;
     return env;
   }
 
