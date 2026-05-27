@@ -1,0 +1,3605 @@
+<!DOCTYPE html>
+<!--
+  Legacy Decantr homepage backup.
+  Preserved on 2026-05-27 before the conversion-focused greenfield redesign of docs/index.html.
+  This file is not the active decantr.ai homepage.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decantr — AI Frontend Governance</title>
+  <meta name="description" content="Decantr is the AI Frontend Governance layer for existing applications. When AI coding agents edit your UI, Decantr keeps changes inside your product standards with typed contracts, route-scoped context, and machine-actionable evidence.">
+  <link rel="canonical" href="https://decantr.ai/">
+  <meta property="og:title" content="Decantr — AI Frontend Governance">
+  <meta property="og:description" content="Typed contracts, route-scoped context, and evidence-backed verification for AI-edited frontend codebases.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://decantr.ai/">
+  <meta property="og:image" content="https://decantr.ai/logo.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Decantr — AI Frontend Governance">
+  <meta name="twitter:description" content="Decantr gives AI coding assistants typed contracts, route-scoped context, evidence bundles, graph anchors, and repair prompts.">
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://decantr.ai/#organization",
+        "name": "Decantr AI",
+        "url": "https://decantr.ai/",
+        "logo": "https://decantr.ai/logo.svg",
+        "sameAs": [
+          "https://github.com/decantr-ai/decantr",
+          "https://www.npmjs.com/org/decantr",
+          "https://registry.decantr.ai"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://decantr.ai/#website",
+        "name": "Decantr",
+        "alternateName": "Decantr AI",
+        "url": "https://decantr.ai/",
+        "publisher": {
+          "@id": "https://decantr.ai/#organization"
+        }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://decantr.ai/#software",
+        "name": "Decantr",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Cross-platform",
+        "url": "https://decantr.ai/",
+        "description": "AI Frontend Governance for existing applications: typed contracts, route-scoped agent context, and evidence-backed verification for AI-edited UI.",
+        "sameAs": "https://github.com/decantr-ai/decantr",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "SoftwareSourceCode",
+        "@id": "https://github.com/decantr-ai/decantr#source",
+        "name": "Decantr",
+        "codeRepository": "https://github.com/decantr-ai/decantr",
+        "programmingLanguage": "TypeScript",
+        "license": "https://opensource.org/license/mit",
+        "targetProduct": {
+          "@id": "https://decantr.ai/#software"
+        }
+      }
+    ]
+  }
+  </script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --bg: #0D0D1A;
+      --fg: #FAFAFA;
+      --muted: #9898A8;
+      --code-bg: #0A0A14;
+      --coral: #F58882;
+      --amber: #FDA303;
+      --cyan: #0AF3EB;
+      --green: #00E0AB;
+      --yellow: #FCD021;
+      --orange: #FC8D0D;
+      --purple: #6500C6;
+      --pink: #FE4474;
+      --crimson: #D80F4A;
+      --max-w: 1100px;
+      --mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--coral); }
+
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+    .underline {
+      text-decoration: underline;
+    }
+    /* ===== FLOATING DOTS ===== */
+    .bg-dot {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: dotPulse 3s ease-in-out infinite;
+      z-index: 0;
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.3); }
+    }
+
+    /* ===== PARTICLE NETWORK ===== */
+    .particle-network {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particle-dot {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+    .particle-line {
+      position: absolute;
+      height: 1px;
+      opacity: 0.06;
+      transform-origin: 0 0;
+    }
+
+    /* ===== SECTION DIVIDER ===== */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .divider-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 0 20px;
+      flex-shrink: 0;
+    }
+
+    /* ===== CARD DECORATIONS ===== */
+    .card-decorated {
+      position: relative;
+    }
+    .card-decorated::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: 20px;
+      height: 20px;
+      border-top: 2px solid rgba(255,255,255,0.5);
+      border-left: 2px solid rgba(255,255,255,0.5);
+      pointer-events: none;
+    }
+    .card-decorated::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 20px;
+      height: 20px;
+      border-bottom: 2px solid rgba(255,255,255,0.5);
+      border-right: 2px solid rgba(255,255,255,0.5);
+      pointer-events: none;
+    }
+
+    /* ===== REVEAL ===== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.3s; }
+    .reveal-d4 { transition-delay: 0.4s; }
+    .reveal-d5 { transition-delay: 0.5s; }
+    .reveal-d6 { transition-delay: 0.6s; }
+    .reveal-d7 { transition-delay: 0.7s; }
+
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      background: #060610;
+      overflow: hidden;
+    }
+
+    .hero-split {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 64px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 40px;
+      width: 100%;
+    }
+
+    .hero-left {
+      flex: 0 0 35%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-right {
+      flex: 1;
+      text-align: left;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-14px); }
+    }
+    .hero-logo {
+      width: 100%;
+      max-width: 420px;
+      height: auto;
+      display: block;
+      animation: logoFloat 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 20px rgba(254,68,116,0.15)) drop-shadow(0 0 40px rgba(10,243,235,0.08));
+    }
+
+    .hero-title {
+      font-size: clamp(2.8rem, 5.5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 28px;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+    .hero-title .accent-dot { color: #FE4474; }
+
+    .hero-body {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 40px;
+      margin-top:20px;
+      max-width: 540px;
+      line-height: 1.75;
+    }
+     .hero-body-highlight {
+      font-size: 1.375rem;
+      color: rgb(255, 255, 255);
+      margin-bottom: 0;
+      max-width: 540px;
+      line-height: 1.5;
+    }
+
+    .hero-body-highlight .hero-accent {
+      color: var(--coral);
+      font-weight: 700;
+      font-style: italic;
+    }
+    .hero-body-highlight .hero-accent-2 {
+      color: var(--yellow);
+      font-weight: 700;
+      font-style: italic;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+      .hero-split {
+        flex-direction: column;
+        text-align: center;
+        gap: 40px;
+        padding: 0 24px;
+      }
+      .hero-left { flex: none; }
+      .hero-logo { max-width: 220px; }
+      .hero-right { text-align: center; }
+      .hero-ctas { justify-content: center; }
+      .hero-title { font-size: 2.2rem; }
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 40px;
+      background: #FE4474;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(254,68,116,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(254,68,116,0.5);
+      background: #FF5588;
+      color: #fff;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 36px;
+      background: transparent;
+      color: var(--fg);
+      font-weight: 700;
+      font-size: 1rem;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      text-decoration: none;
+    }
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.5);
+      background: rgba(255,255,255,0.05);
+      color: var(--fg);
+    }
+
+    /* hero-license and palette removed */
+
+    /* ===== SECTION COMMON ===== */
+    .section {
+      padding: 120px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-heading {
+      font-size: clamp(1.6rem, 4vw, 2.5rem);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+      letter-spacing: -0.03em;
+      color: var(--fg);
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      max-width: 620px;
+      margin: 0 auto 56px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    /* ===== PROBLEM SECTION ===== */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .problem-col-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .problem-card-bad {
+      background: linear-gradient(135deg, #F58882, #FE4474);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      color: #fff;
+      position: relative;
+    }
+    .problem-card-good {
+      background: linear-gradient(135deg, #0AF3EB, #00E0AB);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+      color: #0D0D1A;
+      position: relative;
+    }
+
+    .browser-frame-bar {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+    .browser-dot-w {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+    }
+    .browser-dot-d {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(13,13,26,0.3);
+    }
+    .browser-frame-label {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .mock-card {
+      border-radius: 6px;
+      height: 16px;
+      margin-bottom: 8px;
+    }
+    .mock-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .mock-block {
+      border-radius: 5px;
+      height: 30px;
+      flex: 1;
+    }
+
+    .problem-card-bad .mock-block { background: rgba(255,255,255,0.2); }
+    .problem-card-bad .mock-card { background: rgba(255,255,255,0.15); }
+    .problem-card-good .mock-block { background: rgba(13,13,26,0.15); }
+    .problem-card-good .mock-card { background: rgba(13,13,26,0.1); }
+
+    .drift-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .zero-drift-pill {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 18px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #0D0D1A;
+      border-radius: 20px;
+      background: var(--green);
+      text-align: center;
+    }
+
+    /* ===== PIPELINE SECTION ===== */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .pipeline-grid > :last-child {
+      grid-column: 1 / -1;
+      max-width: calc(50% - 12px);
+      justify-self: center;
+    }
+
+    .pipeline-card {
+      border-radius: 16px;
+      padding: 28px 24px;
+      padding-top: 32px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      color: #fff;
+      background: transparent;
+      border: 3px solid;
+      overflow: hidden;
+    }
+    /* Accent top bar inside card */
+    .pipeline-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+    .pipeline-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .pipeline-card-1 { border-color: #F58882; }
+    .pipeline-card-1::before { background: #F58882; }
+    .pipeline-card-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.2); background: rgba(245,136,130,0.05); }
+    .pipeline-card-1 .pipeline-name { color: #F58882; }
+    .pipeline-card-1 .pipeline-num { background: #F58882; color: #0D0D1A; }
+    .pipeline-card-1 .pipeline-visual { background: rgba(245,136,130,0.07); }
+
+    .pipeline-card-2 { border-color: #FDA303; }
+    .pipeline-card-2::before { background: #FDA303; }
+    .pipeline-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); background: rgba(253,163,3,0.05); }
+    .pipeline-card-2 .pipeline-name { color: #FDA303; }
+    .pipeline-card-2 .pipeline-num { background: #FDA303; color: #0D0D1A; }
+    .pipeline-card-2 .pipeline-visual { background: rgba(253,163,3,0.07); }
+
+    .pipeline-card-3 { border-color: #0AF3EB; }
+    .pipeline-card-3::before { background: #0AF3EB; }
+    .pipeline-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); background: rgba(10,243,235,0.05); }
+    .pipeline-card-3 .pipeline-name { color: #0AF3EB; }
+    .pipeline-card-3 .pipeline-num { background: #0AF3EB; color: #0D0D1A; }
+    .pipeline-card-3 .pipeline-visual { background: rgba(10,243,235,0.07); }
+
+    .pipeline-card-4 { border-color: #00E0AB; }
+    .pipeline-card-4::before { background: #00E0AB; }
+    .pipeline-card-4:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.2); background: rgba(0,224,171,0.05); }
+    .pipeline-card-4 .pipeline-name { color: #00E0AB; }
+    .pipeline-card-4 .pipeline-num { background: #00E0AB; color: #0D0D1A; }
+    .pipeline-card-4 .pipeline-visual { background: rgba(0,224,171,0.07); }
+
+    .pipeline-card-5 { border-color: #FCD021; }
+    .pipeline-card-5::before { background: #FCD021; }
+    .pipeline-card-5:hover { box-shadow: 0 12px 40px rgba(252,208,33,0.2); background: rgba(252,208,33,0.05); }
+    .pipeline-card-5 .pipeline-name { color: #FCD021; }
+    .pipeline-card-5 .pipeline-num { background: #FCD021; color: #0D0D1A; }
+    .pipeline-card-5 .pipeline-visual { background: rgba(252,208,33,0.07); }
+
+    .pipeline-card-6 { border-color: #FC8D0D; }
+    .pipeline-card-6::before { background: #FC8D0D; }
+    .pipeline-card-6:hover { box-shadow: 0 12px 40px rgba(252,141,13,0.2); background: rgba(252,141,13,0.05); }
+    .pipeline-card-6 .pipeline-name { color: #FC8D0D; }
+    .pipeline-card-6 .pipeline-num { background: #FC8D0D; color: #0D0D1A; }
+    .pipeline-card-6 .pipeline-visual { background: rgba(252,141,13,0.07); }
+
+    .pipeline-card-7 { border-color: #6500C6; }
+    .pipeline-card-7::before { background: #6500C6; }
+    .pipeline-card-7:hover { box-shadow: 0 12px 40px rgba(101,0,198,0.2); background: rgba(101,0,198,0.05); }
+    .pipeline-card-7 .pipeline-name { color: #6500C6; }
+    .pipeline-card-7 .pipeline-num { background: #6500C6; color: #fff; }
+    .pipeline-card-7 .pipeline-visual { background: rgba(101,0,198,0.07); }
+
+    .pipeline-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .pipeline-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .pipeline-desc {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .pipeline-visual {
+      font-size: 0.82rem;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .chat-bubble {
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px 10px 10px 2px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+    }
+
+    .layer-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .layer {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(0,0,0,0.15);
+    }
+
+    .mini-code {
+      background: rgba(0,0,0,0.35);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .mini-code .k { opacity: 0.7; }
+    .mini-code .s { color: #fff; }
+    .mini-code .n { opacity: 0.8; }
+
+    .pattern-compose {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+    }
+    .pattern-chip {
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+    }
+    .compose-arrow { opacity: 0.7; font-size: 0.9rem; }
+    .compose-result {
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .code-label {
+      font-size: 0.68rem;
+      opacity: 0.6;
+      margin-top: 8px;
+      text-align: right;
+      font-style: italic;
+    }
+
+    .check-result {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .check-pass, .check-fail {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .check-icon-pass { background: rgba(255,255,255,0.2); }
+    .check-icon-fail { background: rgba(255,255,255,0.15); }
+
+    /* ===== TOOLS SECTION ===== */
+    .tools-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .tool-item {
+      padding: 18px 20px;
+      padding-left: 36px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.2s;
+      background: rgba(255,255,255,0.02);
+      position: relative;
+    }
+    .tool-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+    .tool-item:nth-child(1)::before { background: var(--coral); }
+    .tool-item:nth-child(2)::before { background: var(--amber); }
+    .tool-item:nth-child(3)::before { background: var(--cyan); }
+    .tool-item:nth-child(4)::before { background: var(--green); }
+    .tool-item:nth-child(5)::before { background: var(--yellow); }
+    .tool-item:nth-child(6)::before { background: var(--orange); }
+    .tool-item:nth-child(7)::before { background: var(--purple); }
+    .tool-item:nth-child(8)::before { background: var(--pink); }
+    .tool-item:nth-child(9)::before { background: var(--crimson); }
+    .tool-item:nth-child(10)::before { background: var(--coral); }
+    .tool-item:nth-child(11)::before { background: var(--amber); }
+    .tool-item:nth-child(12)::before { background: var(--cyan); }
+    .tool-item:nth-child(13)::before { background: var(--green); }
+    .tool-item:nth-child(14)::before { background: var(--yellow); }
+    .tool-item:nth-child(15)::before { background: var(--orange); }
+    .tool-item:nth-child(16)::before { background: var(--purple); }
+    .tool-item:nth-child(17)::before { background: var(--pink); }
+    .tool-item:nth-child(18)::before { background: var(--crimson); }
+    .tool-item:nth-child(19)::before { background: var(--coral); }
+
+    .tool-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .tool-name {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      margin-bottom: 4px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      min-width: 0;
+    }
+    .tool-item { min-width: 0; }
+    .tool-item:nth-child(1) .tool-name { color: var(--coral); }
+    .tool-item:nth-child(2) .tool-name { color: var(--amber); }
+    .tool-item:nth-child(3) .tool-name { color: var(--cyan); }
+    .tool-item:nth-child(4) .tool-name { color: var(--green); }
+    .tool-item:nth-child(5) .tool-name { color: var(--yellow); }
+    .tool-item:nth-child(6) .tool-name { color: var(--orange); }
+    .tool-item:nth-child(7) .tool-name { color: var(--purple); }
+    .tool-item:nth-child(8) .tool-name { color: var(--pink); }
+    .tool-item:nth-child(9) .tool-name { color: var(--crimson); }
+    .tool-item:nth-child(10) .tool-name { color: var(--coral); }
+    .tool-item:nth-child(11) .tool-name { color: var(--amber); }
+    .tool-item:nth-child(12) .tool-name { color: var(--cyan); }
+    .tool-item:nth-child(13) .tool-name { color: var(--green); }
+    .tool-item:nth-child(14) .tool-name { color: var(--yellow); }
+    .tool-item:nth-child(15) .tool-name { color: var(--orange); }
+    .tool-item:nth-child(16) .tool-name { color: var(--purple); }
+    .tool-item:nth-child(17) .tool-name { color: var(--pink); }
+    .tool-item:nth-child(18) .tool-name { color: var(--crimson); }
+    .tool-item:nth-child(19) .tool-name { color: var(--coral); }
+
+    .tool-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .section-heading-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+      opacity: 0.6;
+    }
+
+    .stat-icon {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .tier-card-icon {
+      margin-bottom: 12px;
+    }
+
+    .blueprint-icon {
+      margin-bottom: 10px;
+    }
+
+    .cli-icon {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .tool-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .tool-item:nth-child(1) .tool-dot { background: var(--coral); }
+    .tool-item:nth-child(2) .tool-dot { background: var(--amber); }
+    .tool-item:nth-child(3) .tool-dot { background: var(--cyan); }
+    .tool-item:nth-child(4) .tool-dot { background: var(--green); }
+    .tool-item:nth-child(5) .tool-dot { background: var(--yellow); }
+    .tool-item:nth-child(6) .tool-dot { background: var(--orange); }
+    .tool-item:nth-child(7) .tool-dot { background: var(--purple); }
+    .tool-item:nth-child(8) .tool-dot { background: var(--pink); }
+    .tool-item:nth-child(9) .tool-dot { background: var(--crimson); }
+    .tool-item:nth-child(10) .tool-dot { background: var(--coral); }
+    .tool-item:nth-child(11) .tool-dot { background: var(--amber); }
+    .tool-item:nth-child(12) .tool-dot { background: var(--cyan); }
+    .tool-item:nth-child(13) .tool-dot { background: var(--green); }
+    .tool-item:nth-child(14) .tool-dot { background: var(--yellow); }
+    .tool-item:nth-child(15) .tool-dot { background: var(--orange); }
+    .tool-item:nth-child(16) .tool-dot { background: var(--purple); }
+    .tool-item:nth-child(17) .tool-dot { background: var(--pink); }
+    .tool-item:nth-child(18) .tool-dot { background: var(--crimson); }
+    .tool-item:nth-child(19) .tool-dot { background: var(--coral); }
+
+    .tool-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ===== QUICK START SECTION ===== */
+    .qs-steps {
+      display: flex;
+      gap: 24px;
+      max-width: 920px;
+      margin: 0 auto 48px;
+    }
+
+    .qs-step {
+      flex: 1;
+      border-radius: 16px;
+      padding: 28px 22px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      color: #fff;
+    }
+    .qs-step:hover {
+      transform: translateY(-4px);
+    }
+    .qs-step-1 {
+      background: linear-gradient(135deg, #F58882, #D06060);
+    }
+    .qs-step-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.3); }
+    .qs-step-2 {
+      background: linear-gradient(135deg, #FDA303, #D08800);
+    }
+    .qs-step-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.3); }
+    .qs-step-3 {
+      background: linear-gradient(135deg, #6500C6, #4A0090);
+    }
+    .qs-step-3:hover { box-shadow: 0 12px 40px rgba(101,0,198,0.3); }
+
+    .qs-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: rgba(0,0,0,0.2);
+      color: #fff;
+    }
+
+    .qs-step h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .qs-code-block {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+      color: rgba(255,255,255,0.85);
+    }
+    .qs-step-1 .qs-code-block .k { color: #FFD4D2; }
+    .qs-step-1 .qs-code-block .s { color: #fff; }
+
+    .qs-chat {
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px 10px 10px 2px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .qs-output {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 14px;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      line-height: 1.7;
+      white-space: pre;
+      overflow-x: auto;
+      color: rgba(255,255,255,0.85);
+    }
+    .qs-step-3 .qs-output .k { color: #C9A0FF; }
+    .qs-step-3 .qs-output .s { color: #fff; }
+    .qs-step-3 .qs-output .c { color: #B080E0; }
+
+    .config-tabs {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .tab-buttons {
+      display: flex;
+      gap: 0;
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-bottom: none;
+      color: var(--muted);
+      padding: 10px 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.2s, background 0.2s;
+      border-radius: 8px 8px 0 0;
+    }
+    .tab-btn.active {
+      background: var(--code-bg);
+      color: var(--cyan);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .tab-code {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 0 8px 8px 8px;
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.7;
+      color: var(--muted);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .tab-code .k { color: var(--coral); }
+    .tab-code .s { color: var(--green); }
+
+    /* ===== PACKAGES SECTION ===== */
+    .packages-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .pkg-card {
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .pkg-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .pkg-card-1 {
+      background: linear-gradient(135deg, #00E0AB, #00B88A);
+      color: #0D0D1A;
+    }
+    .pkg-card-1:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.3); }
+    .pkg-card-2 {
+      background: linear-gradient(135deg, #FDA303, #D08800);
+      color: #0D0D1A;
+    }
+    .pkg-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.3); }
+    .pkg-card-3 {
+      background: linear-gradient(135deg, #0AF3EB, #08B8B2);
+      color: #0D0D1A;
+    }
+    .pkg-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.3); }
+    .pkg-card-4 {
+      background: linear-gradient(135deg, #F58882, #D06060);
+      color: #fff;
+    }
+    .pkg-card-4:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.3); }
+
+    .pkg-name {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .pkg-desc {
+      font-size: 0.82rem;
+      line-height: 1.5;
+      opacity: 0.85;
+    }
+
+    /* ===== WORKS WITH ===== */
+    .works-section {
+      padding: 80px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .works-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .works-pill {
+      border-radius: 20px;
+      padding: 8px 22px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+    .works-pill:hover { transform: translateY(-2px); }
+
+    .works-pill:nth-child(1) { background: rgba(245,136,130,0.15); color: var(--coral); }
+    .works-pill:nth-child(2) { background: rgba(253,163,3,0.15); color: var(--amber); }
+    .works-pill:nth-child(3) { background: rgba(10,243,235,0.15); color: var(--cyan); }
+    .works-pill:nth-child(4) { background: rgba(0,224,171,0.15); color: var(--green); }
+    .works-pill:nth-child(5) { background: rgba(252,208,33,0.15); color: var(--yellow); }
+    .works-pill:nth-child(6) { background: rgba(101,0,198,0.15); color: #A855F7; }
+    .works-pill:nth-child(7) { background: rgba(254,68,116,0.15); color: var(--pink); }
+    .works-pill:nth-child(8) { background: rgba(252,141,13,0.15); color: var(--orange); }
+    .works-pill:nth-child(9) { background: rgba(245,136,130,0.15); color: var(--coral); }
+    .works-pill:nth-child(10) { background: rgba(253,163,3,0.15); color: var(--amber); }
+
+    /* ===== BOTTOM CTA ===== */
+    .bottom-cta {
+      padding: 100px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(135deg, #F58882, #FDA303, #0AF3EB, #00E0AB);
+      color: #0D0D1A;
+    }
+
+    .bottom-cta h2 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #0D0D1A;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .bottom-cta p {
+      font-size: 1.1rem;
+      color: rgba(13,13,26,0.7);
+      margin-bottom: 32px;
+    }
+
+    .btn-cta-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 36px;
+      background: #0D0D1A;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+    }
+    .btn-cta-dark:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      color: #fff;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 40px 24px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-logo {
+      width: 28px;
+      height: auto;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+    }
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: rgba(152,152,168,0.5);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .problem-grid { grid-template-columns: 1fr; gap: 32px; }
+      .pipeline-grid { grid-template-columns: 1fr; }
+      .pipeline-grid > :last-child { max-width: 100%; }
+      .tools-list { grid-template-columns: 1fr; }
+      .qs-steps { flex-direction: column; }
+      .packages-grid { grid-template-columns: 1fr; }
+      .section { padding: 80px 0; }
+      .tab-buttons { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 2rem; }
+    }
+
+    @media (min-width: 1200px) {
+      .packages-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* ===== SHOWCASE SECTION ===== */
+    .showcase-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .showcase-step {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .showcase-step-num {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      font-family: var(--mono);
+    }
+    .showcase-step-num-1 { background: var(--pink); color: #fff; }
+    .showcase-step-num-2 { background: var(--cyan); color: #0D0D1A; }
+    .showcase-step-num-3 { background: var(--amber); color: #0D0D1A; }
+    .showcase-step-body { flex: 1; }
+    .showcase-step-body h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--fg);
+    }
+    .tier-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .tier-flow-node, .tier-flow-result {
+      flex: 1;
+      min-width: 150px;
+      max-width: 220px;
+    }
+    .tier-flow-node {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--accent, rgba(255,255,255,0.1));
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .tier-flow-node:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+    .tier-flow-icon {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+    }
+    .tier-flow-label {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent, var(--fg));
+      margin-bottom: 4px;
+    }
+    .tier-flow-detail {
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .tier-flow-arrow {
+      color: var(--muted);
+      font-size: 1.2rem;
+      padding: 0 8px;
+      opacity: 0.4;
+      flex-shrink: 0;
+    }
+    .tier-flow-result {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--accent, var(--green));
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .tier-flow-result:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 15%, transparent);
+    }
+    .tier-flow-result .tier-flow-icon { font-size: 1.5rem; }
+    .tier-flow-result .tier-flow-label {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent, var(--green));
+    }
+
+    @media (max-width: 768px) {
+      .tier-flow {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .tier-flow-arrow {
+        transform: rotate(90deg);
+        padding: 4px 0;
+      }
+      .tier-flow-node, .tier-flow-result {
+        width: 100%;
+        max-width: none;
+      }
+    }
+
+    .showcase-code {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--muted);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .showcase-code .k { color: var(--coral); }
+    .showcase-code .s { color: var(--green); }
+    .showcase-code .c { color: var(--muted); }
+    .showcase-prompt {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.75);
+    }
+    .showcase-prompt strong {
+      color: var(--fg);
+    }
+
+    /* ===== THREE-TIER CARDS ===== */
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .tier-card {
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      border: 2px solid;
+      background: transparent;
+    }
+    .tier-card:hover {
+      transform: translateY(-4px);
+    }
+    .tier-card-1 {
+      border-color: var(--pink);
+    }
+    .tier-card-1:hover { box-shadow: 0 12px 40px rgba(254,68,116,0.2); background: rgba(254,68,116,0.04); }
+    .tier-card-1 .tier-label { color: var(--pink); }
+    .tier-card-2 {
+      border-color: var(--cyan);
+    }
+    .tier-card-2:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); background: rgba(10,243,235,0.04); }
+    .tier-card-2 .tier-label { color: var(--cyan); }
+    .tier-card-3 {
+      border-color: var(--amber);
+    }
+    .tier-card-3:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); background: rgba(253,163,3,0.04); }
+    .tier-card-3 .tier-label { color: var(--amber); }
+    .tier-label {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .tier-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .tier-items li {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      padding: 4px 0;
+      line-height: 1.5;
+    }
+
+    /* ===== CONTEXT VIEWER ===== */
+    .context-viewer {
+      background: var(--code-bg);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 24px 28px;
+      max-width: 780px;
+      margin: 0 auto;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.65);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .context-viewer .ctx-heading {
+      color: var(--cyan);
+      font-weight: 700;
+    }
+    .context-viewer .ctx-key {
+      color: var(--amber);
+    }
+    .context-viewer .ctx-value {
+      color: var(--green);
+    }
+    .context-viewer .ctx-comment {
+      color: rgba(255,255,255,0.35);
+      font-style: italic;
+    }
+    .context-viewer .ctx-dim {
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ===== REGISTRY STATS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 780px;
+      margin: 0 auto 32px;
+    }
+    .stat-card {
+      border-radius: 16px;
+      padding: 32px 20px;
+      text-align: center;
+      transition: transform 0.25s;
+      border: 2px solid;
+      background: transparent;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+    }
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+    .stat-card-1 { border-color: var(--coral); }
+    .stat-card-1:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.2); background: rgba(245,136,130,0.04); }
+    .stat-card-1 .stat-number { color: var(--coral); }
+    .stat-card-1 .stat-label { color: var(--coral); }
+    .stat-card-2 { border-color: var(--amber); }
+    .stat-card-2:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); background: rgba(253,163,3,0.04); }
+    .stat-card-2 .stat-number { color: var(--amber); }
+    .stat-card-2 .stat-label { color: var(--amber); }
+    .stat-card-3 { border-color: var(--cyan); }
+    .stat-card-3:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); background: rgba(10,243,235,0.04); }
+    .stat-card-3 .stat-number { color: var(--cyan); }
+    .stat-card-3 .stat-label { color: var(--cyan); }
+    .stat-card-4 { border-color: var(--green); }
+    .stat-card-4:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.2); background: rgba(0,224,171,0.04); }
+    .stat-card-4 .stat-number { color: var(--green); }
+    .stat-card-4 .stat-label { color: var(--green); }
+
+    /* ===== BLUEPRINT CARDS ===== */
+    .blueprint-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 780px;
+      margin: 0 auto 40px;
+    }
+    .blueprint-card {
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      transition: transform 0.25s, box-shadow 0.25s;
+      color: #fff;
+    }
+    .blueprint-card:hover {
+      transform: translateY(-4px);
+    }
+    .blueprint-card-1 {
+      background: linear-gradient(135deg, #1a1a2e, #0D0D1A);
+      border: 2px solid var(--cyan);
+    }
+    .blueprint-card-1:hover { box-shadow: 0 12px 40px rgba(10,243,235,0.2); }
+    .blueprint-card-2 {
+      background: linear-gradient(135deg, #1a1520, #0D0D1A);
+      border: 2px solid var(--coral);
+    }
+    .blueprint-card-2:hover { box-shadow: 0 12px 40px rgba(245,136,130,0.2); }
+    .blueprint-card-3 {
+      background: linear-gradient(135deg, #111a14, #0D0D1A);
+      border: 2px solid var(--green);
+    }
+    .blueprint-card-3:hover { box-shadow: 0 12px 40px rgba(0,224,171,0.2); }
+    .blueprint-card-4 {
+      background: linear-gradient(135deg, #1a1a14, #0D0D1A);
+      border: 2px solid var(--amber);
+    }
+    .blueprint-card-4:hover { box-shadow: 0 12px 40px rgba(253,163,3,0.2); }
+    .blueprint-name {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .blueprint-theme {
+      font-size: 0.72rem;
+      font-family: var(--mono);
+      opacity: 0.5;
+      margin-bottom: 10px;
+    }
+    .blueprint-desc {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+    }
+
+    /* ===== CLI COMMANDS ===== */
+    .cli-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .cli-item {
+      padding: 12px 20px;
+      padding-left: 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      position: relative;
+    }
+    .cli-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--amber);
+    }
+    .cli-name {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--amber);
+      margin-bottom: 2px;
+    }
+    .cli-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ===== PKG VERSION ===== */
+    .pkg-version {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      opacity: 0.6;
+      margin-top: 8px;
+    }
+
+    /* =====================================================
+       NEW: hero positioning, paths row, brownfield/hybrid,
+       theme mocks, MCP install, tool bands, critique panel,
+       context tabs, works tiles, dogfood note
+       ===================================================== */
+
+    /* -- Hero positioning line -- */
+    .hero-positioning {
+      margin-top: -20px;
+      margin-bottom: 36px;
+      font-size: 0.98rem;
+      color: var(--fg);
+      line-height: 1.65;
+      max-width: 540px;
+      font-weight: 400;
+    }
+    .hero-positioning-dim { color: rgba(255,255,255,0.45); }
+    .hero-positioning-emph { color: var(--coral); font-weight: 600; }
+    @media (max-width: 768px) {
+      .hero-positioning { margin: -20px auto 32px; max-width: 540px; }
+    }
+
+    /* -- Paths selector -- */
+    .section-paths { padding-top: 64px; padding-bottom: 64px; }
+    .paths-eyebrow {
+      text-align: center;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 0.78rem;
+      margin-bottom: 28px;
+    }
+    .paths-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .path-tile {
+      display: block;
+      position: relative;
+      padding: 26px 24px 22px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      text-decoration: none;
+      color: var(--fg);
+      transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+      overflow: hidden;
+    }
+    .path-tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 0% 0%, var(--glow, transparent) 0%, transparent 60%);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .path-tile-1 { --glow: rgba(10, 243, 235, 0.25); }
+    .path-tile-2 { --glow: rgba(245, 136, 130, 0.25); }
+    .path-tile-3 { --glow: rgba(253, 163, 3, 0.22); }
+    .path-tile-4 { --glow: rgba(123, 92, 255, 0.22); }
+    .path-tile:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.18);
+      background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+    }
+    .path-tile-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .path-tile-icon { width: 22px; height: 22px; }
+    .path-tile-badge {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 999px;
+    }
+    .path-tile-1 .path-tile-badge { color: var(--cyan); border-color: rgba(10,243,235,0.35); }
+    .path-tile-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--fg);
+    }
+    .path-tile-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .path-tile-cmd {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: var(--code-bg);
+      padding: 9px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--fg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .path-tile-cmd .k { color: var(--muted); margin-right: 6px; }
+    .path-tile-flag { color: var(--muted); }
+    @media (max-width: 900px) {
+      .paths-row { grid-template-columns: 1fr; }
+    }
+
+    /* -- Theme-coded mocks (replaces grey boxes on "With" side) -- */
+    .theme-mock {
+      margin-bottom: 18px;
+      padding: 12px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .theme-mock-luminarum {
+      background: linear-gradient(160deg, rgba(10,243,235,0.06) 0%, rgba(13,13,26,0.6) 60%, rgba(101,0,198,0.08) 100%);
+      border: 1px solid rgba(10,243,235,0.22);
+    }
+    .theme-mock-terminal {
+      background: #050D0A;
+      border: 1px solid rgba(0,224,171,0.3);
+    }
+    .theme-mock-carbon {
+      background: linear-gradient(145deg, #0A0A14 0%, #14091F 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .theme-mock-label {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--fg);
+      opacity: 0.7;
+      z-index: 2;
+    }
+    .theme-mock-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .tm-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .tm-logo { width: 18px; height: 18px; border-radius: 4px; }
+    .tm-nav { display: flex; gap: 6px; margin-left: auto; }
+    .tm-nav-item {
+      width: 40px; height: 8px; border-radius: 3px;
+      background: rgba(255,255,255,0.08);
+    }
+    .tm-hero {
+      padding: 18px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .tm-hero-luminarum .tm-headline {
+      height: 12px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      width: 82%;
+      opacity: 0.85;
+    }
+    .tm-hero-luminarum .tm-headline-sub {
+      background: rgba(255,255,255,0.2);
+      width: 60%;
+      height: 8px;
+    }
+    .tm-hero-carbon .tm-headline {
+      height: 12px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.75);
+    }
+    .tm-hero-carbon .tm-headline-sub {
+      background: rgba(255,255,255,0.25);
+      height: 8px;
+    }
+    .tm-hero-terminal .tm-headline-term {
+      height: 12px;
+      border-radius: 0;
+      background: var(--green);
+      width: 82%;
+      opacity: 0.9;
+    }
+    .tm-hero-terminal .tm-headline-term-sub {
+      height: 8px;
+      border-radius: 0;
+      background: rgba(0,224,171,0.35);
+      width: 60%;
+    }
+    .tm-cta-term {
+      border-radius: 0 !important;
+      background: var(--green) !important;
+      width: 86px !important;
+      height: 22px !important;
+    }
+    .tm-cta {
+      margin-top: 6px;
+      width: 72px;
+      height: 22px;
+      border-radius: 999px;
+    }
+    .tm-hero-terminal {
+      background: rgba(0,224,171,0.03);
+      border-top: 1px solid rgba(0,224,171,0.08);
+      border-bottom: 1px solid rgba(0,224,171,0.08);
+    }
+    .tm-hero-carbon {
+      position: relative;
+    }
+    .tm-glass-card {
+      padding: 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(6px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .tm-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 12px 8px 8px;
+    }
+    .tm-card {
+      padding: 10px;
+      border-radius: 6px;
+      min-height: 44px;
+      position: relative;
+    }
+    .tm-card-glow {
+      background: rgba(10,243,235,0.06);
+      border: 1px solid rgba(10,243,235,0.16);
+    }
+    .tm-card-terminal {
+      background: rgba(0,224,171,0.04);
+      border: 1px solid rgba(0,224,171,0.18);
+      border-radius: 2px;
+    }
+    .tm-card-glass {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(4px);
+    }
+    .tm-card-bar {
+      height: 5px;
+      border-radius: 3px;
+      width: 70%;
+    }
+
+    /* -- Lane steps (brownfield) + hybrid grid -- */
+    .lane-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-width: 840px;
+      margin: 40px auto 0;
+    }
+    .lane-step {
+      display: flex;
+      gap: 22px;
+      align-items: flex-start;
+      padding: 22px 24px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .lane-step-num {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+    .lane-step-body { flex: 1; }
+    .lane-step-body h3 { font-size: 1.1rem; margin-bottom: 10px; }
+    .lane-step-desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 10px;
+      line-height: 1.6;
+    }
+    .lane-step-desc code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--cyan);
+    }
+
+    .hybrid-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      max-width: 960px;
+      margin: 40px auto 0;
+    }
+    .hybrid-card {
+      padding: 22px 24px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+    .hybrid-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.16);
+    }
+    .hybrid-icon { width: 24px; height: 24px; margin-bottom: 12px; }
+    .hybrid-title { font-size: 1.05rem; margin-bottom: 12px; }
+    .hybrid-code {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      background: var(--code-bg);
+      padding: 9px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: var(--fg);
+      margin-bottom: 10px;
+    }
+    .hybrid-code .k { color: var(--muted); margin-right: 6px; }
+    .hybrid-desc {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+    @media (max-width: 720px) {
+      .hybrid-grid { grid-template-columns: 1fr; }
+      .lane-step { flex-direction: column; gap: 14px; }
+    }
+
+    /* -- MCP install tabs -- */
+    .mcp-install {
+      max-width: 860px;
+      margin: 0 auto 48px;
+      padding: 22px 22px 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .mcp-install-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .mcp-install-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+    }
+    .install-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .install-tab-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--sans);
+    }
+    .install-tab-btn:hover { color: var(--fg); border-color: rgba(255,255,255,0.22); }
+    .install-tab-btn.active {
+      color: var(--bg);
+      background: var(--cyan);
+      border-color: var(--cyan);
+      font-weight: 600;
+    }
+    .install-tab-content { display: none; }
+    .install-tab-content.active { display: block; }
+
+    /* -- Tool bands (grouping the MCP tools) -- */
+    .tool-band-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 36px 0 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .tool-band-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .tool-band-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--fg);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .tool-band-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-left: auto;
+    }
+    @media (max-width: 640px) {
+      .tool-band-sub { display: none; }
+    }
+
+    /* -- Package band label -- */
+    .pkg-band-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+    .pkg-band-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* -- Critique proof panel -- */
+    .critique-panel {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      align-items: stretch;
+      max-width: 1040px;
+      margin: 40px auto 0;
+    }
+    .critique-side {
+      padding: 22px 22px 20px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .critique-before { border-color: rgba(254,68,116,0.2); }
+    .critique-after { border-color: rgba(0,224,171,0.24); }
+    .critique-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+    .critique-side-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+    .critique-score {
+      display: flex;
+      align-items: baseline;
+      gap: 2px;
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+    .critique-score-bad {
+      background: rgba(254,68,116,0.12);
+      color: var(--pink);
+    }
+    .critique-score-good {
+      background: rgba(0,224,171,0.15);
+      color: var(--green);
+    }
+    .critique-score-num { font-size: 1.5rem; font-weight: 700; font-family: var(--mono); }
+    .critique-score-max { font-size: 0.85rem; opacity: 0.7; font-family: var(--mono); }
+    .critique-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .critique-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .critique-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+    .critique-item-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--fg);
+    }
+    .critique-item-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .critique-item-note code {
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.85em;
+      color: var(--cyan);
+    }
+    .critique-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .critique-arrow-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    @media (max-width: 900px) {
+      .critique-panel {
+        grid-template-columns: 1fr;
+      }
+      .critique-arrow {
+        flex-direction: row;
+        padding: 8px 0;
+      }
+      .critique-arrow i { transform: rotate(90deg); }
+    }
+
+    /* -- Stat cards: clickable -- */
+    .stat-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+      cursor: pointer;
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,255,255,0.2);
+      color: inherit;
+    }
+    .stat-action {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--cyan);
+      opacity: 0;
+      transition: opacity 0.22s ease;
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
+    }
+    .stat-card:hover .stat-action { opacity: 1; }
+
+    /* -- Context tabs -- */
+    .context-tabs-wrap { max-width: 900px; margin: 0 auto; }
+    .ctx-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .ctx-tab-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--muted);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .ctx-tab-btn:hover { color: var(--fg); border-color: rgba(255,255,255,0.22); }
+    .ctx-tab-btn.active {
+      color: var(--bg);
+      background: var(--amber);
+      border-color: var(--amber);
+      font-weight: 600;
+    }
+    .ctx-tab-content { display: none; }
+    .ctx-tab-content.active { display: block; }
+
+    /* -- Works with: rich tiles -- */
+    .works-group {
+      max-width: 1040px;
+      margin: 0 auto 28px;
+    }
+    .works-group-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .works-row-rich {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .works-tile {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-width: 120px;
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+    .works-tile:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .works-tile-ready {
+      border-color: rgba(0,224,171,0.35);
+      background: linear-gradient(180deg, rgba(0,224,171,0.06), rgba(0,224,171,0.02));
+    }
+    .works-tile-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .works-tile-sub {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .works-tile-ready .works-tile-sub { color: var(--green); }
+    .works-footnote {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .works-legend-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    /* -- Dogfood footer note -- */
+    .dogfood-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 auto 24px;
+      padding: 10px 16px;
+      max-width: 580px;
+      border-radius: 999px;
+      background: rgba(10,243,235,0.05);
+      border: 1px solid rgba(10,243,235,0.2);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .dogfood-link {
+      color: var(--cyan);
+      text-decoration: underline;
+      text-decoration-color: rgba(10,243,235,0.4);
+    }
+    .dogfood-theme { color: var(--fg); }
+
+    /* ===== RESPONSIVE ADDITIONS ===== */
+    @media (max-width: 768px) {
+      .tier-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .showcase-step { flex-direction: column; gap: 12px; }
+      .blueprint-grid { grid-template-columns: 1fr; }
+      .cli-grid { grid-template-columns: 1fr; }
+
+      /* NEW: mobile polish for impact-pass additions */
+      .hero-positioning { max-width: 100%; }
+      .paths-eyebrow { font-size: 0.72rem; }
+      .path-tile { padding: 22px 20px 18px; }
+      .path-tile-cmd { font-size: 0.72rem; }
+      .mcp-install { padding: 18px 16px 14px; }
+      .mcp-install-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .tool-band-label { flex-wrap: wrap; }
+      .hybrid-grid { grid-template-columns: 1fr; gap: 14px; }
+      .critique-panel { gap: 14px; }
+      .critique-side { padding: 18px 18px 16px; }
+      .critique-score-num { font-size: 1.3rem; }
+      .ctx-tab-btn { font-size: 0.74rem; padding: 6px 12px; }
+      .install-tab-btn { font-size: 0.76rem; padding: 5px 10px; }
+      .works-group { margin-bottom: 22px; }
+      .works-tile { min-width: 0; flex: 1 1 calc(50% - 10px); }
+      .works-footnote { font-size: 0.76rem; padding: 0 12px; }
+      .dogfood-note { font-size: 0.72rem; padding: 10px 14px; flex-direction: column; gap: 4px; }
+      .dogfood-note > span { display: block; }
+      /* Reveal stat "Browse" hint on touch — no hover state */
+      .stat-action { opacity: 0.85; }
+      /* Theme-mock mini grid stays 3-col but tightens padding */
+      .tm-grid { gap: 6px; padding: 10px 6px 6px; }
+      .tm-card { padding: 8px; min-height: 36px; }
+      .tm-header { padding: 8px 6px; }
+      .tm-nav-item { width: 26px; }
+    }
+
+    @media (max-width: 420px) {
+      .paths-row { gap: 14px; }
+      .tool-band-sub { display: none; }
+      .hero-title { font-size: 1.9rem; }
+      .critique-arrow-label { display: none; }
+      .tm-nav-item { width: 20px; }
+      .works-tile { flex: 1 1 100%; }
+    }
+
+    /* Touch devices — ensure no hover-only affordances */
+    @media (hover: none) {
+      .stat-action { opacity: 0.85; }
+      .path-tile:hover, .hybrid-card:hover, .works-tile:hover { transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== PARTICLE NETWORK ===== -->
+<div class="particle-network">
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--coral);top:8%;left:12%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--cyan);top:5%;left:45%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--amber);top:12%;left:78%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--green);top:18%;left:30%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--purple);top:22%;left:60%"></div>
+  <div class="particle-dot" style="width:6px;height:6px;background:var(--pink);top:15%;left:92%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--yellow);top:28%;left:8%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--coral);top:32%;left:50%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--orange);top:35%;left:85%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--cyan);top:40%;left:22%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--green);top:45%;left:70%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--amber);top:50%;left:5%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--purple);top:52%;left:40%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--pink);top:58%;left:88%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--coral);top:62%;left:15%"></div>
+  <div class="particle-dot" style="width:6px;height:6px;background:var(--cyan);top:65%;left:55%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--yellow);top:70%;left:35%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--green);top:72%;left:80%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--orange);top:78%;left:10%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--amber);top:80%;left:62%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--purple);top:85%;left:42%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--pink);top:88%;left:75%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--coral);top:92%;left:25%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--cyan);top:95%;left:58%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--green);top:3%;left:68%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--yellow);top:38%;left:48%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--crimson);top:55%;left:18%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--amber);top:75%;left:52%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--orange);top:42%;left:95%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--purple);top:68%;left:3%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--coral);top:25%;left:38%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--cyan);top:48%;left:82%"></div>
+  <div class="particle-dot" style="width:5px;height:5px;background:var(--green);top:82%;left:90%"></div>
+  <div class="particle-dot" style="width:3px;height:3px;background:var(--pink);top:33%;left:72%"></div>
+  <div class="particle-dot" style="width:4px;height:4px;background:var(--yellow);top:60%;left:42%"></div>
+
+  <div class="particle-line" style="width:120px;background:var(--coral);top:9%;left:13%;transform:rotate(25deg)"></div>
+  <div class="particle-line" style="width:90px;background:var(--cyan);top:6%;left:46%;transform:rotate(-15deg)"></div>
+  <div class="particle-line" style="width:150px;background:var(--green);top:19%;left:31%;transform:rotate(40deg)"></div>
+  <div class="particle-line" style="width:100px;background:var(--amber);top:13%;left:79%;transform:rotate(-30deg)"></div>
+  <div class="particle-line" style="width:130px;background:var(--purple);top:33%;left:51%;transform:rotate(15deg)"></div>
+  <div class="particle-line" style="width:80px;background:var(--pink);top:46%;left:23%;transform:rotate(-20deg)"></div>
+  <div class="particle-line" style="width:110px;background:var(--yellow);top:53%;left:41%;transform:rotate(35deg)"></div>
+  <div class="particle-line" style="width:140px;background:var(--orange);top:66%;left:56%;transform:rotate(-10deg)"></div>
+  <div class="particle-line" style="width:95px;background:var(--coral);top:73%;left:11%;transform:rotate(30deg)"></div>
+  <div class="particle-line" style="width:120px;background:var(--cyan);top:80%;left:63%;transform:rotate(-25deg)"></div>
+  <div class="particle-line" style="width:85px;background:var(--green);top:86%;left:26%;transform:rotate(20deg)"></div>
+  <div class="particle-line" style="width:110px;background:var(--amber);top:93%;left:59%;transform:rotate(-35deg)"></div>
+</div>
+
+<!-- ===== FLOATING DOTS ===== -->
+<div class="bg-dot" style="width:5px;height:5px;background:var(--coral);top:10%;left:5%;animation-delay:0s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--cyan);top:20%;left:90%;animation-delay:0.5s"></div>
+<div class="bg-dot" style="width:6px;height:6px;background:var(--amber);top:35%;left:3%;animation-delay:1s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--green);top:50%;left:95%;animation-delay:1.5s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--purple);top:65%;left:7%;animation-delay:2s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--pink);top:75%;left:92%;animation-delay:0.3s"></div>
+<div class="bg-dot" style="width:7px;height:7px;background:var(--yellow);top:85%;left:4%;animation-delay:0.8s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--orange);top:15%;left:88%;animation-delay:1.2s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--coral);top:45%;left:2%;animation-delay:1.8s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--cyan);top:55%;left:97%;animation-delay:2.2s"></div>
+<div class="bg-dot" style="width:6px;height:6px;background:var(--green);top:30%;left:96%;animation-delay:0.6s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--amber);top:90%;left:93%;animation-delay:1.4s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--purple);top:8%;left:50%;animation-delay:2.5s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--pink);top:40%;left:48%;animation-delay:0.9s"></div>
+<div class="bg-dot" style="width:8px;height:8px;background:var(--coral);top:70%;left:50%;animation-delay:1.6s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--yellow);top:25%;left:52%;animation-delay:2.1s"></div>
+<div class="bg-dot" style="width:5px;height:5px;background:var(--orange);top:60%;left:6%;animation-delay:0.4s"></div>
+<div class="bg-dot" style="width:4px;height:4px;background:var(--green);top:82%;left:50%;animation-delay:1.1s"></div>
+<div class="bg-dot" style="width:6px;height:6px;background:var(--cyan);top:5%;left:30%;animation-delay:1.7s"></div>
+<div class="bg-dot" style="width:3px;height:3px;background:var(--crimson);top:95%;left:15%;animation-delay:2.3s"></div>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-split">
+    <div class="hero-left">
+      <img src="logo.svg" alt="Decantr" class="hero-logo">
+    </div>
+    <div class="hero-right">
+      <h1 class="hero-title">decantr<span class="accent-dot">.</span>a<span class="accent-dot">i</span></h1>
+      <p class="hero-body-highlight">AI Frontend <span class="hero-accent underline">Governance</span></p>
+      <p class="hero-body-highlight">for production codebases.</p>
+      <p class="hero-body">When AI coding agents edit your UI, Decantr keeps every change inside your product standards.</p>
+      <p class="hero-positioning"><span class="hero-positioning-dim">Not a component library. Not a code generator.</span> Typed contracts, route-scoped context, and evidence the agent can <span class="hero-positioning-emph">repair against</span>.</p>
+      <div class="hero-ctas">
+        <a href="#quickstart" class="btn-primary">Get Started</a>
+        <a href="https://github.com/decantr-ai/decantr" class="btn-ghost" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--pink)"></span></div>
+
+<!-- ==================== PATHS SELECTOR ==================== -->
+<section class="section section-paths" id="paths">
+  <div class="container">
+    <p class="paths-eyebrow reveal">How are you starting?</p>
+    <div class="paths-row">
+      <a href="#brownfield" class="path-tile path-tile-1 card-decorated reveal reveal-d1">
+        <div class="path-tile-head">
+          <i data-lucide="layers" class="path-tile-icon" style="color:var(--cyan)"></i>
+          <span class="path-tile-badge">⭐ Recommended</span>
+        </div>
+        <h3 class="path-tile-name">Brownfield adoption</h3>
+        <p class="path-tile-desc">Attach Decantr to an existing app as a contract and evidence layer. No rewrite, no CSS takeover.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr adopt <span class="path-tile-flag">--yes</span></div>
+      </a>
+      <a href="#quickstart" class="path-tile path-tile-2 card-decorated reveal reveal-d2">
+        <div class="path-tile-head">
+          <i data-lucide="sparkles" class="path-tile-icon" style="color:var(--coral)"></i>
+          <span class="path-tile-badge">Starter kit</span>
+        </div>
+        <h3 class="path-tile-name">Greenfield starter</h3>
+        <p class="path-tile-desc">Start from a certified app kit, then own the contract as it evolves.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr new my-app <span class="path-tile-flag">--blueprint=X</span></div>
+      </a>
+      <a href="#hybrid" class="path-tile path-tile-3 card-decorated reveal reveal-d3">
+        <div class="path-tile-head">
+          <i data-lucide="git-merge" class="path-tile-icon" style="color:var(--amber)"></i>
+          <span class="path-tile-badge">Layer in</span>
+        </div>
+        <h3 class="path-tile-name">Hybrid operating layer</h3>
+        <p class="path-tile-desc">Any attached project. Codify local UI law, then layer Decantr guidance deliberately.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr codify <span class="path-tile-flag">· task</span></div>
+      </a>
+      <a href="#works" class="path-tile path-tile-4 card-decorated reveal reveal-d3">
+        <div class="path-tile-head">
+          <i data-lucide="file-check-2" class="path-tile-icon" style="color:var(--purple)"></i>
+          <span class="path-tile-badge">Tooling only</span>
+        </div>
+        <h3 class="path-tile-name">Greenfield contract-only</h3>
+        <p class="path-tile-desc">Start a new repo with Decantr context, checks, and AI contracts while keeping your runtime choices open.</p>
+        <div class="path-tile-cmd"><span class="k">$</span> decantr init <span class="path-tile-flag">--workflow=greenfield --adoption=contract-only</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
+
+<!-- ==================== PROBLEM ==================== -->
+<section id="problem" class="section">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="alert-triangle" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>AI edits create frontend drift</h2>
+    <p class="section-sub reveal">The first AI pass can look good. The tenth pass is where teams lose coherence: duplicated components, inconsistent shells, route drift, stale docs, and visual decisions no one can audit.</p>
+
+    <div class="problem-grid">
+      <div class="reveal">
+        <p class="problem-col-label" style="color:var(--pink)">Without Decantr · drift compounds</p>
+
+        <div class="problem-card-bad card-decorated">
+          <div class="drift-label">Prompt 1</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-w"></span><span class="browser-dot-w"></span><span class="browser-dot-w"></span>
+          </div>
+          <div class="mock-card" style="width:40%"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+            <div class="mock-block"></div>
+          </div>
+        </div>
+
+        <div class="problem-card-bad card-decorated">
+          <div class="drift-label">Prompt 5</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-w"></span><span class="browser-dot-w"></span><span class="browser-dot-w"></span>
+          </div>
+          <div class="mock-card" style="width:60%;margin-left:10px"></div>
+          <div class="mock-row">
+            <div class="mock-block"></div>
+            <div class="mock-block" style="flex:1.5"></div>
+            <div class="mock-block" style="flex:0.7"></div>
+          </div>
+          <div class="mock-row" style="gap:16px">
+            <div class="mock-block" style="flex:0.5"></div>
+            <div class="mock-block"></div>
+          </div>
+        </div>
+
+        <div class="problem-card-bad card-decorated">
+          <div class="drift-label">Prompt 10</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-w"></span><span class="browser-dot-w"></span><span class="browser-dot-w"></span>
+          </div>
+          <div class="mock-card"></div>
+          <div class="mock-card" style="height:24px;border-radius:10px;width:70%"></div>
+          <div class="mock-row">
+            <div class="mock-block" style="flex:2;border-radius:0"></div>
+            <div class="mock-block" style="flex:0.5;border-radius:12px"></div>
+            <div class="mock-block" style="flex:1.5;border:2px dashed rgba(255,255,255,0.3)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal reveal-d2">
+        <p class="problem-col-label" style="color:var(--green)">With Decantr · same contract, any theme</p>
+
+        <div class="theme-mock theme-mock-luminarum card-decorated">
+          <div class="theme-mock-label"><span class="theme-mock-dot" style="background:var(--cyan)"></span>luminarum</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
+          </div>
+          <div class="tm-header">
+            <div class="tm-logo" style="background:linear-gradient(135deg,var(--cyan),var(--purple))"></div>
+            <div class="tm-nav">
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+            </div>
+          </div>
+          <div class="tm-hero tm-hero-luminarum">
+            <div class="tm-headline"></div>
+            <div class="tm-headline tm-headline-sub"></div>
+            <div class="tm-cta" style="background:var(--cyan)"></div>
+          </div>
+          <div class="tm-grid">
+            <div class="tm-card tm-card-glow"><div class="tm-card-bar" style="background:var(--cyan)"></div></div>
+            <div class="tm-card tm-card-glow"><div class="tm-card-bar" style="background:var(--coral)"></div></div>
+            <div class="tm-card tm-card-glow"><div class="tm-card-bar" style="background:var(--amber)"></div></div>
+          </div>
+        </div>
+
+        <div class="theme-mock theme-mock-terminal card-decorated">
+          <div class="theme-mock-label"><span class="theme-mock-dot" style="background:var(--green)"></span>terminal</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
+          </div>
+          <div class="tm-header tm-header-terminal">
+            <div class="tm-logo" style="background:var(--green); border-radius:2px"></div>
+            <div class="tm-nav">
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.4); border-radius:2px"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.18); border-radius:2px"></div>
+              <div class="tm-nav-item" style="background:rgba(0,224,171,0.18); border-radius:2px"></div>
+            </div>
+          </div>
+          <div class="tm-hero tm-hero-terminal">
+            <div class="tm-headline tm-headline-term"></div>
+            <div class="tm-headline tm-headline-sub tm-headline-term-sub"></div>
+            <div class="tm-cta tm-cta-term"></div>
+          </div>
+          <div class="tm-grid">
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); border-radius:0"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.5; border-radius:0"></div></div>
+            <div class="tm-card tm-card-terminal"><div class="tm-card-bar" style="background:var(--green); opacity:0.3; border-radius:0"></div></div>
+          </div>
+        </div>
+
+        <div class="theme-mock theme-mock-carbon card-decorated">
+          <div class="theme-mock-label"><span class="theme-mock-dot" style="background:var(--purple)"></span>carbon</div>
+          <div class="browser-frame-bar">
+            <span class="browser-dot-d"></span><span class="browser-dot-d"></span><span class="browser-dot-d"></span>
+          </div>
+          <div class="tm-header tm-header-carbon">
+            <div class="tm-logo" style="background:var(--purple); border-radius:50%"></div>
+            <div class="tm-nav">
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+              <div class="tm-nav-item"></div>
+            </div>
+          </div>
+          <div class="tm-hero tm-hero-carbon">
+            <div class="tm-glass-card">
+              <div class="tm-headline" style="width:70%"></div>
+              <div class="tm-headline tm-headline-sub" style="width:50%"></div>
+            </div>
+            <div class="tm-cta" style="background:linear-gradient(135deg,var(--purple),var(--pink))"></div>
+          </div>
+          <div class="tm-grid">
+            <div class="tm-card tm-card-glass"><div class="tm-card-bar" style="background:rgba(101,0,198,0.6)"></div></div>
+            <div class="tm-card tm-card-glass"><div class="tm-card-bar" style="background:rgba(254,68,116,0.6)"></div></div>
+            <div class="tm-card tm-card-glass"><div class="tm-card-bar" style="background:rgba(101,0,198,0.4)"></div></div>
+          </div>
+        </div>
+
+        <div style="text-align:center">
+          <span class="zero-drift-pill">Zero drift · 3 themes · one essence</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--cyan)"></span></div>
+
+<!-- ==================== SHOWCASE ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal">One governance loop. Repeat it every edit.</h2>
+    <p class="section-sub reveal">Adopt the app, load typed route context, let the agent edit, then verify with evidence before the change lands.</p>
+
+    <div class="showcase-steps">
+
+      <div class="showcase-step reveal reveal-d1">
+        <div class="showcase-step-num showcase-step-num-1">1</div>
+        <div class="showcase-step-body">
+          <h3>Attach</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">npx @decantr/cli adopt --yes</span></div>
+        </div>
+      </div>
+
+      <div class="showcase-step reveal reveal-d2">
+        <div class="showcase-step-num showcase-step-num-2">2</div>
+        <div class="showcase-step-body">
+          <h3>Prepare the task</h3>
+          <div class="showcase-prompt"><strong>Use Decantr route context before editing this UI.</strong>
+
+Load .decantr/graph/contract-capsule.json when present.
+Use .decantr/graph/snapshots for replayable graph history when debugging drift.
+Run decantr task /feed "add saved recipe actions".
+Preserve existing app authority, accepted local law, and style bridge mappings.
+Use Project Health findings as repair instructions.
+
+Make the smallest coherent change, then rerun decantr verify.</div>
+        </div>
+      </div>
+
+      <div class="showcase-step reveal reveal-d3">
+        <div class="showcase-step-num showcase-step-num-3">3</div>
+        <div class="showcase-step-body">
+          <h3>What the AI receives</h3>
+          <div class="tier-flow">
+            <div class="tier-flow-node" style="--accent:var(--pink)">
+              <div class="tier-flow-icon"><i data-lucide="ruler" style="width:24px;height:24px;color:var(--accent)"></i></div>
+              <div class="tier-flow-label">Contract</div>
+              <div class="tier-flow-detail">Essence · Local law · Style bridge · Typed graph</div>
+            </div>
+            <div class="tier-flow-arrow">→</div>
+            <div class="tier-flow-node" style="--accent:var(--cyan)">
+              <div class="tier-flow-icon"><i data-lucide="map" style="width:24px;height:24px;color:var(--accent)"></i></div>
+              <div class="tier-flow-label">Context</div>
+              <div class="tier-flow-detail">Route subgraph · Task authority · Page packs · Changed-file impact</div>
+            </div>
+            <div class="tier-flow-arrow">→</div>
+            <div class="tier-flow-node" style="--accent:var(--amber)">
+              <div class="tier-flow-icon"><i data-lucide="zap" style="width:24px;height:24px;color:var(--accent)"></i></div>
+              <div class="tier-flow-label">Evidence</div>
+              <div class="tier-flow-detail">Stable codes · Repair IDs · Graph anchors · Evidence Bundles</div>
+            </div>
+            <div class="tier-flow-arrow">→</div>
+            <div class="tier-flow-result" style="--accent:var(--green)">
+              <div class="tier-flow-icon"><i data-lucide="sparkles" style="width:24px;height:24px;color:var(--accent)"></i></div>
+              <div class="tier-flow-label">Verified UI</div>
+              <div class="tier-flow-detail">Agent edits stay inside product standards and are auditable after the fact</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--green)"></span></div>
+
+<!-- ==================== THREE-TIER MODEL ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal">Contract / Context / Evidence</h2>
+    <p class="section-sub reveal">Decantr gives agents a typed model of the frontend they are editing, scoped context for the current route, and findings they can repair without parsing prose.</p>
+
+    <div class="tier-grid">
+
+      <div class="tier-card tier-card-1 card-decorated reveal reveal-d1">
+        <div class="tier-card-icon"><i data-lucide="shield" style="width:22px;height:22px;color:var(--pink)"></i></div>
+        <div class="tier-label">Contract</div>
+        <ul class="tier-items">
+          <li>Essence V4</li>
+          <li>Typed graph snapshot</li>
+          <li>Route topology</li>
+          <li>Local UI law</li>
+          <li>Style bridge</li>
+          <li>Design tokens</li>
+          <li>Component vocabulary</li>
+        </ul>
+      </div>
+
+      <div class="tier-card tier-card-2 card-decorated reveal reveal-d2">
+        <div class="tier-card-icon"><i data-lucide="map" style="width:22px;height:22px;color:var(--cyan)"></i></div>
+        <div class="tier-label">Context</div>
+        <ul class="tier-items">
+          <li>Contract capsule</li>
+          <li>Route-scoped subgraph</li>
+          <li>Task-time authority</li>
+          <li>Changed-file impact</li>
+          <li>Accepted local patterns</li>
+          <li>Visual evidence references</li>
+        </ul>
+      </div>
+
+      <div class="tier-card tier-card-3 card-decorated reveal reveal-d3">
+        <div class="tier-card-icon"><i data-lucide="layers" style="width:22px;height:22px;color:var(--amber)"></i></div>
+        <div class="tier-label">Evidence</div>
+        <ul class="tier-items">
+          <li>Stable diagnostic codes</li>
+          <li>Typed repair IDs</li>
+          <li>Graph anchors</li>
+          <li>Evidence Bundles</li>
+          <li>Component reuse findings</li>
+          <li>CI health artifacts</li>
+          <li>Repair prompts</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--pink)"></span></div>
+
+<!-- ==================== WHAT THE AI READS ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal">Typed graph context -- not prompt soup</h2>
+    <p class="section-sub reveal">Markdown remains readable for humans. Agents get graph snapshots, contract capsules, and route-scoped context that point to the exact pages, shells, patterns, rules, and evidence in play.</p>
+
+    <div class="reveal context-tabs-wrap">
+      <div class="ctx-tabs">
+        <button class="ctx-tab-btn active" data-ctx="section">route graph</button>
+        <button class="ctx-tab-btn" data-ctx="scaffold">contract capsule</button>
+        <button class="ctx-tab-btn" data-ctx="pattern">pattern spec</button>
+      </div>
+
+      <div class="ctx-tab-content active" id="ctx-section">
+        <div class="context-viewer"><span class="ctx-heading">## Quick Start</span>
+
+<span class="ctx-comment"># From section-agent-orchestrator.md:</span>
+
+<span class="ctx-key">Shell:</span>       <span class="ctx-value">SidebarMainLayout</span>  (sidebar 260px, main fluid)
+<span class="ctx-key">Sidebar:</span>     <span class="ctx-value">fixed, dark bg, 60px header zone, nav groups with icons</span>
+<span class="ctx-key">Tokens:</span>      <span class="ctx-value">import tokens.css</span> -- surfaces, borders, text, accents
+<span class="ctx-key">Treatments:</span>  <span class="ctx-value">import treatments.css</span> -- cards, code blocks, data rows
+
+<span class="ctx-heading">## Pattern: Agent Timeline</span>
+
+<span class="ctx-key">Visual brief:</span>
+  <span class="ctx-dim">Vertical feed of agent execution events. Each node shows</span>
+  <span class="ctx-dim">timestamp, agent name, action type, and status badge.</span>
+  <span class="ctx-dim">Connected by a thin vertical line (border-left on</span>
+  <span class="ctx-dim">the timeline track).</span>
+
+<span class="ctx-key">Composition:</span>  <span class="ctx-value">timeline-track</span> &gt; <span class="ctx-value">timeline-node[]</span> &gt; <span class="ctx-value">{ icon, meta, detail }</span>
+
+<span class="ctx-key">Spacing:</span>     <span class="ctx-value">gap-4 between nodes, p-4 inside cards</span>
+<span class="ctx-key">Motion:</span>      <span class="ctx-value">nodes fade-in staggered 50ms on mount</span>
+<span class="ctx-key">Responsive:</span>  <span class="ctx-value">single-column, full-width at all breakpoints</span></div>
+      </div>
+
+      <div class="ctx-tab-content" id="ctx-scaffold">
+        <div class="context-viewer"><span class="ctx-heading">## Topology</span>
+
+<span class="ctx-comment"># From scaffold.md — the full app overview</span>
+
+<span class="ctx-key">Zones:</span>
+  <span class="ctx-value">public</span>   → marketing-core (home, pricing, about)
+  <span class="ctx-value">gateway</span>  → auth-full (/login, /register)
+  <span class="ctx-value">app</span>      → agent-orchestrator (/chat, /settings)
+
+<span class="ctx-key">Transitions:</span>
+  <span class="ctx-dim">public → gateway  via CTA clicks (Sign up, Sign in)</span>
+  <span class="ctx-dim">gateway → app     via successful auth (redirect /chat)</span>
+  <span class="ctx-dim">app → gateway     via logout (redirect /login)</span>
+
+<span class="ctx-heading">## Voice &amp; Copy</span>
+
+<span class="ctx-key">Tone:</span>        <span class="ctx-value">confident, technical, warm</span>
+<span class="ctx-key">CTA verbs:</span>   <span class="ctx-value">Start, Build, Compose — never "Click here"</span>
+<span class="ctx-key">Empty:</span>       <span class="ctx-value">"No agents yet. Compose your first one."</span>
+<span class="ctx-key">Errors:</span>      <span class="ctx-value">one sentence, cause + next action</span>
+
+<span class="ctx-heading">## Development Mode</span>
+
+<span class="ctx-key">Dev auth:</span>    <span class="ctx-value">the generated auth flag</span> bypasses gateway
+<span class="ctx-key">Mock data:</span>   <span class="ctx-dim">every page ships with realistic seeded fixtures</span></div>
+      </div>
+
+      <div class="ctx-tab-content" id="ctx-pattern">
+        <div class="context-viewer"><span class="ctx-heading">## Pattern: split-feature</span>
+
+<span class="ctx-comment"># Resolved via decantr_resolve_pattern</span>
+
+<span class="ctx-key">Visual brief:</span>
+  <span class="ctx-dim">Two-column feature block. Left column holds a tight</span>
+  <span class="ctx-dim">code snippet or terminal capture; right column carries</span>
+  <span class="ctx-dim">the headline, body copy, and a single CTA. Asymmetric</span>
+  <span class="ctx-dim">alignment — text is top-aligned, media floats.</span>
+
+<span class="ctx-key">Slots:</span>
+  - <span class="ctx-value">media</span>       <span class="ctx-dim">(code-sample · terminal · image)</span>
+  - <span class="ctx-value">eyebrow</span>     <span class="ctx-dim">(optional uppercase label)</span>
+  - <span class="ctx-value">headline</span>
+  - <span class="ctx-value">body</span>
+  - <span class="ctx-value">cta-primary</span>
+
+<span class="ctx-key">Composition:</span>
+  <span class="ctx-value">split-container</span> &gt; [
+    <span class="ctx-value">split-media</span>   &gt; { slot: media },
+    <span class="ctx-value">split-content</span> &gt; { eyebrow, headline, body, cta-primary }
+  ]
+
+<span class="ctx-key">Motion:</span>       <span class="ctx-value">media slides in 80px → 0 on scroll. content fades.</span>
+<span class="ctx-key">Responsive:</span>   <span class="ctx-value">stacks under 720px — media on top, content below</span>
+<span class="ctx-key">A11y:</span>         <span class="ctx-value">media is decorative unless media.role = "demo"</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--amber)"></span></div>
+
+<!-- ==================== MCP TOOLS ==================== -->
+<section class="section" id="tools">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="wrench" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>32 tools for your AI assistant</h2>
+    <p class="section-sub reveal">MCP-native governance: agents can read the contract graph, prepare route-scoped work, verify findings, and request repair prompts.</p>
+
+    <!-- MCP INSTALL -->
+    <div class="mcp-install reveal">
+      <div class="mcp-install-head">
+        <span class="mcp-install-label">Add the MCP server</span>
+        <div class="install-tabs">
+          <button class="install-tab-btn active" data-install="claude">Claude Code</button>
+          <button class="install-tab-btn" data-install="cursor">Cursor</button>
+          <button class="install-tab-btn" data-install="windsurf">Windsurf</button>
+          <button class="install-tab-btn" data-install="manual">Manual</button>
+        </div>
+      </div>
+      <div class="install-tab-content active" id="install-claude">
+        <div class="showcase-code"><span class="k">$</span> <span class="s">claude mcp add decantr -- npx -y @decantr/mcp-server</span></div>
+      </div>
+      <div class="install-tab-content" id="install-cursor">
+        <div class="showcase-code"><span class="ctx-comment"># ~/.cursor/mcp.json</span>
+{
+  <span class="ctx-key">"mcpServers"</span>: {
+    <span class="ctx-key">"decantr"</span>: {
+      <span class="ctx-key">"command"</span>: <span class="ctx-value">"npx"</span>,
+      <span class="ctx-key">"args"</span>: [<span class="ctx-value">"-y"</span>, <span class="ctx-value">"@decantr/mcp-server"</span>]
+    }
+  }
+}</div>
+      </div>
+      <div class="install-tab-content" id="install-windsurf">
+        <div class="showcase-code"><span class="ctx-comment"># ~/.codeium/windsurf/mcp_config.json</span>
+{
+  <span class="ctx-key">"mcpServers"</span>: {
+    <span class="ctx-key">"decantr"</span>: {
+      <span class="ctx-key">"command"</span>: <span class="ctx-value">"npx"</span>,
+      <span class="ctx-key">"args"</span>: [<span class="ctx-value">"-y"</span>, <span class="ctx-value">"@decantr/mcp-server"</span>]
+    }
+  }
+}</div>
+      </div>
+      <div class="install-tab-content" id="install-manual">
+        <div class="showcase-code"><span class="k">$</span> <span class="s">npm i -g @decantr/mcp-server &amp;&amp; decantr-mcp</span>
+<span class="ctx-comment"># Then register the binary in your editor's MCP config</span></div>
+      </div>
+    </div>
+
+    <!-- READ band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--cyan)"></span>
+      <span class="tool-band-name">Read</span>
+      <span class="tool-band-sub">Surface the contract and context the AI needs to work</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-text" class="tool-icon" style="color:var(--cyan)"></i>decantr_read_essence</div>
+        <p class="tool-desc">Read the current design spec</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="activity" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_project_state</div>
+        <p class="tool-desc">Compact project readiness, pack, graph, and local-authority state</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="brain-circuit" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_contract_capsule</div>
+        <p class="tool-desc">Load the cache-friendly typed Contract capsule for an agent session</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="git-fork" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_graph_snapshot</div>
+        <p class="tool-desc">Read graph metadata, route subgraphs, history snapshots, or typed snapshot diffs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="search-code" class="tool-icon" style="color:var(--cyan)"></i>decantr_query_graph</div>
+        <p class="tool-desc">Query current or historical typed graph nodes, relations, and endpoints</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="workflow" class="tool-icon" style="color:var(--cyan)"></i>decantr_traverse_graph</div>
+        <p class="tool-desc">Traverse current or historical graph relationships from route, token, component, or rule nodes</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="layout-grid" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_scaffold_context</div>
+        <p class="tool-desc">Top-level scaffold context for the whole app</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="book-open" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_section_context</div>
+        <p class="tool-desc">Scoped context for a specific app section</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-stack" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_page_context</div>
+        <p class="tool-desc">Page-scoped context for one route or page id</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="package-search" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_execution_pack</div>
+        <p class="tool-desc">Read compiled scaffold, page, section, review, or mutation packs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="gallery-vertical-end" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_showcase_benchmarks</div>
+        <p class="tool-desc">Inspect shortlist, manifest, and showcase verification metadata</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="bar-chart-3" class="tool-icon" style="color:var(--cyan)"></i>decantr_get_registry_intelligence_summary</div>
+        <p class="tool-desc">Hosted aggregate intelligence coverage without crawling the registry</p>
+      </div>
+    </div>
+
+    <!-- REASON band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--amber)"></span>
+      <span class="tool-band-name">Vocabulary</span>
+      <span class="tool-band-sub">Resolve certified vocabulary when the project asks for it</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="search" class="tool-icon" style="color:var(--amber)"></i>decantr_search_registry</div>
+        <p class="tool-desc">Search patterns, archetypes, themes, starter kits, shells</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="puzzle" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_pattern</div>
+        <p class="tool-desc">Full pattern details with layout specs</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="boxes" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_archetype</div>
+        <p class="tool-desc">App templates with page maps</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="layout-template" class="tool-icon" style="color:var(--amber)"></i>decantr_resolve_blueprint</div>
+        <p class="tool-desc">Composed templates with topology, zones, and transitions</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="lightbulb" class="tool-icon" style="color:var(--amber)"></i>decantr_suggest_patterns</div>
+        <p class="tool-desc">Pattern recommendations for any page description</p>
+      </div>
+    </div>
+
+    <!-- MUTATE band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--coral)"></span>
+      <span class="tool-band-name">Mutate</span>
+      <span class="tool-band-sub">Write structured changes back into the contract</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-plus" class="tool-icon" style="color:var(--coral)"></i>decantr_create_essence</div>
+        <p class="tool-desc">Generate a design spec from a description</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="pencil" class="tool-icon" style="color:var(--coral)"></i>decantr_update_essence</div>
+        <p class="tool-desc">Apply structured updates to DNA or Blueprint</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="check-circle" class="tool-icon" style="color:var(--coral)"></i>decantr_accept_drift</div>
+        <p class="tool-desc">Resolve violations by accepting, scoping, rejecting, or deferring</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="server-cog" class="tool-icon" style="color:var(--coral)"></i>decantr_compile_execution_packs</div>
+        <p class="tool-desc">Compile a hosted execution-pack bundle from an essence</p>
+      </div>
+    </div>
+
+    <!-- VERIFY band -->
+    <div class="tool-band-label reveal">
+      <span class="tool-band-dot" style="background:var(--green)"></span>
+      <span class="tool-band-name">Verify</span>
+      <span class="tool-band-sub">Score, audit, and repair generated UI against the contract</span>
+    </div>
+    <div class="tools-list reveal">
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-check" class="tool-icon" style="color:var(--green)"></i>decantr_validate</div>
+        <p class="tool-desc">Validate an Essence against the schema</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="shield-check" class="tool-icon" style="color:var(--green)"></i>decantr_check_drift</div>
+        <p class="tool-desc">Detect design-spec violations in code changes</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="star" class="tool-icon" style="color:var(--green)"></i>decantr_critique</div>
+        <p class="tool-desc">Score generated code on treatments, decorators, motion, a11y, responsive</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="clipboard-check" class="tool-icon" style="color:var(--green)"></i>decantr_audit_project</div>
+        <p class="tool-desc">Schema-backed project audit against packs, guards, and drift</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="list-checks" class="tool-icon" style="color:var(--green)"></i>decantr_get_findings</div>
+        <p class="tool-desc">Typed findings with stable codes, repair IDs, graph anchors, and optional prompts</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="wrench" class="tool-icon" style="color:var(--green)"></i>decantr_get_repair_plan</div>
+        <p class="tool-desc">Structured repair plan with action payload, evidence, read targets, constraints, and rerun commands</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="folder-check" class="tool-icon" style="color:var(--green)"></i>decantr_get_evidence_bundle</div>
+        <p class="tool-desc">Local evidence bundle for AI repair loops and CI artifacts</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="file-pen-line" class="tool-icon" style="color:var(--green)"></i>decantr_get_repair_prompt</div>
+        <p class="tool-desc">Scoped repair prompt with exact finding evidence and rerun commands</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="network" class="tool-icon" style="color:var(--green)"></i>decantr_workspace_health</div>
+        <p class="tool-desc">Aggregate health for many attached Decantr projects in a monorepo</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="refresh-cw" class="tool-icon" style="color:var(--green)"></i>decantr_run_health_loop</div>
+        <p class="tool-desc">Run health, evidence, and the next repair prompt in one local loop</p>
+      </div>
+      <div class="tool-item">
+        <div class="tool-name"><i data-lucide="map" class="tool-icon" style="color:var(--green)"></i>decantr_prepare_task_context</div>
+        <p class="tool-desc">Resolve route-local Brownfield or Hybrid authority, local law, visual evidence, and theme inventory before editing</p>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 3rem; color: var(--amber); text-align: center; font-size: 1.15rem;" class="reveal">CLI Commands</h3>
+    <p class="tool-desc reveal" style="margin-bottom: 1rem; text-align: center;">Manage your project from the terminal</p>
+
+    <div class="cli-grid reveal">
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="rocket" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>new &lt;name&gt; --blueprint=X</div>
+        <p class="cli-desc">Scaffold a new project from a blueprint</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="refresh-cw" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>refresh</div>
+        <p class="cli-desc">Regenerate context files from the essence</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="git-fork" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>graph</div>
+        <p class="cli-desc">Generate the typed Contract graph, graph diff, manifest, and contract capsule</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="plus-circle" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>add page</div>
+        <p class="cli-desc">Add a new page to a section</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="minus-circle" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>remove page</div>
+        <p class="cli-desc">Remove a page from a section</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="palette" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>theme switch</div>
+        <p class="cli-desc">Switch to a different theme</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="shield" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>verify</div>
+        <p class="cli-desc">Run the local reliability gate for humans, CI, and agents</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="activity" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>verify --evidence</div>
+        <p class="cli-desc">Write a privacy-redacted Evidence Bundle for AI repair and CI artifacts</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="lightbulb" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>suggest --route --from-code</div>
+        <p class="cli-desc">Rank patterns against route, file, source-code evidence, and accepted local law</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="sparkles" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>magic "prompt"</div>
+        <p class="cli-desc">Scaffold greenfield apps from natural language; attached apps are steered into task context</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="scan-line" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>adopt</div>
+        <p class="cli-desc">Analyze, attach, verify, baseline, and show the Brownfield operating loop</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="stethoscope" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>doctor</div>
+        <p class="cli-desc">Explain app/workspace state, adoption lane, stale artifacts, local law, CI wiring, and the ordered next-step queue</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="map" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>task &lt;route&gt;</div>
+        <p class="cli-desc">Prepare route context, authority, local law, evidence, and changed-file impact before an LLM edits code</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="badge-check" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>ci</div>
+        <p class="cli-desc">Run the non-mutating required automation gate with schema-backed artifacts</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="file-cog" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>codify --from-audit</div>
+        <p class="cli-desc">Turn local buttons, cards, forms, themes, evidence, variants, and starter rules into project-owned UI law</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="search" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>search &lt;query&gt;</div>
+        <p class="cli-desc">Search certified vocabulary across patterns, themes, shells, and starter kits</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="clipboard-check" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>audit</div>
+        <p class="cli-desc">Full project audit — drift, packs, guard, critique</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="network" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>verify --workspace</div>
+        <p class="cli-desc">Aggregate Project Health across many Decantr projects</p>
+      </div>
+      <div class="cli-item">
+        <div class="cli-name"><i data-lucide="palette" class="cli-icon" style="width:14px;height:14px;color:var(--amber)"></i>export --to figma-tokens</div>
+        <p class="cli-desc">Bridge Decantr tokens into Tokens Studio-compatible JSON</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--purple)"></span></div>
+
+<!-- ==================== GET STARTED ==================== -->
+<section class="section" id="quickstart">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="rocket" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Get started</h2>
+    <p class="section-sub reveal">Attach Decantr to the app you already have, give the agent route-scoped context, then verify the change before it lands.</p>
+
+    <div class="reveal">
+      <h3 style="text-align:center; color:var(--coral); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 1: Adopt</h3>
+      <div class="showcase-code" style="max-width:780px; margin:0 auto 20px;"><span class="k">$</span> <span class="s">npx @decantr/cli adopt --yes</span></div>
+      <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:640px; margin:0 auto 40px;">Decantr inventories routes, framework, style signals, local docs, and existing UI patterns, then writes an observed contract you own.</p>
+    </div>
+
+    <div class="reveal" style="max-width:780px; margin:0 auto 40px;">
+      <h3 style="text-align:center; color:var(--cyan); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 2: Activate context</h3>
+      <div class="showcase-code"><span class="k">$</span> <span class="s">decantr graph &amp;&amp; decantr task /feed "add saved recipe actions"</span></div>
+    </div>
+
+    <div class="reveal" style="max-width:780px; margin:0 auto;">
+      <h3 style="text-align:center; color:var(--amber); margin-bottom:24px; font-size:1rem; text-transform:uppercase; letter-spacing:0.08em;">Step 3: Verify</h3>
+      <div class="showcase-code"><span class="k">$</span> <span class="s">decantr verify --evidence</span></div>
+      <p style="text-align:center; color:var(--muted); font-size:1rem; line-height:1.7; max-width:580px; margin:20px auto 0;">Project Health emits stable codes, typed repair IDs, graph anchors, and evidence bundles; graph snapshots give the assistant replayable history to fix drift.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--green)"></span></div>
+
+<!-- ==================== CRITIQUE PROOF ==================== -->
+<section class="section" id="critique">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="star" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>The verifier turns drift into repair work.</h2>
+    <p class="section-sub reveal">Project Health and MCP tools emit stable codes, typed repair IDs, graph anchors, and source evidence. The agent gets a precise finding instead of a vague review comment.</p>
+
+    <div class="critique-panel reveal">
+      <div class="critique-side critique-before card-decorated">
+        <div class="critique-head">
+          <span class="critique-side-label">First pass</span>
+          <div class="critique-score critique-score-bad">
+            <span class="critique-score-num">42</span><span class="critique-score-max">/100</span>
+          </div>
+        </div>
+        <ul class="critique-list">
+          <li class="critique-item critique-fail">
+            <i data-lucide="x-circle" class="critique-icon" style="color:var(--pink)"></i>
+            <div>
+              <div class="critique-item-name">Treatments</div>
+              <div class="critique-item-note"><code>COMP001</code>: local <code>Button</code> reimplemented instead of importing the project-owned primitive.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-fail">
+            <i data-lucide="x-circle" class="critique-icon" style="color:var(--pink)"></i>
+            <div>
+              <div class="critique-item-name">Context</div>
+              <div class="critique-item-note"><code>CTX002</code>: execution packs are missing, so agent context may be stale.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-warn">
+            <i data-lucide="alert-triangle" class="critique-icon" style="color:var(--amber)"></i>
+            <div>
+              <div class="critique-item-name">Route</div>
+              <div class="critique-item-note"><code>ROUTE001</code>: observed route is not represented in the contract.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Accessibility</div>
+              <div class="critique-item-note">WCAG AA focus rings, skip nav present.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="critique-arrow">
+        <i data-lucide="arrow-right" style="width:28px;height:28px;color:var(--muted)"></i>
+        <span class="critique-arrow-label">one iteration</span>
+      </div>
+
+      <div class="critique-side critique-after card-decorated">
+        <div class="critique-head">
+          <span class="critique-side-label">After AI re-reads section context</span>
+          <div class="critique-score critique-score-good">
+            <span class="critique-score-num">94</span><span class="critique-score-max">/100</span>
+          </div>
+        </div>
+        <ul class="critique-list">
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Component reuse</div>
+              <div class="critique-item-note">Repair imports the canonical <code>Button</code> and removes the duplicate local primitive.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Context</div>
+              <div class="critique-item-note">Packs are regenerated and the Contract capsule points at the current graph snapshot.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Route</div>
+              <div class="critique-item-note">Observed route is reconciled into Essence and can receive route-scoped task context.</div>
+            </div>
+          </li>
+          <li class="critique-item critique-pass">
+            <i data-lucide="check-circle" class="critique-icon" style="color:var(--green)"></i>
+            <div>
+              <div class="critique-item-name">Accessibility</div>
+              <div class="critique-item-note">WCAG AA · focus visible · skip nav · keyboard nav verified.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
+
+<!-- ==================== BROWNFIELD ==================== -->
+<section class="section" id="brownfield">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="layers" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Already have a project? Adopt Decantr without a rewrite.</h2>
+    <p class="section-sub reveal">Brownfield adoption is a first-class path. Decantr inventories what you have, drafts an observed contract proposal, keeps existing code and styling authoritative, and gives your LLM a repeatable route context before it edits.</p>
+
+    <div class="lane-steps">
+      <div class="lane-step reveal reveal-d1">
+        <div class="lane-step-num" style="--accent:var(--coral)">1</div>
+        <div class="lane-step-body">
+          <h3>Adopt</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr adopt --yes</span></div>
+          <p class="lane-step-desc">Runs the adoption workflow: analysis, observed contract proposal, deterministic acceptance or merge, hosted pack hydration when online, Project Health, and baseline. In monorepos, install at the workspace root and pass --project apps/web; app primitives keep that scope instead of falling back to the root. Visual evidence is an optional follow-up when the app is running.</p>
+        </div>
+      </div>
+      <div class="lane-step reveal reveal-d2">
+        <div class="lane-step-num" style="--accent:var(--amber)">2</div>
+        <div class="lane-step-body">
+          <h3>Activate</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr task /feed "add saved recipe actions"</span></div>
+        <p class="lane-step-desc">Surfaces route-local context, page and section packs, screenshot references, Brownfield intelligence, theme inventory, accepted local patterns, accepted local rules, changed-file impact, and the active authority lane before the assistant edits code.</p>
+        </div>
+      </div>
+      <div class="lane-step reveal reveal-d3">
+        <div class="lane-step-num" style="--accent:var(--cyan)">3</div>
+        <div class="lane-step-body">
+          <h3>Diagnose and gate</h3>
+          <div class="showcase-code"><span class="k">$</span> <span class="s">decantr doctor &amp;&amp; decantr ci</span></div>
+          <p class="lane-step-desc">Use doctor when the next step is unclear, codify project-owned button/card/form/shell/theme law when you are ready for Hybrid, and run ci as the non-mutating pull-request gate. Accepted local-rule findings show up in CI with file and line evidence. Setup, task paths, health prompts, refresh summaries, token exports, custom themes, and suggestions remain app-scoped in monorepos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--amber)"></span></div>
+
+<!-- ==================== HYBRID ==================== -->
+<section class="section" id="hybrid">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="git-merge" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Layer in what you need, when you need it.</h2>
+    <p class="section-sub reveal">Hybrid lets an attached app adopt selected Decantr or project-owned authority without handing Decantr the whole source tree. Start with local law, map hosted ideas into your own components, then tighten verification only where the team agrees.</p>
+
+    <div class="hybrid-grid">
+      <div class="hybrid-card card-decorated reveal reveal-d1">
+        <i data-lucide="file-cog" class="hybrid-icon" style="color:var(--cyan)"></i>
+        <h3 class="hybrid-title">Codify local law</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr codify --from-audit --style-bridge</div>
+        <p class="hybrid-desc">Turn observed buttons, cards, forms, shells, theme variants, source evidence, confidence tiers, and token/class mappings into project-owned law before enforcing them. Suggest and CI surface those accepted laws as active authority.</p>
+      </div>
+      <div class="hybrid-card card-decorated reveal reveal-d2">
+        <i data-lucide="stethoscope" class="hybrid-icon" style="color:var(--coral)"></i>
+        <h3 class="hybrid-title">See the active lane</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr doctor</div>
+        <p class="hybrid-desc">Doctor says whether the app is contract-only, Hybrid local law, style bridge, Decantr CSS, or composition mode.</p>
+      </div>
+      <div class="hybrid-card card-decorated reveal reveal-d3">
+        <i data-lucide="map" class="hybrid-icon" style="color:var(--amber)"></i>
+        <h3 class="hybrid-title">Activate route context</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr task /feed "standardize cards"</div>
+        <p class="hybrid-desc">Task context includes source authority, style authority, active laws, style bridge mappings, and runtime boundary warnings before the LLM edits.</p>
+      </div>
+      <div class="hybrid-card card-decorated reveal reveal-d4">
+        <i data-lucide="git-merge" class="hybrid-icon" style="color:var(--green)"></i>
+        <h3 class="hybrid-title">Map hosted ideas</h3>
+        <div class="hybrid-code"><span class="k">$</span> decantr codify --map-pattern hero</div>
+        <p class="hybrid-desc">Bring registry guidance into local law as advisory context first. Add project-owned components, token/class recipes, variants, and exceptions before treating it as enforceable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--yellow)"></span></div>
+
+<!-- ==================== VOCABULARY ==================== -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="database" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Certified vocabulary, not a marketplace dependency.</h2>
+    <p class="section-sub reveal">The public registry is a vocabulary source for patterns, themes, shells, archetypes, and starter kits. Your repo-owned Contract decides what applies; registry content never overrides local law.</p>
+
+    <div class="stats-grid">
+      <a href="https://registry.decantr.ai/browse/patterns" target="_blank" rel="noopener" class="stat-card stat-card-1 reveal reveal-d1">
+        <div class="stat-icon"><i data-lucide="puzzle" style="width:24px;height:24px;color:var(--coral)"></i></div>
+        <div class="stat-number">225+</div>
+        <div class="stat-label">Patterns</div>
+        <div class="stat-action">Browse →</div>
+      </a>
+      <a href="https://registry.decantr.ai/browse/themes" target="_blank" rel="noopener" class="stat-card stat-card-2 reveal reveal-d2">
+        <div class="stat-icon"><i data-lucide="palette" style="width:24px;height:24px;color:var(--amber)"></i></div>
+        <div class="stat-number">30+</div>
+        <div class="stat-label">Themes</div>
+        <div class="stat-action">Browse →</div>
+      </a>
+      <a href="https://registry.decantr.ai/browse/blueprints" target="_blank" rel="noopener" class="stat-card stat-card-3 reveal reveal-d3">
+        <div class="stat-icon"><i data-lucide="layout-template" style="width:24px;height:24px;color:var(--cyan)"></i></div>
+        <div class="stat-number">40+</div>
+        <div class="stat-label">Starter Kits</div>
+        <div class="stat-action">Browse →</div>
+      </a>
+      <a href="https://registry.decantr.ai/browse/archetypes" target="_blank" rel="noopener" class="stat-card stat-card-4 reveal reveal-d4">
+        <div class="stat-icon"><i data-lucide="boxes" style="width:24px;height:24px;color:var(--green)"></i></div>
+        <div class="stat-number">200+</div>
+        <div class="stat-label">Archetypes</div>
+        <div class="stat-action">Browse →</div>
+      </a>
+    </div>
+
+    <div style="text-align:center; margin-top:3rem; display:flex; gap:16px; justify-content:center; flex-wrap:wrap;" class="reveal">
+      <a href="/reference/project-health.md" class="btn-primary" style="font-size:1.05rem; padding:14px 32px;">Read Project Health</a>
+      <a href="https://registry.decantr.ai" target="_blank" rel="noopener" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Browse Vocabulary</a>
+      <a href="/reference/registry-public-api.html" class="btn-ghost" style="font-size:1.05rem; padding:14px 32px;">Read the Registry API</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--green)"></span></div>
+
+<!-- ==================== PACKAGES ==================== -->
+<section class="section" id="packages">
+  <div class="container">
+    <h2 class="section-heading reveal"><i data-lucide="package" class="section-heading-icon" style="width:20px;height:20px;color:var(--muted)"></i>Open source. MIT licensed.</h2>
+    <p class="section-sub reveal">Eight packages, one mission: make AI-edited frontend code reliable enough to govern.</p>
+
+    <div class="pkg-band-label reveal"><span class="pkg-band-dot" style="background:var(--cyan)"></span>Foundation</div>
+    <div class="packages-grid">
+      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d1">
+        <div class="pkg-name">@decantr/essence-spec</div>
+        <p class="pkg-desc">Schema, validator, guard rules, and TypeScript types for the Essence format</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-4 card-decorated reveal reveal-d2">
+        <div class="pkg-name">@decantr/registry</div>
+        <p class="pkg-desc">Certified vocabulary contracts and discovery helpers for patterns, archetypes, themes, starter kits, and shells</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d3">
+        <div class="pkg-name">@decantr/css</div>
+        <p class="pkg-desc">Optional framework-agnostic CSS atoms runtime for starter kits and Decantr CSS adoption lanes</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d4">
+        <div class="pkg-name">@decantr/core</div>
+        <p class="pkg-desc">Execution-pack compiler primitives, typed Contract graph builders, graph diffs, and Contract capsules</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d5">
+        <div class="pkg-name">@decantr/telemetry</div>
+        <p class="pkg-desc">Privacy-preserving event contracts, clients, and analytics sinks</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+    </div>
+
+    <div class="pkg-band-label reveal" style="margin-top:2rem"><span class="pkg-band-dot" style="background:var(--coral)"></span>Delivery</div>
+    <div class="packages-grid">
+      <div class="pkg-card pkg-card-1 card-decorated reveal reveal-d1">
+        <div class="pkg-name">@decantr/cli</div>
+        <p class="pkg-desc">Workflow commands, project scaffolding, Brownfield activation, Hybrid authority lanes, doctor, CI, local law, style bridges, visual evidence, baselines, workspace health, and registry sync</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-2 card-decorated reveal reveal-d2">
+        <div class="pkg-name">@decantr/mcp-server</div>
+        <p class="pkg-desc">MCP server exposing typed graph context, Brownfield/Hybrid authority, local law, style bridges, Evidence Bundles, and repair prompts to AI assistants</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+      <div class="pkg-card pkg-card-3 card-decorated reveal reveal-d3">
+        <div class="pkg-name">@decantr/verifier</div>
+        <p class="pkg-desc">Project Health, structured diagnostics, graph-anchored findings, component reuse drift, Evidence Bundles, CI schemas, and repair payloads</p>
+        <div class="pkg-version">v3.0.1</div>
+      </div>
+    </div>
+    <p class="section-sub reveal" style="margin-top:28px">Security reviews should inspect the installed npm surface, not internal release scripts or showcase fixtures. See the <a href="/reference/security-permissions.md">security and permissions matrix</a> for filesystem, network, process, telemetry, hosted upload, and MCP write-tool behavior.</p>
+  </div>
+</section>
+
+<!-- ===== DIVIDER ===== -->
+<div class="section-divider"><span class="divider-dot" style="background:var(--coral)"></span></div>
+
+<!-- ==================== WORKS WITH ==================== -->
+<section class="works-section" id="works">
+  <div class="container">
+    <h2 class="section-heading reveal" style="margin-bottom:16px">Deep where verification matters</h2>
+    <p class="section-sub reveal" style="margin-bottom:32px">Decantr stays useful across web stacks, but the governance path is getting deepest first for React, TypeScript, Tailwind, and shadcn-style component systems.</p>
+
+    <div class="works-group reveal">
+      <div class="works-group-label"><i data-lucide="bot" style="width:14px;height:14px"></i>AI assistants</div>
+      <div class="works-row-rich">
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Claude Code</span><span class="works-tile-sub">MCP · tested</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Cursor</span><span class="works-tile-sub">MCP · tested</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Windsurf</span><span class="works-tile-sub">MCP · tested</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Any MCP client</span><span class="works-tile-sub">stdio · compatible</span></div>
+      </div>
+    </div>
+
+    <div class="works-group reveal">
+      <div class="works-group-label"><i data-lucide="code-2" style="width:14px;height:14px"></i>Frameworks</div>
+      <div class="works-row-rich">
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">React + Vite</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Next.js</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Native HTML/CSS</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Vue</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">SvelteKit</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Angular</span><span class="works-tile-sub">starter adapter</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">Solid</span><span class="works-tile-sub">starter adapter</span></div>
+      </div>
+    </div>
+
+    <div class="works-group reveal">
+      <div class="works-group-label"><i data-lucide="paintbrush" style="width:14px;height:14px"></i>Styling</div>
+      <div class="works-row-rich">
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">CSS tokens</span><span class="works-tile-sub">generated per theme</span></div>
+        <div class="works-tile works-tile-ready"><span class="works-tile-name">@decantr/css atoms</span><span class="works-tile-sub">framework-agnostic</span></div>
+        <div class="works-tile works-tile-compat"><span class="works-tile-name">Tailwind</span><span class="works-tile-sub">coexists</span></div>
+      </div>
+    </div>
+
+    <p class="works-footnote reveal"><span class="works-legend-dot" style="background:var(--green)"></span>runnable adapter · <span class="works-legend-dot" style="background:var(--muted)"></span>generic-web contract-only fallback — your AI writes the runtime</p>
+  </div>
+</section>
+
+<!-- ==================== BOTTOM CTA ==================== -->
+<div class="bottom-cta">
+  <h2>Put governance in the agent loop.</h2>
+  <p>Adopt a project, load route context, verify the edit, and keep the evidence.</p>
+  <a href="#quickstart" class="btn-cta-dark">Get Started</a>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <div class="dogfood-note">
+    <i data-lucide="sparkles" style="width:14px;height:14px;color:var(--cyan)"></i>
+    <span>This page is built with Decantr. Essence: <a href="/decantr.essence.json" class="dogfood-link">decantr.essence.json</a> · Theme: <span class="dogfood-theme">luminarum</span> · Archetype: <span class="dogfood-theme">marketing-saas</span></span>
+  </div>
+  <img src="logo.svg" alt="Decantr" class="footer-logo">
+  <div class="footer-links">
+    <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">npm</a>
+    <a href="/guides/existing-apps.md">Existing Apps</a>
+    <a href="/guides/monorepos.md">Monorepos</a>
+    <a href="/guides/project-health-ci.md">Project Health CI</a>
+    <a href="/guides/ai-assistant-setup.md">AI Tools</a>
+    <a href="/guides/typed-graph-agent-playbook.md">Graph Playbook</a>
+    <a href="https://github.com/decantr-ai/decantr/blob/main/docs/runbooks/release-stewardship.md" target="_blank" rel="noopener">Release Stewardship</a>
+    <a href="/reference/security-permissions.md">Security &amp; Permissions</a>
+    <a href="/reference/registry-public-api.html">Registry API</a>
+    <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" target="_blank" rel="noopener">Project Health</a>
+    <a href="#tools">MCP Tools</a>
+  </div>
+  <p class="footer-copy">MIT License. Built by Decantr AI.</p>
+</footer>
+
+<script src="/analytics-config.js"></script>
+<script defer src="/analytics.js"></script>
+
+<script>
+  // Scroll reveal
+  (function() {
+    var els = document.querySelectorAll('.reveal');
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    els.forEach(function(el) { observer.observe(el); });
+  })();
+
+  // Config tabs (legacy)
+  (function() {
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        var target = document.getElementById('tab-' + btn.getAttribute('data-tab'));
+        if (target) target.classList.add('active');
+      });
+    });
+  })();
+
+  // MCP install tabs
+  (function() {
+    var btns = document.querySelectorAll('.install-tab-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.install-tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        var target = document.getElementById('install-' + btn.getAttribute('data-install'));
+        if (target) target.classList.add('active');
+      });
+    });
+  })();
+
+  // Context tabs
+  (function() {
+    var btns = document.querySelectorAll('.ctx-tab-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.ctx-tab-content').forEach(function(tc) { tc.classList.remove('active'); });
+        var target = document.getElementById('ctx-' + btn.getAttribute('data-ctx'));
+        if (target) target.classList.add('active');
+      });
+    });
+  })();
+</script>
+
+<script>lucide.createIcons();</script>
+
+</body>
+</html>
