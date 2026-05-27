@@ -221,6 +221,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 0.5rem;
       min-height: 2.55rem;
       padding: 0 1rem;
       color: var(--ink);
@@ -316,6 +317,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 0.55rem;
       min-height: 3rem;
       padding: 0 1.15rem;
       border: 1px solid var(--border);
@@ -350,6 +352,18 @@
       border-color: var(--border-strong);
       background: rgba(255, 255, 255, 0.075);
       outline: none;
+    }
+
+    .icon {
+      width: 1em;
+      height: 1em;
+      flex: 0 0 auto;
+      stroke-width: 2.15;
+    }
+
+    .button .icon {
+      width: 1rem;
+      height: 1rem;
     }
 
     .command-card {
@@ -396,6 +410,10 @@
     }
 
     .copy-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
       min-height: 2.35rem;
       padding: 0 0.75rem;
       color: var(--text);
@@ -414,6 +432,11 @@
       background: var(--cyan);
       border-color: var(--cyan);
       outline: none;
+    }
+
+    .copy-button .icon {
+      width: 0.9rem;
+      height: 0.9rem;
     }
 
     .hero-proof {
@@ -468,6 +491,12 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       font-family: var(--mono);
       font-size: 0.76rem;
+    }
+
+    .visual-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
     }
 
     .window-dots {
@@ -658,6 +687,38 @@
       border-radius: var(--radius);
     }
 
+    .card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.6rem;
+      height: 2.6rem;
+      margin-bottom: 0.95rem;
+      color: var(--cyan);
+      background: rgba(10, 243, 235, 0.08);
+      border: 1px solid rgba(10, 243, 235, 0.18);
+      border-radius: var(--radius);
+    }
+
+    .card-icon .icon {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .problem-item:nth-child(2) .card-icon,
+    .step-item:nth-child(2) .card-icon {
+      color: var(--coral);
+      background: rgba(245, 136, 130, 0.09);
+      border-color: rgba(245, 136, 130, 0.2);
+    }
+
+    .problem-item:nth-child(3) .card-icon,
+    .step-item:nth-child(3) .card-icon {
+      color: var(--green);
+      background: rgba(0, 224, 171, 0.08);
+      border-color: rgba(0, 224, 171, 0.18);
+    }
+
     .problem-item {
       display: grid;
       gap: 1rem;
@@ -758,11 +819,20 @@
     }
 
     .trust-kicker {
-      display: block;
-      width: 0.65rem;
-      height: 0.65rem;
-      background: var(--green);
-      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.2rem;
+      height: 2.2rem;
+      color: var(--green);
+      background: rgba(0, 224, 171, 0.08);
+      border: 1px solid rgba(0, 224, 171, 0.18);
+      border-radius: var(--radius);
+    }
+
+    .trust-kicker .icon {
+      width: 1.05rem;
+      height: 1.05rem;
     }
 
     .trust-item h3 {
@@ -845,7 +915,8 @@
 
     .output-row {
       display: grid;
-      grid-template-columns: 7rem 1fr;
+      grid-template-columns: auto 7rem 1fr;
+      align-items: center;
       gap: 0.7rem;
       padding: 0.65rem 0.75rem;
       color: var(--muted);
@@ -853,6 +924,12 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: calc(var(--radius) - 2px);
       font-size: 0.87rem;
+    }
+
+    .output-row .icon {
+      color: var(--cyan);
+      width: 1rem;
+      height: 1rem;
     }
 
     .output-row strong {
@@ -935,6 +1012,9 @@
     }
 
     .footer-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
       padding: 0.45rem 0.6rem;
       border: 1px solid rgba(255, 255, 255, 0.09);
       border-radius: var(--radius);
@@ -948,6 +1028,12 @@
       border-color: var(--border-strong);
       background: rgba(255, 255, 255, 0.045);
       outline: none;
+    }
+
+    .footer-links .icon {
+      width: 0.9rem;
+      height: 0.9rem;
+      color: var(--soft);
     }
 
     .audit-metadata {
@@ -1060,7 +1146,11 @@
       }
 
       .output-row {
-        grid-template-columns: 1fr;
+        grid-template-columns: auto 1fr;
+      }
+
+      .output-row span {
+        grid-column: 1 / -1;
       }
 
       .footer-grid {
@@ -1098,7 +1188,7 @@
         <a href="/guides/existing-apps.md">Docs</a>
         <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
       </nav>
-      <a class="nav-action" href="#install">Scan locally</a>
+      <a class="nav-action" href="#install"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i>Scan locally</a>
     </div>
   </header>
 
@@ -1110,16 +1200,16 @@
         <p>Decantr runs locally, reads your frontend, gives your AI route-scoped context, and verifies every change with repairable evidence before drift lands in your repo.</p>
 
         <div class="hero-actions" aria-label="Primary actions">
-          <a class="button button-primary" href="#install">Scan locally</a>
-          <a class="button button-secondary" href="/guides/existing-apps.md">Read docs</a>
-          <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">View GitHub</a>
+          <a class="button button-primary" href="#install"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i>Scan locally</a>
+          <a class="button button-secondary" href="/guides/existing-apps.md"><i data-lucide="book-open" class="icon" aria-hidden="true"></i>Read docs</a>
+          <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener"><i data-lucide="github" class="icon" aria-hidden="true"></i>View GitHub</a>
         </div>
 
         <div class="command-card" id="install" aria-label="Install Decantr locally">
           <span class="command-label">Run this in your existing frontend</span>
           <div class="command-row">
             <code>npx @decantr/cli scan</code>
-            <button class="copy-button" type="button" data-copy="npx @decantr/cli scan">Copy</button>
+            <button class="copy-button" type="button" data-copy="npx @decantr/cli scan"><i data-lucide="copy" class="icon" aria-hidden="true"></i><span class="copy-label">Copy</span></button>
           </div>
         </div>
 
@@ -1133,7 +1223,7 @@
       <aside class="product-visual reveal" aria-label="Decantr Project Health preview">
         <div class="visual-topbar">
           <span class="window-dots" aria-hidden="true"><span></span><span></span><span></span></span>
-          <span>project-health.local</span>
+          <span class="visual-title"><i data-lucide="activity" class="icon" aria-hidden="true"></i>project-health.local</span>
         </div>
 
         <div class="terminal" aria-label="Terminal preview">
@@ -1174,6 +1264,7 @@
       <div class="problem-grid">
         <article class="problem-item reveal">
           <div>
+            <span class="card-icon"><i data-lucide="copy" class="icon" aria-hidden="true"></i></span>
             <h3>Duplicated components</h3>
             <p>The agent rebuilds a local button, card, dialog, or form instead of importing the primitive your app already owns.</p>
           </div>
@@ -1182,6 +1273,7 @@
 
         <article class="problem-item reveal">
           <div>
+            <span class="card-icon"><i data-lucide="palette" class="icon" aria-hidden="true"></i></span>
             <h3>Inconsistent styling</h3>
             <p>Inline colors, arbitrary Tailwind values, and one-off spacing sneak past review because each prompt only sees part of the app.</p>
           </div>
@@ -1190,6 +1282,7 @@
 
         <article class="problem-item reveal">
           <div>
+            <span class="card-icon"><i data-lucide="route" class="icon" aria-hidden="true"></i></span>
             <h3>Stale route intent</h3>
             <p>Pages keep changing while docs, route maps, and design expectations stop agreeing with the code users actually touch.</p>
           </div>
@@ -1207,7 +1300,7 @@
 
       <div class="steps-grid">
         <article class="step-item reveal">
-          <span class="step-number">1</span>
+          <span class="card-icon"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i></span>
           <div>
             <h3>Scan</h3>
             <p>Decantr reads routes, components, styling, package signals, and existing project rules without writing anything.</p>
@@ -1216,7 +1309,7 @@
         </article>
 
         <article class="step-item reveal">
-          <span class="step-number">2</span>
+          <span class="card-icon"><i data-lucide="file-plus" class="icon" aria-hidden="true"></i></span>
           <div>
             <h3>Adopt</h3>
             <p>It writes a repo-owned contract, scoped context, and an observed baseline while your existing app remains the authority.</p>
@@ -1225,7 +1318,7 @@
         </article>
 
         <article class="step-item reveal">
-          <span class="step-number">3</span>
+          <span class="card-icon"><i data-lucide="shield-check" class="icon" aria-hidden="true"></i></span>
           <div>
             <h3>Verify</h3>
             <p>Project Health emits stable codes, repair IDs, graph anchors, and evidence bundles your AI can repair against.</p>
@@ -1243,27 +1336,27 @@
 
       <div class="trust-grid">
         <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"></span>
+          <span class="trust-kicker" aria-hidden="true"><i data-lucide="laptop" class="icon"></i></span>
           <h3>Runs locally</h3>
           <p>Use Decantr from the terminal, CI, or MCP-compatible agent tools.</p>
         </article>
         <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"></span>
+          <span class="trust-kicker" aria-hidden="true"><i data-lucide="cloud-off" class="icon"></i></span>
           <h3>No source upload</h3>
           <p>Local checks stay local by default, including evidence and screenshots.</p>
         </article>
         <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"></span>
+          <span class="trust-kicker" aria-hidden="true"><i data-lucide="refresh-ccw" class="icon"></i></span>
           <h3>No rewrite</h3>
           <p>Brownfield adoption observes your app before proposing a contract.</p>
         </article>
         <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"></span>
+          <span class="trust-kicker" aria-hidden="true"><i data-lucide="paintbrush" class="icon"></i></span>
           <h3>No CSS takeover</h3>
           <p>Keep Tailwind, CSS modules, MUI, Bootstrap, or your design system.</p>
         </article>
         <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"></span>
+          <span class="trust-kicker" aria-hidden="true"><i data-lucide="badge-check" class="icon"></i></span>
           <h3>MIT licensed</h3>
           <p>Open-source packages for the CLI, verifier, MCP server, and contract layer.</p>
         </article>
@@ -1288,9 +1381,9 @@
           <code>$ npx @decantr/cli verify --evidence</code>
         </div>
         <div class="loop-output" aria-label="Agent context output preview">
-          <div class="output-row"><strong>Contract</strong><span>Route graph, source authority, local rules</span></div>
-          <div class="output-row"><strong>Context</strong><span>Page packs, changed-file impact, visual evidence refs</span></div>
-          <div class="output-row"><strong>Evidence</strong><span>Finding codes, repair IDs, graph anchors, rerun commands</span></div>
+          <div class="output-row"><i data-lucide="map" class="icon" aria-hidden="true"></i><strong>Contract</strong><span>Route graph, source authority, local rules</span></div>
+          <div class="output-row"><i data-lucide="braces" class="icon" aria-hidden="true"></i><strong>Context</strong><span>Page packs, changed-file impact, visual evidence refs</span></div>
+          <div class="output-row"><i data-lucide="file-check-2" class="icon" aria-hidden="true"></i><strong>Evidence</strong><span>Finding codes, repair IDs, graph anchors, rerun commands</span></div>
         </div>
       </div>
     </section>
@@ -1303,13 +1396,13 @@
         <span class="command-label">First command</span>
         <div class="command-row">
           <code>npx @decantr/cli scan</code>
-          <button class="copy-button" type="button" data-copy="npx @decantr/cli scan">Copy</button>
+          <button class="copy-button" type="button" data-copy="npx @decantr/cli scan"><i data-lucide="copy" class="icon" aria-hidden="true"></i><span class="copy-label">Copy</span></button>
         </div>
       </div>
       <div class="hero-actions" style="justify-content:center">
-        <a class="button button-primary" href="#install">Scan locally</a>
-        <a class="button button-secondary" href="/reference/security-permissions.md">Security permissions</a>
-        <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
+        <a class="button button-primary" href="#install"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i>Scan locally</a>
+        <a class="button button-secondary" href="/reference/security-permissions.md"><i data-lucide="lock-keyhole" class="icon" aria-hidden="true"></i>Security permissions</a>
+        <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener"><i data-lucide="github" class="icon" aria-hidden="true"></i>GitHub</a>
       </div>
     </section>
   </main>
@@ -1324,14 +1417,14 @@
         <p class="footer-copy">Local-first AI Frontend Governance for production codebases touched by AI agents. Registry vocabulary is available when useful, but your repo-owned contract stays in charge.</p>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
-        <a href="/guides/existing-apps.md">Existing apps</a>
-        <a href="/guides/project-health-ci.md">Project Health CI</a>
-        <a href="/guides/ai-assistant-setup.md">AI assistant setup</a>
-        <a href="/reference/security-permissions.md">Security</a>
-        <a href="/llms.txt">llms.txt</a>
-        <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">npm</a>
-        <a href="https://registry.decantr.ai" target="_blank" rel="noopener">Registry</a>
+        <a href="/guides/existing-apps.md"><i data-lucide="folder-open" class="icon" aria-hidden="true"></i>Existing apps</a>
+        <a href="/guides/project-health-ci.md"><i data-lucide="shield-check" class="icon" aria-hidden="true"></i>Project Health CI</a>
+        <a href="/guides/ai-assistant-setup.md"><i data-lucide="bot" class="icon" aria-hidden="true"></i>AI assistant setup</a>
+        <a href="/reference/security-permissions.md"><i data-lucide="lock-keyhole" class="icon" aria-hidden="true"></i>Security</a>
+        <a href="/llms.txt"><i data-lucide="file-text" class="icon" aria-hidden="true"></i>llms.txt</a>
+        <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener"><i data-lucide="github" class="icon" aria-hidden="true"></i>GitHub</a>
+        <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener"><i data-lucide="package" class="icon" aria-hidden="true"></i>npm</a>
+        <a href="https://registry.decantr.ai" target="_blank" rel="noopener"><i data-lucide="database" class="icon" aria-hidden="true"></i>Registry</a>
       </nav>
     </div>
   </footer>
@@ -1364,8 +1457,17 @@
 
   <script src="/analytics-config.js"></script>
   <script defer src="/analytics.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>
     (function () {
+      if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons({
+          attrs: {
+            'aria-hidden': 'true'
+          }
+        });
+      }
+
       var revealTargets = document.querySelectorAll('.reveal');
       if (!('IntersectionObserver' in window)) {
         revealTargets.forEach(function (target) {
@@ -1388,24 +1490,32 @@
       document.querySelectorAll('[data-copy]').forEach(function (button) {
         button.addEventListener('click', function () {
           var value = button.getAttribute('data-copy') || '';
+          var label = button.querySelector('.copy-label');
+          var setCopyLabel = function (text) {
+            if (label) {
+              label.textContent = text;
+              return;
+            }
+            button.textContent = text;
+          };
           var reset = function () {
             window.setTimeout(function () {
-              button.textContent = 'Copy';
+              setCopyLabel('Copy');
             }, 1400);
           };
 
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(value).then(function () {
-              button.textContent = 'Copied';
+              setCopyLabel('Copied');
               reset();
             }).catch(function () {
-              button.textContent = value;
+              setCopyLabel(value);
               reset();
             });
             return;
           }
 
-          button.textContent = value;
+          setCopyLabel(value);
           reset();
         });
       });
