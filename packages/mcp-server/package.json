@@ -1,6 +1,6 @@
 {
   "name": "@decantr/mcp-server",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "mcpName": "io.github.decantr-ai/mcp-server",
   "description": "MCP server for Decantr — exposes Contract context, typed graph artifacts, and verification evidence to AI coding assistants",
   "keywords": [
