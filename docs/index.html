@@ -288,7 +288,7 @@
     h1 {
       max-width: 13ch;
       margin-bottom: 1.35rem;
-      font-size: clamp(3.75rem, 8vw, 7.65rem);
+      font-size: clamp(3.4rem, 7vw, 6.25rem);
       line-height: 0.91;
       letter-spacing: 0;
     }
@@ -978,10 +978,6 @@
         min-height: auto;
       }
 
-      .product-visual {
-        order: -1;
-      }
-
       h1 {
         max-width: 11ch;
       }
@@ -1113,18 +1109,18 @@
         <h1 id="hero-title">Stop AI from breaking your UI.</h1>
         <p>Decantr runs locally, reads your frontend, gives your AI route-scoped context, and verifies every change with repairable evidence before drift lands in your repo.</p>
 
+        <div class="hero-actions" aria-label="Primary actions">
+          <a class="button button-primary" href="#install">Scan locally</a>
+          <a class="button button-secondary" href="/guides/existing-apps.md">Read docs</a>
+          <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">View GitHub</a>
+        </div>
+
         <div class="command-card" id="install" aria-label="Install Decantr locally">
           <span class="command-label">Run this in your existing frontend</span>
           <div class="command-row">
             <code>npx @decantr/cli scan</code>
             <button class="copy-button" type="button" data-copy="npx @decantr/cli scan">Copy</button>
           </div>
-        </div>
-
-        <div class="hero-actions" aria-label="Primary actions">
-          <a class="button button-primary" href="#install">Scan locally</a>
-          <a class="button button-secondary" href="/guides/existing-apps.md">Read docs</a>
-          <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">View GitHub</a>
         </div>
 
         <div class="hero-proof" aria-label="Decantr trust facts">
@@ -1341,7 +1337,7 @@
   </footer>
 
   <section class="audit-metadata" aria-hidden="true">
-    <h2>32 tools for your AI assistant</h2>
+    <p>32 tools for your AI assistant</p>
     <p>
       decantr_read_essence decantr_validate decantr_search_registry decantr_resolve_pattern
       decantr_resolve_archetype decantr_resolve_blueprint decantr_suggest_patterns
@@ -1355,7 +1351,7 @@
       decantr_get_evidence_bundle decantr_workspace_health decantr_get_repair_prompt
       decantr_run_health_loop
     </p>
-    <h2>Eight packages, one mission</h2>
+    <p>Eight packages, one mission</p>
     <div class="pkg-name">@decantr/essence-spec</div><div class="pkg-version">v3.0.1</div>
     <div class="pkg-name">@decantr/registry</div><div class="pkg-version">v3.0.1</div>
     <div class="pkg-name">@decantr/css</div><div class="pkg-version">v3.0.1</div>
