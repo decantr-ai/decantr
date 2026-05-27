@@ -181,15 +181,18 @@ function describeAuthMode(mode) {
 }
 
 function runPublishCommand({ cwd, cmd, mode }) {
+  const shouldInheritStdio = !ciProvenance && mode === 'token' && process.stdin.isTTY && process.stdout.isTTY;
   const result = spawnSync('pnpm', cmd, {
     cwd,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: shouldInheritStdio ? undefined : 'utf8',
+    stdio: shouldInheritStdio ? 'inherit' : ['ignore', 'pipe', 'pipe'],
     env: createPublishEnv(mode),
   });
 
-  if (result.stdout) process.stdout.write(result.stdout);
-  if (result.stderr) process.stderr.write(result.stderr);
+  if (!shouldInheritStdio) {
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+  }
 
   return result;
 }
