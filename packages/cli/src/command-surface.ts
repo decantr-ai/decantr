@@ -130,7 +130,8 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     classification: 'advanced',
     mutates: true,
     audience: 'app-developer',
-    purpose: 'Regenerate derived context and style artifacts from Essence and optional vocabulary content.',
+    purpose:
+      'Regenerate derived context and style artifacts from Essence and optional vocabulary content.',
     consolidation: 'keep',
   },
   {

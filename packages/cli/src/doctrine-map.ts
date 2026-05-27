@@ -1,6 +1,10 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { AmbientContextInventory, AmbientContextItem, AmbientContextRole } from './ambient-context.js';
+import type {
+  AmbientContextInventory,
+  AmbientContextItem,
+  AmbientContextRole,
+} from './ambient-context.js';
 
 export type DoctrineArea =
   | 'security-data'

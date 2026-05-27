@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getDecantrAdapter, listDecantrAdapters, resolveBootstrapTarget } from '../src/bootstrap.js';
+import {
+  getDecantrAdapter,
+  listDecantrAdapters,
+  resolveBootstrapTarget,
+} from '../src/bootstrap.js';
 
 describe('bootstrap adapter registry', () => {
   it('preserves existing React, Next, and generic target behavior', () => {

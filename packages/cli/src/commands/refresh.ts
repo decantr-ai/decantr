@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { isAbsolute, join, relative } from 'node:path';
-import { collectMissingPackManifestFiles } from '@decantr/verifier';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
+import { collectMissingPackManifestFiles } from '@decantr/verifier';
 import { RegistryClient } from '../registry.js';
 import { refreshDerivedFiles } from '../scaffold.js';
 

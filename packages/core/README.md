@@ -25,11 +25,11 @@ npm install @decantr/core
 - execution-pack schema URLs
 - markdown rendering for compiled packs
 - IR and pipeline helpers used by higher-level Decantr surfaces
-- draft Decantr 3 typed graph types, graph constants, Essence/IR-to-graph snapshot derivation, temporal snapshot/diff shapes, source import/reference edges, contract capsule derivation with a bounded source-artifact path index, task-aware route-context ranking, node impact context extraction, and an in-memory `GraphStore` adapter for early graph-foundation work
+- draft Decantr 3 typed graph types, graph constants, Essence/IR-to-graph snapshot derivation, temporal snapshot/diff shapes, source import/reference edges, contract capsule derivation with a bounded source-artifact path index, task-aware route-context ranking, behavior-obligation LocalRule projection support through existing graph shapes, node impact context extraction, and an in-memory `GraphStore` adapter for early graph-foundation work
 
 In the current workflow architecture, `@decantr/core` owns the canonical adapter labels used by compiled packs, while runnable greenfield bootstrap adapters are resolved in the CLI on top of those labels.
 
-The graph exports are draft Decantr 3 foundation APIs. They establish the storage boundary, typed schema shape, temporal snapshot/diff shape, payload-filterable node queries, task-aware route-context ranking, node impact traversal, and provider-neutral contract capsule shape for CLI, MCP, verifier, and CI integration. The capsule keeps the contract cache key stable while listing bounded SourceArtifact paths agents can use for file-impact follow-up queries. The core package remains pure library code: filesystem graph persistence belongs in higher-level packages such as the CLI.
+The graph exports are draft Decantr 3 foundation APIs. They establish the storage boundary, typed schema shape, temporal snapshot/diff shape, payload-filterable node queries, task-aware route-context ranking, node impact traversal, and provider-neutral contract capsule shape for CLI, MCP, verifier, and CI integration. Behavior obligations remain app-owned local law in `.decantr/local-patterns.json`; higher-level packages project accepted obligations into existing `LocalRule` graph nodes with `payload.kind = "behavior-obligation"` instead of adding a new graph node type. The capsule keeps the contract cache key stable while listing bounded SourceArtifact paths agents can use for file-impact follow-up queries. The core package remains pure library code: filesystem graph persistence belongs in higher-level packages such as the CLI.
 
 ## FAQ
 

@@ -1,19 +1,15 @@
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative } from 'node:path';
 import {
-  GRAPH_NODE_TYPES,
-  GRAPH_RELATIONS,
   buildGraphImpactContext,
   buildGraphRouteContext,
   createMemoryGraphStore,
   diffGraphSnapshots,
-  graphPayloadString,
-  sortGraphEdges,
-  sortGraphNodes,
-  summarizeGraphDiff,
+  GRAPH_NODE_TYPES,
+  GRAPH_RELATIONS,
   type GraphDiff,
   type GraphEdge,
   type GraphManifest,
@@ -22,6 +18,10 @@ import {
   type GraphRelation,
   type GraphSnapshot,
   type GraphTraverseDirection,
+  graphPayloadString,
+  sortGraphEdges,
+  sortGraphNodes,
+  summarizeGraphDiff,
 } from '@decantr/core';
 import type { BlueprintPage, EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
@@ -175,11 +175,7 @@ function readGraphSnapshotHistory(projectRoot: string, limit = 20) {
         };
       })
       .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
-      .sort(
-        (a, b) =>
-          b.created_at.localeCompare(a.created_at) ||
-          a.id.localeCompare(b.id),
-      )
+      .sort((a, b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id))
       .slice(0, Math.max(1, Math.min(100, limit)));
   } catch {
     return [];
@@ -732,9 +728,10 @@ function graphRelationsArg(
   return { values: parsed.values as GraphRelation[] };
 }
 
-function graphTraverseDirectionArg(
-  args: Record<string, unknown>,
-): { value?: GraphTraverseDirection; error?: string } {
+function graphTraverseDirectionArg(args: Record<string, unknown>): {
+  value?: GraphTraverseDirection;
+  error?: string;
+} {
   const value = args.direction;
   if (value === undefined) return {};
   if (value !== 'out' && value !== 'in' && value !== 'both') {
@@ -936,13 +933,84 @@ function impactedRoutesForFiles(projectRoot: string, files: string[]): string[] 
   return [...impacted].sort();
 }
 
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
+    : [];
+}
+
+function behaviorObligationSummary(pattern: {
+  id?: string;
+  role?: string;
+  componentPaths?: string[];
+  behavior_obligations?: {
+    intent?: string;
+    pattern_role?: string;
+    modalities?: unknown;
+    states?: unknown;
+    risk_profile?: unknown;
+    obligations?: unknown;
+    test_hints?: unknown;
+  };
+}) {
+  const contract = pattern.behavior_obligations;
+  if (!contract || !Array.isArray(contract.obligations)) return null;
+  const obligations = contract.obligations
+    .map((entry, index) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+      const record = entry as Record<string, unknown>;
+      const id =
+        typeof record.id === 'string' && record.id.trim()
+          ? record.id.trim()
+          : `obligation-${index + 1}`;
+      const label =
+        typeof record.label === 'string' && record.label.trim() ? record.label.trim() : id;
+      return {
+        id,
+        label,
+        severity: typeof record.severity === 'string' ? record.severity : null,
+        evidence: typeof record.evidence === 'string' ? record.evidence : null,
+      };
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+  if (obligations.length === 0) return null;
+  return {
+    pattern_id: pattern.id ?? 'unknown',
+    pattern_role: contract.pattern_role ?? pattern.role ?? null,
+    intent: contract.intent ?? null,
+    modalities: stringArray(contract.modalities),
+    states: stringArray(contract.states),
+    risk_profile: stringArray(contract.risk_profile),
+    obligations,
+    test_hints: stringArray(contract.test_hints),
+    component_paths: pattern.componentPaths ?? [],
+  };
+}
+
 function localLawSummary(projectRoot: string) {
   const patterns = readJsonIfExists<{
-    patterns?: Array<{ id?: string; role?: string; componentPaths?: string[] }>;
+    patterns?: Array<{
+      id?: string;
+      role?: string;
+      componentPaths?: string[];
+      behavior_obligations?: {
+        intent?: string;
+        pattern_role?: string;
+        modalities?: unknown;
+        states?: unknown;
+        risk_profile?: unknown;
+        obligations?: unknown;
+        test_hints?: unknown;
+      };
+    }>;
   }>(join(projectRoot, '.decantr', 'local-patterns.json'));
   const rules = readJsonIfExists<{
     rules?: Array<{ id?: string; enabled?: boolean; severity?: string; description?: string }>;
   }>(join(projectRoot, '.decantr', 'rules.json'));
+  const behaviorObligations =
+    patterns?.patterns
+      ?.map((pattern) => behaviorObligationSummary(pattern))
+      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry)) ?? [];
 
   return {
     patterns_path: patterns ? '.decantr/local-patterns.json' : null,
@@ -952,7 +1020,9 @@ function localLawSummary(projectRoot: string) {
         id: pattern.id ?? 'unknown',
         role: pattern.role ?? null,
         component_paths: pattern.componentPaths ?? [],
+        behavior_obligations: behaviorObligationSummary(pattern),
       })) ?? [],
+    behavior_obligations: behaviorObligations,
     rules:
       rules?.rules?.map((rule) => ({
         id: rule.id ?? 'unknown',
@@ -1702,7 +1772,11 @@ function mcpSourceFromFinding(finding: VerificationFinding): ProjectHealthFindin
   ) {
     return 'interaction';
   }
-  if (category.includes('style bridge') || id.includes('style-bridge') || rule.includes('style-bridge')) {
+  if (
+    category.includes('style bridge') ||
+    id.includes('style-bridge') ||
+    rule.includes('style-bridge')
+  ) {
     return 'style-bridge';
   }
   return 'audit';
@@ -1821,7 +1895,8 @@ function mcpCollectGraphArtifactFindings(projectRoot: string): ProjectHealthFind
         source: 'graph',
         category: 'Typed Contract Graph',
         severity: 'warn',
-        message: 'Typed Contract graph could not be derived: active graph workflows require Essence v4.0.0.',
+        message:
+          'Typed Contract graph could not be derived: active graph workflows require Essence v4.0.0.',
         evidence: [
           'Graph derivation reads decantr.essence.json, local rules, style bridge, visual manifest, and saved evidence bundle artifacts.',
         ],
@@ -2085,7 +2160,8 @@ function mcpRepairPlanAction(finding: ProjectHealthFinding) {
       id: repairId,
       kind: 'regenerate_artifact',
       target: '.decantr/graph',
-      description: 'Regenerate the typed Contract graph artifacts from the current project sources.',
+      description:
+        'Regenerate the typed Contract graph artifacts from the current project sources.',
       payload: finding.repair?.payload ?? {},
     };
   }
@@ -2699,7 +2775,7 @@ export const TOOLS = [
     name: 'decantr_prepare_task_context',
     title: 'Prepare Task Context',
     description:
-      'Resolve compact Brownfield/Essence task-time context for a route or page before editing. Returns route, section, page pack, directives, patterns, shared components, visual target, health evidence, and local screenshot references when available.',
+      'Resolve compact Brownfield/Essence task-time context for a route or page before editing. Returns route, section, page pack, directives, local law, behavior obligations, style bridge mappings, typed graph context, health evidence, and local screenshot references when available.',
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -2859,8 +2935,7 @@ export const TOOLS = [
         },
         payload_contains: {
           type: 'string' as const,
-          description:
-            'Optional case-insensitive substring filter over the node payload JSON.',
+          description: 'Optional case-insensitive substring filter over the node payload JSON.',
         },
         edge_src: {
           type: 'string' as const,
@@ -4003,7 +4078,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const snapshotHistoryPath = snapshot
           ? graphSnapshotHistoryPath(projectRoot, snapshot.id)
           : null;
-        const snapshotHistoryPresent = snapshotHistoryPath ? existsSync(snapshotHistoryPath) : false;
+        const snapshotHistoryPresent = snapshotHistoryPath
+          ? existsSync(snapshotHistoryPath)
+          : false;
         const snapshotHistoryCount = graphSnapshotHistoryCount(projectRoot);
         const capsule = readJsonIfExists<{
           cache_key?: string;
@@ -4021,7 +4098,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           adoptionMode?: string;
           telemetry?: boolean;
         }>(join(projectRoot, '.decantr', 'project.json'));
-        const localPatternsPresent = existsSync(join(projectRoot, '.decantr', 'local-patterns.json'));
+        const localPatternsPresent = existsSync(
+          join(projectRoot, '.decantr', 'local-patterns.json'),
+        );
         const localRulesPresent = existsSync(join(projectRoot, '.decantr', 'rules.json'));
         const styleBridgePresent = existsSync(join(projectRoot, '.decantr', 'style-bridge.json'));
         const hasGraphArtifacts =
@@ -4030,7 +4109,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           existsSync(manifestPath) &&
           existsSync(diffPath) &&
           existsSync(capsulePath);
-        const graphReady = Boolean(snapshot) && hasGraphArtifacts && graphFreshness.current === true;
+        const graphReady =
+          Boolean(snapshot) && hasGraphArtifacts && graphFreshness.current === true;
 
         return {
           source: 'local_workspace',
@@ -4196,16 +4276,14 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         }
         const snapshot = selected.snapshot;
         const snapshotHistoryPath = graphSnapshotHistoryPath(projectRoot, snapshot.id);
-        let comparison:
-          | {
-              from: string;
-              to: string;
-              summary: ReturnType<typeof summarizeGraphDiff>;
-              ops?: GraphDiff['ops'];
-              ops_truncated?: boolean;
-              limit?: number;
-            }
-          | null = null;
+        let comparison: {
+          from: string;
+          to: string;
+          summary: ReturnType<typeof summarizeGraphDiff>;
+          ops?: GraphDiff['ops'];
+          ops_truncated?: boolean;
+          limit?: number;
+        } | null = null;
         if (args.compare_to !== undefined && typeof args.compare_to !== 'string') {
           return { error: 'Optional parameter "compare_to" must be a string.' };
         }
@@ -4345,7 +4423,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           created_at: snapshot.created_at,
           source_hash: snapshot.source_hash,
           summary: snapshot.summary,
-          history: args.include_history === true ? readGraphSnapshotHistory(projectRoot) : undefined,
+          history:
+            args.include_history === true ? readGraphSnapshotHistory(projectRoot) : undefined,
           diff_summary:
             !snapshotId || snapshot.id === currentSnapshot.id
               ? graphDiff
@@ -4428,7 +4507,8 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           !!nodeTypes.values?.length ||
           !!payloadFilter.key ||
           !!payloadFilter.contains;
-        const hasEdgeSelector = !!edgeSrc || !!edgeDst || !!relation.value || !!relations.values?.length;
+        const hasEdgeSelector =
+          !!edgeSrc || !!edgeDst || !!relation.value || !!relations.values?.length;
         if (!hasNodeSelector && !hasEdgeSelector) {
           return {
             error:
@@ -5099,7 +5179,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const resolvedRoute =
         routeArg ??
         (typeof (page as { route?: unknown }).route === 'string'
-          ? ((page as { route: string }).route)
+          ? (page as { route: string }).route
           : Object.entries(essence.blueprint.routes ?? {}).find(
               ([, entry]) => entry.section === section.id && entry.page === pageId,
             )?.[0]) ??
@@ -5599,10 +5679,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       if (args.include_prompts != null && typeof args.include_prompts !== 'boolean') {
         return { error: 'Invalid include_prompts. Must be a boolean when provided.' };
       }
-      if (
-        args.limit != null &&
-        (typeof args.limit !== 'number' || !Number.isFinite(args.limit))
-      ) {
+      if (args.limit != null && (typeof args.limit !== 'number' || !Number.isFinite(args.limit))) {
         return { error: 'Invalid limit. Must be a finite number when provided.' };
       }
 
@@ -5614,9 +5691,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
         const code = typeof args.code === 'string' ? args.code : undefined;
         const includePrompts = args.include_prompts === true;
         const limit =
-          typeof args.limit === 'number'
-            ? Math.max(1, Math.min(200, Math.floor(args.limit)))
-            : 50;
+          typeof args.limit === 'number' ? Math.max(1, Math.min(200, Math.floor(args.limit))) : 50;
         const filtered = state.report.findings.filter((finding) => {
           if (severity && finding.severity !== severity) return false;
           if (source && finding.source !== source) return false;

@@ -85,7 +85,10 @@ function saveToCache(
 function contentCacheKey(item: unknown): string | null {
   if (!item || typeof item !== 'object') return null;
   const record = item as Record<string, unknown>;
-  const data = record.data && typeof record.data === 'object' ? (record.data as Record<string, unknown>) : null;
+  const data =
+    record.data && typeof record.data === 'object'
+      ? (record.data as Record<string, unknown>)
+      : null;
   return (
     (typeof record.slug === 'string' && record.slug) ||
     (data && typeof data.id === 'string' && data.id) ||
@@ -98,7 +101,10 @@ function contentCacheKey(item: unknown): string | null {
 function normalizeCacheItem<T>(item: T, fallbackId: string): T {
   if (!item || typeof item !== 'object') return item;
   const record = item as Record<string, unknown>;
-  const data = record.data && typeof record.data === 'object' ? (record.data as Record<string, unknown>) : null;
+  const data =
+    record.data && typeof record.data === 'object'
+      ? (record.data as Record<string, unknown>)
+      : null;
 
   if (data) {
     return {

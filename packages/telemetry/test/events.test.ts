@@ -66,7 +66,9 @@ describe('telemetry actor attribution', () => {
     expect(isTelemetryEventAllowedForSource('registry_web.page_viewed', 'registry-web')).toBe(true);
     expect(isTelemetryEventAllowedForSource('registry_web.page_viewed', 'cli')).toBe(false);
     expect(isTelemetryEventAllowedForSource('decantr.analyze.completed', 'cli')).toBe(true);
-    expect(isTelemetryEventAllowedForSource('telemetry.identity_linked', 'registry-web')).toBe(false);
+    expect(isTelemetryEventAllowedForSource('telemetry.identity_linked', 'registry-web')).toBe(
+      false,
+    );
   });
 
   it('accepts the rollout schema version and the previous public ingest version', () => {

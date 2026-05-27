@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sortPublicContent, type PublicContentSummary } from '../src/index.js';
+import { type PublicContentSummary, sortPublicContent } from '../src/index.js';
 
 describe('public content ranking', () => {
   it('prioritizes certified and featured blueprints in recommended ordering', () => {

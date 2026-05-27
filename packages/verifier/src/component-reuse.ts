@@ -227,7 +227,10 @@ function isReusableComponentPath(file: string, name: string): boolean {
   );
 }
 
-function collectImports(sourceFile: ts.SourceFile, file: string): {
+function collectImports(
+  sourceFile: ts.SourceFile,
+  file: string,
+): {
   names: Set<string>;
   references: CodeImportReference[];
 } {
@@ -323,7 +326,11 @@ function componentDeclarationName(node: ts.Node): string | null {
   ) {
     return node.name.text;
   }
-  if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && isComponentName(node.name.text)) {
+  if (
+    ts.isVariableDeclaration(node) &&
+    ts.isIdentifier(node.name) &&
+    isComponentName(node.name.text)
+  ) {
     return node.initializer && containsJsx(node) ? node.name.text : null;
   }
   return null;

@@ -1,7 +1,7 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
 import { validateShowcaseManifest } from '../../../scripts/validate-showcase-manifest.mjs';
 
 const createdRoots: string[] = [];
@@ -43,7 +43,10 @@ function createEntry(slug: string, overrides: Record<string, unknown> = {}) {
   };
 }
 
-function validateWithSandbox(sandbox: ReturnType<typeof createSandbox>, apps: Array<Record<string, unknown>>) {
+function validateWithSandbox(
+  sandbox: ReturnType<typeof createSandbox>,
+  apps: Array<Record<string, unknown>>,
+) {
   return validateShowcaseManifest({
     manifest: { apps },
     shortlistReport: { results: [] },
@@ -96,6 +99,8 @@ describe('validateShowcaseManifest', () => {
 
     const result = validateWithSandbox(sandbox, [createEntry('alpha')]);
 
-    expect(result.errors).toContain('Official blueprint "beta" is missing an active showcase manifest entry.');
+    expect(result.errors).toContain(
+      'Official blueprint "beta" is missing an active showcase manifest entry.',
+    );
   });
 });

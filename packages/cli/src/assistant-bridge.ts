@@ -120,7 +120,10 @@ export function applyAssistantBridge(projectRoot: string, detected: DetectedProj
   ];
 
   for (const target of markdownTargets) {
-    if (detected.existingRuleFiles.includes(target) && upsertMarkdownBlock(join(projectRoot, target))) {
+    if (
+      detected.existingRuleFiles.includes(target) &&
+      upsertMarkdownBlock(join(projectRoot, target))
+    ) {
       updated.push(target);
     }
   }

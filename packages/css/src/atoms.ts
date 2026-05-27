@@ -616,7 +616,7 @@ const TAILWIND_DIRECT: Record<string, string> = {
   '-translate-y-1/2': 'translate:0 -50%',
   jcs: 'justify-content:flex-start',
   jce: 'justify-content:flex-end',
-  'border': 'border:1px solid var(--d-border)',
+  border: 'border:1px solid var(--d-border)',
   'border-t': 'border-top:1px solid var(--d-border)',
   'border-r': 'border-right:1px solid var(--d-border)',
   'border-b': 'border-bottom:1px solid var(--d-border)',
@@ -648,7 +648,7 @@ const TAILWIND_DIRECT: Record<string, string> = {
   'backdrop-blur-sm': 'backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)',
   'backdrop-blur-md': 'backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)',
   'backdrop-blur-lg': 'backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)',
-  'transition': 'transition:all 0.15s ease',
+  transition: 'transition:all 0.15s ease',
   'transition-all': 'transition:all 0.15s ease',
   'transition-colors': 'transition:color,background-color,border-color 0.15s ease',
   'scroll-smooth': 'scroll-behavior:smooth',
@@ -719,19 +719,19 @@ const TAILWIND_ARBITRARY_PROPS: Record<string, string> = {
   'grid-rows': 'grid-template-rows',
   gc: 'grid-template-columns',
   gr: 'grid-template-rows',
-  'border': 'border',
+  border: 'border',
   bb: 'border-bottom',
   bt: 'border-top',
-  'rounded': 'border-radius',
-  'text': 'text-align',
-  'bg': 'background',
-  'z': 'z-index',
-  'top': 'top',
-  'right': 'right',
-  'bottom': 'bottom',
-  'left': 'left',
-  'inset': 'inset',
-  'aspect': 'aspect-ratio',
+  rounded: 'border-radius',
+  text: 'text-align',
+  bg: 'background',
+  z: 'z-index',
+  top: 'top',
+  right: 'right',
+  bottom: 'bottom',
+  left: 'left',
+  inset: 'inset',
+  aspect: 'aspect-ratio',
 };
 
 const TAILWIND_SPACING_PROPS: Record<string, string> = {
@@ -824,7 +824,10 @@ function sanitizeTailwindValue(value: string): string {
   return safe.replace(/_/g, ' ');
 }
 
-function semanticColorValue(token: string, prop: 'background' | 'color' | 'border-color'): string | null {
+function semanticColorValue(
+  token: string,
+  prop: 'background' | 'color' | 'border-color',
+): string | null {
   const key = token.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
   if (key === 'transparent') return 'transparent';
   if (key === 'white') return '#fff';
@@ -965,7 +968,8 @@ function resolveTailwindishDecl(name: string): string | null {
     const prop = TAILWIND_SPACING_PROPS[prefix];
     const value = spacingValue(token);
     if (prop && value) {
-      const canBeNegative = prop.startsWith('margin') || ['top', 'right', 'bottom', 'left'].includes(prop);
+      const canBeNegative =
+        prop.startsWith('margin') || ['top', 'right', 'bottom', 'left'].includes(prop);
       if (negative && !canBeNegative) return null;
       return `${prop}:${negative ? '-' : ''}${value}`;
     }
@@ -1054,14 +1058,16 @@ function resolveTailwindishDecl(name: string): string | null {
     if (side === 'r') return `border-top-right-radius:${value};border-bottom-right-radius:${value}`;
     if (side === 'l') return `border-top-left-radius:${value};border-bottom-left-radius:${value}`;
     if (side === 't') return `border-top-left-radius:${value};border-top-right-radius:${value}`;
-    if (side === 'b') return `border-bottom-left-radius:${value};border-bottom-right-radius:${value}`;
+    if (side === 'b')
+      return `border-bottom-left-radius:${value};border-bottom-right-radius:${value}`;
   }
 
   const fontMatch = name.match(/^font-(.+)$/);
   if (fontMatch && FONT_WEIGHTS[fontMatch[1]]) return `font-weight:${FONT_WEIGHTS[fontMatch[1]]}`;
 
   const leadingMatch = name.match(/^leading-(.+)$/);
-  if (leadingMatch && LINE_HEIGHTS[leadingMatch[1]]) return `line-height:${LINE_HEIGHTS[leadingMatch[1]]}`;
+  if (leadingMatch && LINE_HEIGHTS[leadingMatch[1]])
+    return `line-height:${LINE_HEIGHTS[leadingMatch[1]]}`;
 
   const trackingMatch = name.match(/^tracking-(.+)$/);
   if (trackingMatch && LETTER_SPACING[trackingMatch[1]]) {

@@ -559,8 +559,20 @@ export const DECANTR_TELEMETRY_EVENT_CATALOG: readonly TelemetryEventCatalogEntr
   eventCatalogEntry('api_key.created', API_ONLY, 'activation', 'aggregate', false),
   eventCatalogEntry('audit.completed', API_ONLY, 'hosted_intelligence', 'aggregate', false),
   eventCatalogEntry('cli.command.completed', CLI_ONLY, 'cli_adoption', 'aggregate', true),
-  eventCatalogEntry('content.publish.completed', CONTENT_CI_AND_API, 'content_pipeline', 'aggregate', true),
-  eventCatalogEntry('content.validation.completed', CONTENT_CI_AND_API, 'content_pipeline', 'aggregate', true),
+  eventCatalogEntry(
+    'content.publish.completed',
+    CONTENT_CI_AND_API,
+    'content_pipeline',
+    'aggregate',
+    true,
+  ),
+  eventCatalogEntry(
+    'content.validation.completed',
+    CONTENT_CI_AND_API,
+    'content_pipeline',
+    'aggregate',
+    true,
+  ),
   eventCatalogEntry('critique.completed', API_ONLY, 'hosted_intelligence', 'aggregate', false),
   eventCatalogEntry('decantr.analyze.completed', CLI_ONLY, 'product_activation', 'aggregate', true),
   eventCatalogEntry('decantr.check.completed', CLI_ONLY, 'product_activation', 'aggregate', true),
@@ -571,31 +583,145 @@ export const DECANTR_TELEMETRY_EVENT_CATALOG: readonly TelemetryEventCatalogEntr
   eventCatalogEntry('execution_pack.compiled', API_ONLY, 'hosted_intelligence', 'aggregate', false),
   eventCatalogEntry('execution_pack.selected', API_ONLY, 'hosted_intelligence', 'aggregate', false),
   eventCatalogEntry('health.ci.failed', CLI_ONLY, 'project_health', 'aggregate', true),
-  eventCatalogEntry('health.finding.prompt_requested', CLI_ONLY, 'project_health', 'aggregate', true),
+  eventCatalogEntry(
+    'health.finding.prompt_requested',
+    CLI_ONLY,
+    'project_health',
+    'aggregate',
+    true,
+  ),
   eventCatalogEntry('health.report.generated', CLI_ONLY, 'project_health', 'aggregate', true),
-  eventCatalogEntry('marketing_web.command_clicked', MARKETING_WEB_ONLY, 'paid_acquisition', 'public_metadata', true),
-  eventCatalogEntry('marketing_web.cta_clicked', MARKETING_WEB_ONLY, 'paid_acquisition', 'public_metadata', true),
-  eventCatalogEntry('marketing_web.outbound_clicked', MARKETING_WEB_ONLY, 'paid_acquisition', 'public_metadata', true),
-  eventCatalogEntry('marketing_web.page_viewed', MARKETING_WEB_ONLY, 'paid_acquisition', 'public_metadata', true),
+  eventCatalogEntry(
+    'marketing_web.command_clicked',
+    MARKETING_WEB_ONLY,
+    'paid_acquisition',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'marketing_web.cta_clicked',
+    MARKETING_WEB_ONLY,
+    'paid_acquisition',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'marketing_web.outbound_clicked',
+    MARKETING_WEB_ONLY,
+    'paid_acquisition',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'marketing_web.page_viewed',
+    MARKETING_WEB_ONLY,
+    'paid_acquisition',
+    'public_metadata',
+    true,
+  ),
   eventCatalogEntry('org.created', API_ONLY, 'activation', 'aggregate', false),
-  eventCatalogEntry('billing.checkout_blocked', ['api', 'registry-web'], 'billing_intent', 'aggregate', true),
+  eventCatalogEntry(
+    'billing.checkout_blocked',
+    ['api', 'registry-web'],
+    'billing_intent',
+    'aggregate',
+    true,
+  ),
   eventCatalogEntry('billing.plan_clicked', REGISTRY_WEB_ONLY, 'billing_intent', 'aggregate', true),
-  eventCatalogEntry('private_registry.content_listed', REGISTRY_WEB_ONLY, 'private_registry_readiness', 'aggregate', true),
-  eventCatalogEntry('private_registry.gate_viewed', REGISTRY_WEB_ONLY, 'private_registry_readiness', 'aggregate', true),
-  eventCatalogEntry('private_registry.intent_clicked', REGISTRY_WEB_ONLY, 'private_registry_readiness', 'aggregate', true),
-  eventCatalogEntry('registry_web.api_key_page_viewed', REGISTRY_WEB_ONLY, 'commercial_intent', 'public_metadata', true),
-  eventCatalogEntry('registry_web.billing_viewed', REGISTRY_WEB_ONLY, 'commercial_intent', 'public_metadata', true),
-  eventCatalogEntry('registry_web.content_opened', REGISTRY_WEB_ONLY, 'registry_discovery', 'public_metadata', true),
-  eventCatalogEntry('registry_web.identity_linked', REGISTRY_WEB_ONLY, 'identity_hygiene', 'opaque_identity', true),
-  eventCatalogEntry('registry_web.organization_viewed', REGISTRY_WEB_ONLY, 'commercial_intent', 'aggregate', true),
-  eventCatalogEntry('registry_web.page_viewed', REGISTRY_WEB_ONLY, 'registry_discovery', 'public_metadata', true),
-  eventCatalogEntry('registry_web.search_performed', REGISTRY_WEB_ONLY, 'registry_discovery', 'aggregate', true),
-  eventCatalogEntry('registry_web.signup_clicked', REGISTRY_WEB_ONLY, 'activation', 'public_metadata', true),
-  eventCatalogEntry('registry.item.resolved', REGISTRY_RESOLUTION_SOURCES, 'registry_discovery', 'aggregate', true),
+  eventCatalogEntry(
+    'private_registry.content_listed',
+    REGISTRY_WEB_ONLY,
+    'private_registry_readiness',
+    'aggregate',
+    true,
+  ),
+  eventCatalogEntry(
+    'private_registry.gate_viewed',
+    REGISTRY_WEB_ONLY,
+    'private_registry_readiness',
+    'aggregate',
+    true,
+  ),
+  eventCatalogEntry(
+    'private_registry.intent_clicked',
+    REGISTRY_WEB_ONLY,
+    'private_registry_readiness',
+    'aggregate',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.api_key_page_viewed',
+    REGISTRY_WEB_ONLY,
+    'commercial_intent',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.billing_viewed',
+    REGISTRY_WEB_ONLY,
+    'commercial_intent',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.content_opened',
+    REGISTRY_WEB_ONLY,
+    'registry_discovery',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.identity_linked',
+    REGISTRY_WEB_ONLY,
+    'identity_hygiene',
+    'opaque_identity',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.organization_viewed',
+    REGISTRY_WEB_ONLY,
+    'commercial_intent',
+    'aggregate',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.page_viewed',
+    REGISTRY_WEB_ONLY,
+    'registry_discovery',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.search_performed',
+    REGISTRY_WEB_ONLY,
+    'registry_discovery',
+    'aggregate',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry_web.signup_clicked',
+    REGISTRY_WEB_ONLY,
+    'activation',
+    'public_metadata',
+    true,
+  ),
+  eventCatalogEntry(
+    'registry.item.resolved',
+    REGISTRY_RESOLUTION_SOURCES,
+    'registry_discovery',
+    'aggregate',
+    true,
+  ),
   eventCatalogEntry('registry.sync.completed', CLI_ONLY, 'cli_adoption', 'aggregate', true),
   eventCatalogEntry('studio.health_refreshed', CLI_ONLY, 'project_health', 'aggregate', true),
   eventCatalogEntry('studio.started', CLI_ONLY, 'project_health', 'aggregate', true),
-  eventCatalogEntry('telemetry.identity_linked', API_ONLY, 'identity_hygiene', 'opaque_identity', false),
+  eventCatalogEntry(
+    'telemetry.identity_linked',
+    API_ONLY,
+    'identity_hygiene',
+    'opaque_identity',
+    false,
+  ),
   eventCatalogEntry('user.signup.completed', API_ONLY, 'activation', 'aggregate', false),
 ];
 
@@ -631,11 +757,17 @@ export type DecantrTelemetryEvent =
   | TelemetryEventBase<'private_registry.content_listed', PrivateRegistryContentListedProperties>
   | TelemetryEventBase<'private_registry.gate_viewed', PrivateRegistryGateViewedProperties>
   | TelemetryEventBase<'private_registry.intent_clicked', PrivateRegistryIntentClickedProperties>
-  | TelemetryEventBase<'registry_web.api_key_page_viewed', RegistryWebCommercialPageViewedProperties>
+  | TelemetryEventBase<
+      'registry_web.api_key_page_viewed',
+      RegistryWebCommercialPageViewedProperties
+    >
   | TelemetryEventBase<'registry_web.billing_viewed', RegistryWebCommercialPageViewedProperties>
   | TelemetryEventBase<'registry_web.content_opened', RegistryWebContentOpenedProperties>
   | TelemetryEventBase<'registry_web.identity_linked', RegistryWebCommercialPageViewedProperties>
-  | TelemetryEventBase<'registry_web.organization_viewed', RegistryWebCommercialPageViewedProperties>
+  | TelemetryEventBase<
+      'registry_web.organization_viewed',
+      RegistryWebCommercialPageViewedProperties
+    >
   | TelemetryEventBase<'registry_web.page_viewed', RegistryWebPageViewedProperties>
   | TelemetryEventBase<'registry_web.search_performed', RegistryWebSearchPerformedProperties>
   | TelemetryEventBase<'registry_web.signup_clicked', RegistryWebCommercialPageViewedProperties>

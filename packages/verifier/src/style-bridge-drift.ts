@@ -146,8 +146,7 @@ function readAcceptedStyleBridge(projectRoot: string): AcceptedStyleBridge | nul
   if (bridge.status !== 'accepted' || !Array.isArray(bridge.mappings)) return null;
 
   const mappings = bridge.mappings.filter(
-    (mapping): mapping is StyleBridgeMapping =>
-      Boolean(mapping) && typeof mapping === 'object',
+    (mapping): mapping is StyleBridgeMapping => Boolean(mapping) && typeof mapping === 'object',
   );
   if (mappings.length === 0) return null;
 
@@ -210,10 +209,9 @@ function isClassHelperCall(node: ts.CallExpression): boolean {
 }
 
 function templateExpressionText(expression: ts.TemplateExpression): string {
-  return [
-    expression.head.text,
-    ...expression.templateSpans.map((span) => span.literal.text),
-  ].join(' ');
+  return [expression.head.text, ...expression.templateSpans.map((span) => span.literal.text)].join(
+    ' ',
+  );
 }
 
 function collectClassTextsFromNode(node: ts.Node): Array<{ className: string; node: ts.Node }> {
@@ -246,7 +244,10 @@ function stripTailwindVariants(className: string): string {
 }
 
 function arbitraryStyleClasses(className: string): string[] {
-  const classes = className.split(/\s+/).map((entry) => entry.trim()).filter(Boolean);
+  const classes = className
+    .split(/\s+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
   return classes.filter((entry) => {
     const classWithoutVariant = stripTailwindVariants(entry);
     return (
@@ -513,9 +514,7 @@ export function auditStyleBridgeDrift(
   return {
     filesChecked: filesToCheck.filter(
       (file) =>
-        !isNonProductionStyleBridgeDriftFile(
-          normalizePath(relative(projectRoot, file) || file),
-        ),
+        !isNonProductionStyleBridgeDriftFile(normalizePath(relative(projectRoot, file) || file)),
     ).length,
     bridgeMappingCount: bridge.mappingIds.length,
     arbitraryValueCount: findings.length,

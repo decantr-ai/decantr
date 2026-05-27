@@ -674,9 +674,7 @@ function graphNodePayloadMatches(node: GraphNode, query: GraphNodeQuery): boolea
     if (query.payloadValue !== undefined && String(value) !== query.payloadValue) return false;
   }
   if (query.payloadContains) {
-    return JSON.stringify(node.payload)
-      .toLowerCase()
-      .includes(query.payloadContains.toLowerCase());
+    return JSON.stringify(node.payload).toLowerCase().includes(query.payloadContains.toLowerCase());
   }
   return true;
 }

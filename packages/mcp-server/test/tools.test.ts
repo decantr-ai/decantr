@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -119,8 +119,8 @@ function evidenceBundleSourceHash(bundle: {
           warnCount: bundle.health.warnCount,
           infoCount: bundle.health.infoCount,
           findingCount: bundle.health.findingCount,
-      }
-    : null,
+        }
+      : null,
     provenance: Object.entries(bundle.provenance ?? {})
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([key, entry]) => ({
@@ -172,7 +172,10 @@ function analysisSourceHash(analysis: {
     hasTailwind?: boolean;
     projectScope?: string;
   };
-  routes?: { strategy?: string; routes?: Array<{ path?: string; file?: string; hasLayout?: boolean }> };
+  routes?: {
+    strategy?: string;
+    routes?: Array<{ path?: string; file?: string; hasLayout?: boolean }>;
+  };
   styling?: {
     approach?: string;
     configFile?: string | null;
@@ -989,7 +992,12 @@ describe('MCP tool handlers', () => {
         })) as {
           impact?: {
             ranking?: { method?: string; seed?: string[]; task_keywords?: string[] };
-            ids?: { routes?: string[]; pages?: string[]; patterns?: string[]; components?: string[] };
+            ids?: {
+              routes?: string[];
+              pages?: string[];
+              patterns?: string[];
+              components?: string[];
+            };
             ranked?: Array<{ id: string; reason: string; matched_terms?: string[] }>;
           } | null;
         };
@@ -1374,6 +1382,22 @@ describe('MCP tool handlers', () => {
               id: 'button',
               role: 'Actions and command triggers',
               componentPaths: ['src/components/Button.tsx'],
+              behavior_obligations: {
+                intent: 'Keep destructive actions explicit.',
+                pattern_role: 'confirmation-dialog',
+                modalities: ['keyboard', 'pointer', 'screen-reader'],
+                states: ['closed', 'open', 'submitting'],
+                risk_profile: ['accidental-destruction'],
+                obligations: [
+                  {
+                    id: 'accessible-name',
+                    label: 'Dialog has an accessible name.',
+                    severity: 'error',
+                    evidence: 'static',
+                  },
+                ],
+                test_hints: ['keyboard interaction smoke test'],
+              },
             },
           ],
         });
@@ -1516,7 +1540,19 @@ describe('MCP tool handlers', () => {
           local_law: {
             patterns_path: string;
             rules_path: string;
-            patterns: Array<{ id: string; component_paths: string[] }>;
+            patterns: Array<{
+              id: string;
+              component_paths: string[];
+              behavior_obligations?: {
+                intent?: string;
+                obligations?: Array<{ id: string; label: string }>;
+              } | null;
+            }>;
+            behavior_obligations: Array<{
+              pattern_id: string;
+              intent?: string;
+              obligations: Array<{ id: string; label: string }>;
+            }>;
             rules: Array<{ id: string; severity: string }>;
           };
           authority: {
@@ -1573,6 +1609,13 @@ describe('MCP tool handlers', () => {
         expect(result.local_law.patterns_path).toBe('.decantr/local-patterns.json');
         expect(result.local_law.rules_path).toBe('.decantr/rules.json');
         expect(result.local_law.patterns[0].component_paths).toContain('src/components/Button.tsx');
+        expect(result.local_law.patterns[0].behavior_obligations?.obligations[0].id).toBe(
+          'accessible-name',
+        );
+        expect(result.local_law.behavior_obligations[0]).toMatchObject({
+          pattern_id: 'button',
+          intent: 'Keep destructive actions explicit.',
+        });
         expect(result.local_law.rules[0].id).toBe('no-inline-style');
         expect(result.authority.lane).toBe('Hybrid local law');
         expect(result.authority.active_authorities).toContain('accepted local patterns/rules');
@@ -1744,7 +1787,11 @@ describe('MCP tool handlers', () => {
           },
         });
         expect(repairPlan.plan?.read_targets).toEqual(
-          expect.arrayContaining(['DECANTR.md', 'decantr.essence.json', 'src/app/dashboard/page.tsx']),
+          expect.arrayContaining([
+            'DECANTR.md',
+            'decantr.essence.json',
+            'src/app/dashboard/page.tsx',
+          ]),
         );
         expect(repairPlan.plan?.prompt).toBeUndefined();
 
@@ -1839,7 +1886,11 @@ describe('MCP tool handlers', () => {
             { id: 'proj:default', type: 'Project', payload: { id: 'default' } },
             { id: 'rt:/', type: 'Route', payload: { path: '/' } },
             { id: 'pg:app:home', type: 'Page', payload: { id: 'home', section: 'app' } },
-            { id: 'sh:observed-existing-shell', type: 'Shell', payload: { id: 'observed-existing-shell' } },
+            {
+              id: 'sh:observed-existing-shell',
+              type: 'Shell',
+              payload: { id: 'observed-existing-shell' },
+            },
             { id: 'pat:existing-surface', type: 'Pattern', payload: { id: 'existing-surface' } },
             { id: 'bridge:surface', type: 'StyleBridge', payload: { id: 'bridge:surface' } },
             { id: 'tkn:color-surface', type: 'Token', payload: { name: '--color-surface' } },

@@ -219,7 +219,16 @@ interface StylingScan {
   themeSignals: string[];
 }
 
-const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.vue', '.svelte']);
+const SOURCE_EXTENSIONS = new Set([
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.vue',
+  '.svelte',
+]);
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
 const PAGE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.html']);
 const MAX_FILE_READ_BYTES = 512 * 1024;
@@ -270,7 +279,10 @@ function githubPagesOwnerFromHostname(hostname: string): string | null {
   return GITHUB_OWNER_RE.test(owner) ? owner : null;
 }
 
-function normalizeGitHubPathSegment(segment: string | undefined, kind: 'owner' | 'repo'): string | null {
+function normalizeGitHubPathSegment(
+  segment: string | undefined,
+  kind: 'owner' | 'repo',
+): string | null {
   if (!segment) return null;
   const normalized = kind === 'repo' ? segment.replace(/\.git$/i, '') : segment;
   const pattern = kind === 'owner' ? GITHUB_OWNER_RE : GITHUB_REPO_RE;
@@ -303,14 +315,22 @@ function readTextFile(path: string, maxBytes = MAX_FILE_READ_BYTES): string | nu
   }
 }
 
-function readPackageJson(projectRoot: string): { value: PackageJson | null; present: boolean; valid: boolean } {
+function readPackageJson(projectRoot: string): {
+  value: PackageJson | null;
+  present: boolean;
+  valid: boolean;
+} {
   const path = join(projectRoot, 'package.json');
   if (!existsSync(path)) return { value: null, present: false, valid: false };
   const content = readTextFile(path);
   if (!content) return { value: null, present: true, valid: false };
   try {
     const parsed = JSON.parse(content) as unknown;
-    return { value: isRecord(parsed) ? (parsed as PackageJson) : null, present: true, valid: isRecord(parsed) };
+    return {
+      value: isRecord(parsed) ? (parsed as PackageJson) : null,
+      present: true,
+      valid: isRecord(parsed),
+    };
   } catch {
     return { value: null, present: true, valid: false };
   }
@@ -342,7 +362,8 @@ function detectPackageManager(projectRoot: string, pkg: PackageJson | null): str
 
 function detectPrimaryLanguage(projectRoot: string, packageJsonPresent: boolean): string {
   if (packageJsonPresent) return 'javascript';
-  if (hasAnyFile(projectRoot, ['pyproject.toml', 'requirements.txt', 'setup.py', 'Pipfile'])) return 'python';
+  if (hasAnyFile(projectRoot, ['pyproject.toml', 'requirements.txt', 'setup.py', 'Pipfile']))
+    return 'python';
   if (hasAnyFile(projectRoot, ['go.mod'])) return 'go';
   if (hasAnyFile(projectRoot, ['Cargo.toml'])) return 'rust';
   if (hasAnyFile(projectRoot, ['index.html', 'docs/index.html'])) return 'html';
@@ -356,16 +377,26 @@ function detectProject(projectRoot: string): ProjectDetection {
   let framework = 'unknown';
   let frameworkVersion: string | null = null;
 
-  if (hasAnyFile(projectRoot, ['next.config.js', 'next.config.ts', 'next.config.mjs']) || dependencies.next) {
+  if (
+    hasAnyFile(projectRoot, ['next.config.js', 'next.config.ts', 'next.config.mjs']) ||
+    dependencies.next
+  ) {
     framework = 'nextjs';
     frameworkVersion = dependencyVersion(dependencies, ['next']);
   } else if (hasAnyFile(projectRoot, ['nuxt.config.js', 'nuxt.config.ts']) || dependencies.nuxt) {
     framework = 'nuxt';
     frameworkVersion = dependencyVersion(dependencies, ['nuxt']);
-  } else if (hasAnyFile(projectRoot, ['astro.config.mjs', 'astro.config.ts']) || dependencies.astro) {
+  } else if (
+    hasAnyFile(projectRoot, ['astro.config.mjs', 'astro.config.ts']) ||
+    dependencies.astro
+  ) {
     framework = 'astro';
     frameworkVersion = dependencyVersion(dependencies, ['astro']);
-  } else if (hasAnyFile(projectRoot, ['svelte.config.js', 'svelte.config.ts']) || dependencies.svelte || dependencies['@sveltejs/kit']) {
+  } else if (
+    hasAnyFile(projectRoot, ['svelte.config.js', 'svelte.config.ts']) ||
+    dependencies.svelte ||
+    dependencies['@sveltejs/kit']
+  ) {
     framework = 'svelte';
     frameworkVersion = dependencyVersion(dependencies, ['svelte', '@sveltejs/kit']);
   } else if (hasAnyFile(projectRoot, ['angular.json']) || dependencies['@angular/core']) {
@@ -411,7 +442,10 @@ function shouldSkipDir(name: string): boolean {
   return SKIP_DIRS.has(name) || (name.startsWith('.') && name !== '.github');
 }
 
-function walkFiles(projectRoot: string, options: { extensions?: Set<string>; includeHidden?: boolean } = {}): string[] {
+function walkFiles(
+  projectRoot: string,
+  options: { extensions?: Set<string>; includeHidden?: boolean } = {},
+): string[] {
   const files: string[] = [];
 
   function walk(dir: string) {
@@ -489,7 +523,13 @@ function walkNextAppRoutes(dir: string, projectRoot: string, segments: string[])
       continue;
     }
     const routeSegment = segmentToRoute(entry);
-    routes.push(...walkNextAppRoutes(fullPath, projectRoot, routeSegment === null ? segments : [...segments, routeSegment]));
+    routes.push(
+      ...walkNextAppRoutes(
+        fullPath,
+        projectRoot,
+        routeSegment === null ? segments : [...segments, routeSegment],
+      ),
+    );
   }
   return routes;
 }
@@ -497,12 +537,23 @@ function walkNextAppRoutes(dir: string, projectRoot: string, segments: string[])
 function fileRouteFromPath(file: string, baseDir: string): string {
   let withoutExt = file.slice(0, -extname(file).length);
   if (withoutExt.endsWith('/index')) withoutExt = withoutExt.slice(0, -'/index'.length);
-  withoutExt = withoutExt.replace(new RegExp(`^${baseDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '');
-  const parts = withoutExt.split('/').filter(Boolean).map((part) => segmentToRoute(part)).filter(Boolean);
+  withoutExt = withoutExt.replace(
+    new RegExp(`^${baseDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`),
+    '',
+  );
+  const parts = withoutExt
+    .split('/')
+    .filter(Boolean)
+    .map((part) => segmentToRoute(part))
+    .filter(Boolean);
   return `/${parts.join('/')}` || '/';
 }
 
-function scanFileRoutes(projectRoot: string, baseDir: string, extensions = PAGE_EXTENSIONS): ScanRouteV1[] {
+function scanFileRoutes(
+  projectRoot: string,
+  baseDir: string,
+  extensions = PAGE_EXTENSIONS,
+): ScanRouteV1[] {
   const fullBase = join(projectRoot, baseDir);
   if (!existsSync(fullBase)) return [];
   return walkFiles(fullBase, { extensions }).map((file) => {
@@ -540,12 +591,15 @@ function scanReactRouter(projectRoot: string): { routes: ScanRouteV1[]; hashRout
 
 function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan {
   const appRoutes = ['src/app', 'app'].flatMap((dir) =>
-    existsSync(join(projectRoot, dir)) ? walkNextAppRoutes(join(projectRoot, dir), projectRoot, []) : [],
+    existsSync(join(projectRoot, dir))
+      ? walkNextAppRoutes(join(projectRoot, dir), projectRoot, [])
+      : [],
   );
   const pagesRoutes = ['src/pages', 'pages'].flatMap((dir) => scanFileRoutes(projectRoot, dir));
 
   if (detection.framework === 'nextjs') {
-    if (appRoutes.length > 0 && pagesRoutes.length > 0) return { strategy: 'mixed-next-router', routes: [...appRoutes, ...pagesRoutes] };
+    if (appRoutes.length > 0 && pagesRoutes.length > 0)
+      return { strategy: 'mixed-next-router', routes: [...appRoutes, ...pagesRoutes] };
     if (appRoutes.length > 0) return { strategy: 'app-router', routes: appRoutes };
     if (pagesRoutes.length > 0) return { strategy: 'pages-router', routes: pagesRoutes };
   }
@@ -556,7 +610,9 @@ function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan
   }
 
   if (detection.framework === 'nuxt') {
-    const routes = ['pages', 'app/pages'].flatMap((dir) => scanFileRoutes(projectRoot, dir, new Set(['.vue'])));
+    const routes = ['pages', 'app/pages'].flatMap((dir) =>
+      scanFileRoutes(projectRoot, dir, new Set(['.vue'])),
+    );
     if (routes.length > 0) return { strategy: 'nuxt-router', routes };
   }
 
@@ -566,14 +622,21 @@ function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan
   }
 
   const reactRouter = scanReactRouter(projectRoot);
-  if (reactRouter.routes.length > 0) return { strategy: 'react-router', routes: reactRouter.routes };
+  if (reactRouter.routes.length > 0)
+    return { strategy: 'react-router', routes: reactRouter.routes };
   if (pagesRoutes.length > 0) return { strategy: 'pages-router', routes: pagesRoutes };
 
   if (existsSync(join(projectRoot, 'index.html'))) {
-    return { strategy: 'static-html', routes: [{ path: '/', file: 'index.html', hasLayout: false }] };
+    return {
+      strategy: 'static-html',
+      routes: [{ path: '/', file: 'index.html', hasLayout: false }],
+    };
   }
   if (existsSync(join(projectRoot, 'docs', 'index.html'))) {
-    return { strategy: 'static-html', routes: [{ path: '/', file: 'docs/index.html', hasLayout: false }] };
+    return {
+      strategy: 'static-html',
+      routes: [{ path: '/', file: 'docs/index.html', hasLayout: false }],
+    };
   }
 
   return { strategy: 'none', routes: [] };
@@ -585,7 +648,11 @@ function countComponents(projectRoot: string, routes: RouteScan): ScanReportV1['
     const base = file.split('/').pop() ?? file;
     return /^[A-Z][\w-]*\.(tsx|ts|jsx|js|vue|svelte)$/.test(base);
   });
-  const directories = [...new Set(componentFiles.map((file) => file.split('/').slice(0, -1).join('/')).filter(Boolean))].slice(0, 16);
+  const directories = [
+    ...new Set(
+      componentFiles.map((file) => file.split('/').slice(0, -1).join('/')).filter(Boolean),
+    ),
+  ].slice(0, 16);
   return {
     pageCount: routes.routes.length,
     componentCount: componentFiles.length,
@@ -593,11 +660,17 @@ function countComponents(projectRoot: string, routes: RouteScan): ScanReportV1['
   };
 }
 
-function extractCssEvidence(content: string): { variables: number; colors: number; dark: boolean; themeSignals: string[] } {
+function extractCssEvidence(content: string): {
+  variables: number;
+  colors: number;
+  dark: boolean;
+  themeSignals: string[];
+} {
   const variableMatches = [...content.matchAll(/--[\w-]+\s*:/g)];
   const colorMatches = [...content.matchAll(/#[0-9a-fA-F]{3,8}\b|rgb[a]?\(|hsl[a]?\(/g)];
   const themeSignals = new Set<string>();
-  if (/\bdark\b|color-scheme:\s*dark|\[data-theme=['"]dark['"]|\.dark\b/.test(content)) themeSignals.add('dark mode');
+  if (/\bdark\b|color-scheme:\s*dark|\[data-theme=['"]dark['"]|\.dark\b/.test(content))
+    themeSignals.add('dark mode');
   if (/\[data-theme=|data-theme|theme-\w+/.test(content)) themeSignals.add('theme selector');
   if (/prefers-color-scheme/.test(content)) themeSignals.add('system color preference');
   return {
@@ -618,13 +691,20 @@ function scanStyling(projectRoot: string, detection: ProjectDetection): StylingS
   let configFile: string | null = null;
   let approach = 'unknown';
 
-  const tailwindConfig = ['tailwind.config.js', 'tailwind.config.ts', 'tailwind.config.mjs', 'tailwind.config.cjs'].find((file) =>
-    existsSync(join(projectRoot, file)),
-  );
+  const tailwindConfig = [
+    'tailwind.config.js',
+    'tailwind.config.ts',
+    'tailwind.config.mjs',
+    'tailwind.config.cjs',
+  ].find((file) => existsSync(join(projectRoot, file)));
   if (tailwindConfig || deps.tailwindcss) {
     approach = 'tailwind';
     configFile = tailwindConfig ?? 'package.json';
-  } else if (deps['@decantr/css'] || (existsSync(join(projectRoot, 'src/styles/tokens.css')) && existsSync(join(projectRoot, 'src/styles/treatments.css')))) {
+  } else if (
+    deps['@decantr/css'] ||
+    (existsSync(join(projectRoot, 'src/styles/tokens.css')) &&
+      existsSync(join(projectRoot, 'src/styles/treatments.css')))
+  ) {
     approach = 'decantr-css';
     configFile = deps['@decantr/css'] ? 'package.json' : 'src/styles/tokens.css';
   } else if (deps.bootstrap) {
@@ -666,7 +746,10 @@ function findAssistantRules(projectRoot: string): string[] {
   return RULE_FILES.filter((file) => existsSync(join(projectRoot, file)));
 }
 
-function scanStaticHosting(projectRoot: string, detection: ProjectDetection): ScanReportV1['staticHosting'] {
+function scanStaticHosting(
+  projectRoot: string,
+  detection: ProjectDetection,
+): ScanReportV1['staticHosting'] {
   const packageRead = readPackageJson(projectRoot);
   const pkg = packageRead.value;
   const evidence: string[] = [];
@@ -683,14 +766,21 @@ function scanStaticHosting(projectRoot: string, detection: ProjectDetection): Sc
   if (detection.dependencies['gh-pages'] || pkg?.scripts?.deploy?.includes('gh-pages')) {
     evidence.push('package scripts or dependencies reference gh-pages');
   }
-  if (existsSync(join(projectRoot, 'docs', 'index.html'))) evidence.push('docs/index.html can serve GitHub Pages');
-  if (existsSync(join(projectRoot, '404.html')) || existsSync(join(projectRoot, 'docs', '404.html'))) {
+  if (existsSync(join(projectRoot, 'docs', 'index.html')))
+    evidence.push('docs/index.html can serve GitHub Pages');
+  if (
+    existsSync(join(projectRoot, '404.html')) ||
+    existsSync(join(projectRoot, 'docs', '404.html'))
+  ) {
     evidence.push('404.html fallback is present');
   }
 
   const workflowDir = join(projectRoot, '.github', 'workflows');
   if (existsSync(workflowDir)) {
-    for (const file of walkFiles(workflowDir, { extensions: new Set(['.yml', '.yaml']) }).slice(0, 20)) {
+    for (const file of walkFiles(workflowDir, { extensions: new Set(['.yml', '.yaml']) }).slice(
+      0,
+      20,
+    )) {
       const content = readTextFile(join(workflowDir, file));
       if (content && /pages|gh-pages|upload-pages-artifact|deploy-pages/i.test(content)) {
         evidence.push(`GitHub Pages workflow hint: .github/workflows/${file}`);
@@ -721,7 +811,9 @@ function scanStaticHosting(projectRoot: string, detection: ProjectDetection): Sc
   }
 
   return {
-    githubPagesLikely: evidence.some((item) => item.toLowerCase().includes('github') || item.toLowerCase().includes('pages')),
+    githubPagesLikely: evidence.some(
+      (item) => item.toLowerCase().includes('github') || item.toLowerCase().includes('pages'),
+    ),
     evidence: [...new Set(evidence)].slice(0, 12),
     homepageUrl,
     basePath,
@@ -729,7 +821,11 @@ function scanStaticHosting(projectRoot: string, detection: ProjectDetection): Sc
   };
 }
 
-function buildApplicability(detection: ProjectDetection, routes: RouteScan, components: ScanReportV1['components']): ScanReportV1['applicability'] {
+function buildApplicability(
+  detection: ProjectDetection,
+  routes: RouteScan,
+  components: ScanReportV1['components'],
+): ScanReportV1['applicability'] {
   if (!WEB_FRAMEWORKS.has(detection.framework)) {
     const label =
       detection.primaryLanguage === 'python'
@@ -750,7 +846,10 @@ function buildApplicability(detection: ProjectDetection, routes: RouteScan, comp
     return {
       status: 'strong_fit',
       label: 'Good Brownfield scan target',
-      reasons: ['A supported web UI framework or static site entrypoint was detected.', 'Routes or UI component files are present.'],
+      reasons: [
+        'A supported web UI framework or static site entrypoint was detected.',
+        'Routes or UI component files are present.',
+      ],
     };
   }
 
@@ -811,7 +910,8 @@ function buildFindings(input: {
       id: 'package-manifest-missing',
       severity: 'warn',
       title: 'No JavaScript package manifest',
-      message: 'Decantr could not find package.json, so framework and dependency confidence is limited.',
+      message:
+        'Decantr could not find package.json, so framework and dependency confidence is limited.',
       evidence: ['package.json missing'],
     });
   } else if (detection.packageJsonPresent && !detection.packageJsonValid) {
@@ -819,7 +919,8 @@ function buildFindings(input: {
       id: 'package-manifest-invalid',
       severity: 'warn',
       title: 'package.json could not be parsed',
-      message: 'The scan continued with file-system evidence, but dependency confidence is limited.',
+      message:
+        'The scan continued with file-system evidence, but dependency confidence is limited.',
       evidence: ['package.json parse failed'],
     });
   }
@@ -829,8 +930,12 @@ function buildFindings(input: {
       id: 'not-brownfield-ui-target',
       severity: 'info',
       title: 'Not a Brownfield UI target',
-      message: 'This repository does not look like a supported frontend application for Decantr adoption.',
-      evidence: [`primary language: ${detection.primaryLanguage}`, `framework: ${detection.framework}`],
+      message:
+        'This repository does not look like a supported frontend application for Decantr adoption.',
+      evidence: [
+        `primary language: ${detection.primaryLanguage}`,
+        `framework: ${detection.framework}`,
+      ],
       recommendation: 'Use Decantr scan on a frontend app or GitHub Pages site.',
     });
     return findings;
@@ -841,9 +946,11 @@ function buildFindings(input: {
       id: 'route-map-thin',
       severity: 'warn',
       title: 'Route map is thin',
-      message: 'No route declarations were detected, so a future Decantr contract would need manual route confirmation.',
+      message:
+        'No route declarations were detected, so a future Decantr contract would need manual route confirmation.',
       evidence: [`route strategy: ${routes.strategy}`],
-      recommendation: 'Run `decantr analyze` locally when you are ready for a proposal-backed attach.',
+      recommendation:
+        'Run `decantr analyze` locally when you are ready for a proposal-backed attach.',
     });
   } else {
     findings.push({
@@ -860,7 +967,8 @@ function buildFindings(input: {
       id: 'style-authority-unclear',
       severity: 'warn',
       title: 'Style authority is unclear',
-      message: 'The scan did not find Tailwind, Decantr CSS, a common component library, or clear CSS files.',
+      message:
+        'The scan did not find Tailwind, Decantr CSS, a common component library, or clear CSS files.',
       evidence: ['styling approach: unknown'],
     });
   } else {
@@ -869,7 +977,11 @@ function buildFindings(input: {
       severity: 'success',
       title: 'Style authority detected',
       message: `The project appears to use ${styling.approach}. Decantr should preserve that authority during Brownfield adoption.`,
-      evidence: [styling.configFile ? `${styling.approach}: ${styling.configFile}` : `styling approach: ${styling.approach}`],
+      evidence: [
+        styling.configFile
+          ? `${styling.approach}: ${styling.configFile}`
+          : `styling approach: ${styling.approach}`,
+      ],
     });
   }
 
@@ -878,7 +990,8 @@ function buildFindings(input: {
       id: 'github-pages-signal',
       severity: 'info',
       title: 'GitHub Pages signal',
-      message: 'The repository has static-hosting evidence. The report separates repo evidence from published-site evidence.',
+      message:
+        'The repository has static-hosting evidence. The report separates repo evidence from published-site evidence.',
       evidence: hosting.evidence.slice(0, 5),
     });
   }
@@ -888,9 +1001,11 @@ function buildFindings(input: {
       id: 'github-pages-routing-risk',
       severity: 'warn',
       title: 'Static routing risk',
-      message: 'React apps on GitHub Pages usually need hash routing or a 404 fallback for direct routes.',
+      message:
+        'React apps on GitHub Pages usually need hash routing or a 404 fallback for direct routes.',
       evidence: ['HashRouter not detected'],
-      recommendation: 'Confirm whether the published site uses hash routing or a Pages 404 fallback.',
+      recommendation:
+        'Confirm whether the published site uses hash routing or a Pages 404 fallback.',
     });
   }
 
@@ -899,7 +1014,8 @@ function buildFindings(input: {
       id: 'assistant-rules-missing',
       severity: 'info',
       title: 'No assistant rules detected',
-      message: 'No common AI-assistant rule file was found. Decantr can add scoped task context after adoption.',
+      message:
+        'No common AI-assistant rule file was found. Decantr can add scoped task context after adoption.',
       evidence: ['No CLAUDE.md, AGENTS.md, .cursorrules, or Copilot instructions detected'],
     });
   }
@@ -909,7 +1025,8 @@ function buildFindings(input: {
       id: 'published-site-unreachable',
       severity: 'warn',
       title: 'Published site was not reachable',
-      message: 'Decantr could inspect the repository, but the inferred published site did not return a usable response.',
+      message:
+        'Decantr could inspect the repository, but the inferred published site did not return a usable response.',
       evidence: [pagesProbe.error ?? `status: ${pagesProbe.status ?? 'unknown'}`],
     });
   }
@@ -926,7 +1043,10 @@ function buildCommands(applicability: ScanReportV1['applicability']): string[] {
   return commands;
 }
 
-export async function scanProject(projectRoot: string, options: ScanProjectOptions = {}): Promise<ScanReportV1> {
+export async function scanProject(
+  projectRoot: string,
+  options: ScanProjectOptions = {},
+): Promise<ScanReportV1> {
   const detection = detectProject(projectRoot);
   const routes = scanRoutes(projectRoot, detection);
   routes.routes = routes.routes.slice(0, MAX_REPORT_ROUTES);
@@ -976,7 +1096,15 @@ export async function scanProject(projectRoot: string, options: ScanProjectOptio
       ruleFiles: assistantRules,
     },
     pagesProbe,
-    findings: buildFindings({ detection, routes, styling, hosting: staticHosting, assistantRules, applicability, pagesProbe }),
+    findings: buildFindings({
+      detection,
+      routes,
+      styling,
+      hosting: staticHosting,
+      assistantRules,
+      applicability,
+      pagesProbe,
+    }),
     recommendedCommands: buildCommands(applicability),
     privacy: {
       sourceUploaded: input.kind !== 'local',
@@ -1080,7 +1208,10 @@ function extractHtmlAttribute(tag: string, attr: string): string | null {
   return match?.[1] ? decodeHtmlAttributeValue(match[1]) : null;
 }
 
-export async function probePublishedSite(url: string, options: { timeoutMs?: number; fetchImpl?: typeof fetch } = {}): Promise<PublishedSiteProbeV1> {
+export async function probePublishedSite(
+  url: string,
+  options: { timeoutMs?: number; fetchImpl?: typeof fetch } = {},
+): Promise<PublishedSiteProbeV1> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 6000);
@@ -1096,7 +1227,8 @@ export async function probePublishedSite(url: string, options: { timeoutMs?: num
     });
     const text = (await response.text()).slice(0, MAX_FILE_READ_BYTES);
     const titleMatch = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-    const descriptionTag = text.match(/<meta\b[^>]*(?:name|property)=["']description["'][^>]*>/i)?.[0] ?? null;
+    const descriptionTag =
+      text.match(/<meta\b[^>]*(?:name|property)=["']description["'][^>]*>/i)?.[0] ?? null;
     const canonicalTag = text.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/i)?.[0] ?? null;
     const assetSamples = [...text.matchAll(/\b(?:src|href)=["']([^"']+)["']/gi)]
       .map((match) => match[1])
@@ -1104,7 +1236,11 @@ export async function probePublishedSite(url: string, options: { timeoutMs?: num
       .slice(0, 40);
     const routingHints: string[] = [];
     if (text.includes('/#/') || text.includes('#/')) routingHints.push('hash route URLs present');
-    if (text.includes('data-reactroot') || text.includes('id="root"') || text.includes("id='root'")) {
+    if (
+      text.includes('data-reactroot') ||
+      text.includes('id="root"') ||
+      text.includes("id='root'")
+    ) {
       routingHints.push('client app mount detected');
     }
 
@@ -1118,9 +1254,12 @@ export async function probePublishedSite(url: string, options: { timeoutMs?: num
       description: descriptionTag ? extractHtmlAttribute(descriptionTag, 'content') : null,
       canonicalUrl: canonicalTag ? extractHtmlAttribute(canonicalTag, 'href') : null,
       assetHints: {
-        rootRelative: assetSamples.filter((item) => item.startsWith('/') && !item.startsWith('//')).length,
-        relative: assetSamples.filter((item) => !item.startsWith('/') && !/^https?:\/\//.test(item)).length,
-        absolute: assetSamples.filter((item) => /^https?:\/\//.test(item) || item.startsWith('//')).length,
+        rootRelative: assetSamples.filter((item) => item.startsWith('/') && !item.startsWith('//'))
+          .length,
+        relative: assetSamples.filter((item) => !item.startsWith('/') && !/^https?:\/\//.test(item))
+          .length,
+        absolute: assetSamples.filter((item) => /^https?:\/\//.test(item) || item.startsWith('//'))
+          .length,
         samples: assetSamples.slice(0, 8),
       },
       routingHints,
@@ -1171,18 +1310,25 @@ export function resolveGitHubScanInput(input: string): GitHubScanInputResolution
         url: `https://github.com/${owner}/${repo}`,
       },
       publishedSiteUrl: `https://${owner}.github.io/${repo}/`,
-      warnings: url.pathname.split('/').filter(Boolean).length > 2 ? ['Extra GitHub URL path segments were ignored.'] : [],
+      warnings:
+        url.pathname.split('/').filter(Boolean).length > 2
+          ? ['Extra GitHub URL path segments were ignored.']
+          : [],
     };
   }
 
   const pagesOwner = githubPagesOwnerFromHostname(host);
   if (pagesOwner) {
     const segments = url.pathname.split('/').filter(Boolean);
-    const repo = segments[0] ? normalizeGitHubPathSegment(segments[0], 'repo') : `${pagesOwner}.github.io`;
+    const repo = segments[0]
+      ? normalizeGitHubPathSegment(segments[0], 'repo')
+      : `${pagesOwner}.github.io`;
     if (!repo) {
       throw new Error('GitHub Pages URLs must include a valid owner and repository path.');
     }
-    const publishedSiteUrl = segments[0] ? `https://${pagesOwner}.github.io/${repo}/` : `https://${pagesOwner}.github.io/`;
+    const publishedSiteUrl = segments[0]
+      ? `https://${pagesOwner}.github.io/${repo}/`
+      : `https://${pagesOwner}.github.io/`;
     return {
       inputKind: 'github-pages',
       normalizedInput: publishedSiteUrl,
@@ -1192,7 +1338,10 @@ export function resolveGitHubScanInput(input: string): GitHubScanInputResolution
         url: `https://github.com/${pagesOwner}/${repo}`,
       },
       publishedSiteUrl,
-      warnings: segments.length > 1 ? ['Only the first GitHub Pages path segment was used to infer the repository.'] : [],
+      warnings:
+        segments.length > 1
+          ? ['Only the first GitHub Pages path segment was used to infer the repository.']
+          : [],
     };
   }
 

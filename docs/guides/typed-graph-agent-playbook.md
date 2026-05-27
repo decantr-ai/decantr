@@ -20,6 +20,8 @@ That command writes:
 
 The Contract capsule is the cache-friendly session artifact. Route context and impact context are follow-up reads against the snapshot.
 
+Accepted project `behavior_obligations` from `.decantr/local-patterns.json` are projected into the graph as existing `LocalRule` nodes, not as a new UX schema. Their node ids follow `rule:behavior:<pattern-id>:<obligation-id>`, with `payload.kind = "behavior-obligation"`, and they link back to the project, matching Pattern node when one exists, and the `.decantr/local-patterns.json` SourceArtifact.
+
 ## Default Agent Flow
 
 1. Call `decantr_get_project_state`.
@@ -43,13 +45,41 @@ Use route context when the task is page-scoped:
 }
 ```
 
-The response returns the route, page, shell, composed patterns, components, tokens, local rules, style bridge mappings, findings, evidence, provenance, and ranked nodes boosted by the task text.
+The response returns the route, page, shell, composed patterns, components, tokens, local rules, behavior-obligation local rules, style bridge mappings, findings, evidence, provenance, and ranked nodes boosted by the task text.
 
 CLI equivalent:
 
 ```bash
 decantr graph --project apps/web --route /feed --task "improve recipe card loading" --json
 ```
+
+MCP task context also surfaces accepted behavior obligations before an edit:
+
+```json
+{
+  "local_law": {
+    "behavior_obligations": [
+      {
+        "pattern_id": "confirmation-dialog",
+        "role": "confirmation-dialog",
+        "intent": "Confirm destructive account actions without accidental execution.",
+        "obligations": [
+          {
+            "id": "accessible-name",
+            "label": "Dialog has an accessible name.",
+            "severity": "error",
+            "evidence": "static"
+          }
+        ],
+        "risk_profile": ["accidental-destruction", "focus-loss"],
+        "test_hints": ["keyboard path smoke test", "focus return assertion"]
+      }
+    ]
+  }
+}
+```
+
+Agents should inspect these obligations before editing dialogs, forms, destructive actions, menus, or other interactive surfaces. They are app-owned local law: preserve project primitives and architecture first, then use WCAG tooling, Playwright, axe, Storybook, or project tests for behavioral evidence Decantr cannot prove statically.
 
 ## Impact Context
 

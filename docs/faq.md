@@ -269,6 +269,18 @@ npx @decantr/cli ci --fail-on error
 
 Not primarily. Decantr is an AI Frontend Governance layer for codebases touched by AI agents. It gives AI tools a clearer Contract, better route-scoped Context, registry-backed vocabulary when useful, and drift evidence with repair guidance. The assistant still writes the code.
 
+## Are behavior obligations a UX framework or WCAG replacement?
+
+No. `behavior_obligations` are a narrow local-law facet for project-owned interaction and accessibility expectations in an existing app. They help Decantr tell an AI assistant, "this project uses this Dialog primitive for destructive confirmation," or "this project requires explicit labels and button types in forms."
+
+Decantr only verifies obligations where static source evidence is strong. It does not replace WCAG expertise, axe, Playwright, Storybook, Chromatic, manual screen-reader checks, or your project tests. Focus trapping, real keyboard paths, temporal UI state, and screen-reader behavior still belong in project-owned tests and review unless there is concrete source evidence Decantr can cite.
+
+## Why are behavior obligations local law instead of Essence or registry data?
+
+Because interaction behavior is usually app-owned. A registry pattern can provide useful accessibility and interaction guidance, but it should not override the way a production codebase composes its own Dialog, Button, Form, routing, feature flags, or test harness.
+
+Keeping `behavior_obligations` in `.decantr/local-patterns.json` lets Brownfield and Hybrid teams accept only the obligations their source evidence supports. The typed graph then projects those accepted obligations as `LocalRule` nodes, task context serves them to agents, and Project Health emits evidence-backed findings without changing Essence V4 or the public registry schema.
+
 ## What should I do when Decantr flags drift?
 
 Decide whether the code or the contract is wrong.

@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { isAbsolute, resolve } from 'node:path';
 import type { ProjectHealthReport } from '@decantr/verifier';
+import { sendStudioHealthRefreshedTelemetry, sendStudioStartedTelemetry } from '../telemetry.js';
 import { createProjectHealthReport } from './health.js';
 import { createWorkspaceHealthReport } from './workspace.js';
-import { sendStudioHealthRefreshedTelemetry, sendStudioStartedTelemetry } from '../telemetry.js';
 
 const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
@@ -44,7 +44,10 @@ function sendNotFound(res: ServerResponse): void {
   sendJson(res, 404, { error: 'not_found' });
 }
 
-function resolveReportPath(projectRoot: string, reportPath: string | undefined): string | undefined {
+function resolveReportPath(
+  projectRoot: string,
+  reportPath: string | undefined,
+): string | undefined {
   if (!reportPath) return undefined;
   return isAbsolute(reportPath) ? reportPath : resolve(projectRoot, reportPath);
 }
@@ -1171,13 +1174,19 @@ function workspaceStudioHtml(): string {
 </html>`;
 }
 
-export function createStudioRequestHandler(projectRoot: string, options: StudioCommandOptions = {}) {
+export function createStudioRequestHandler(
+  projectRoot: string,
+  options: StudioCommandOptions = {},
+) {
   const reportPath = resolveReportPath(projectRoot, options.report);
   const loadReport = () =>
     reportPath ? readProjectHealthReport(reportPath) : createProjectHealthReport(projectRoot);
   const loadWorkspaceReport = () => createWorkspaceHealthReport(projectRoot);
 
-  return async function handleStudioRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  return async function handleStudioRequest(
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): Promise<void> {
     const url = new URL(req.url ?? '/', 'http://localhost');
     try {
       if (req.method === 'GET' && url.pathname === '/') {

@@ -35,6 +35,7 @@ Use `decantr health --diagnostics --json` for a machine-readable catalog, or `de
 | `GRAPH001` | `typed-graph-current` | `regenerate-typed-graph` | Run `decantr graph` for missing or stale graph artifacts. |
 | `COMP001` | `component-reuse-primitive-reimplemented` | `import-existing-component` | Replace a local primitive redeclaration with the existing reusable component. |
 | `COMP010` | `component-reuse-raw-control` | `replace-raw-control-with-local-component` | Replace raw JSX controls with project-owned primitives. |
+| `COMP020` | `behavior-project-interaction-primitive` / `behavior-dialog-project-primitive` | `use-project-owned-interaction-primitive` | Replace one-off interaction surfaces with accepted project-owned primitives from local law. |
 | `TOKEN001` | `tokens-file-present` | `restore-design-token-file` | Restore missing token files where Decantr tokens are authoritative. |
 | `TOKEN002` | `design-token-coverage` | `repair-design-token-coverage` | Reconcile exported design tokens with local token usage. |
 | `TOKEN010` | `style-bridge-arbitrary-value` | `replace-arbitrary-style-with-bridge-token` | Replace arbitrary Tailwind, inline style, or stylesheet values with accepted style bridge tokens/classes. |
@@ -43,6 +44,12 @@ Use `decantr health --diagnostics --json` for a machine-readable catalog, or `de
 | `VISUAL003` | `browser-route-verification-failed` | `fix-route-render` | Fix a route that fails browser verification. |
 | `VISUAL010` | `visual-baseline-screenshot-drift` | `review-visual-baseline-drift` | Review screenshot hash changes since the saved health baseline. |
 | `A11Y001` | `focus-visible-enabled` | `enable-focus-visible` | Add visible keyboard focus treatment. |
+| `A11Y010` | `behavior-dialog-accessible-name` | `restore-dialog-accessible-name` | Restore accessible names for accepted confirmation-dialog behavior obligations. |
+| `A11Y011` | `behavior-form-label-associated` | `restore-label-association` | Restore label association for accepted form-control behavior obligations. |
+| `INT010` | `behavior-dialog-visible-consequence` | `restore-visible-consequence-copy` | Restore visible destructive consequence copy in accepted confirmation dialogs. |
+| `INT011` | `behavior-dialog-cancel-affordance` | `restore-cancel-affordance` | Restore cancel or close affordances in accepted confirmation dialogs. |
+| `INT012` | `behavior-dialog-submitting-guard` | `restore-submitting-guard` | Restore submitting guards for destructive confirmation execution. |
+| `INT013` | `behavior-form-explicit-button-type` | `set-explicit-button-type` | Set explicit button types inside accepted form-control behavior. |
 | `ROUTE001` | `brownfield-route-drift` | `reconcile-brownfield-routes` | Reconcile observed routes with the contract. |
 | `CHECK001` | `check-failed` | `repair-contract-check` | Repair a failed `decantr check` rule. |
 | `AUDIT001` | `project-audit-invalid` | `repair-project-audit` | Resolve blocking project audit findings. |

@@ -71,7 +71,44 @@ export interface LocalPattern {
   forbiddenAlternatives?: string[];
   evidence?: string[];
   evidenceToCollect?: string[];
+  behavior_obligations?: LocalBehaviorObligations;
   [key: string]: unknown;
+}
+
+export interface LocalBehaviorObligations {
+  intent?: string;
+  pattern_role?: string;
+  modalities?: string[];
+  states?: string[];
+  risk_profile?: string[];
+  obligations?: LocalBehaviorObligation[];
+  test_hints?: string[];
+  [key: string]: unknown;
+}
+
+export interface LocalBehaviorObligation {
+  id?: string;
+  label?: string;
+  severity?: LocalRuleSeverity;
+  evidence?: string;
+  [key: string]: unknown;
+}
+
+export interface LocalBehaviorObligationSummary {
+  patternId: string;
+  patternRole: string | null;
+  intent: string | null;
+  modalities: string[];
+  states: string[];
+  riskProfile: string[];
+  obligations: Array<{
+    id: string;
+    label: string;
+    severity: LocalRuleSeverity | null;
+    evidence: string | null;
+  }>;
+  testHints: string[];
+  componentPaths: string[];
 }
 
 export interface LocalPatternVariant {
@@ -163,7 +200,9 @@ export interface LocalLawTaskSummary {
     confidenceTier: string | null;
     enforcementLevel: string | null;
     hostedPatternRefs: string[];
+    behaviorObligations: LocalBehaviorObligationSummary | null;
   }>;
+  behaviorObligations: LocalBehaviorObligationSummary[];
   rules: Array<{ id: string; severity: LocalRuleSeverity; enabled: boolean; description: string }>;
 }
 
@@ -212,6 +251,162 @@ export function readLocalPatternPack(projectRoot: string): LocalPatternPack | nu
 
 export function readLocalRuleManifest(projectRoot: string): LocalRuleManifest | null {
   return readJsonFile<LocalRuleManifest>(localRulesPath(projectRoot));
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0)
+    : [];
+}
+
+function localBehaviorSeverity(value: unknown): LocalRuleSeverity | null {
+  return value === 'info' || value === 'warn' || value === 'error' ? value : null;
+}
+
+export function summarizeLocalPatternBehaviorObligations(
+  pattern: LocalPattern,
+): LocalBehaviorObligationSummary | null {
+  const contract = pattern.behavior_obligations;
+  if (!contract || typeof contract !== 'object' || Array.isArray(contract)) return null;
+  if (!Array.isArray(contract.obligations)) return null;
+
+  const patternId = typeof pattern.id === 'string' && pattern.id.trim() ? pattern.id : 'unknown';
+  const obligations = contract.obligations
+    .map((obligation, index) => {
+      if (!obligation || typeof obligation !== 'object' || Array.isArray(obligation)) {
+        return null;
+      }
+      const id =
+        typeof obligation.id === 'string' && obligation.id.trim()
+          ? obligation.id.trim()
+          : `obligation-${index + 1}`;
+      const label =
+        typeof obligation.label === 'string' && obligation.label.trim()
+          ? obligation.label.trim()
+          : id;
+      const evidence =
+        typeof obligation.evidence === 'string' && obligation.evidence.trim()
+          ? obligation.evidence.trim()
+          : null;
+      return {
+        id,
+        label,
+        severity: localBehaviorSeverity(obligation.severity),
+        evidence,
+      };
+    })
+    .filter((entry): entry is LocalBehaviorObligationSummary['obligations'][number] =>
+      Boolean(entry),
+    );
+
+  if (obligations.length === 0) return null;
+
+  return {
+    patternId,
+    patternRole:
+      typeof contract.pattern_role === 'string'
+        ? contract.pattern_role
+        : typeof pattern.role === 'string'
+          ? pattern.role
+          : null,
+    intent:
+      typeof contract.intent === 'string' && contract.intent.trim() ? contract.intent.trim() : null,
+    modalities: stringArray(contract.modalities),
+    states: stringArray(contract.states),
+    riskProfile: stringArray(contract.risk_profile),
+    obligations,
+    testHints: stringArray(contract.test_hints),
+    componentPaths: stringArray(pattern.componentPaths),
+  };
+}
+
+function formControlBehaviorObligations(evidence: {
+  formComponents: string[];
+  formSourceEvidence: LocalPatternSourceEvidence[];
+}): LocalBehaviorObligations | undefined {
+  if (evidence.formComponents.length === 0 && evidence.formSourceEvidence.length === 0) {
+    return undefined;
+  }
+  return {
+    intent:
+      'Preserve accessible, explicit form behavior when AI edits inputs, labels, validation, or form actions.',
+    pattern_role: 'form-control',
+    modalities: ['keyboard', 'pointer', 'screen-reader', 'touch'],
+    states: ['empty', 'focused', 'valid', 'invalid', 'submitting', 'disabled'],
+    risk_profile: ['label-loss', 'accidental-submit', 'validation-context-loss'],
+    obligations: [
+      {
+        id: 'label-associated',
+        label: 'Inputs, selects, and textareas keep an associated visible or programmatic label.',
+        severity: 'warn',
+        evidence: 'static',
+      },
+      {
+        id: 'explicit-form-button-type',
+        label: 'Buttons inside forms declare type="button" or type="submit" explicitly.',
+        severity: 'warn',
+        evidence: 'static',
+      },
+      {
+        id: 'project-form-primitive',
+        label: 'Use project-owned form/control primitives when they exist.',
+        severity: 'info',
+        evidence: 'primitive',
+      },
+    ],
+    test_hints: [
+      'keyboard form path smoke test',
+      'label association assertion',
+      'non-submit action does not submit form',
+    ],
+  };
+}
+
+function confirmationDialogBehaviorObligations(): LocalBehaviorObligations {
+  return {
+    intent: 'Confirm destructive account or data actions without accidental execution.',
+    pattern_role: 'confirmation-dialog',
+    modalities: ['keyboard', 'pointer', 'screen-reader', 'touch'],
+    states: ['closed', 'opening', 'open', 'submitting', 'error', 'success'],
+    risk_profile: ['accidental-destruction', 'focus-loss', 'screen-reader-context-loss'],
+    obligations: [
+      {
+        id: 'project-dialog-primitive',
+        label: 'Use the project-owned Dialog or AlertDialog primitive instead of one-off overlays.',
+        severity: 'warn',
+        evidence: 'primitive',
+      },
+      {
+        id: 'accessible-name',
+        label: 'Dialog has an accessible name.',
+        severity: 'error',
+        evidence: 'static',
+      },
+      {
+        id: 'visible-consequence',
+        label: 'Destructive consequence is stated in visible text.',
+        severity: 'warn',
+        evidence: 'static',
+      },
+      {
+        id: 'cancel-affordance',
+        label: 'Dialog exposes a clear cancel/close affordance before the destructive action.',
+        severity: 'warn',
+        evidence: 'static',
+      },
+      {
+        id: 'submitting-guard',
+        label: 'Submitting state prevents accidental repeated destructive execution.',
+        severity: 'info',
+        evidence: 'static',
+      },
+    ],
+    test_hints: [
+      'keyboard interaction smoke test',
+      'focus return assertion',
+      'destructive action requires explicit confirmation',
+    ],
+  };
 }
 
 export function createBrownfieldCodifyProposal(
@@ -379,6 +574,7 @@ export function createBrownfieldCodifyProposal(
             'Start by mapping field wrappers, labels, error states, and disabled states from source.',
           ],
         },
+        behavior_obligations: formControlBehaviorObligations(evidence),
         evidence: evidence.formComponents.length
           ? evidence.formComponents
           : ['Add form field wrapper paths and validation examples.'],
@@ -415,6 +611,43 @@ export function createBrownfieldCodifyProposal(
           'Component-local theme forks that bypass shared theme providers or tokens.',
         ],
       },
+      ...(evidence.dialogComponents.length > 0 || evidence.dialogSourceEvidence.length > 0
+        ? [
+            {
+              id: 'confirmation-dialog',
+              label: 'Confirmation dialogs',
+              role: 'Destructive confirmations, modal decisions, and interruptive dialog actions',
+              appliesTo: [
+                'destructive confirmations',
+                'account deletion',
+                'data removal',
+                'modal decisions',
+              ],
+              componentPaths: evidence.dialogComponents,
+              decide:
+                'Define which Dialog/AlertDialog primitive, destructive Button variant, consequence copy, cancel affordance, and submitting guard the app owns.',
+              sourceEvidence: evidence.dialogSourceEvidence,
+              confidence: confidenceForEvidence({
+                componentCount: evidence.dialogComponents.length,
+                sourceEvidenceCount: evidence.dialogSourceEvidence.length,
+              }),
+              enforcement: {
+                level: 'warn',
+                status: 'proposal',
+                notes: [
+                  'Only enforce statically checkable obligations. Focus trapping and screen-reader behavior should stay in project tests unless source evidence is explicit.',
+                ],
+              },
+              behavior_obligations: confirmationDialogBehaviorObligations(),
+              evidence: evidence.dialogComponents.length
+                ? evidence.dialogComponents
+                : evidence.dialogSourceEvidence.map((entry) => entry.file),
+              forbiddenAlternatives: [
+                'One-off overlays for destructive actions without reviewed dialog primitives.',
+              ],
+            } satisfies LocalPattern,
+          ]
+        : []),
     ],
     starterRules: [
       'Prefer project-owned wrappers for repeated primitives once they exist.',
@@ -689,6 +922,36 @@ export function validateLocalLaw(projectRoot: string): LocalLawValidation {
           `Local pattern ${id} maps hosted registry guidance but has no project-owned component path yet.`,
         );
       }
+      if (
+        pattern.behavior_obligations &&
+        (typeof pattern.behavior_obligations !== 'object' ||
+          Array.isArray(pattern.behavior_obligations))
+      ) {
+        warnings.push(
+          `Local pattern ${id || 'unknown'} has behavior_obligations, but it is not an object.`,
+        );
+      } else if (
+        pattern.behavior_obligations &&
+        !Array.isArray(pattern.behavior_obligations.obligations)
+      ) {
+        warnings.push(
+          `Local pattern ${id || 'unknown'} has behavior_obligations without an obligations array.`,
+        );
+      } else if (pattern.behavior_obligations?.obligations) {
+        for (const [index, obligation] of pattern.behavior_obligations.obligations.entries()) {
+          if (!obligation || typeof obligation !== 'object' || Array.isArray(obligation)) {
+            warnings.push(
+              `Local pattern ${id || 'unknown'} has malformed behavior obligation at index ${index}.`,
+            );
+            continue;
+          }
+          if (typeof obligation.id !== 'string' || !obligation.id.trim()) {
+            warnings.push(
+              `Local pattern ${id || 'unknown'} has a behavior obligation missing an id.`,
+            );
+          }
+        }
+      }
     }
   }
 
@@ -710,30 +973,36 @@ export function validateLocalLaw(projectRoot: string): LocalLawValidation {
 export function createLocalLawTaskSummary(projectRoot: string): LocalLawTaskSummary {
   const patternPack = readLocalPatternPack(projectRoot);
   const ruleManifest = readLocalRuleManifest(projectRoot);
-  const patterns = (patternPack?.patterns ?? []).map((pattern) => ({
-    id: typeof pattern.id === 'string' ? pattern.id : 'unknown',
-    role: typeof pattern.role === 'string' ? pattern.role : null,
-    componentPaths: Array.isArray(pattern.componentPaths)
-      ? pattern.componentPaths.filter((entry): entry is string => typeof entry === 'string')
-      : [],
-    confidenceTier:
-      typeof pattern.confidence === 'object' &&
-      pattern.confidence !== null &&
-      typeof pattern.confidence.tier === 'string'
-        ? pattern.confidence.tier
-        : null,
-    enforcementLevel:
-      typeof pattern.enforcement === 'object' &&
-      pattern.enforcement !== null &&
-      typeof pattern.enforcement.level === 'string'
-        ? pattern.enforcement.level
-        : null,
-    hostedPatternRefs: Array.isArray(pattern.hostedPatternRefs)
-      ? pattern.hostedPatternRefs
-          .map((ref) => (typeof ref?.slug === 'string' ? ref.slug : null))
-          .filter((slug): slug is string => Boolean(slug))
-      : [],
-  }));
+  const behaviorObligations: LocalBehaviorObligationSummary[] = [];
+  const patterns = (patternPack?.patterns ?? []).map((pattern) => {
+    const behavior = summarizeLocalPatternBehaviorObligations(pattern);
+    if (behavior) behaviorObligations.push(behavior);
+    return {
+      id: typeof pattern.id === 'string' ? pattern.id : 'unknown',
+      role: typeof pattern.role === 'string' ? pattern.role : null,
+      componentPaths: Array.isArray(pattern.componentPaths)
+        ? pattern.componentPaths.filter((entry): entry is string => typeof entry === 'string')
+        : [],
+      confidenceTier:
+        typeof pattern.confidence === 'object' &&
+        pattern.confidence !== null &&
+        typeof pattern.confidence.tier === 'string'
+          ? pattern.confidence.tier
+          : null,
+      enforcementLevel:
+        typeof pattern.enforcement === 'object' &&
+        pattern.enforcement !== null &&
+        typeof pattern.enforcement.level === 'string'
+          ? pattern.enforcement.level
+          : null,
+      hostedPatternRefs: Array.isArray(pattern.hostedPatternRefs)
+        ? pattern.hostedPatternRefs
+            .map((ref) => (typeof ref?.slug === 'string' ? ref.slug : null))
+            .filter((slug): slug is string => Boolean(slug))
+        : [],
+      behaviorObligations: behavior,
+    };
+  });
   const rules = (ruleManifest?.rules ?? []).map((rule) => ({
     id: rule.id,
     severity: rule.severity,
@@ -747,6 +1016,7 @@ export function createLocalLawTaskSummary(projectRoot: string): LocalLawTaskSumm
     patternCount: patterns.length,
     ruleCount: rules.length,
     patterns,
+    behaviorObligations,
     rules,
   };
 }
@@ -864,6 +1134,9 @@ function summarizeSourceEvidence(
   const themeComponents = componentPaths
     .filter((file) => /theme|provider|mode|appearance|tenant|brand/i.test(file))
     .slice(0, 12);
+  const dialogComponents = componentPaths
+    .filter((file) => /dialog|modal|alert|confirm|sheet|drawer/i.test(file))
+    .slice(0, 12);
   const shellComponents = files
     .filter((file) => /layout|shell|frame|app|root|nav|sidebar/i.test(basename(file.relative)))
     .map((file) => file.relative)
@@ -911,6 +1184,19 @@ function summarizeSourceEvidence(
       'error',
       'field',
       'select',
+    ]),
+    dialogComponents,
+    dialogSourceEvidence: collectSourceEvidence(projectRoot, files, [
+      'dialog',
+      'alertdialog',
+      'modal',
+      'confirm',
+      'confirmation',
+      'delete',
+      'remove',
+      'destructive',
+      'irreversible',
+      'cannot be undone',
     ]),
     themeSourceEvidence: collectSourceEvidence(projectRoot, files, [
       'theme',

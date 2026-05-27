@@ -4,10 +4,10 @@ import { fileURLToPath } from 'node:url';
 import {
   buildGraphImpactContext,
   buildGraphRouteContext,
-  graphPayloadString,
-  summarizeGraphDiff,
   type ExecutionPackBundle,
   type GraphSnapshot,
+  graphPayloadString,
+  summarizeGraphDiff,
 } from '@decantr/core';
 import type { EssenceFile, EssenceV4 } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
@@ -43,14 +43,15 @@ import {
 import {
   auditProject,
   critiqueFile as critiqueProjectFile,
-  scanProject as scanProjectReadOnly,
+  type FileCritiqueReport,
+  type ProjectAuditReport,
   type ScanFindingV1,
   type ScanGraphPreviewV1,
   type ScanReportV1,
-  type FileCritiqueReport,
-  type ProjectAuditReport,
+  scanProject as scanProjectReadOnly,
   type VerificationFinding,
 } from '@decantr/verifier';
+import { scanStyling } from './analyzers/styling.js';
 import { writeArtifactReadme } from './artifacts.js';
 import {
   applyAssistantBridge,
@@ -87,12 +88,12 @@ import { detectProject, formatDetection } from './detect.js';
 import { buildGuardRegistryContext } from './guard-context.js';
 // V4 C5 wiring — scan source for missing interaction implementations.
 import { scanProjectInteractions } from './lib/scan-interactions.js';
-import { scanStyling } from './analyzers/styling.js';
 import {
   acceptBrownfieldLocalLaw,
   changedFiles as collectChangedFiles,
   createBrownfieldCodifyProposal,
   createLocalLawTaskSummary,
+  type LocalBehaviorObligationSummary,
   type LocalHostedPatternRef,
   localPatternsPath,
   localPatternsProposalPath,
@@ -105,15 +106,6 @@ import {
   writeHostedPatternMappingProposal,
 } from './local-law.js';
 import { seedOfflineRegistry } from './offline-content.js';
-import {
-  acceptStyleBridge,
-  createStyleBridgeProposal,
-  createStyleBridgeTaskSummary,
-  styleBridgeMatches,
-  styleBridgePath,
-  styleBridgeProposalPath,
-  writeStyleBridgeProposal,
-} from './style-bridge.js';
 import {
   confirm,
   mergeWithDefaults,
@@ -147,6 +139,15 @@ import {
   writeExecutionPackBundleArtifacts,
   type ZoneInput,
 } from './scaffold.js';
+import {
+  acceptStyleBridge,
+  createStyleBridgeProposal,
+  createStyleBridgeTaskSummary,
+  styleBridgeMatches,
+  styleBridgePath,
+  styleBridgeProposalPath,
+  writeStyleBridgeProposal,
+} from './style-bridge.js';
 import { optIn, sendCliCommandTelemetry } from './telemetry.js';
 import {
   createTheme,
@@ -1645,7 +1646,9 @@ function localPatternMatches(
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((term) => term.length > 1)
-    .flatMap((term) => (term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term]));
+    .flatMap((term) =>
+      term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term],
+    );
   if (queryTerms.length === 0) return [];
 
   return patterns
@@ -1795,7 +1798,9 @@ async function cmdSuggest(query: string, options: SuggestOptions = {}) {
   if (matches.length === 0) {
     console.log(dim('No hosted/bundled registry patterns matched this query.'));
     console.log('');
-    console.log(dim('Use local law first, or run "decantr list patterns" to browse registry options.'));
+    console.log(
+      dim('Use local law first, or run "decantr list patterns" to browse registry options.'),
+    );
     return;
   }
   for (const match of matches.slice(0, 8)) {
@@ -2309,7 +2314,7 @@ async function applyAcceptedBrownfieldProposal(input: {
       `    2. Run ${cyan(withProject('decantr codify --from-audit', projectLabel))} when you are ready to propose project-owned UI law`,
     );
     console.log(
-      `    3. Use ${cyan(withProject('decantr task / \"change summary\"', projectLabel))} before LLM edits`,
+      `    3. Use ${cyan(withProject('decantr task / "change summary"', projectLabel))} before LLM edits`,
     );
     console.log(
       `    4. Run ${cyan(withProject('decantr verify --brownfield', projectLabel))} after edits`,
@@ -3904,7 +3909,9 @@ function printScanReport(report: ScanReportV1): void {
   console.log(dim('Read-only Brownfield reconnaissance. No files were written.'));
   console.log('');
   console.log(`${BOLD}Verdict${RESET}`);
-  console.log(`  ${formatScanApplicability(report.applicability.status)}  ${report.applicability.label}`);
+  console.log(
+    `  ${formatScanApplicability(report.applicability.status)}  ${report.applicability.label}`,
+  );
   console.log(
     `  Confidence: ${cyan(`${report.confidence.score}/100`)} (${report.confidence.level})`,
   );
@@ -3914,7 +3921,9 @@ function printScanReport(report: ScanReportV1): void {
   console.log('');
 
   console.log(`${BOLD}Project${RESET}`);
-  console.log(`  Framework:      ${cyan(report.project.framework)}${report.project.frameworkVersion ? ` ${report.project.frameworkVersion}` : ''}`);
+  console.log(
+    `  Framework:      ${cyan(report.project.framework)}${report.project.frameworkVersion ? ` ${report.project.frameworkVersion}` : ''}`,
+  );
   console.log(`  Package manager:${' '} ${report.project.packageManager}`);
   console.log(`  Language:       ${report.project.primaryLanguage}`);
   console.log(`  TypeScript:     ${report.project.hasTypeScript ? 'yes' : 'no'}`);
@@ -3941,7 +3950,9 @@ function printScanReport(report: ScanReportV1): void {
 
   if (report.staticHosting.githubPagesLikely || report.pagesProbe) {
     console.log(`${BOLD}Published Surface${RESET}`);
-    console.log(`  GitHub Pages:   ${report.staticHosting.githubPagesLikely ? 'likely' : 'not detected'}`);
+    console.log(
+      `  GitHub Pages:   ${report.staticHosting.githubPagesLikely ? 'likely' : 'not detected'}`,
+    );
     if (report.source.publishedSiteUrl) {
       console.log(`  Site URL:       ${report.source.publishedSiteUrl}`);
     }
@@ -4051,7 +4062,9 @@ async function cmdSetupWorkflow(args: string[]): Promise<void> {
     console.log(
       `  ${cyan(withProject(verifyCommand, projectArg))}     Run local health and drift checks`,
     );
-    console.log(`  ${cyan(withProject('decantr ci init', projectArg))}              Wire the app into CI`);
+    console.log(
+      `  ${cyan(withProject('decantr ci init', projectArg))}              Wire the app into CI`,
+    );
     return;
   }
 
@@ -4543,6 +4556,73 @@ function createTaskAuthoritySummary(input: {
   return { lane, sourceAuthority, styleAuthority, activeAuthorities, runtimeBoundary, warnings };
 }
 
+function behaviorTaskKeywords(task: string): string[] {
+  return [
+    ...new Set(
+      task
+        .toLowerCase()
+        .split(/[^a-z0-9_-]+/)
+        .map((term) => term.trim())
+        .filter((term) => term.length >= 3),
+    ),
+  ];
+}
+
+function rankBehaviorObligationsForTask(
+  obligations: LocalBehaviorObligationSummary[],
+  routePatterns: string[],
+  taskSummary: string,
+): Array<LocalBehaviorObligationSummary & { relevance: { score: number; reasons: string[] } }> {
+  const routePatternSet = new Set(routePatterns.map((pattern) => pattern.toLowerCase()));
+  const keywords = behaviorTaskKeywords(taskSummary);
+  const ranked = obligations.map((entry) => {
+    const haystack = [
+      entry.patternId,
+      entry.patternRole,
+      entry.intent,
+      ...entry.riskProfile,
+      ...entry.componentPaths,
+      ...entry.obligations.flatMap((obligation) => [obligation.id, obligation.label]),
+    ]
+      .filter((value): value is string => typeof value === 'string')
+      .join(' ')
+      .toLowerCase();
+    const reasons: string[] = [];
+    let score = 0;
+    if (routePatternSet.has(entry.patternId.toLowerCase())) {
+      score += 5;
+      reasons.push('route_pattern');
+    }
+    for (const keyword of keywords) {
+      if (!haystack.includes(keyword)) continue;
+      score += 2;
+      reasons.push(`task:${keyword}`);
+    }
+    if (/dialog|modal|confirm|delete|destructive|remove|account/.test(taskSummary)) {
+      if (/dialog|modal|confirm|destructive/.test(haystack)) {
+        score += 3;
+        reasons.push('interaction_intent');
+      }
+    }
+    if (/form|input|field|label|submit|validation/.test(taskSummary)) {
+      if (/form|input|label|submit|validation/.test(haystack)) {
+        score += 3;
+        reasons.push('form_intent');
+      }
+    }
+    return {
+      ...entry,
+      relevance: {
+        score,
+        reasons: reasons.length > 0 ? [...new Set(reasons)] : ['accepted_local_law'],
+      },
+    };
+  });
+  return ranked.sort(
+    (a, b) => b.relevance.score - a.relevance.score || a.patternId.localeCompare(b.patternId),
+  );
+}
+
 async function cmdTaskWorkflow(args: string[]): Promise<void> {
   const { flags, positional } = parseLooseArgs(args);
   const workspaceInfo = resolveWorkflowProject(flags, 'task');
@@ -4630,7 +4710,13 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     } & GraphSnapshot
   >(graphSnapshotPath);
   const routeGraphContext = buildGraphRouteContext(graphSnapshot, route, { task: taskSummary });
+  const routePatterns = page?.layout?.map(extractPatternName) ?? [];
   const localLaw = createLocalLawTaskSummary(workspaceInfo.appRoot);
+  const rankedBehaviorObligations = rankBehaviorObligationsForTask(
+    localLaw.behaviorObligations,
+    routePatterns,
+    taskSummary,
+  );
   const styleBridge = createStyleBridgeTaskSummary(workspaceInfo.appRoot);
   const displayedStyleBridge = {
     ...styleBridge,
@@ -4642,6 +4728,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       ? displayProjectPath(workspaceInfo, localLaw.patternsPath)
       : null,
     rulesPath: localLaw.rulesPath ? displayProjectPath(workspaceInfo, localLaw.rulesPath) : null,
+    behaviorObligations: rankedBehaviorObligations,
   };
   const changedSince = flagString(flags, 'since');
   const currentChangedFiles = collectChangedFiles(workspaceInfo.appRoot, changedSince);
@@ -4686,7 +4773,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     section: target.section,
     page: target.page,
     shell: page?.shell ?? section?.shell ?? null,
-    patterns: page?.layout?.map(extractPatternName) ?? [],
+    patterns: routePatterns,
     read: [
       pagePack
         ? displayProjectPath(workspaceInfo, join('.decantr/context', pagePack.markdown))
@@ -4745,10 +4832,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
             changedFileContext:
               currentChangedFiles.length > 0
                 ? {
-                    path: displayProjectPath(
-                      workspaceInfo,
-                      '.decantr/graph/graph.snapshot.json',
-                    ),
+                    path: displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json'),
                     changedFiles: currentChangedFiles.slice(0, 40),
                     resolvedNodeIds: changedFileSourceNodeIds,
                     missingFiles: changedFileMissingFiles.slice(0, 40),
@@ -4907,6 +4991,26 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
         .filter(Boolean)
         .join(' | ');
       console.log(`  ${pattern.id}: ${authorityHint}${pathHint}`);
+    }
+    if (context.localLaw.behaviorObligations.length > 0) {
+      console.log('');
+      console.log(`${BOLD}Behavior obligations:${RESET}`);
+      for (const behavior of context.localLaw.behaviorObligations.slice(0, 3)) {
+        const obligations = behavior.obligations
+          .slice(0, 3)
+          .map((obligation) => obligation.label)
+          .join('; ');
+        const reasons = behavior.relevance.reasons.slice(0, 3).join(', ');
+        console.log(
+          `  ${behavior.patternId}: ${behavior.intent ?? behavior.patternRole ?? 'interaction law'} (${reasons})`,
+        );
+        console.log(`    ${obligations}`);
+      }
+      if (context.localLaw.behaviorObligations.length > 3) {
+        console.log(
+          dim(`  ...${context.localLaw.behaviorObligations.length - 3} more behavior pattern(s)`),
+        );
+      }
     }
   } else {
     console.log('');
@@ -5249,12 +5353,12 @@ ${BOLD}Commands:${RESET}
   ${cyan('scan')}        Read-only Brownfield reconnaissance; no files written
   ${cyan('new')}         Create a new greenfield workspace and bootstrap the available starter adapter
   ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
-  ${cyan('task')}        Prepare route/task context, local law, evidence, and changed-file impact for an AI coding assistant
+  ${cyan('task')}        Prepare route/task context, local law, behavior obligations, evidence, and changed-file impact for an AI coding assistant
   ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
   ${cyan('graph')}       Build typed Contract graph artifacts and the agent cache capsule
   ${cyan('ci')}          Non-mutating CI gate and CI integration generator
   ${cyan('doctor')}      Explain Decantr state, artifact ownership, and the next command
-  ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns and rules
+  ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns, behavior obligations, and rules
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('content')}     Content-author namespace: check, create, publish
 
@@ -5640,8 +5744,9 @@ ${BOLD}Usage:${RESET}
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
 
 ${BOLD}Behavior:${RESET}
-  Includes the typed contract capsule path when .decantr/graph exists. Run decantr graph first
-  when you want graph-backed agent context in CLI-only workflows.
+  Includes accepted local law and behavior obligations, plus the typed contract capsule path when
+  .decantr/graph exists. Run decantr graph first when you want graph-backed agent context in
+  CLI-only workflows.
 
 ${BOLD}Examples:${RESET}
   decantr task /feed "add saved recipe actions"
@@ -5652,7 +5757,7 @@ ${BOLD}Examples:${RESET}
 
 function cmdCodifyHelp() {
   console.log(`
-${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI law and style bridges
+${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI law, behavior obligations, and style bridges
 
 ${BOLD}Usage:${RESET}
   decantr codify [--from-audit] [--style-bridge] [--project <path>]

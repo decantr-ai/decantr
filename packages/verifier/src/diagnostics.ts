@@ -66,6 +66,18 @@ export const KNOWN_VERIFICATION_DIAGNOSTICS = [
     family: 'COMP',
   },
   {
+    rule: 'behavior-project-interaction-primitive',
+    code: 'COMP020',
+    repairId: 'use-project-owned-interaction-primitive',
+    family: 'COMP',
+  },
+  {
+    rule: 'behavior-dialog-project-primitive',
+    code: 'COMP020',
+    repairId: 'use-project-owned-interaction-primitive',
+    family: 'COMP',
+  },
+  {
     rule: 'component-reuse-primitive-reimplemented',
     code: 'COMP001',
     repairId: 'import-existing-component',
@@ -106,6 +118,42 @@ export const KNOWN_VERIFICATION_DIAGNOSTICS = [
     code: 'A11Y001',
     repairId: 'enable-focus-visible',
     family: 'A11Y',
+  },
+  {
+    rule: 'behavior-dialog-accessible-name',
+    code: 'A11Y010',
+    repairId: 'restore-dialog-accessible-name',
+    family: 'A11Y',
+  },
+  {
+    rule: 'behavior-form-label-associated',
+    code: 'A11Y011',
+    repairId: 'restore-label-association',
+    family: 'A11Y',
+  },
+  {
+    rule: 'behavior-dialog-visible-consequence',
+    code: 'INT010',
+    repairId: 'restore-visible-consequence-copy',
+    family: 'INT',
+  },
+  {
+    rule: 'behavior-dialog-cancel-affordance',
+    code: 'INT011',
+    repairId: 'restore-cancel-affordance',
+    family: 'INT',
+  },
+  {
+    rule: 'behavior-dialog-submitting-guard',
+    code: 'INT012',
+    repairId: 'restore-submitting-guard',
+    family: 'INT',
+  },
+  {
+    rule: 'behavior-form-explicit-button-type',
+    code: 'INT013',
+    repairId: 'set-explicit-button-type',
+    family: 'INT',
   },
   {
     rule: 'pack-manifest-present',

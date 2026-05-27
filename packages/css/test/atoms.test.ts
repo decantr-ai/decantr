@@ -224,9 +224,7 @@ describe('resolveAtomDecl', () => {
 
     it('resolves hyphenated arbitrary-value aliases from content packs', () => {
       expect(resolveAtomDecl('_h-[52px]')).toBe('height:52px');
-      expect(resolveAtomDecl('_grid-cols-[1fr_320px]')).toBe(
-        'grid-template-columns:1fr 320px',
-      );
+      expect(resolveAtomDecl('_grid-cols-[1fr_320px]')).toBe('grid-template-columns:1fr 320px');
     });
 
     it('resolves legacy registry aliases observed in authored content', () => {

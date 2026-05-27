@@ -38,7 +38,8 @@ function writeHealthyContent(): void {
         layout: { layout: 'stack', atoms: '_flex _col _gap4' },
       },
     },
-    visual_brief: 'A crisp full-width hero with generous spacing, clear brand signal, and strong CTA hierarchy.',
+    visual_brief:
+      'A crisp full-width hero with generous spacing, clear brand signal, and strong CTA hierarchy.',
     interactions: ['scale-hover'],
   });
   writeJson(join(testDir, 'themes', 'clean.json'), {
@@ -163,7 +164,9 @@ describe('Content Health report', () => {
 
     expect(report.status).toBe('error');
     expect(report.references.missingByType.archetype).toBeGreaterThan(0);
-    expect(report.findings.some((finding) => finding.rule === 'blueprint-compose-archetype')).toBe(true);
+    expect(report.findings.some((finding) => finding.rule === 'blueprint-compose-archetype')).toBe(
+      true,
+    );
   });
 
   it('renders markdown and scoped remediation prompts for quality findings', async () => {
@@ -192,6 +195,8 @@ describe('Content Health report', () => {
     expect(shouldFailContentHealth(report, 'error')).toBe(false);
     expect(shouldFailContentHealth(report, 'warn')).toBe(true);
     expect(markdown).toContain('# Decantr Content Health');
-    expect(finding?.remediation.prompt).toContain('You are fixing one Decantr Content Health finding');
+    expect(finding?.remediation.prompt).toContain(
+      'You are fixing one Decantr Content Health finding',
+    );
   });
 });

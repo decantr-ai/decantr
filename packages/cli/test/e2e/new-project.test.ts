@@ -154,7 +154,13 @@ describe('new command (e2e)', () => {
       files: ['package.json', 'vite.config.ts', 'src/main.tsx', 'src/App.tsx'],
       deps: ['solid-js', '@solidjs/router'],
     },
-  ])('creates a runnable $target starter through $adapterId', ({ target, adapterId, files, deps, absentDeps }) => {
+  ])('creates a runnable $target starter through $adapterId', ({
+    target,
+    adapterId,
+    files,
+    deps,
+    absentDeps,
+  }) => {
     writeFileSync(join(testDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
     const fakeBinDir = join(testDir, '.fake-bin');
     mkdirSync(fakeBinDir, { recursive: true });
@@ -285,13 +291,7 @@ describe('new command (e2e)', () => {
 
     execFileSync(
       process.execPath,
-      [
-        cliPath,
-        'new',
-        'argv-smoke',
-        '--offline',
-        `--registry=${maliciousRegistry}`,
-      ],
+      [cliPath, 'new', 'argv-smoke', '--offline', `--registry=${maliciousRegistry}`],
       {
         cwd: testDir,
         stdio: 'pipe',

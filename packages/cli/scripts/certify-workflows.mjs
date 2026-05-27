@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 
 import { execFileSync } from 'node:child_process';
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -154,7 +162,10 @@ function seedSvelteProject(projectDir) {
   writeFileSync(join(projectDir, 'svelte.config.js'), 'export default {};\n');
   mkdirSync(join(projectDir, 'src', 'routes', 'dashboard'), { recursive: true });
   writeFileSync(join(projectDir, 'src', 'routes', '+page.svelte'), '<main>home</main>\n');
-  writeFileSync(join(projectDir, 'src', 'routes', 'dashboard', '+page.svelte'), '<main>dashboard</main>\n');
+  writeFileSync(
+    join(projectDir, 'src', 'routes', 'dashboard', '+page.svelte'),
+    '<main>dashboard</main>\n',
+  );
 }
 
 function seedVueProject(projectDir) {
@@ -331,10 +342,16 @@ function certifyAdoptionMode(tmpRoot, cliPath, contentRoot, adoptionMode) {
   if (projectJson.initialized?.adoptionMode !== adoptionMode) {
     throw new Error(`${adoptionMode} was not persisted`);
   }
-  if (adoptionMode === 'style-bridge' && !existsSync(join(projectDir, 'src/styles/decantr-bridge.css'))) {
+  if (
+    adoptionMode === 'style-bridge' &&
+    !existsSync(join(projectDir, 'src/styles/decantr-bridge.css'))
+  ) {
     throw new Error('style-bridge did not emit bridge CSS');
   }
-  if (adoptionMode === 'decantr-css' && !existsSync(join(projectDir, 'src/styles/treatments.css'))) {
+  if (
+    adoptionMode === 'decantr-css' &&
+    !existsSync(join(projectDir, 'src/styles/treatments.css'))
+  ) {
     throw new Error('decantr-css did not emit treatments CSS');
   }
   return { workflow: `adoption-${adoptionMode}`, status: 'passed' };
@@ -385,9 +402,13 @@ function certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, target, adapterId
   if (readProjectJson(projectDir).initialized?.adapterId !== adapterId) {
     throw new Error(`${adapterId} adapter id was not persisted`);
   }
-  const scaffoldPack = JSON.parse(readFileSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf8'));
+  const scaffoldPack = JSON.parse(
+    readFileSync(join(projectDir, '.decantr', 'context', 'scaffold-pack.json'), 'utf8'),
+  );
   if (scaffoldPack.target?.adapter !== adapterId) {
-    throw new Error(`${adapterId} scaffold pack target was ${scaffoldPack.target?.adapter ?? 'missing'}`);
+    throw new Error(
+      `${adapterId} scaffold pack target was ${scaffoldPack.target?.adapter ?? 'missing'}`,
+    );
   }
   return { workflow: `${adapterId}-adapter`, status: 'passed' };
 }
@@ -450,7 +471,12 @@ function certifyHybrid(tmpRoot, cliPath, contentRoot) {
   seedReactProject(projectDir);
 
   runCli(cliPath, projectDir, ['analyze'], contentRoot);
-  runCli(cliPath, projectDir, ['init', '--existing', '--accept-proposal', '--offline'], contentRoot);
+  runCli(
+    cliPath,
+    projectDir,
+    ['init', '--existing', '--accept-proposal', '--offline'],
+    contentRoot,
+  );
   runCli(cliPath, projectDir, ['add', 'feature', 'live-updates'], contentRoot);
 
   const essence = JSON.parse(readFileSync(join(projectDir, 'decantr.essence.json'), 'utf8'));
@@ -497,11 +523,36 @@ function main() {
       () => certifyAdoptionMode(tmpRoot, cliPath, contentRoot, 'decantr-css'),
       () => certifyUnsupportedTarget(tmpRoot, cliPath, contentRoot),
       () => certifyNextAdapter(tmpRoot, cliPath, contentRoot),
-      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'html', 'vanilla-vite', 'src/main.js'),
+      () =>
+        certifyRunnableAdapter(
+          tmpRoot,
+          cliPath,
+          contentRoot,
+          'html',
+          'vanilla-vite',
+          'src/main.js',
+        ),
       () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'vue', 'vue-vite', 'src/App.vue'),
-      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'svelte', 'sveltekit', 'src/routes/+page.svelte'),
-      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'angular', 'angular', 'src/app/app.component.ts'),
-      () => certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'solid', 'solid-vite', 'src/App.tsx'),
+      () =>
+        certifyRunnableAdapter(
+          tmpRoot,
+          cliPath,
+          contentRoot,
+          'svelte',
+          'sveltekit',
+          'src/routes/+page.svelte',
+        ),
+      () =>
+        certifyRunnableAdapter(
+          tmpRoot,
+          cliPath,
+          contentRoot,
+          'angular',
+          'angular',
+          'src/app/app.component.ts',
+        ),
+      () =>
+        certifyRunnableAdapter(tmpRoot, cliPath, contentRoot, 'solid', 'solid-vite', 'src/App.tsx'),
       () => certifyMonorepoProject(tmpRoot, cliPath, contentRoot),
       () => certifyHybrid(tmpRoot, cliPath, contentRoot),
     ];

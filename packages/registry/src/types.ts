@@ -175,12 +175,7 @@ export interface ThemeShell {
 // --- Blueprint ---
 export type ComposeEntry = string | { archetype: string; prefix: string; role?: ArchetypeRole };
 
-export const BLUEPRINT_PORTFOLIO_VISIBILITIES = [
-  'featured',
-  'public',
-  'labs',
-  'hidden',
-] as const;
+export const BLUEPRINT_PORTFOLIO_VISIBILITIES = ['featured', 'public', 'labs', 'hidden'] as const;
 export type BlueprintPortfolioVisibility = (typeof BLUEPRINT_PORTFOLIO_VISIBILITIES)[number];
 
 export const BLUEPRINT_PORTFOLIO_MATURITIES = [
@@ -234,12 +229,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function getBlueprintPortfolioMetadata(
-  value: unknown,
-): BlueprintPortfolioMetadata | null {
-  const candidate = isRecord(value) && isRecord(value.blueprint_portfolio)
-    ? value.blueprint_portfolio
-    : value;
+export function getBlueprintPortfolioMetadata(value: unknown): BlueprintPortfolioMetadata | null {
+  const candidate =
+    isRecord(value) && isRecord(value.blueprint_portfolio) ? value.blueprint_portfolio : value;
   if (!isRecord(candidate)) {
     return null;
   }

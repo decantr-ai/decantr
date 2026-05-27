@@ -256,11 +256,12 @@ describe('CLI command telemetry', () => {
   });
 
   it('links opted-in opaque CLI telemetry identity to the API', async () => {
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify({ linked: 2 }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200,
-      }),
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ linked: 2 }), {
+          headers: { 'Content-Type': 'application/json' },
+          status: 200,
+        }),
     );
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.stubGlobal('fetch', fetchMock);
@@ -309,18 +310,22 @@ describe('CLI command telemetry', () => {
     };
 
     expect(report.enabled).toBe(true);
-    expect(report.events).toEqual(expect.arrayContaining([
-      expect.objectContaining({ name: 'cli.command.completed', privacy: 'aggregate' }),
-      expect.objectContaining({ name: 'decantr.analyze.completed', privacy: 'aggregate' }),
-      expect.objectContaining({ name: 'health.report.generated', privacy: 'aggregate' }),
-    ]));
-    expect(report.neverCollected).toEqual(expect.arrayContaining([
-      'source code',
-      'prompt text',
-      'local file paths',
-      'emails',
-      'private package slugs',
-    ]));
+    expect(report.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'cli.command.completed', privacy: 'aggregate' }),
+        expect.objectContaining({ name: 'decantr.analyze.completed', privacy: 'aggregate' }),
+        expect.objectContaining({ name: 'health.report.generated', privacy: 'aggregate' }),
+      ]),
+    );
+    expect(report.neverCollected).toEqual(
+      expect.arrayContaining([
+        'source code',
+        'prompt text',
+        'local file paths',
+        'emails',
+        'private package slugs',
+      ]),
+    );
     expect(output).not.toContain(projectRoot);
 
     logSpy.mockRestore();
@@ -351,7 +356,9 @@ describe('CLI command telemetry', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const bodies = fetchMock.mock.calls.map(([, init]) =>
       JSON.parse(String((init as RequestInit).body)),
-    ) as Array<{ event: { context: Record<string, unknown>; properties: Record<string, unknown> } }>;
+    ) as Array<{
+      event: { context: Record<string, unknown>; properties: Record<string, unknown> };
+    }>;
 
     expect(bodies[0].event.context.projectId).toMatch(/^project_/);
     expect(bodies[0].event.properties).toMatchObject({

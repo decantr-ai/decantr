@@ -73,6 +73,34 @@ describe('graph command artifacts', () => {
         },
       ],
     });
+    writeJson(join(testDir, '.decantr', 'local-patterns.json'), {
+      version: 2,
+      status: 'accepted',
+      source: 'test',
+      patterns: [
+        {
+          id: 'existing-surface',
+          role: 'Route surface',
+          componentPaths: ['src/components/Dialog.tsx'],
+          behavior_obligations: {
+            intent: 'Keep destructive confirmations safe.',
+            pattern_role: 'confirmation-dialog',
+            modalities: ['keyboard', 'pointer', 'screen-reader'],
+            states: ['closed', 'open', 'submitting'],
+            risk_profile: ['accidental-destruction'],
+            obligations: [
+              {
+                id: 'accessible-name',
+                label: 'Dialog has an accessible name.',
+                severity: 'error',
+                evidence: 'static',
+              },
+            ],
+            test_hints: ['focus return assertion'],
+          },
+        },
+      ],
+    });
     writeJson(join(testDir, '.decantr', 'style-bridge.json'), {
       version: 1,
       status: 'accepted',
@@ -129,7 +157,13 @@ describe('graph command artifacts', () => {
     const artifacts = buildGraphArtifacts(testDir);
 
     expect(artifacts?.snapshot.nodes.map((node) => node.id)).toEqual(
-      expect.arrayContaining(['rule:no-raw-button', 'bridge:surface', 'tkn:surface', 'rt:/']),
+      expect.arrayContaining([
+        'rule:no-raw-button',
+        'rule:behavior:existing-surface:accessible-name',
+        'bridge:surface',
+        'tkn:surface',
+        'rt:/',
+      ]),
     );
     expect(artifacts?.snapshot.edges).toEqual(
       expect.arrayContaining([
@@ -138,12 +172,17 @@ describe('graph command artifacts', () => {
           dst: 'tkn:surface',
           relation: 'STYLE_BRIDGE_MAPS_TO',
         }),
+        expect.objectContaining({
+          src: 'rule:behavior:existing-surface:accessible-name',
+          dst: 'pat:existing-surface',
+          relation: 'LOCAL_RULE_APPLIES_TO',
+        }),
       ]),
     );
     expect(artifacts?.capsule.summary).toMatchObject({
       routes: 1,
       tokens: 1,
-      local_rules: 1,
+      local_rules: 2,
       style_bridge: 1,
     });
     expect(artifacts?.capsule.summary.source_artifacts).toBeGreaterThan(0);
@@ -194,10 +233,13 @@ describe('graph command artifacts', () => {
     expect(capsule.cache_key).toBe(`decantr-contract:${capsule.contract_hash}`);
     expect(capsule.contract_cache_key).toBe(capsule.cache_key);
     expect(capsule.summary).toMatchObject({
-      local_rules: 1,
+      local_rules: 2,
       style_bridge: 1,
       source_artifacts: expect.any(Number),
     });
+    expect(capsule.local_rules?.map((rule) => rule.id)).toEqual(
+      expect.arrayContaining(['rule:behavior:existing-surface:accessible-name']),
+    );
     expect(capsule.tokens?.map((token) => token.id)).toEqual(['tkn:surface']);
     expect(capsule.source_artifacts?.map((source) => source.path)).toEqual(
       expect.arrayContaining(['decantr.essence.json']),
@@ -241,11 +283,11 @@ describe('graph command artifacts', () => {
     const summary = JSON.parse(String(log.mock.calls.at(-1)?.[0])) as {
       routeContext?: {
         found?: boolean;
-      route?: string;
-      ranking?: { method?: string; seed?: string; task_keywords?: string[] };
-      ids?: { patterns?: string[]; tokens?: string[]; localRules?: string[] };
-      ranked?: Array<{ id: string; reason: string }>;
-    };
+        route?: string;
+        ranking?: { method?: string; seed?: string; task_keywords?: string[] };
+        ids?: { patterns?: string[]; tokens?: string[]; localRules?: string[] };
+        ranked?: Array<{ id: string; reason: string }>;
+      };
     };
     expect(summary.routeContext?.found).toBe(true);
     expect(summary.routeContext?.route).toBe('/');
@@ -257,6 +299,9 @@ describe('graph command artifacts', () => {
     expect(summary.routeContext?.ids?.patterns).toContain('pat:existing-surface');
     expect(summary.routeContext?.ids?.tokens).toContain('tkn:surface');
     expect(summary.routeContext?.ids?.localRules).toContain('rule:no-raw-button');
+    expect(summary.routeContext?.ids?.localRules).toContain(
+      'rule:behavior:existing-surface:accessible-name',
+    );
     expect(summary.routeContext?.ranked?.[0]).toMatchObject({
       id: 'rt:/',
       reason: 'requested_route',
@@ -547,7 +592,10 @@ describe('graph command artifacts', () => {
   it('ingests saved evidence bundle findings as graph finding evidence and repair nodes', () => {
     mkdirSync(join(testDir, '.decantr', 'evidence'), { recursive: true });
     mkdirSync(join(testDir, 'src'), { recursive: true });
-    writeFileSync(join(testDir, 'src', 'App.tsx'), 'export function App() { return <button />; }\n');
+    writeFileSync(
+      join(testDir, 'src', 'App.tsx'),
+      'export function App() { return <button />; }\n',
+    );
     writeJson(join(testDir, '.decantr', 'evidence', 'latest.json'), {
       $schema: 'https://decantr.ai/schemas/evidence-bundle.v1.json',
       generatedAt: '2026-05-21T14:00:00.000Z',

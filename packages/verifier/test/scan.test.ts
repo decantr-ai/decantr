@@ -48,7 +48,10 @@ describe('scanProject', () => {
         '',
       ].join('\n'),
     );
-    writeFileSync(join(projectRoot, 'src', 'components', 'HeroPanel.tsx'), 'export function HeroPanel() { return <section />; }\n');
+    writeFileSync(
+      join(projectRoot, 'src', 'components', 'HeroPanel.tsx'),
+      'export function HeroPanel() { return <section />; }\n',
+    );
     writeFileSync(
       join(projectRoot, 'src', 'styles', 'theme.css'),
       ':root { --surface: #fff; --accent: #2563eb; } .dark { color-scheme: dark; }\n',
@@ -62,7 +65,9 @@ describe('scanProject', () => {
     expect(report.applicability.status).toBe('strong_fit');
     expect(report.project.framework).toBe('react');
     expect(report.routes.strategy).toBe('react-router');
-    expect(report.routes.items.map((route) => route.path)).toEqual(expect.arrayContaining(['/', '/settings']));
+    expect(report.routes.items.map((route) => route.path)).toEqual(
+      expect.arrayContaining(['/', '/settings']),
+    );
     expect(report.staticHosting.githubPagesLikely).toBe(true);
     expect(report.staticHosting.hashRouting).toBe(true);
     expect(report.styling.cssVariableCount).toBeGreaterThanOrEqual(2);
@@ -77,18 +82,29 @@ describe('scanProject', () => {
     );
     mkdirSync(join(projectRoot, 'app', 'dashboard'), { recursive: true });
     writeFileSync(join(projectRoot, 'next.config.ts'), 'export default {};\n');
-    writeFileSync(join(projectRoot, 'app', 'page.tsx'), 'export default function Page() { return <main />; }\n');
-    writeFileSync(join(projectRoot, 'app', 'dashboard', 'page.tsx'), 'export default function Page() { return <main />; }\n');
+    writeFileSync(
+      join(projectRoot, 'app', 'page.tsx'),
+      'export default function Page() { return <main />; }\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'app', 'dashboard', 'page.tsx'),
+      'export default function Page() { return <main />; }\n',
+    );
 
     const report = await scanProject(projectRoot);
 
     expect(report.project.framework).toBe('nextjs');
     expect(report.routes.strategy).toBe('app-router');
-    expect(report.routes.items.map((route) => route.path)).toEqual(expect.arrayContaining(['/', '/dashboard']));
+    expect(report.routes.items.map((route) => route.path)).toEqual(
+      expect.arrayContaining(['/', '/dashboard']),
+    );
   });
 
   it('handles static HTML projects', async () => {
-    writeFileSync(join(projectRoot, 'index.html'), '<!doctype html><title>Portfolio</title><main>Hello</main>\n');
+    writeFileSync(
+      join(projectRoot, 'index.html'),
+      '<!doctype html><title>Portfolio</title><main>Hello</main>\n',
+    );
     writeFileSync(join(projectRoot, 'styles.css'), ':root { --ink: #111; }\n');
 
     const report = await scanProject(projectRoot);
@@ -153,8 +169,12 @@ describe('resolveGitHubScanInput', () => {
   });
 
   it('rejects invalid GitHub repository path segments', () => {
-    expect(() => resolveGitHubScanInput('https://github.com/acme/site%2Fadmin')).toThrow(/valid owner and repository/);
-    expect(() => resolveGitHubScanInput('https://acme.github.io/site%2Fadmin/')).toThrow(/valid owner and repository/);
+    expect(() => resolveGitHubScanInput('https://github.com/acme/site%2Fadmin')).toThrow(
+      /valid owner and repository/,
+    );
+    expect(() => resolveGitHubScanInput('https://acme.github.io/site%2Fadmin/')).toThrow(
+      /valid owner and repository/,
+    );
   });
 });
 

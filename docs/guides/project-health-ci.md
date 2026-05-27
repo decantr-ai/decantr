@@ -35,7 +35,7 @@ npx @decantr/cli verify --markdown --output decantr-health.md
 npx @decantr/cli verify --json --output decantr-health.json
 ```
 
-Use `verify` for the local human/agent loop and `ci` for mandatory automation. Both commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, style bridges and Decantr CSS are only enforced where explicitly adopted, and workspace runs isolate each attached app. `ci` includes accepted local-rule findings plus style bridge status in text, markdown, and JSON reports; the human output now distinguishes enforceable `.decantr/rules.json` scans from advisory style-bridge mappings. `--fail-on error` keeps warning-level local law visible without blocking, while `--fail-on warn` blocks on those warnings once your team has stabilized them. In monorepos, keep `--project <app-path>` explicit unless you intentionally want a workspace aggregate with `--workspace`.
+Use `verify` for the local human/agent loop and `ci` for mandatory automation. Both commands respect the selected adoption lane: contract-only Brownfield apps keep existing source/style authority, Hybrid local law adds accepted project rules, style bridges and Decantr CSS are only enforced where explicitly adopted, and workspace runs isolate each attached app. `ci` includes accepted local-rule findings, accepted `behavior_obligations` findings for statically checkable form/dialog regressions, plus style bridge status in text, markdown, and JSON reports; the human output now distinguishes enforceable `.decantr/rules.json` scans from advisory style-bridge mappings. `--fail-on error` keeps warning-level local law visible without blocking, while `--fail-on warn` blocks on those warnings once your team has stabilized them. In monorepos, keep `--project <app-path>` explicit unless you intentionally want a workspace aggregate with `--workspace`.
 
 ## Repair With An AI Assistant
 
@@ -45,6 +45,8 @@ npx @decantr/cli health --project apps/web --prompt <finding-id>
 ```
 
 The prompt is scoped to one finding. It does not edit files by itself. In monorepos, keep the same `--project` that produced the finding so the prompt resolves against the app, not the workspace root. Give the prompt to the assistant doing the implementation, then rerun Project Health.
+
+Behavior-obligation prompts cite the owning local pattern, the obligation id, the graph local-rule anchor when `.decantr/graph` exists, the file evidence, and the project-owned primitive Decantr expected to see. They are intentionally scoped to strong static signals such as dialog accessible names, visible destructive consequence copy, cancel affordances, submitting guards, label associations, explicit form button types, and project-owned interaction primitives.
 
 ## Privacy Boundary
 

@@ -131,9 +131,9 @@ export function resolveWorkflowPolicy(input: {
       ? 'contract-only'
       : workflowMode === 'hybrid-compose'
         ? 'contract-only'
-      : workflowMode === 'greenfield-contract-only'
-        ? 'contract-only'
-        : 'decantr-css');
+        : workflowMode === 'greenfield-contract-only'
+          ? 'contract-only'
+          : 'decantr-css');
 
   const contentSource: ContentSource = hasRegistryContent
     ? input.offline

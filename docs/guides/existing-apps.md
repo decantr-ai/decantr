@@ -50,7 +50,7 @@ npx @decantr/cli verify --project apps/web --base-url http://localhost:3000 --ev
 - `.decantr/evidence/visual-manifest.json`: local route-to-screenshot map when `verify --base-url <url> --evidence` is run.
 - `.decantr/local-patterns.proposal.json`: project-owned pattern proposal when `decantr codify --from-audit` is run.
 - `.decantr/rules.proposal.json`: project-owned rule proposal when `decantr codify --from-audit` is run.
-- `.decantr/local-patterns.json`: accepted project-owned UI law when `decantr codify --accept` is run.
+- `.decantr/local-patterns.json`: accepted project-owned UI law when `decantr codify --accept` is run. It may include optional `behavior_obligations` for app-owned interaction and accessibility rules such as confirmation dialogs and form controls.
 - `.decantr/rules.json`: accepted project-owned local rule checks when `decantr codify --accept` is run.
 
 ## What Decantr Does Not Do
@@ -95,7 +95,7 @@ npx @decantr/cli codify --accept
 npx @decantr/cli verify --brownfield --local-patterns
 ```
 
-Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. `codify --from-audit` now includes source snippets, confidence tiers, and likely variants for button, card/surface, form, shell, and theme families so the proposal is less generic. Accepting a style bridge adds `.decantr/style-bridge.json`, which maps Decantr concepts like surfaces, actions, focus, density, and theme variants to your own tokens/classes without adopting Decantr CSS. Hosted registry patterns are useful vocabulary and review guidance; `codify --map-pattern <slug>` places one into the local-law proposal as advisory guidance, but it is not enforceable until you add project-owned components, classes, token recipes, variants, and exceptions.
+Accepting local law moves the app from plain Brownfield contract-only into the first Hybrid lane. The existing app still owns source and styling, but `.decantr/local-patterns.json` and `.decantr/rules.json` become project-owned UI authority for assistants and verification. `codify --from-audit` now includes source snippets, confidence tiers, and likely variants for button, card/surface, form, shell, and theme families so the proposal is less generic. When the source shows form controls or destructive confirmation dialogs, the proposal can also include `behavior_obligations`: project-owned interaction and accessibility obligations that `task`, MCP, graph, Project Health, and repair prompts can carry without changing Essence. Accepting a style bridge adds `.decantr/style-bridge.json`, which maps Decantr concepts like surfaces, actions, focus, density, and theme variants to your own tokens/classes without adopting Decantr CSS. Hosted registry patterns are useful vocabulary and review guidance; `codify --map-pattern <slug>` places one into the local-law proposal as advisory guidance, but it is not enforceable until you add project-owned components, classes, token recipes, variants, and exceptions.
 
 In a monorepo, keep passing the same app path:
 
@@ -129,7 +129,7 @@ If you run `decantr setup` after adoption from a monorepo root, it should show a
 
 If you run `decantr setup` from inside an attached app, Decantr should reflect the current state: apps with accepted local law get `verify --brownfield --local-patterns`, while apps without accepted local law or style bridge still get the `codify --from-audit --style-bridge` next step.
 
-This does not replace ESLint, Biome, Storybook, visual regression, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. `decantr ci` prints those accepted local-rule findings with file/line evidence so they appear in the same automation surface as Project Health; use `--fail-on warn` only when the team is ready to block on warnings. Deeper deterministic enforcement should still live in the project rule stack where it can fail CI with full framework knowledge.
+This does not replace ESLint, Biome, Storybook, visual regression, axe, Playwright, or project tests. Decantr owns the contract and LLM context layer, then adds a narrow local `.decantr/rules.json` scan for obvious Brownfield drift such as inline styles, raw color literals, or raw button usage when a wrapper exists. Behavior obligations add a second narrow lane: Decantr can statically check high-confidence dialog/form obligations such as accessible names, label association, explicit form button types, visible destructive consequence copy, cancel affordances, and project-owned primitives. Focus trapping, screen-reader behavior, and full temporal state coverage should still live in the project test stack where Decantr should not guess. `decantr ci` prints those accepted local-rule and Project Health findings with file/line evidence; use `--fail-on warn` only when the team is ready to block on warnings.
 
 See also: [Monorepos](monorepos.md), [Workflow Model](../reference/workflow-model.md), [Project Health](../reference/project-health.md).
 

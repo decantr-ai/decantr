@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { EssenceFile } from '@decantr/essence-spec';
-import type { DetectedProject } from './detect.js';
 import type { StylingAnalysis } from './analyzers/styling.js';
+import type { DetectedProject } from './detect.js';
 import { readLocalPatternPack } from './local-law.js';
 
 type StyleBridgeStatus = 'proposal' | 'accepted';
@@ -132,9 +132,14 @@ function tokenHints(styling: StylingAnalysis, terms: RegExp): string[] {
 function readProjectPatternPack(projectRoot: string) {
   return (
     readLocalPatternPack(projectRoot) ??
-    readJsonFile<{ patterns?: Array<{ id?: string; classHints?: string[]; componentPaths?: string[]; evidence?: string[] }> }>(
-      join(projectRoot, '.decantr', 'local-patterns.proposal.json'),
-    )
+    readJsonFile<{
+      patterns?: Array<{
+        id?: string;
+        classHints?: string[];
+        componentPaths?: string[];
+        evidence?: string[];
+      }>;
+    }>(join(projectRoot, '.decantr', 'local-patterns.proposal.json'))
   );
 }
 
@@ -162,7 +167,11 @@ function sourceEvidence(projectRoot: string, ids: string[]): string[] {
 function colorTokenNames(styling: StylingAnalysis): string[] {
   const names = new Set<string>(Object.keys(styling.colors ?? {}));
   for (const variable of styling.cssVariables) {
-    if (/color|bg|background|surface|text|foreground|border|primary|secondary|accent|muted/i.test(variable)) {
+    if (
+      /color|bg|background|surface|text|foreground|border|primary|secondary|accent|muted/i.test(
+        variable,
+      )
+    ) {
       names.add(variable);
     }
   }
@@ -179,7 +188,10 @@ export function createStyleBridgeProposal(input: {
   const theme = readThemeInventory(input.projectRoot);
   const routeCount =
     input.essence && typeof input.essence === 'object' && 'blueprint' in input.essence
-      ? Object.keys((input.essence as { blueprint?: { routes?: Record<string, unknown> } }).blueprint?.routes ?? {}).length
+      ? Object.keys(
+          (input.essence as { blueprint?: { routes?: Record<string, unknown> } }).blueprint
+            ?.routes ?? {},
+        ).length
       : 0;
   const target =
     input.essence && typeof input.essence === 'object' && 'meta' in input.essence
@@ -234,7 +246,10 @@ export function createStyleBridgeProposal(input: {
         label: 'Surfaces and cards',
         decantrIntent: 'surface background, card treatment, border, radius, depth, and hover state',
         projectAuthority: 'Use the app card/surface primitives, tokens, and accepted local law.',
-        tokenHints: tokenHints(input.styling, /surface|card|panel|bg|background|border|shadow|radius/i),
+        tokenHints: tokenHints(
+          input.styling,
+          /surface|card|panel|bg|background|border|shadow|radius/i,
+        ),
         classHints: classHintsForPattern(input.projectRoot, ['surface-card']),
         sourceEvidence: sourceEvidence(input.projectRoot, ['surface-card']),
         guardrails: [
@@ -245,9 +260,13 @@ export function createStyleBridgeProposal(input: {
       {
         id: 'action',
         label: 'Actions and buttons',
-        decantrIntent: 'primary, secondary, tertiary, destructive, icon-only, loading, and disabled action states',
+        decantrIntent:
+          'primary, secondary, tertiary, destructive, icon-only, loading, and disabled action states',
         projectAuthority: 'Use the app button/action primitives and local variant names.',
-        tokenHints: tokenHints(input.styling, /primary|secondary|accent|danger|error|destructive|focus/i),
+        tokenHints: tokenHints(
+          input.styling,
+          /primary|secondary|accent|danger|error|destructive|focus/i,
+        ),
         classHints: classHintsForPattern(input.projectRoot, ['button']),
         sourceEvidence: sourceEvidence(input.projectRoot, ['button']),
         guardrails: [
@@ -259,7 +278,8 @@ export function createStyleBridgeProposal(input: {
         id: 'focus-accessibility',
         label: 'Focus and accessibility',
         decantrIntent: 'visible focus, keyboard clarity, contrast, and reduced-motion safety',
-        projectAuthority: 'Use the app accessibility classes, focus tokens, and framework conventions.',
+        projectAuthority:
+          'Use the app accessibility classes, focus tokens, and framework conventions.',
         tokenHints: tokenHints(input.styling, /focus|ring|outline|contrast|motion|duration/i),
         classHints: [],
         sourceEvidence: [],
@@ -271,8 +291,10 @@ export function createStyleBridgeProposal(input: {
       {
         id: 'layout-density',
         label: 'Layout density and spacing',
-        decantrIntent: 'route gutters, section gaps, component padding, density, and responsive rhythm',
-        projectAuthority: 'Use existing layout wrappers, shell primitives, and spacing tokens/classes.',
+        decantrIntent:
+          'route gutters, section gaps, component padding, density, and responsive rhythm',
+        projectAuthority:
+          'Use existing layout wrappers, shell primitives, and spacing tokens/classes.',
         tokenHints: tokenHints(input.styling, /space|spacing|gap|gutter|container|radius/i),
         classHints: classHintsForPattern(input.projectRoot, ['page-shell']),
         sourceEvidence: sourceEvidence(input.projectRoot, ['page-shell']),
@@ -285,7 +307,8 @@ export function createStyleBridgeProposal(input: {
         id: 'theme-variant',
         label: 'Theme variants',
         decantrIntent: 'light, dark, brand, tenant, seasonal, and density variants',
-        projectAuthority: 'Use the app theme provider, data attributes, CSS variables, or Tailwind mode strategy.',
+        projectAuthority:
+          'Use the app theme provider, data attributes, CSS variables, or Tailwind mode strategy.',
         tokenHints: tokenHints(input.styling, /theme|dark|light|brand|tenant|mode|color/i),
         classHints: classHintsForPattern(input.projectRoot, ['theme-variant']),
         sourceEvidence: sourceEvidence(input.projectRoot, ['theme-variant']),
@@ -379,7 +402,9 @@ export function styleBridgeMatches(
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((term) => term.length > 1)
-    .flatMap((term) => (term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term]));
+    .flatMap((term) =>
+      term.endsWith('s') && term.length > 3 ? [term, term.slice(0, -1)] : [term],
+    );
   if (terms.length === 0) return [];
   return bridge.mappings
     .map((mapping) => {

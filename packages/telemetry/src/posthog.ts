@@ -1,8 +1,8 @@
 import type { TelemetrySink } from './client.js';
 import {
   DECANTR_TELEMETRY_SCHEMA_VERSION,
-  resolveTelemetryActorType,
   type DecantrTelemetryEvent,
+  resolveTelemetryActorType,
   type TelemetryProperties,
 } from './events.js';
 

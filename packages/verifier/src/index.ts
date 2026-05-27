@@ -9,8 +9,8 @@ import * as ts from 'typescript';
 import {
   auditComponentReuse,
   COMPONENT_REUSE_RULE_ID,
-  RAW_CONTROL_REUSE_RULE_ID,
   type ComponentReuseAudit,
+  RAW_CONTROL_REUSE_RULE_ID,
 } from './component-reuse.js';
 import type { VerificationRepairAction } from './diagnostics.js';
 import type { VerificationGraphAnchor } from './graph-anchors.js';
@@ -24,19 +24,13 @@ import {
 export {
   auditComponentReuse,
   COMPONENT_REUSE_RULE_ID,
-  RAW_CONTROL_REUSE_RULE_ID,
-  type CodeImportReference,
   type CodeComponentDeclaration,
+  type CodeImportReference,
   type ComponentReuseAudit,
   type ComponentReuseFinding,
+  RAW_CONTROL_REUSE_RULE_ID,
   type RawControlReuseFinding,
 } from './component-reuse.js';
-export {
-  auditStyleBridgeDrift,
-  STYLE_BRIDGE_ARBITRARY_VALUE_RULE_ID,
-  type StyleBridgeDriftAudit,
-  type StyleBridgeDriftFinding,
-} from './style-bridge-drift.js';
 export type {
   VerificationDiagnosticCatalogEntry,
   VerificationDiagnosticInput,
@@ -87,6 +81,12 @@ export {
   SCAN_REPORT_SCHEMA_URL,
   scanProject,
 } from './scan.js';
+export {
+  auditStyleBridgeDrift,
+  STYLE_BRIDGE_ARBITRARY_VALUE_RULE_ID,
+  type StyleBridgeDriftAudit,
+  type StyleBridgeDriftFinding,
+} from './style-bridge-drift.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
   common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
@@ -563,6 +563,12 @@ function evidenceRepairReadTargets(projectRoot: string, finding: ProjectHealthFi
   }
   if (finding.source === 'style-bridge') {
     targets.add('.decantr/style-bridge.json');
+  }
+  if (
+    finding.category.toLowerCase().includes('behavior obligation') ||
+    finding.rule?.startsWith('behavior:')
+  ) {
+    targets.add('.decantr/local-patterns.json');
   }
   if (finding.source === 'pack' || finding.source === 'assertion') {
     targets.add('.decantr/context/pack-manifest.json');
@@ -3137,6 +3143,445 @@ function appendRuntimeAuditFindings(
   }
 }
 
+interface LocalBehaviorPattern {
+  id?: string;
+  role?: string;
+  componentPaths?: string[];
+  behavior_obligations?: {
+    intent?: string;
+    pattern_role?: string;
+    obligations?: Array<{
+      id?: string;
+      label?: string;
+      severity?: VerificationSeverity;
+      evidence?: string;
+    }>;
+    test_hints?: string[];
+  };
+}
+
+function readBehaviorPatterns(projectRoot: string): LocalBehaviorPattern[] {
+  const pack = readJsonIfExists<{ patterns?: LocalBehaviorPattern[] }>(
+    join(projectRoot, '.decantr', 'local-patterns.json'),
+  );
+  return (pack?.patterns ?? []).filter(
+    (pattern) =>
+      pattern.behavior_obligations &&
+      Array.isArray(pattern.behavior_obligations.obligations) &&
+      pattern.behavior_obligations.obligations.length > 0,
+  );
+}
+
+function behaviorPatternRole(pattern: LocalBehaviorPattern): string {
+  return (
+    pattern.behavior_obligations?.pattern_role ??
+    pattern.role ??
+    pattern.id ??
+    'behavior-obligation'
+  )
+    .trim()
+    .toLowerCase();
+}
+
+function behaviorSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_.:/-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function behaviorRuleId(patternId: string, obligationId: string): string {
+  return `behavior:${behaviorSlug(patternId) || 'pattern'}:${behaviorSlug(obligationId) || 'obligation'}`;
+}
+
+function behaviorPatternHasObligation(
+  pattern: LocalBehaviorPattern,
+  obligationId: string,
+): boolean {
+  return Boolean(
+    pattern.behavior_obligations?.obligations?.some((obligation) => obligation.id === obligationId),
+  );
+}
+
+function behaviorRepairPayload(input: {
+  patternId: string;
+  obligationId: string;
+  file: string;
+  componentPaths?: string[];
+}): Record<string, unknown> {
+  return {
+    local_pattern_id: input.patternId,
+    behavior_obligation_id: input.obligationId,
+    file: input.file,
+    ...(input.componentPaths?.length ? { component_paths: input.componentPaths } : {}),
+  };
+}
+
+function sourceAuditFilePath(projectRoot: string, file: string): string {
+  return isAbsolute(file) ? file : join(projectRoot, file);
+}
+
+function sourceAuditRelativePath(projectRoot: string, file: string): string {
+  return (isAbsolute(file) ? relative(projectRoot, file) : file).replace(/\\/g, '/');
+}
+
+function sourceFileContainsAny(
+  projectRoot: string,
+  sourceFiles: string[],
+  patterns: RegExp[],
+): boolean {
+  for (const file of sourceFiles.slice(0, 400)) {
+    try {
+      const code = readFileSync(sourceAuditFilePath(projectRoot, file), 'utf-8');
+      if (patterns.some((pattern) => pattern.test(code))) return true;
+    } catch {
+      // Ignore unreadable files; source collection already filters aggressively.
+    }
+  }
+  return false;
+}
+
+function hasProjectDialogPrimitive(pattern: LocalBehaviorPattern): boolean {
+  return (pattern.componentPaths ?? []).some((file) => /dialog|alert|modal|confirm/i.test(file));
+}
+
+function fileUsesProjectDialogPrimitive(code: string): boolean {
+  return /<\s*(?:AlertDialog|Dialog|Modal|ConfirmationDialog|ConfirmDialog)\b/.test(code);
+}
+
+function fileHasDialogSurface(code: string): boolean {
+  return (
+    /<\s*dialog\b/i.test(code) ||
+    /role\s*=\s*["'](?:dialog|alertdialog)["']/i.test(code) ||
+    /<\s*(?:AlertDialog|Dialog|Modal|ConfirmationDialog|ConfirmDialog)\b/.test(code) ||
+    /\b(?:fixed|absolute)\b[^"'`]+(?:inset-0|z-\d+|bg-black\/|backdrop)/i.test(code)
+  );
+}
+
+function fileHasDestructiveIntent(code: string): boolean {
+  return /\b(?:delete|remove|destroy|destructive|permanent|irreversible|cannot be undone|account deletion)\b/i.test(
+    code,
+  );
+}
+
+function fileHasDialogAccessibleName(code: string): boolean {
+  return (
+    /(?:aria-label|aria-labelledby|title)\s*=/i.test(code) ||
+    /<\s*(?:AlertDialogTitle|DialogTitle|ModalTitle|h[1-6])\b/i.test(code)
+  );
+}
+
+function fileHasVisibleConsequenceCopy(code: string): boolean {
+  return /\b(?:cannot be undone|permanent(?:ly)?|irreversible|lose access|delete your account|remove this|destroy)\b/i.test(
+    code,
+  );
+}
+
+function fileHasCancelAffordance(code: string): boolean {
+  return (
+    /\b(?:cancel|close|dismiss|go back|keep account|never mind)\b/i.test(code) ||
+    /<\s*(?:AlertDialogCancel|DialogClose|ModalClose)\b/i.test(code)
+  );
+}
+
+function fileHasSubmittingGuard(code: string): boolean {
+  return /\b(?:isSubmitting|submitting|isPending|pending|loading|disabled|aria-disabled|useTransition)\b/i.test(
+    code,
+  );
+}
+
+function appendBehaviorObligationFindings(
+  findings: VerificationFinding[],
+  projectRoot: string,
+  sourceFiles: string[],
+): void {
+  const behaviorPatterns = readBehaviorPatterns(projectRoot);
+  if (behaviorPatterns.length === 0) return;
+
+  const formPattern = behaviorPatterns.find((pattern) =>
+    /form-control|form|input|field/.test(`${pattern.id ?? ''} ${behaviorPatternRole(pattern)}`),
+  );
+  const dialogPattern = behaviorPatterns.find((pattern) =>
+    /confirmation-dialog|dialog|modal|alertdialog|destructive/.test(
+      `${pattern.id ?? ''} ${behaviorPatternRole(pattern)}`,
+    ),
+  );
+
+  if (formPattern) {
+    const patternId = formPattern.id ?? 'form-control';
+    for (const file of sourceFiles.slice(0, 400)) {
+      const relativeFile = sourceAuditRelativePath(projectRoot, file);
+      let code = '';
+      try {
+        code = readFileSync(sourceAuditFilePath(projectRoot, file), 'utf-8');
+      } catch {
+        continue;
+      }
+      if (!/<\s*(?:form|input|select|textarea|button)\b/i.test(code)) continue;
+      const signals = analyzeAstSignals(relativeFile, code);
+      if (
+        behaviorPatternHasObligation(formPattern, 'label-associated') &&
+        signals.formControlWithoutLabelCount > 0
+      ) {
+        findings.push(
+          makeFinding({
+            id: 'behavior-form-label-associated',
+            code: 'A11Y011',
+            category: 'Behavior Obligation',
+            severity: 'warn',
+            message:
+              'Accepted form-control behavior obligations require controls to keep associated labels.',
+            evidence: [
+              '.decantr/local-patterns.json behavior_obligations: form-control/label-associated',
+              `${relativeFile}: form controls without labels: ${signals.formControlWithoutLabelCount}`,
+            ],
+            file: relativeFile,
+            target: patternId,
+            rule: behaviorRuleId(patternId, 'label-associated'),
+            suggestedFix:
+              'Associate each input, select, or textarea with a visible label, htmlFor/id pair, aria-label, or aria-labelledby while preserving the project-owned form primitive.',
+            repair: {
+              id: 'restore-label-association',
+              payload: behaviorRepairPayload({
+                patternId,
+                obligationId: 'label-associated',
+                file: relativeFile,
+                componentPaths: formPattern.componentPaths,
+              }),
+            },
+          }),
+        );
+      }
+      if (
+        behaviorPatternHasObligation(formPattern, 'explicit-form-button-type') &&
+        signals.buttonInFormWithoutTypeCount > 0
+      ) {
+        findings.push(
+          makeFinding({
+            id: 'behavior-form-explicit-button-type',
+            code: 'INT013',
+            category: 'Behavior Obligation',
+            severity: 'warn',
+            message:
+              'Accepted form-control behavior obligations require buttons inside forms to declare an explicit type.',
+            evidence: [
+              '.decantr/local-patterns.json behavior_obligations: form-control/explicit-form-button-type',
+              `${relativeFile}: buttons inside forms without type: ${signals.buttonInFormWithoutTypeCount}`,
+            ],
+            file: relativeFile,
+            target: patternId,
+            rule: behaviorRuleId(patternId, 'explicit-form-button-type'),
+            suggestedFix:
+              'Set type="button" for non-submit actions and type="submit" for the intended submit control.',
+            repair: {
+              id: 'set-explicit-button-type',
+              payload: behaviorRepairPayload({
+                patternId,
+                obligationId: 'explicit-form-button-type',
+                file: relativeFile,
+                componentPaths: formPattern.componentPaths,
+              }),
+            },
+          }),
+        );
+      }
+    }
+  }
+
+  if (!dialogPattern) return;
+  const dialogPatternId = dialogPattern.id ?? 'confirmation-dialog';
+  const projectHasDialogPrimitive = hasProjectDialogPrimitive(dialogPattern);
+  const sourceHasDialogIntent = sourceFileContainsAny(projectRoot, sourceFiles, [
+    /<\s*(?:dialog|AlertDialog|Dialog|Modal|ConfirmationDialog|ConfirmDialog)\b/i,
+    /role\s*=\s*["'](?:dialog|alertdialog)["']/i,
+  ]);
+  if (!sourceHasDialogIntent) return;
+
+  for (const file of sourceFiles.slice(0, 400)) {
+    const relativeFile = sourceAuditRelativePath(projectRoot, file);
+    let code = '';
+    try {
+      code = readFileSync(sourceAuditFilePath(projectRoot, file), 'utf-8');
+    } catch {
+      continue;
+    }
+    if (!fileHasDialogSurface(code) || !fileHasDestructiveIntent(code)) continue;
+
+    if (
+      behaviorPatternHasObligation(dialogPattern, 'project-dialog-primitive') &&
+      projectHasDialogPrimitive &&
+      !fileUsesProjectDialogPrimitive(code)
+    ) {
+      findings.push(
+        makeFinding({
+          id: 'behavior-dialog-project-primitive',
+          code: 'COMP020',
+          category: 'Behavior Obligation',
+          severity: 'warn',
+          message:
+            'Accepted confirmation-dialog behavior obligations require the project-owned Dialog primitive instead of one-off destructive overlays.',
+          evidence: [
+            '.decantr/local-patterns.json behavior_obligations: confirmation-dialog/project-dialog-primitive',
+            `${relativeFile}: destructive dialog-like surface does not use the project Dialog primitive`,
+          ],
+          file: relativeFile,
+          target: dialogPatternId,
+          rule: behaviorRuleId(dialogPatternId, 'project-dialog-primitive'),
+          suggestedFix:
+            'Replace the one-off overlay with the project-owned Dialog or AlertDialog primitive listed in .decantr/local-patterns.json.',
+          repair: {
+            id: 'use-project-owned-interaction-primitive',
+            payload: behaviorRepairPayload({
+              patternId: dialogPatternId,
+              obligationId: 'project-dialog-primitive',
+              file: relativeFile,
+              componentPaths: dialogPattern.componentPaths,
+            }),
+          },
+        }),
+      );
+    }
+
+    if (
+      behaviorPatternHasObligation(dialogPattern, 'accessible-name') &&
+      !fileHasDialogAccessibleName(code)
+    ) {
+      findings.push(
+        makeFinding({
+          id: 'behavior-dialog-accessible-name',
+          code: 'A11Y010',
+          category: 'Behavior Obligation',
+          severity: 'error',
+          message:
+            'Accepted confirmation-dialog behavior obligations require the destructive dialog to have an accessible name.',
+          evidence: [
+            '.decantr/local-patterns.json behavior_obligations: confirmation-dialog/accessible-name',
+            `${relativeFile}: destructive dialog-like surface has no DialogTitle, aria-label, aria-labelledby, title, or heading signal`,
+          ],
+          file: relativeFile,
+          target: dialogPatternId,
+          rule: behaviorRuleId(dialogPatternId, 'accessible-name'),
+          suggestedFix:
+            'Add the project Dialog title primitive or an aria-label/aria-labelledby that names the destructive confirmation.',
+          repair: {
+            id: 'restore-dialog-accessible-name',
+            payload: behaviorRepairPayload({
+              patternId: dialogPatternId,
+              obligationId: 'accessible-name',
+              file: relativeFile,
+              componentPaths: dialogPattern.componentPaths,
+            }),
+          },
+        }),
+      );
+    }
+
+    if (
+      behaviorPatternHasObligation(dialogPattern, 'visible-consequence') &&
+      !fileHasVisibleConsequenceCopy(code)
+    ) {
+      findings.push(
+        makeFinding({
+          id: 'behavior-dialog-visible-consequence',
+          code: 'INT010',
+          category: 'Behavior Obligation',
+          severity: 'warn',
+          message:
+            'Accepted confirmation-dialog behavior obligations require visible copy that states the destructive consequence.',
+          evidence: [
+            '.decantr/local-patterns.json behavior_obligations: confirmation-dialog/visible-consequence',
+            `${relativeFile}: destructive dialog-like surface lacks consequence copy such as "cannot be undone" or "permanently"`,
+          ],
+          file: relativeFile,
+          target: dialogPatternId,
+          rule: behaviorRuleId(dialogPatternId, 'visible-consequence'),
+          suggestedFix:
+            'Add visible consequence copy that clearly explains what will be deleted, removed, or lost.',
+          repair: {
+            id: 'restore-visible-consequence-copy',
+            payload: behaviorRepairPayload({
+              patternId: dialogPatternId,
+              obligationId: 'visible-consequence',
+              file: relativeFile,
+              componentPaths: dialogPattern.componentPaths,
+            }),
+          },
+        }),
+      );
+    }
+
+    if (
+      behaviorPatternHasObligation(dialogPattern, 'cancel-affordance') &&
+      !fileHasCancelAffordance(code)
+    ) {
+      findings.push(
+        makeFinding({
+          id: 'behavior-dialog-cancel-affordance',
+          code: 'INT011',
+          category: 'Behavior Obligation',
+          severity: 'warn',
+          message:
+            'Accepted confirmation-dialog behavior obligations require a visible cancel or close affordance.',
+          evidence: [
+            '.decantr/local-patterns.json behavior_obligations: confirmation-dialog/cancel-affordance',
+            `${relativeFile}: destructive dialog-like surface lacks a cancel/close affordance signal`,
+          ],
+          file: relativeFile,
+          target: dialogPatternId,
+          rule: behaviorRuleId(dialogPatternId, 'cancel-affordance'),
+          suggestedFix:
+            'Add a reviewed cancel/close affordance before the destructive action using the project Dialog primitive.',
+          repair: {
+            id: 'restore-cancel-affordance',
+            payload: behaviorRepairPayload({
+              patternId: dialogPatternId,
+              obligationId: 'cancel-affordance',
+              file: relativeFile,
+              componentPaths: dialogPattern.componentPaths,
+            }),
+          },
+        }),
+      );
+    }
+
+    if (
+      behaviorPatternHasObligation(dialogPattern, 'submitting-guard') &&
+      !fileHasSubmittingGuard(code)
+    ) {
+      findings.push(
+        makeFinding({
+          id: 'behavior-dialog-submitting-guard',
+          code: 'INT012',
+          category: 'Behavior Obligation',
+          severity: 'info',
+          message:
+            'Accepted confirmation-dialog behavior obligations expect a submitting guard for destructive execution.',
+          evidence: [
+            '.decantr/local-patterns.json behavior_obligations: confirmation-dialog/submitting-guard',
+            `${relativeFile}: destructive dialog-like surface has no obvious disabled/loading/pending guard`,
+          ],
+          file: relativeFile,
+          target: dialogPatternId,
+          rule: behaviorRuleId(dialogPatternId, 'submitting-guard'),
+          suggestedFix:
+            'Guard the destructive submit path with a disabled, pending, loading, or submitting state to avoid repeated execution.',
+          repair: {
+            id: 'restore-submitting-guard',
+            payload: behaviorRepairPayload({
+              patternId: dialogPatternId,
+              obligationId: 'submitting-guard',
+              file: relativeFile,
+              componentPaths: dialogPattern.componentPaths,
+            }),
+          },
+        }),
+      );
+    }
+  }
+}
+
 function appendSourceAuditFindings(
   findings: VerificationFinding[],
   sourceAudit: SourceAuditSummary,
@@ -4964,6 +5409,7 @@ export async function auditProject(projectRoot: string): Promise<ProjectAuditRep
     sourceAudit,
   );
   appendSourceAuditFindings(findings, sourceAudit, essence, reviewPack, adoptionMode);
+  appendBehaviorObligationFindings(findings, projectRoot, projectSourceFiles);
   appendComponentReuseFindings(findings, componentReuseAudit);
   appendStyleBridgeDriftFindings(findings, styleBridgeDriftAudit);
   appendStyleContractFindings(findings, styleAudit, essence);

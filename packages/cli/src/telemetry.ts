@@ -8,15 +8,15 @@ import {
   createFetchTelemetrySink,
   createTelemetryClient,
   type DecantrAnalyzeCompletedProperties,
+  type DecantrLifecycleCompletedProperties,
   type DecantrTelemetryEvent,
   type DecantrTelemetryEventName,
-  type DecantrLifecycleCompletedProperties,
   type HealthCiFailedProperties,
   type HealthFindingPromptRequestedProperties,
+  isTelemetryActorType,
   type ProjectHealthFailOn,
   type ProjectHealthOutputFormat,
   type ProjectHealthTelemetryProperties,
-  isTelemetryActorType,
   type ProjectScope,
   type RegistrySource,
   type StudioHealthRefreshedProperties,
@@ -136,7 +136,9 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
   }
 
   const registrySource =
-    input.registrySource ?? getRegistrySourceProperty(input.properties) ?? inferRegistrySource(input.args ?? []);
+    input.registrySource ??
+    getRegistrySourceProperty(input.properties) ??
+    inferRegistrySource(input.args ?? []);
 
   const client = createTelemetryClient({
     sink: createFetchTelemetrySink({
@@ -167,7 +169,10 @@ export async function captureCliTelemetryEvent(input: CliTelemetryEventInput): P
 }
 
 export async function sendCliCommandTelemetry(input: CliCommandTelemetryInput): Promise<void> {
-  const projectRoot = resolveCliTelemetryProjectRoot(input.projectRoot ?? process.cwd(), input.args);
+  const projectRoot = resolveCliTelemetryProjectRoot(
+    input.projectRoot ?? process.cwd(),
+    input.args,
+  );
   const command = normalizeCommand(input.args[0]);
   if (
     !isOptedIn(projectRoot) ||
@@ -368,7 +373,9 @@ export interface StudioStartedTelemetryInput {
   projectRoot?: string;
 }
 
-export async function sendStudioStartedTelemetry(input: StudioStartedTelemetryInput): Promise<void> {
+export async function sendStudioStartedTelemetry(
+  input: StudioStartedTelemetryInput,
+): Promise<void> {
   const projectRoot = input.projectRoot ?? process.cwd();
   const metadata = readProjectTelemetryMetadata(projectRoot);
   const properties: StudioStartedProperties = {

@@ -427,12 +427,18 @@ function sourceFromAuditFinding(finding: VerificationFinding): ProjectHealthFind
   }
   if (
     category.includes('interaction') ||
+    category.includes('behavior') ||
     id.includes('interaction') ||
+    id.includes('behavior') ||
     rule.includes('interaction')
   ) {
     return 'interaction';
   }
-  if (category.includes('style bridge') || id.includes('style-bridge') || rule.includes('style-bridge')) {
+  if (
+    category.includes('style bridge') ||
+    id.includes('style-bridge') ||
+    rule.includes('style-bridge')
+  ) {
     return 'style-bridge';
   }
   return 'audit';
@@ -458,6 +464,7 @@ function normalizeHealthCategory(category: string, source: ProjectHealthFindingS
   if (source === 'design-token' || lower.includes('design-token')) return 'Design Token';
   if (source === 'style-bridge' || lower.includes('style bridge')) return 'Style Bridge';
   if (source === 'graph') return 'Typed Contract Graph';
+  if (lower.includes('behavior obligation')) return 'Behavior Obligation';
   if (lower.includes('accessibility')) return 'Accessibility';
   if (source === 'runtime') return 'Runtime';
   if (source === 'browser') return 'Visual Evidence';
@@ -558,7 +565,8 @@ function inspectProjectHealthGraph(projectRoot: string): ProjectHealthReport['gr
       snapshotId: snapshot?.id ?? artifacts?.snapshot.id ?? null,
       sourceHash: snapshot?.source_hash ?? artifacts?.snapshot.source_hash ?? null,
       contractHash: capsule?.contract_hash ?? artifacts?.capsule.contract_hash ?? null,
-      contractCacheKey: capsule?.contract_cache_key ?? artifacts?.capsule.contract_cache_key ?? null,
+      contractCacheKey:
+        capsule?.contract_cache_key ?? artifacts?.capsule.contract_cache_key ?? null,
       sourceArtifactCount:
         snapshot?.nodes.filter((node) => node.type === 'SourceArtifact').length ??
         artifacts?.snapshot.nodes.filter((node) => node.type === 'SourceArtifact').length ??
@@ -1978,7 +1986,8 @@ export function formatDiagnosticCatalogMarkdown(): string {
     '| Code | Family | Rule | Repair ID |',
     '| --- | --- | --- | --- |',
     ...diagnosticCatalogPayload().diagnostics.map(
-      (entry) => `| \`${entry.code}\` | \`${entry.family}\` | \`${entry.rule}\` | \`${entry.repairId}\` |`,
+      (entry) =>
+        `| \`${entry.code}\` | \`${entry.family}\` | \`${entry.rule}\` | \`${entry.repairId}\` |`,
     ),
     '',
   ];

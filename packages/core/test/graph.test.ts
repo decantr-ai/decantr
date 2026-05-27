@@ -18,11 +18,11 @@ import {
   GRAPH_MANIFEST_SCHEMA_URL,
   GRAPH_SCHEMA_VERSION,
   GRAPH_SNAPSHOT_SCHEMA_URL,
-  graphContractHash,
-  summarizeGraphDiff,
   type GraphSnapshot,
+  graphContractHash,
   type IRAppNode,
   normalizeGraphSnapshot,
+  summarizeGraphDiff,
 } from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -436,12 +436,13 @@ describe('typed graph foundation', () => {
       reason: 'pattern_component+task_match',
       matched_terms: ['settings', 'filter'],
     });
-    expect(taskContext?.ranked.find((node) => node.id === 'src:src/app/settings/page.tsx'))
-      .toMatchObject({
-        id: 'src:src/app/settings/page.tsx',
-        reason: 'source_provenance+task_match',
-        matched_terms: ['settings', 'source'],
-      });
+    expect(
+      taskContext?.ranked.find((node) => node.id === 'src:src/app/settings/page.tsx'),
+    ).toMatchObject({
+      id: 'src:src/app/settings/page.tsx',
+      reason: 'source_provenance+task_match',
+      matched_terms: ['settings', 'source'],
+    });
   });
 
   it('extracts node impact context across contract and evidence relationships', () => {
@@ -722,9 +723,7 @@ describe('typed graph foundation', () => {
       source_artifacts: 1,
       open_findings: 1,
     });
-    expect(capsule.source_artifact_limit).toBe(
-      DEFAULT_CONTRACT_CAPSULE_SOURCE_ARTIFACT_LIMIT,
-    );
+    expect(capsule.source_artifact_limit).toBe(DEFAULT_CONTRACT_CAPSULE_SOURCE_ARTIFACT_LIMIT);
     expect(capsule.source_artifacts_truncated).toBe(false);
     expect(capsule.source_artifacts).toEqual([
       {

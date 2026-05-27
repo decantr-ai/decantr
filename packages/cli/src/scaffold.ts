@@ -4690,7 +4690,7 @@ export function generateSectionContext(input: SectionContextInput): string {
   lines.push('');
   if (adoptionMode === 'contract-only') {
     lines.push(
-      'Usage: implement this section through the app\'s existing styling authority (design-system components, Tailwind/Sass/theme tokens, CVA variants, or accepted local rules). Do not add `@decantr/css`, `css(...)`, `d-*` treatments, or Decantr token CSS unless adoption mode changes.',
+      "Usage: implement this section through the app's existing styling authority (design-system components, Tailwind/Sass/theme tokens, CVA variants, or accepted local rules). Do not add `@decantr/css`, `css(...)`, `d-*` treatments, or Decantr token CSS unless adoption mode changes.",
     );
   } else {
     lines.push(

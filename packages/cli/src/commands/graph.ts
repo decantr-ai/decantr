@@ -2,9 +2,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative } from 'node:path';
 import {
+  buildContractCapsuleFromSnapshot,
   buildGraphImpactContext,
   buildGraphRouteContext,
-  buildContractCapsuleFromSnapshot,
   buildGraphSnapshotFromEssence,
   type ContractCapsule,
   diffGraphSnapshots,
@@ -20,17 +20,23 @@ import {
   type GraphSnapshot,
   graphPayloadString,
   normalizeGraphSnapshot,
-  summarizeGraphDiff,
   type SourceArtifact,
+  summarizeGraphDiff,
 } from '@decantr/core';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
 import {
   auditComponentReuse,
-  collectProjectSourceFiles,
   type ComponentReuseAudit,
+  collectProjectSourceFiles,
 } from '@decantr/verifier';
-import { localRulesPath, readLocalRuleManifest } from '../local-law.js';
+import {
+  localPatternsPath,
+  localRulesPath,
+  readLocalPatternPack,
+  readLocalRuleManifest,
+  summarizeLocalPatternBehaviorObligations,
+} from '../local-law.js';
 import { readStyleBridge, styleBridgePath } from '../style-bridge.js';
 
 const GREEN = '\x1b[32m';
@@ -400,7 +406,10 @@ function graphSnapshotHistoryFileName(snapshotId: string): string {
   return `${snapshotId.replace(/[^a-zA-Z0-9_.-]+/g, '-')}.json`;
 }
 
-function withSnapshotHistoryPath(paths: GraphArtifactPaths, snapshotId: string): GraphArtifactPaths {
+function withSnapshotHistoryPath(
+  paths: GraphArtifactPaths,
+  snapshotId: string,
+): GraphArtifactPaths {
   return {
     ...paths,
     snapshotHistory: join(paths.snapshotsDir, graphSnapshotHistoryFileName(snapshotId)),
@@ -468,9 +477,7 @@ function existingProjectRelativePath(projectRoot: string, path: string | undefin
 }
 
 function stripJsonComments(value: string): string {
-  return value
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  return value.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 }
 
 function readCompilerImportResolutionConfig(projectRoot: string): CompilerImportResolutionConfig {
@@ -651,6 +658,16 @@ function sourceArtifacts(
     });
   }
 
+  const patternsPath = localPatternsPath(projectRoot);
+  if (existsSync(patternsPath)) {
+    sources.push({
+      id: 'src:.decantr/local-patterns.json',
+      kind: 'local-pattern-manifest',
+      path: '.decantr/local-patterns.json',
+      hash: hashFile(patternsPath),
+    });
+  }
+
   const bridgePath = styleBridgePath(projectRoot);
   if (existsSync(bridgePath)) {
     sources.push({
@@ -721,7 +738,10 @@ function sourceArtifacts(
     const importingFile = projectRelativePath(projectRoot, importReference.file);
     if (!importingFile) continue;
     const importingPath = join(projectRoot, importingFile);
-    if (existsSync(importingPath) && !sources.some((source) => source.id === `src:${importingFile}`)) {
+    if (
+      existsSync(importingPath) &&
+      !sources.some((source) => source.id === `src:${importingFile}`)
+    ) {
       sources.push({
         id: `src:${importingFile}`,
         kind: 'code-source',
@@ -735,7 +755,11 @@ function sourceArtifacts(
       });
     }
 
-    const importedFile = resolveImportSourcePath(projectRoot, importingFile, importReference.source);
+    const importedFile = resolveImportSourcePath(
+      projectRoot,
+      importingFile,
+      importReference.source,
+    );
     if (!importedFile) continue;
     const importedPath = join(projectRoot, importedFile);
     if (!existsSync(importedPath)) continue;
@@ -904,11 +928,11 @@ function firstFindingSourceArtifactId(
   return null;
 }
 
-function routeForScreenshotPath(visualManifest: VisualManifest | null, screenshot: string): string | null {
-  return (
-    visualManifest?.routes?.find((route) => route.screenshot === screenshot)?.route ??
-    null
-  );
+function routeForScreenshotPath(
+  visualManifest: VisualManifest | null,
+  screenshot: string,
+): string | null {
+  return visualManifest?.routes?.find((route) => route.screenshot === screenshot)?.route ?? null;
 }
 
 function augmentProjectGraph(
@@ -958,6 +982,64 @@ function augmentProjectGraph(
     }
   }
 
+  const localPatterns = readLocalPatternPack(projectRoot);
+  if (localPatterns) {
+    const sourceId = 'src:.decantr/local-patterns.json';
+    for (const pattern of localPatterns.patterns ?? []) {
+      const behavior = summarizeLocalPatternBehaviorObligations(pattern);
+      if (!behavior) continue;
+      const patternNodeId = `pat:${graphSlug(behavior.patternId, 'pattern')}`;
+      for (const obligation of behavior.obligations) {
+        const ruleId = `rule:behavior:${graphSlug(behavior.patternId, 'pattern')}:${graphSlug(
+          obligation.id,
+          'obligation',
+        )}`;
+        addNode(nodes, {
+          id: ruleId,
+          type: 'LocalRule',
+          payload: {
+            id: ruleId.replace(/^rule:/, ''),
+            kind: 'behavior-obligation',
+            patternId: behavior.patternId,
+            patternRole: behavior.patternRole,
+            intent: behavior.intent,
+            obligationId: obligation.id,
+            label: obligation.label,
+            severity: obligation.severity,
+            evidence: obligation.evidence,
+            modalities: behavior.modalities,
+            states: behavior.states,
+            riskProfile: behavior.riskProfile,
+            testHints: behavior.testHints,
+            componentPaths: behavior.componentPaths,
+            manifest: {
+              status: localPatterns.status,
+              source: localPatterns.source,
+              acceptedAt: localPatterns.acceptedAt,
+            },
+          },
+        });
+        addEdge(edges, {
+          src: ruleId,
+          dst: snapshot.project_id,
+          relation: 'LOCAL_RULE_APPLIES_TO',
+        });
+        if (nodes.has(patternNodeId)) {
+          addEdge(edges, {
+            src: ruleId,
+            dst: patternNodeId,
+            relation: 'LOCAL_RULE_APPLIES_TO',
+          });
+        }
+        addEdge(edges, {
+          src: ruleId,
+          dst: sourceId,
+          relation: 'NODE_DERIVED_FROM_SOURCE',
+        });
+      }
+    }
+  }
+
   const styleBridge = readStyleBridge(projectRoot);
   if (styleBridge) {
     const sourceId = 'src:.decantr/style-bridge.json';
@@ -989,9 +1071,7 @@ function augmentProjectGraph(
       for (const tokenHint of mapping.tokenHints ?? []) {
         const tokenName = tokenHint.trim();
         if (!tokenName) continue;
-        const tokenGraphName = tokenName
-          .replace(/^var\((--[^),\s]+).*$/, '$1')
-          .replace(/^--/, '');
+        const tokenGraphName = tokenName.replace(/^var\((--[^),\s]+).*$/, '$1').replace(/^--/, '');
         const tokenId = `tkn:${graphSlug(tokenGraphName, 'style-token')}`;
         addNode(nodes, {
           id: tokenId,
@@ -1099,7 +1179,11 @@ function augmentProjectGraph(
   for (const importReference of componentReuseAudit?.imports ?? []) {
     const importingFile = projectRelativePath(projectRoot, importReference.file);
     if (!importingFile || !nodes.has(`src:${importingFile}`)) continue;
-    const importedFile = resolveImportSourcePath(projectRoot, importingFile, importReference.source);
+    const importedFile = resolveImportSourcePath(
+      projectRoot,
+      importingFile,
+      importReference.source,
+    );
     if (!importedFile || !nodes.has(`src:${importedFile}`)) continue;
     addEdge(edges, {
       src: `src:${importingFile}`,
@@ -1200,7 +1284,7 @@ function augmentProjectGraph(
       const anchoredAt =
         finding.graph?.node_id && nodes.has(finding.graph.node_id)
           ? finding.graph.node_id
-          : fallbackSourceAnchorId ?? finding.graph?.node_id;
+          : (fallbackSourceAnchorId ?? finding.graph?.node_id);
       addNode(nodes, {
         id: findingId,
         type: 'Finding',
@@ -1545,7 +1629,8 @@ function comparisonPayload(
   includeOps = false,
   limit: number | undefined = undefined,
 ): GraphComparisonPayload {
-  const boundedLimit = typeof limit === 'number' && Number.isFinite(limit) && limit > 0 ? limit : 25;
+  const boundedLimit =
+    typeof limit === 'number' && Number.isFinite(limit) && limit > 0 ? limit : 25;
   return {
     from: diff.from,
     to: diff.to,
@@ -1619,7 +1704,10 @@ function summaryPayload(
         }
       : undefined,
     comparison,
-    routeContext: routeContextPayload(routeContext ?? null, routeContext ? optionsRoute(routeContext) : undefined),
+    routeContext: routeContextPayload(
+      routeContext ?? null,
+      routeContext ? optionsRoute(routeContext) : undefined,
+    ),
     impactContext: impactContextPayload(impactContext ?? null, impactSelection),
   };
 }
@@ -1971,7 +2059,7 @@ export async function cmdGraph(
           task: options.task,
           limit: options.limit,
         })
-    : undefined;
+      : undefined;
   if (impactSeedIds.length > 0 && !impactContext) {
     console.error(
       `${RED}Impact seed not found in Decantr typed graph: ${impactSeedIds.join(', ')}${RESET}`,

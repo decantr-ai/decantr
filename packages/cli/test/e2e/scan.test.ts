@@ -59,7 +59,10 @@ describe('scan command', () => {
       join(testDir, 'apps', 'web', 'package.json'),
       JSON.stringify({ dependencies: { react: '^19.0.0' } }, null, 2),
     );
-    writeFileSync(join(testDir, 'apps', 'web', 'src', 'App.tsx'), 'export function App() { return <main />; }\n');
+    writeFileSync(
+      join(testDir, 'apps', 'web', 'src', 'App.tsx'),
+      'export function App() { return <main />; }\n',
+    );
 
     const output = execSync(`node ${cliPath} scan --project apps/web --json`, {
       cwd: testDir,

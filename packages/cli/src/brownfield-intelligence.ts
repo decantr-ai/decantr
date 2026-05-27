@@ -180,7 +180,9 @@ function createThemeInventory(projectRoot: string, styling: StylingAnalysis): Th
   const variants = [...variantMap.values()].sort((a, b) => a.id.localeCompare(b.id));
   const modes = variants.map((variant) => variant.id);
   const darkModeDetected =
-    styling.darkMode || modes.includes('dark') || variants.some((variant) => /dark/i.test(variant.id));
+    styling.darkMode ||
+    modes.includes('dark') ||
+    variants.some((variant) => /dark/i.test(variant.id));
   if (variants.length > 2) {
     notes.push(
       'Multiple theme variants were observed. Essence V4 remains unchanged; variants are reported here for task-time context.',

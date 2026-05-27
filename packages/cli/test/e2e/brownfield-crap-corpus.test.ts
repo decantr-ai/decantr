@@ -37,230 +37,237 @@ describe('brownfield crap corpus', () => {
     rmSync(testDir, { recursive: true, force: true });
   });
 
-  it('observes ugly framework and styling combinations without importing Decantr defaults', () => {
-    const cases = [
-      {
-        name: 'angular-bootstrap',
-        setup(projectDir: string) {
-          writeJson(join(projectDir, 'package.json'), {
-            name: 'angular-bootstrap',
-            dependencies: {
-              '@angular/core': '^19.0.0',
-              '@angular/router': '^19.0.0',
-              bootstrap: '^5.3.0',
-            },
-          });
-          writeJson(join(projectDir, 'angular.json'), { version: 1, projects: {} });
-          mkdirp(join(projectDir, 'src', 'app'));
-          writeFileSync(
-            join(projectDir, 'src', 'app', 'app.routes.ts'),
-            [
-              "import type { Routes } from '@angular/router';",
-              'export const routes: Routes = [',
-              "  { path: '', loadComponent: () => import('./home') },",
-              "  { path: 'admin/users', loadComponent: () => import('./users') },",
-              "  { path: 'billing/invoices', loadComponent: () => import('./billing') },",
-              "  { path: 'settings/profile', loadComponent: () => import('./settings') },",
-              "  { path: '**', redirectTo: '' },",
-              '];',
-              '',
-            ].join('\n'),
-          );
-          writeFileSync(
-            join(projectDir, 'src', 'styles.css'),
-            ':root { --bs-primary: #0d6efd; --surface-card: #fff; }\n',
-          );
+  it(
+    'observes ugly framework and styling combinations without importing Decantr defaults',
+    () => {
+      const cases = [
+        {
+          name: 'angular-bootstrap',
+          setup(projectDir: string) {
+            writeJson(join(projectDir, 'package.json'), {
+              name: 'angular-bootstrap',
+              dependencies: {
+                '@angular/core': '^19.0.0',
+                '@angular/router': '^19.0.0',
+                bootstrap: '^5.3.0',
+              },
+            });
+            writeJson(join(projectDir, 'angular.json'), { version: 1, projects: {} });
+            mkdirp(join(projectDir, 'src', 'app'));
+            writeFileSync(
+              join(projectDir, 'src', 'app', 'app.routes.ts'),
+              [
+                "import type { Routes } from '@angular/router';",
+                'export const routes: Routes = [',
+                "  { path: '', loadComponent: () => import('./home') },",
+                "  { path: 'admin/users', loadComponent: () => import('./users') },",
+                "  { path: 'billing/invoices', loadComponent: () => import('./billing') },",
+                "  { path: 'settings/profile', loadComponent: () => import('./settings') },",
+                "  { path: '**', redirectTo: '' },",
+                '];',
+                '',
+              ].join('\n'),
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'styles.css'),
+              ':root { --bs-primary: #0d6efd; --surface-card: #fff; }\n',
+            );
+          },
+          framework: 'angular',
+          routeStrategy: 'angular-router',
+          styling: 'bootstrap',
+          routes: ['/', '/admin/users', '/billing/invoices', '/settings/profile'],
+          sections: ['observed-public', 'observed-admin', 'observed-billing', 'observed-settings'],
         },
-        framework: 'angular',
-        routeStrategy: 'angular-router',
-        styling: 'bootstrap',
-        routes: ['/', '/admin/users', '/billing/invoices', '/settings/profile'],
-        sections: ['observed-public', 'observed-admin', 'observed-billing', 'observed-settings'],
-      },
-      {
-        name: 'sveltekit-css',
-        setup(projectDir: string) {
-          writeJson(join(projectDir, 'package.json'), {
-            name: 'sveltekit-css',
-            dependencies: {
-              '@sveltejs/kit': '^2.0.0',
-              svelte: '^5.0.0',
-            },
-          });
-          writeFileSync(join(projectDir, 'svelte.config.js'), 'export default {};\n');
-          mkdirp(join(projectDir, 'src', 'routes', '(app)', 'dashboard'));
-          mkdirp(join(projectDir, 'src', 'routes', '(app)', 'reports', '[id]'));
-          writeFileSync(join(projectDir, 'src', 'routes', '+page.svelte'), '<main>Home</main>\n');
-          writeFileSync(
-            join(projectDir, 'src', 'routes', '(app)', 'dashboard', '+page.svelte'),
-            '<main>Dashboard</main>\n',
-          );
-          writeFileSync(
-            join(projectDir, 'src', 'routes', '(app)', 'reports', '[id]', '+page.svelte'),
-            '<main>Report</main>\n',
-          );
-          writeFileSync(
-            join(projectDir, 'src', 'app.css'),
-            ':root { --brand-primary: #16a34a; }\n',
-          );
+        {
+          name: 'sveltekit-css',
+          setup(projectDir: string) {
+            writeJson(join(projectDir, 'package.json'), {
+              name: 'sveltekit-css',
+              dependencies: {
+                '@sveltejs/kit': '^2.0.0',
+                svelte: '^5.0.0',
+              },
+            });
+            writeFileSync(join(projectDir, 'svelte.config.js'), 'export default {};\n');
+            mkdirp(join(projectDir, 'src', 'routes', '(app)', 'dashboard'));
+            mkdirp(join(projectDir, 'src', 'routes', '(app)', 'reports', '[id]'));
+            writeFileSync(join(projectDir, 'src', 'routes', '+page.svelte'), '<main>Home</main>\n');
+            writeFileSync(
+              join(projectDir, 'src', 'routes', '(app)', 'dashboard', '+page.svelte'),
+              '<main>Dashboard</main>\n',
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'routes', '(app)', 'reports', '[id]', '+page.svelte'),
+              '<main>Report</main>\n',
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'app.css'),
+              ':root { --brand-primary: #16a34a; }\n',
+            );
+          },
+          framework: 'svelte',
+          routeStrategy: 'sveltekit-router',
+          styling: 'css',
+          routes: ['/', '/dashboard', '/reports/:id'],
+          sections: ['observed-public', 'observed-dashboard', 'observed-reporting'],
         },
-        framework: 'svelte',
-        routeStrategy: 'sveltekit-router',
-        styling: 'css',
-        routes: ['/', '/dashboard', '/reports/:id'],
-        sections: ['observed-public', 'observed-dashboard', 'observed-reporting'],
-      },
-      {
-        name: 'vue-chakra',
-        setup(projectDir: string) {
-          writeJson(join(projectDir, 'package.json'), {
-            name: 'vue-chakra',
-            dependencies: {
-              vue: '^3.5.0',
-              'vue-router': '^4.4.0',
-              '@chakra-ui/vue-next': '^2.0.0',
-            },
-          });
-          writeFileSync(join(projectDir, 'vite.config.ts'), 'export default {};\n');
-          mkdirp(join(projectDir, 'src', 'router'));
-          writeFileSync(
-            join(projectDir, 'src', 'router', 'index.ts'),
-            [
-              "import { createRouter, createWebHistory } from 'vue-router';",
-              'export const router = createRouter({',
-              '  history: createWebHistory(),',
-              '  routes: [',
-              "    { path: '/', component: {} },",
-              "    { path: '/workspace', component: {} },",
-              "    { path: '/admin/roles', component: {} },",
-              "    { path: '/content/library', component: {} },",
-              '  ],',
-              '});',
-              '',
-            ].join('\n'),
-          );
+        {
+          name: 'vue-chakra',
+          setup(projectDir: string) {
+            writeJson(join(projectDir, 'package.json'), {
+              name: 'vue-chakra',
+              dependencies: {
+                vue: '^3.5.0',
+                'vue-router': '^4.4.0',
+                '@chakra-ui/vue-next': '^2.0.0',
+              },
+            });
+            writeFileSync(join(projectDir, 'vite.config.ts'), 'export default {};\n');
+            mkdirp(join(projectDir, 'src', 'router'));
+            writeFileSync(
+              join(projectDir, 'src', 'router', 'index.ts'),
+              [
+                "import { createRouter, createWebHistory } from 'vue-router';",
+                'export const router = createRouter({',
+                '  history: createWebHistory(),',
+                '  routes: [',
+                "    { path: '/', component: {} },",
+                "    { path: '/workspace', component: {} },",
+                "    { path: '/admin/roles', component: {} },",
+                "    { path: '/content/library', component: {} },",
+                '  ],',
+                '});',
+                '',
+              ].join('\n'),
+            );
+          },
+          framework: 'vue',
+          routeStrategy: 'vue-router',
+          styling: 'chakra',
+          routes: ['/', '/workspace', '/admin/roles', '/content/library'],
+          sections: ['observed-public', 'observed-dashboard', 'observed-rbac', 'observed-content'],
         },
-        framework: 'vue',
-        routeStrategy: 'vue-router',
-        styling: 'chakra',
-        routes: ['/', '/workspace', '/admin/roles', '/content/library'],
-        sections: ['observed-public', 'observed-dashboard', 'observed-rbac', 'observed-content'],
-      },
-      {
-        name: 'nuxt-pages',
-        setup(projectDir: string) {
-          writeJson(join(projectDir, 'package.json'), {
-            name: 'nuxt-pages',
-            dependencies: {
-              nuxt: '^3.15.0',
-              vue: '^3.5.0',
-            },
-          });
-          writeFileSync(
-            join(projectDir, 'nuxt.config.ts'),
-            'export default defineNuxtConfig({});\n',
-          );
-          mkdirp(join(projectDir, 'pages', 'settings'));
-          writeFileSync(join(projectDir, 'pages', 'index.vue'), '<template><main /></template>\n');
-          writeFileSync(
-            join(projectDir, 'pages', 'dashboard.vue'),
-            '<template><main /></template>\n',
-          );
-          writeFileSync(
-            join(projectDir, 'pages', 'settings', 'profile.vue'),
-            '<template><main /></template>\n',
-          );
-          mkdirp(join(projectDir, 'assets', 'css'));
-          writeFileSync(
-            join(projectDir, 'assets', 'css', 'main.css'),
-            ':root { --brand-primary: #2563eb; }\n',
-          );
+        {
+          name: 'nuxt-pages',
+          setup(projectDir: string) {
+            writeJson(join(projectDir, 'package.json'), {
+              name: 'nuxt-pages',
+              dependencies: {
+                nuxt: '^3.15.0',
+                vue: '^3.5.0',
+              },
+            });
+            writeFileSync(
+              join(projectDir, 'nuxt.config.ts'),
+              'export default defineNuxtConfig({});\n',
+            );
+            mkdirp(join(projectDir, 'pages', 'settings'));
+            writeFileSync(
+              join(projectDir, 'pages', 'index.vue'),
+              '<template><main /></template>\n',
+            );
+            writeFileSync(
+              join(projectDir, 'pages', 'dashboard.vue'),
+              '<template><main /></template>\n',
+            );
+            writeFileSync(
+              join(projectDir, 'pages', 'settings', 'profile.vue'),
+              '<template><main /></template>\n',
+            );
+            mkdirp(join(projectDir, 'assets', 'css'));
+            writeFileSync(
+              join(projectDir, 'assets', 'css', 'main.css'),
+              ':root { --brand-primary: #2563eb; }\n',
+            );
+          },
+          framework: 'nuxt',
+          routeStrategy: 'nuxt-router',
+          styling: 'css',
+          routes: ['/', '/dashboard', '/settings/profile'],
+          sections: ['observed-public', 'observed-dashboard', 'observed-settings'],
         },
-        framework: 'nuxt',
-        routeStrategy: 'nuxt-router',
-        styling: 'css',
-        routes: ['/', '/dashboard', '/settings/profile'],
-        sections: ['observed-public', 'observed-dashboard', 'observed-settings'],
-      },
-      {
-        name: 'mixed-next-mui',
-        setup(projectDir: string) {
-          writeJson(join(projectDir, 'package.json'), {
-            name: 'mixed-next-mui',
-            dependencies: {
-              next: '^15.0.0',
-              react: '^19.0.0',
-              'react-dom': '^19.0.0',
-              '@emotion/react': '^11.0.0',
-              '@mui/material': '^6.0.0',
-            },
-          });
-          writeFileSync(join(projectDir, 'next.config.ts'), 'export default {};\n');
-          mkdirp(join(projectDir, 'src', 'app', 'dashboard'));
-          mkdirp(join(projectDir, 'src', 'pages', 'admin'));
-          writeFileSync(
-            join(projectDir, 'src', 'app', 'dashboard', 'page.tsx'),
-            'export default function Page() { return null; }\n',
-          );
-          writeFileSync(
-            join(projectDir, 'src', 'pages', 'settings.tsx'),
-            'export default function Page() { return null; }\n',
-          );
-          writeFileSync(
-            join(projectDir, 'src', 'pages', 'admin', 'users.tsx'),
-            'export default function Page() { return null; }\n',
-          );
+        {
+          name: 'mixed-next-mui',
+          setup(projectDir: string) {
+            writeJson(join(projectDir, 'package.json'), {
+              name: 'mixed-next-mui',
+              dependencies: {
+                next: '^15.0.0',
+                react: '^19.0.0',
+                'react-dom': '^19.0.0',
+                '@emotion/react': '^11.0.0',
+                '@mui/material': '^6.0.0',
+              },
+            });
+            writeFileSync(join(projectDir, 'next.config.ts'), 'export default {};\n');
+            mkdirp(join(projectDir, 'src', 'app', 'dashboard'));
+            mkdirp(join(projectDir, 'src', 'pages', 'admin'));
+            writeFileSync(
+              join(projectDir, 'src', 'app', 'dashboard', 'page.tsx'),
+              'export default function Page() { return null; }\n',
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'pages', 'settings.tsx'),
+              'export default function Page() { return null; }\n',
+            );
+            writeFileSync(
+              join(projectDir, 'src', 'pages', 'admin', 'users.tsx'),
+              'export default function Page() { return null; }\n',
+            );
+          },
+          framework: 'nextjs',
+          routeStrategy: 'mixed-next-router',
+          styling: 'mui',
+          routes: ['/dashboard', '/settings', '/admin/users'],
+          sections: ['observed-dashboard', 'observed-settings', 'observed-admin'],
         },
-        framework: 'nextjs',
-        routeStrategy: 'mixed-next-router',
-        styling: 'mui',
-        routes: ['/dashboard', '/settings', '/admin/users'],
-        sections: ['observed-dashboard', 'observed-settings', 'observed-admin'],
-      },
-    ];
+      ];
 
-    for (const fixture of cases) {
-      const projectDir = join(testDir, fixture.name);
-      mkdirp(projectDir);
-      fixture.setup(projectDir);
+      for (const fixture of cases) {
+        const projectDir = join(testDir, fixture.name);
+        mkdirp(projectDir);
+        fixture.setup(projectDir);
 
-      execSync(`node ${cliPath} analyze`, { cwd: projectDir, stdio: 'pipe' });
+        execSync(`node ${cliPath} analyze`, { cwd: projectDir, stdio: 'pipe' });
 
-      const analysis = readJson<{
-        project?: { framework?: string };
-        routes?: { strategy?: string; routes?: Array<{ path: string }> };
-        styling?: { approach?: string };
-      }>(join(projectDir, '.decantr', 'analysis.json'));
-      const proposal = readJson<{
-        evidence?: { semanticSectionCount?: number };
-        essence?: {
-          dna?: { theme?: { id?: string } };
-          meta?: { platform?: { type?: string } };
-          blueprint?: { sections?: Array<{ id?: string }>; routes?: Record<string, unknown> };
-        };
-      }>(join(projectDir, '.decantr', 'observed-essence.proposal.json'));
+        const analysis = readJson<{
+          project?: { framework?: string };
+          routes?: { strategy?: string; routes?: Array<{ path: string }> };
+          styling?: { approach?: string };
+        }>(join(projectDir, '.decantr', 'analysis.json'));
+        const proposal = readJson<{
+          evidence?: { semanticSectionCount?: number };
+          essence?: {
+            dna?: { theme?: { id?: string } };
+            meta?: { platform?: { type?: string } };
+            blueprint?: { sections?: Array<{ id?: string }>; routes?: Record<string, unknown> };
+          };
+        }>(join(projectDir, '.decantr', 'observed-essence.proposal.json'));
 
-      expect(analysis.project?.framework).toBe(fixture.framework);
-      expect(analysis.routes?.strategy).toBe(fixture.routeStrategy);
-      expect(analysis.routes?.routes?.map((route) => route.path)).toEqual(
-        expect.arrayContaining(fixture.routes),
-      );
-      expect(analysis.styling?.approach).toBe(fixture.styling);
-      expect(proposal.essence?.dna?.theme?.id).toBe('existing');
-      if (['nextjs', 'nuxt', 'svelte'].includes(fixture.framework)) {
-        expect(proposal.essence?.meta?.platform?.type).toBe('ssr');
+        expect(analysis.project?.framework).toBe(fixture.framework);
+        expect(analysis.routes?.strategy).toBe(fixture.routeStrategy);
+        expect(analysis.routes?.routes?.map((route) => route.path)).toEqual(
+          expect.arrayContaining(fixture.routes),
+        );
+        expect(analysis.styling?.approach).toBe(fixture.styling);
+        expect(proposal.essence?.dna?.theme?.id).toBe('existing');
+        if (['nextjs', 'nuxt', 'svelte'].includes(fixture.framework)) {
+          expect(proposal.essence?.meta?.platform?.type).toBe('ssr');
+        }
+        expect(proposal.evidence?.semanticSectionCount).toBeGreaterThanOrEqual(1);
+        expect(proposal.essence?.blueprint?.sections?.map((section) => section.id)).toEqual(
+          expect.arrayContaining(fixture.sections),
+        );
+        for (const route of fixture.routes) {
+          expect(proposal.essence?.blueprint?.routes?.[route]).toBeTruthy();
+        }
+        expect(JSON.stringify(proposal)).not.toContain('luminarum');
+        expect(JSON.stringify(proposal)).not.toContain('home:hero');
       }
-      expect(proposal.evidence?.semanticSectionCount).toBeGreaterThanOrEqual(1);
-      expect(proposal.essence?.blueprint?.sections?.map((section) => section.id)).toEqual(
-        expect.arrayContaining(fixture.sections),
-      );
-      for (const route of fixture.routes) {
-        expect(proposal.essence?.blueprint?.routes?.[route]).toBeTruthy();
-      }
-      expect(JSON.stringify(proposal)).not.toContain('luminarum');
-      expect(JSON.stringify(proposal)).not.toContain('home:hero');
-    }
-  }, corpusObservationTimeoutMs);
+    },
+    corpusObservationTimeoutMs,
+  );
 
   it('keeps monorepo app roots explicit for brownfield analysis', () => {
     writeFileSync(join(testDir, 'pnpm-workspace.yaml'), 'packages:\n  - apps/*\n');

@@ -81,13 +81,19 @@ describe('registry sync', () => {
     tempRoots.push(root);
 
     try {
-      const result = await syncRegistry(join(root, '.decantr', 'cache'), `http://127.0.0.1:${port}/v1`);
+      const result = await syncRegistry(
+        join(root, '.decantr', 'cache'),
+        `http://127.0.0.1:${port}/v1`,
+      );
 
       expect(result.failed).toEqual([]);
       expect(result.synced).toContain('patterns');
 
       const index = JSON.parse(
-        readFileSync(join(root, '.decantr', 'cache', '@official', 'patterns', 'index.json'), 'utf-8'),
+        readFileSync(
+          join(root, '.decantr', 'cache', '@official', 'patterns', 'index.json'),
+          'utf-8',
+        ),
       );
       expect(index.items.map((item: { slug: string }) => item.slug)).toEqual([
         'pattern-1',

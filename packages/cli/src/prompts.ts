@@ -245,11 +245,7 @@ export async function runInteractivePrompts(
       { value: 'light', label: 'light', description: 'Light background' },
       { value: 'auto', label: 'auto', description: 'Follow system preference' },
     ],
-    workflowSeed?.mode === 'light'
-      ? 1
-      : workflowSeed?.mode === 'auto' || existingProject
-        ? 2
-        : 0,
+    workflowSeed?.mode === 'light' ? 1 : workflowSeed?.mode === 'auto' || existingProject ? 2 : 0,
   );
 
   // Shape
@@ -453,8 +449,11 @@ export function mergeWithDefaults(
     guard: flags.guard || workflowSeed?.guard || (detected.existingEssence ? 'guided' : 'strict'),
     density: flags.density || workflowSeed?.density || 'comfortable',
     shell:
-      flags.shell || workflowSeed?.shell || (existingProject ? 'observed-existing-shell' : 'sidebar-main'),
-    personality: flags.personality || (existingProject ? ['observed brownfield product'] : ['professional']),
+      flags.shell ||
+      workflowSeed?.shell ||
+      (existingProject ? 'observed-existing-shell' : 'sidebar-main'),
+    personality:
+      flags.personality || (existingProject ? ['observed brownfield product'] : ['professional']),
     features: flags.features || [],
     existing: flags.existing || workflowSeed?.existing || detected.existingEssence,
     workflowMode: flags.workflowMode || workflowSeed?.workflowMode,

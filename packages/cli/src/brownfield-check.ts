@@ -52,7 +52,9 @@ function routePathname(route: string): string {
 }
 
 function declaredRouteObserved(route: string, observedRoutes: Set<string>): boolean {
-  return observedRoutes.has(route) || (route.includes('?') && observedRoutes.has(routePathname(route)));
+  return (
+    observedRoutes.has(route) || (route.includes('?') && observedRoutes.has(routePathname(route)))
+  );
 }
 
 function hasDoctrineEffect(essence: EssenceV4, key: string): boolean {

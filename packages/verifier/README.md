@@ -37,6 +37,14 @@ npm install @decantr/verifier
 - project source audits ignore test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints and unsafe rendering patterns
 - project audits emit `COMP001` / `import-existing-component` findings when a production source file locally redeclares a primitive such as `Button`, `Card`, or `Dialog` while an exported reusable primitive already exists under common component paths
 - project audits emit `COMP010` / `replace-raw-control-with-local-component` findings when production JSX renders raw controls such as `<button>` or `<input>` while a project-owned primitive already exists
+- project audits emit behavior-obligation findings when accepted `.decantr/local-patterns.json` patterns declare `behavior_obligations` and production source strongly violates statically checkable dialog/form obligations:
+  - `A11Y010` / `restore-dialog-accessible-name`
+  - `A11Y011` / `restore-label-association`
+  - `INT010` / `restore-visible-consequence-copy`
+  - `INT011` / `restore-cancel-affordance`
+  - `INT012` / `restore-submitting-guard`
+  - `INT013` / `set-explicit-button-type`
+  - `COMP020` / `use-project-owned-interaction-primitive`
 - project audits emit `TOKEN010` / `replace-arbitrary-style-with-bridge-token` findings when an accepted `.decantr/style-bridge.json` exists and production JSX uses arbitrary Tailwind values such as `bg-[#0f172a]`, values inside `cn()`, `clsx()`, `classnames()`, `cva()`, and `tv()` calls, hardcoded inline color styles such as `style={{ backgroundColor: "#0f172a" }}`, or hardcoded visual values in production CSS/module stylesheets
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:

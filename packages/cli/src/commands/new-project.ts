@@ -70,7 +70,12 @@ function validatePassThroughFlagValue(flag: PassThroughFlagName, value: string):
   if (value.length > 512) {
     throw new Error(`--${flag} is too long.`);
   }
-  if (/[\u0000-\u001f\u007f]/.test(value)) {
+  if (
+    Array.from(value).some((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 0x1f || code === 0x7f;
+    })
+  ) {
     throw new Error(`--${flag} contains unsupported control characters.`);
   }
   return value;

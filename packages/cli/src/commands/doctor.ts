@@ -430,7 +430,10 @@ function deriveAdoptionLane(input: {
   };
 }
 
-function inspectGraphArtifacts(appRoot: string, workspaceRoot: string): {
+function inspectGraphArtifacts(
+  appRoot: string,
+  workspaceRoot: string,
+): {
   snapshotPresent: boolean;
   capsulePresent: boolean;
   artifactsCurrent: boolean | null;

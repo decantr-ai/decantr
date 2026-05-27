@@ -86,21 +86,25 @@ function printTelemetryStatus(projectRoot: string, options: TelemetryCommandOpti
         RESET,
     );
   } else {
-    console.log(DIM + 'Run `decantr init --telemetry` or `decantr telemetry link --enable` to opt in.' + RESET);
+    console.log(
+      DIM +
+        'Run `decantr init --telemetry` or `decantr telemetry link --enable` to opt in.' +
+        RESET,
+    );
   }
 }
 
 function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOptions): void {
   const status = getCliTelemetryIdentityStatus(projectRoot, { create: false });
-  const cliEvents = DECANTR_TELEMETRY_EVENT_CATALOG
-    .filter((entry) => entry.allowedSources.includes('cli'))
-    .map((entry) => ({
-      name: entry.name,
-      bucket: entry.bucket,
-      privacy: entry.privacy,
-      publicIngest: entry.publicIngest,
-      notes: entry.privacyNotes,
-    }));
+  const cliEvents = DECANTR_TELEMETRY_EVENT_CATALOG.filter((entry) =>
+    entry.allowedSources.includes('cli'),
+  ).map((entry) => ({
+    name: entry.name,
+    bucket: entry.bucket,
+    privacy: entry.privacy,
+    publicIngest: entry.publicIngest,
+    notes: entry.privacyNotes,
+  }));
   const report = {
     source: 'cli',
     enabled: status.enabled,
@@ -108,9 +112,11 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
     identifiers: {
       installId: status.installId ?? null,
       projectId: status.projectId ?? null,
-      meaning: 'Opaque Decantr-generated ids used only when this project has opted into CLI telemetry.',
+      meaning:
+        'Opaque Decantr-generated ids used only when this project has opted into CLI telemetry.',
     },
-    endpoint: process.env.DECANTR_TELEMETRY_ENDPOINT ?? 'https://api.decantr.ai/v1/telemetry/events',
+    endpoint:
+      process.env.DECANTR_TELEMETRY_ENDPOINT ?? 'https://api.decantr.ai/v1/telemetry/events',
     events: cliEvents,
     aggregateFields: [
       'command name',
@@ -138,7 +144,8 @@ function printTelemetryExplain(projectRoot: string, options: TelemetryCommandOpt
       'finding evidence',
     ],
     controls: {
-      optIn: 'Run decantr init --telemetry, decantr new --telemetry, or decantr telemetry link --enable.',
+      optIn:
+        'Run decantr init --telemetry, decantr new --telemetry, or decantr telemetry link --enable.',
       optOut: 'Set "telemetry": false in .decantr/project.json.',
       link: 'Run decantr telemetry link after login to attach opaque ids to your Decantr account/org.',
     },
@@ -176,7 +183,9 @@ async function linkTelemetryIdentity(
   }
 
   if (!isOptedIn(projectRoot)) {
-    throw new Error('This project has not opted into telemetry. Re-run with --enable or use `decantr init --telemetry`.');
+    throw new Error(
+      'This project has not opted into telemetry. Re-run with --enable or use `decantr init --telemetry`.',
+    );
   }
 
   const identity = getCliTelemetryIdentityStatus(projectRoot, { create: true });
@@ -186,10 +195,14 @@ async function linkTelemetryIdentity(
 
   const apiKey = options.apiKey ?? getApiKeyOrToken();
   if (!apiKey) {
-    throw new Error('Run `decantr login --api-key=<key>` or pass `--api-key <key>` before linking telemetry.');
+    throw new Error(
+      'Run `decantr login --api-key=<key>` or pass `--api-key <key>` before linking telemetry.',
+    );
   }
 
-  const apiUrl = trimTrailingSlashes(options.apiUrl ?? process.env.DECANTR_API_URL ?? DEFAULT_API_URL);
+  const apiUrl = trimTrailingSlashes(
+    options.apiUrl ?? process.env.DECANTR_API_URL ?? DEFAULT_API_URL,
+  );
   const response = await fetch(`${apiUrl}/me/telemetry-link`, {
     method: 'POST',
     headers: {
@@ -205,17 +218,19 @@ async function linkTelemetryIdentity(
   });
 
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as { error?: string } | null;
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? `Telemetry link failed with HTTP ${response.status}.`);
   }
 
-  const body = await response.json().catch(() => ({ linked: 0 })) as { linked?: number };
+  const body = (await response.json().catch(() => ({ linked: 0 }))) as { linked?: number };
   console.log(`${GREEN}Telemetry identity linked.${RESET}`);
   console.log(`  Linked:     ${body.linked ?? 0}`);
   console.log(`  Install ID: ${identity.installId ?? `${DIM}none${RESET}`}`);
   console.log(`  Project ID: ${identity.projectId ?? `${DIM}none${RESET}`}`);
   if (options.org) console.log(`  Org:        ${CYAN}${options.org}${RESET}`);
-  console.log(DIM + 'These opaque IDs now attribute opted-in CLI usage to your Decantr account/org.' + RESET);
+  console.log(
+    DIM + 'These opaque IDs now attribute opted-in CLI usage to your Decantr account/org.' + RESET,
+  );
 }
 
 function parseTelemetryOptions(args: string[]): TelemetryCommandOptions {

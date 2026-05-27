@@ -55,7 +55,7 @@ describe('analyze command', () => {
     writeFileSync(
       join(testDir, 'src', 'styles', 'themes.css'),
       [
-        ":root { --surface: #fff; }",
+        ':root { --surface: #fff; }',
         "[data-theme='dark'] { --surface: #111; }",
         "[data-theme='holiday'] { --surface: #f6fff1; }",
         '.theme-switcher, .actions { display: flex; }',

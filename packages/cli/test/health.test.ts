@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { COMMAND_SURFACE, commandSurfaceByName } from '../src/command-surface.js';
+import { buildGraphArtifacts } from '../src/commands/graph.js';
 import {
   cmdHealth,
   createProjectEvidenceBundle,
@@ -15,7 +16,6 @@ import {
   shouldFailHealth,
   writeProjectHealthCiWorkflow,
 } from '../src/commands/health.js';
-import { buildGraphArtifacts } from '../src/commands/graph.js';
 import { createWorkspaceHealthReport, listWorkspaceProjects } from '../src/commands/workspace.js';
 
 let testDir = '';
@@ -423,9 +423,7 @@ describe('Project Health report', () => {
     );
 
     const report = await createProjectHealthReport(testDir);
-    const finding = report.findings.find(
-      (entry) => entry.rule === 'component-reuse-raw-control',
-    );
+    const finding = report.findings.find((entry) => entry.rule === 'component-reuse-raw-control');
     const evidence = await createProjectEvidenceBundle(testDir, report);
     const evidenceFinding = evidence.findings.find((entry) => entry.id === finding?.id);
 
@@ -479,9 +477,7 @@ describe('Project Health report', () => {
     );
 
     const report = await createProjectHealthReport(testDir);
-    const finding = report.findings.find(
-      (entry) => entry.rule === 'style-bridge-arbitrary-value',
-    );
+    const finding = report.findings.find((entry) => entry.rule === 'style-bridge-arbitrary-value');
     const evidence = await createProjectEvidenceBundle(testDir, report);
     const evidenceFinding = evidence.findings.find((entry) => entry.id === finding?.id);
 
