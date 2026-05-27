@@ -40,6 +40,15 @@ pnpm release:commands
 
 Publish through the wrapper command produced by `pnpm release:commands`; do not publish public Decantr packages with a bare `npm publish`.
 
+The GitHub `Publish` workflow defaults to `publish_auth_strategy=auto`: it tries npm trusted publishing through GitHub OIDC first, then retries the current package once with `NPM_TOKEN` when that secret is available. This keeps provenance-backed publishing as the preferred path while preventing a single package with missing npm trusted-publisher configuration from stranding the whole release wave. Use `publish_auth_strategy=oidc` to require trusted publishing only, or `publish_auth_strategy=token` for an explicit token-only recovery run.
+
+For npm trusted publishing, every published package must have a matching trusted publisher in npm package settings:
+
+- Publisher: GitHub Actions
+- Organization/repository: `decantr-ai/decantr`
+- Workflow filename: `publish.yml`
+- Allowed action: `npm publish`
+
 After publishing:
 
 ```bash
@@ -58,6 +67,14 @@ node scripts/publish-packages.mjs --only=@decantr/cli
 pnpm release:verify -- --only=@decantr/cli
 pnpm release:closeout -- --only=@decantr/cli --version X.Y.Z
 pnpm release:announce -- --only=@decantr/cli --version X.Y.Z --send
+```
+
+If the tag workflow fails with npm `E404` / "could not be found or you do not have permission" during OIDC publishing, first verify the package's npm trusted-publisher settings. If the release is time-sensitive and `NPM_TOKEN` is configured as a GitHub Actions secret, rerun the workflow with `publish_auth_strategy=token` or run the wrapper locally after npm 2FA:
+
+```bash
+node scripts/publish-packages.mjs --only=@decantr/telemetry --auth-strategy=token
+pnpm release:verify -- --only=@decantr/telemetry
+pnpm release:closeout -- --only=@decantr/telemetry --version X.Y.Z
 ```
 
 ## Prerelease Channel

@@ -12,6 +12,12 @@ const includeExperimental = args.has('--include-experimental');
 const dryRun = args.has('--dry-run');
 const publishDryRun = args.has('--publish-dry-run');
 const ciProvenance = process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true';
+const requestedAuthStrategy = (
+  readArgValue(rawArgs, 'auth-strategy')
+  ?? readArgValue(rawArgs, 'publish-auth')
+  ?? process.env.DECANTR_PUBLISH_AUTH_STRATEGY
+  ?? 'auto'
+).toLowerCase();
 const shouldCheckPublishedVersions = publishDryRun || !dryRun;
 const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
 const onlyWave = readArgValue(rawArgs, 'wave');
@@ -29,6 +35,13 @@ const DEPENDENCY_FIELDS = [
   'peerDependencies',
   'optionalDependencies',
 ];
+const AUTH_STRATEGIES = new Set(['auto', 'oidc', 'token']);
+
+if (!AUTH_STRATEGIES.has(requestedAuthStrategy)) {
+  console.error(`Unsupported publish auth strategy: ${requestedAuthStrategy}`);
+  console.error('Use one of: auto, oidc, token.');
+  process.exit(1);
+}
 
 function parsePackOutput(stdout) {
   const parsed = JSON.parse(stdout.trim());
@@ -105,6 +118,144 @@ function auditPackedManifest(entry, cwd, packageVersion) {
   }
 }
 
+function hasClassicPublishToken() {
+  return Boolean(process.env.NODE_AUTH_TOKEN || process.env.NPM_TOKEN);
+}
+
+function isPackageVersionPublished(packageName, packageVersion) {
+  const npmVersions = readNpmVersions(packageName);
+  return Boolean(
+    npmVersions?.published
+    && Array.isArray(npmVersions.versions)
+    && npmVersions.versions.includes(packageVersion),
+  );
+}
+
+function getPrimaryAuthMode() {
+  if (requestedAuthStrategy === 'token') return 'token';
+  if (requestedAuthStrategy === 'oidc') return 'oidc';
+  return ciProvenance ? 'oidc' : 'token';
+}
+
+function createPublishCommand({ distTag, mode }) {
+  return [
+    'publish',
+    '--access',
+    'public',
+    ...(mode === 'oidc' && ciProvenance ? ['--provenance'] : []),
+    '--tag',
+    distTag,
+    '--no-git-checks',
+    ...(publishDryRun ? ['--dry-run'] : []),
+  ];
+}
+
+function createPublishEnv(mode) {
+  const env = { ...process.env };
+
+  if (mode !== 'token') {
+    return env;
+  }
+
+  if (env.NPM_TOKEN && !env.NODE_AUTH_TOKEN) {
+    env.NODE_AUTH_TOKEN = env.NPM_TOKEN;
+  }
+
+  // Force the classic token/user-auth path for fallback publishes.
+  // Otherwise npm may prefer the ambient GitHub OIDC variables again.
+  delete env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+  delete env.ACTIONS_ID_TOKEN_REQUEST_URL;
+  env.NPM_CONFIG_PROVENANCE = 'false';
+
+  return env;
+}
+
+function describeAuthMode(mode) {
+  if (mode === 'oidc') return 'GitHub OIDC trusted publishing';
+  return ciProvenance ? 'npm token fallback' : 'local npm auth';
+}
+
+function runPublishCommand({ cwd, cmd, mode }) {
+  const result = spawnSync('pnpm', cmd, {
+    cwd,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: createPublishEnv(mode),
+  });
+
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+
+  return result;
+}
+
+function explainPublishFailure({ entry, mode, packageVersion }) {
+  if (mode !== 'oidc') return;
+
+  console.error(
+    [
+      '',
+      `OIDC publish failed for ${entry.name}@${packageVersion}.`,
+      'For GitHub trusted publishing, npm package settings must include:',
+      '- Publisher: GitHub Actions',
+      '- Organization/repository: decantr-ai/decantr',
+      '- Workflow filename: publish.yml',
+      '- Allowed action: npm publish',
+      'Alternatively set NPM_TOKEN in GitHub Actions and rerun with DECANTR_PUBLISH_AUTH_STRATEGY=token or workflow input publish_auth_strategy=token.',
+      '',
+    ].join('\n'),
+  );
+}
+
+function publishPackage({ entry, cwd, distTag, packageVersion }) {
+  const primaryMode = getPrimaryAuthMode();
+  const primaryCmd = createPublishCommand({ distTag, mode: primaryMode });
+
+  console.log(`Using ${describeAuthMode(primaryMode)} for ${entry.name}.`);
+
+  if (!publishDryRun && primaryMode === 'token' && ciProvenance && !hasClassicPublishToken()) {
+    throw new Error(
+      [
+        `Cannot publish ${entry.name} with token auth because neither NODE_AUTH_TOKEN nor NPM_TOKEN is set.`,
+        'Add an npm automation token as the NPM_TOKEN GitHub Actions secret or use OIDC trusted publishing.',
+      ].join('\n'),
+    );
+  }
+
+  const primaryResult = runPublishCommand({ cwd, cmd: primaryCmd, mode: primaryMode });
+
+  if (primaryResult.status === 0) {
+    return;
+  }
+
+  if (isPackageVersionPublished(entry.name, packageVersion)) {
+    console.warn(
+      `pnpm publish exited non-zero for ${entry.name}, but npm now lists ${packageVersion}; continuing to the verifier.`,
+    );
+    return;
+  }
+
+  const canFallbackToToken = requestedAuthStrategy === 'auto'
+    && primaryMode === 'oidc'
+    && ciProvenance
+    && hasClassicPublishToken();
+
+  if (!canFallbackToToken) {
+    explainPublishFailure({ entry, mode: primaryMode, packageVersion });
+    process.exit(primaryResult.status ?? 1);
+  }
+
+  console.warn(
+    `OIDC publish failed for ${entry.name}; retrying once with npm token fallback and provenance disabled.`,
+  );
+  const fallbackCmd = createPublishCommand({ distTag, mode: 'token' });
+  const fallbackResult = runPublishCommand({ cwd, cmd: fallbackCmd, mode: 'token' });
+
+  if (fallbackResult.status !== 0) {
+    process.exit(fallbackResult.status ?? 1);
+  }
+}
+
 if (dryRun && publishDryRun) {
   console.error('Use either --dry-run (selection only) or --publish-dry-run (npm publish preflight), not both.');
   process.exit(1);
@@ -147,22 +298,16 @@ for (const entry of selected) {
     continue;
   }
 
-  const cmd = versionAlreadyPublished
-    ? null
-    : ['publish', '--access', 'public', ...(ciProvenance ? ['--provenance'] : []), '--tag', distTag, '--no-git-checks'];
-  if (publishDryRun && !versionAlreadyPublished) {
-    cmd.push('--dry-run');
-  }
-
   const action = versionAlreadyPublished ? 'Auditing packed manifest for' : 'Publishing';
   const suffix = versionAlreadyPublished ? ` (version ${packageVersion} is already published)` : ` with tag ${distTag}`;
   console.log(`${prefix}${action} ${entry.name} from ${entry.path}${suffix} (wave ${entry.releaseWave}, order ${entry.publishOrder})`);
 
   if (dryRun) continue;
 
-  if (!publishDryRun && !ciProvenance) {
+  const primaryMode = getPrimaryAuthMode();
+  if (!publishDryRun && primaryMode === 'token' && !ciProvenance && !hasClassicPublishToken()) {
     assertNpmPackageWriteAccess(entry.name);
-  } else if (!publishDryRun && ciProvenance) {
+  } else if (!publishDryRun && primaryMode === 'oidc') {
     console.log('Skipping npm write-access precheck; GitHub OIDC publishing obtains npm credentials at publish time.');
   }
 
@@ -170,13 +315,5 @@ for (const entry of selected) {
 
   if (versionAlreadyPublished) continue;
 
-  const result = spawnSync('pnpm', cmd, {
-    cwd,
-    stdio: 'inherit',
-    env: process.env,
-  });
-
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1);
-  }
+  publishPackage({ entry, cwd, distTag, packageVersion });
 }

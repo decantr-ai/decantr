@@ -10,6 +10,12 @@ const jsonOutput = args.has('--json');
 const includeExperimental = args.has('--include-experimental');
 const onlyWave = readArgValue(rawArgs, 'wave');
 const tagOverride = readArgValue(rawArgs, 'tag-override') ?? readArgValue(rawArgs, 'tag');
+const publishAuthStrategy = (
+  readArgValue(rawArgs, 'auth-strategy')
+  ?? readArgValue(rawArgs, 'publish-auth')
+  ?? process.env.DECANTR_PUBLISH_AUTH_STRATEGY
+  ?? 'auto'
+).toLowerCase();
 const onlyNames = new Set(
   readArgValue(rawArgs, 'only')
     ? readArgValue(rawArgs, 'only')
@@ -23,6 +29,13 @@ const root = getRepoRoot();
 const surface = loadPackageSurface(root);
 const npmAuth = readNpmAuthState();
 const repairPlan = planNpmSurfaceRepairs(surface);
+const AUTH_STRATEGIES = new Set(['auto', 'oidc', 'token']);
+
+if (!AUTH_STRATEGIES.has(publishAuthStrategy)) {
+  console.error(`Unsupported publish auth strategy: ${publishAuthStrategy}`);
+  console.error('Use one of: auto, oidc, token.');
+  process.exit(1);
+}
 
 const selected = sortReleaseEntries(surface.packages).filter((entry) => {
   if (!entry.publish) return false;
@@ -38,6 +51,7 @@ function createPublishPackagesCommand(extraArgs = []) {
   if (onlyNames.size > 0) parts.push(`--only=${[...onlyNames].join(',')}`);
   if (includeExperimental) parts.push('--include-experimental');
   if (tagOverride) parts.push(`--tag-override=${tagOverride}`);
+  if (publishAuthStrategy !== 'auto') parts.push(`--auth-strategy=${publishAuthStrategy}`);
   return parts.join(' ');
 }
 
@@ -57,7 +71,9 @@ const commands = selected.map((entry) => {
   const distTag = tagOverride || entry.defaultDistTag;
   const npmVersions = readNpmVersions(entry.name);
   const versionAlreadyPublished = npmVersions.published && Array.isArray(npmVersions.versions) && npmVersions.versions.includes(version);
-  const provenanceFlag = process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true' ? ' --provenance' : '';
+  const provenanceFlag = publishAuthStrategy !== 'token' && (process.env.GITHUB_ACTIONS === 'true' || process.env.CI === 'true')
+    ? ' --provenance'
+    : '';
   const preflight = versionAlreadyPublished
     ? `cd ${cwd} && pnpm pack --pack-destination /tmp`
     : `cd ${cwd} && pnpm publish --access public${provenanceFlag} --tag ${distTag} --no-git-checks --dry-run`;
@@ -117,9 +133,10 @@ const output = {
     only: [...onlyNames],
     includeExperimental,
     tagOverride,
+    publishAuthStrategy,
   },
   wrapperCommands: {
-    auth: createPublishPackagesCommand().replace('node scripts/publish-packages.mjs', 'pnpm audit:npm-auth'),
+    auth: 'pnpm audit:npm-auth',
     preflight: createPublishPackagesCommand(['--publish-dry-run']),
     publish: createPublishPackagesCommand(),
     verify: createVerifyPublishedPackagesCommand(),
@@ -142,6 +159,7 @@ const lines = [
   `- Only filter: ${onlyNames.size > 0 ? [...onlyNames].join(', ') : 'all'}`,
   `- Include experimental: ${includeExperimental ? 'yes' : 'no'}`,
   `- Tag override: ${tagOverride ?? 'none'}`,
+  `- Publish auth: ${publishAuthStrategy} (${publishAuthStrategy === 'auto' ? 'CI uses OIDC first, then NPM_TOKEN fallback when available' : 'explicit'})`,
   `- Auth check: \`npm whoami\``,
   '',
   '## Wrapper Commands',
@@ -152,6 +170,7 @@ const lines = [
   `- verify: \`${output.wrapperCommands.verify}\``,
   '',
   'The wrapper commands are preferred because they audit packed tarball manifests before publishing, then verify the public npm install surface after publishing.',
+  'CI publishes use GitHub OIDC trusted publishing by default. If a package is missing npm trusted-publisher configuration and `NPM_TOKEN` is available, `auto` retries that package once with token auth and provenance disabled.',
   '',
 ];
 

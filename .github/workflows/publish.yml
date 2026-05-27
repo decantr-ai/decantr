@@ -32,6 +32,15 @@ on:
         required: false
         type: boolean
         default: false
+      publish_auth_strategy:
+        description: Publish auth strategy; auto tries OIDC first and falls back to NPM_TOKEN when available
+        required: false
+        type: choice
+        options:
+          - auto
+          - oidc
+          - token
+        default: auto
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -55,6 +64,7 @@ jobs:
         with:
           node-version: 24
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
       - name: Report toolchain versions
         run: |
           node -v
@@ -105,13 +115,15 @@ jobs:
           name: package-release-evidence
           path: package-release-evidence/**
           if-no-files-found: error
-      - name: Publish packages with OIDC provenance
+      - name: Publish packages
         env:
           RELEASE_WAVE: ${{ github.event.inputs.release_wave || 'all' }}
           DIST_TAG_OVERRIDE: ${{ github.event.inputs.dist_tag || '' }}
           ONLY_PACKAGES: ${{ github.event.inputs.only_packages || '' }}
           INCLUDE_EXPERIMENTAL: ${{ github.event.inputs.include_experimental || 'false' }}
           DRY_RUN_ONLY: ${{ github.event.inputs.dry_run_only || 'false' }}
+          DECANTR_PUBLISH_AUTH_STRATEGY: ${{ github.event.inputs.publish_auth_strategy || 'auto' }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           ARGS=""
           if [ "$RELEASE_WAVE" != "all" ]; then
@@ -129,6 +141,7 @@ jobs:
           if [ "$DRY_RUN_ONLY" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
+          ARGS="$ARGS --auth-strategy=$DECANTR_PUBLISH_AUTH_STRATEGY"
           node scripts/publish-packages.mjs $ARGS
       - name: Verify published npm packages
         if: ${{ github.event.inputs.dry_run_only != 'true' }}
