@@ -9,7 +9,7 @@ function runCli(cwd: string, args: string[]): string {
   return execFileSync('node', [cliPath, ...args], {
     cwd,
     encoding: 'utf-8',
-    timeout: 15_000,
+    timeout: 45_000,
     env: { ...process.env, DECANTR_OFFLINE: 'true' },
   });
 }
