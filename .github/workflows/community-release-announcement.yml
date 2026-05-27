@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version, for example 3.0.0-next.0
+        description: Release version, for example 3.0.0
         required: true
       only_packages:
         description: Optional comma-separated package names to announce

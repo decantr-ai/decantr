@@ -46,8 +46,8 @@ This means 3.0 should be a new major line, not a slow rewording of 2.x.
 Implementation status after the first 2026-05-23 prerelease closeout:
 
 - Research gate inputs were created and folded into the architecture direction.
-- The first Decantr 3 foundation package line was published as `3.0.0-next.0` under npm `next`; npm `latest` remains on the 2.x line.
-- Git tag and GitHub prerelease: `v3.0.0-next.0`.
+- The Decantr 3 foundation package line was first published as `3.0.0-next.0` under npm `next`, then promoted to `3.0.0` under npm `latest`.
+- Git tags: `v3.0.0-next.0` for the prerelease and `v3.0.0` for the stable Decantr 3 release.
 - Public docs and package READMEs now lead with AI Frontend Governance, Contract / Context / Evidence, typed graph artifacts, and Brownfield/Hybrid governance.
 - The monorepo reset work landed on `main`; historical implementation branches are no longer the release authority.
 - The content-doc alignment work landed on `main` in `decantr-content`.
