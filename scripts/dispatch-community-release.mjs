@@ -117,7 +117,14 @@ const response = await fetch(`https://api.github.com/repos/${targetRepo}/dispatc
 
 if (!response.ok) {
   const text = await response.text();
-  throw new Error(`GitHub repository_dispatch failed ${response.status} ${response.statusText}: ${text.slice(0, 600)}`);
+  throw new Error(
+    [
+      `GitHub repository_dispatch failed ${response.status} ${response.statusText}: ${text.slice(0, 600)}`,
+      '',
+      'Fallback: trigger the receiver workflow directly from community-ops with the changelog file attached:',
+      renderReceiverFallbackCommand(),
+    ].join('\n'),
+  );
 }
 
 console.log(`Dispatched ${eventType} for ${explicitProject} ${releaseVersion} to ${targetRepo}.`);
@@ -174,4 +181,29 @@ function runGit(gitArgs, options = {}) {
     if (options.allowFailure) return null;
     throw error;
   }
+}
+
+function renderReceiverFallbackCommand() {
+  const packagesArg = selectedPackages
+    .map((entry) => `${entry.name}@${entry.version}`)
+    .join(',');
+  return [
+    'gh workflow run discord-release.yml \\',
+    '  --repo decantr-ai/community-ops \\',
+    '  --ref main \\',
+    `  -f version=${shellQuote(releaseVersion)} \\`,
+    `  -f tag=${shellQuote(releaseTag)} \\`,
+    `  -f repo=${shellQuote(sourceRepo)} \\`,
+    `  -f release_note_path=${shellQuote(releaseNotePath)} \\`,
+    `  -f release_url=${shellQuote(`https://github.com/${sourceRepo}/releases/tag/${releaseTag}`)} \\`,
+    `  -f packages=${shellQuote(packagesArg)} \\`,
+    `  -F changelog_markdown=@${shellQuote(releaseNotePath)} \\`,
+    '  -f dry_run=false',
+  ].join('\n');
+}
+
+function shellQuote(value) {
+  const stringValue = String(value);
+  if (/^[A-Za-z0-9_./:@,%+-]+$/.test(stringValue)) return stringValue;
+  return `'${stringValue.replaceAll("'", "'\\''")}'`;
 }

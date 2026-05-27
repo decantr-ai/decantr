@@ -130,8 +130,11 @@ gh workflow run discord-release.yml \
   -f release_note_path=docs/releases/2026-05-23-decantr-3-next-foundation.md \
   -f release_url=https://github.com/decantr-ai/decantr/releases/tag/v3.0.0-next.0 \
   -f packages='@decantr/cli@3.0.0-next.0,@decantr/mcp-server@3.0.0-next.0,@decantr/verifier@3.0.0-next.0' \
+  -F changelog_markdown=@docs/releases/2026-05-23-decantr-3-next-foundation.md \
   -f dry_run=false
 ```
+
+Always pass `changelog_markdown` on the receiver fallback. Prerelease tags can point at the package release commit while release notes continue to evolve on `main`; passing the markdown directly keeps `community-ops` from fetching a release note from a tag that may not contain it.
 
 That direct receiver path uses `community-ops` repository secrets, including `DISCORD_RELEASE_WEBHOOK_URL`, and does not require the source repo dispatch token.
 
