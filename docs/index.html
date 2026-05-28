@@ -939,34 +939,47 @@
       overflow: hidden;
     }
     .proof-item {
-      display: grid; gap: 0.32rem;
-      padding: 1.4rem 1.25rem;
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: 0.55rem;
+      justify-items: center;
+      align-content: start;
+      padding: 1.5rem 1.25rem;
       color: var(--muted);
       border-right: 1px solid var(--border);
       text-align: center;
     }
     .proof-item:last-child { border-right: 0; }
-    .proof-item .big {
-      color: var(--text);
-      font-family: var(--sans);
-      font-weight: 700;
-      font-size: clamp(1.4rem, 2vw, 1.85rem);
-      letter-spacing: -0.02em;
-      line-height: 1;
-    }
     .proof-item .label {
       color: var(--soft);
       font-family: var(--mono);
       font-size: 0.72rem; font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      line-height: 1.2;
     }
-    .proof-item a {
-      display: inline-flex; align-items: center; gap: 0.32rem;
-      color: var(--accent);
+    .proof-item .big {
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(1.4rem, 2vw, 1.85rem);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      min-height: 1.15em;
     }
-    .proof-item a:hover { color: var(--accent-2); }
-    .proof-item .icon { width: 0.9rem; height: 0.9rem; }
+    .proof-item .sub {
+      display: inline-flex; align-items: center;
+      gap: 0.42rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 500;
+      line-height: 1.2;
+      transition: color 140ms ease;
+    }
+    .proof-item .sub.link { color: var(--accent); }
+    .proof-item .sub.link:hover { color: var(--accent-2); }
+    .proof-item .sub .icon { width: 0.9rem; height: 0.9rem; flex-shrink: 0; }
 
     .pricing-line {
       max-width: 64rem;
@@ -1608,25 +1621,29 @@ action:
           <div class="proof-item">
             <span class="label">Packages shipping</span>
             <span class="big">8 @ v3.0.2</span>
-            <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">
-              <i data-lucide="package" class="icon"></i>npm
+            <a class="sub link" href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">
+              <i data-lucide="package" class="icon" aria-hidden="true"></i>npm
             </a>
           </div>
           <div class="proof-item">
             <span class="label">MCP tools online</span>
             <span class="big">32</span>
-            <span style="color:var(--soft); font-size:0.82rem;">for any MCP agent</span>
+            <span class="sub">
+              <i data-lucide="bot" class="icon" aria-hidden="true"></i>for any MCP agent
+            </span>
           </div>
           <div class="proof-item">
             <span class="label">License</span>
             <span class="big">MIT</span>
-            <span style="color:var(--soft); font-size:0.82rem;">no rug pull, ever</span>
+            <span class="sub">
+              <i data-lucide="shield-check" class="icon" aria-hidden="true"></i>no rug pull, ever
+            </span>
           </div>
           <div class="proof-item">
             <span class="label">Source</span>
             <span class="big">TypeScript</span>
-            <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">
-              <i data-lucide="git-branch" class="icon"></i>GitHub
+            <a class="sub link" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">
+              <i data-lucide="git-branch" class="icon" aria-hidden="true"></i>GitHub
             </a>
           </div>
         </div>
