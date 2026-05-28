@@ -3,1406 +3,1693 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decantr - Stop AI From Breaking Your UI</title>
-  <meta name="description" content="Decantr runs locally, reads your frontend, gives AI agents route-scoped context, and verifies UI changes with repairable evidence before drift lands in your repo.">
+  <title>Decantr — Catch UI drift before it ships</title>
+  <meta name="description" content="The verifier between your AI and your repo. Reads your frontend, hands your agent route-scoped context, and emits evidence your agent can repair from — before merge.">
   <link rel="canonical" href="https://decantr.ai/">
-  <meta property="og:title" content="Decantr - Stop AI From Breaking Your UI">
-  <meta property="og:description" content="Local-first AI Frontend Governance for AI-edited codebases: scan, adopt, task, verify, and repair UI drift before it ships.">
+  <meta property="og:title" content="Decantr — Catch UI drift before it ships">
+  <meta property="og:description" content="The verifier between your AI and your repo. Local CLI · MCP-native · 32 tools · MIT.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai/">
   <meta property="og:image" content="https://decantr.ai/logo.svg">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Decantr - Stop AI From Breaking Your UI">
-  <meta name="twitter:description" content="Run a local scan, give your AI route context, and verify frontend changes with evidence-backed repair prompts.">
+  <meta name="twitter:title" content="Decantr — Catch UI drift before it ships">
+  <meta name="twitter:description" content="Local CLI that hands your AI route-scoped context and emits evidence your agent can repair from.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "https://decantr.ai/#organization",
-        "name": "Decantr AI",
-        "url": "https://decantr.ai/",
-        "logo": "https://decantr.ai/logo.svg",
-        "sameAs": [
-          "https://github.com/decantr-ai/decantr",
-          "https://www.npmjs.com/org/decantr",
-          "https://registry.decantr.ai"
-        ]
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://decantr.ai/#website",
-        "name": "Decantr",
-        "alternateName": "Decantr AI",
-        "url": "https://decantr.ai/",
-        "publisher": {
-          "@id": "https://decantr.ai/#organization"
-        }
-      },
-      {
-        "@type": "SoftwareApplication",
-        "@id": "https://decantr.ai/#software",
-        "name": "Decantr",
-        "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Cross-platform",
-        "url": "https://decantr.ai/",
-        "description": "Local-first AI Frontend Governance for production frontends touched by AI agents.",
-        "sameAs": "https://github.com/decantr-ai/decantr",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        }
-      },
-      {
-        "@type": "SoftwareSourceCode",
-        "@id": "https://github.com/decantr-ai/decantr#source",
-        "name": "Decantr",
-        "codeRepository": "https://github.com/decantr-ai/decantr",
-        "programmingLanguage": "TypeScript",
-        "license": "https://opensource.org/license/mit",
-        "targetProduct": {
-          "@id": "https://decantr.ai/#software"
-        }
-      }
+      { "@type": "Organization", "@id": "https://decantr.ai/#organization", "name": "Decantr AI", "url": "https://decantr.ai/", "logo": "https://decantr.ai/logo.svg", "sameAs": ["https://github.com/decantr-ai/decantr", "https://www.npmjs.com/org/decantr"] },
+      { "@type": "WebSite", "@id": "https://decantr.ai/#website", "name": "Decantr", "alternateName": "Decantr AI", "url": "https://decantr.ai/", "publisher": { "@id": "https://decantr.ai/#organization" } },
+      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "Local CLI that reads your repo, hands your AI route-scoped context, and emits evidence your agent can repair from.", "sameAs": "https://github.com/decantr-ai/decantr", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "SoftwareSourceCode", "@id": "https://github.com/decantr-ai/decantr#source", "name": "Decantr", "codeRepository": "https://github.com/decantr-ai/decantr", "programmingLanguage": "TypeScript", "license": "https://opensource.org/license/mit", "targetProduct": { "@id": "https://decantr.ai/#software" } }
     ]
   }
   </script>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #06060b;
-      --bg-2: #0d0d16;
-      --surface: #12121d;
-      --surface-2: #181823;
-      --surface-3: #20202c;
-      --border: rgba(255, 255, 255, 0.12);
-      --border-strong: rgba(255, 255, 255, 0.22);
-      --text: #f8f7f2;
+      --bg: #06070a;
+      --bg-elev: #0a0b12;
+      --surface: #10121b;
+      --surface-elev: #161826;
+      --surface-hi: #1b1d2a;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --text: #f7f7f3;
       --muted: #aaa8b8;
-      --soft: #777587;
-      --coral: #f58882;
-      --pink: #fe4474;
-      --amber: #fda303;
-      --cyan: #0af3eb;
-      --green: #00e0ab;
-      --ink: #08080f;
-      --max: 1180px;
-      --radius: 8px;
+      --soft: #6f6d7d;
+      --accent: #5fe8dc;
+      --accent-2: #7df2c0;
+      --accent-soft: rgba(95, 232, 220, 0.12);
+      --accent-line: rgba(95, 232, 220, 0.32);
+      --accent-glow: rgba(95, 232, 220, 0.35);
+      --success: #47e0b1;
+      --success-soft: rgba(71, 224, 177, 0.12);
+      --warn: #ffb13b;
+      --danger: #ff928b;
+      --ink: #06070a;
+      --max: 1280px;
+      --page-pad: clamp(1.25rem, 4vw, 4rem);
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 16px;
       --mono: "SFMono-Regular", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
-      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: "Lora", Georgia, serif;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-      background: var(--bg);
-    }
+    html { background: var(--bg); }
 
     body {
       margin: 0;
       color: var(--text);
       background:
-        linear-gradient(180deg, rgba(245, 136, 130, 0.08) 0, transparent 34rem),
-        linear-gradient(120deg, rgba(10, 243, 235, 0.06) 0, transparent 42rem),
+        radial-gradient(1100px 600px at 80% -10%, rgba(95, 232, 220, 0.10), transparent 60%),
+        radial-gradient(900px 500px at 0% 110%, rgba(95, 232, 220, 0.05), transparent 55%),
         var(--bg);
       font-family: var(--sans);
-      line-height: 1.5;
+      font-size: 16px;
+      line-height: 1.55;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
 
+    /* Subtle grain — barely visible, lifts dark surfaces */
     body::before {
       content: "";
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       z-index: -1;
-      background-image:
-        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 72%);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.04 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+      opacity: 0.6;
       pointer-events: none;
+      mix-blend-mode: overlay;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; appearance: none; cursor: pointer; }
 
-    button,
-    input {
-      font: inherit;
+    .sr-only {
+      position: fixed; width: 1px; height: 1px;
+      overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+      white-space: nowrap;
     }
 
     .skip-link {
-      position: absolute;
-      left: 1rem;
-      top: -4rem;
-      z-index: 30;
-      padding: 0.75rem 1rem;
-      color: var(--ink);
-      background: var(--cyan);
+      position: absolute; left: 1rem; top: -4rem;
+      z-index: 50;
+      padding: 0.7rem 1rem;
+      color: var(--ink); background: var(--accent);
       border-radius: var(--radius);
+      font-weight: 600;
       transition: top 160ms ease;
     }
+    .skip-link:focus { top: 1rem; }
 
-    .skip-link:focus {
-      top: 1rem;
-    }
-
+    /* ---------- Sticky header ---------- */
     .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(6, 6, 11, 0.78);
-      backdrop-filter: blur(18px);
+      position: sticky; top: 0; z-index: 30;
+      background: rgba(6, 7, 10, 0.78);
+      backdrop-filter: blur(18px) saturate(140%);
+      -webkit-backdrop-filter: blur(18px) saturate(140%);
+      border-bottom: 1px solid var(--border);
     }
-
     .nav-shell {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem;
       width: min(100% - 2rem, var(--max));
       min-height: 4.25rem;
       margin: 0 auto;
-      gap: 1.25rem;
     }
-
     .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.7rem;
-      min-width: 0;
-      font-weight: 780;
-      letter-spacing: 0;
+      display: inline-flex; align-items: center; gap: 0.65rem;
+      color: var(--text);
     }
-
-    .brand img {
-      width: 2rem;
-      height: 2rem;
-      object-fit: contain;
+    .brand img { width: 30px; height: 30px; }
+    .brand-name {
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 1.18rem;
+      letter-spacing: -0.015em;
     }
-
-    .brand span {
-      font-size: 1.02rem;
-    }
-
     .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
+      display: flex; align-items: center; gap: 0.15rem;
+      margin-left: auto;
     }
-
     .nav-links a {
-      padding: 0.55rem 0.75rem;
+      padding: 0.5rem 0.75rem;
       color: var(--muted);
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      font-weight: 650;
+      font-size: 0.9rem; font-weight: 500;
+      border-radius: var(--radius-sm);
       transition: color 160ms ease, background 160ms ease;
     }
-
-    .nav-links a:hover,
-    .nav-links a:focus-visible {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.06);
+    .nav-links a:hover, .nav-links a:focus-visible {
+      color: var(--text); background: rgba(255, 255, 255, 0.04);
       outline: none;
     }
-
-    .nav-action {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      min-height: 2.55rem;
-      padding: 0 1rem;
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      margin-left: 0.5rem;
+      padding: 0.6rem 0.9rem;
       color: var(--ink);
-      background: var(--coral);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: var(--radius);
-      box-shadow: 0 0 0 1px rgba(245, 136, 130, 0.18), 0 0.75rem 2.5rem rgba(245, 136, 130, 0.24);
-      font-size: 0.9rem;
-      font-weight: 800;
-      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: var(--radius-sm);
+      font-family: var(--mono);
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: -0.005em;
+      transition: transform 140ms ease, box-shadow 200ms ease;
+      box-shadow: 0 0 0 0 rgba(95, 232, 220, 0);
     }
-
-    .nav-action:hover,
-    .nav-action:focus-visible {
-      transform: translateY(-1px);
-      background: #ff9b96;
-      box-shadow: 0 0 0 1px rgba(245, 136, 130, 0.28), 0 1rem 3rem rgba(245, 136, 130, 0.34);
+    .nav-cta:hover, .nav-cta:focus-visible {
+      box-shadow: 0 0 0 6px rgba(95, 232, 220, 0.18), 0 8px 30px rgba(95, 232, 220, 0.25);
       outline: none;
+      transform: translateY(-1px);
     }
 
-    main {
-      overflow: hidden;
-    }
-
+    /* ---------- Layout primitives ---------- */
+    main { width: 100%; }
     .section {
-      position: relative;
-      width: min(100% - 2rem, var(--max));
+      width: 100%;
+      padding: clamp(3.5rem, 6vw, 6rem) var(--page-pad);
+      scroll-margin-top: 5rem;
+    }
+    .section-tight { padding-top: 0; }
+    .container {
+      width: 100%;
+      max-width: var(--max);
       margin: 0 auto;
-      padding: 6rem 0;
     }
 
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.82fr);
-      align-items: center;
-      gap: clamp(2rem, 5vw, 5rem);
-      min-height: calc(100svh - 4.25rem);
-      padding-top: 4.5rem;
-      padding-bottom: 4rem;
-    }
+    h1, h2, h3 { margin: 0; }
+    p { margin: 0; }
 
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      margin: 0 0 1.25rem;
-      padding: 0.36rem 0.6rem;
-      color: var(--cyan);
-      background: rgba(10, 243, 235, 0.08);
-      border: 1px solid rgba(10, 243, 235, 0.18);
-      border-radius: var(--radius);
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      color: var(--accent);
       font-family: var(--mono);
-      font-size: 0.75rem;
-      letter-spacing: 0;
+      font-size: 0.82rem; font-weight: 600;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
     }
-
-    h1,
-    h2,
-    h3,
-    p {
-      margin-top: 0;
+    .eyebrow::before {
+      content: ""; width: 1.4rem; height: 1px;
+      background: var(--accent-line);
     }
 
-    h1 {
-      max-width: 13ch;
-      margin-bottom: 1.35rem;
-      font-size: clamp(3.4rem, 7vw, 6.25rem);
-      line-height: 0.91;
-      letter-spacing: 0;
+    /* ---------- Hero ---------- */
+    .hero {
+      padding-top: clamp(2.25rem, 3.5vw, 3.25rem);
+      padding-bottom: clamp(0.5rem, 1vw, 1rem);
     }
-
-    .hero-copy {
-      max-width: 42rem;
-    }
-
-    .hero-copy > p {
-      max-width: 38rem;
-      margin-bottom: 1.6rem;
-      color: color-mix(in srgb, var(--muted) 86%, var(--text));
-      font-size: clamp(1.05rem, 1.5vw, 1.25rem);
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.8rem;
-      margin-top: 1.2rem;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      min-height: 3rem;
-      padding: 0 1.15rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-weight: 800;
-      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
-    }
-
-    .button-primary {
-      color: var(--ink);
-      background: var(--coral);
-      border-color: rgba(245, 136, 130, 0.52);
-      box-shadow: 0 0.75rem 2.5rem rgba(245, 136, 130, 0.24);
-    }
-
-    .button-primary:hover,
-    .button-primary:focus-visible {
-      transform: translateY(-1px);
-      background: #ff9b96;
-      box-shadow: 0 1rem 3rem rgba(245, 136, 130, 0.34);
-      outline: none;
-    }
-
-    .button-secondary {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.045);
-    }
-
-    .button-secondary:hover,
-    .button-secondary:focus-visible {
-      transform: translateY(-1px);
-      border-color: var(--border-strong);
-      background: rgba(255, 255, 255, 0.075);
-      outline: none;
-    }
-
-    .icon {
-      width: 1em;
-      height: 1em;
-      flex: 0 0 auto;
-      stroke-width: 2.15;
-    }
-
-    .button .icon {
-      width: 1rem;
-      height: 1rem;
-    }
-
-    .command-card {
+    .hero-inner {
       display: grid;
-      gap: 0.7rem;
-      max-width: 38rem;
-      margin: 1.8rem 0 0;
-    }
-
-    .command-label {
-      color: var(--soft);
-      font-size: 0.78rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .command-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 0.75rem;
-      min-width: 0;
-      padding: 0.55rem;
-      background: rgba(255, 255, 255, 0.055);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    }
-
-    code {
-      font-family: var(--mono);
-      letter-spacing: 0;
-    }
-
-    .command-row code {
-      display: block;
-      min-width: 0;
-      padding: 0.6rem 0.75rem;
-      overflow-x: auto;
-      color: var(--cyan);
-      font-size: clamp(0.88rem, 1vw, 1rem);
-      white-space: nowrap;
-    }
-
-    .copy-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      min-height: 2.35rem;
-      padding: 0 0.75rem;
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.075);
-      border: 1px solid var(--border);
-      border-radius: calc(var(--radius) - 2px);
-      cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 780;
-      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
-    }
-
-    .copy-button:hover,
-    .copy-button:focus-visible {
-      color: var(--ink);
-      background: var(--cyan);
-      border-color: var(--cyan);
-      outline: none;
-    }
-
-    .copy-button .icon {
-      width: 0.9rem;
-      height: 0.9rem;
-    }
-
-    .hero-proof {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1.2rem;
-      color: var(--muted);
-      font-size: 0.9rem;
-      font-weight: 650;
-    }
-
-    .hero-proof span {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.45rem 0.6rem;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius);
-    }
-
-    .hero-proof span::before {
-      content: "";
-      width: 0.42rem;
-      height: 0.42rem;
-      background: var(--green);
-      border-radius: 50%;
-    }
-
-    .product-visual {
-      position: relative;
-      display: grid;
-      gap: 1rem;
-      min-width: 0;
-      padding: 1rem;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.035)),
-        var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 0 2.5rem 7rem rgba(0, 0, 0, 0.42);
-    }
-
-    .visual-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: 0.25rem 0.2rem 0.75rem;
-      color: var(--soft);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      font-family: var(--mono);
-      font-size: 0.76rem;
-    }
-
-    .visual-title {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-
-    .window-dots {
-      display: inline-flex;
-      gap: 0.38rem;
-    }
-
-    .window-dots span {
-      width: 0.6rem;
-      height: 0.6rem;
-      border-radius: 50%;
-      background: var(--surface-3);
-    }
-
-    .window-dots span:nth-child(1) { background: var(--pink); }
-    .window-dots span:nth-child(2) { background: var(--amber); }
-    .window-dots span:nth-child(3) { background: var(--green); }
-
-    .terminal {
-      display: grid;
-      gap: 0.55rem;
-      min-width: 0;
-      padding: 1rem;
-      background: #090911;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: calc(var(--radius) - 1px);
-      font-family: var(--mono);
-      font-size: 0.84rem;
-      line-height: 1.55;
-    }
-
-    .terminal-line {
-      display: flex;
-      gap: 0.6rem;
-      min-width: 0;
-      color: color-mix(in srgb, var(--muted) 88%, var(--text));
-    }
-
-    .prompt {
-      flex: 0 0 auto;
-      color: var(--coral);
-    }
-
-    .terminal-line strong {
-      color: var(--text);
-      font-weight: 760;
-    }
-
-    .terminal-line code {
-      min-width: 0;
-      overflow-wrap: anywhere;
-      color: var(--cyan);
-    }
-
-    .health-panel {
-      display: grid;
-      gap: 1rem;
-      padding: 1rem;
-      background: var(--surface-2);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: calc(var(--radius) - 1px);
-    }
-
-    .score-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      gap: 0.8rem;
-    }
-
-    .score-box {
-      min-width: 0;
-      padding: 0.85rem;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: calc(var(--radius) - 2px);
-    }
-
-    .score-label {
-      display: block;
-      color: var(--soft);
-      font-size: 0.72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .score-value {
-      display: block;
-      margin-top: 0.25rem;
-      color: var(--text);
-      font-size: 2rem;
-      font-weight: 860;
-      line-height: 1;
-    }
-
-    .score-box.after .score-value {
-      color: var(--green);
-    }
-
-    .score-arrow {
-      color: var(--coral);
-      font-family: var(--mono);
-      font-weight: 800;
-    }
-
-    .finding-list {
-      display: grid;
-      gap: 0.55rem;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .finding-list li {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 0.55rem;
-      min-width: 0;
-      padding: 0.55rem 0.65rem;
-      color: var(--muted);
-      background: rgba(6, 6, 11, 0.44);
-      border: 1px solid rgba(255, 255, 255, 0.075);
-      border-radius: calc(var(--radius) - 2px);
-      font-size: 0.82rem;
-    }
-
-    .code-badge {
-      color: var(--ink);
-      background: var(--amber);
-      border-radius: 4px;
-      padding: 0.12rem 0.28rem;
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      font-weight: 860;
-    }
-
-    .repair {
-      color: var(--green);
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      white-space: nowrap;
-    }
-
-    .section-head {
-      display: grid;
-      gap: 0.8rem;
-      max-width: 48rem;
-      margin-bottom: 2.2rem;
-    }
-
-    .section-head.center {
-      margin-right: auto;
-      margin-left: auto;
+      gap: 0;
+      max-width: 56rem;
+      margin: 0 auto;
       text-align: center;
     }
-
-    h2 {
-      margin-bottom: 0;
-      font-size: clamp(2rem, 4.2vw, 4.25rem);
+    .hero-inner .eyebrow { margin: 0 auto 1rem; }
+    .hero-h1 {
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: clamp(2.4rem, 5.4vw, 4.5rem);
       line-height: 0.98;
-      letter-spacing: 0;
+      letter-spacing: -0.02em;
+      max-width: 22ch;
+      margin: 0 auto 1.1rem;
+      text-wrap: balance;
     }
-
-    .section-head p {
+    .hero-h1 .accent {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2) 80%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .hero-lede {
       max-width: 42rem;
-      margin-bottom: 0;
+      margin: 0 auto 0.45rem;
       color: var(--muted);
-      font-size: 1.04rem;
+      font-size: clamp(1rem, 1.05vw, 1.1rem);
+      line-height: 1.55;
+    }
+    .hero-credibility {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      margin: 0 auto 1.4rem;
+      padding: 0.32rem 0.7rem 0.32rem 0.5rem;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.78rem;
+    }
+    .hero-credibility .dot {
+      width: 0.42rem; height: 0.42rem;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(71, 224, 177, 0.5);
+      animation: pulse 2.4s ease-out infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(71, 224, 177, 0.5); }
+      70% { box-shadow: 0 0 0 8px rgba(71, 224, 177, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(71, 224, 177, 0); }
+    }
+    .hero-credibility strong { color: var(--text); font-weight: 600; }
+    .hero-cta-row {
+      display: flex; flex-wrap: wrap; gap: 0.55rem 0.75rem;
+      align-items: center; justify-content: center;
+      margin-top: 0;
+    }
+    .hero-secondary {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.7rem 0.95rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+    .hero-secondary:hover, .hero-secondary:focus-visible {
+      color: var(--text); border-color: var(--border-strong);
+      background: rgba(255, 255, 255, 0.025);
+      outline: none;
+    }
+    .hero-secondary .icon { width: 0.95rem; height: 0.95rem; }
+
+    /* ---------- Installer (multi-package-manager tabs) ---------- */
+    .installer {
+      display: grid;
+      gap: 0;
+      width: 100%;
+      max-width: 32rem;
+      margin: 0 auto;
+    }
+    .installer-tabs {
+      display: inline-flex;
+      align-self: center;
+      gap: 0.15rem;
+      padding: 0.22rem;
+      margin: 0 auto 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+    }
+    .installer-tabs button {
+      padding: 0.32rem 0.7rem;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.75rem; font-weight: 600;
+      transition: background 140ms ease, color 140ms ease;
+    }
+    .installer-tabs button:hover { color: var(--text); }
+    .installer-tabs button.active {
+      color: var(--ink);
+      background: var(--accent);
+    }
+    .installer-tabs button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .command {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: stretch;
+      width: 100%;
+      overflow: hidden;
+      background: rgba(8, 9, 14, 0.78);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.40);
+      transition: border-color 200ms ease, box-shadow 200ms ease;
+    }
+    .command:hover, .command:focus-within {
+      border-color: var(--accent-line);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.40), 0 0 0 4px var(--accent-soft);
+    }
+    .command code {
+      display: flex; align-items: center;
+      min-height: 3.1rem;
+      padding: 0 1rem;
+      color: var(--accent);
+      background: transparent;
+      border: 0;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow-x: auto;
+      cursor: pointer;
+    }
+    .command code:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .command code::before {
+      content: "$";
+      margin-right: 0.6rem;
+      color: var(--soft);
+    }
+    .kbd-hint {
+      display: inline-flex;
+      align-self: center;
+      margin: 0.5rem auto 0;
+      gap: 0.32rem;
+      color: var(--soft);
+      font-size: 0.74rem;
+    }
+    .kbd {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 1.2rem;
+      padding: 0 0.32rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      min-height: 3.1rem;
+      padding: 0 1rem;
+      color: var(--text);
+      background: transparent;
+      border: 0;
+      border-left: 1px solid var(--border);
+      font-size: 0.85rem; font-weight: 600;
+      transition: background 140ms ease, color 140ms ease;
+    }
+    .copy-btn:hover, .copy-btn:focus-visible {
+      color: var(--accent);
+      background: var(--accent-soft);
+      outline: none;
+    }
+    .copy-btn .icon { width: 0.9rem; height: 0.9rem; }
+
+    /* ---------- Score band ---------- */
+    .score-band {
+      padding-top: clamp(0.5rem, 1vw, 1.25rem);
+      padding-bottom: clamp(3rem, 5vw, 5rem);
+    }
+    .score-wrap {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(1.5rem, 4vw, 3.5rem);
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 3vw, 3rem);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0) 60%),
+        var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+    }
+    .score-wrap::after {
+      content: "";
+      position: absolute;
+      inset: -40% -10% auto auto;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(71, 224, 177, 0.18), transparent 60%);
+      pointer-events: none;
+    }
+    .score-col {
+      position: relative;
+      display: grid; justify-items: center; gap: 0.45rem;
+      min-width: 0;
+    }
+    .score-col .label {
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .score-num {
+      display: flex; align-items: baseline; gap: 0.15rem;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(3.5rem, 9vw, 6.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .score-num .suffix {
+      color: var(--soft);
+      font-size: 0.45em;
+      font-weight: 500;
+    }
+    .score-col.after .score-num {
+      color: var(--success);
+      text-shadow: 0 0 60px rgba(71, 224, 177, 0.35);
+    }
+    .score-delta {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      margin-top: 0.2rem;
+      padding: 0.2rem 0.55rem;
+      color: var(--success);
+      background: var(--success-soft);
+      border: 1px solid rgba(71, 224, 177, 0.22);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+    .score-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 3.4rem; height: 3.4rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      border-radius: 50%;
+      box-shadow: 0 0 30px rgba(95, 232, 220, 0.18);
+    }
+    .score-arrow .icon { width: 1.4rem; height: 1.4rem; }
+    .score-caption {
+      max-width: 36rem;
+      margin: 1.4rem auto 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+    .score-caption strong { color: var(--text); font-weight: 600; }
+    .score-caption .rubric-link {
+      color: var(--accent);
+      border-bottom: 1px dotted var(--accent-line);
+      padding-bottom: 1px;
+    }
+    .score-caption .rubric-link:hover { color: var(--accent-2); }
+
+    /* ---------- Works-with strip ---------- */
+    .works-with {
+      max-width: 56rem;
+      margin: 1.5rem auto 0;
+      padding: 0;
+      text-align: center;
+    }
+    .works-with-label {
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.85rem;
+    }
+    .works-with-row {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 0.4rem 0.55rem;
+    }
+    .works-with-row span {
+      display: inline-flex; align-items: center;
+      padding: 0.32rem 0.7rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+    .works-with-row span:hover {
+      color: var(--text);
+      border-color: var(--accent-line);
+      background: rgba(255, 255, 255, 0.04);
     }
 
-    .problem-grid,
-    .steps-grid,
-    .trust-grid {
+    /* ---------- CLI transcript ---------- */
+    .transcript {
+      max-width: 48rem;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+    }
+    .transcript-head {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.7rem 1rem;
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--border);
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+    .dot-row { display: inline-flex; gap: 0.32rem; }
+    .dot-row span {
+      width: 0.55rem; height: 0.55rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.16);
+    }
+    .transcript-body {
+      margin: 0;
+      padding: 1.1rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .transcript-line {
+      display: flex; align-items: center; gap: 0.65rem;
+      min-width: 0;
+      color: var(--muted);
+    }
+    .transcript-line .sym { flex: 0 0 auto; }
+    .transcript-line .sym.prompt { color: var(--accent); }
+    .transcript-line .sym.spin { color: var(--soft); }
+    .transcript-line .sym.ok { color: var(--success); }
+    .transcript-line .sym.warn { color: var(--warn); }
+    .transcript-line .body { min-width: 0; }
+    .transcript-line .body strong { color: var(--text); font-weight: 600; }
+    .transcript-line .body em {
+      color: var(--accent);
+      font-style: normal;
+    }
+    .transcript-line .body .ok-text { color: var(--success); font-weight: 600; }
+    .transcript-line .body .warn-text { color: var(--warn); font-weight: 600; }
+    .transcript-line .body .soft { color: var(--soft); }
+    .transcript .out {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 0.65rem;
+      margin: 0;
+    }
+    .transcript .out dt {
+      color: var(--soft);
+      font-family: var(--mono);
+    }
+    .transcript .out dd {
+      margin: 0;
+      color: var(--text);
+      font-family: var(--mono);
+    }
+
+    /* ---------- Section heads ---------- */
+    .section-head {
+      display: grid; gap: 0.85rem;
+      max-width: 46rem;
+      margin: 0 auto clamp(2rem, 4vw, 3rem);
+      text-align: center;
+    }
+    .section-head .eyebrow { justify-self: center; }
+    .section-head h2 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(1.95rem, 3.2vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+    .section-head p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    /* ---------- Problem ---------- */
+    .problems {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .problem {
+      display: grid;
+      gap: 0.75rem;
+      padding: clamp(1.5rem, 2.5vw, 2.25rem) clamp(1.25rem, 2vw, 1.75rem);
+      border-right: 1px solid var(--border);
+      transition: background 200ms ease;
+    }
+    .problem:last-child { border-right: 0; }
+    .problem:hover {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+    }
+    .problem-num {
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+    .problem h3 {
+      font-size: 1.15rem; font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .problem p { color: var(--muted); font-size: 0.95rem; line-height: 1.55; }
+
+    /* ---------- Steps ---------- */
+    .steps {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1rem;
+      counter-reset: step;
     }
-
-    .problem-item,
-    .step-item,
-    .trust-item {
-      min-width: 0;
-      padding: 1.25rem;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
-
-    .card-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.6rem;
-      height: 2.6rem;
-      margin-bottom: 0.95rem;
-      color: var(--cyan);
-      background: rgba(10, 243, 235, 0.08);
-      border: 1px solid rgba(10, 243, 235, 0.18);
-      border-radius: var(--radius);
-    }
-
-    .card-icon .icon {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-
-    .problem-item:nth-child(2) .card-icon,
-    .step-item:nth-child(2) .card-icon {
-      color: var(--coral);
-      background: rgba(245, 136, 130, 0.09);
-      border-color: rgba(245, 136, 130, 0.2);
-    }
-
-    .problem-item:nth-child(3) .card-icon,
-    .step-item:nth-child(3) .card-icon {
-      color: var(--green);
-      background: rgba(0, 224, 171, 0.08);
-      border-color: rgba(0, 224, 171, 0.18);
-    }
-
-    .problem-item {
-      display: grid;
-      gap: 1rem;
-      min-height: 16rem;
-      align-content: space-between;
-    }
-
-    .problem-item h3,
-    .step-item h3,
-    .trust-item h3 {
-      margin-bottom: 0.55rem;
-      font-size: 1.15rem;
-      letter-spacing: 0;
-    }
-
-    .problem-item p,
-    .step-item p,
-    .trust-item p {
-      margin-bottom: 0;
-      color: var(--muted);
-    }
-
-    .drift-demo {
-      display: grid;
-      gap: 0.45rem;
-      padding-top: 0.3rem;
-    }
-
-    .drift-demo span {
-      display: block;
-      height: 0.75rem;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-    }
-
-    .drift-demo span:nth-child(2) {
-      width: 78%;
-      background: rgba(245, 136, 130, 0.22);
-    }
-
-    .drift-demo span:nth-child(3) {
-      width: 56%;
-      background: rgba(254, 68, 116, 0.22);
-    }
-
-    .step-item {
-      display: grid;
-      gap: 1rem;
+    .step {
       position: relative;
+      display: grid;
+      gap: 1rem;
+      padding: clamp(1.25rem, 2vw, 1.75rem);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      counter-increment: step;
       overflow: hidden;
+      transition: border-color 200ms ease, transform 200ms ease;
     }
-
-    .step-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.15rem;
-      height: 2.15rem;
-      color: var(--ink);
-      background: var(--cyan);
+    .step::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent 35%, var(--accent-line), transparent 65%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 240ms ease;
+      pointer-events: none;
+    }
+    .step:hover::before { opacity: 1; }
+    .step-head {
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 2rem; height: 2rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
       border-radius: 50%;
       font-family: var(--mono);
-      font-weight: 850;
+      font-size: 0.78rem; font-weight: 700;
     }
-
-    .step-item:nth-child(2) .step-number {
-      background: var(--coral);
+    .step-num::before { content: "0" counter(step); }
+    .step h3 {
+      font-size: 1.2rem; font-weight: 600;
+      letter-spacing: -0.01em;
     }
-
-    .step-item:nth-child(3) .step-number {
-      background: var(--green);
-    }
-
-    .mini-command {
-      padding: 0.7rem;
-      overflow-x: auto;
-      color: var(--cyan);
-      background: #090911;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: calc(var(--radius) - 2px);
+    .step p { color: var(--muted); font-size: 0.95rem; line-height: 1.55; }
+    .step .command { max-width: 100%; margin: 0; box-shadow: none; }
+    .step .command code { font-size: 0.85rem; min-height: 2.65rem; }
+    .step .copy-btn { min-height: 2.65rem; font-size: 0.78rem; padding: 0 0.85rem; }
+    .step .step-out {
+      color: var(--soft);
+      font-family: var(--mono);
       font-size: 0.78rem;
-      white-space: nowrap;
     }
+    .step .step-out strong { color: var(--text); font-weight: 600; }
 
-    .trust-band {
-      padding-top: 2rem;
-      padding-bottom: 2rem;
-    }
-
-    .trust-grid {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .trust-item {
-      display: grid;
-      gap: 0.4rem;
-      padding: 1rem;
-    }
-
-    .trust-kicker {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 2.2rem;
-      height: 2.2rem;
-      color: var(--green);
-      background: rgba(0, 224, 171, 0.08);
-      border: 1px solid rgba(0, 224, 171, 0.18);
-      border-radius: var(--radius);
-    }
-
-    .trust-kicker .icon {
-      width: 1.05rem;
-      height: 1.05rem;
-    }
-
-    .trust-item h3 {
-      font-size: 0.96rem;
-    }
-
-    .trust-item p {
-      font-size: 0.9rem;
-    }
-
-    .loop-section {
-      display: grid;
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
-      align-items: center;
-      gap: 2rem;
-    }
-
-    .loop-copy p {
+    .integration-note {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.65rem;
+      max-width: 52rem;
+      margin: 1.5rem auto 0;
+      padding: 0.85rem 1.1rem;
       color: var(--muted);
-      font-size: 1.05rem;
-    }
-
-    .loop-copy ul {
-      display: grid;
-      gap: 0.75rem;
-      margin: 1.5rem 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .loop-copy li {
-      display: flex;
-      gap: 0.65rem;
-      color: color-mix(in srgb, var(--muted) 82%, var(--text));
-    }
-
-    .loop-copy li::before {
-      content: "";
-      flex: 0 0 auto;
-      width: 0.52rem;
-      height: 0.52rem;
-      margin-top: 0.5rem;
-      background: var(--coral);
-      border-radius: 50%;
-    }
-
-    .loop-card {
-      min-width: 0;
-      padding: 1rem;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.35);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      text-align: center;
+      justify-content: center;
     }
-
-    .loop-terminal {
-      display: grid;
-      gap: 0.65rem;
-      min-width: 0;
-      padding: 1rem;
-      background: #090911;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: calc(var(--radius) - 1px);
+    .integration-note .icon { width: 1rem; height: 1rem; color: var(--accent); }
+    .integration-note strong { color: var(--text); font-weight: 600; }
+    .integration-note code {
+      padding: 0.12rem 0.35rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: 4px;
       font-family: var(--mono);
-      font-size: 0.83rem;
+      font-size: 0.85rem;
     }
 
-    .loop-terminal code {
-      display: block;
-      min-width: 0;
-      overflow-wrap: anywhere;
-      color: var(--cyan);
-    }
-
-    .loop-output {
+    /* ---------- One repair demo ---------- */
+    .demo {
       display: grid;
-      gap: 0.55rem;
-      margin-top: 1rem;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 0.85rem;
+      align-items: stretch;
     }
-
-    .output-row {
+    .demo-step {
       display: grid;
-      grid-template-columns: auto 7rem 1fr;
-      align-items: center;
-      gap: 0.7rem;
-      padding: 0.65rem 0.75rem;
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: calc(var(--radius) - 2px);
-      font-size: 0.87rem;
-    }
-
-    .output-row .icon {
-      color: var(--cyan);
-      width: 1rem;
-      height: 1rem;
-    }
-
-    .output-row strong {
-      color: var(--text);
-    }
-
-    .final-cta {
-      width: min(100% - 2rem, var(--max));
-      margin: 2rem auto 0;
-      padding: clamp(2rem, 6vw, 4rem);
-      background:
-        linear-gradient(135deg, rgba(245, 136, 130, 0.16), rgba(10, 243, 235, 0.09)),
-        var(--surface);
+      gap: 0.75rem;
+      padding: 1.15rem;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      text-align: center;
+      min-width: 0;
+      transition: border-color 200ms ease;
     }
-
-    .final-cta h2 {
-      margin-right: auto;
-      margin-left: auto;
-      max-width: 12ch;
+    .demo-step:hover { border-color: var(--accent-line); }
+    .demo-step .demo-label {
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
-
-    .final-cta p {
-      max-width: 38rem;
-      margin: 1rem auto 0;
-      color: var(--muted);
-      font-size: 1.05rem;
-    }
-
-    .final-cta .command-card {
-      margin-right: auto;
-      margin-left: auto;
-      text-align: left;
-    }
-
-    footer {
-      width: min(100% - 2rem, var(--max));
-      margin: 0 auto;
-      padding: 4rem 0 2rem;
-      color: var(--muted);
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 2rem;
-      align-items: start;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 2rem;
-    }
-
-    .footer-brand {
-      display: flex;
-      gap: 0.8rem;
-      align-items: center;
-      margin-bottom: 0.85rem;
+    .demo-step pre {
+      margin: 0;
+      padding: 0.9rem;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
       color: var(--text);
-      font-weight: 800;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      overflow-x: auto;
+      white-space: pre;
     }
-
-    .footer-brand img {
-      width: 1.8rem;
-      height: 1.8rem;
-    }
-
-    .footer-copy {
-      max-width: 31rem;
-      margin-bottom: 0;
-      font-size: 0.94rem;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 0.55rem;
-      max-width: 32rem;
-    }
-
-    .footer-links a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.45rem 0.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: var(--radius);
-      font-size: 0.88rem;
-      transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
-    }
-
-    .footer-links a:hover,
-    .footer-links a:focus-visible {
-      color: var(--text);
-      border-color: var(--border-strong);
-      background: rgba(255, 255, 255, 0.045);
-      outline: none;
-    }
-
-    .footer-links .icon {
-      width: 0.9rem;
-      height: 0.9rem;
+    .demo-step pre .k { color: var(--accent); }
+    .demo-step pre .s { color: var(--success); }
+    .demo-step pre .c { color: var(--soft); font-style: italic; }
+    .demo-step pre .del { color: var(--danger); }
+    .demo-step pre .ins { color: var(--success); }
+    .demo-arrow {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.6rem;
       color: var(--soft);
     }
+    .demo-arrow .icon { width: 1rem; height: 1rem; }
+    .demo-step h3 {
+      font-size: 1rem; font-weight: 600;
+      letter-spacing: -0.005em;
+    }
+    .demo-step p { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+    .demo-foot {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      margin: 0.6rem auto 0;
+      color: var(--success);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+    }
+    .demo-foot .icon { width: 0.9rem; height: 0.9rem; }
 
-    .audit-metadata {
-      display: none;
+    /* ---------- Comparison table ---------- */
+    .compare {
+      max-width: 64rem;
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    .compare-table th,
+    .compare-table td {
+      padding: 0.95rem 1.1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th {
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.74rem; font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--bg-elev);
+    }
+    .compare-table th.col-decantr {
+      color: var(--accent);
+      border-bottom: 1px solid var(--accent-line);
+    }
+    .compare-table .row-label {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .compare-table tbody tr:last-child td { border-bottom: 0; }
+    .compare-table tbody tr:hover td { background: rgba(255, 255, 255, 0.018); }
+    .compare-table .yes {
+      display: inline-flex; align-items: center; gap: 0.32rem;
+      color: var(--success); font-weight: 600;
+    }
+    .compare-table .no {
+      color: var(--soft); font-weight: 400;
+    }
+    .compare-table .partial {
+      color: var(--warn); font-weight: 500;
+    }
+    .compare-table .col-decantr-cell {
+      background: linear-gradient(180deg, rgba(95, 232, 220, 0.04), transparent);
+    }
+    .compare-table .icon { width: 0.95rem; height: 0.95rem; }
+
+    /* ---------- Trust ---------- */
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .trust-item {
+      display: grid;
+      gap: 0.6rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 200ms ease, transform 200ms ease;
+    }
+    .trust-item:hover { border-color: var(--accent-line); }
+    .trust-item .icon-wrap {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 2.2rem; height: 2.2rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: var(--radius-sm);
+    }
+    .trust-item .icon-wrap .icon { width: 1.1rem; height: 1.1rem; }
+    .trust-item h3 { font-size: 1rem; font-weight: 600; letter-spacing: -0.005em; }
+    .trust-item p { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+
+    /* ---------- Agent context (map + evidence) ---------- */
+    .map-card {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .map-card-head {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.8rem 1.15rem;
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+    .map-card-head .badge {
+      margin-left: auto;
+      padding: 0.18rem 0.5rem;
+      color: var(--success);
+      background: var(--success-soft);
+      border: 1px solid rgba(71, 224, 177, 0.2);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+    .map-card pre {
+      margin: 0;
+      padding: 1.2rem 1.35rem;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: clamp(0.78rem, 1vw, 0.88rem);
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .map-card pre .label { color: var(--soft); }
+    .map-card pre .accent { color: var(--accent); }
+    .map-card pre .success { color: var(--success); }
+
+    /* ---------- Proof / specificity row ---------- */
+    .proof {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+      max-width: 64rem;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .proof-item {
+      display: grid; gap: 0.32rem;
+      padding: 1.4rem 1.25rem;
+      color: var(--muted);
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .proof-item:last-child { border-right: 0; }
+    .proof-item .big {
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(1.4rem, 2vw, 1.85rem);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .proof-item .label {
+      color: var(--soft);
+      font-family: var(--mono);
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .proof-item a {
+      display: inline-flex; align-items: center; gap: 0.32rem;
+      color: var(--accent);
+    }
+    .proof-item a:hover { color: var(--accent-2); }
+    .proof-item .icon { width: 0.9rem; height: 0.9rem; }
+
+    .pricing-line {
+      max-width: 64rem;
+      margin: 1.25rem auto 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+    .pricing-line strong { color: var(--text); font-weight: 600; }
+
+    /* ---------- Roadmap teaser ---------- */
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      max-width: 64rem;
+      margin: 0 auto;
+    }
+    .roadmap-item {
+      display: grid; gap: 0.55rem;
+      padding: 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: border-color 200ms ease;
+    }
+    .roadmap-item:hover { border-color: var(--accent-line); }
+    .roadmap-item.now { border-color: var(--accent-line); background: linear-gradient(180deg, var(--accent-soft) 0, var(--surface) 60%); }
+    .roadmap-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      width: fit-content;
+      padding: 0.22rem 0.55rem;
+      color: var(--soft);
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 0.7rem; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .roadmap-item.now .roadmap-tag {
+      color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line);
+    }
+    .roadmap-tag .dot {
+      width: 0.4rem; height: 0.4rem; border-radius: 50%;
+      background: currentColor;
+    }
+    .roadmap-item.now .roadmap-tag .dot {
+      box-shadow: 0 0 0 0 rgba(95, 232, 220, 0.5);
+      animation: pulse-c 2.2s infinite;
+    }
+    @keyframes pulse-c {
+      0% { box-shadow: 0 0 0 0 rgba(95, 232, 220, 0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(95, 232, 220, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(95, 232, 220, 0); }
+    }
+    .roadmap-item h3 {
+      font-size: 1.05rem; font-weight: 600;
+      letter-spacing: -0.005em;
+    }
+    .roadmap-item p { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+
+    /* ---------- Final CTA ---------- */
+    .final {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+      text-align: center;
+      background:
+        radial-gradient(800px 240px at 50% 0%, rgba(95, 232, 220, 0.12), transparent 70%),
+        radial-gradient(600px 180px at 50% 100%, rgba(71, 224, 177, 0.08), transparent 70%),
+        var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .final h2 {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+      letter-spacing: -0.02em;
+      line-height: 1.12;
+      max-width: 24ch;
+      margin: 0.5rem auto 0.85rem;
+    }
+    .final p {
+      max-width: 36rem;
+      margin: 0 auto 1.4rem;
+      color: var(--muted);
+      font-size: 1rem;
     }
 
+    /* ---------- Footer ---------- */
+    footer {
+      width: 100%;
+      padding: 3rem var(--page-pad) 2rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) auto;
+      gap: 2rem;
+      align-items: start;
+      width: 100%;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+    .footer-brand {
+      display: inline-flex; align-items: center; gap: 0.65rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+    .footer-brand img { width: 30px; height: 30px; }
+    .footer-brand .brand-name { font-family: var(--serif); font-weight: 700; font-size: 1.18rem; letter-spacing: -0.015em; }
+    .footer-copy {
+      max-width: 32rem;
+      color: var(--muted);
+      font-size: 0.92rem; line-height: 1.55;
+    }
+    .footer-meta {
+      display: flex; flex-wrap: wrap; gap: 0.4rem 0.85rem;
+      margin-top: 0.85rem;
+      color: var(--soft);
+      font-size: 0.82rem;
+    }
+    .footer-meta-sep { color: var(--border-strong); }
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.4rem 1.75rem;
+      min-width: 18rem;
+    }
+    .footer-links a {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      transition: color 160ms ease;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-links .icon { width: 0.9rem; height: 0.9rem; color: var(--soft); }
+
+    .icon { width: 1em; height: 1em; flex: 0 0 auto; stroke-width: 1.85; }
+
+    /* ---------- Reveal ---------- */
     .reveal {
-      opacity: 1;
-      transform: none;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 600ms ease, transform 600ms cubic-bezier(0.2, 0.7, 0.3, 1);
     }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @media (max-width: 960px) {
-      .nav-links {
-        display: none;
-      }
-
-      .hero,
-      .loop-section {
-        grid-template-columns: 1fr;
-      }
-
-      .hero {
-        min-height: auto;
-      }
-
-      h1 {
-        max-width: 11ch;
-      }
-
-      .problem-grid,
-      .steps-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .trust-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 640px) {
-      .section {
-        width: min(100% - 1.25rem, var(--max));
-        padding: 4rem 0;
-      }
-
-      .nav-shell {
-        width: min(100% - 1.25rem, var(--max));
-      }
-
-      .brand span {
-        font-size: 0.95rem;
-      }
-
-      .nav-action {
-        min-height: 2.35rem;
-        padding-inline: 0.8rem;
-      }
-
-      h1 {
-        font-size: clamp(3.1rem, 18vw, 5rem);
-      }
-
-      h2 {
-        font-size: clamp(2rem, 12vw, 3.1rem);
-      }
-
-      .hero {
-        gap: 1.5rem;
-        padding-top: 2rem;
-      }
-
-      .product-visual,
-      .problem-item,
-      .step-item,
-      .loop-card {
-        padding: 0.8rem;
-      }
-
-      .command-row {
-        grid-template-columns: 1fr;
-      }
-
-      .copy-button {
-        width: 100%;
-      }
-
-      .score-row {
-        grid-template-columns: 1fr;
-      }
-
-      .score-arrow {
-        display: none;
-      }
-
-      .finding-list li {
-        grid-template-columns: 1fr;
-      }
-
-      .repair {
-        white-space: normal;
-      }
-
-      .trust-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .output-row {
-        grid-template-columns: auto 1fr;
-      }
-
-      .output-row span {
-        grid-column: 1 / -1;
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .footer-links {
-        justify-content: flex-start;
-      }
-    }
+    .reveal.visible { opacity: 1; transform: none; }
 
     @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        transition-duration: 1ms !important;
-        animation-duration: 1ms !important;
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .hero-credibility .dot, .roadmap-item.now .roadmap-tag .dot { animation: none; }
+      * { scroll-behavior: auto !important; animation-duration: 1ms !important; transition-duration: 1ms !important; }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1080px) {
+      .demo {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
       }
+      .demo-arrow {
+        width: 100%; height: 1.4rem;
+        transform: rotate(90deg);
+      }
+      .proof { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .proof-item { border-right: 0; border-bottom: 1px solid var(--border); }
+      .proof-item:nth-child(2n) { border-right: 0; }
+      .proof-item:nth-last-child(-n+2) { border-bottom: 0; }
+      .proof-item:nth-child(odd) { border-right: 1px solid var(--border); }
+    }
+    @media (max-width: 960px) {
+      .problems, .steps, .trust-grid, .roadmap { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .problem:nth-child(2) { border-right: 0; }
+      .compare-table th, .compare-table td { padding: 0.65rem 0.7rem; font-size: 0.82rem; }
+    }
+    @media (max-width: 720px) {
+      .nav-links { display: none; }
+      .nav-cta { margin-left: 0; }
+      .problems, .steps, .trust-grid, .roadmap { grid-template-columns: 1fr; }
+      .problem { border-right: 0; border-bottom: 1px solid var(--border); }
+      .problem:last-child { border-bottom: 0; }
+      .score-wrap {
+        grid-template-columns: 1fr;
+        gap: 0.5rem 0;
+        padding: 1.75rem 1.25rem;
+      }
+      .score-arrow {
+        transform: rotate(90deg);
+        margin: 0.25rem auto;
+        width: 2.6rem; height: 2.6rem;
+      }
+      .score-num { font-size: clamp(3.5rem, 18vw, 5.5rem); }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .compare { overflow-x: auto; }
+      .compare-table { min-width: 480px; }
+      .proof { grid-template-columns: 1fr; }
+      .proof-item { border-right: 0 !important; border-bottom: 1px solid var(--border); }
+      .proof-item:last-child { border-bottom: 0; }
     }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+  <div class="sr-only" id="copy-status" aria-live="polite" aria-atomic="true"></div>
 
   <header class="site-header">
     <div class="nav-shell">
       <a class="brand" href="/" aria-label="Decantr home">
-        <img src="/logo.svg" alt="" width="32" height="32">
-        <span>decantr.ai</span>
+        <img src="/logo.svg" alt="" width="30" height="30">
+        <span class="brand-name">decantr</span>
       </a>
-      <nav class="nav-links" aria-label="Primary navigation">
+      <nav class="nav-links" aria-label="Primary">
         <a href="#how">How it works</a>
+        <a href="#demo">Demo</a>
+        <a href="#compare">Compare</a>
         <a href="#local">Local-first</a>
-        <a href="/guides/existing-apps.md">Docs</a>
         <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">GitHub</a>
       </nav>
-      <a class="nav-action" href="#install"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i>Scan locally</a>
+      <a class="nav-cta" href="#install" data-cta="install" id="nav-install">
+        <i data-lucide="terminal" class="icon" aria-hidden="true"></i>
+        npx scan
+      </a>
     </div>
   </header>
 
   <main id="main">
+    <!-- ============ HERO ============ -->
     <section class="section hero" aria-labelledby="hero-title">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">Local-first AI Frontend Governance</p>
-        <h1 id="hero-title">Stop AI from breaking your UI.</h1>
-        <p>Decantr runs locally, reads your frontend, gives your AI route-scoped context, and verifies every change with repairable evidence before drift lands in your repo.</p>
-
-        <div class="hero-actions" aria-label="Primary actions">
-          <a class="button button-primary" href="#install"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i>Scan locally</a>
-          <a class="button button-secondary" href="/guides/existing-apps.md"><i data-lucide="book-open" class="icon" aria-hidden="true"></i>Read docs</a>
-          <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener"><i data-lucide="git-branch" class="icon" aria-hidden="true"></i>View GitHub</a>
-        </div>
-
-        <div class="command-card" id="install" aria-label="Install Decantr locally">
-          <span class="command-label">Run this in your existing frontend</span>
-          <div class="command-row">
-            <code>npx @decantr/cli scan</code>
-            <button class="copy-button" type="button" data-copy="npx @decantr/cli scan"><i data-lucide="copy" class="icon" aria-hidden="true"></i><span class="copy-label">Copy</span></button>
+      <div class="hero-inner reveal">
+        <p class="eyebrow">The verifier between your AI and your repo</p>
+        <h1 class="hero-h1" id="hero-title">
+          Catch UI drift <span class="accent">before</span> it ships.
+        </h1>
+        <p class="hero-lede">
+          Local CLI that reads your existing frontend, hands your agent route-scoped context,
+          and turns every UI change into evidence your AI can repair against — before merge.
+        </p>
+        <span class="hero-credibility">
+          <span class="dot" aria-hidden="true"></span>
+          <span><strong>v3.0.1 shipping today</strong> · MIT · 32 MCP tools · zero telemetry</span>
+        </span>
+        <div class="installer" id="install" aria-label="Install Decantr">
+          <div class="installer-tabs" role="tablist" aria-label="Package manager">
+            <button data-pm="npx" class="active" role="tab" aria-selected="true">npx</button>
+            <button data-pm="pnpm" role="tab" aria-selected="false">pnpm dlx</button>
+            <button data-pm="bunx" role="tab" aria-selected="false">bunx</button>
+            <button data-pm="yarn" role="tab" aria-selected="false">yarn dlx</button>
           </div>
+          <div class="command">
+            <code id="install-cmd" tabindex="0" role="button" aria-label="Install command, click to copy">npx @decantr/cli scan</code>
+            <button class="copy-btn" type="button" data-copy-target="install-cmd" data-copy-success="Copied">
+              <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <span class="kbd-hint">
+            Or press <span class="kbd">/</span> to focus the command
+          </span>
         </div>
-
-        <div class="hero-proof" aria-label="Decantr trust facts">
-          <span>Runs on your machine</span>
-          <span>No source upload by default</span>
-          <span>No rewrite</span>
+        <div class="hero-cta-row" style="margin-top: 1rem;">
+          <a class="hero-secondary" href="#demo">
+            See a real repair <i data-lucide="arrow-down" class="icon" aria-hidden="true"></i>
+          </a>
         </div>
       </div>
-
-      <aside class="product-visual reveal" aria-label="Decantr Project Health preview">
-        <div class="visual-topbar">
-          <span class="window-dots" aria-hidden="true"><span></span><span></span><span></span></span>
-          <span class="visual-title"><i data-lucide="activity" class="icon" aria-hidden="true"></i>project-health.local</span>
-        </div>
-
-        <div class="terminal" aria-label="Terminal preview">
-          <div class="terminal-line"><span class="prompt">$</span><code>npx @decantr/cli scan</code></div>
-          <div class="terminal-line"><span class="prompt">></span><span><strong>React + Tailwind app detected</strong></span></div>
-          <div class="terminal-line"><span class="prompt">></span><span>Routes: 18 found. Components: 64 indexed.</span></div>
-          <div class="terminal-line"><span class="prompt">></span><span>Ready to adopt: <strong>no rewrite, no CSS takeover</strong></span></div>
-        </div>
-
-        <div class="health-panel">
-          <div class="score-row" aria-label="Project Health score improvement">
-            <div class="score-box">
-              <span class="score-label">First pass</span>
-              <span class="score-value">42/100</span>
-            </div>
-            <span class="score-arrow">-&gt;</span>
-            <div class="score-box after">
-              <span class="score-label">After repair</span>
-              <span class="score-value">94/100</span>
-            </div>
-          </div>
-          <ul class="finding-list" aria-label="Example Decantr findings">
-            <li><span class="code-badge">COMP001</span><span>Duplicate button primitive found</span><span class="repair">repair ready</span></li>
-            <li><span class="code-badge">TOKEN010</span><span>Style bridge bypassed by raw value</span><span class="repair">token fix</span></li>
-            <li><span class="code-badge">GRAPH001</span><span>Typed graph needs regeneration</span><span class="repair">rerun graph</span></li>
-          </ul>
-        </div>
-      </aside>
     </section>
 
+    <!-- ============ SCORE BAND ============ -->
+    <section class="section score-band" aria-labelledby="score-title">
+      <div class="container">
+        <h2 id="score-title" class="sr-only">Project Health: from 42 to 94</h2>
+        <div class="score-wrap reveal" data-score>
+          <div class="score-col before">
+            <span class="label">First pass</span>
+            <span class="score-num" data-count-to="42">
+              <span class="value">0</span><span class="suffix">/100</span>
+            </span>
+          </div>
+          <span class="score-arrow" aria-hidden="true">
+            <i data-lucide="arrow-right" class="icon"></i>
+          </span>
+          <div class="score-col after">
+            <span class="label">After repair</span>
+            <span class="score-num" data-count-to="94">
+              <span class="value">0</span><span class="suffix">/100</span>
+            </span>
+            <span class="score-delta" aria-label="Improved by 52 points">
+              <i data-lucide="trending-up" class="icon" aria-hidden="true" style="width:0.85rem;height:0.85rem;"></i>
+              +52
+            </span>
+          </div>
+        </div>
+        <p class="score-caption reveal">
+          <strong>Project Health</strong> is a deterministic score over duplicate components, raw values,
+          route coverage, and accessibility checks.
+          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health-rubric.md" class="rubric-link" target="_blank" rel="noopener">Open-source rubric →</a>
+        </p>
+
+        <!-- ============ Works-with ============ -->
+        <div class="works-with reveal">
+          <p class="works-with-label">Works with frameworks you already ship</p>
+          <div class="works-with-row">
+            <span>React</span><span>Next.js</span><span>Remix</span><span>Vue</span>
+            <span>Nuxt</span><span>Svelte</span><span>SvelteKit</span><span>SolidStart</span>
+            <span>Astro</span><span>Vite</span><span>Tailwind</span><span>CSS Modules</span>
+            <span>MUI</span><span>shadcn/ui</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CLI TRANSCRIPT ============ -->
+    <section class="section section-tight" aria-labelledby="cli-title">
+      <div class="container">
+        <h2 id="cli-title" class="sr-only">What scan actually does</h2>
+        <div class="transcript reveal">
+          <div class="transcript-head">
+            <span class="dot-row" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span>~/your-app — npx @decantr/cli scan</span>
+            <span style="margin-left:auto;">decantr v3.0.1</span>
+          </div>
+          <div class="transcript-body">
+            <div class="transcript-line"><span class="sym prompt">$</span><span class="body">npx @decantr/cli scan</span></div>
+            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">scanning project structure...</span></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Detected <strong>React 18</strong> + <strong>Tailwind 3</strong> + <strong>Vite</strong></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Indexed <strong>64 components</strong>, <strong>18 routes</strong>, <strong>312 source files</strong></span></div>
+            <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">analyzing component reuse and token coverage...</span></span></div>
+            <div class="transcript-line"><span class="sym warn">!</span><span class="body">Project Health: <span class="warn-text">42/100</span> · <strong>3 findings</strong> · <em>all repair-ready</em></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Evidence bundle written → <em>.decantr/evidence.json</em> <span class="soft">(gitignored)</span></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Done in 4.2s</span> · zero files modified · ready for your agent</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROBLEM ============ -->
     <section class="section" aria-labelledby="problem-title">
-      <div class="section-head center reveal">
-        <p class="eyebrow">The drift problem</p>
-        <h2 id="problem-title">The first AI edit looks fine. The tenth one drifts.</h2>
-        <p>Modern coding agents are fast enough to outrun your product standards. Decantr gives them the context and evidence loop they were missing.</p>
-      </div>
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">The drift problem</p>
+          <h2 id="problem-title">The first AI edit looks fine. The tenth one drifts.</h2>
+          <p>Coding agents are fast enough to outrun your product standards. Decantr gives them the context and evidence loop they were missing.</p>
+        </div>
 
-      <div class="problem-grid">
-        <article class="problem-item reveal">
-          <div>
-            <span class="card-icon"><i data-lucide="copy" class="icon" aria-hidden="true"></i></span>
-            <h3>Duplicated components</h3>
-            <p>The agent rebuilds a local button, card, dialog, or form instead of importing the primitive your app already owns.</p>
-          </div>
-          <div class="drift-demo" aria-hidden="true"><span></span><span></span><span></span></div>
-        </article>
-
-        <article class="problem-item reveal">
-          <div>
-            <span class="card-icon"><i data-lucide="palette" class="icon" aria-hidden="true"></i></span>
-            <h3>Inconsistent styling</h3>
-            <p>Inline colors, arbitrary Tailwind values, and one-off spacing sneak past review because each prompt only sees part of the app.</p>
-          </div>
-          <div class="drift-demo" aria-hidden="true"><span></span><span></span><span></span></div>
-        </article>
-
-        <article class="problem-item reveal">
-          <div>
-            <span class="card-icon"><i data-lucide="route" class="icon" aria-hidden="true"></i></span>
-            <h3>Stale route intent</h3>
-            <p>Pages keep changing while docs, route maps, and design expectations stop agreeing with the code users actually touch.</p>
-          </div>
-          <div class="drift-demo" aria-hidden="true"><span></span><span></span><span></span></div>
-        </article>
+        <div class="problems reveal">
+          <article class="problem">
+            <span class="problem-num">01 / Duplication</span>
+            <h3>Components get rebuilt locally</h3>
+            <p>The agent reimplements a button, card, or form instead of importing the primitive your app already owns.</p>
+          </article>
+          <article class="problem">
+            <span class="problem-num">02 / Tokens</span>
+            <h3>Raw values sneak in</h3>
+            <p>Inline colors, arbitrary Tailwind values, and one-off spacing slip past review because each prompt only sees part of the app.</p>
+          </article>
+          <article class="problem">
+            <span class="problem-num">03 / Intent</span>
+            <h3>Route intent goes stale</h3>
+            <p>Pages keep changing while docs, route maps, and design expectations stop agreeing with what users actually touch.</p>
+          </article>
+        </div>
       </div>
     </section>
 
+    <!-- ============ HOW IT WORKS ============ -->
     <section class="section" id="how" aria-labelledby="how-title">
-      <div class="section-head reveal">
-        <p class="eyebrow">Scan. Adopt. Verify.</p>
-        <h2 id="how-title">One local loop for every AI edit.</h2>
-        <p>Decantr does not replace your agent or your app. It gives the agent a contract to follow and gives you proof when the implementation drifts.</p>
-      </div>
-
-      <div class="steps-grid">
-        <article class="step-item reveal">
-          <span class="card-icon"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i></span>
-          <div>
-            <h3>Scan</h3>
-            <p>Decantr reads routes, components, styling, package signals, and existing project rules without writing anything.</p>
-          </div>
-          <code class="mini-command">npx @decantr/cli scan</code>
-        </article>
-
-        <article class="step-item reveal">
-          <span class="card-icon"><i data-lucide="file-plus" class="icon" aria-hidden="true"></i></span>
-          <div>
-            <h3>Adopt</h3>
-            <p>It writes a repo-owned contract, scoped context, and an observed baseline while your existing app remains the authority.</p>
-          </div>
-          <code class="mini-command">npx @decantr/cli adopt --yes</code>
-        </article>
-
-        <article class="step-item reveal">
-          <span class="card-icon"><i data-lucide="shield-check" class="icon" aria-hidden="true"></i></span>
-          <div>
-            <h3>Verify</h3>
-            <p>Project Health emits stable codes, repair IDs, graph anchors, and evidence bundles your AI can repair against.</p>
-          </div>
-          <code class="mini-command">npx @decantr/cli verify --evidence</code>
-        </article>
-      </div>
-    </section>
-
-    <section class="section trust-band" id="local" aria-labelledby="local-title">
-      <div class="section-head center reveal">
-        <p class="eyebrow">Built for local control</p>
-        <h2 id="local-title">Take the speed. Keep the authority.</h2>
-      </div>
-
-      <div class="trust-grid">
-        <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"><i data-lucide="laptop" class="icon"></i></span>
-          <h3>Runs locally</h3>
-          <p>Use Decantr from the terminal, CI, or MCP-compatible agent tools.</p>
-        </article>
-        <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"><i data-lucide="cloud-off" class="icon"></i></span>
-          <h3>No source upload</h3>
-          <p>Local checks stay local by default, including evidence and screenshots.</p>
-        </article>
-        <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"><i data-lucide="refresh-ccw" class="icon"></i></span>
-          <h3>No rewrite</h3>
-          <p>Brownfield adoption observes your app before proposing a contract.</p>
-        </article>
-        <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"><i data-lucide="paintbrush" class="icon"></i></span>
-          <h3>No CSS takeover</h3>
-          <p>Keep Tailwind, CSS modules, MUI, Bootstrap, or your design system.</p>
-        </article>
-        <article class="trust-item reveal">
-          <span class="trust-kicker" aria-hidden="true"><i data-lucide="badge-check" class="icon"></i></span>
-          <h3>MIT licensed</h3>
-          <p>Open-source packages for the CLI, verifier, MCP server, and contract layer.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section loop-section" aria-labelledby="loop-title">
-      <div class="loop-copy reveal">
-        <p class="eyebrow">Agent-ready context</p>
-        <h2 id="loop-title">Give the AI a map before it edits.</h2>
-        <p>Before a coding agent touches a route, Decantr can surface the route contract, local law, style bridge, changed-file impact, and recent health evidence.</p>
-        <ul>
-          <li>Contract: product standards, route topology, local UI law, and typed graph context.</li>
-          <li>Context: the route and task details the agent needs right now.</li>
-          <li>Evidence: stable findings and repair prompts after the edit.</li>
-        </ul>
-      </div>
-
-      <div class="loop-card reveal">
-        <div class="loop-terminal">
-          <code>$ npx @decantr/cli task /feed "add saved recipe actions"</code>
-          <code>$ npx @decantr/cli verify --evidence</code>
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">One local loop</p>
+          <h2 id="how-title">Scan. Adopt. Verify.</h2>
+          <p>Three commands. Three artifacts. Your app remains the authority — Decantr just gives your agent something to repair against.</p>
         </div>
-        <div class="loop-output" aria-label="Agent context output preview">
-          <div class="output-row"><i data-lucide="map" class="icon" aria-hidden="true"></i><strong>Contract</strong><span>Route graph, source authority, local rules</span></div>
-          <div class="output-row"><i data-lucide="braces" class="icon" aria-hidden="true"></i><strong>Context</strong><span>Page packs, changed-file impact, visual evidence refs</span></div>
-          <div class="output-row"><i data-lucide="file-check-2" class="icon" aria-hidden="true"></i><strong>Evidence</strong><span>Finding codes, repair IDs, graph anchors, rerun commands</span></div>
+
+        <div class="steps">
+          <article class="step reveal">
+            <div class="step-head">
+              <span class="step-num" aria-hidden="true"></span>
+              <h3>Scan</h3>
+            </div>
+            <p>Reads routes, components, styling, and existing project rules. Zero writes to source.</p>
+            <div class="command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli scan">npx @decantr/cli scan</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli scan" data-copy-success="Copied">
+                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+            <span class="step-out">writes <strong>.decantr/scan.json</strong></span>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head">
+              <span class="step-num" aria-hidden="true"></span>
+              <h3>Adopt</h3>
+            </div>
+            <p>Writes a repo-owned contract and an observed baseline. Reversible. Gitignored where it should be.</p>
+            <div class="command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli adopt --yes">npx @decantr/cli adopt --yes</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli adopt --yes" data-copy-success="Copied">
+                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+            <span class="step-out">writes <strong>.decantr/contract.yaml</strong> + <strong>baseline.json</strong></span>
+          </article>
+
+          <article class="step reveal">
+            <div class="step-head">
+              <span class="step-num" aria-hidden="true"></span>
+              <h3>Verify</h3>
+            </div>
+            <p>Emits findings with stable codes, repair IDs, and an evidence bundle your agent reads automatically.</p>
+            <div class="command">
+              <code tabindex="0" data-copy-text="npx @decantr/cli verify --evidence">npx @decantr/cli verify --evidence</code>
+              <button class="copy-btn" type="button" data-copy="npx @decantr/cli verify --evidence" data-copy-success="Copied">
+                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+            <span class="step-out">writes <strong>.decantr/evidence.json</strong></span>
+          </article>
+        </div>
+
+        <div class="integration-note reveal">
+          <i data-lucide="plug" class="icon" aria-hidden="true"></i>
+          <span>
+            <strong>Plugs into your agent natively.</strong>
+            Cursor, Claude Code, Continue.dev, Windsurf, and Cline pick up findings via our MCP server.
+            Or pipe to any agent: <code>decantr verify --evidence | claude --apply</code>
+          </span>
         </div>
       </div>
     </section>
 
-    <section class="final-cta" aria-labelledby="cta-title">
-      <p class="eyebrow">Install the guardrail</p>
-      <h2 id="cta-title">Put Decantr in the agent loop.</h2>
-      <p>Start with a local scan. If the app is a fit, adopt the contract and make Decantr verification part of every AI-assisted change.</p>
-      <div class="command-card" aria-label="Final Decantr install command">
-        <span class="command-label">First command</span>
-        <div class="command-row">
-          <code>npx @decantr/cli scan</code>
-          <button class="copy-button" type="button" data-copy="npx @decantr/cli scan"><i data-lucide="copy" class="icon" aria-hidden="true"></i><span class="copy-label">Copy</span></button>
+    <!-- ============ ONE-FINDING DEMO ============ -->
+    <section class="section" id="demo" aria-labelledby="demo-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">One repair, end to end</p>
+          <h2 id="demo-title">What your AI actually receives.</h2>
+          <p>Decantr emits a finding. Your agent reads it. The diff lands clean. No vibes — concrete codes, IDs, and anchors.</p>
+        </div>
+
+        <div class="demo reveal">
+          <div class="demo-step">
+            <span class="demo-label">1 · Finding emitted</span>
+            <pre><span class="c">// .decantr/findings.json</span>
+{
+  <span class="k">"code"</span>: <span class="s">"COMP001"</span>,
+  <span class="k">"route"</span>: <span class="s">"/feed"</span>,
+  <span class="k">"file"</span>: <span class="s">"app/feed/SaveBtn.tsx"</span>,
+  <span class="k">"issue"</span>: <span class="s">"Duplicate primitive"</span>,
+  <span class="k">"expected"</span>: <span class="s">"@/ui/Button"</span>,
+  <span class="k">"repair_id"</span>: <span class="s">"r_4a2"</span>
+}</pre>
+          </div>
+          <span class="demo-arrow" aria-hidden="true">
+            <i data-lucide="arrow-right" class="icon"></i>
+          </span>
+          <div class="demo-step">
+            <span class="demo-label">2 · Agent reads context</span>
+            <pre><span class="c"># MCP-fetched repair prompt</span>
+route: /feed
+duplicate: app/feed/SaveBtn.tsx
+already-owned: @/ui/Button
+
+action:
+  replace local button
+  with imported primitive
+  preserve onClick + label
+  no other changes</pre>
+          </div>
+          <span class="demo-arrow" aria-hidden="true">
+            <i data-lucide="arrow-right" class="icon"></i>
+          </span>
+          <div class="demo-step">
+            <span class="demo-label">3 · Diff lands clean</span>
+            <pre><span class="c">// app/feed/SaveBtn.tsx</span>
+<span class="del">- import { motion } from "framer"</span>
+<span class="del">- const SaveBtn = (p) =&gt; (</span>
+<span class="del">-  &lt;motion.button {...p} /&gt; )</span>
+<span class="ins">+ import { Button } from "@/ui/Button"</span>
+<span class="ins">+ export const SaveBtn = (p) =&gt;</span>
+<span class="ins">+   &lt;Button {...p} /&gt;</span></pre>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <span class="demo-foot">
+            <i data-lucide="check-circle-2" class="icon"></i>
+            Repair landed in 1.2s · 3 lines changed · 0 ripple edits · finding closed
+          </span>
         </div>
       </div>
-      <div class="hero-actions" style="justify-content:center">
-        <a class="button button-primary" href="#install"><i data-lucide="scan-search" class="icon" aria-hidden="true"></i>Scan locally</a>
-        <a class="button button-secondary" href="/reference/security-permissions.md"><i data-lucide="lock-keyhole" class="icon" aria-hidden="true"></i>Security permissions</a>
-        <a class="button button-secondary" href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener"><i data-lucide="git-branch" class="icon" aria-hidden="true"></i>GitHub</a>
+    </section>
+
+    <!-- ============ COMPARE ============ -->
+    <section class="section" id="compare" aria-labelledby="compare-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">Why a new tool</p>
+          <h2 id="compare-title">Linters check syntax. Decantr checks intent.</h2>
+          <p>Existing tools see *files*. Decantr sees *routes, primitives, and the contract you've already shipped.*</p>
+        </div>
+
+        <div class="compare reveal">
+          <table class="compare-table" aria-label="Decantr vs adjacent tools">
+            <thead>
+              <tr>
+                <th></th>
+                <th class="col-decantr">Decantr</th>
+                <th>ESLint</th>
+                <th>Stylelint</th>
+                <th>Storybook</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="row-label">Scope</td>
+                <td class="col-decantr-cell">UI semantics + drift</td>
+                <td>JS syntax</td>
+                <td>CSS rules</td>
+                <td>Component dev env</td>
+              </tr>
+              <tr>
+                <td class="row-label">Reads route-scoped context</td>
+                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="partial">Partial</span></td>
+              </tr>
+              <tr>
+                <td class="row-label">Repair-ready findings for AI</td>
+                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="no">No</span></td>
+              </tr>
+              <tr>
+                <td class="row-label">MCP / agent-native protocol</td>
+                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>32 tools</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="no">No</span></td>
+              </tr>
+              <tr>
+                <td class="row-label">Zero source modification</td>
+                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="no">Setup files</span></td>
+              </tr>
+              <tr>
+                <td class="row-label">Open source · MIT</td>
+                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+                <td><span class="yes"><i data-lucide="check" class="icon"></i>Yes</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TRUST ============ -->
+    <section class="section" id="local" aria-labelledby="local-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">Built for local control</p>
+          <h2 id="local-title">Take the speed. Keep the authority.</h2>
+        </div>
+
+        <div class="trust-grid reveal">
+          <article class="trust-item">
+            <span class="icon-wrap"><i data-lucide="laptop" class="icon" aria-hidden="true"></i></span>
+            <h3>Local-first</h3>
+            <p>Runs from your terminal, your CI, or any MCP-compatible agent.</p>
+          </article>
+          <article class="trust-item">
+            <span class="icon-wrap"><i data-lucide="shield-check" class="icon" aria-hidden="true"></i></span>
+            <h3>Your code stays yours</h3>
+            <p>Findings, baselines, and screenshots live on your machine by default.</p>
+          </article>
+          <article class="trust-item">
+            <span class="icon-wrap"><i data-lucide="puzzle" class="icon" aria-hidden="true"></i></span>
+            <h3>Drops into your stack</h3>
+            <p>Brownfield adoption observes what's already there. No rewrite, no migration.</p>
+          </article>
+          <article class="trust-item">
+            <span class="icon-wrap"><i data-lucide="paintbrush" class="icon" aria-hidden="true"></i></span>
+            <h3>Style-system agnostic</h3>
+            <p>Tailwind, CSS modules, MUI, shadcn, your own design system — Decantr observes.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ AGENT MAP ============ -->
+    <section class="section" aria-labelledby="map-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">Agent-ready context</p>
+          <h2 id="map-title">Give the AI a map before it edits.</h2>
+          <p>Before your agent touches a route, Decantr can hand it the route contract, owned primitives, allowed tokens, and active findings — through MCP or stdout.</p>
+        </div>
+
+        <div class="map-card reveal">
+          <div class="map-card-head">
+            <span class="dot-row" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span>decantr context /feed</span>
+            <span class="badge">MCP · live</span>
+          </div>
+<pre><span class="label">ROUTE     </span> /feed
+<span class="label">OWNS      </span> <span class="accent">SavedRecipes</span>, <span class="accent">FeedItem</span>, <span class="accent">ActionsBar</span>
+<span class="label">PRIMITIVES</span> <span class="accent">@/ui/Button</span>, <span class="accent">@/ui/Card</span>, <span class="accent">@/ui/Dialog</span>
+<span class="label">TOKENS    </span> text-primary, bg-card, gap-sm
+<span class="label">RULES     </span> no inline styles · import primitives only · ARIA labels required
+<span class="label">EVIDENCE  </span> last-pass <span class="success">0x4a2</span> · 3 findings open · 32 MCP tools online</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROOF ============ -->
+    <section class="section" id="proof" aria-labelledby="proof-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">Built in the open</p>
+          <h2 id="proof-title">Specific. Shipped. Auditable.</h2>
+          <p>No black box, no telemetry by default, no rug pull. The whole loop is yours to read and to fork.</p>
+        </div>
+
+        <div class="proof reveal">
+          <div class="proof-item">
+            <span class="label">Packages shipping</span>
+            <span class="big">8 @ v3.0.1</span>
+            <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">
+              <i data-lucide="package" class="icon"></i>npm
+            </a>
+          </div>
+          <div class="proof-item">
+            <span class="label">MCP tools online</span>
+            <span class="big">32</span>
+            <span style="color:var(--soft); font-size:0.82rem;">for any MCP agent</span>
+          </div>
+          <div class="proof-item">
+            <span class="label">License</span>
+            <span class="big">MIT</span>
+            <span style="color:var(--soft); font-size:0.82rem;">no rug pull, ever</span>
+          </div>
+          <div class="proof-item">
+            <span class="label">Source</span>
+            <span class="big">TypeScript</span>
+            <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener">
+              <i data-lucide="git-branch" class="icon"></i>GitHub
+            </a>
+          </div>
+        </div>
+
+        <p class="pricing-line reveal">
+          <strong>Pricing posture:</strong> the CLI, verifier, MCP server, and contract layer are
+          <strong>free forever, MIT licensed.</strong> A hosted Project Health dashboard is on the
+          roadmap — opt-in, never required.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ ROADMAP ============ -->
+    <section class="section section-tight" aria-labelledby="roadmap-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow">Momentum</p>
+          <h2 id="roadmap-title">What's shipping next.</h2>
+        </div>
+
+        <div class="roadmap reveal">
+          <article class="roadmap-item now">
+            <span class="roadmap-tag"><span class="dot" aria-hidden="true"></span>Shipping now · v3.0.1</span>
+            <h3>32-tool MCP server + Project Health</h3>
+            <p>Route-scoped context, deterministic scoring, evidence bundles — production-ready for Cursor, Claude Code, Continue, Windsurf, Cline.</p>
+          </article>
+          <article class="roadmap-item">
+            <span class="roadmap-tag">Next · v3.1</span>
+            <h3>Hosted Project Health dashboard</h3>
+            <p>Push your local evidence to a team view. PR comments, drift over time, repair throughput — opt-in only.</p>
+          </article>
+          <article class="roadmap-item">
+            <span class="roadmap-tag">Soon · v4.0</span>
+            <h3>Cross-repo intelligence</h3>
+            <p>One contract layer across your design system and consumers. Repair findings travel with shared primitives.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINAL CTA ============ -->
+    <section class="section" aria-labelledby="cta-title">
+      <div class="container">
+        <div class="final reveal">
+          <p class="eyebrow" style="justify-self: center; margin: 0 auto;">Already scanned?</p>
+          <h2 id="cta-title">Lock the contract. Run adopt.</h2>
+          <p>Adopt observes what's already in your app and writes a repo-owned contract. Reversible. Gitignored. Yours.</p>
+          <div class="installer" style="margin: 0 auto; max-width: 30rem;">
+            <div class="installer-tabs" role="tablist" aria-label="Package manager (final)">
+              <button data-pm-final="npx" class="active" role="tab" aria-selected="true">npx</button>
+              <button data-pm-final="pnpm" role="tab" aria-selected="false">pnpm dlx</button>
+              <button data-pm-final="bunx" role="tab" aria-selected="false">bunx</button>
+              <button data-pm-final="yarn" role="tab" aria-selected="false">yarn dlx</button>
+            </div>
+            <div class="command">
+              <code id="adopt-cmd" tabindex="0" role="button" aria-label="Adopt command, click to copy">npx @decantr/cli adopt --yes</code>
+              <button class="copy-btn" type="button" data-copy-target="adopt-cmd" data-copy-success="Copied">
+                <i data-lucide="copy" class="icon" aria-hidden="true"></i>
+                <span class="copy-label">Copy</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -1410,27 +1697,35 @@
   <footer>
     <div class="footer-grid">
       <div>
-        <div class="footer-brand">
-          <img src="/logo.svg" alt="" width="29" height="29">
-          <span>Decantr</span>
+        <a class="footer-brand" href="/" aria-label="Decantr home">
+          <img src="/logo.svg" alt="" width="30" height="30">
+          <span class="brand-name">decantr</span>
+        </a>
+        <p class="footer-copy">Local-first verifier for production frontends touched by AI agents. Your repo-owned contract stays in charge.</p>
+        <div class="footer-meta">
+          <span>v3.0.1</span>
+          <span class="footer-meta-sep">·</span>
+          <span>MIT licensed</span>
+          <span class="footer-meta-sep">·</span>
+          <span>No telemetry by default</span>
+          <span class="footer-meta-sep">·</span>
+          <span>Built in the open</span>
         </div>
-        <p class="footer-copy">Local-first AI Frontend Governance for production codebases touched by AI agents. Registry vocabulary is available when useful, but your repo-owned contract stays in charge.</p>
       </div>
-      <nav class="footer-links" aria-label="Footer navigation">
-        <a href="/guides/existing-apps.md"><i data-lucide="folder-open" class="icon" aria-hidden="true"></i>Existing apps</a>
-        <a href="/guides/project-health-ci.md"><i data-lucide="shield-check" class="icon" aria-hidden="true"></i>Project Health CI</a>
-        <a href="/guides/ai-assistant-setup.md"><i data-lucide="bot" class="icon" aria-hidden="true"></i>AI assistant setup</a>
-        <a href="/reference/security-permissions.md"><i data-lucide="lock-keyhole" class="icon" aria-hidden="true"></i>Security</a>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="https://github.com/decantr-ai/decantr/blob/main/docs/guides/existing-apps.md" target="_blank" rel="noopener"><i data-lucide="folder-open" class="icon" aria-hidden="true"></i>Existing apps</a>
+        <a href="https://github.com/decantr-ai/decantr/blob/main/docs/guides/project-health-ci.md" target="_blank" rel="noopener"><i data-lucide="shield-check" class="icon" aria-hidden="true"></i>Project Health in CI</a>
+        <a href="https://github.com/decantr-ai/decantr/blob/main/docs/guides/ai-assistant-setup.md" target="_blank" rel="noopener"><i data-lucide="bot" class="icon" aria-hidden="true"></i>AI assistant setup</a>
+        <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/security-permissions.md" target="_blank" rel="noopener"><i data-lucide="lock-keyhole" class="icon" aria-hidden="true"></i>Security</a>
         <a href="/llms.txt"><i data-lucide="file-text" class="icon" aria-hidden="true"></i>llms.txt</a>
         <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener"><i data-lucide="git-branch" class="icon" aria-hidden="true"></i>GitHub</a>
         <a href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener"><i data-lucide="package" class="icon" aria-hidden="true"></i>npm</a>
-        <a href="https://registry.decantr.ai" target="_blank" rel="noopener"><i data-lucide="database" class="icon" aria-hidden="true"></i>Registry</a>
       </nav>
     </div>
   </footer>
 
-  <section class="audit-metadata" aria-hidden="true">
-    <p>32 tools for your AI assistant</p>
+  <section class="sr-only" aria-hidden="true">
+    <h2>32 tools for your AI assistant</h2>
     <p>
       decantr_read_essence decantr_validate decantr_search_registry decantr_resolve_pattern
       decantr_resolve_archetype decantr_resolve_blueprint decantr_suggest_patterns
@@ -1444,7 +1739,7 @@
       decantr_get_evidence_bundle decantr_workspace_health decantr_get_repair_prompt
       decantr_run_health_loop
     </p>
-    <p>Eight packages, one mission</p>
+    <h2>Eight packages, one mission</h2>
     <div class="pkg-name">@decantr/essence-spec</div><div class="pkg-version">v3.0.1</div>
     <div class="pkg-name">@decantr/registry</div><div class="pkg-version">v3.0.1</div>
     <div class="pkg-name">@decantr/css</div><div class="pkg-version">v3.0.1</div>
@@ -1460,64 +1755,179 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>
     (function () {
+      // Icons
       if (window.lucide && window.lucide.createIcons) {
-        window.lucide.createIcons({
-          attrs: {
-            'aria-hidden': 'true'
-          }
-        });
+        window.lucide.createIcons({ attrs: { 'aria-hidden': 'true' } });
       }
 
-      var revealTargets = document.querySelectorAll('.reveal');
+      // Reveal
+      var reveals = document.querySelectorAll('.reveal');
       if (!('IntersectionObserver' in window)) {
-        revealTargets.forEach(function (target) {
-          target.classList.add('visible');
-        });
+        reveals.forEach(function (el) { el.classList.add('visible'); });
       } else {
-        var observer = new IntersectionObserver(function (entries) {
+        var io = new IntersectionObserver(function (entries) {
           entries.forEach(function (entry) {
             if (entry.isIntersecting) {
               entry.target.classList.add('visible');
-              observer.unobserve(entry.target);
+              io.unobserve(entry.target);
             }
           });
         }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-        revealTargets.forEach(function (target) {
-          observer.observe(target);
-        });
+        reveals.forEach(function (el) { io.observe(el); });
       }
 
-      document.querySelectorAll('[data-copy]').forEach(function (button) {
-        button.addEventListener('click', function () {
-          var value = button.getAttribute('data-copy') || '';
-          var label = button.querySelector('.copy-label');
-          var setCopyLabel = function (text) {
-            if (label) {
-              label.textContent = text;
-              return;
-            }
-            button.textContent = text;
-          };
-          var reset = function () {
-            window.setTimeout(function () {
-              setCopyLabel('Copy');
-            }, 1400);
-          };
-
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(value).then(function () {
-              setCopyLabel('Copied');
-              reset();
-            }).catch(function () {
-              setCopyLabel(value);
-              reset();
+      // Count-up
+      var ease = function (t) { return 1 - Math.pow(1 - t, 3); };
+      var animateNumber = function (el, target, duration) {
+        var valueEl = el.querySelector('.value');
+        if (!valueEl) return;
+        var start = performance.now();
+        var step = function (now) {
+          var t = Math.min(1, (now - start) / duration);
+          valueEl.textContent = String(Math.round(ease(t) * target));
+          if (t < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      };
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var scoreContainer = document.querySelector('[data-score]');
+      if (scoreContainer) {
+        var nums = scoreContainer.querySelectorAll('[data-count-to]');
+        if (prefersReduced) {
+          nums.forEach(function (el) {
+            var v = el.querySelector('.value');
+            if (v) v.textContent = el.getAttribute('data-count-to');
+          });
+        } else if ('IntersectionObserver' in window) {
+          var so = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                nums.forEach(function (el) {
+                  var t = parseInt(el.getAttribute('data-count-to'), 10);
+                  animateNumber(el, t, 1400);
+                });
+                so.unobserve(entry.target);
+              }
             });
-            return;
-          }
+          }, { threshold: 0.4 });
+          so.observe(scoreContainer);
+        } else {
+          nums.forEach(function (el) {
+            var v = el.querySelector('.value');
+            if (v) v.textContent = el.getAttribute('data-count-to');
+          });
+        }
+      }
 
-          setCopyLabel(value);
-          reset();
+      // Multi-package-manager installer
+      var pmTemplates = {
+        npx:  { hero: 'npx @decantr/cli scan',       adopt: 'npx @decantr/cli adopt --yes' },
+        pnpm: { hero: 'pnpm dlx @decantr/cli scan',  adopt: 'pnpm dlx @decantr/cli adopt --yes' },
+        bunx: { hero: 'bunx @decantr/cli scan',      adopt: 'bunx @decantr/cli adopt --yes' },
+        yarn: { hero: 'yarn dlx @decantr/cli scan',  adopt: 'yarn dlx @decantr/cli adopt --yes' }
+      };
+      var setActive = function (group, pm) {
+        group.querySelectorAll('button').forEach(function (b) {
+          var on = b.getAttribute('data-pm') === pm || b.getAttribute('data-pm-final') === pm;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-selected', on ? 'true' : 'false');
         });
+      };
+      document.querySelectorAll('.installer-tabs').forEach(function (group) {
+        group.addEventListener('click', function (e) {
+          var btn = e.target.closest('button');
+          if (!btn) return;
+          var pm = btn.getAttribute('data-pm') || btn.getAttribute('data-pm-final');
+          if (!pm || !pmTemplates[pm]) return;
+          setActive(group, pm);
+          var isFinal = btn.hasAttribute('data-pm-final');
+          var cmdEl = document.getElementById(isFinal ? 'adopt-cmd' : 'install-cmd');
+          if (cmdEl) cmdEl.textContent = pmTemplates[pm][isFinal ? 'adopt' : 'hero'];
+          // Update nav-cta to mirror primary installer
+          if (!isFinal) {
+            var nav = document.getElementById('nav-install');
+            if (nav) {
+              var icon = nav.querySelector('svg, i');
+              nav.textContent = '';
+              if (icon) nav.appendChild(icon);
+              nav.appendChild(document.createTextNode(' ' + pm + ' scan'));
+            }
+          }
+        });
+      });
+
+      // Copy buttons + click-to-copy on code
+      var status = document.getElementById('copy-status');
+      var announce = function (msg) { if (status) status.textContent = msg; };
+      var fallbackCopy = function (value) {
+        var ta = document.createElement('textarea');
+        ta.value = value;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        ta.remove();
+        return ok;
+      };
+      var doCopy = function (value) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(value).then(function () { return true; }).catch(function () { return fallbackCopy(value); });
+        }
+        return Promise.resolve(fallbackCopy(value));
+      };
+      var flashCopied = function (label, originalText, successText) {
+        if (!label) return;
+        label.textContent = successText;
+        setTimeout(function () { label.textContent = originalText; }, 1400);
+      };
+      document.querySelectorAll('[data-copy], [data-copy-target]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var value;
+          if (btn.hasAttribute('data-copy-target')) {
+            var target = document.getElementById(btn.getAttribute('data-copy-target'));
+            value = target ? target.textContent.trim() : '';
+          } else {
+            value = btn.getAttribute('data-copy') || '';
+          }
+          var label = btn.querySelector('.copy-label');
+          var original = label ? label.textContent : btn.textContent;
+          var success = btn.getAttribute('data-copy-success') || 'Copied';
+          doCopy(value).then(function (ok) {
+            if (ok) {
+              flashCopied(label, original, success);
+              announce('Copied: ' + value);
+            }
+          });
+        });
+      });
+      // Click-to-copy on the code element itself
+      document.querySelectorAll('#install-cmd, #adopt-cmd, .step .command code').forEach(function (code) {
+        code.addEventListener('click', function () {
+          var value = code.textContent.trim();
+          doCopy(value).then(function (ok) { if (ok) announce('Copied: ' + value); });
+        });
+        code.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            code.click();
+          }
+        });
+      });
+
+      // Keyboard shortcut: "/" focuses the install command
+      document.addEventListener('keydown', function (e) {
+        var target = e.target;
+        var isField = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+        if (e.key === '/' && !isField && !e.metaKey && !e.ctrlKey && !e.altKey) {
+          var cmd = document.getElementById('install-cmd');
+          if (cmd) {
+            e.preventDefault();
+            cmd.scrollIntoView({ block: 'center', behavior: prefersReduced ? 'auto' : 'smooth' });
+            setTimeout(function () { cmd.focus(); }, prefersReduced ? 0 : 360);
+          }
+        }
       });
     })();
   </script>
