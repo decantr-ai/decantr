@@ -62,3 +62,6 @@ apps/showcase-host/src/capsules/*/.decantr/custom/
 # Operational / internal-only notes — never committed to the public repo
 .private/
 .private/*
+
+# Build-time generated docs artifacts
+docs/stats.json
