@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Decantr — Catch UI drift before it ships</title>
-  <meta name="description" content="The verifier between your AI and your repo. Reads your frontend, hands your agent route-scoped context, and emits evidence your agent can repair from — before merge.">
+  <title>Decantr — AI Frontend Governance for AI-edited codebases</title>
+  <meta name="description" content="AI Frontend Governance for production frontend codebases touched by AI agents: typed contracts, route-scoped context, Project Health, and repair-ready evidence before merge.">
   <link rel="canonical" href="https://decantr.ai/">
-  <meta property="og:title" content="Decantr — Catch UI drift before it ships">
-  <meta property="og:description" content="The verifier between your AI and your repo. Local CLI · MCP-native · 32 tools · MIT.">
+  <meta property="og:title" content="Decantr — AI Frontend Governance">
+  <meta property="og:description" content="Typed contracts, route-scoped context, Project Health, behavior obligations, and repair-ready evidence for AI-edited frontend codebases.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://decantr.ai/">
   <meta property="og:image" content="https://decantr.ai/logo.svg">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Decantr — Catch UI drift before it ships">
-  <meta name="twitter:description" content="Local CLI that hands your AI route-scoped context and emits evidence your agent can repair from.">
+  <meta name="twitter:title" content="Decantr — AI Frontend Governance">
+  <meta name="twitter:description" content="Local CLI and MCP server that keep AI-edited frontends inside your product contract.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
     "@graph": [
       { "@type": "Organization", "@id": "https://decantr.ai/#organization", "name": "Decantr AI", "url": "https://decantr.ai/", "logo": "https://decantr.ai/logo.svg", "sameAs": ["https://github.com/decantr-ai/decantr", "https://www.npmjs.com/org/decantr"] },
       { "@type": "WebSite", "@id": "https://decantr.ai/#website", "name": "Decantr", "alternateName": "Decantr AI", "url": "https://decantr.ai/", "publisher": { "@id": "https://decantr.ai/#organization" } },
-      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "Local CLI that reads your repo, hands your AI route-scoped context, and emits evidence your agent can repair from.", "sameAs": "https://github.com/decantr-ai/decantr", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
+      { "@type": "SoftwareApplication", "@id": "https://decantr.ai/#software", "name": "Decantr", "applicationCategory": "DeveloperApplication", "operatingSystem": "Cross-platform", "url": "https://decantr.ai/", "description": "AI Frontend Governance for production codebases touched by AI agents: typed contracts, route-scoped context, Project Health, behavior obligations, and repair-ready evidence.", "sameAs": "https://github.com/decantr-ai/decantr", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
       { "@type": "SoftwareSourceCode", "@id": "https://github.com/decantr-ai/decantr#source", "name": "Decantr", "codeRepository": "https://github.com/decantr-ai/decantr", "programmingLanguage": "TypeScript", "license": "https://opensource.org/license/mit", "targetProduct": { "@id": "https://decantr.ai/#software" } }
     ]
   }
@@ -1215,13 +1215,13 @@
     <!-- ============ HERO ============ -->
     <section class="section hero" aria-labelledby="hero-title">
       <div class="hero-inner reveal">
-        <p class="eyebrow">The verifier between your AI and your repo</p>
+        <p class="eyebrow">AI Frontend Governance for production codebases</p>
         <h1 class="hero-h1" id="hero-title">
           Catch UI drift <span class="accent">before</span> it ships.
         </h1>
         <p class="hero-lede">
-          Local CLI that reads your existing frontend, hands your agent route-scoped context,
-          and turns every UI change into evidence your AI can repair against — before merge.
+          Decantr gives AI coding agents the contract, context, and evidence they need
+          to edit your frontend without drifting from your product standards.
         </p>
         <span class="hero-credibility">
           <span class="dot" aria-hidden="true"></span>
@@ -1291,7 +1291,7 @@
         <p class="score-caption reveal">
           <strong>Project Health</strong> is a deterministic score over duplicate components, raw values,
           route coverage, and accessibility checks.
-          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health-rubric.md" class="rubric-link" target="_blank" rel="noopener">Open-source rubric →</a>
+          <a href="https://github.com/decantr-ai/decantr/blob/main/docs/reference/project-health.md" class="rubric-link" target="_blank" rel="noopener">Open-source rubric →</a>
         </p>
 
         <!-- ============ Works-with ============ -->
@@ -1324,7 +1324,7 @@
             <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Indexed <strong>64 components</strong>, <strong>18 routes</strong>, <strong>312 source files</strong></span></div>
             <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">analyzing component reuse and token coverage...</span></span></div>
             <div class="transcript-line"><span class="sym warn">!</span><span class="body">Project Health: <span class="warn-text">42/100</span> · <strong>3 findings</strong> · <em>all repair-ready</em></span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Evidence bundle written → <em>.decantr/evidence.json</em> <span class="soft">(gitignored)</span></span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Evidence bundle written → <em>.decantr/evidence/latest.json</em> <span class="soft">(gitignored)</span></span></div>
             <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Done in 4.2s</span> · zero files modified · ready for your agent</span></div>
           </div>
         </div>
@@ -1383,7 +1383,7 @@
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">writes <strong>.decantr/scan.json</strong></span>
+            <span class="step-out">prints a zero-write fit report</span>
           </article>
 
           <article class="step reveal">
@@ -1399,7 +1399,7 @@
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">writes <strong>.decantr/contract.yaml</strong> + <strong>baseline.json</strong></span>
+            <span class="step-out">writes <strong>decantr.essence.json</strong> + <strong>.decantr/graph/*</strong></span>
           </article>
 
           <article class="step reveal">
@@ -1415,7 +1415,7 @@
                 <span class="copy-label">Copy</span>
               </button>
             </div>
-            <span class="step-out">writes <strong>.decantr/evidence.json</strong></span>
+            <span class="step-out">writes <strong>.decantr/evidence/latest.json</strong></span>
           </article>
         </div>
 
@@ -1442,7 +1442,7 @@
         <div class="demo reveal">
           <div class="demo-step">
             <span class="demo-label">1 · Finding emitted</span>
-            <pre><span class="c">// .decantr/findings.json</span>
+            <pre><span class="c">// .decantr/evidence/latest.json</span>
 {
   <span class="k">"code"</span>: <span class="s">"COMP001"</span>,
   <span class="k">"route"</span>: <span class="s">"/feed"</span>,
@@ -1605,7 +1605,7 @@ action:
         <div class="map-card reveal">
           <div class="map-card-head">
             <span class="dot-row" aria-hidden="true"><span></span><span></span><span></span></span>
-            <span>decantr context /feed</span>
+            <span>decantr task /feed "add save action"</span>
             <span class="badge">MCP · live</span>
           </div>
 <pre><span class="label">ROUTE     </span> /feed
@@ -1613,6 +1613,7 @@ action:
 <span class="label">PRIMITIVES</span> <span class="accent">@/ui/Button</span>, <span class="accent">@/ui/Card</span>, <span class="accent">@/ui/Dialog</span>
 <span class="label">TOKENS    </span> text-primary, bg-card, gap-sm
 <span class="label">RULES     </span> no inline styles · import primitives only · ARIA labels required
+<span class="label">BEHAVIOR  </span> confirmation-dialog · accessible name · destructive copy
 <span class="label">EVIDENCE  </span> last-pass <span class="success">0x4a2</span> · 3 findings open · 32 MCP tools online</pre>
         </div>
       </div>

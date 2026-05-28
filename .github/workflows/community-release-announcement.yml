@@ -18,6 +18,10 @@ on:
         description: community-ops repository owner/name
         required: false
         default: "decantr-ai/community-ops"
+      event_type:
+        description: repository_dispatch event type. Use decantr_release_access_probe for token checks.
+        required: false
+        default: "decantr_release_published"
       send:
         description: Dispatch to community-ops. Leave false for payload preview.
         required: true
@@ -48,6 +52,7 @@ jobs:
       - name: Build or send dispatch payload
         env:
           COMMUNITY_OPS_DISPATCH_TOKEN: ${{ secrets.COMMUNITY_OPS_DISPATCH_TOKEN }}
+          EVENT_TYPE: ${{ inputs.event_type }}
           ONLY_PACKAGES: ${{ inputs.only_packages }}
           RELEASE_NOTE: ${{ inputs.release_note }}
           SEND: ${{ inputs.send }}
@@ -56,6 +61,9 @@ jobs:
         run: |
           set -euo pipefail
           args=(--version "$VERSION" --target-repo "$TARGET_REPO")
+          if [ -n "$EVENT_TYPE" ]; then
+            args+=(--event-type "$EVENT_TYPE")
+          fi
           if [ -n "$ONLY_PACKAGES" ]; then
             args+=(--only "$ONLY_PACKAGES")
           fi
@@ -74,6 +82,7 @@ jobs:
             echo
             echo "- Version: \`$VERSION\`"
             echo "- Target repo: \`$TARGET_REPO\`"
+            echo "- Event type: \`$EVENT_TYPE\`"
             echo "- Mode: $([ "$SEND" = "true" ] && echo "dispatch" || echo "dry run")"
             echo
             echo '```text'

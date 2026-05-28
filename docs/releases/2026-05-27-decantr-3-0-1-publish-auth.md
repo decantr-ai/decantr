@@ -32,6 +32,7 @@ This patch publishes the stable public Decantr package surface as `3.0.1`:
 - Preferred publish path remains GitHub OIDC trusted publishing with provenance.
 - The fallback is a release-continuity guard, not a replacement for trusted-publisher setup.
 - Verify every package in npm has trusted publishing configured for `decantr-ai/decantr` and workflow filename `publish.yml`.
+- Use `pnpm npm:trust:plan` to preview the trusted-publishing relationship for every public package, and `pnpm npm:trust:configure` after npm account authentication is ready.
 
 ## Verification
 

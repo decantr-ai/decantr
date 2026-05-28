@@ -49,6 +49,20 @@ For npm trusted publishing, every published package must have a matching trusted
 - Workflow filename: `publish.yml`
 - Allowed action: `npm publish`
 
+Use the repo helper to configure or audit the intended npm trusted-publishing relationship across the publishable Decantr package set:
+
+```bash
+pnpm npm:trust:plan
+pnpm npm:trust:configure
+```
+
+`npm:trust:plan` uses `npm trust github ... --dry-run` and does not mutate npm package settings. `npm:trust:configure` uses the same selected package surface without `--dry-run`; npm may require a browser-based account confirmation before it can change trusted-publisher settings. If you intentionally restrict publishing to a GitHub environment, pass the same environment to both npm and the workflow:
+
+```bash
+pnpm npm:trust:plan -- --environment npm-production
+pnpm npm:trust:configure -- --environment npm-production
+```
+
 After publishing:
 
 ```bash
@@ -130,10 +144,23 @@ gh workflow run community-release-announcement.yml \
   -f only_packages=@decantr/cli,@decantr/mcp-server,@decantr/verifier \
   -f release_note=docs/releases/2026-05-23-decantr-3-next-foundation.md \
   -f target_repo=decantr-ai/community-ops \
+  -f event_type=decantr_release_published \
   -f send=false
 ```
 
 Run it in dry-run mode first, then rerun with `send=true` after closeout has passed. If that workflow fails with `403 Resource not accessible by personal access token`, the `COMMUNITY_OPS_DISPATCH_TOKEN` secret exists but does not have cross-repo `repository_dispatch` access to `decantr-ai/community-ops`.
+
+To test the token without posting to Discord, dispatch a probe event type that `community-ops` does not listen to:
+
+```bash
+gh workflow run community-release-announcement.yml \
+  --repo decantr-ai/decantr \
+  --ref main \
+  -f version=3.0.2 \
+  -f release_note=docs/releases/2026-05-28-decantr-3-0-2-homepage-release-hardening.md \
+  -f event_type=decantr_release_access_probe \
+  -f send=true
+```
 
 When cross-repo dispatch is blocked, trigger the receiver workflow directly from `community-ops`:
 
