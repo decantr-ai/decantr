@@ -77,13 +77,13 @@
     "npm-surface:normalize": "node scripts/normalize-npm-dist-tags.mjs --write"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.15",
+    "@biomejs/biome": "^2.4.16",
     "@types/node": "^25.9.1",
     "entities": "^8.0.0",
     "tsup": "^8.0.0",
-    "tsx": "^4.22.3",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   },
   "engines": {
     "node": ">=20.19.0",
