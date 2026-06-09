@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { handleTool } from '../src/tools.js';
+import { callTool } from './tool-call.js';
 
 function makeV4Essence(): EssenceV4 {
   return {
@@ -86,7 +86,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'add_page',
       payload: { id: 'billing', layout: ['form-sections', 'data-table'] },
       path: essencePath,
@@ -105,7 +105,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'add_page',
       payload: { id: 'overview' },
       path: essencePath,
@@ -118,7 +118,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'remove_page',
       payload: { id: 'settings' },
       path: essencePath,
@@ -135,7 +135,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'remove_page',
       payload: { id: 'nonexistent' },
       path: essencePath,
@@ -149,7 +149,7 @@ describe('decantr_update_essence', () => {
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
     const newLayout = ['hero', 'kpi-grid', 'activity-feed'];
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'update_page_layout',
       payload: { id: 'overview', layout: newLayout },
       path: essencePath,
@@ -166,7 +166,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'update_dna',
       payload: { theme: { id: 'glassmorphism' }, personality: ['playful', 'bold'] },
       path: essencePath,
@@ -185,7 +185,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'add_feature',
       payload: { feature: 'payments' },
       path: essencePath,
@@ -202,7 +202,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'remove_feature',
       payload: { feature: 'search' },
       path: essencePath,
@@ -219,7 +219,7 @@ describe('decantr_update_essence', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'add_feature',
       payload: { feature: 'payments' },
       path: essencePath,
@@ -229,7 +229,7 @@ describe('decantr_update_essence', () => {
   });
 
   it('should reject invalid operation', async () => {
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'invalid_op',
       payload: {},
     })) as { error: string };
@@ -238,7 +238,7 @@ describe('decantr_update_essence', () => {
   });
 
   it('should reject missing payload', async () => {
-    const result = (await handleTool('decantr_update_essence', {
+    const result = (await callTool('decantr_update_essence', {
       operation: 'add_page',
     })) as { error: string };
 

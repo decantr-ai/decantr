@@ -287,6 +287,34 @@ describe('style bridge drift audit', () => {
     );
   }
 
+  function writeAcceptedStyleBridgeV2(projectRoot: string): void {
+    writeFile(
+      projectRoot,
+      '.decantr/style-bridge.json',
+      JSON.stringify(
+        {
+          version: 2,
+          status: 'accepted',
+          mappings: [
+            {
+              id: 'bridge:surface',
+              label: 'Surface colors',
+              native: { kind: 'css-var', ref: '--color-surface' },
+              essence: { kind: 'treatment', ref: 'surface' },
+              confidence: 0.86,
+              source: 'declared',
+              property: 'background-color',
+              tokenHints: ['--color-foreground'],
+              classHints: ['bg-background', 'text-foreground'],
+            },
+          ],
+        },
+        null,
+        2,
+      ),
+    );
+  }
+
   it('finds arbitrary Tailwind values when a style bridge is accepted', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -329,6 +357,36 @@ describe('style bridge drift audit', () => {
         value: 'bg-[#0f172a]',
         className: 'bg-[#0f172a]',
       });
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('includes v2 mapping confidence and native refs in drift evidence', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeAcceptedStyleBridgeV2(projectRoot);
+      const page = writeFile(
+        projectRoot,
+        'src/app/dashboard/page.tsx',
+        'export function DashboardPage() { return <main className="bg-[#0f172a] text-foreground">Dashboard</main>; }\n',
+      );
+
+      const audit = auditStyleBridgeDrift(projectRoot, [page]);
+
+      expect(audit.findings).toHaveLength(1);
+      expect(audit.findings[0]).toMatchObject({
+        bridgeMappingIds: ['bridge:surface'],
+        bridgeConfidence: 0.86,
+        bridgeSources: ['declared'],
+        tokenHints: ['--color-foreground', '--color-surface'],
+      });
+      expect(audit.findings[0]?.evidence).toEqual(
+        expect.arrayContaining([
+          'Accepted style bridge max confidence: 0.86',
+          'Accepted style bridge mapping sources: declared',
+        ]),
+      );
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

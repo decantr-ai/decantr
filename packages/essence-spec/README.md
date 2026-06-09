@@ -39,7 +39,7 @@ const violations = evaluateGuard(essence, {});
 
 ## Compatibility
 
-`@decantr/essence-spec` defines the active Essence v4 public contract for Decantr V2. Runtime validation accepts v4 only; older Essence v2/v3 files are supported through `decantr migrate --to v4`.
+`@decantr/essence-spec` defines the active Essence v4 public contract for Decantr 3. Runtime validation accepts v4 only; older Essence v2/v3 files are supported through `decantr migrate --to v4`.
 
 - additive schema fields may be introduced in compatible minor releases
 - breaking schema or migration behavior changes require a major version

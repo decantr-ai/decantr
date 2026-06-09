@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetAPIClient } from '../src/helpers.js';
-import { handleTool } from '../src/tools.js';
+import { callTool } from './tool-call.js';
 
 function makeV4Essence(overrides?: Partial<EssenceV4>): EssenceV4 {
   return {
@@ -299,7 +299,7 @@ describe('V4 tool tests', () => {
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_audit_project', {})) as {
+      const result = (await callTool('decantr_audit_project', {})) as {
         $schema: string;
         summary: { reviewPackPresent: boolean };
         findings: Array<{ id: string }>;
@@ -387,7 +387,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_audit_project', {
+      const result = (await callTool('decantr_audit_project', {
         sources_path: 'src',
         allow_hosted_upload: true,
       })) as {
@@ -448,7 +448,7 @@ describe('V4 tool tests', () => {
       await writeFile(filePath, '<section className="plain-panel">Overview</section>\n');
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_critique', { file_path: filePath })) as {
+      const result = (await callTool('decantr_critique', { file_path: filePath })) as {
         $schema: string;
         focusAreas: string[];
         findings: Array<{ id: string }>;
@@ -492,7 +492,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_critique', {
+      const result = (await callTool('decantr_critique', {
         file_path: filePath,
         allow_hosted_upload: true,
       })) as {
@@ -517,7 +517,7 @@ describe('V4 tool tests', () => {
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('hosted upload should not run'));
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_critique', { file_path: filePath })) as {
+      const result = (await callTool('decantr_critique', { file_path: filePath })) as {
         $schema: string;
         findings: Array<{ id: string }>;
       };
@@ -613,7 +613,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_showcase_benchmarks', {
+      const result = (await callTool('decantr_get_showcase_benchmarks', {
         view: 'verification',
       })) as {
         $schema: string;
@@ -736,7 +736,7 @@ describe('V4 tool tests', () => {
       await writeFile(join(testDir, 'decantr.essence.json'), JSON.stringify(makeV4Essence()));
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_compile_execution_packs', {
+      const result = (await callTool('decantr_compile_execution_packs', {
         namespace: '@official',
       })) as {
         $schema: string;
@@ -755,7 +755,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_read_essence', { path: essencePath })) as EssenceV4;
+      const result = (await callTool('decantr_read_essence', { path: essencePath })) as EssenceV4;
       expect(result.version).toBe('4.0.0');
       expect(result.dna).toBeDefined();
       expect(result.blueprint).toBeDefined();
@@ -766,7 +766,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_read_essence', {
+      const result = (await callTool('decantr_read_essence', {
         path: essencePath,
         layer: 'dna',
       })) as Record<string, unknown>;
@@ -779,7 +779,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_read_essence', {
+      const result = (await callTool('decantr_read_essence', {
         path: essencePath,
         layer: 'blueprint',
       })) as Record<string, unknown>;
@@ -792,7 +792,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
-      const result = (await handleTool('decantr_read_essence', {
+      const result = (await callTool('decantr_read_essence', {
         path: essencePath,
         layer: 'dna',
       })) as Record<string, unknown>;
@@ -805,7 +805,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_validate', { path: essencePath })) as Record<
+      const result = (await callTool('decantr_validate', { path: essencePath })) as Record<
         string,
         unknown
       >;
@@ -823,7 +823,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_check_drift', { path: essencePath })) as Record<
+      const result = (await callTool('decantr_check_drift', { path: essencePath })) as Record<
         string,
         unknown
       >;
@@ -836,7 +836,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_check_drift', {
+      const result = (await callTool('decantr_check_drift', {
         path: essencePath,
         theme_used: 'glassmorphism',
       })) as { drifted: boolean; dna_violations: Array<{ rule: string; layer: string }> };
@@ -850,7 +850,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_check_drift', {
+      const result = (await callTool('decantr_check_drift', {
         path: essencePath,
         page_id: 'nonexistent-page',
       })) as { drifted: boolean; blueprint_drift: Array<{ rule: string; autoFixable: boolean }> };
@@ -865,7 +865,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV2Essence()));
 
-      const result = (await handleTool('decantr_check_drift', { path: essencePath })) as Record<
+      const result = (await callTool('decantr_check_drift', { path: essencePath })) as Record<
         string,
         unknown
       >;
@@ -878,7 +878,7 @@ describe('V4 tool tests', () => {
       const essencePath = join(testDir, 'decantr.essence.json');
       await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-      const result = (await handleTool('decantr_check_drift', {
+      const result = (await callTool('decantr_check_drift', {
         path: essencePath,
         page_id: 'overview',
         components_used: ['kpi-grid', 'unknown-widget'],
@@ -897,7 +897,7 @@ describe('V4 tool tests', () => {
     it('should generate V4 format essence', async () => {
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
 
-      const result = (await handleTool('decantr_create_essence', {
+      const result = (await callTool('decantr_create_essence', {
         description: 'SaaS dashboard with analytics',
       })) as { essence: EssenceV4; format: string };
 
@@ -911,7 +911,7 @@ describe('V4 tool tests', () => {
     it('should use matched archetype in meta', async () => {
       vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
 
-      const result = (await handleTool('decantr_create_essence', {
+      const result = (await callTool('decantr_create_essence', {
         description: 'ecommerce shop',
       })) as { essence: EssenceV4; archetype: string };
 
@@ -978,7 +978,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_scaffold_context', {})) as {
+      const result = (await callTool('decantr_get_scaffold_context', {})) as {
         task_context: string;
         scaffold_context: string;
         execution_pack: { markdown: string; json: { packType: string } };
@@ -1041,7 +1041,7 @@ describe('V4 tool tests', () => {
       });
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_scaffold_context', {})) as {
+      const result = (await callTool('decantr_get_scaffold_context', {})) as {
         source: string;
         scaffold_context: string;
         execution_pack: { markdown: string; json: { packType: string } };
@@ -1079,7 +1079,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_execution_pack', {})) as {
+      const result = (await callTool('decantr_get_execution_pack', {})) as {
         version: string;
         scaffold: { id: string };
       };
@@ -1130,7 +1130,7 @@ describe('V4 tool tests', () => {
       });
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_execution_pack', {})) as {
+      const result = (await callTool('decantr_get_execution_pack', {})) as {
         version: string;
         scaffold: { id: string };
         source: string;
@@ -1204,7 +1204,7 @@ describe('V4 tool tests', () => {
       await writeFile(join(contextDir, 'section-dashboard.md'), '# Section Context\n');
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_page_context', { page_id: 'overview' })) as {
+      const result = (await callTool('decantr_get_page_context', { page_id: 'overview' })) as {
         page_id: string;
         section_id: string;
         section_role: string;
@@ -1283,7 +1283,7 @@ describe('V4 tool tests', () => {
       });
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_page_context', { page_id: 'overview' })) as {
+      const result = (await callTool('decantr_get_page_context', { page_id: 'overview' })) as {
         page_context: string;
         manifest_source: string;
         execution_pack_source: string;
@@ -1349,7 +1349,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_execution_pack', {
+      const result = (await callTool('decantr_get_execution_pack', {
         pack_type: 'page',
         id: 'overview',
       })) as {
@@ -1401,7 +1401,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_execution_pack', {
+      const result = (await callTool('decantr_get_execution_pack', {
         pack_type: 'mutation',
         id: 'modify',
       })) as {
@@ -1448,7 +1448,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_execution_pack', {
+      const result = (await callTool('decantr_get_execution_pack', {
         pack_type: 'review',
       })) as {
         source: string;
@@ -1492,7 +1492,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_execution_pack', {
+      const result = (await callTool('decantr_get_execution_pack', {
         pack_type: 'review',
       })) as {
         pack_type: string;
@@ -1549,7 +1549,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_section_context', {
+      const result = (await callTool('decantr_get_section_context', {
         section_id: 'dashboard',
       })) as {
         section_id: string;
@@ -1598,7 +1598,7 @@ describe('V4 tool tests', () => {
       );
 
       process.chdir(testDir);
-      const result = (await handleTool('decantr_get_section_context', {
+      const result = (await callTool('decantr_get_section_context', {
         section_id: 'dashboard',
       })) as {
         context: string;

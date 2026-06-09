@@ -1,0 +1,1 @@
+exports.localCopy = 'Fallback copy';

@@ -27,6 +27,7 @@
     "seo:docs-sitemap": "node scripts/generate-docs-sitemap.mjs",
     "seo:indexnow": "node scripts/submit-indexnow.mjs",
     "audit:docs-marketing": "node scripts/audit-docs-marketing.mjs",
+    "audit:docs-drift": "node scripts/audit-docs-drift.mjs",
     "audit:public-links": "node scripts/audit-public-links.mjs",
     "audit:package-surface": "node scripts/audit-package-surface.mjs && node scripts/audit-package-permissions.mjs",
     "audit:package-permissions": "node scripts/audit-package-permissions.mjs",

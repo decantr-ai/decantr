@@ -39,6 +39,8 @@
     "./schema/project-health-report.v1.json": "./schema/project-health-report.v1.json",
     "./schema/decantr-ci-report.v1.json": "./schema/decantr-ci-report.v1.json",
     "./schema/evidence-bundle.v1.json": "./schema/evidence-bundle.v1.json",
+    "./schema/evidence-bundle.v2.json": "./schema/evidence-bundle.v2.json",
+    "./schema/runtime-probe-payload.v2.json": "./schema/runtime-probe-payload.v2.json",
     "./schema/scan-report.v1.json": "./schema/scan-report.v1.json",
     "./schema/workspace-health-report.v1.json": "./schema/workspace-health-report.v1.json",
     "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",

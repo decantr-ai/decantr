@@ -47,6 +47,18 @@ export const KNOWN_VERIFICATION_DIAGNOSTICS = [
     family: 'VISUAL',
   },
   {
+    rule: 'browser-runtime-probes-failed',
+    code: 'RUNTIME010',
+    repairId: 'repair-browser-runtime-probes',
+    family: 'RUNTIME',
+  },
+  {
+    rule: 'browser-axe-violations',
+    code: 'A11Y020',
+    repairId: 'fix-rendered-accessibility',
+    family: 'A11Y',
+  },
+  {
     rule: 'visual-baseline-screenshot-drift',
     code: 'VISUAL010',
     repairId: 'review-visual-baseline-drift',

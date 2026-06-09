@@ -1,6 +1,6 @@
 # Decantr Command Surface
 
-This is the current command audit for the 2.x reliability layer. The goal is consolidation without breaking users: workflow commands are the human-facing product surface, while existing primitives remain available for advanced users, scripts, and CI internals.
+This is the current command audit for the Decantr 3 governance line. The goal is consolidation without breaking users: workflow commands are the human-facing product surface, while existing primitives remain available for advanced users, scripts, and CI internals.
 
 | Command | Class | Decision | Notes |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ This is the current command audit for the 2.x reliability layer. The goal is con
 | `check` | advanced | keep | Fast contract and guard validation. |
 | `health` | advanced | keep | Canonical report, Evidence Bundle, prompt, browser/token checks, and lower-level Project Health primitive used by `verify` and `ci`. |
 | `workspace` | advanced | keep | Monorepo app candidate discovery, attached Decantr project listing, and aggregate health; `verify --workspace` is the user-facing shortcut. |
-| `heal` | deprecated-alias | soft-deprecate | Alias for `check`; no hard removal in 2.x. |
+| `heal` | deprecated-alias | soft-deprecate | Alias for `check`; retained for compatibility. |
 | `audit` | advanced | keep advanced | Lower-level verifier audit/file critique. |
 | `status`, `sync`, `upgrade`, `sync-drift`, `get`, `list`, `validate`, `rules`, `export` | advanced | keep | Useful when users need direct registry, rules, export, or diagnostic control. |
 | `registry`, `showcase`, `login`, `logout`, `telemetry` | operator | keep | Operator/registry/support workflows. |
@@ -57,4 +57,4 @@ Command help must be side-effect free. `decantr <command> --help`, `decantr <com
 
 Package and trust audits are repo scripts, not user-facing CLI commands. `pnpm audit:package-surface` verifies support-matrix drift and the installed permission surface, while `pnpm audit:package-permissions` runs the permission-only audit with `npm pack --dry-run --json`. The generated reference is `docs/reference/security-permissions.md`.
 
-`@decantr/vite-plugin` remains experimental after this audit. It may become a verifier-backed dev adapter later, but it is not part of the default reliability layer and should not be treated as a graduated 2.x surface yet.
+`@decantr/vite-plugin` remains experimental after this audit. It may become a verifier-backed dev adapter later, but it is not part of the default Decantr 3 reliability layer.

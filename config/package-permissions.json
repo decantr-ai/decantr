@@ -128,7 +128,7 @@
       "runtimeKind": "library",
       "ships": ["dist", "schema", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project source and stylesheet files", "Decantr context files", "accepted .decantr/style-bridge.json when auditProject checks style bridge drift", "read-only scan files for framework, route, styling, static-host, assistant-rule, and Decantr presence signals", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
+        "read": ["Selected project source and stylesheet files", "Decantr context files", "accepted .decantr/style-bridge.json when auditProject checks style bridge drift", "read-only scan files for framework, route, styling, static-host, assistant-rule, source inventory, and Decantr presence signals", "built dist/.next output when auditBuiltDist or auditProject needs runtime evidence"],
         "write": [],
         "delete": []
       },
@@ -179,7 +179,7 @@
       "runtimeKind": "cli",
       "ships": ["dist", "src/templates", "src/bundled", "README.md", "package.json"],
       "filesystem": {
-        "read": ["Selected project/workspace files", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
+        "read": ["Selected project/workspace files, including project-local Playwright and axe-core packages when browser evidence is explicitly requested", "package manifests", "routing/style/config files", ".decantr artifacts including .decantr/graph typed graph artifacts", "Decantr cache/config files"],
         "write": ["decantr.essence.json", "DECANTR.md", ".decantr artifacts", "generated context packs", ".decantr/graph typed graph artifacts including local snapshot history", "optional CI workflows/snippets", "optional style/export files", "Decantr config for auth/telemetry when explicitly enabled"],
         "delete": ["Generated Decantr artifacts or explicit command targets such as removed generated context/theme outputs"]
       },
@@ -197,7 +197,8 @@
         "The CLI is intentionally a local project inspector and artifact writer.",
         "decantr scan is local read-only reconnaissance; it writes no .decantr directory or report files and does not upload source.",
         "Process execution is limited to fixed command/argv paths; shell execution is avoided in shipped workflow code.",
-        "Visual evidence screenshots remain local unless the user invokes a hosted workflow."
+        "Visual evidence screenshots remain local unless the user invokes a hosted workflow.",
+        "Optional axe accessibility evidence loads only a project/workspace-local axe-core package and records local probe summaries."
       ]
     },
     {

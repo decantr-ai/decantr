@@ -19,7 +19,10 @@ const EXPECTED_PACKAGE_PATHS = {
 const EXPECTED_PACKAGES = Object.keys(EXPECTED_PACKAGE_PATHS);
 
 function extractToolNames(source) {
-  return [...source.matchAll(/name:\s*'([^']+)'/g)].map((match) => match[1]);
+  return [
+    ...source.matchAll(/name:\s*'([^']+)'/g),
+    ...source.matchAll(/consolidatedTool\(\s*'([^']+)'/g),
+  ].map((match) => match[1]);
 }
 
 function extractDocsToolNames(source) {

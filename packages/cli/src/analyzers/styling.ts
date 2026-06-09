@@ -60,9 +60,9 @@ function extractCSSVariables(content: string): {
 
   // Match CSS custom property declarations
   const varRegex = /--([\w-]+)\s*:\s*([^;]+)/g;
-  let match: RegExpExecArray | null;
+  let match = varRegex.exec(content);
 
-  while ((match = varRegex.exec(content)) !== null) {
+  while (match !== null) {
     const name = match[1];
     const value = match[2].trim();
     variables.push(`--${name}`);
@@ -88,6 +88,35 @@ function extractCSSVariables(content: string): {
       colorPatterns.some((p) => name.includes(p))
     ) {
       colors[name] = value;
+    }
+
+    match = varRegex.exec(content);
+  }
+
+  return { colors, variables };
+}
+
+function extractTailwindThemeTokens(content: string): {
+  colors: Record<string, string>;
+  variables: string[];
+} {
+  const colors: Record<string, string> = {};
+  const variables: string[] = [];
+
+  for (const match of content.matchAll(
+    /\b([a-zA-Z][\w-]*)\s*:\s*['"`](#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|hsla?\([^)]+\)|oklch\([^)]+\)|var\(--[^)]+\))['"`]/g,
+  )) {
+    const name = match[1];
+    const value = match[2];
+    if (
+      /color|bg|background|surface|text|foreground|border|primary|secondary|accent|muted|danger|error|success|warning/i.test(
+        name,
+      ) ||
+      /^#|^(?:rgba?|hsla?|oklch)\(/i.test(value) ||
+      /^var\(--/i.test(value)
+    ) {
+      colors[name] = value;
+      variables.push(`theme.colors.${name}`);
     }
   }
 
@@ -304,6 +333,18 @@ export function scanStyling(projectRoot: string): StylingAnalysis {
     const extracted = extractCSSVariables(cssContent);
     colors = { ...colors, ...extracted.colors };
     cssVariables.push(...extracted.variables);
+  }
+
+  for (const cfg of TAILWIND_CONFIGS) {
+    const configPath = join(projectRoot, cfg);
+    if (!existsSync(configPath)) continue;
+    try {
+      const extracted = extractTailwindThemeTokens(readFileSync(configPath, 'utf-8'));
+      colors = { ...colors, ...extracted.colors };
+      cssVariables.push(...extracted.variables);
+    } catch {
+      // Ignore unreadable configs; styling scan is best-effort evidence.
+    }
   }
 
   cssVariables = [...new Set(cssVariables)];

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { EssenceV4 } from '@decantr/essence-spec';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { handleTool } from '../src/tools.js';
+import { callTool } from './tool-call.js';
 
 function makeV4Essence(): EssenceV4 {
   return {
@@ -68,7 +68,7 @@ afterEach(async () => {
 
 describe('decantr_accept_drift', () => {
   it('should reject when violations array is empty', async () => {
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [],
       resolution: 'accept',
     })) as { error: string };
@@ -76,7 +76,7 @@ describe('decantr_accept_drift', () => {
   });
 
   it('should reject with invalid resolution', async () => {
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [{ rule: 'theme' }],
       resolution: 'invalid',
     })) as { error: string };
@@ -84,7 +84,7 @@ describe('decantr_accept_drift', () => {
   });
 
   it('should require confirm_dna for DNA violations', async () => {
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'accept',
     })) as { error: string; requires_confirmation: boolean };
@@ -93,7 +93,7 @@ describe('decantr_accept_drift', () => {
   });
 
   it('should allow reject without confirm_dna', async () => {
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'reject',
     })) as { status: string };
@@ -104,7 +104,7 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [{ rule: 'structure', page_id: 'billing' }],
       resolution: 'accept',
       path: essencePath,
@@ -122,7 +122,7 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [{ rule: 'theme', details: 'glassmorphism' }],
       resolution: 'accept',
       path: essencePath,
@@ -139,7 +139,7 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [
         { rule: 'layout', page_id: 'overview', details: 'reordered patterns' },
         { rule: 'page-exists', page_id: 'billing' },
@@ -164,7 +164,7 @@ describe('decantr_accept_drift', () => {
     const essencePath = join(testDir, 'decantr.essence.json');
     await writeFile(essencePath, JSON.stringify(makeV4Essence()));
 
-    const result = (await handleTool('decantr_accept_drift', {
+    const result = (await callTool('decantr_accept_drift', {
       violations: [{ rule: 'structure', page_id: 'billing' }],
       resolution: 'accept_scoped',
       scope: 'overview',

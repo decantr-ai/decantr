@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/runtime-probe-payload.v2.json",
+  "title": "Decantr Runtime Probe Payload",
+  "description": "Standalone v2 payload for local build, published-site, browser, visual, and benchmark runtime probes. It does not replace v1 project-audit runtimeAudit fields.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "project",
+    "scope",
+    "status",
+    "privacy",
+    "summary",
+    "probes",
+    "findings"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/runtime-probe-payload.v2.json"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "rootLabel"],
+      "properties": {
+        "id": { "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString" },
+        "rootLabel": { "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString" },
+        "projectPath": { "type": ["string", "null"] },
+        "target": { "type": ["string", "null"] },
+        "adapter": { "type": ["string", "null"] },
+        "workflowMode": { "type": ["string", "null"] },
+        "adoptionMode": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": ["kind", "routeHints"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["local-build", "published-site", "browser", "visual-baseline", "showcase", "proof-corpus"]
+        },
+        "baseUrl": { "type": ["string", "null"] },
+        "distDir": { "type": ["string", "null"] },
+        "routeHints": { "type": "array", "items": { "type": "string" } },
+        "commit": { "type": ["string", "null"] },
+        "suite": { "type": ["string", "null"] },
+        "viewport": {
+          "anyOf": [
+            { "$ref": "#/$defs/viewport" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "warning", "failed", "skipped"]
+    },
+    "privacy": {
+      "type": "object",
+      "required": ["localOnly", "sourceIncluded", "screenshotsLocalOnly", "redactedFields"],
+      "properties": {
+        "localOnly": { "type": "boolean" },
+        "sourceIncluded": { "const": false },
+        "screenshotsLocalOnly": { "type": "boolean" },
+        "redactedFields": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "probeCount",
+        "passedCount",
+        "warningCount",
+        "failedCount",
+        "routeCount",
+        "routeCoverageOk",
+        "assetCount",
+        "totalAssetBytes",
+        "durationMs"
+      ],
+      "properties": {
+        "probeCount": { "type": "integer", "minimum": 0 },
+        "passedCount": { "type": "integer", "minimum": 0 },
+        "warningCount": { "type": "integer", "minimum": 0 },
+        "failedCount": { "type": "integer", "minimum": 0 },
+        "routeCount": { "type": "integer", "minimum": 0 },
+        "routeCoverageOk": { "type": ["boolean", "null"] },
+        "assetCount": { "type": "integer", "minimum": 0 },
+        "totalAssetBytes": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "number", "minimum": 0 },
+        "runtimeKind": { "type": ["string", "null"] },
+        "largestAssetPath": { "type": ["string", "null"] },
+        "largestAssetBytes": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "probes": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/probeResult" }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/runtimeArtifact" }
+    },
+    "legacyRuntimeAudit": {
+      "type": "object",
+      "description": "Optional copy of the v1 RuntimeAudit shape for consumers that still compare against project-audit-report.v1.json.",
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["verifierVersion", "command", "inputHash"],
+      "properties": {
+        "verifierVersion": { "type": ["string", "null"] },
+        "command": { "type": ["string", "null"] },
+        "inputHash": { "type": ["string", "null"] },
+        "graphSnapshotId": { "type": ["string", "null"] },
+        "visualManifestPath": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/verificationFinding"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "deviceScaleFactor": { "type": "number", "minimum": 0 },
+        "isMobile": { "type": "boolean" },
+        "name": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "metricValue": {
+      "anyOf": [
+        { "type": "number" },
+        { "type": "integer" },
+        { "type": "boolean" },
+        { "type": "string" },
+        { "type": "null" }
+      ]
+    },
+    "probeResult": {
+      "type": "object",
+      "required": ["id", "kind", "status", "target", "message", "evidence", "metrics"],
+      "properties": {
+        "id": { "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString" },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "html-document",
+            "route-document",
+            "route-coverage",
+            "asset",
+            "security-signal",
+            "performance-budget",
+            "browser-render",
+            "visual-baseline",
+            "metadata",
+            "custom"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["passed", "warning", "failed", "skipped"]
+        },
+        "target": { "type": ["string", "null"] },
+        "route": { "type": ["string", "null"] },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/metricValue" }
+        },
+        "graph": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor"
+        }
+      },
+      "additionalProperties": false
+    },
+    "runtimeArtifact": {
+      "type": "object",
+      "required": ["id", "kind", "path", "localOnly"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["html", "asset", "screenshot", "visual-manifest", "trace", "log", "report"]
+        },
+        "path": { "type": "string" },
+        "hash": { "type": ["string", "null"] },
+        "route": { "type": ["string", "null"] },
+        "localOnly": { "type": "boolean" },
+        "redacted": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

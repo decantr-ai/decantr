@@ -509,6 +509,16 @@ describe('Project Health report', () => {
     expect(json.diagnostics).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          code: 'A11Y020',
+          rule: 'browser-axe-violations',
+          repairId: 'fix-rendered-accessibility',
+        }),
+        expect.objectContaining({
+          code: 'RUNTIME010',
+          rule: 'browser-runtime-probes-failed',
+          repairId: 'repair-browser-runtime-probes',
+        }),
+        expect.objectContaining({
           code: 'TOKEN010',
           rule: 'style-bridge-arbitrary-value',
           repairId: 'replace-arbitrary-style-with-bridge-token',
@@ -661,11 +671,43 @@ const path = require('node:path');
 exports.chromium = {
   launch: async () => ({
     newPage: async () => ({
+      on: () => undefined,
       goto: async () => undefined,
+      evaluate: async (_fn, arg) => {
+        if (Array.isArray(arg)) {
+          return {
+            routeRendered: {
+              status: 'passed',
+              readyState: 'complete',
+              url: 'http://127.0.0.1:3000/',
+              title: 'Home',
+              bodyPresent: true,
+              appRootPresent: true,
+              bodyChildCount: 1,
+            },
+            nonblankDom: {
+              status: 'passed',
+              textLength: 12,
+              meaningfulElementCount: 2,
+              mediaElementCount: 0,
+              controlElementCount: 1,
+            },
+            interactionStyles: {
+              status: 'passed',
+              checked: 1,
+              matchedClasses: ['d-pulse'],
+              animatedOrTransitioned: 1,
+              missing: [],
+            },
+          };
+        }
+        return { violations: [], incomplete: 0 };
+      },
       screenshot: async ({ path: target }) => {
         fs.mkdirSync(path.dirname(target), { recursive: true });
         fs.writeFileSync(target, 'fake screenshot');
       },
+      close: async () => undefined,
     }),
     close: async () => undefined,
   }),
@@ -683,7 +725,17 @@ exports.chromium = {
       readFileSync(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), 'utf-8'),
     ) as {
       localOnly: boolean;
-      routes: Array<{ route: string; screenshot: string | null; status: string }>;
+      routes: Array<{
+        route: string;
+        screenshot: string | null;
+        status: string;
+        runtime?: {
+          routeRendered: { status: string };
+          nonblankDom: { status: string };
+          interactionStyles: { status: string; matchedClasses: string[] };
+          accessibility: { status: string; reason?: string };
+        };
+      }>;
     };
 
     expect(manifest.localOnly).toBe(true);
@@ -692,7 +744,230 @@ exports.chromium = {
       screenshot: '.decantr/evidence/screenshots/root.png',
       status: 'captured',
     });
+    expect(manifest.routes[0].runtime).toMatchObject({
+      routeRendered: { status: 'passed' },
+      nonblankDom: { status: 'passed' },
+      interactionStyles: { status: 'passed', matchedClasses: ['d-pulse'] },
+      accessibility: {
+        status: 'skipped',
+        reason: 'axe-core is not installed in this project.',
+      },
+    });
     expect(existsSync(join(testDir, '.decantr', 'evidence', 'screenshots', 'root.png'))).toBe(true);
+  });
+
+  it('turns browser runtime probe failures into a repairable health finding', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    const playwrightDir = join(testDir, 'node_modules', 'playwright');
+    mkdirSync(playwrightDir, { recursive: true });
+    writeFileSync(
+      join(playwrightDir, 'index.js'),
+      `const fs = require('node:fs');
+const path = require('node:path');
+exports.chromium = {
+  launch: async () => ({
+    newPage: async () => {
+      const handlers = {};
+      return {
+        on: (event, handler) => {
+          handlers[event] = handler;
+        },
+        goto: async () => {
+          handlers.console?.({ type: () => 'error', text: () => 'ReferenceError: missing state' });
+          handlers.console?.({ type: () => 'warning', text: () => 'ignored warning' });
+          handlers.pageerror?.(new Error('Uncaught route failure'));
+        },
+        evaluate: async (_fn, arg) => {
+          if (Array.isArray(arg)) {
+            return {
+              routeRendered: {
+                status: 'passed',
+                readyState: 'complete',
+                url: 'http://127.0.0.1:3000/',
+                title: 'Home',
+                bodyPresent: true,
+                appRootPresent: true,
+                bodyChildCount: 1,
+              },
+              nonblankDom: {
+                status: 'failed',
+                textLength: 0,
+                meaningfulElementCount: 0,
+                mediaElementCount: 0,
+                controlElementCount: 0,
+                reason: 'DOM rendered, but no meaningful content was detected.',
+              },
+              interactionStyles: {
+                status: 'failed',
+                checked: 1,
+                matchedClasses: ['d-pulse'],
+                animatedOrTransitioned: 0,
+                missing: ['d-pulse'],
+              },
+            };
+          }
+          return { violations: [], incomplete: 0 };
+        },
+        screenshot: async ({ path: target }) => {
+          fs.mkdirSync(path.dirname(target), { recursive: true });
+          fs.writeFileSync(target, 'fake screenshot');
+        },
+        close: async () => undefined,
+      };
+    },
+    close: async () => undefined,
+  }),
+};
+`,
+      'utf-8',
+    );
+
+    const report = await createProjectHealthReport(testDir, {
+      browser: true,
+      browserBaseUrl: 'http://127.0.0.1:3000',
+    });
+    const finding = report.findings.find((entry) => entry.rule === 'browser-runtime-probes-failed');
+    const manifest = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), 'utf-8'),
+    ) as {
+      routes: Array<{
+        runtime?: {
+          nonblankDom: { status: string };
+          consoleErrors: { status: string; count: number; messages: string[] };
+          pageErrors: { status: string; count: number; messages: string[] };
+          interactionStyles: { status: string; missing: string[] };
+        };
+      }>;
+    };
+
+    expect(finding).toMatchObject({
+      code: 'RUNTIME010',
+      source: 'browser',
+      rule: 'browser-runtime-probes-failed',
+      repair: { id: 'repair-browser-runtime-probes' },
+    });
+    expect(finding?.evidence.join('\n')).toContain('console errors (1)');
+    expect(finding?.evidence.join('\n')).toContain('page errors (1)');
+    expect(finding?.evidence.join('\n')).toContain('nonblank DOM probe failed');
+    expect(finding?.evidence.join('\n')).toContain('interaction style probe');
+    expect(manifest.routes[0].runtime).toMatchObject({
+      nonblankDom: { status: 'failed' },
+      consoleErrors: {
+        status: 'failed',
+        count: 1,
+        messages: ['ReferenceError: missing state'],
+      },
+      pageErrors: {
+        status: 'failed',
+        count: 1,
+        messages: ['Uncaught route failure'],
+      },
+      interactionStyles: { status: 'failed', missing: ['d-pulse'] },
+    });
+  });
+
+  it('runs the optional axe lane when axe-core is installed', async () => {
+    writeRegistryCache();
+    writeEssence();
+    writePacks();
+    const playwrightDir = join(testDir, 'node_modules', 'playwright');
+    const axeDir = join(testDir, 'node_modules', 'axe-core');
+    mkdirSync(playwrightDir, { recursive: true });
+    mkdirSync(axeDir, { recursive: true });
+    writeFileSync(join(axeDir, 'index.js'), "exports.source = 'window.axe = {}';\n", 'utf-8');
+    writeFileSync(
+      join(playwrightDir, 'index.js'),
+      `const fs = require('node:fs');
+const path = require('node:path');
+exports.chromium = {
+  launch: async () => ({
+    newPage: async () => ({
+      on: () => undefined,
+      goto: async () => undefined,
+      addScriptTag: async () => undefined,
+      evaluate: async (_fn, arg) => {
+        if (Array.isArray(arg)) {
+          return {
+            routeRendered: {
+              status: 'passed',
+              readyState: 'complete',
+              url: 'http://127.0.0.1:3000/',
+              title: 'Home',
+              bodyPresent: true,
+              appRootPresent: true,
+              bodyChildCount: 1,
+            },
+            nonblankDom: {
+              status: 'passed',
+              textLength: 12,
+              meaningfulElementCount: 2,
+              mediaElementCount: 0,
+              controlElementCount: 1,
+            },
+            interactionStyles: {
+              status: 'skipped',
+              checked: 0,
+              matchedClasses: [],
+              animatedOrTransitioned: 0,
+              missing: [],
+              reason: 'No known Decantr interaction classes were present on this route.',
+            },
+          };
+        }
+        return {
+          violations: [
+            {
+              id: 'color-contrast',
+              impact: 'serious',
+              help: 'Elements must meet minimum color contrast ratios',
+              targets: ['button.primary'],
+            },
+          ],
+          incomplete: 0,
+        };
+      },
+      screenshot: async ({ path: target }) => {
+        fs.mkdirSync(path.dirname(target), { recursive: true });
+        fs.writeFileSync(target, 'fake screenshot');
+      },
+      close: async () => undefined,
+    }),
+    close: async () => undefined,
+  }),
+};
+`,
+      'utf-8',
+    );
+
+    const report = await createProjectHealthReport(testDir, {
+      browser: true,
+      browserBaseUrl: 'http://127.0.0.1:3000',
+    });
+    const finding = report.findings.find((entry) => entry.rule === 'browser-axe-violations');
+    const manifest = JSON.parse(
+      readFileSync(join(testDir, '.decantr', 'evidence', 'visual-manifest.json'), 'utf-8'),
+    ) as {
+      routes: Array<{
+        runtime?: { accessibility: { status: string; violations: number; messages: string[] } };
+      }>;
+    };
+
+    expect(finding).toMatchObject({
+      code: 'A11Y020',
+      category: 'Accessibility',
+      rule: 'browser-axe-violations',
+      repair: { id: 'fix-rendered-accessibility' },
+    });
+    expect(finding?.evidence.join('\n')).toContain('color-contrast');
+    expect(manifest.routes[0].runtime?.accessibility).toMatchObject({
+      status: 'failed',
+      violations: 1,
+      messages: [
+        'color-contrast (serious): Elements must meet minimum color contrast ratios [button.primary]',
+      ],
+    });
   });
 
   it('supports warning-sensitive CI gating', async () => {

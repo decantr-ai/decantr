@@ -6,12 +6,35 @@ import type { DetectedProject } from './detect.js';
 import { readLocalPatternPack } from './local-law.js';
 
 type StyleBridgeStatus = 'proposal' | 'accepted';
+type StyleBridgeSource = 'declared' | 'inferred';
+
+export interface StyleBridgeNativeRef {
+  kind:
+    | 'tailwind-class'
+    | 'css-var'
+    | 'sass-var'
+    | 'styled-component'
+    | 'vanilla-extract-token'
+    | 'component'
+    | 'class';
+  ref: string;
+}
+
+export interface StyleBridgeEssenceRef {
+  kind: 'token' | 'treatment' | 'decorator' | 'behavior' | 'layout';
+  ref: string;
+}
 
 export interface StyleBridgeMapping {
   id: string;
   label: string;
   decantrIntent: string;
   projectAuthority: string;
+  native?: StyleBridgeNativeRef;
+  essence?: StyleBridgeEssenceRef;
+  confidence?: number;
+  source?: StyleBridgeSource;
+  property?: string;
   tokenHints: string[];
   classHints: string[];
   sourceEvidence: string[];
@@ -19,7 +42,7 @@ export interface StyleBridgeMapping {
 }
 
 export interface StyleBridgeManifest {
-  version: 1;
+  version: 1 | 2;
   status: StyleBridgeStatus;
   generatedAt: string;
   acceptedAt?: string;
@@ -178,6 +201,28 @@ function colorTokenNames(styling: StylingAnalysis): string[] {
   return [...names].slice(0, 40);
 }
 
+function firstCssVariable(styling: StylingAnalysis, terms: RegExp): string | null {
+  return styling.cssVariables.find((name) => terms.test(name)) ?? null;
+}
+
+function firstClassHint(projectRoot: string, ids: string[]): string | null {
+  return classHintsForPattern(projectRoot, ids)[0] ?? null;
+}
+
+function nativeRefForMapping(input: {
+  projectRoot: string;
+  styling: StylingAnalysis;
+  patternIds: string[];
+  tokenTerms: RegExp;
+  fallbackClass: string;
+}): StyleBridgeNativeRef {
+  const cssVariable = firstCssVariable(input.styling, input.tokenTerms);
+  if (cssVariable) return { kind: 'css-var', ref: cssVariable };
+  const classHint = firstClassHint(input.projectRoot, input.patternIds);
+  if (classHint) return { kind: 'class', ref: classHint };
+  return { kind: 'class', ref: input.fallbackClass };
+}
+
 export function createStyleBridgeProposal(input: {
   projectRoot: string;
   detected: DetectedProject;
@@ -204,7 +249,7 @@ export function createStyleBridgeProposal(input: {
     theme.variantIds.length > 0 ? theme.variantIds : themeModes.filter((mode) => mode !== 'base');
 
   return {
-    version: 1,
+    version: 2,
     status: 'proposal',
     generatedAt,
     source: 'decantr codify --style-bridge',
@@ -246,6 +291,17 @@ export function createStyleBridgeProposal(input: {
         label: 'Surfaces and cards',
         decantrIntent: 'surface background, card treatment, border, radius, depth, and hover state',
         projectAuthority: 'Use the app card/surface primitives, tokens, and accepted local law.',
+        native: nativeRefForMapping({
+          projectRoot: input.projectRoot,
+          styling: input.styling,
+          patternIds: ['surface-card'],
+          tokenTerms: /surface|card|panel|bg|background|border|shadow|radius/i,
+          fallbackClass: 'surface-card',
+        }),
+        essence: { kind: 'treatment', ref: 'surface' },
+        confidence: 0.7,
+        source: 'inferred',
+        property: 'surface',
         tokenHints: tokenHints(
           input.styling,
           /surface|card|panel|bg|background|border|shadow|radius/i,
@@ -263,6 +319,17 @@ export function createStyleBridgeProposal(input: {
         decantrIntent:
           'primary, secondary, tertiary, destructive, icon-only, loading, and disabled action states',
         projectAuthority: 'Use the app button/action primitives and local variant names.',
+        native: nativeRefForMapping({
+          projectRoot: input.projectRoot,
+          styling: input.styling,
+          patternIds: ['button'],
+          tokenTerms: /primary|secondary|accent|danger|error|destructive|focus/i,
+          fallbackClass: 'button',
+        }),
+        essence: { kind: 'treatment', ref: 'action' },
+        confidence: 0.72,
+        source: 'inferred',
+        property: 'color',
         tokenHints: tokenHints(
           input.styling,
           /primary|secondary|accent|danger|error|destructive|focus/i,
@@ -280,6 +347,17 @@ export function createStyleBridgeProposal(input: {
         decantrIntent: 'visible focus, keyboard clarity, contrast, and reduced-motion safety',
         projectAuthority:
           'Use the app accessibility classes, focus tokens, and framework conventions.',
+        native: nativeRefForMapping({
+          projectRoot: input.projectRoot,
+          styling: input.styling,
+          patternIds: [],
+          tokenTerms: /focus|ring|outline|contrast|motion|duration/i,
+          fallbackClass: 'focus-visible',
+        }),
+        essence: { kind: 'behavior', ref: 'focus-accessibility' },
+        confidence: 0.66,
+        source: 'inferred',
+        property: 'focus',
         tokenHints: tokenHints(input.styling, /focus|ring|outline|contrast|motion|duration/i),
         classHints: [],
         sourceEvidence: [],
@@ -295,6 +373,17 @@ export function createStyleBridgeProposal(input: {
           'route gutters, section gaps, component padding, density, and responsive rhythm',
         projectAuthority:
           'Use existing layout wrappers, shell primitives, and spacing tokens/classes.',
+        native: nativeRefForMapping({
+          projectRoot: input.projectRoot,
+          styling: input.styling,
+          patternIds: ['page-shell'],
+          tokenTerms: /space|spacing|gap|gutter|container|radius/i,
+          fallbackClass: 'page-shell',
+        }),
+        essence: { kind: 'layout', ref: 'density-spacing' },
+        confidence: 0.68,
+        source: 'inferred',
+        property: 'spacing',
         tokenHints: tokenHints(input.styling, /space|spacing|gap|gutter|container|radius/i),
         classHints: classHintsForPattern(input.projectRoot, ['page-shell']),
         sourceEvidence: sourceEvidence(input.projectRoot, ['page-shell']),
@@ -309,6 +398,17 @@ export function createStyleBridgeProposal(input: {
         decantrIntent: 'light, dark, brand, tenant, seasonal, and density variants',
         projectAuthority:
           'Use the app theme provider, data attributes, CSS variables, or Tailwind mode strategy.',
+        native: nativeRefForMapping({
+          projectRoot: input.projectRoot,
+          styling: input.styling,
+          patternIds: ['theme-variant'],
+          tokenTerms: /theme|dark|light|brand|tenant|mode|color/i,
+          fallbackClass: 'theme-variant',
+        }),
+        essence: { kind: 'token', ref: 'theme-variant' },
+        confidence: 0.64,
+        source: 'inferred',
+        property: 'theme',
         tokenHints: tokenHints(input.styling, /theme|dark|light|brand|tenant|mode|color/i),
         classHints: classHintsForPattern(input.projectRoot, ['theme-variant']),
         sourceEvidence: sourceEvidence(input.projectRoot, ['theme-variant']),
@@ -413,6 +513,11 @@ export function styleBridgeMatches(
         mapping.label,
         mapping.decantrIntent,
         mapping.projectAuthority,
+        mapping.native?.ref,
+        mapping.native?.kind,
+        mapping.essence?.ref,
+        mapping.essence?.kind,
+        mapping.property,
         ...mapping.tokenHints,
         ...mapping.classHints,
         ...mapping.guardrails,
