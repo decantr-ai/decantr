@@ -1,6 +1,6 @@
 {
   "name": "@decantr/cli",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Decantr CLI - adopt, verify, graph, and govern frontend codebases touched by AI agents",
   "keywords": [
     "decantr",
