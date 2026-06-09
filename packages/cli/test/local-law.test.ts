@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -5,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { detectProject } from '../src/detect.js';
 import {
   acceptBrownfieldLocalLaw,
+  changedFiles,
   createBrownfieldCodifyProposal,
   createLocalLawTaskSummary,
   localPatternsPath,
@@ -163,5 +165,39 @@ describe('brownfield local law', () => {
 
     const validation = validateLocalLaw(testDir);
     expect(validation.patternPackPresent).toBe(false);
+  });
+});
+
+describe('local law git changed files', () => {
+  let repoRoot = '';
+
+  beforeEach(() => {
+    repoRoot = mkdtempSync(join(tmpdir(), 'decantr-local-law-git-'));
+    mkdirSync(join(repoRoot, 'apps', 'web', 'src'), { recursive: true });
+    mkdirSync(join(repoRoot, 'apps', 'admin', 'src'), { recursive: true });
+    writeFileSync(join(repoRoot, 'apps', 'web', 'src', 'page.tsx'), 'export const web = 1;\n');
+    writeFileSync(join(repoRoot, 'apps', 'admin', 'src', 'page.tsx'), 'export const admin = 1;\n');
+    execFileSync('git', ['init'], { cwd: repoRoot, stdio: 'ignore' });
+    execFileSync('git', ['config', 'user.email', 'test@example.com'], {
+      cwd: repoRoot,
+      stdio: 'ignore',
+    });
+    execFileSync('git', ['config', 'user.name', 'Decantr Test'], {
+      cwd: repoRoot,
+      stdio: 'ignore',
+    });
+    execFileSync('git', ['add', '.'], { cwd: repoRoot, stdio: 'ignore' });
+    execFileSync('git', ['commit', '-m', 'baseline'], { cwd: repoRoot, stdio: 'ignore' });
+  });
+
+  afterEach(() => {
+    rmSync(repoRoot, { recursive: true, force: true });
+  });
+
+  it('scopes git changed files to the selected project root', () => {
+    writeFileSync(join(repoRoot, 'apps', 'web', 'src', 'page.tsx'), 'export const web = 2;\n');
+    writeFileSync(join(repoRoot, 'apps', 'admin', 'src', 'page.tsx'), 'export const admin = 2;\n');
+
+    expect(changedFiles(join(repoRoot, 'apps', 'web'))).toEqual(['src/page.tsx']);
   });
 });

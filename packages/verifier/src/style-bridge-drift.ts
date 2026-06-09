@@ -303,8 +303,7 @@ function arbitraryInlineStyleValue(
   if (
     /(?:^|[\s,(])#[0-9a-f]{3,8}\b|(?:rgba?|hsla?|oklch|oklab|lch|lab|color-mix)\(/i.test(
       normalizedValue,
-    ) ||
-    /var\(--[A-Za-z0-9_-]+\)/i.test(normalizedValue)
+    )
   ) {
     return `${normalizedProperty}: ${normalizedValue}`;
   }

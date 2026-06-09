@@ -196,4 +196,33 @@ describe('behavior obligations', () => {
     const report = await auditProject(projectRoot);
     expect(report.findings.some((finding) => finding.id.startsWith('behavior-'))).toBe(false);
   });
+
+  it('does not treat project-owned form primitive definitions as unlabeled user controls', async () => {
+    writeFileSync(
+      join(projectRoot, 'src', 'components', 'Input.tsx'),
+      'export function Input(props) { return <input {...props} />; }\n',
+      'utf-8',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'settings.tsx'),
+      `export function Settings() {
+  return (
+    <main>
+      <form>
+        <label htmlFor="account-name">Account name</label>
+        <Input id="account-name" />
+        <button type="submit">Save</button>
+      </form>
+    </main>
+  );
+}
+`,
+      'utf-8',
+    );
+
+    const report = await auditProject(projectRoot);
+    expect(
+      report.findings.some((finding) => finding.rule === 'behavior:form-control:label-associated'),
+    ).toBe(false);
+  });
 });

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative } from 'node:path';
 import {
   buildContractCapsuleFromSnapshot,
@@ -470,10 +470,18 @@ function projectRelativePath(projectRoot: string, path: string | undefined): str
   return relativePath;
 }
 
+function pathIsFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
 function existingProjectRelativePath(projectRoot: string, path: string | undefined): string | null {
   const relativePath = projectRelativePath(projectRoot, path);
   if (!relativePath) return null;
-  return existsSync(join(projectRoot, relativePath)) ? relativePath : null;
+  return pathIsFile(join(projectRoot, relativePath)) ? relativePath : null;
 }
 
 function stripJsonComments(value: string): string {
@@ -532,7 +540,7 @@ function existingImportCandidate(projectRoot: string, candidate: string): string
     join(relativeCandidate, 'index.cts').replace(/\\/g, '/'),
   ];
   for (const possible of candidates) {
-    if (existsSync(join(projectRoot, possible))) return possible;
+    if (pathIsFile(join(projectRoot, possible))) return possible;
   }
   return null;
 }
@@ -698,7 +706,7 @@ function sourceArtifacts(
       const routeFile = projectRelativePath(projectRoot, route.file);
       if (!routeFile) continue;
       const routeFilePath = join(projectRoot, routeFile);
-      if (!existsSync(routeFilePath)) continue;
+      if (!pathIsFile(routeFilePath)) continue;
       sources.push({
         id: `src:${routeFile}`,
         kind: 'route-source',
@@ -718,7 +726,7 @@ function sourceArtifacts(
     const componentFile = projectRelativePath(projectRoot, declaration.file);
     if (!componentFile) continue;
     const componentPath = join(projectRoot, componentFile);
-    if (!existsSync(componentPath)) continue;
+    if (!pathIsFile(componentPath)) continue;
     if (sources.some((source) => source.id === `src:${componentFile}`)) continue;
     sources.push({
       id: `src:${componentFile}`,
@@ -739,7 +747,7 @@ function sourceArtifacts(
     if (!importingFile) continue;
     const importingPath = join(projectRoot, importingFile);
     if (
-      existsSync(importingPath) &&
+      pathIsFile(importingPath) &&
       !sources.some((source) => source.id === `src:${importingFile}`)
     ) {
       sources.push({
@@ -762,7 +770,7 @@ function sourceArtifacts(
     );
     if (!importedFile) continue;
     const importedPath = join(projectRoot, importedFile);
-    if (!existsSync(importedPath)) continue;
+    if (!pathIsFile(importedPath)) continue;
     if (sources.some((source) => source.id === `src:${importedFile}`)) continue;
     sources.push({
       id: `src:${importedFile}`,
@@ -793,7 +801,7 @@ function sourceArtifacts(
     for (const route of visualManifest.routes ?? []) {
       if (!route.screenshot) continue;
       const screenshotPath = join(projectRoot, route.screenshot);
-      if (!existsSync(screenshotPath)) continue;
+      if (!pathIsFile(screenshotPath)) continue;
       sources.push({
         id: `src:${route.screenshot}`,
         kind: 'visual-screenshot',

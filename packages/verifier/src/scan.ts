@@ -231,6 +231,10 @@ const SOURCE_EXTENSIONS = new Set([
 ]);
 const STYLE_EXTENSIONS = new Set(['.css', '.scss', '.sass', '.less']);
 const PAGE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.vue', '.svelte', '.html']);
+const ROUTE_VARIABLE_NAMES =
+  '(?:path|pathname|route|currentPath|currentRoute|locationPath|activePath)';
+const ROUTE_ASSET_EXTENSION_RE =
+  /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mp4|pdf|png|svg|webp|woff2?)$/i;
 const MAX_FILE_READ_BYTES = 512 * 1024;
 const MAX_WALK_FILES = 5000;
 const MAX_REPORT_ROUTES = 80;
@@ -460,7 +464,7 @@ function walkFiles(
     for (const entry of entries) {
       if (files.length >= MAX_WALK_FILES) return;
       const fullPath = join(dir, entry);
-      let stat;
+      let stat: ReturnType<typeof statSync>;
       try {
         stat = statSync(fullPath);
       } catch {
@@ -573,20 +577,68 @@ function scanReactRouter(projectRoot: string): { routes: ScanRouteV1[]; hashRout
     if (content.includes('HashRouter') || content.includes('createHashRouter')) hashRouting = true;
 
     const jsxRouteRegex = /<Route\b[^>]*\bpath\s*=\s*["']([^"']+)["']/g;
-    let match: RegExpExecArray | null;
-    while ((match = jsxRouteRegex.exec(content)) !== null) {
-      const route = match[1] || '/';
-      routes.set(route, { path: route, file, hasLayout: false });
+    for (const match of content.matchAll(jsxRouteRegex)) {
+      const route = normalizeDetectedRouteLiteral(match[1] || '/');
+      if (route) routes.set(route, { path: route, file, hasLayout: false });
     }
 
     const objectRouteRegex = /\bpath\s*:\s*["']([^"']+)["']/g;
-    while ((match = objectRouteRegex.exec(content)) !== null) {
-      const route = match[1] || '/';
-      if (route.startsWith('/')) routes.set(route, { path: route, file, hasLayout: false });
+    for (const match of content.matchAll(objectRouteRegex)) {
+      const route = normalizeDetectedRouteLiteral(match[1] || '/');
+      if (route) routes.set(route, { path: route, file, hasLayout: false });
+    }
+
+    for (const route of detectPathnameBranchRoutes(content)) {
+      routes.set(route, { path: route, file, hasLayout: false });
     }
   }
 
   return { routes: [...routes.values()], hashRouting };
+}
+
+function normalizeDetectedRouteLiteral(value: string): string | null {
+  const cleaned = value.trim().split(/[?#]/)[0];
+  if (!cleaned || cleaned === '/') return '/';
+  if (cleaned === '*' || cleaned === '**' || cleaned.startsWith('#')) return null;
+  if (!cleaned.startsWith('/') || cleaned.startsWith('//')) return null;
+  if (ROUTE_ASSET_EXTENSION_RE.test(cleaned)) return null;
+  return cleaned.replace(/\/+$/g, '') || '/';
+}
+
+function collectRouteLiterals(pattern: RegExp, content: string, routes: Set<string>): number {
+  let count = 0;
+  for (const match of content.matchAll(pattern)) {
+    const route = normalizeDetectedRouteLiteral(match[1] ?? '');
+    if (!route) continue;
+    routes.add(route);
+    count += 1;
+  }
+  return count;
+}
+
+function detectPathnameBranchRoutes(content: string): string[] {
+  const routes = new Set<string>();
+  const comparison = new RegExp(
+    `\\b${ROUTE_VARIABLE_NAMES}\\b\\s*(?:===|!==|==|!=)\\s*["'\`](\\/[^"'\`]+)["'\`]`,
+    'g',
+  );
+  const reversedComparison = new RegExp(
+    `["'\`](\\/[^"'\`]+)["'\`]\\s*(?:===|!==|==|!=)\\s*\\b${ROUTE_VARIABLE_NAMES}\\b`,
+    'g',
+  );
+  const strongMatches =
+    collectRouteLiterals(comparison, content, routes) +
+    collectRouteLiterals(reversedComparison, content, routes) +
+    collectRouteLiterals(/\bcase\s+["'`](\/[^"'`]+)["'`]\s*:/g, content, routes);
+
+  const hasPathnameSignal = /\b(?:window\.|document\.)?location\.pathname\b|\bpathname\b/.test(
+    content,
+  );
+  if (strongMatches > 0 || hasPathnameSignal) {
+    collectRouteLiterals(/\b(?:href|to)\s*=\s*["'`](\/[^"'`]+)["'`]/g, content, routes);
+  }
+
+  return [...routes];
 }
 
 function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan {

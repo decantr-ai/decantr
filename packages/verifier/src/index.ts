@@ -3219,6 +3219,32 @@ function behaviorRepairPayload(input: {
   };
 }
 
+function isLocalPatternComponentPath(pattern: LocalBehaviorPattern, relativeFile: string): boolean {
+  const normalizedFile = relativeFile.replace(/\\/g, '/');
+  return (pattern.componentPaths ?? []).some((componentPath) => {
+    const normalizedComponentPath = componentPath.replace(/\\/g, '/');
+    return (
+      normalizedFile === normalizedComponentPath ||
+      normalizedFile.endsWith(`/${normalizedComponentPath}`)
+    );
+  });
+}
+
+function isFormPrimitiveDefinitionFile(
+  pattern: LocalBehaviorPattern,
+  relativeFile: string,
+): boolean {
+  if (isLocalPatternComponentPath(pattern, relativeFile)) return true;
+  const normalizedFile = relativeFile.replace(/\\/g, '/');
+  if (!/(?:^|\/)(?:components|ui|shared|packages\/[^/]+\/src)\//i.test(normalizedFile)) {
+    return false;
+  }
+  const base = basename(normalizedFile).toLowerCase();
+  return /^(?:input|select|textarea|field|form|form-field|form-control|label|checkbox|radio|switch|combobox|button)\.[cm]?[jt]sx?$/.test(
+    base,
+  );
+}
+
 function sourceAuditFilePath(projectRoot: string, file: string): string {
   return isAbsolute(file) ? file : join(projectRoot, file);
 }
@@ -3320,6 +3346,7 @@ function appendBehaviorObligationFindings(
         continue;
       }
       if (!/<\s*(?:form|input|select|textarea|button)\b/i.test(code)) continue;
+      if (isFormPrimitiveDefinitionFile(formPattern, relativeFile)) continue;
       const signals = analyzeAstSignals(relativeFile, code);
       if (
         behaviorPatternHasObligation(formPattern, 'label-associated') &&

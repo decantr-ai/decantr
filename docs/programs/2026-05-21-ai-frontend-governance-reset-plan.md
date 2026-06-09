@@ -124,6 +124,44 @@ The architecture remains extensible, but the public promise should stop leading 
 
 Use a gated major-line reset.
 
+### Phase 0: Proof-Lab Hardening
+
+Purpose:
+
+- Validate the released Decantr 3 operating loop on controlled brownfield apps before expanding the next north-star build.
+- Replace broad "wait for more users" validation with a small reproducible proof tax.
+- Fix issues that sit directly on the Contract / Context / Evidence path.
+
+Required proof input:
+
+- `docs/programs/2026-06-09-proof-lab-phase-0.md`
+
+Actions:
+
+1. Keep the proof lab reproducible against the published npm line, not only local monorepo source.
+2. Harden route discovery for messy React apps that branch on `window.location.pathname`, route constants, or href-backed route switches.
+3. Add route shell provenance and first-pass shell drift warnings, especially for public/full-bleed routes versus app-shell routes.
+4. Scope behavior-obligation verification to high-confidence usage sites and avoid flagging reusable primitives as failures by default.
+5. Reduce style bridge false positives around accepted project CSS variables and token definitions.
+6. Fix direct CLI graph query modes for `--route`, `--file --impact`, and `--node --impact`.
+7. Align repair prompts to the Decantr 3 verification loop.
+8. Keep project-scoped `task` changed-file context separate from workspace-wide changes.
+
+Exit criteria:
+
+- The proof lab's clean, messy, and hybrid fixtures can all run `scan`, `adopt`, `codify`, `graph`, `task`, and `verify --evidence`.
+- Messy route-switching React fixtures have targetable routes.
+- Full-bleed public routes and app-shell routes are not conflated.
+- Seeded dialog/form regressions produce high-confidence, graph-anchored findings.
+- Token/style findings avoid obvious project-token false positives.
+- Direct graph query commands do not fail with raw filesystem errors.
+
+Local implementation status:
+
+- Phase 0 fixes are implemented in the monorepo as a Decantr 3.1 preflight hardening pass.
+- The rebuilt local CLI detects pathname-branch React routes, emits shell-drift warnings, scopes project dirty files, resolves direct graph route/file impact queries, and avoids the behavior/style false positives found in the proof lab.
+- Verification covered `pnpm build:packages`, targeted CLI graph/local-law/route tests, targeted verifier scan/behavior/style tests, and a local `/tmp/decantr-proof-lab` smoke of the original failing scenarios.
+
 ### Research Gate: Competitive Architecture Calibration
 
 Purpose:

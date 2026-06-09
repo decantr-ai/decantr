@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { join, relative } from 'node:path';
 
 export interface RouteInfo {
   path: string;
@@ -184,6 +184,10 @@ function walkSvelteKitRoutes(dir: string, baseDir: string, segments: string[]): 
 }
 
 const ROUTER_FILE_EXTENSIONS = new Set(['.tsx', '.ts', '.jsx', '.js']);
+const ROUTE_VARIABLE_NAMES =
+  '(?:path|pathname|route|currentPath|currentRoute|locationPath|activePath)';
+const ROUTE_ASSET_EXTENSION_RE =
+  /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mp4|pdf|png|svg|webp|woff2?)$/i;
 
 function collectRouteCandidateFiles(dir: string, files: string[], depth = 0): void {
   if (depth > 5) return;
@@ -240,18 +244,24 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
       content.includes('HashRouter') ||
       content.includes('BrowserRouter');
 
-    if (!isReactRouterFile) continue;
-
     const relativePath = relative(projectRoot, absolutePath);
     const pathMatches = new Set<string>();
 
-    for (const match of content.matchAll(/<Route\b[^>]*\bpath=["'`]([^"'`]+)["'`]/g)) {
-      pathMatches.add(match[1]);
+    if (isReactRouterFile) {
+      for (const match of content.matchAll(/<Route\b[^>]*\bpath=["'`]([^"'`]+)["'`]/g)) {
+        pathMatches.add(match[1]);
+      }
+
+      for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]+)["'`]/g)) {
+        pathMatches.add(match[1]);
+      }
     }
 
-    for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]+)["'`]/g)) {
-      pathMatches.add(match[1]);
+    for (const route of detectPathnameBranchRoutes(content)) {
+      pathMatches.add(route);
     }
+
+    if (!isReactRouterFile && pathMatches.size === 0) continue;
 
     if (
       pathMatches.size === 0 &&
@@ -261,17 +271,62 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
     }
 
     for (const path of pathMatches) {
-      if (!routeMap.has(path)) {
-        routeMap.set(path, {
-          path,
-          file: relativePath,
-          hasLayout: false,
-        });
-      }
+      const routePath = normalizeDetectedRouteLiteral(path);
+      if (!routePath || routeMap.has(routePath)) continue;
+      routeMap.set(routePath, {
+        path: routePath,
+        file: relativePath,
+        hasLayout: false,
+      });
     }
   }
 
   return [...routeMap.values()];
+}
+
+function normalizeDetectedRouteLiteral(value: string): string | null {
+  const cleaned = value.trim().split(/[?#]/)[0];
+  if (!cleaned || cleaned === '/') return '/';
+  if (cleaned === '*' || cleaned === '**' || cleaned.startsWith('#')) return null;
+  if (!cleaned.startsWith('/') || cleaned.startsWith('//')) return null;
+  if (ROUTE_ASSET_EXTENSION_RE.test(cleaned)) return null;
+  return cleaned.replace(/\/+$/g, '') || '/';
+}
+
+function collectRouteLiterals(pattern: RegExp, content: string, routes: Set<string>): number {
+  let count = 0;
+  for (const match of content.matchAll(pattern)) {
+    const route = normalizeDetectedRouteLiteral(match[1] ?? '');
+    if (!route) continue;
+    routes.add(route);
+    count += 1;
+  }
+  return count;
+}
+
+function detectPathnameBranchRoutes(content: string): string[] {
+  const routes = new Set<string>();
+  const comparison = new RegExp(
+    `\\b${ROUTE_VARIABLE_NAMES}\\b\\s*(?:===|!==|==|!=)\\s*["'\`](\\/[^"'\`]+)["'\`]`,
+    'g',
+  );
+  const reversedComparison = new RegExp(
+    `["'\`](\\/[^"'\`]+)["'\`]\\s*(?:===|!==|==|!=)\\s*\\b${ROUTE_VARIABLE_NAMES}\\b`,
+    'g',
+  );
+  const strongMatches =
+    collectRouteLiterals(comparison, content, routes) +
+    collectRouteLiterals(reversedComparison, content, routes) +
+    collectRouteLiterals(/\bcase\s+["'`](\/[^"'`]+)["'`]\s*:/g, content, routes);
+
+  const hasPathnameSignal = /\b(?:window\.|document\.)?location\.pathname\b|\bpathname\b/.test(
+    content,
+  );
+  if (strongMatches > 0 || hasPathnameSignal) {
+    collectRouteLiterals(/\b(?:href|to)\s*=\s*["'`](\/[^"'`]+)["'`]/g, content, routes);
+  }
+
+  return [...routes];
 }
 
 function hasReactRouterDependency(projectRoot: string): boolean {

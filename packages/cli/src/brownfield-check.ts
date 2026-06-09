@@ -57,9 +57,46 @@ function declaredRouteObserved(route: string, observedRoutes: Set<string>): bool
   );
 }
 
+function sectionForRoute(
+  essence: EssenceV4,
+  route: string,
+): { id?: string; shell?: string; role?: string } | null {
+  const mappedSectionId = essence.blueprint.routes?.[route]?.section;
+  const sections = essence.blueprint.sections ?? [];
+  if (mappedSectionId) {
+    return sections.find((section) => section.id === mappedSectionId) ?? null;
+  }
+  return (
+    sections.find((section) =>
+      section.pages?.some((page) => page.route === route || page.route === routePathname(route)),
+    ) ?? null
+  );
+}
+
+function readObservedRouteSource(projectRoot: string, file: string): string {
+  if (!file || file === '.') return '';
+  try {
+    return readFileSync(join(projectRoot, file), 'utf-8');
+  } catch {
+    return '';
+  }
+}
+
+function routeLooksPublicFullBleed(path: string, file: string, code: string): boolean {
+  return /\b(?:pricing|plans|marketing|landing|public|hero|full-bleed|fullbleed|marketing-bleed)\b/i.test(
+    `${path} ${file} ${code}`,
+  );
+}
+
+function routeLooksAppShell(file: string, code: string): boolean {
+  return /\b(?:sidebar|side-nav|sidenav|app-frame|dashboard-shell|app-shell)\b|<\s*(?:Sidebar|AppShell|DashboardShell)\b/i.test(
+    `${file} ${code}`,
+  );
+}
+
 function hasDoctrineEffect(essence: EssenceV4, key: string): boolean {
   const effects = essence.dna.constraints?.effects;
-  return Boolean(effects && effects[key]);
+  return Boolean(effects?.[key]);
 }
 
 function hasActionableDoctrineSource(
@@ -156,6 +193,34 @@ export function scanBrownfieldIssues(projectRoot: string, essence: EssenceV4): B
       rule: 'brownfield-stale-route',
       message: `Essence routes were not observed in source: ${routeLabel(missingFromSource)}.`,
       suggestion: 'Confirm whether these are generated/dynamic routes or stale contract entries.',
+    });
+  }
+
+  const shellDriftRoutes: string[] = [];
+  for (const route of routes.routes.slice(0, 80)) {
+    const section = sectionForRoute(essence, route.path);
+    const shell = section?.shell ?? '';
+    if (!shell) continue;
+    const source = readObservedRouteSource(projectRoot, route.file);
+    const shellHasSidebar = /\bsidebar\b/i.test(shell);
+    const shellIsPublicLight = /^(?:main-only|main-footer|topnav-main|topnav-main-footer)$/i.test(
+      shell,
+    );
+    if (shellHasSidebar && routeLooksPublicFullBleed(route.path, route.file, source)) {
+      shellDriftRoutes.push(`${route.path} (${shell} vs public/full-bleed source)`);
+    } else if (shellIsPublicLight && routeLooksAppShell(route.file, source)) {
+      shellDriftRoutes.push(`${route.path} (${shell} vs app-shell source)`);
+    }
+  }
+  if (shellDriftRoutes.length > 0) {
+    issues.push({
+      type: 'warning',
+      rule: 'brownfield-shell-drift',
+      message: `Observed route shell signals disagree with the Decantr section shell: ${routeLabel(
+        shellDriftRoutes,
+      )}.`,
+      suggestion:
+        'Regenerate and merge a brownfield proposal, or update the affected section shell after reviewing the route source.',
     });
   }
 

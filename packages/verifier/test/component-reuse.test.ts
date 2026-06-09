@@ -397,6 +397,24 @@ describe('style bridge drift audit', () => {
     }
   });
 
+  it('allows project CSS variable references even when they are not explicit token hints', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeAcceptedStyleBridge(projectRoot);
+      const page = writeFile(
+        projectRoot,
+        'src/app/dashboard/page.tsx',
+        'export function DashboardPage() { return <main style={{ color: "var(--foreground)" }}>Dashboard</main>; }\n',
+      );
+
+      const audit = auditStyleBridgeDrift(projectRoot, [page]);
+
+      expect(audit.findings).toHaveLength(0);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('finds hardcoded stylesheet color values when a style bridge is accepted', async () => {
     const projectRoot = createProjectRoot();
     try {
@@ -440,6 +458,24 @@ describe('style bridge drift audit', () => {
 
       expect(audit.findings).toHaveLength(0);
       expect(audit.filesChecked).toBe(1);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('allows stylesheet CSS variable references outside explicit token hints', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeAcceptedStyleBridge(projectRoot);
+      writeFile(
+        projectRoot,
+        'src/app/dashboard/dashboard.module.css',
+        '.shell { color: var(--foreground); border-color: var(--border); }\n',
+      );
+
+      const audit = auditStyleBridgeDrift(projectRoot, []);
+
+      expect(audit.findings).toHaveLength(0);
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

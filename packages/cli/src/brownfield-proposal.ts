@@ -321,6 +321,48 @@ function doctrineEffects(ambient: AmbientContextInventory): Record<string, strin
   return Object.keys(effects).length > 0 ? effects : undefined;
 }
 
+function readRouteSource(projectRoot: string, file: string): string {
+  if (!file || file === '.') return '';
+  try {
+    return readFileSync(join(projectRoot, file), 'utf-8');
+  } catch {
+    return '';
+  }
+}
+
+function publicSurfaceShell(input: BrownfieldProposalInput, code: string): string {
+  const hasFooter = input.layout.hasFooter || /\bfooter\b|<\s*Footer\b/i.test(code);
+  const hasTopNav =
+    input.layout.hasTopNav ||
+    /\b(?:topnav|top-nav|navbar|header)\b|<\s*(?:Header|Nav|Navbar)\b/i.test(code);
+  if (hasTopNav && hasFooter) return 'topnav-main-footer';
+  if (hasTopNav) return 'topnav-main';
+  if (hasFooter) return 'main-footer';
+  return 'main-only';
+}
+
+function routeShellPattern(
+  input: BrownfieldProposalInput,
+  route: { path: string; file: string },
+  classified: RouteDomain,
+  fallbackShell: string,
+): string {
+  const code = readRouteSource(input.project.projectRoot, route.file);
+  const routeEvidence = `${route.path} ${route.file} ${code}`;
+  if (
+    classified.role === 'public' ||
+    /\b(?:pricing|plans|marketing|landing|public|hero|full-bleed|fullbleed|marketing-bleed)\b/i.test(
+      routeEvidence,
+    )
+  ) {
+    return publicSurfaceShell(input, code);
+  }
+  if (/\b(?:sidebar|side-nav|sidenav|app-frame|dashboard-shell)\b/i.test(routeEvidence)) {
+    return fallbackShell;
+  }
+  return fallbackShell;
+}
+
 export function createBrownfieldProposal(input: BrownfieldProposalInput): BrownfieldProposal {
   const target = input.project.framework !== 'unknown' ? input.project.framework : 'generic-web';
   const shell = input.layout.shellPattern || 'observed-existing-shell';
@@ -334,12 +376,13 @@ export function createBrownfieldProposal(input: BrownfieldProposalInput): Brownf
 
   for (const route of observedRoutes) {
     const classified = routeDomain(route.path);
+    const observedShell = routeShellPattern(input, route, classified, shell);
     const section =
       sectionMap.get(classified.sectionId) ??
       ({
         id: classified.sectionId,
         role: classified.role,
-        shell,
+        shell: observedShell,
         features: featuresForSection(classified.sectionId, input.features.detected),
         description: classified.description,
         pages: [],
@@ -357,6 +400,7 @@ export function createBrownfieldProposal(input: BrownfieldProposalInput): Brownf
         layout: ['existing-surface'],
         directives: [
           `Observed source: ${route.file}. Treat this route as existing product surface, not scaffold territory.`,
+          `Observed shell: ${observedShell}. Preserve this route's shell posture unless the user explicitly approves a layout migration.`,
         ],
       });
     }

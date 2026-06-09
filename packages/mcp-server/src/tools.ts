@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { basename, dirname, isAbsolute, join, relative } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import {
   buildGraphImpactContext,
   buildGraphRouteContext,
@@ -896,10 +896,11 @@ function buildTaskTypedGraphContext(
 function changedFilesForTask(projectRoot: string): string[] {
   const changed = new Set<string>();
   try {
+    const gitRoot = gitTopLevelForTask(projectRoot) ?? projectRoot;
     // Security: fixed argv, shell disabled, and cwd is the already-resolved project root.
     for (const args of [
-      ['diff', '--name-only'],
-      ['diff', '--name-only', '--cached'],
+      ['diff', '--name-only', '--relative'],
+      ['diff', '--name-only', '--relative', '--cached'],
     ]) {
       const output = execFileSync('git', args, {
         cwd: projectRoot,
@@ -908,13 +909,42 @@ function changedFilesForTask(projectRoot: string): string[] {
       });
       for (const entry of output.split(/\r?\n/)) {
         const file = entry.trim();
-        if (file) changed.add(file);
+        const projectFile = changedFileForProject(projectRoot, gitRoot, file);
+        if (projectFile) changed.add(projectFile);
       }
     }
   } catch {
     // MCP may run outside a git repository.
   }
   return [...changed].sort();
+}
+
+function gitTopLevelForTask(projectRoot: string): string | null {
+  try {
+    return execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: projectRoot,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function changedFileForProject(projectRoot: string, gitRoot: string, file: string): string | null {
+  if (!file) return null;
+  const absoluteProjectRoot = resolve(projectRoot);
+  const candidateAbsoluteFiles = isAbsolute(file)
+    ? [file]
+    : [join(absoluteProjectRoot, file), join(gitRoot, file)];
+  for (const absoluteFile of candidateAbsoluteFiles) {
+    const projectRelative = relative(absoluteProjectRoot, absoluteFile).replace(/\\/g, '/');
+    if (!projectRelative || projectRelative.startsWith('../') || projectRelative === '..') {
+      continue;
+    }
+    return projectRelative;
+  }
+  return null;
 }
 
 function impactedRoutesForFiles(projectRoot: string, files: string[]): string[] {
@@ -1737,7 +1767,7 @@ function mcpCommandsForFinding(source: ProjectHealthFindingSource): string[] {
     case 'graph':
       return ['decantr graph', 'decantr health --evidence'];
     case 'interaction':
-      return ['decantr check --strict', 'decantr health'];
+      return ['decantr verify --brownfield --local-patterns', 'decantr verify --evidence'];
     case 'pack':
       return [
         'decantr refresh',

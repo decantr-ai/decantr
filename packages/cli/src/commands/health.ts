@@ -671,7 +671,7 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
     case 'runtime':
       return ['npm run build', 'decantr health'];
     case 'interaction':
-      return ['decantr check --strict', 'decantr health'];
+      return ['decantr verify --brownfield --local-patterns', 'decantr verify --evidence'];
     case 'assertion':
       return ['decantr refresh', 'decantr health --evidence'];
     case 'browser':
@@ -681,7 +681,7 @@ function commandsForFinding(source: ProjectHealthFindingSource): string[] {
     case 'style-bridge':
       return ['decantr codify --style-bridge', 'decantr verify --evidence'];
     case 'graph':
-      return ['decantr graph', 'decantr health'];
+      return ['decantr graph', 'decantr verify --evidence'];
     case 'check':
       return ['decantr check', 'decantr health'];
     default:
@@ -783,6 +783,10 @@ function rewriteHealthCommand(command: string, context: ProjectCommandContext): 
   rewritten = rewritten.replace(
     /^decantr graph\b/,
     `decantr graph --project ${context.projectPath}`,
+  );
+  rewritten = rewritten.replace(
+    /^decantr verify\b/,
+    `decantr verify --project ${context.projectPath}`,
   );
   rewritten = rewritten.replace(/^decantr audit\b/, context.verifyCommand);
   rewritten = rewritten.replace(/^decantr health\b/, context.verifyCommand);

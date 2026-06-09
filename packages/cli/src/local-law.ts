@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { basename, extname, join, relative, sep } from 'node:path';
+import { basename, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import type { EssenceFile } from '@decantr/essence-spec';
 import { isV4 } from '@decantr/essence-spec';
 import type { DetectedProject } from './detect.js';
@@ -1024,15 +1024,16 @@ export function createLocalLawTaskSummary(projectRoot: string): LocalLawTaskSumm
 export function changedFiles(projectRoot: string, since?: string): string[] {
   const changed = new Set<string>();
   try {
+    const gitRoot = gitTopLevel(projectRoot) ?? projectRoot;
     // Security: fixed git argv, shell disabled, and cwd scoped to the selected project.
     const commands = since
       ? [
-          ['diff', '--name-only', since, '--'],
-          ['diff', '--name-only', '--cached'],
+          ['diff', '--name-only', '--relative', since, '--'],
+          ['diff', '--name-only', '--relative', '--cached'],
         ]
       : [
-          ['diff', '--name-only'],
-          ['diff', '--name-only', '--cached'],
+          ['diff', '--name-only', '--relative'],
+          ['diff', '--name-only', '--relative', '--cached'],
         ];
     for (const args of commands) {
       const output = execFileSync('git', args, {
@@ -1042,13 +1043,42 @@ export function changedFiles(projectRoot: string, since?: string): string[] {
       });
       for (const line of output.split(/\r?\n/)) {
         const file = line.trim();
-        if (file) changed.add(normalizePath(file));
+        const projectFile = changedFileForProject(projectRoot, gitRoot, file);
+        if (projectFile) changed.add(projectFile);
       }
     }
   } catch {
     // Not every attached app is a git repository.
   }
   return [...changed].sort();
+}
+
+function gitTopLevel(projectRoot: string): string | null {
+  try {
+    return execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: projectRoot,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function changedFileForProject(projectRoot: string, gitRoot: string, file: string): string | null {
+  if (!file) return null;
+  const absoluteProjectRoot = resolve(projectRoot);
+  const candidateAbsoluteFiles = isAbsolute(file)
+    ? [file]
+    : [join(absoluteProjectRoot, file), join(gitRoot, file)];
+  for (const absoluteFile of candidateAbsoluteFiles) {
+    const projectRelative = normalizePath(relative(absoluteProjectRoot, absoluteFile));
+    if (!projectRelative || projectRelative.startsWith('../') || projectRelative === '..') {
+      continue;
+    }
+    return projectRelative;
+  }
+  return null;
 }
 
 export function routeImpacts(projectRoot: string, files: string[]): string[] {
