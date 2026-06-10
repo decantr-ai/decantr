@@ -1,6 +1,6 @@
 {
   "name": "@decantr/registry",
-  "version": "3.1.0",
+  "version": "3.4.0",
   "description": "Certified vocabulary contracts, schemas, API client, and content utilities for Decantr",
   "keywords": [
     "decantr",

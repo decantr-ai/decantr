@@ -6,12 +6,12 @@
     "url": "https://github.com/decantr-ai/decantr",
     "source": "github"
   },
-  "version": "3.1.0",
+  "version": "3.4.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@decantr/mcp-server",
-      "version": "3.1.0",
+      "version": "3.4.0",
       "transport": {
         "type": "stdio"
       }
