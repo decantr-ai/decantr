@@ -43,9 +43,11 @@ Use `decantr health --diagnostics --json` for a machine-readable catalog, or `de
 | `VISUAL002` | `browser-base-url-missing` | `provide-browser-base-url` | Provide a browser verification base URL. |
 | `VISUAL003` | `browser-route-verification-failed` | `fix-route-render` | Fix a route that fails browser verification. |
 | `VISUAL010` | `visual-baseline-screenshot-drift` | `review-visual-baseline-drift` | Review screenshot hash changes since the saved health baseline. |
+| `RUNTIME010` | `browser-runtime-probes-failed` | `repair-browser-runtime-probes` | Repair rendered route runtime, DOM, console, page-error, or interaction-style evidence failures. |
 | `A11Y001` | `focus-visible-enabled` | `enable-focus-visible` | Add visible keyboard focus treatment. |
 | `A11Y010` | `behavior-dialog-accessible-name` | `restore-dialog-accessible-name` | Restore accessible names for accepted confirmation-dialog behavior obligations. |
 | `A11Y011` | `behavior-form-label-associated` | `restore-label-association` | Restore label association for accepted form-control behavior obligations. |
+| `A11Y020` | `browser-axe-violations` | `fix-rendered-accessibility` | Repair axe-backed rendered accessibility violations from browser evidence. |
 | `INT010` | `behavior-dialog-visible-consequence` | `restore-visible-consequence-copy` | Restore visible destructive consequence copy in accepted confirmation dialogs. |
 | `INT011` | `behavior-dialog-cancel-affordance` | `restore-cancel-affordance` | Restore cancel or close affordances in accepted confirmation dialogs. |
 | `INT012` | `behavior-dialog-submitting-guard` | `restore-submitting-guard` | Restore submitting guards for destructive confirmation execution. |

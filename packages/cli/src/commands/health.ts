@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -47,6 +47,20 @@ const DEFAULT_HEALTH_CI_REPORT_PATH = 'decantr-health.md';
 const DEFAULT_HEALTH_CI_JSON_PATH = 'decantr-health.json';
 const DEFAULT_HEALTH_CI_CLI_VERSION = 'latest';
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const HEALTH_BROWSER_RUNTIME_DIAGNOSTICS = [
+  {
+    rule: 'browser-runtime-probes-failed',
+    code: 'RUNTIME010',
+    repairId: 'repair-browser-runtime-probes',
+    family: 'RUNTIME',
+  },
+  {
+    rule: 'browser-axe-violations',
+    code: 'A11Y020',
+    repairId: 'fix-rendered-accessibility',
+    family: 'A11Y',
+  },
+] as const;
 
 export type HealthOutputFormat = 'text' | 'json' | 'markdown';
 export type HealthFailOn = 'error' | 'warn' | 'none';
@@ -114,7 +128,62 @@ interface ProjectCommandContext {
 
 interface BrowserVerificationResult {
   evidence: NonNullable<EvidenceBundle['browser']>;
-  finding: ProjectHealthFinding | null;
+  findings: ProjectHealthFinding[];
+}
+
+type BrowserProbeStatus = 'passed' | 'failed' | 'skipped';
+
+interface BrowserRouteRenderedProbe {
+  status: Exclude<BrowserProbeStatus, 'skipped'>;
+  readyState: string | null;
+  url: string | null;
+  title: string | null;
+  bodyPresent: boolean;
+  appRootPresent: boolean;
+  bodyChildCount: number;
+  reason?: string;
+}
+
+interface BrowserNonblankDomProbe {
+  status: Exclude<BrowserProbeStatus, 'skipped'>;
+  textLength: number;
+  meaningfulElementCount: number;
+  mediaElementCount: number;
+  controlElementCount: number;
+  reason?: string;
+}
+
+interface BrowserInteractionStyleProbe {
+  status: BrowserProbeStatus;
+  checked: number;
+  matchedClasses: string[];
+  animatedOrTransitioned: number;
+  missing: string[];
+  reason?: string;
+}
+
+interface BrowserConsoleProbe {
+  status: Exclude<BrowserProbeStatus, 'skipped'>;
+  count: number;
+  messages: string[];
+}
+
+interface BrowserAccessibilityProbe {
+  status: BrowserProbeStatus;
+  engine: 'axe-core';
+  violations: number;
+  incomplete: number;
+  messages: string[];
+  reason?: string;
+}
+
+interface BrowserRuntimeProbeManifest {
+  routeRendered: BrowserRouteRenderedProbe;
+  nonblankDom: BrowserNonblankDomProbe;
+  consoleErrors: BrowserConsoleProbe;
+  pageErrors: BrowserConsoleProbe;
+  interactionStyles: BrowserInteractionStyleProbe;
+  accessibility: BrowserAccessibilityProbe;
 }
 
 interface VisualManifestRoute {
@@ -123,6 +192,7 @@ interface VisualManifestRoute {
   screenshot: string | null;
   screenshotHash: string | null;
   status: 'captured' | 'failed';
+  runtime?: BrowserRuntimeProbeManifest;
   error?: string;
 }
 
@@ -167,16 +237,31 @@ interface HealthBaselineComparison {
 interface PlaywrightLike {
   chromium: {
     launch(options: { headless: boolean }): Promise<{
-      newPage(): Promise<{
-        goto(
-          url: string,
-          options: { waitUntil: 'load' | 'domcontentloaded' | 'networkidle'; timeout: number },
-        ): Promise<unknown>;
-        screenshot(options: { path: string; fullPage: boolean }): Promise<unknown>;
-      }>;
+      newPage(): Promise<BrowserPageLike>;
       close(): Promise<unknown>;
     }>;
   };
+}
+
+interface BrowserConsoleMessageLike {
+  type?(): string;
+  text?(): string;
+}
+
+interface BrowserPageLike {
+  goto(
+    url: string,
+    options: { waitUntil: 'load' | 'domcontentloaded' | 'networkidle'; timeout: number },
+  ): Promise<unknown>;
+  screenshot(options: { path: string; fullPage: boolean }): Promise<unknown>;
+  evaluate<T, Arg = unknown>(
+    pageFunction: ((arg: Arg) => T | Promise<T>) | string,
+    arg?: Arg,
+  ): Promise<T>;
+  addScriptTag?(options: { content?: string; path?: string; url?: string }): Promise<unknown>;
+  on?(event: 'console', handler: (message: BrowserConsoleMessageLike) => void): unknown;
+  on?(event: 'pageerror', handler: (error: Error) => void): unknown;
+  close?(): Promise<unknown>;
 }
 
 function readProjectMetadata(projectRoot: string): ProjectMetadata {
@@ -1133,6 +1218,438 @@ function loadProjectPlaywright(projectRoot: string): PlaywrightLike | null {
   return null;
 }
 
+const KNOWN_INTERACTION_STYLE_CLASSES = [
+  'd-enter-fade',
+  'd-enter-slide-up',
+  'd-enter-scale',
+  'd-stagger-children',
+  'd-pulse',
+  'd-pulse-ring',
+  'd-shimmer',
+  'd-float',
+  'd-glow-hover',
+  'd-lift-hover',
+  'd-scale-hover',
+  'd-ripple',
+];
+
+interface BrowserAxeCore {
+  source: string;
+}
+
+interface BrowserRuntimeDomSnapshot {
+  routeRendered: BrowserRouteRenderedProbe;
+  nonblankDom: BrowserNonblankDomProbe;
+  interactionStyles: BrowserInteractionStyleProbe;
+}
+
+interface BrowserAxeRawViolation {
+  id?: string;
+  impact?: string;
+  help?: string;
+  description?: string;
+  targets?: string[];
+}
+
+interface BrowserAxeRawResult {
+  error?: string;
+  violations?: BrowserAxeRawViolation[];
+  incomplete?: number;
+}
+
+function compactBrowserEvidence(value: string): string {
+  return value.replace(/\s+/g, ' ').trim().slice(0, 240);
+}
+
+function browserErrorMessage(error: unknown): string {
+  return compactBrowserEvidence(error instanceof Error ? error.message : String(error));
+}
+
+function isPathInside(parentPath: string, childPath: string): boolean {
+  const parentRealPath = realpathSync(parentPath);
+  const childRealPath = realpathSync(childPath);
+  const relativePath = relative(parentRealPath, childRealPath);
+  return relativePath === '' || (!relativePath.startsWith('..') && !isAbsolute(relativePath));
+}
+
+function loadProjectAxeCore(projectRoot: string): BrowserAxeCore | null {
+  try {
+    const requireFromProject = createRequire(join(projectRoot, 'package.json'));
+    const resolved = requireFromProject.resolve('axe-core');
+    const workspaceRoot = resolveWorkspaceInfo(projectRoot).workspaceRoot;
+    const resolvedInProject = [projectRoot, workspaceRoot].some((root) =>
+      isPathInside(root, resolved),
+    );
+    if (!resolvedInProject) return null;
+    const loaded = requireFromProject('axe-core') as { source?: unknown };
+    return typeof loaded.source === 'string' && loaded.source.length > 0
+      ? { source: loaded.source }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function consoleErrorMessage(message: BrowserConsoleMessageLike): string | null {
+  try {
+    const type = typeof message.type === 'function' ? message.type() : 'error';
+    if (type !== 'error') return null;
+    const text = typeof message.text === 'function' ? message.text() : 'Console error';
+    return compactBrowserEvidence(text || 'Console error');
+  } catch {
+    return 'Console error event could not be read.';
+  }
+}
+
+function consoleProbe(messages: string[]): BrowserConsoleProbe {
+  return {
+    status: messages.length > 0 ? 'failed' : 'passed',
+    count: messages.length,
+    messages: messages.slice(0, 5),
+  };
+}
+
+function fallbackRuntimeDomSnapshot(reason: string): BrowserRuntimeDomSnapshot {
+  return {
+    routeRendered: {
+      status: 'failed',
+      readyState: null,
+      url: null,
+      title: null,
+      bodyPresent: false,
+      appRootPresent: false,
+      bodyChildCount: 0,
+      reason,
+    },
+    nonblankDom: {
+      status: 'failed',
+      textLength: 0,
+      meaningfulElementCount: 0,
+      mediaElementCount: 0,
+      controlElementCount: 0,
+      reason,
+    },
+    interactionStyles: {
+      status: 'skipped',
+      checked: 0,
+      matchedClasses: [],
+      animatedOrTransitioned: 0,
+      missing: [],
+      reason,
+    },
+  };
+}
+
+async function collectRuntimeDomSnapshot(
+  page: BrowserPageLike,
+): Promise<BrowserRuntimeDomSnapshot> {
+  try {
+    return await page.evaluate<BrowserRuntimeDomSnapshot, string[]>((knownInteractionClasses) => {
+      const global = globalThis as unknown as {
+        document?: Record<string, unknown>;
+        location?: { href?: string };
+        getComputedStyle?: (element: Record<string, unknown>) => Record<string, unknown>;
+      };
+      const document = global.document;
+      const body = document?.body as Record<string, unknown> | undefined;
+      const readyState =
+        typeof document?.readyState === 'string' ? (document.readyState as string) : null;
+      const title = typeof document?.title === 'string' ? (document.title as string) : null;
+      const url = typeof global.location?.href === 'string' ? global.location.href : null;
+      const querySelector =
+        typeof document?.querySelector === 'function'
+          ? (document.querySelector as (selector: string) => unknown)
+          : null;
+      const querySelectorAll =
+        typeof document?.querySelectorAll === 'function'
+          ? (document.querySelectorAll as (selector: string) => unknown)
+          : null;
+      const bodyChildCount =
+        typeof body?.childElementCount === 'number' ? (body.childElementCount as number) : 0;
+      const appRootPresent = Boolean(
+        querySelector?.('[data-decantr-root], #root, #app, main, [role="main"], body > *'),
+      );
+      const routeRendered =
+        Boolean(body) && readyState !== 'loading' && (appRootPresent || bodyChildCount > 0);
+      const rawElements = querySelectorAll ? querySelectorAll('body *') : [];
+      const elements = Array.from(rawElements as Iterable<Record<string, unknown>>);
+      const text = String((body?.innerText ?? body?.textContent ?? '') as string)
+        .replace(/\s+/g, ' ')
+        .trim();
+      const mediaTags = new Set(['IMG', 'SVG', 'CANVAS', 'VIDEO', 'PICTURE']);
+      const controlTags = new Set(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'SUMMARY']);
+      const elementTag = (element: Record<string, unknown>) =>
+        typeof element.tagName === 'string' ? element.tagName.toUpperCase() : '';
+      const elementText = (element: Record<string, unknown>) =>
+        String((element.textContent ?? '') as string)
+          .replace(/\s+/g, ' ')
+          .trim();
+      const elementAttribute = (element: Record<string, unknown>, name: string) =>
+        typeof element.getAttribute === 'function'
+          ? String((element.getAttribute as (attr: string) => unknown)(name) ?? '').trim()
+          : '';
+      const mediaElementCount = elements.filter((element) =>
+        mediaTags.has(elementTag(element)),
+      ).length;
+      const controlElementCount = elements.filter((element) =>
+        controlTags.has(elementTag(element)),
+      ).length;
+      const meaningfulElementCount = elements.filter((element) => {
+        const tag = elementTag(element);
+        return (
+          elementText(element).length > 0 ||
+          mediaTags.has(tag) ||
+          controlTags.has(tag) ||
+          elementAttribute(element, 'aria-label').length > 0 ||
+          elementAttribute(element, 'alt').length > 0 ||
+          elementAttribute(element, 'title').length > 0
+        );
+      }).length;
+      const nonblank =
+        text.length > 0 ||
+        meaningfulElementCount > 0 ||
+        mediaElementCount > 0 ||
+        controlElementCount > 0;
+
+      const durationHasTime = (value: unknown): boolean =>
+        String(value ?? '')
+          .split(',')
+          .some((part) => {
+            const trimmed = part.trim();
+            if (!trimmed) return false;
+            if (trimmed.endsWith('ms')) return Number.parseFloat(trimmed) > 0;
+            if (trimmed.endsWith('s')) return Number.parseFloat(trimmed) > 0;
+            return Number.parseFloat(trimmed) > 0;
+          });
+      const classListContains = (element: Record<string, unknown>, className: string): boolean => {
+        const classList = element.classList as
+          | { contains?: (value: string) => boolean }
+          | undefined;
+        if (typeof classList?.contains === 'function') return classList.contains(className);
+        return String((element.className ?? '') as string)
+          .split(/\s+/)
+          .includes(className);
+      };
+      const styleTargets = elements
+        .map((element) => ({
+          element,
+          classes: knownInteractionClasses.filter((className) =>
+            classListContains(element, className),
+          ),
+        }))
+        .filter((entry) => entry.classes.length > 0);
+      const matchedClasses = [...new Set(styleTargets.flatMap((entry) => entry.classes))].sort();
+      const missing = new Set<string>();
+      let animatedOrTransitioned = 0;
+      for (const entry of styleTargets) {
+        const computed =
+          typeof global.getComputedStyle === 'function'
+            ? global.getComputedStyle(entry.element)
+            : {};
+        const animationName = String(computed.animationName ?? 'none');
+        const transitionProperty = String(computed.transitionProperty ?? 'none');
+        const hasAnimation =
+          animationName !== 'none' && durationHasTime(computed.animationDuration);
+        const hasTransition =
+          transitionProperty !== 'none' && durationHasTime(computed.transitionDuration);
+        if (hasAnimation || hasTransition) {
+          animatedOrTransitioned += 1;
+        } else {
+          for (const className of entry.classes) missing.add(className);
+        }
+      }
+      const interactionStatus =
+        styleTargets.length === 0 ? 'skipped' : missing.size === 0 ? 'passed' : 'failed';
+
+      return {
+        routeRendered: {
+          status: routeRendered ? 'passed' : 'failed',
+          readyState,
+          url,
+          title,
+          bodyPresent: Boolean(body),
+          appRootPresent,
+          bodyChildCount,
+          ...(routeRendered
+            ? {}
+            : { reason: 'No rendered app root or body content was detected after navigation.' }),
+        },
+        nonblankDom: {
+          status: nonblank ? 'passed' : 'failed',
+          textLength: text.length,
+          meaningfulElementCount,
+          mediaElementCount,
+          controlElementCount,
+          ...(nonblank
+            ? {}
+            : {
+                reason:
+                  'DOM rendered, but no meaningful text, media, controls, or labels were detected.',
+              }),
+        },
+        interactionStyles: {
+          status: interactionStatus,
+          checked: styleTargets.length,
+          matchedClasses,
+          animatedOrTransitioned,
+          missing: [...missing].slice(0, 8),
+          ...(styleTargets.length === 0
+            ? { reason: 'No known Decantr interaction classes were present on this route.' }
+            : {}),
+        },
+      };
+    }, KNOWN_INTERACTION_STYLE_CLASSES);
+  } catch (error) {
+    return fallbackRuntimeDomSnapshot(`Runtime DOM probe failed: ${browserErrorMessage(error)}`);
+  }
+}
+
+function skippedAccessibilityProbe(reason: string): BrowserAccessibilityProbe {
+  return {
+    status: 'skipped',
+    engine: 'axe-core',
+    violations: 0,
+    incomplete: 0,
+    messages: [],
+    reason,
+  };
+}
+
+async function collectAccessibilityProbe(
+  page: BrowserPageLike,
+  axeCore: BrowserAxeCore | null,
+): Promise<BrowserAccessibilityProbe> {
+  if (!axeCore) return skippedAccessibilityProbe('axe-core is not installed in this project.');
+  if (!page.addScriptTag) {
+    return skippedAccessibilityProbe('The local Playwright adapter does not expose addScriptTag.');
+  }
+
+  try {
+    await page.addScriptTag({ content: axeCore.source });
+    const result = await page.evaluate<BrowserAxeRawResult>(() => {
+      const global = globalThis as unknown as {
+        axe?: {
+          run?: (
+            document: unknown,
+            options?: Record<string, unknown>,
+          ) => Promise<{
+            violations?: Array<{
+              id?: string;
+              impact?: string;
+              help?: string;
+              description?: string;
+              nodes?: Array<{ target?: string[] }>;
+            }>;
+            incomplete?: unknown[];
+          }>;
+        };
+        document?: unknown;
+      };
+      if (!global.axe?.run) return { error: 'axe-core did not expose window.axe.run.' };
+      return global.axe.run(global.document, { resultTypes: ['violations'] }).then((axeResult) => ({
+        violations: (axeResult.violations ?? []).map((violation) => ({
+          id: violation.id,
+          impact: violation.impact,
+          help: violation.help,
+          description: violation.description,
+          targets: (violation.nodes ?? []).flatMap((node) => node.target ?? []).slice(0, 3),
+        })),
+        incomplete: axeResult.incomplete?.length ?? 0,
+      }));
+    });
+
+    if (result.error) {
+      return {
+        status: 'failed',
+        engine: 'axe-core',
+        violations: 0,
+        incomplete: 0,
+        messages: [result.error],
+        reason: result.error,
+      };
+    }
+
+    const violations = result.violations ?? [];
+    const messages = violations.slice(0, 5).map((violation) => {
+      const label = violation.id ?? 'axe-violation';
+      const detail = violation.help ?? violation.description ?? 'Accessibility violation';
+      const impact = violation.impact ? ` (${violation.impact})` : '';
+      const targets =
+        violation.targets && violation.targets.length > 0
+          ? ` [${violation.targets.join(', ')}]`
+          : '';
+      return compactBrowserEvidence(`${label}${impact}: ${detail}${targets}`);
+    });
+
+    return {
+      status: violations.length > 0 ? 'failed' : 'passed',
+      engine: 'axe-core',
+      violations: violations.length,
+      incomplete: result.incomplete ?? 0,
+      messages,
+    };
+  } catch (error) {
+    const message = `Axe probe failed: ${browserErrorMessage(error)}`;
+    return {
+      status: 'failed',
+      engine: 'axe-core',
+      violations: 0,
+      incomplete: 0,
+      messages: [message],
+      reason: message,
+    };
+  }
+}
+
+function browserRuntimeFailureMessages(
+  route: string,
+  runtime: BrowserRuntimeProbeManifest,
+): string[] {
+  const messages: string[] = [];
+  if (runtime.routeRendered.status === 'failed') {
+    messages.push(
+      `${route}: route-rendered probe failed (${runtime.routeRendered.reason ?? 'no rendered app root detected'})`,
+    );
+  }
+  if (runtime.nonblankDom.status === 'failed') {
+    messages.push(
+      `${route}: nonblank DOM probe failed (${runtime.nonblankDom.reason ?? 'blank DOM detected'})`,
+    );
+  }
+  if (runtime.consoleErrors.count > 0) {
+    messages.push(
+      `${route}: console errors (${runtime.consoleErrors.count}) ${runtime.consoleErrors.messages.join(' | ')}`,
+    );
+  }
+  if (runtime.pageErrors.count > 0) {
+    messages.push(
+      `${route}: page errors (${runtime.pageErrors.count}) ${runtime.pageErrors.messages.join(' | ')}`,
+    );
+  }
+  if (runtime.interactionStyles.status === 'failed') {
+    messages.push(
+      `${route}: interaction style probe found known classes without computed animation/transition (${runtime.interactionStyles.missing.join(', ')})`,
+    );
+  }
+  return messages.map(compactBrowserEvidence);
+}
+
+function browserAccessibilityFailureMessages(
+  route: string,
+  runtime: BrowserRuntimeProbeManifest,
+): string[] {
+  if (runtime.accessibility.status !== 'failed') return [];
+  const detail =
+    runtime.accessibility.messages.length > 0
+      ? runtime.accessibility.messages.join(' | ')
+      : (runtime.accessibility.reason ?? 'axe-core reported accessibility failures');
+  return [
+    compactBrowserEvidence(
+      `${route}: axe-core violations (${runtime.accessibility.violations}) ${detail}`,
+    ),
+  ];
+}
+
 function browserRouteUrl(baseUrl: string, route: string): string {
   return new URL(route || '/', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`).toString();
 }
@@ -1163,7 +1680,7 @@ async function collectBrowserVerification(
       baseId: 'playwright-missing',
     });
     return {
-      finding,
+      findings: [finding],
       evidence: {
         enabled: true,
         status: 'unavailable',
@@ -1187,7 +1704,7 @@ async function collectBrowserVerification(
       baseId: 'base-url-missing',
     });
     return {
-      finding,
+      findings: [finding],
       evidence: {
         enabled: true,
         status: 'unavailable',
@@ -1211,7 +1728,7 @@ async function collectBrowserVerification(
       baseId: 'adapter-missing',
     });
     return {
-      finding,
+      findings: [finding],
       evidence: {
         enabled: true,
         status: 'unavailable',
@@ -1224,20 +1741,42 @@ async function collectBrowserVerification(
 
   const routes = (declaredRoutes.length > 0 ? declaredRoutes : ['/']).slice(0, 12);
   const screenshots: string[] = [];
-  const browserFindings: string[] = [];
+  const routeFailures: string[] = [];
+  const runtimeFailures: string[] = [];
+  const accessibilityFailures: string[] = [];
   const visualRoutes: VisualManifestRoute[] = [];
   const screenshotDir = join(projectRoot, '.decantr', 'evidence', 'screenshots');
   mkdirSync(screenshotDir, { recursive: true });
+  const axeCore = loadProjectAxeCore(projectRoot);
 
   let browser: Awaited<ReturnType<PlaywrightLike['chromium']['launch']>> | null = null;
   try {
     browser = await playwright.chromium.launch({ headless: true });
-    const page = await browser.newPage();
     for (const route of routes) {
       const url = browserRouteUrl(options.browserBaseUrl, route);
       const relativePath = browserScreenshotRelativePath(route);
+      let page: BrowserPageLike | null = null;
+      const consoleErrors: string[] = [];
+      const pageErrors: string[] = [];
       try {
+        page = await browser.newPage();
+        page.on?.('console', (message) => {
+          const errorMessage = consoleErrorMessage(message);
+          if (errorMessage) consoleErrors.push(errorMessage);
+        });
+        page.on?.('pageerror', (error) => {
+          pageErrors.push(browserErrorMessage(error));
+        });
         await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
+        const domSnapshot = await collectRuntimeDomSnapshot(page);
+        const runtime: BrowserRuntimeProbeManifest = {
+          ...domSnapshot,
+          consoleErrors: consoleProbe(consoleErrors),
+          pageErrors: consoleProbe(pageErrors),
+          accessibility: await collectAccessibilityProbe(page, axeCore),
+        };
+        runtimeFailures.push(...browserRuntimeFailureMessages(route, runtime));
+        accessibilityFailures.push(...browserAccessibilityFailureMessages(route, runtime));
         const absoluteScreenshotPath = join(projectRoot, relativePath);
         await page.screenshot({ path: absoluteScreenshotPath, fullPage: true });
         screenshots.push(relativePath);
@@ -1247,10 +1786,11 @@ async function collectBrowserVerification(
           screenshot: relativePath,
           screenshotHash: hashFile(absoluteScreenshotPath),
           status: 'captured',
+          runtime,
         });
       } catch (error) {
         const message = (error as Error).message;
-        browserFindings.push(`${route}: ${message}`);
+        routeFailures.push(`${route}: ${message}`);
         visualRoutes.push({
           route,
           url,
@@ -1259,10 +1799,16 @@ async function collectBrowserVerification(
           status: 'failed',
           error: message,
         });
+      } finally {
+        try {
+          await page?.close?.();
+        } catch {
+          /* page cleanup is best-effort */
+        }
       }
     }
   } catch (error) {
-    browserFindings.push((error as Error).message);
+    routeFailures.push((error as Error).message);
   } finally {
     if (browser) await browser.close();
   }
@@ -1278,32 +1824,73 @@ async function collectBrowserVerification(
   mkdirSync(dirname(visualManifestPath), { recursive: true });
   writeFileSync(visualManifestPath, JSON.stringify(visualManifest, null, 2) + '\n', 'utf-8');
 
-  if (browserFindings.length > 0) {
-    const finding = createHealthFinding({
-      source: 'browser',
-      category: 'Browser Verification',
-      severity: options.requireBrowser ? 'error' : 'warn',
-      message: 'Browser verification could not render every declared route.',
-      evidence: browserFindings.slice(0, 5),
-      rule: 'browser-route-verification-failed',
-      suggestedFix:
-        'Start the app at the provided base URL, fix route render errors, and rerun `decantr health --browser --evidence`.',
-      baseId: 'route-verification-failed',
-    });
+  const findings: ProjectHealthFinding[] = [];
+  if (routeFailures.length > 0) {
+    findings.push(
+      createHealthFinding({
+        source: 'browser',
+        category: 'Browser Verification',
+        severity: options.requireBrowser ? 'error' : 'warn',
+        message: 'Browser verification could not render every declared route.',
+        evidence: routeFailures.slice(0, 5),
+        rule: 'browser-route-verification-failed',
+        suggestedFix:
+          'Start the app at the provided base URL, fix route render errors, and rerun `decantr health --browser --evidence`.',
+        baseId: 'route-verification-failed',
+      }),
+    );
+  }
+  if (runtimeFailures.length > 0) {
+    findings.push(
+      createHealthFinding({
+        source: 'browser',
+        category: 'Browser Runtime',
+        severity: options.requireBrowser ? 'error' : 'warn',
+        message: 'Browser runtime probes failed for one or more rendered routes.',
+        evidence: runtimeFailures.slice(0, 5),
+        rule: 'browser-runtime-probes-failed',
+        suggestedFix:
+          'Inspect console/page errors and rendered DOM state, repair the route runtime behavior, and rerun `decantr health --browser --evidence`.',
+        code: 'RUNTIME010',
+        repair: { id: 'repair-browser-runtime-probes' },
+        baseId: 'runtime-probes-failed',
+      }),
+    );
+  }
+  if (accessibilityFailures.length > 0) {
+    findings.push(
+      createHealthFinding({
+        source: 'browser',
+        category: 'Browser Accessibility',
+        severity: options.requireBrowser ? 'error' : 'warn',
+        message: 'Axe reported accessibility violations in rendered browser evidence.',
+        evidence: accessibilityFailures.slice(0, 5),
+        rule: 'browser-axe-violations',
+        suggestedFix:
+          'Repair the rendered accessibility violations and rerun `decantr health --browser --evidence`.',
+        code: 'A11Y020',
+        repair: { id: 'fix-rendered-accessibility' },
+        baseId: 'axe-violations',
+      }),
+    );
+  }
+
+  if (findings.length > 0) {
+    const evidenceFindings = [...routeFailures, ...runtimeFailures, ...accessibilityFailures];
     return {
-      finding,
+      findings,
       evidence: {
         enabled: true,
         status: 'failed',
         baseUrl: options.browserBaseUrl,
         screenshots,
-        findings: browserFindings,
+        findings: evidenceFindings,
       },
     };
   }
 
   return {
-    finding: null,
+    findings: [],
     evidence: {
       enabled: true,
       status: 'passed',
@@ -1772,8 +2359,8 @@ export async function createProjectHealthReport(
     options,
     declaredRoutes,
   );
-  if (browserVerification?.finding && !isDuplicateFinding(seen, browserVerification.finding)) {
-    findings.push(browserVerification.finding);
+  for (const browserFinding of browserVerification?.findings ?? []) {
+    if (!isDuplicateFinding(seen, browserFinding)) findings.push(browserFinding);
   }
   const anchoredFindings = anchorProjectHealthFindings(projectRoot, findings);
   const scopedFindings = scopeHealthFindingsToProject(projectRoot, anchoredFindings);
@@ -1969,13 +2556,22 @@ export function formatProjectHealthJson(report: ProjectHealthReport): string {
 }
 
 function diagnosticCatalogPayload() {
+  const diagnosticsByRule = new Map<
+    string,
+    { rule: string; code: string; repairId: string; family: string }
+  >();
+  for (const entry of [...KNOWN_VERIFICATION_DIAGNOSTICS, ...HEALTH_BROWSER_RUNTIME_DIAGNOSTICS]) {
+    diagnosticsByRule.set(entry.rule, entry);
+  }
   return {
-    diagnostics: KNOWN_VERIFICATION_DIAGNOSTICS.map((entry) => ({
-      code: entry.code,
-      family: entry.family,
-      rule: entry.rule,
-      repairId: entry.repairId,
-    })).sort((a, b) => a.code.localeCompare(b.code) || a.rule.localeCompare(b.rule)),
+    diagnostics: [...diagnosticsByRule.values()]
+      .map((entry) => ({
+        code: entry.code,
+        family: entry.family,
+        rule: entry.rule,
+        repairId: entry.repairId,
+      }))
+      .sort((a, b) => a.code.localeCompare(b.code) || a.rule.localeCompare(b.rule)),
   };
 }
 

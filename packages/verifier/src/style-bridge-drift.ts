@@ -13,6 +13,8 @@ export interface StyleBridgeDriftFinding {
   source: 'className' | 'inline-style' | 'stylesheet';
   property?: string;
   bridgeMappingIds: string[];
+  bridgeConfidence: number | null;
+  bridgeSources: string[];
   tokenHints: string[];
   classHints: string[];
   evidence: string[];
@@ -28,6 +30,11 @@ export interface StyleBridgeDriftAudit {
 interface StyleBridgeMapping {
   id?: unknown;
   label?: unknown;
+  native?: { kind?: unknown; ref?: unknown };
+  essence?: { kind?: unknown; ref?: unknown };
+  confidence?: unknown;
+  source?: unknown;
+  property?: unknown;
   tokenHints?: unknown;
   classHints?: unknown;
 }
@@ -39,6 +46,8 @@ interface StyleBridgeManifest {
 
 interface AcceptedStyleBridge {
   mappingIds: string[];
+  confidence: number | null;
+  sources: string[];
   tokenHints: string[];
   classHints: string[];
 }
@@ -85,6 +94,25 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
     : [];
+}
+
+function normalizedConfidence(value: unknown): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return Math.max(0, Math.min(1, value));
+}
+
+function nativeTokenHint(mapping: StyleBridgeMapping): string | null {
+  const kind = typeof mapping.native?.kind === 'string' ? mapping.native.kind : null;
+  const ref = typeof mapping.native?.ref === 'string' ? mapping.native.ref : null;
+  if (!kind || !ref) return null;
+  return kind === 'css-var' || kind === 'vanilla-extract-token' || kind === 'sass-var' ? ref : null;
+}
+
+function nativeClassHint(mapping: StyleBridgeMapping): string | null {
+  const kind = typeof mapping.native?.kind === 'string' ? mapping.native.kind : null;
+  const ref = typeof mapping.native?.ref === 'string' ? mapping.native.ref : null;
+  if (!kind || !ref) return null;
+  return kind === 'class' || kind === 'tailwind-class' || kind === 'component' ? ref : null;
 }
 
 function isNonProductionStyleBridgeDriftFile(file: string): boolean {
@@ -160,13 +188,37 @@ function readAcceptedStyleBridge(projectRoot: string): AcceptedStyleBridge | nul
     )
     .slice(0, 12);
   const tokenHints = [
-    ...new Set(mappings.flatMap((mapping) => stringArray(mapping.tokenHints))),
-  ].slice(0, 16);
+    ...new Set(
+      mappings.flatMap((mapping) => [...stringArray(mapping.tokenHints), nativeTokenHint(mapping)]),
+    ),
+  ]
+    .filter((entry): entry is string => Boolean(entry))
+    .slice(0, 16);
   const classHints = [
-    ...new Set(mappings.flatMap((mapping) => stringArray(mapping.classHints))),
+    ...new Set(
+      mappings.flatMap((mapping) => [...stringArray(mapping.classHints), nativeClassHint(mapping)]),
+    ),
+  ]
+    .filter((entry): entry is string => Boolean(entry))
+    .slice(0, 16);
+  const confidences = mappings
+    .map((mapping) => normalizedConfidence(mapping.confidence))
+    .filter((entry): entry is number => entry !== null);
+  const sources = [
+    ...new Set(
+      mappings
+        .map((mapping) => mapping.source)
+        .filter((source): source is string => typeof source === 'string' && source.length > 0),
+    ),
   ].slice(0, 16);
 
-  return { mappingIds, tokenHints, classHints };
+  return {
+    mappingIds,
+    confidence: confidences.length > 0 ? Math.max(...confidences) : null,
+    sources,
+    tokenHints,
+    classHints,
+  };
 }
 
 function lineForNode(sourceFile: ts.SourceFile, node: ts.Node): number {
@@ -371,11 +423,19 @@ function collectStyleBridgeDriftFindings(input: {
       source,
       ...(property ? { property } : {}),
       bridgeMappingIds: input.bridge.mappingIds,
+      bridgeConfidence: input.bridge.confidence,
+      bridgeSources: input.bridge.sources,
       tokenHints: input.bridge.tokenHints,
       classHints: input.bridge.classHints,
       evidence: [
         styleBridgeEvidenceText(file, line, source, value),
         `.decantr/style-bridge.json is accepted with mappings: ${input.bridge.mappingIds.join(', ')}`,
+        input.bridge.confidence === null
+          ? 'Accepted style bridge has no mapping confidence metadata'
+          : `Accepted style bridge max confidence: ${input.bridge.confidence.toFixed(2)}`,
+        input.bridge.sources.length > 0
+          ? `Accepted style bridge mapping sources: ${input.bridge.sources.join(', ')}`
+          : 'Accepted style bridge has no mapping source metadata',
         input.bridge.tokenHints.length > 0
           ? `Accepted token hints: ${input.bridge.tokenHints.join(', ')}`
           : 'Accepted style bridge has no token hints for this mapping set',
@@ -468,11 +528,19 @@ function collectStylesheetBridgeDriftFindings(input: {
         source: 'stylesheet',
         property,
         bridgeMappingIds: input.bridge.mappingIds,
+        bridgeConfidence: input.bridge.confidence,
+        bridgeSources: input.bridge.sources,
         tokenHints: input.bridge.tokenHints,
         classHints: input.bridge.classHints,
         evidence: [
           `${file}:${lineNumber} uses stylesheet value "${value}"`,
           `.decantr/style-bridge.json is accepted with mappings: ${input.bridge.mappingIds.join(', ')}`,
+          input.bridge.confidence === null
+            ? 'Accepted style bridge has no mapping confidence metadata'
+            : `Accepted style bridge max confidence: ${input.bridge.confidence.toFixed(2)}`,
+          input.bridge.sources.length > 0
+            ? `Accepted style bridge mapping sources: ${input.bridge.sources.join(', ')}`
+            : 'Accepted style bridge has no mapping source metadata',
           input.bridge.tokenHints.length > 0
             ? `Accepted token hints: ${input.bridge.tokenHints.join(', ')}`
             : 'Accepted style bridge has no token hints for this mapping set',

@@ -1493,27 +1493,6 @@ async function loadHostedSelectedExecutionPackFallback(args: Record<string, unkn
   }
 }
 
-async function loadHostedSelectedExecutionPackByType(
-  args: Record<string, unknown>,
-  packType: 'scaffold' | 'review' | 'section' | 'page' | 'mutation',
-  id?: string,
-): Promise<{
-  selected: HostedSelectedExecutionPack | null;
-  error: string | null;
-}> {
-  const selectedArgs: Record<string, unknown> = {
-    ...args,
-    pack_type: packType,
-  };
-
-  delete selectedArgs.id;
-  if (typeof id === 'string') {
-    selectedArgs.id = id;
-  }
-
-  return loadHostedSelectedExecutionPackFallback(selectedArgs);
-}
-
 async function loadHostedFileCritiqueFallback(args: Record<string, unknown>): Promise<{
   report: Awaited<ReturnType<typeof getHostedFileCritiquePayload>> | null;
   error: string | null;
@@ -1565,18 +1544,6 @@ function toHostedExecutionPackPayload(pack: { renderedMarkdown?: string } | null
     markdown: pack && typeof pack.renderedMarkdown === 'string' ? pack.renderedMarkdown : null,
     json: pack ?? null,
   };
-}
-
-function findHostedSectionPack(bundle: HostedExecutionPackBundle, sectionId: string) {
-  return bundle.sections.find((section) => section.data.sectionId === sectionId) ?? null;
-}
-
-function findHostedPagePack(bundle: HostedExecutionPackBundle, pageId: string) {
-  return bundle.pages.find((page) => page.data.pageId === pageId) ?? null;
-}
-
-function findHostedMutationPack(bundle: HostedExecutionPackBundle, mutationId: string) {
-  return bundle.mutations.find((mutation) => mutation.data.mutationType === mutationId) ?? null;
 }
 
 function findManifestEntryForPack(
@@ -2433,986 +2400,167 @@ async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
   };
 }
 
+const CONSOLIDATED_TOOL_ACTIONS = {
+  decantr_project: {
+    state: 'decantr_get_project_state',
+    workspace_health: 'decantr_workspace_health',
+  },
+  decantr_contract: {
+    read_essence: 'decantr_read_essence',
+    validate: 'decantr_validate',
+    check_drift: 'decantr_check_drift',
+    create_essence: 'decantr_create_essence',
+    capsule: 'decantr_get_contract_capsule',
+  },
+  decantr_context: {
+    scaffold: 'decantr_get_scaffold_context',
+    section: 'decantr_get_section_context',
+    page: 'decantr_get_page_context',
+    task: 'decantr_prepare_task_context',
+    execution_pack: 'decantr_get_execution_pack',
+  },
+  decantr_graph: {
+    snapshot: 'decantr_get_graph_snapshot',
+    query: 'decantr_query_graph',
+    traverse: 'decantr_traverse_graph',
+  },
+  decantr_registry: {
+    search: 'decantr_search_registry',
+    resolve_pattern: 'decantr_resolve_pattern',
+    resolve_archetype: 'decantr_resolve_archetype',
+    resolve_blueprint: 'decantr_resolve_blueprint',
+    suggest_patterns: 'decantr_suggest_patterns',
+    showcase_benchmarks: 'decantr_get_showcase_benchmarks',
+    intelligence_summary: 'decantr_get_registry_intelligence_summary',
+    compile_execution_packs: 'decantr_compile_execution_packs',
+  },
+  decantr_verify: {
+    audit_project: 'decantr_audit_project',
+    critique: 'decantr_critique',
+    findings: 'decantr_get_findings',
+    evidence_bundle: 'decantr_get_evidence_bundle',
+    health_loop: 'decantr_run_health_loop',
+  },
+  decantr_repair: {
+    findings: 'decantr_get_findings',
+    repair_plan: 'decantr_get_repair_plan',
+    repair_prompt: 'decantr_get_repair_prompt',
+    health_loop: 'decantr_run_health_loop',
+  },
+  decantr_contract_write: {
+    accept_drift: 'decantr_accept_drift',
+    update_essence: 'decantr_update_essence',
+  },
+} as const;
+
+type ConsolidatedToolName = keyof typeof CONSOLIDATED_TOOL_ACTIONS;
+
+function consolidatedActionNames(name: ConsolidatedToolName): string[] {
+  return Object.keys(CONSOLIDATED_TOOL_ACTIONS[name]);
+}
+
+function consolidatedTool(
+  name: ConsolidatedToolName,
+  title: string,
+  description: string,
+  annotations: typeof READ_ONLY,
+) {
+  return {
+    name,
+    title,
+    description,
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        action: {
+          type: 'string' as const,
+          enum: consolidatedActionNames(name),
+          description: 'Action to run through this consolidated Decantr MCP tool.',
+        },
+      },
+      required: ['action'],
+      additionalProperties: true,
+    },
+    annotations,
+  };
+}
+
 export const TOOLS = [
-  // 1. decantr_read_essence — local read
-  {
-    name: 'decantr_read_essence',
-    title: 'Read Essence',
-    description:
-      'Read and return the current Essence v4 decantr.essence.json file from the working directory. Optionally filter by layer (dna, blueprint, or full).',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Optional path to essence file. Defaults to ./decantr.essence.json.',
-        },
-        layer: {
-          type: 'string',
-          enum: ['dna', 'blueprint', 'full'],
-          description: 'For Essence v4 files: return only the specified layer. Defaults to full.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 2. decantr_validate — local read
-  {
-    name: 'decantr_validate',
-    title: 'Validate Essence',
-    description:
-      'Validate an Essence v4 decantr.essence.json file against the schema and guard rules, reporting DNA vs Blueprint violations separately.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 3. decantr_search_registry — network
-  {
-    name: 'decantr_search_registry',
-    title: 'Search Vocabulary',
-    description:
-      'Search Decantr official/community vocabulary for patterns, archetypes, themes, and shells.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        query: { type: 'string', description: 'Search query (e.g. "kanban", "neon", "dashboard")' },
-        type: { type: 'string', description: 'Filter by type: pattern, archetype, theme, shell' },
-        sort: { type: 'string', description: 'Optional sort: recommended, recent, or name.' },
-        recommended: { type: 'boolean', description: 'When true, only return recommended items.' },
-        source: {
-          type: 'string',
-          description: 'Optional intelligence source filter: authored, benchmark, or hybrid.',
-        },
-      },
-      required: ['query'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 4. decantr_resolve_pattern — network
-  {
-    name: 'decantr_resolve_pattern',
-    title: 'Resolve Pattern',
-    description:
-      'Get full pattern details including layout spec, components, presets, and code examples.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        id: { type: 'string', description: 'Pattern ID (e.g. "hero", "data-table", "kpi-grid")' },
-        preset: { type: 'string', description: 'Optional preset name (e.g. "product", "content")' },
-        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
-      },
-      required: ['id'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 5. decantr_resolve_archetype — network
-  {
-    name: 'decantr_resolve_archetype',
-    title: 'Resolve Archetype',
-    description:
-      'Get archetype details including default pages, layouts, features, and suggested theme.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        id: { type: 'string', description: 'Archetype ID (e.g. "saas-dashboard", "ecommerce")' },
-        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
-      },
-      required: ['id'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 6. decantr_resolve_blueprint — network
-  {
-    name: 'decantr_resolve_blueprint',
-    title: 'Resolve Blueprint',
-    description:
-      'Get a blueprint (app composition) with its archetype list, suggested theme, personality traits, and full page structure.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        id: {
-          type: 'string',
-          description: 'Blueprint ID (e.g. "saas-dashboard", "ecommerce", "portfolio")',
-        },
-        namespace: { type: 'string', description: 'Namespace (default: "@official")' },
-      },
-      required: ['id'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 8. decantr_suggest_patterns — network
-  {
-    name: 'decantr_suggest_patterns',
-    title: 'Suggest Patterns',
-    description:
-      'Given a page description, suggest appropriate patterns from the registry. Returns ranked pattern matches with layout specs and component lists.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        description: {
-          type: 'string',
-          description:
-            'Description of the page or section (e.g. "dashboard with metrics and charts", "settings form with toggles")',
-        },
-        route: {
-          type: 'string',
-          description: 'Optional route context, for example "/feed" or "/settings".',
-        },
-        source_code: {
-          type: 'string',
-          description: 'Optional local source excerpt to rank against actual code evidence.',
-        },
-      },
-      required: ['description'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 9. decantr_check_drift — local read
-  {
-    name: 'decantr_check_drift',
-    title: 'Check Drift',
-    description:
-      'Check if code changes violate the design intent captured in the Essence v4 spec. Returns separate dna_violations and blueprint_drift with autoFixable flags.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
-        },
-        page_id: {
-          type: 'string',
-          description: 'Page ID being modified (e.g. "overview", "settings")',
-        },
-        components_used: {
-          type: 'array' as const,
-          items: { type: 'string' },
-          description:
-            'List of component names used in the generated code. Checked against page layout patterns.',
-        },
-        theme_used: { type: 'string', description: 'Theme id used in the generated code' },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 10. decantr_create_essence — network (fetches archetype)
-  {
-    name: 'decantr_create_essence',
-    title: 'Create Essence',
-    description:
-      'Generate a valid Essence v4 skeleton from a project description. Returns a sectioned decantr.essence.json template based on the closest matching archetype and blueprint.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        description: {
-          type: 'string',
-          description:
-            'Natural language project description (e.g. "SaaS dashboard with analytics, user management, and billing")',
-        },
-        framework: {
-          type: 'string',
-          description: 'Target framework (e.g. "react", "vue", "svelte"). Defaults to "react".',
-        },
-      },
-      required: ['description'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 11. decantr_accept_drift — WRITE tool (NEW)
-  {
-    name: 'decantr_accept_drift',
-    title: 'Accept Drift',
-    description:
-      'Resolve guard violations by accepting, scoping, rejecting, or deferring drift. For DNA violations, requires explicit confirmation. Updates the essence file or drift log.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        violations: {
-          type: 'array' as const,
-          items: {
-            type: 'object' as const,
-            properties: {
-              rule: { type: 'string' },
-              page_id: { type: 'string' },
-              details: { type: 'string' },
-            },
-            required: ['rule'],
-          },
-          description: 'The violations to resolve.',
-        },
-        resolution: {
-          type: 'string',
-          enum: ['accept', 'accept_scoped', 'reject', 'defer'],
-          description:
-            'How to resolve: accept updates the essence, accept_scoped limits to a page, reject is a no-op, defer logs for later.',
-        },
-        scope: { type: 'string', description: 'For accept_scoped: the page or section scope.' },
-        path: {
-          type: 'string',
-          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
-        },
-        confirm_dna: {
-          type: 'boolean',
-          description: 'Required to be true when accepting DNA-layer violations.',
-        },
-      },
-      required: ['violations', 'resolution'],
-    },
-    annotations: WRITE_TOOL,
-  },
-  // 12. decantr_update_essence — WRITE tool (NEW)
-  {
-    name: 'decantr_update_essence',
-    title: 'Update Essence',
-    description:
-      'Mutate an Essence v4 file: add/remove/update pages, update DNA or blueprint fields, add/remove features. Older projects must run `decantr migrate --to v4` first.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        operation: {
-          type: 'string',
-          enum: [
-            'add_page',
-            'remove_page',
-            'update_page_layout',
-            'update_dna',
-            'update_blueprint',
-            'add_feature',
-            'remove_feature',
-          ],
-          description: 'The mutation operation to perform.',
-        },
-        payload: {
-          type: 'object' as const,
-          description: 'Operation-specific payload. See tool docs for each operation.',
-        },
-        path: {
-          type: 'string',
-          description: 'Path to essence file. Defaults to ./decantr.essence.json.',
-        },
-      },
-      required: ['operation', 'payload'],
-    },
-    annotations: WRITE_TOOL,
-  },
-  // 13. decantr_get_scaffold_context — local read
-  {
-    name: 'decantr_get_scaffold_context',
-    title: 'Get Scaffold Context',
-    description:
-      'Get the top-level scaffold context for the current project. Returns the scaffold task brief, scaffold overview, compiled scaffold execution pack, compiled review pack, and pack manifest when available. Falls back to hosted execution-pack compilation when local context artifacts are missing.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        path: {
-          type: 'string',
-          description:
-            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
-        },
-        namespace: {
-          type: 'string',
-          description:
-            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 14. decantr_get_section_context — local read
-  {
-    name: 'decantr_get_section_context',
-    title: 'Get Section Context',
-    description:
-      'Get the self-contained context for a specific section of the project. Returns the richer section context file and, when available, the compiled section execution pack for a more compact contract-first view. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        section_id: {
-          type: 'string',
-          description:
-            'Section ID (archetype ID, e.g., "ai-chatbot", "auth-full", "settings-full")',
-        },
-        path: {
-          type: 'string',
-          description:
-            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
-        },
-        namespace: {
-          type: 'string',
-          description:
-            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
-        },
-      },
-      required: ['section_id'],
-    },
-    annotations: READ_ONLY,
-  },
-  // 15. decantr_get_page_context — local read
-  {
-    name: 'decantr_get_page_context',
-    title: 'Get Page Context',
-    description:
-      'Get the route-local context for a specific page. Returns the compiled page execution pack plus its parent section pack and section context when available. Falls back to hosted execution-pack compilation when local pack artifacts are missing.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        page_id: {
-          type: 'string',
-          description: 'Page ID (for example "overview", "settings", or "home").',
-        },
-        path: {
-          type: 'string',
-          description:
-            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
-        },
-        namespace: {
-          type: 'string',
-          description:
-            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
-        },
-      },
-      required: ['page_id'],
-    },
-    annotations: READ_ONLY,
-  },
-  // 16. decantr_get_project_state — local read
-  {
-    name: 'decantr_get_project_state',
-    title: 'Get Project State',
-    description:
-      'Read a compact typed summary of the active Decantr project: Essence version, routes, generated packs, typed graph artifacts, local law, style bridge, diagnostic catalog, and recommended next MCP tools.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 17. decantr_prepare_task_context — local read
-  {
-    name: 'decantr_prepare_task_context',
-    title: 'Prepare Task Context',
-    description:
-      'Resolve compact Brownfield/Essence task-time context for a route or page before editing. Returns route, section, page pack, directives, local law, behavior obligations, style bridge mappings, typed graph context, health evidence, and local screenshot references when available.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        route: {
-          type: 'string',
-          description: 'Route being edited, for example "/feed". Preferred when known.',
-        },
-        page_id: {
-          type: 'string',
-          description: 'Page ID when route is unknown.',
-        },
-        task: {
-          type: 'string',
-          description: 'Short task description used to rank relevant patterns and context.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 17. decantr_get_contract_capsule — local typed graph read
-  {
-    name: 'decantr_get_contract_capsule',
-    title: 'Get Contract Capsule',
-    description:
-      'Read the Decantr typed Contract capsule generated by `decantr graph`. This is the compact, cache-friendly Contract summary agents should load near session start.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 18. decantr_get_graph_snapshot — local typed graph read
-  {
-    name: 'decantr_get_graph_snapshot',
-    title: 'Get Graph Snapshot',
-    description:
-      'Read the Decantr typed graph snapshot generated by `decantr graph`. By default returns snapshot metadata and available routes; pass route for a scoped route subgraph, include_history for a compact local timeline, or include_full for the full snapshot.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        route: {
-          type: 'string' as const,
-          description: 'Optional route path, for example "/settings", to return a scoped subgraph.',
-        },
-        node_id: {
-          type: 'string' as const,
-          description:
-            'Optional graph node ID, for example "cmp:button" or "tkn:surface", to return dependency impact context.',
-        },
-        file_path: {
-          type: 'string' as const,
-          description:
-            'Optional project-relative source file path, for example "src/app/page.tsx", to return dependency impact context for its SourceArtifact node.',
-        },
-        snapshot_id: {
-          type: 'string' as const,
-          description:
-            'Optional graph snapshot id to read from .decantr/graph/snapshots. Use "current" or omit for graph.snapshot.json.',
-        },
-        compare_to: {
-          type: 'string' as const,
-          description:
-            'Optional snapshot id to diff against the selected snapshot. Use "current" for graph.snapshot.json.',
-        },
-        include_diff_ops: {
-          type: 'boolean' as const,
-          description:
-            'Include diff operation details when compare_to is provided. Defaults to false.',
-        },
-        limit: {
-          type: 'number' as const,
-          description:
-            'Maximum diff operations or impact nodes to return. Defaults to 200, maximum 500.',
-        },
-        include_full: {
-          type: 'boolean' as const,
-          description: 'Return the full graph snapshot instead of metadata. Defaults to false.',
-        },
-        include_history: {
-          type: 'boolean' as const,
-          description:
-            'Include a compact index of local snapshot history entries from .decantr/graph/snapshots. Defaults to false.',
-        },
-        task: {
-          type: 'string' as const,
-          description:
-            'Optional task description used to boost matching nodes in route-scoped or impact ranked context.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 19. decantr_query_graph — local typed graph read
-  {
-    name: 'decantr_query_graph',
-    title: 'Query Graph',
-    description:
-      'Run a narrow typed query against the local Decantr graph snapshot generated by `decantr graph`. Use for direct node/type/relation lookups instead of reading the full graph.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        snapshot_id: {
-          type: 'string' as const,
-          description:
-            'Optional snapshot id from local graph history, or "current". Defaults to current.',
-        },
-        node_ids: {
-          type: 'array' as const,
-          items: { type: 'string' as const },
-          description: 'Optional exact graph node IDs to return, for example ["rt:/feed"].',
-        },
-        file_path: {
-          type: 'string' as const,
-          description:
-            'Optional project-relative source file path, for example "src/app/page.tsx", resolved to a SourceArtifact node selector.',
-        },
-        node_type: {
-          type: 'string' as const,
-          enum: [...GRAPH_NODE_TYPES],
-          description: 'Optional single node type selector, for example "Route" or "Component".',
-        },
-        node_types: {
-          type: 'array' as const,
-          items: { type: 'string' as const, enum: [...GRAPH_NODE_TYPES] },
-          description: 'Optional node type selectors.',
-        },
-        payload_key: {
-          type: 'string' as const,
-          description:
-            'Optional node payload key or dotted path filter, for example "code" for Finding nodes.',
-        },
-        payload_value: {
-          type: 'string' as const,
-          description:
-            'Optional exact stringified payload value used with payload_key, for example "COMP010".',
-        },
-        payload_contains: {
-          type: 'string' as const,
-          description: 'Optional case-insensitive substring filter over the node payload JSON.',
-        },
-        edge_src: {
-          type: 'string' as const,
-          description: 'Optional edge source node ID selector.',
-        },
-        edge_dst: {
-          type: 'string' as const,
-          description: 'Optional edge destination node ID selector.',
-        },
-        relation: {
-          type: 'string' as const,
-          enum: [...GRAPH_RELATIONS],
-          description:
-            'Optional single edge relation selector, for example "PAGE_COMPOSES_PATTERN".',
-        },
-        relations: {
-          type: 'array' as const,
-          items: { type: 'string' as const, enum: [...GRAPH_RELATIONS] },
-          description: 'Optional edge relation selectors.',
-        },
-        include_edges: {
-          type: 'boolean' as const,
-          description:
-            'When querying nodes, include incident edges and their opposite endpoint nodes. Defaults to false unless edge selectors are present.',
-        },
-        include_impact: {
-          type: 'boolean' as const,
-          description:
-            'When querying nodes, also return the dependency impact context for the matched node IDs.',
-        },
-        task: {
-          type: 'string' as const,
-          description:
-            'Optional task description used to boost matching nodes in the impact ranking when include_impact is true.',
-        },
-        limit: {
-          type: 'number' as const,
-          description: 'Maximum nodes and edges to return. Defaults to 200, maximum 500.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 20. decantr_traverse_graph — local typed graph read
-  {
-    name: 'decantr_traverse_graph',
-    title: 'Traverse Graph',
-    description:
-      'Traverse the local Decantr graph from one or more node IDs or a source file by relation, direction, and depth. Use for questions like which pages use this token or which graph nodes point at this source file.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        snapshot_id: {
-          type: 'string' as const,
-          description:
-            'Optional snapshot id from local graph history, or "current". Defaults to current.',
-        },
-        from: {
-          type: 'string' as const,
-          description: 'Start node ID, for example "rt:/feed" or "tkn:color.primary".',
-        },
-        from_ids: {
-          type: 'array' as const,
-          items: { type: 'string' as const },
-          description: 'Optional start node IDs. Used when traversing from multiple anchors.',
-        },
-        file_path: {
-          type: 'string' as const,
-          description:
-            'Optional project-relative source file path, for example "src/app/page.tsx", resolved to a SourceArtifact start node.',
-        },
-        relations: {
-          type: 'array' as const,
-          items: { type: 'string' as const, enum: [...GRAPH_RELATIONS] },
-          description: 'Optional relation allow-list. When omitted, all relations are traversed.',
-        },
-        direction: {
-          type: 'string' as const,
-          enum: ['out', 'in', 'both'],
-          description: 'Traversal direction. Defaults to out.',
-        },
-        depth: {
-          type: 'number' as const,
-          description: 'Traversal depth. Defaults to 1, maximum 4.',
-        },
-        limit: {
-          type: 'number' as const,
-          description: 'Maximum nodes and edges to return. Defaults to 200, maximum 500.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 21. decantr_get_execution_pack — local read
-  {
-    name: 'decantr_get_execution_pack',
-    title: 'Get Execution Pack',
-    description:
-      'Read compiled execution packs from .decantr/context. Returns the pack manifest by default, or a specific scaffold, review, mutation, section, or page pack in markdown, JSON, or both. Falls back to the hosted selected-pack surface for targeted reads when local pack artifacts are missing.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        pack_type: {
-          type: 'string',
-          enum: ['manifest', 'scaffold', 'review', 'mutation', 'section', 'page'],
-          description: 'Pack type to fetch. Defaults to manifest.',
-        },
-        id: {
-          type: 'string',
-          description:
-            'Required for section/page/mutation packs (for example "dashboard", "overview", or "modify").',
-        },
-        format: {
-          type: 'string',
-          enum: ['json', 'markdown', 'both'],
-          description: 'Return format for a specific pack. Defaults to both.',
-        },
-        path: {
-          type: 'string',
-          description:
-            'Optional path to an essence file when using hosted fallback compilation. Defaults to ./decantr.essence.json.',
-        },
-        namespace: {
-          type: 'string',
-          description:
-            'Optional preferred public namespace for hosted fallback compilation. Defaults to "@official".',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 17. decantr_get_showcase_benchmarks — network read
-  {
-    name: 'decantr_get_showcase_benchmarks',
-    title: 'Get Showcase Benchmarks',
-    description:
-      'Read the audited Decantr showcase corpus metadata. Returns the active manifest, shortlisted benchmark set, or the schema-backed shortlist verification report.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        view: {
-          type: 'string',
-          enum: ['manifest', 'shortlist', 'verification'],
-          description: 'Which showcase benchmark view to return. Defaults to shortlist.',
-        },
-      },
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 18. decantr_get_registry_intelligence_summary — network read
-  {
-    name: 'decantr_get_registry_intelligence_summary',
-    title: 'Get Registry Intelligence Summary',
-    description:
-      'Read the hosted schema-backed registry intelligence summary. Useful for checking overall intelligence/recommendation coverage without crawling every item.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        namespace: {
-          type: 'string',
-          description: 'Optional namespace to scope the summary to, for example "@official".',
-        },
-      },
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 19. decantr_compile_execution_packs — network read
-  {
-    name: 'decantr_compile_execution_packs',
-    title: 'Compile Execution Packs',
-    description:
-      'Compile a hosted execution-pack bundle from an essence document using the public Decantr API. Reads the local essence file by default, or accepts an inline essence object.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        path: {
-          type: 'string',
-          description:
-            'Optional path to an essence file. Defaults to ./decantr.essence.json when essence is not provided.',
-        },
-        essence: {
-          type: 'object' as const,
-          description: 'Optional inline essence document to compile instead of reading from disk.',
-        },
-        namespace: {
-          type: 'string',
-          description:
-            'Optional preferred public namespace for content resolution. Defaults to "@official".',
-        },
-      },
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 20. decantr_audit_project — local read with hosted fallback
-  {
-    name: 'decantr_audit_project',
-    title: 'Audit Project',
-    description:
-      'Audit the current project against the essence contract, guard rules, and compiled execution packs. Can fall back to the hosted verifier when local compiled pack artifacts are missing only when allow_hosted_upload is true. Returns a schema-backed project audit report.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        path: {
-          type: 'string' as const,
-          description:
-            'Optional path to the essence file for hosted fallback. Defaults to ./decantr.essence.json.',
-        },
-        namespace: {
-          type: 'string' as const,
-          description:
-            'Optional preferred public namespace for hosted fallback. Defaults to "@official".',
-        },
-        dist_path: {
-          type: 'string' as const,
-          description:
-            'Optional path to a local dist directory to snapshot for hosted runtime verification. Defaults to ./dist.',
-        },
-        sources_path: {
-          type: 'string' as const,
-          description:
-            'Optional path to a local source directory to snapshot for hosted source-level verification. For example `src` or `app`.',
-        },
-        allow_hosted_upload: {
-          type: 'boolean' as const,
-          description:
-            'Explicitly opt in to uploading local dist/source snapshots to the hosted verifier when local packs are missing. Defaults to false.',
-        },
-      },
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 21. decantr_critique — local read with hosted fallback
-  {
-    name: 'decantr_critique',
-    title: 'Design Critique',
-    description:
-      'Critique a file against the compiled review contract and Decantr verification heuristics. Can fall back to the hosted verifier when local review packs are missing only when allow_hosted_upload is true. Returns a schema-backed file critique report with scores, findings, and focus areas.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        file_path: {
-          type: 'string' as const,
-          description: 'Path to the component file to critique',
-        },
-        path: {
-          type: 'string' as const,
-          description:
-            'Optional path to the essence file when using hosted fallback. Defaults to ./decantr.essence.json.',
-        },
-        namespace: {
-          type: 'string' as const,
-          description:
-            'Optional preferred public namespace for hosted fallback. Defaults to "@official".',
-        },
-        treatments_path: {
-          type: 'string' as const,
-          description:
-            'Optional path to treatments.css when using hosted fallback. Defaults to ./src/styles/treatments.css.',
-        },
-        allow_hosted_upload: {
-          type: 'boolean' as const,
-          description:
-            'Explicitly opt in to uploading the target source file to the hosted verifier when local review packs are missing. Defaults to false.',
-        },
-      },
-      required: ['file_path'],
-    },
-    annotations: READ_ONLY_NETWORK,
-  },
-  // 24. decantr_get_findings — local typed findings read
-  {
-    name: 'decantr_get_findings',
-    title: 'Get Findings',
-    description:
-      'Return typed Project Health findings for the current Decantr project, with stable codes, repair IDs, graph anchors when available, and optional repair prompts.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        severity: {
-          type: 'string' as const,
-          enum: ['error', 'warn', 'info'],
-          description: 'Optional severity filter.',
-        },
-        source: {
-          type: 'string' as const,
-          enum: [
-            'audit',
-            'assertion',
-            'browser',
-            'check',
-            'brownfield',
-            'design-token',
-            'style-bridge',
-            'graph',
-            'runtime',
-            'pack',
-            'interaction',
-          ],
-          description: 'Optional finding source filter.',
-        },
-        code: {
-          type: 'string' as const,
-          description: 'Optional stable diagnostic code filter, for example "TOKEN010".',
-        },
-        include_prompts: {
-          type: 'boolean' as const,
-          description:
-            'Include full repair prompts on each finding. Defaults to false to keep context compact.',
-        },
-        limit: {
-          type: 'number' as const,
-          description: 'Maximum findings to return. Defaults to 50, maximum 200.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 25. decantr_get_repair_plan — local structured repair loop
-  {
-    name: 'decantr_get_repair_plan',
-    title: 'Get Repair Plan',
-    description:
-      'Return a typed repair plan for one Project Health finding: diagnostic code, repair ID, graph anchor, action payload, evidence, read targets, preserve/avoid constraints, rerun commands, and optional prompt text.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        finding_id: {
-          type: 'string' as const,
-          description:
-            'Optional finding id. Defaults to the first error or warning, then the first finding.',
-        },
-        code: {
-          type: 'string' as const,
-          description: 'Optional stable diagnostic code selector, for example "GRAPH001".',
-        },
-        include_prompt: {
-          type: 'boolean' as const,
-          description: 'Include the human-readable repair prompt alongside the typed plan.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 26. decantr_get_evidence_bundle — local reliability artifact
-  {
-    name: 'decantr_get_evidence_bundle',
-    title: 'Get Evidence Bundle',
-    description:
-      'Generate a local Evidence Bundle for the current Decantr project. The bundle redacts source, prompts, secrets, absolute paths, repo names, and screenshots by default.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 23. decantr_workspace_health — local workspace reliability scan
-  {
-    name: 'decantr_workspace_health',
-    title: 'Workspace Health',
-    description:
-      'Discover Decantr projects in the active workspace and return deterministic aggregate health for monorepos with many Decantr apps.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        workspace_root: {
-          type: 'string' as const,
-          description:
-            'Optional relative workspace root inside the active workspace. Defaults to the current working directory.',
-        },
-        max_projects: {
-          type: 'number' as const,
-          description: 'Optional cap on discovered projects. Defaults to 500.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 24. decantr_get_repair_prompt — local AI repair loop
-  {
-    name: 'decantr_get_repair_prompt',
-    title: 'Get Repair Prompt',
-    description:
-      'Return an AI-ready repair prompt for a Project Health finding, including exact finding evidence, preserved constraints, do-not-change guidance, and rerun commands.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        finding_id: {
-          type: 'string' as const,
-          description:
-            'Optional finding id. Defaults to the first error or warning, then the first finding.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
-  // 25. decantr_run_health_loop — local evidence + repair loop
-  {
-    name: 'decantr_run_health_loop',
-    title: 'Run Health Loop',
-    description:
-      'Run Project Health, produce evidence, and return the next repair prompt for AI agents without uploading project source.',
-    inputSchema: {
-      type: 'object' as const,
-      properties: {
-        project_path: {
-          type: 'string' as const,
-          description:
-            'Optional relative project path inside the active workspace. Defaults to the current working directory.',
-        },
-        finding_id: {
-          type: 'string' as const,
-          description:
-            'Optional finding id to target. Defaults to the first error or warning, then the first finding.',
-        },
-      },
-    },
-    annotations: READ_ONLY,
-  },
+  consolidatedTool(
+    'decantr_project',
+    'Decantr Project',
+    'Read local project state and workspace health without uploading source.',
+    READ_ONLY,
+  ),
+  consolidatedTool(
+    'decantr_contract',
+    'Decantr Contract',
+    'Read, validate, drift-check, generate, or summarize the active Decantr contract.',
+    READ_ONLY_NETWORK,
+  ),
+  consolidatedTool(
+    'decantr_context',
+    'Decantr Context',
+    'Read scaffold, section, page, task, and execution-pack context for agent work.',
+    READ_ONLY_NETWORK,
+  ),
+  consolidatedTool(
+    'decantr_graph',
+    'Decantr Graph',
+    'Read, query, and traverse local typed Contract graph artifacts.',
+    READ_ONLY,
+  ),
+  consolidatedTool(
+    'decantr_registry',
+    'Decantr Registry',
+    'Search and resolve hosted registry content, benchmark metadata, and execution packs.',
+    READ_ONLY_NETWORK,
+  ),
+  consolidatedTool(
+    'decantr_verify',
+    'Decantr Verify',
+    'Run local verification reads, critique files, and return evidence or health findings.',
+    READ_ONLY_NETWORK,
+  ),
+  consolidatedTool(
+    'decantr_repair',
+    'Decantr Repair',
+    'Read typed findings, repair plans, repair prompts, and health-loop guidance.',
+    READ_ONLY,
+  ),
+  consolidatedTool(
+    'decantr_contract_write',
+    'Decantr Contract Write',
+    'Explicit write surface for accepting drift or mutating Essence v4 inside the workspace.',
+    WRITE_TOOL,
+  ),
 ];
 
 export async function handleTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+  if (!(name in CONSOLIDATED_TOOL_ACTIONS)) {
+    return { error: `Unknown tool: ${name}` };
+  }
+
+  const actionMap = CONSOLIDATED_TOOL_ACTIONS[name as ConsolidatedToolName];
+  if (typeof args.action !== 'string' || !args.action.trim()) {
+    return {
+      error: `Required parameter "action" must be one of: ${Object.keys(actionMap).join(', ')}.`,
+    };
+  }
+
+  const action = args.action.trim();
+  const legacyName = actionMap[action as keyof typeof actionMap];
+  if (!legacyName) {
+    return {
+      error: `Unsupported action "${action}" for ${name}. Must be one of: ${Object.keys(actionMap).join(', ')}.`,
+    };
+  }
+
+  const { action: _action, ...routedArgs } = args;
+  return handleLegacyTool(legacyName, routedArgs);
+}
+
+async function handleLegacyTool(name: string, args: Record<string, unknown>): Promise<unknown> {
   const apiClient = getAPIClient();
 
   switch (name) {
@@ -4033,7 +3181,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
       // resolution === 'accept' or 'accept_scoped'
       try {
-        const { essence, path } = await mutateEssenceFile(args.path as string | undefined, (v4) => {
+        const { path } = await mutateEssenceFile(args.path as string | undefined, (v4) => {
           for (const v of violations) {
             applyDriftAcceptance(v4, v, resolution, args.scope as string | undefined);
           }
@@ -4078,7 +3226,7 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       }
 
       try {
-        const { essence, path } = await mutateEssenceFile(args.path as string | undefined, (v4) => {
+        const { path } = await mutateEssenceFile(args.path as string | undefined, (v4) => {
           return applyEssenceUpdate(v4, operation, payload);
         });
 
@@ -4242,13 +3390,25 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
             })).sort((a, b) => a.code.localeCompare(b.code) || a.rule.localeCompare(b.rule)),
           },
           recommended_next_tools: [
-            graphReady ? 'decantr_get_contract_capsule' : 'decantr_get_findings',
-            graphReady ? null : 'decantr_get_repair_plan',
-            snapshot ? 'decantr_get_graph_snapshot' : null,
-            'decantr_prepare_task_context',
-            'decantr_get_findings',
-            'decantr_get_evidence_bundle',
-          ].filter((tool): tool is string => Boolean(tool)),
+            graphReady ? 'decantr_contract' : 'decantr_repair',
+            graphReady ? null : 'decantr_repair',
+            snapshot ? 'decantr_graph' : null,
+            'decantr_context',
+            'decantr_repair',
+            'decantr_verify',
+          ]
+            .filter((tool): tool is string => Boolean(tool))
+            .filter((tool, index, tools) => tools.indexOf(tool) === index),
+          recommended_next_actions: [
+            graphReady
+              ? { tool: 'decantr_contract', action: 'capsule' }
+              : { tool: 'decantr_repair', action: 'findings' },
+            graphReady ? null : { tool: 'decantr_repair', action: 'repair_plan' },
+            snapshot ? { tool: 'decantr_graph', action: 'snapshot' } : null,
+            { tool: 'decantr_context', action: 'task' },
+            { tool: 'decantr_repair', action: 'findings' },
+            { tool: 'decantr_verify', action: 'evidence_bundle' },
+          ].filter((action): action is { tool: string; action: string } => Boolean(action)),
         };
       } catch (e) {
         return { error: `Could not read project state: ${(e as Error).message}` };
@@ -5394,7 +4554,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
       const manifestPath = join(contextDir, 'pack-manifest.json');
       let manifest: PackManifest | null = null;
       let manifestSource: PackSource | null = null;
-      let hostedBundle: HostedExecutionPackBundle | null = null;
       let hostedSelectedPack: HostedSelectedExecutionPack | null = null;
       let hostedFallbackError: string | null = null;
       const packType = (args.pack_type as string | undefined) ?? 'manifest';
@@ -5417,7 +4576,6 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
           manifestSource = 'hosted_fallback';
         } else {
           const hosted = await loadHostedExecutionPackBundleFallback(args);
-          hostedBundle = hosted.bundle;
           hostedFallbackError = hosted.error;
           if (!hosted.bundle) {
             return {

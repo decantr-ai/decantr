@@ -1,6 +1,6 @@
 {
   "name": "@decantr/telemetry",
-  "version": "3.1.0",
+  "version": "3.4.0",
   "description": "Privacy-preserving telemetry contracts, clients, and analytics sinks for Decantr",
   "keywords": [
     "decantr",

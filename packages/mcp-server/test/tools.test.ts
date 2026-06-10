@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fuzzyScore, resolveWorkspacePath, validateStringArg } from '../src/helpers.js';
 import { handleTool, TOOLS } from '../src/tools.js';
+import { callTool } from './tool-call.js';
 
 const ORIGINAL_CWD = process.cwd();
 
@@ -239,8 +240,17 @@ function healthBaselineDiffSourceHash(diff: {
 
 describe('MCP tool handlers', () => {
   describe('tool definitions', () => {
-    it('should define the full MCP tool surface', () => {
-      expect(TOOLS).toHaveLength(32);
+    it('should advertise the hard 8-tool MCP surface', () => {
+      expect(TOOLS.map((tool) => tool.name)).toEqual([
+        'decantr_project',
+        'decantr_contract',
+        'decantr_context',
+        'decantr_graph',
+        'decantr_registry',
+        'decantr_verify',
+        'decantr_repair',
+        'decantr_contract_write',
+      ]);
     });
 
     it('should have unique tool names', () => {
@@ -248,40 +258,60 @@ describe('MCP tool handlers', () => {
       expect(new Set(names).size).toBe(names.length);
     });
 
-    it('should have correct annotations on read-only tools', () => {
-      const readOnlyTools = TOOLS.filter(
-        (t) => !['decantr_accept_drift', 'decantr_update_essence'].includes(t.name),
+    it('should advertise key replacement actions', () => {
+      const actionsByTool = Object.fromEntries(
+        TOOLS.map((tool) => [tool.name, tool.inputSchema.properties.action.enum]),
+      ) as Record<string, string[]>;
+
+      expect(actionsByTool.decantr_contract).toEqual(
+        expect.arrayContaining(['read_essence', 'validate', 'check_drift', 'capsule']),
       );
+      expect(actionsByTool.decantr_context).toEqual(
+        expect.arrayContaining(['scaffold', 'section', 'page', 'task', 'execution_pack']),
+      );
+      expect(actionsByTool.decantr_graph).toEqual(
+        expect.arrayContaining(['snapshot', 'query', 'traverse']),
+      );
+      expect(actionsByTool.decantr_registry).toEqual(
+        expect.arrayContaining(['search', 'resolve_pattern', 'compile_execution_packs']),
+      );
+      expect(actionsByTool.decantr_verify).toEqual(
+        expect.arrayContaining(['audit_project', 'critique', 'evidence_bundle']),
+      );
+      expect(actionsByTool.decantr_repair).toEqual(
+        expect.arrayContaining(['findings', 'repair_plan', 'repair_prompt']),
+      );
+      expect(actionsByTool.decantr_contract_write).toEqual(['accept_drift', 'update_essence']);
+    });
+
+    it('should not advertise legacy tool names', () => {
+      const names = TOOLS.map((tool) => tool.name);
+      expect(names).not.toContain('decantr_read_essence');
+      expect(names).not.toContain('decantr_update_essence');
+      expect(names).not.toContain('decantr_accept_drift');
+    });
+
+    it('should have correct annotations on read-only tools', () => {
+      const readOnlyTools = TOOLS.filter((t) => t.name !== 'decantr_contract_write');
       for (const tool of readOnlyTools) {
         expect(tool.annotations.readOnlyHint).toBe(true);
         expect(tool.annotations.destructiveHint).toBe(false);
       }
     });
 
-    it('should have write annotations on write tools', () => {
-      const writeTools = TOOLS.filter((t) =>
-        ['decantr_accept_drift', 'decantr_update_essence'].includes(t.name),
-      );
-      for (const tool of writeTools) {
-        expect(tool.annotations.readOnlyHint).toBe(false);
-        expect(tool.annotations.destructiveHint).toBe(false);
-        expect(tool.annotations.idempotentHint).toBe(false);
-      }
+    it('should keep writes isolated to decantr_contract_write', () => {
+      const writeTool = TOOLS.find((t) => t.name === 'decantr_contract_write');
+      expect(writeTool?.annotations.readOnlyHint).toBe(false);
+      expect(writeTool?.annotations.destructiveHint).toBe(false);
+      expect(writeTool?.annotations.idempotentHint).toBe(false);
     });
 
     it('should have openWorldHint: true on network tools', () => {
       const networkToolNames = [
-        'decantr_search_registry',
-        'decantr_resolve_pattern',
-        'decantr_resolve_archetype',
-        'decantr_resolve_blueprint',
-        'decantr_suggest_patterns',
-        'decantr_create_essence',
-        'decantr_get_showcase_benchmarks',
-        'decantr_get_registry_intelligence_summary',
-        'decantr_compile_execution_packs',
-        'decantr_audit_project',
-        'decantr_critique',
+        'decantr_contract',
+        'decantr_context',
+        'decantr_registry',
+        'decantr_verify',
       ];
       for (const name of networkToolNames) {
         const tool = TOOLS.find((t) => t.name === name);
@@ -291,35 +321,26 @@ describe('MCP tool handlers', () => {
 
     it('should have openWorldHint: false on local-only tools', () => {
       const localToolNames = [
-        'decantr_read_essence',
-        'decantr_validate',
-        'decantr_check_drift',
-        'decantr_get_scaffold_context',
-        'decantr_get_page_context',
-        'decantr_get_project_state',
-        'decantr_prepare_task_context',
-        'decantr_get_contract_capsule',
-        'decantr_get_graph_snapshot',
-        'decantr_query_graph',
-        'decantr_traverse_graph',
-        'decantr_get_execution_pack',
-        'decantr_get_findings',
-        'decantr_get_repair_plan',
-        'decantr_get_evidence_bundle',
-        'decantr_workspace_health',
-        'decantr_get_repair_prompt',
-        'decantr_run_health_loop',
+        'decantr_project',
+        'decantr_graph',
+        'decantr_repair',
+        'decantr_contract_write',
       ];
       for (const name of localToolNames) {
         const tool = TOOLS.find((t) => t.name === name);
         expect(tool?.annotations.openWorldHint).toBe(false);
       }
     });
+
+    it('should reject direct legacy tool calls', async () => {
+      const result = await handleTool('decantr_read_essence', {});
+      expect(result).toEqual({ error: 'Unknown tool: decantr_read_essence' });
+    });
   });
 
   describe('decantr_read_essence', () => {
     it('should return error for missing essence file', async () => {
-      const result = await handleTool('decantr_read_essence', {
+      const result = await callTool('decantr_read_essence', {
         path: '/nonexistent/decantr.essence.json',
       });
       expect(result).toHaveProperty('error');
@@ -328,7 +349,7 @@ describe('MCP tool handlers', () => {
 
   describe('decantr_validate', () => {
     it('should return error for missing file', async () => {
-      const result = (await handleTool('decantr_validate', {
+      const result = (await callTool('decantr_validate', {
         path: '/nonexistent/decantr.essence.json',
       })) as { valid: boolean; errors: string[] };
       expect(result.valid).toBe(false);
@@ -692,7 +713,7 @@ describe('MCP tool handlers', () => {
           ],
         });
 
-        const state = (await handleTool('decantr_get_project_state', {})) as {
+        const state = (await callTool('decantr_get_project_state', {})) as {
           essence?: { routes?: string[]; active_v4?: boolean };
           graph?: {
             ready?: boolean;
@@ -720,6 +741,7 @@ describe('MCP tool handlers', () => {
             codes?: Array<{ code: string; rule: string; repair_id: string; family: string }>;
           };
           recommended_next_tools?: string[];
+          recommended_next_actions?: Array<{ tool: string; action: string }>;
         };
         expect(state.essence?.active_v4).toBe(true);
         expect(state.essence?.routes).toEqual(['/feed']);
@@ -757,9 +779,13 @@ describe('MCP tool handlers', () => {
             },
           ]),
         );
-        expect(state.recommended_next_tools).toContain('decantr_get_contract_capsule');
+        expect(state.recommended_next_tools).toContain('decantr_contract');
+        expect(state.recommended_next_actions).toContainEqual({
+          tool: 'decantr_contract',
+          action: 'capsule',
+        });
 
-        const capsule = (await handleTool('decantr_get_contract_capsule', {})) as {
+        const capsule = (await callTool('decantr_get_contract_capsule', {})) as {
           capsule?: {
             cache_key?: string;
             source_artifact_limit?: number;
@@ -780,7 +806,7 @@ describe('MCP tool handlers', () => {
           },
         ]);
 
-        const metadata = (await handleTool('decantr_get_graph_snapshot', {
+        const metadata = (await callTool('decantr_get_graph_snapshot', {
           include_history: true,
         })) as {
           available_routes?: string[];
@@ -804,7 +830,7 @@ describe('MCP tool handlers', () => {
           evidence: { added: 1 },
         });
 
-        const olderSnapshot = (await handleTool('decantr_get_graph_snapshot', {
+        const olderSnapshot = (await callTool('decantr_get_graph_snapshot', {
           snapshot_id: 'graph:older',
           include_full: true,
         })) as {
@@ -814,7 +840,7 @@ describe('MCP tool handlers', () => {
         expect(olderSnapshot.current_snapshot_id).toBe('graph:test');
         expect(olderSnapshot.snapshot?.id).toBe('graph:older');
 
-        const comparedSnapshot = (await handleTool('decantr_get_graph_snapshot', {
+        const comparedSnapshot = (await callTool('decantr_get_graph_snapshot', {
           compare_to: 'graph:older',
           include_diff_ops: true,
           limit: 3,
@@ -851,7 +877,7 @@ describe('MCP tool handlers', () => {
         expect(comparedSnapshot.comparison?.ops_truncated).toBe(true);
         expect(comparedSnapshot.comparison?.limit).toBe(3);
 
-        const routeGraph = (await handleTool('decantr_get_graph_snapshot', {
+        const routeGraph = (await callTool('decantr_get_graph_snapshot', {
           route: '/feed',
         })) as {
           nodes?: Array<{ id: string }>;
@@ -876,7 +902,7 @@ describe('MCP tool handlers', () => {
           reason: 'requested_route',
         });
 
-        const taskRankedRouteGraph = (await handleTool('decantr_get_graph_snapshot', {
+        const taskRankedRouteGraph = (await callTool('decantr_get_graph_snapshot', {
           route: '/feed',
           task: 'Repair raw button local law drift.',
         })) as {
@@ -894,7 +920,7 @@ describe('MCP tool handlers', () => {
           matched_terms: ['raw', 'button', 'local', 'law'],
         });
 
-        const nodeImpactGraph = (await handleTool('decantr_get_graph_snapshot', {
+        const nodeImpactGraph = (await callTool('decantr_get_graph_snapshot', {
           node_id: 'cmp:recipecard',
           task: 'change recipe card surface',
         })) as {
@@ -919,7 +945,7 @@ describe('MCP tool handlers', () => {
           matched_terms: ['recipe', 'card'],
         });
 
-        const fileImpactGraph = (await handleTool('decantr_get_graph_snapshot', {
+        const fileImpactGraph = (await callTool('decantr_get_graph_snapshot', {
           file_path: 'src/app/feed/page.tsx',
           task: 'edit feed source',
         })) as {
@@ -945,7 +971,7 @@ describe('MCP tool handlers', () => {
           matched_terms: ['feed', 'source'],
         });
 
-        const query = (await handleTool('decantr_query_graph', {
+        const query = (await callTool('decantr_query_graph', {
           node_type: 'Route',
           include_edges: true,
         })) as {
@@ -961,7 +987,7 @@ describe('MCP tool handlers', () => {
         );
         expect(query.edges?.map((edge) => edge.relation)).toContain('PAGE_ROUTED_AT_ROUTE');
 
-        const historicalQuery = (await handleTool('decantr_query_graph', {
+        const historicalQuery = (await callTool('decantr_query_graph', {
           snapshot_id: 'graph:older',
           node_type: 'Route',
         })) as {
@@ -975,7 +1001,7 @@ describe('MCP tool handlers', () => {
         expect(historicalQuery.summary?.nodes).toBe(0);
         expect(historicalQuery.nodes).toEqual([]);
 
-        const relationQuery = (await handleTool('decantr_query_graph', {
+        const relationQuery = (await callTool('decantr_query_graph', {
           relation: 'PATTERN_NEEDS_COMPONENT',
         })) as { nodes?: Array<{ id: string }>; edges?: Array<{ src: string; dst: string }> };
         expect(relationQuery.edges).toEqual([
@@ -985,7 +1011,7 @@ describe('MCP tool handlers', () => {
           expect.arrayContaining(['pat:content-feed', 'cmp:recipecard']),
         );
 
-        const impactQuery = (await handleTool('decantr_query_graph', {
+        const impactQuery = (await callTool('decantr_query_graph', {
           node_ids: ['cmp:recipecard'],
           include_impact: true,
           task: 'change recipe card surface',
@@ -1016,7 +1042,7 @@ describe('MCP tool handlers', () => {
           matched_terms: ['recipe', 'card'],
         });
 
-        const fileImpactQuery = (await handleTool('decantr_query_graph', {
+        const fileImpactQuery = (await callTool('decantr_query_graph', {
           file_path: 'src/app/feed/page.tsx',
           include_impact: true,
           task: 'edit feed source',
@@ -1040,7 +1066,7 @@ describe('MCP tool handlers', () => {
         expect(fileImpactQuery.impact?.ids?.routes).toEqual(['rt:/feed']);
         expect(fileImpactQuery.impact?.ids?.sourceArtifacts).toEqual(['src:src/app/feed/page.tsx']);
 
-        const payloadQuery = (await handleTool('decantr_query_graph', {
+        const payloadQuery = (await callTool('decantr_query_graph', {
           node_type: 'Finding',
           payload_key: 'code',
           payload_value: 'RULE001',
@@ -1048,7 +1074,7 @@ describe('MCP tool handlers', () => {
         expect(payloadQuery.summary?.nodes).toBe(1);
         expect(payloadQuery.nodes?.map((node) => node.id)).toEqual(['find:check-no-raw-button']);
 
-        const payloadContainsQuery = (await handleTool('decantr_query_graph', {
+        const payloadContainsQuery = (await callTool('decantr_query_graph', {
           payload_contains: 'raw button',
         })) as { nodes?: Array<{ id: string }>; summary?: { nodes: number } };
         expect(payloadContainsQuery.summary?.nodes).toBe(1);
@@ -1056,7 +1082,7 @@ describe('MCP tool handlers', () => {
           'find:check-no-raw-button',
         ]);
 
-        const traversal = (await handleTool('decantr_traverse_graph', {
+        const traversal = (await callTool('decantr_traverse_graph', {
           from: 'rt:/feed',
           direction: 'in',
           relations: ['PAGE_ROUTED_AT_ROUTE'],
@@ -1073,7 +1099,7 @@ describe('MCP tool handlers', () => {
         );
         expect(traversal.summary?.edges).toBe(1);
 
-        const fileTraversal = (await handleTool('decantr_traverse_graph', {
+        const fileTraversal = (await callTool('decantr_traverse_graph', {
           file_path: 'src/app/feed/page.tsx',
           direction: 'in',
           relations: ['NODE_DERIVED_FROM_SOURCE'],
@@ -1105,7 +1131,7 @@ describe('MCP tool handlers', () => {
           ]),
         );
 
-        const historicalTraversal = (await handleTool('decantr_traverse_graph', {
+        const historicalTraversal = (await callTool('decantr_traverse_graph', {
           snapshot_id: 'graph:older',
           from: 'rt:/feed',
         })) as { error?: string; snapshot_id?: string; available_routes?: string[] };
@@ -1124,7 +1150,7 @@ describe('MCP tool handlers', () => {
           })),
           generatedAt: '2026-05-21T14:02:00.000Z',
         });
-        const staleState = (await handleTool('decantr_get_project_state', {})) as {
+        const staleState = (await callTool('decantr_get_project_state', {})) as {
           graph?: {
             current?: boolean | null;
             stale_sources?: Array<{ path: string }>;
@@ -1158,7 +1184,7 @@ describe('MCP tool handlers', () => {
         ).toThrow(/Path escapes the active workspace root/);
 
         process.chdir(workspaceDir);
-        const result = (await handleTool('decantr_update_essence', {
+        const result = (await callTool('decantr_update_essence', {
           operation: 'add_feature',
           payload: { feature: 'unsafe' },
           path: join(outsideDir, 'decantr.essence.json'),
@@ -1173,7 +1199,7 @@ describe('MCP tool handlers', () => {
 
   describe('reliability tools', () => {
     it('requires route or page_id for task context', async () => {
-      const result = await handleTool('decantr_prepare_task_context', {
+      const result = await callTool('decantr_prepare_task_context', {
         task: 'improve feed',
       });
 
@@ -1221,7 +1247,7 @@ describe('MCP tool handlers', () => {
           },
         });
 
-        const result = (await handleTool('decantr_prepare_task_context', {
+        const result = (await callTool('decantr_prepare_task_context', {
           project_path: 'apps/web',
           route: '/',
           task: 'tighten home loading',
@@ -1517,7 +1543,7 @@ describe('MCP tool handlers', () => {
           summary: { nodes: 7, edges: 7, findings: 0, evidence: 0 },
         });
 
-        const result = (await handleTool('decantr_prepare_task_context', {
+        const result = (await callTool('decantr_prepare_task_context', {
           route: '/feed',
           task: 'improve recipe feed loading',
         })) as {
@@ -1718,7 +1744,7 @@ describe('MCP tool handlers', () => {
           'utf-8',
         );
 
-        const evidence = (await handleTool('decantr_get_evidence_bundle', {})) as {
+        const evidence = (await callTool('decantr_get_evidence_bundle', {})) as {
           provenance?: {
             graphSnapshot?: { present?: boolean; path?: string };
             contractCapsule?: { present?: boolean; path?: string };
@@ -1747,7 +1773,7 @@ describe('MCP tool handlers', () => {
           present: false,
         });
 
-        const findings = (await handleTool('decantr_get_findings', {
+        const findings = (await callTool('decantr_get_findings', {
           code: 'COMP001',
         })) as {
           findings: Array<{
@@ -1765,7 +1791,7 @@ describe('MCP tool handlers', () => {
         expect(findings.findings[0]?.remediation?.prompt).toBeUndefined();
         expect(findings.findings[0]?.remediation?.commands?.length).toBeGreaterThan(0);
 
-        const repairPlan = (await handleTool('decantr_get_repair_plan', {
+        const repairPlan = (await callTool('decantr_get_repair_plan', {
           code: 'COMP001',
         })) as {
           finding?: { code?: string };
@@ -1795,7 +1821,7 @@ describe('MCP tool handlers', () => {
         );
         expect(repairPlan.plan?.prompt).toBeUndefined();
 
-        const rawControlRepairPlan = (await handleTool('decantr_get_repair_plan', {
+        const rawControlRepairPlan = (await callTool('decantr_get_repair_plan', {
           code: 'COMP010',
         })) as {
           plan?: {
@@ -1911,7 +1937,7 @@ describe('MCP tool handlers', () => {
           'utf-8',
         );
 
-        const findings = (await handleTool('decantr_get_findings', {
+        const findings = (await callTool('decantr_get_findings', {
           source: 'style-bridge',
           code: 'TOKEN010',
         })) as {
@@ -1937,7 +1963,7 @@ describe('MCP tool handlers', () => {
           },
         });
 
-        const repairPlan = (await handleTool('decantr_get_repair_plan', {
+        const repairPlan = (await callTool('decantr_get_repair_plan', {
           code: 'TOKEN010',
         })) as {
           plan?: {
@@ -2029,7 +2055,7 @@ describe('MCP tool handlers', () => {
           },
         });
 
-        const findings = (await handleTool('decantr_get_findings', {
+        const findings = (await callTool('decantr_get_findings', {
           code: 'GRAPH001',
         })) as {
           findings: Array<{
@@ -2047,7 +2073,7 @@ describe('MCP tool handlers', () => {
           repair: { id: 'regenerate-typed-graph' },
         });
 
-        const evidence = (await handleTool('decantr_get_evidence_bundle', {})) as {
+        const evidence = (await callTool('decantr_get_evidence_bundle', {})) as {
           provenance?: {
             graphSnapshot?: { present?: boolean };
             graphManifest?: { present?: boolean };
@@ -2060,7 +2086,7 @@ describe('MCP tool handlers', () => {
         expect(evidence.provenance?.graphDiff?.present).toBe(false);
         expect(evidence.provenance?.contractCapsule?.present).toBe(false);
 
-        const repairPlan = (await handleTool('decantr_get_repair_plan', {
+        const repairPlan = (await callTool('decantr_get_repair_plan', {
           code: 'GRAPH001',
         })) as {
           plan?: {
@@ -2081,7 +2107,7 @@ describe('MCP tool handlers', () => {
     });
 
     it('rejects project paths outside the active workspace root', async () => {
-      const result = await handleTool('decantr_get_evidence_bundle', {
+      const result = await callTool('decantr_get_evidence_bundle', {
         project_path: '../outside-workspace',
       });
 
@@ -2092,7 +2118,7 @@ describe('MCP tool handlers', () => {
 
   describe('decantr_search_registry', () => {
     it('should require query parameter', async () => {
-      const result = await handleTool('decantr_search_registry', {});
+      const result = await callTool('decantr_search_registry', {});
       expect(result).toHaveProperty('error');
     });
 
@@ -2130,7 +2156,7 @@ describe('MCP tool handlers', () => {
         ),
       );
 
-      const result = (await handleTool('decantr_search_registry', {
+      const result = (await callTool('decantr_search_registry', {
         query: 'portfolio',
         sort: 'name',
         recommended: true,
@@ -2157,12 +2183,12 @@ describe('MCP tool handlers', () => {
 
   describe('decantr_resolve_pattern', () => {
     it('should require id parameter', async () => {
-      const result = await handleTool('decantr_resolve_pattern', {});
+      const result = await callTool('decantr_resolve_pattern', {});
       expect(result).toHaveProperty('error');
     });
 
     it('should return not-found for unknown pattern', async () => {
-      const result = (await handleTool('decantr_resolve_pattern', {
+      const result = (await callTool('decantr_resolve_pattern', {
         id: 'nonexistent-pattern-xyz',
       })) as { found: boolean };
       expect(result.found).toBe(false);
@@ -2171,12 +2197,12 @@ describe('MCP tool handlers', () => {
 
   describe('decantr_resolve_archetype', () => {
     it('should require id parameter', async () => {
-      const result = await handleTool('decantr_resolve_archetype', {});
+      const result = await callTool('decantr_resolve_archetype', {});
       expect(result).toHaveProperty('error');
     });
 
     it('should return not-found for unknown archetype', async () => {
-      const result = (await handleTool('decantr_resolve_archetype', {
+      const result = (await callTool('decantr_resolve_archetype', {
         id: 'nonexistent-archetype-xyz',
       })) as { found: boolean };
       expect(result.found).toBe(false);
@@ -2279,7 +2305,7 @@ describe('MCP tool handlers', () => {
         ),
       );
 
-      const result = (await handleTool('decantr_get_registry_intelligence_summary', {
+      const result = (await callTool('decantr_get_registry_intelligence_summary', {
         namespace: '@official',
       })) as {
         namespace: string;
@@ -2297,7 +2323,7 @@ describe('MCP tool handlers', () => {
 
   describe('unknown tool', () => {
     it('should return error for unknown tool name', async () => {
-      const result = await handleTool('unknown_tool', {});
+      const result = await callTool('unknown_tool', {});
       expect(result).toHaveProperty('error');
     });
   });

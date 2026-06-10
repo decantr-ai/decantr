@@ -70,9 +70,9 @@ Blueprint records can include `blueprint_portfolio` metadata. List/search summar
 
 ## Compatibility
 
-`@decantr/registry` is part of the stable public Decantr package surface in the `2.x` line.
+`@decantr/registry` is part of the stable public Decantr package surface in the Decantr 3 line.
 
-- exported schema paths and documented client entrypoints are expected to remain stable across `1.x`
+- exported schema paths and documented client entrypoints are expected to remain stable across compatible releases
 - additive response fields may be introduced without breaking the stable contract
 - breaking client, schema, or path changes require a major version
 

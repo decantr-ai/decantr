@@ -88,8 +88,15 @@ describe('hybrid style bridge', () => {
     });
     const proposalPath = writeStyleBridgeProposal(testDir, proposal);
     expect(existsSync(proposalPath)).toBe(true);
+    expect(proposal.version).toBe(2);
     expect(proposal.styling.darkModeDetected).toBe(true);
     expect(proposal.styling.themeModes).toEqual(['base', 'dark', 'holiday']);
+    expect(proposal.mappings.find((mapping) => mapping.id === 'surface')).toMatchObject({
+      confidence: expect.any(Number),
+      source: 'inferred',
+      native: { kind: 'css-var', ref: '--surface' },
+      essence: { kind: 'treatment', ref: 'surface' },
+    });
     expect(proposal.mappings.find((mapping) => mapping.id === 'action')?.classHints).toContain(
       'btn primary action',
     );
@@ -124,5 +131,43 @@ describe('hybrid style bridge', () => {
     expect(proposal.styling.darkModeDetected).toBe(true);
     expect(proposal.styling.themeModes).toEqual(['base', 'dark']);
     expect(proposal.styling.themeVariantIds).toEqual(['dark']);
+  });
+
+  it('extracts Tailwind theme config tokens as bridge token hints', () => {
+    writeFileSync(
+      join(testDir, 'tailwind.config.ts'),
+      [
+        'export default {',
+        '  theme: {',
+        '    extend: {',
+        '      colors: {',
+        "        brand: '#0f766e',",
+        "        danger: 'var(--danger)',",
+        '      },',
+        '    },',
+        '  },',
+        '}',
+        '',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const styling = scanStyling(testDir);
+    expect(styling.approach).toBe('tailwind');
+    expect(styling.cssVariables).toEqual(
+      expect.arrayContaining(['theme.colors.brand', 'theme.colors.danger']),
+    );
+
+    const proposal = createStyleBridgeProposal({
+      projectRoot: testDir,
+      detected: detectProject(testDir),
+      essence: null,
+      styling,
+    });
+
+    expect(proposal.styling.colorTokenNames).toEqual(expect.arrayContaining(['brand', 'danger']));
+    expect(proposal.mappings.find((mapping) => mapping.id === 'action')?.tokenHints).toEqual(
+      expect.arrayContaining(['theme.colors.danger']),
+    );
   });
 });

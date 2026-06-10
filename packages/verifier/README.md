@@ -85,10 +85,16 @@ function isBlocking(report: ProjectHealthReport) {
 - `@decantr/verifier/schema/project-health-report.v1.json`
 - `@decantr/verifier/schema/decantr-ci-report.v1.json`
 - `@decantr/verifier/schema/evidence-bundle.v1.json`
+- `@decantr/verifier/schema/evidence-bundle.v2.json`
+- `@decantr/verifier/schema/runtime-probe-payload.v2.json`
 - `@decantr/verifier/schema/scan-report.v1.json`
 - `@decantr/verifier/schema/workspace-health-report.v1.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
+
+The v2 schema assets support the Decantr 3 proof-train dashboard and runtime probe lanes.
+
+v1 schemas remain the active emitted contracts until a command explicitly changes its `$schema` URL. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
 ## Security And Permissions
 
@@ -96,7 +102,7 @@ The verifier is a local library. It reads selected project source, Decantr conte
 
 ## Compatibility
 
-`@decantr/verifier` is stable in the `2.x` line for the documented verifier APIs and published report-schema exports.
+`@decantr/verifier` is stable in the Decantr 3 line for the documented verifier APIs and published report-schema assets.
 
 - new checks and additive report fields may appear in compatible releases
 - breaking report-shape or exported API changes require a major version

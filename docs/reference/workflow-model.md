@@ -65,7 +65,7 @@ decantr init --existing --replace-essence # explicit destructive replacement wit
 
 Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
 
-Task-time activation is explicit. MCP clients should call `decantr_prepare_task_context` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
+Task-time activation is explicit. MCP clients should call `decantr_context` with `{ "action": "task" }` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
 
 For CLI-only assistants, prefer:
 
@@ -99,7 +99,7 @@ Hybrid starts when an attached app moves beyond contract-only context and intent
 
 The authority order is explicit: existing production source first, accepted local patterns/rules next, Essence V4 contract next, and hosted registry patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the public registry owns a contract-only app.
 
-`decantr doctor` reports the active adoption lane and the next choice. `decantr task <route> "<task>"` and MCP `decantr_prepare_task_context` return a compact authority block with source authority, style authority, active authorities, runtime boundary, accepted behavior obligations, and warnings when a prompt asks to mix frameworks or add Decantr CSS outside `decantr-css` mode. That block is intended to be pasted into, or automatically surfaced by, the assistant before it edits.
+`decantr doctor` reports the active adoption lane and the next choice. `decantr task <route> "<task>"` and MCP `decantr_context` with `{ "action": "task" }` return a compact authority block with source authority, style authority, active authorities, runtime boundary, accepted behavior obligations, and warnings when a prompt asks to mix frameworks or add Decantr CSS outside `decantr-css` mode. That block is intended to be pasted into, or automatically surfaced by, the assistant before it edits.
 
 ```bash
 decantr doctor --project apps/web

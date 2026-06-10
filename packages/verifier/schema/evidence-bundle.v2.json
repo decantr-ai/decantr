@@ -1,0 +1,436 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/evidence-bundle.v2.json",
+  "title": "Decantr Evidence Bundle v2",
+  "description": "Forward-compatible Evidence Bundle schema for evidence-tier summaries, runtime probe payloads, local artifacts, graph anchors, and repair context. v1 remains valid and unchanged.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "project",
+    "toolchain",
+    "privacy",
+    "evidenceTier",
+    "health",
+    "provenance",
+    "assertions",
+    "findings"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://decantr.ai/schemas/evidence-bundle.v2.json"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "project": {
+      "type": "object",
+      "required": ["id", "rootLabel"],
+      "properties": {
+        "id": { "type": "string" },
+        "rootLabel": { "type": "string" },
+        "projectPath": { "type": ["string", "null"] },
+        "workflowMode": { "type": ["string", "null"] },
+        "adoptionMode": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "toolchain": {
+      "type": "object",
+      "required": ["verifierVersion"],
+      "properties": {
+        "verifierVersion": { "type": ["string", "null"] },
+        "cliVersion": { "type": ["string", "null"] },
+        "mcpServerVersion": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "privacy": {
+      "type": "object",
+      "required": [
+        "localOnly",
+        "sourceIncluded",
+        "redactedFields",
+        "screenshotsLocalOnly",
+        "hostedUploadAllowed"
+      ],
+      "properties": {
+        "localOnly": { "type": "boolean" },
+        "sourceIncluded": { "const": false },
+        "redactedFields": { "type": "array", "items": { "type": "string" } },
+        "screenshotsLocalOnly": { "type": "boolean" },
+        "hostedUploadAllowed": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "evidenceTier": {
+      "$ref": "#/$defs/evidenceTier"
+    },
+    "health": {
+      "type": "object",
+      "required": ["status", "score", "errorCount", "warnCount", "infoCount", "findingCount"],
+      "properties": {
+        "status": { "type": "string", "enum": ["healthy", "warning", "error"] },
+        "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "errorCount": { "type": "integer", "minimum": 0 },
+        "warnCount": { "type": "integer", "minimum": 0 },
+        "infoCount": { "type": "integer", "minimum": 0 },
+        "findingCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "essence",
+        "packManifest",
+        "reviewPack",
+        "graphSnapshot",
+        "graphManifest",
+        "graphDiff",
+        "contractCapsule"
+      ],
+      "properties": {
+        "essence": { "$ref": "#/$defs/provenanceEntry" },
+        "packManifest": { "$ref": "#/$defs/provenanceEntry" },
+        "reviewPack": { "$ref": "#/$defs/provenanceEntry" },
+        "graphSnapshot": { "$ref": "#/$defs/provenanceEntry" },
+        "graphManifest": { "$ref": "#/$defs/provenanceEntry" },
+        "graphDiff": { "$ref": "#/$defs/provenanceEntry" },
+        "contractCapsule": { "$ref": "#/$defs/provenanceEntry" },
+        "workspaceConfig": { "$ref": "#/$defs/provenanceEntry" },
+        "designTokens": { "$ref": "#/$defs/provenanceEntry" },
+        "runtimeProbe": { "$ref": "#/$defs/provenanceEntry" },
+        "visualManifest": { "$ref": "#/$defs/provenanceEntry" }
+      },
+      "additionalProperties": false
+    },
+    "assertions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/assertion" }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "runtimeProbe": {
+      "anyOf": [
+        { "$ref": "https://decantr.ai/schemas/runtime-probe-payload.v2.json" },
+        { "type": "null" }
+      ]
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceArtifact" }
+    },
+    "dashboard": {
+      "type": "object",
+      "required": ["safeToUpload", "retentionClass", "redactionNotes"],
+      "properties": {
+        "safeToUpload": { "type": "boolean" },
+        "retentionClass": {
+          "type": "string",
+          "enum": ["local-only", "team-report", "public-benchmark"]
+        },
+        "redactionNotes": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "browser": {
+      "type": "object",
+      "required": ["enabled", "status", "baseUrl", "screenshots", "findings"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["not_requested", "unavailable", "passed", "failed"]
+        },
+        "baseUrl": { "type": ["string", "null"] },
+        "screenshots": { "type": "array", "items": { "type": "string" } },
+        "findings": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "designTokens": {
+      "type": "object",
+      "required": ["source", "status", "compared", "matched", "missing"],
+      "properties": {
+        "source": { "type": "string" },
+        "status": { "type": "string", "enum": ["not_requested", "passed", "warning", "error"] },
+        "compared": { "type": "integer", "minimum": 0 },
+        "matched": { "type": "integer", "minimum": 0 },
+        "missing": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "evidenceTier": {
+      "type": "object",
+      "required": ["schemaVersion", "stage", "status", "capabilities", "coverage", "confidence"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "stage": {
+          "type": "string",
+          "enum": ["static", "graph", "runtime", "visual", "repair", "proof"]
+        },
+        "status": { "type": "string", "enum": ["healthy", "warning", "error", "incomplete"] },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "static-audit",
+              "project-health",
+              "typed-graph",
+              "runtime-probe",
+              "browser-evidence",
+              "visual-baseline",
+              "repair-plan",
+              "benchmark-replay"
+            ]
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "required": [
+            "declaredRoutes",
+            "runtimeRoutesChecked",
+            "findingsAnchored",
+            "findingsWithRepairPlan",
+            "runtimeProbeCount",
+            "visualArtifactCount"
+          ],
+          "properties": {
+            "declaredRoutes": { "type": "integer", "minimum": 0 },
+            "runtimeRoutesChecked": { "type": "integer", "minimum": 0 },
+            "findingsAnchored": { "type": "integer", "minimum": 0 },
+            "findingsWithRepairPlan": { "type": "integer", "minimum": 0 },
+            "runtimeProbeCount": { "type": "integer", "minimum": 0 },
+            "visualArtifactCount": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "confidence": {
+          "type": "object",
+          "required": ["level", "score", "reasons"],
+          "properties": {
+            "level": { "type": "string", "enum": ["low", "moderate", "high"] },
+            "score": { "type": "number", "minimum": 0, "maximum": 1 },
+            "reasons": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenanceEntry": {
+      "type": "object",
+      "required": ["path", "present", "hash", "generatedAt"],
+      "properties": {
+        "path": { "type": "string" },
+        "present": { "type": "boolean" },
+        "hash": { "type": ["string", "null"] },
+        "generatedAt": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "assertion": {
+      "type": "object",
+      "required": ["id", "category", "status", "severity", "message", "evidence", "rule"],
+      "properties": {
+        "id": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "route",
+            "shell",
+            "region",
+            "interaction",
+            "accessibility",
+            "design-token",
+            "context",
+            "policy",
+            "runtime",
+            "visual"
+          ]
+        },
+        "status": { "type": "string", "enum": ["passed", "failed", "not_applicable"] },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "target": { "type": "string" },
+        "rule": { "type": "string" },
+        "suggestedFix": { "type": "string" },
+        "graph": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor"
+        }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "source",
+        "category",
+        "severity",
+        "message",
+        "evidence",
+        "remediationSummary",
+        "commands",
+        "promptCommand"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "code": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/nonEmptyString"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "audit",
+            "assertion",
+            "browser",
+            "check",
+            "brownfield",
+            "design-token",
+            "style-bridge",
+            "graph",
+            "runtime",
+            "pack",
+            "interaction",
+            "visual",
+            "benchmark"
+          ]
+        },
+        "category": { "type": "string" },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "target": { "type": "string" },
+        "rule": { "type": "string" },
+        "suggestedFix": { "type": "string" },
+        "graph": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor"
+        },
+        "repair": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/repairAction"
+        },
+        "repairPlan": { "$ref": "#/$defs/repairPlan" },
+        "runtimeProbeIds": { "type": "array", "items": { "type": "string" } },
+        "artifactIds": { "type": "array", "items": { "type": "string" } },
+        "remediationSummary": { "type": "string" },
+        "commands": { "type": "array", "items": { "type": "string" } },
+        "promptCommand": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "repairPlan": {
+      "type": "object",
+      "required": [
+        "id",
+        "findingId",
+        "severity",
+        "source",
+        "category",
+        "actions",
+        "evidence",
+        "readTargets",
+        "preserve",
+        "avoid",
+        "commands"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "findingId": { "type": "string" },
+        "diagnosticCode": { "type": ["string", "null"] },
+        "repairId": { "type": ["string", "null"] },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "source": {
+          "type": "string",
+          "enum": [
+            "audit",
+            "assertion",
+            "browser",
+            "check",
+            "brownfield",
+            "design-token",
+            "style-bridge",
+            "graph",
+            "runtime",
+            "pack",
+            "interaction",
+            "visual",
+            "benchmark"
+          ]
+        },
+        "category": { "type": "string" },
+        "graphAnchor": {
+          "anyOf": [
+            { "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor" },
+            { "type": "null" }
+          ]
+        },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/repairPlanAction" } },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/repairPlanEvidence" } },
+        "readTargets": { "type": "array", "items": { "type": "string" } },
+        "preserve": { "type": "array", "items": { "type": "string" } },
+        "avoid": { "type": "array", "items": { "type": "string" } },
+        "commands": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "repairPlanAction": {
+      "type": "object",
+      "required": ["id", "kind", "description"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "type": "string" },
+        "target": { "type": ["string", "null"] },
+        "description": { "type": "string" },
+        "payload": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    "repairPlanEvidence": {
+      "type": "object",
+      "required": ["id", "text"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "evidenceArtifact": {
+      "type": "object",
+      "required": ["id", "kind", "path", "localOnly"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "evidence-bundle",
+            "runtime-probe",
+            "project-health",
+            "graph-snapshot",
+            "visual-manifest",
+            "screenshot",
+            "baseline-diff",
+            "repair-prompt",
+            "benchmark-transcript"
+          ]
+        },
+        "path": { "type": "string" },
+        "hash": { "type": ["string", "null"] },
+        "route": { "type": ["string", "null"] },
+        "findingId": { "type": ["string", "null"] },
+        "localOnly": { "type": "boolean" },
+        "redacted": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

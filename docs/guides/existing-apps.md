@@ -74,7 +74,7 @@ Use `adopt` when you want the guided attach workflow. It can write the accepted 
 
 Use brownfield attach when your app already exists and the problem is drift: AI-generated pages stop matching the intended product shape, routes grow without a coherent map, or design-system decisions get repeated differently across screens.
 
-For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_prepare_task_context` with a route and task. CLI-only workflows can use `decantr task <route> "<task>"`.
+For day-two work, ask assistants to load task context before editing. MCP clients can call `decantr_context` with `{ "action": "task" }`, a route, and a task. CLI-only workflows can use `decantr task <route> "<task>"`.
 
 The CLI shortcut is:
 
