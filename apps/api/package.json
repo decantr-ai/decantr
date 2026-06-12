@@ -17,23 +17,23 @@
     "@decantr/registry": "workspace:*",
     "@decantr/telemetry": "workspace:*",
     "@decantr/verifier": "workspace:*",
-    "@hono/node-server": "^2.0.3",
-    "@supabase/supabase-js": "^2.106.1",
+    "@hono/node-server": "^2.0.4",
+    "@supabase/supabase-js": "^2.108.1",
     "ajv": "^8.20.0",
-    "hono": "^4.12.22",
+    "hono": "^4.12.25",
     "pino": "^10.3.1",
-    "stripe": "^22.1.1"
+    "stripe": "^22.2.0"
   },
   "engines": {
     "node": ">=20.19.0"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.3",
     "ajv-formats": "^3.0.1",
     "dotenv-cli": "^11.0.0",
     "tsup": "^8.0.0",
-    "tsx": "^4.22.3",
+    "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   }
 }
