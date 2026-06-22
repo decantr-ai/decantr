@@ -225,4 +225,69 @@ describe('behavior obligations', () => {
       report.findings.some((finding) => finding.rule === 'behavior:form-control:label-associated'),
     ).toBe(false);
   });
+
+  it('emits A11Y011 for unlabeled project-owned form control usages', async () => {
+    writeFileSync(
+      join(projectRoot, 'src', 'components', 'Input.tsx'),
+      'export function Input(props) { return <input {...props} />; }\n',
+      'utf-8',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'settings.tsx'),
+      `export function Settings() {
+  return (
+    <main>
+      <form>
+        <Input name="supportEmail" placeholder="Support email" />
+        <button type="submit">Save</button>
+      </form>
+    </main>
+  );
+}
+`,
+      'utf-8',
+    );
+
+    const report = await auditProject(projectRoot);
+    const finding = report.findings.find(
+      (entry) => entry.rule === 'behavior:form-control:label-associated',
+    );
+
+    expect(finding).toMatchObject({
+      code: 'A11Y011',
+      file: 'src/app/settings.tsx',
+    });
+  });
+
+  it('does not accept empty or dangling aria labels for behavior form controls', async () => {
+    writeFileSync(
+      join(projectRoot, 'src', 'components', 'Input.tsx'),
+      'export function Input(props) { return <input {...props} />; }\n',
+      'utf-8',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'settings.tsx'),
+      `export function Settings() {
+  return (
+    <main>
+      <form>
+        <Input name="emptyLabel" aria-label="" />
+        <Input name="danglingLabel" aria-labelledby="missing-label" />
+        <button type="submit">Save</button>
+      </form>
+    </main>
+  );
+}
+`,
+      'utf-8',
+    );
+
+    const report = await auditProject(projectRoot);
+    const finding = report.findings.find(
+      (entry) => entry.rule === 'behavior:form-control:label-associated',
+    );
+
+    expect(finding?.code).toBe('A11Y011');
+    expect(finding?.evidence).toContain('src/app/settings.tsx: form controls without labels: 2');
+  });
 });

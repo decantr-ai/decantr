@@ -342,6 +342,7 @@ function arbitraryInlineStyleValue(
   property: string,
   value: string,
   tokenHints: string[],
+  options: { allowCssVariableValues?: boolean } = {},
 ): string | null {
   const normalizedProperty = property.trim();
   const normalizedValue = value.trim();
@@ -352,6 +353,9 @@ function arbitraryInlineStyleValue(
     normalizedProperty.startsWith('--');
   if (!isVisualProperty) return null;
   if (isAcceptedTokenValue(normalizedValue, tokenHints)) return null;
+  if (options.allowCssVariableValues && /\bvar\(\s*--[A-Za-z0-9_-]+/i.test(normalizedValue)) {
+    return null;
+  }
   if (
     /(?:^|[\s,(])#[0-9a-f]{3,8}\b|(?:rgba?|hsla?|oklch|oklab|lch|lab|color-mix)\(/i.test(
       normalizedValue,
@@ -513,7 +517,9 @@ function collectStylesheetBridgeDriftFindings(input: {
       const property = match.groups?.property;
       const rawValue = match.groups?.value;
       if (!property || !rawValue) continue;
-      const value = arbitraryInlineStyleValue(property, rawValue, input.bridge.tokenHints);
+      const value = arbitraryInlineStyleValue(property, rawValue, input.bridge.tokenHints, {
+        allowCssVariableValues: true,
+      });
       if (!value) continue;
       const lineNumber = lineIndex + 1;
       const key = `${file}:${lineNumber}:${value}`;

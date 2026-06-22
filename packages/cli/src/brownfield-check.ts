@@ -89,7 +89,7 @@ function routeLooksPublicFullBleed(path: string, file: string, code: string): bo
 }
 
 function routeLooksAppShell(file: string, code: string): boolean {
-  return /\b(?:sidebar|side-nav|sidenav|app-frame|dashboard-shell|app-shell)\b|<\s*(?:Sidebar|AppShell|DashboardShell)\b/i.test(
+  return /\b(?:sidebar|side-nav|sidenav|app-frame|dashboard-shell|protected-shell)\b|<\s*(?:Sidebar|DashboardShell)\b/i.test(
     `${file} ${code}`,
   );
 }

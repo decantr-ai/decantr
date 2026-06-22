@@ -558,6 +558,56 @@ describe('style bridge drift audit', () => {
     }
   });
 
+  it('does not treat stylesheet CSS variable usages as style bridge drift', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeAcceptedStyleBridge(projectRoot);
+      writeFile(
+        projectRoot,
+        'app/globals.css',
+        `@theme {
+  --color-background: hsl(0 0% 100%);
+}
+
+body {
+  background: hsl(var(--background));
+  color: var(--foreground);
+}
+`,
+      );
+
+      const audit = auditStyleBridgeDrift(projectRoot, []);
+
+      expect(audit.findings).toHaveLength(0);
+      expect(audit.filesChecked).toBe(1);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('still finds hardcoded stylesheet visual values when a style bridge is accepted', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      writeAcceptedStyleBridge(projectRoot);
+      writeFile(
+        projectRoot,
+        'src/styles/card.css',
+        '.card { background: #0f172a; color: var(--color-foreground); }\n',
+      );
+
+      const audit = auditStyleBridgeDrift(projectRoot, []);
+
+      expect(audit.findings).toHaveLength(1);
+      expect(audit.findings[0]).toMatchObject({
+        file: 'src/styles/card.css',
+        source: 'stylesheet',
+        value: 'background: #0f172a',
+      });
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('ignores arbitrary values until the style bridge is accepted', async () => {
     const projectRoot = createProjectRoot();
     try {

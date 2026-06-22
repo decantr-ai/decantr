@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'n
 import { readFile } from 'node:fs/promises';
 import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { ReviewExecutionPack } from '@decantr/core';
-import type { EssenceFile, EssenceV4, GuardViolation } from '@decantr/essence-spec';
+import type { EssenceFile, GuardViolation } from '@decantr/essence-spec';
 import { evaluateGuard, isV4, validateEssence } from '@decantr/essence-spec';
 import * as ts from 'typescript';
 import {
@@ -707,7 +707,8 @@ export function createContractAssertions(
   if (v4) {
     const declaredRoutes = Object.keys(v4.blueprint.routes ?? {}).sort();
     for (const route of declaredRoutes) {
-      const routeTarget = (v4.blueprint.routes ?? {})[route];
+      const routeTarget = v4.blueprint.routes?.[route];
+      if (!routeTarget) continue;
       const section = v4.blueprint.sections.find((entry) => entry.id === routeTarget.section);
       const page = section?.pages.find((entry) => entry.id === routeTarget.page);
       assertions.push(
@@ -5825,9 +5826,16 @@ function getJsxTextContent(node: ts.Node): string {
   return text;
 }
 
+function hasNonEmptyJsxAttribute(attributes: ts.JsxAttributes, ...names: string[]): boolean {
+  const attribute = getJsxAttribute(attributes, ...names);
+  if (!attribute?.initializer) return false;
+  const literalValue = getJsxAttributeLiteralValue(attribute);
+  return literalValue === null || literalValue.trim().length > 0;
+}
+
 function hasAccessibleLabel(attributes: ts.JsxAttributes, textContent: string): boolean {
   return Boolean(
-    getJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title') ||
+    hasNonEmptyJsxAttribute(attributes, 'aria-label', 'aria-labelledby', 'title') ||
       textContent.trim().length > 0,
   );
 }
@@ -5850,6 +5858,22 @@ function collectLabelForIds(root: ts.Node): Set<string> {
           ids.add(htmlForValue);
         }
       }
+    }
+
+    ts.forEachChild(node, walk);
+  };
+
+  walk(root);
+  return ids;
+}
+
+function collectElementIds(root: ts.Node): Set<string> {
+  const ids = new Set<string>();
+
+  const walk = (node: ts.Node) => {
+    if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+      const idValue = getJsxAttributeLiteralValue(getJsxAttribute(node.attributes, 'id'));
+      if (idValue?.trim()) ids.add(idValue.trim());
     }
 
     ts.forEachChild(node, walk);
@@ -5883,13 +5907,23 @@ function hasAncestorJsxTag(node: ts.Node, tagName: string): boolean {
 
 function isLabelableFormControl(tagName: string | null, attributes: ts.JsxAttributes): boolean {
   if (!tagName) return false;
-  if (tagName === 'select' || tagName === 'textarea') return true;
-  if (tagName !== 'input') return false;
+  const normalizedTagName = tagName.toLowerCase();
+  if (normalizedTagName === 'select' || normalizedTagName === 'textarea') return true;
+  if (normalizedTagName !== 'input' && !isLikelyProjectFormControlTag(tagName)) return false;
 
   const inputType = (
     getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'type')) ?? 'text'
   ).toLowerCase();
   return !['hidden', 'submit', 'reset', 'button'].includes(inputType);
+}
+
+function isLikelyProjectFormControlTag(tagName: string): boolean {
+  if (tagName === tagName.toLowerCase()) return false;
+  const normalizedTagName = tagName.toLowerCase();
+  return (
+    /(?:^|(?:text|email|password|search|number|tel|url|date))input$/.test(normalizedTagName) ||
+    /^(?:textarea|textArea|select|combobox|comboBox|checkbox|radio|switch)$/i.test(tagName)
+  );
 }
 
 function getNormalizedInputType(attributes: ts.JsxAttributes): string {
@@ -5903,14 +5937,29 @@ function hasFormControlLabel(
   tagName: string | null,
   attributes: ts.JsxAttributes,
   labelForIds: Set<string>,
+  elementIds: Set<string>,
   textContent: string,
 ): boolean {
   if (!isLabelableFormControl(tagName, attributes)) return true;
-  if (hasAccessibleLabel(attributes, textContent)) return true;
+  if (hasNonEmptyJsxAttribute(attributes, 'aria-label', 'title')) return true;
+  if (hasAriaLabelledByReference(attributes, elementIds)) return true;
+  if (textContent.trim().length > 0) return true;
   if (isWrappedInJsxLabel(node)) return true;
 
   const idValue = getJsxAttributeLiteralValue(getJsxAttribute(attributes, 'id'));
   return Boolean(idValue && labelForIds.has(idValue));
+}
+
+function hasAriaLabelledByReference(
+  attributes: ts.JsxAttributes,
+  elementIds: Set<string>,
+): boolean {
+  const attribute = getJsxAttribute(attributes, 'aria-labelledby');
+  if (!attribute?.initializer) return false;
+  const literalValue = getJsxAttributeLiteralValue(attribute);
+  if (literalValue === null) return true;
+  const references = literalValue.trim().split(/\s+/).filter(Boolean);
+  return references.some((reference) => elementIds.has(reference));
 }
 
 function isExternalLinkTargetBlankWithoutRel(attributes: ts.JsxAttributes): boolean {
@@ -8177,7 +8226,8 @@ function countAuthAnonymousRedirectSignals(code: string): number {
   return patterns.reduce((count, pattern) => count + (pattern.test(code) ? 1 : 0), 0);
 }
 
-const OPEN_REDIRECT_QUERY_KEY_PATTERN = String.raw`next|redirect(?:To|[_-]to)?|return(?:To|[_-]to)?|callback(?:Url|[_-]url)?|continue(?:Url|[_-]url)?|from`;
+const OPEN_REDIRECT_QUERY_KEY_PATTERN =
+  'next|redirect(?:To|[_-]to)?|return(?:To|[_-]to)?|callback(?:Url|[_-]url)?|continue(?:Url|[_-]url)?|from';
 const OPEN_REDIRECT_SOURCE_PATTERN = String.raw`\b(?:searchParams|(?:request|req)\.nextUrl\.searchParams|url\.searchParams)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\b(?:router\.query|route\.query|query)\.(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})\b|\b(?:new\s+)?URLSearchParams\s*\(\s*(?:(?:window|globalThis|document|self|parent|top)\.)?location\.(?:search|hash)(?:\.slice\(\s*1\s*\)|\.replace\([^)]*\))?\s*\)\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)|\bnew\s+URL\(\s*(?:request|req)\.url\s*\)\.searchParams\.get\s*\(\s*['"\`](?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})['"\`]\s*\)`;
 const OPEN_REDIRECT_SOURCE_REGEX = new RegExp(OPEN_REDIRECT_SOURCE_PATTERN, 'i');
 const OPEN_REDIRECT_QUERY_KEY_REGEX = new RegExp(`^(?:${OPEN_REDIRECT_QUERY_KEY_PATTERN})$`, 'i');
@@ -13903,6 +13953,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
   const namedExpressionInitializers = collectNamedExpressionInitializers(sourceFile);
   const namedPropertyAliases = collectNamedPropertyAliases(sourceFile);
   const labelForIds = collectLabelForIds(sourceFile);
+  const elementIds = collectElementIds(sourceFile);
   let navigationLandmarkCount = 0;
   let unlabeledNavigationLandmarkCount = 0;
 
@@ -14520,7 +14571,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           signals.authInputWithoutNameCount += 1;
         }
       }
-      if (!hasFormControlLabel(node, tagName, node.attributes, labelForIds, '')) {
+      if (!hasFormControlLabel(node, tagName, node.attributes, labelForIds, elementIds, '')) {
         signals.formControlWithoutLabelCount += 1;
       }
     }
@@ -14679,6 +14730,7 @@ function analyzeAstSignals(filePath: string, code: string): AstCritiqueSignals {
           tagName,
           node.openingElement.attributes,
           labelForIds,
+          elementIds,
           textContent,
         )
       ) {
