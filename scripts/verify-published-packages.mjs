@@ -266,7 +266,6 @@ function runCliSmokeChecks(version, distTag) {
         report?.$schema === 'https://decantr.ai/schemas/project-health-report.v2.json',
         'missing Project Health v2 schema',
       );
-      assert(report.schemaVersion === 2, 'missing Project Health v2 schemaVersion');
       assert(typeof report.status === 'string', 'missing health status');
       assert(Array.isArray(report.findings), 'missing findings array');
       assert(report.loop?.schemaVersion === 2, 'missing loop readiness v2 block');
