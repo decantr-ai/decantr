@@ -319,7 +319,12 @@ function formatLocalLawText(summary: LocalLawCiSummary, health: ProjectHealthRep
     lines.push(`  ${DIM}[WARN] ${warning}${RESET}`);
   }
   for (const finding of summary.findings.slice(0, 8)) {
-    const label = finding.severity.toUpperCase();
+    const label =
+      finding.severity === 'error'
+        ? 'Local law error'
+        : finding.severity === 'warn'
+          ? 'Local law warning'
+          : 'Local law info';
     lines.push(
       `  [${label}] ${finding.ruleId} ${finding.file}:${finding.line}:${finding.column} ${finding.message}`,
     );

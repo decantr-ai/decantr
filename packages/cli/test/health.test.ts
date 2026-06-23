@@ -11,6 +11,7 @@ import {
   createProjectHealthReport,
   formatDiagnosticCatalogJson,
   formatProjectHealthMarkdown,
+  formatProjectHealthText,
   parseHealthArgs,
   renderProjectHealthCiWorkflow,
   shouldFailHealth,
@@ -586,6 +587,7 @@ describe('Project Health report', () => {
     expect(report.findings.some((finding) => finding.rule === 'page-pack-count-mismatch')).toBe(
       true,
     );
+    expect(formatProjectHealthText(report)).toContain('[Blueprint warning]');
   });
 
   it('does not require Decantr token CSS for contract-only brownfield projects', async () => {

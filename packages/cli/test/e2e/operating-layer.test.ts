@@ -810,6 +810,9 @@ describe('operating layer commands', () => {
 
       expect(output).toContain('Decantr Adopt');
       expect(output).not.toContain('is not an app candidate');
+      expect(output).toContain('decantr task <route> "<change>"');
+      expect(output).toContain(`cd ${externalApp} && decantr studio`);
+      expect(output).toContain('Inspect routes, findings, and attention areas visually');
       expect(existsSync(join(externalApp, 'decantr.essence.json'))).toBe(true);
     } finally {
       rmSync(externalApp, { recursive: true, force: true });
@@ -1140,6 +1143,7 @@ describe('operating layer commands', () => {
     const output = runCli(testDir, ['ci', '--project', 'apps/web', '--fail-on', 'none']);
 
     expect(output).toContain('Project-owned local law');
+    expect(output).toContain('[Local law warning]');
     expect(output).toContain('no-inline-style');
     expect(output).toContain('src/App.tsx:1');
   });

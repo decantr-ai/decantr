@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-05-28T17:19:18-04:00</lastmod>
+    <lastmod>2026-06-09T20:15:34-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -91,6 +91,18 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/benchmarks/2026-06-10-tmp-proof-corpus-field-report.md</loc>
+    <lastmod>2026-06-10T10:15:41-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/benchmarks/governance-proof-methodology.md</loc>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/css-scaffolding-guide.md</loc>
     <lastmod>2026-04-13T16:35:40-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -104,7 +116,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -116,7 +128,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/existing-apps.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -140,7 +152,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/typed-graph-agent-playbook.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -206,13 +218,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/programs/2026-05-21-ai-frontend-governance-reset-plan.md</loc>
-    <lastmod>2026-05-27T17:00:54-04:00</lastmod>
+    <lastmod>2026-06-09T17:23:09-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/programs/2026-06-09-proof-lab-phase-0.md</loc>
+    <lastmod>2026-06-09T17:23:09-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-05-23T11:36:51-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -224,7 +242,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/diagnostic-codes.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/reference/mcp-migration.md</loc>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -236,7 +260,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -253,8 +277,14 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/reference/report-schemas.md</loc>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/reference/security-permissions.md</loc>
-    <lastmod>2026-05-23T11:19:37-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -278,7 +308,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -506,13 +536,49 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-27-decantr-3-0-1-publish-auth.md</loc>
-    <lastmod>2026-05-27T17:55:22-04:00</lastmod>
+    <lastmod>2026-05-28T17:46:32-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-05-28-decantr-3-0-2-homepage-release-hardening.md</loc>
     <lastmod>2026-05-28T17:03:51-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-09-decantr-3-1-0-proof-lab-hardening.md</loc>
+    <lastmod>2026-06-09T18:22:37-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-09-decantr-3-4-0-proof-benchmarks.md</loc>
+    <lastmod>2026-06-09T20:55:32-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-09-runtime-probes-milestone.md</loc>
+    <lastmod>2026-06-09T20:29:15-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-09-verifier-substrate-milestone.md</loc>
+    <lastmod>2026-06-09T20:29:15-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-22-decantr-3-4-1-proof-lab-hardening.md</loc>
+    <lastmod>2026-06-22T09:55:38-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-22-decantr-3-4-2-brownfield-activation-polish.md</loc>
+    <lastmod>2026-06-22T14:19:54.353Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -590,7 +656,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/release-stewardship.md</loc>
-    <lastmod>2026-05-27T17:26:29-04:00</lastmod>
+    <lastmod>2026-05-28T17:46:32-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

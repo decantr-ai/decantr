@@ -63,6 +63,9 @@ describe('command help (e2e)', () => {
   });
 
   it('prints workflow command help without running workflows', () => {
+    const rootHelp = runHelp(testDir, ['help']);
+    const setup = runHelp(testDir, ['setup', '--help']);
+    const scan = runHelp(testDir, ['scan', '--help']);
     const adopt = runHelp(testDir, ['adopt', '--help']);
     const verify = runHelp(testDir, ['verify', '--help']);
     const ci = runHelp(testDir, ['ci', '--help']);
@@ -70,6 +73,11 @@ describe('command help (e2e)', () => {
     const task = runHelp(testDir, ['task', '--help']);
     const codify = runHelp(testDir, ['codify', '--help']);
 
+    expect(rootHelp).toContain('Which command first?');
+    expect(rootHelp).toContain('Existing app, read-only preview');
+    expect(setup).toContain('Which command first?');
+    expect(scan).toContain('Which command first?');
+    expect(scan).toContain('decantr scan');
     expect(adopt).toContain('decantr adopt');
     expect(adopt).toContain('--dry-run');
     expect(verify).toContain('decantr verify');

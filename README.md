@@ -10,7 +10,7 @@ Decantr is the governance layer between product intent and AI-edited frontend co
 
 | Path | Use when | Start with |
 | --- | --- | --- |
-| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** &nbsp;⭐ | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr adopt --yes` |
+| **[Brownfield adoption](docs/reference/workflow-model.md#brownfield-adoption)** &nbsp;⭐ | Attaching Decantr to an existing Angular/React/Vue/etc. project | `decantr scan` -> `decantr adopt --yes` |
 | **[Hybrid operating layer](docs/reference/workflow-model.md#hybrid-operating-layer)** | An attached app wants selected Decantr or project-owned UI law, without source takeover | `decantr codify`, `decantr doctor`, `decantr task` |
 | **[Greenfield starter kit](#greenfield-blueprint)** | New project, published app composition as the starting point | `decantr new my-app --blueprint=<id> --workflow=greenfield --adoption=decantr-css` |
 | **Greenfield contract-only** | New project or repo that wants Decantr governance but no blueprint/runtime takeover | `decantr init --workflow=greenfield --adoption=contract-only` |
@@ -49,7 +49,7 @@ Decantr produces the contract. Your AI assistant produces the implementation aga
 
 ### 3. Hand it to your AI assistant
 
-Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your assistant reads `DECANTR.md` first for the methodology, then loads section context files on demand as it works through each part of the app. The split keeps the assistant focused on the right scope at the right time.
+Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your assistant reads `DECANTR.md` first for the methodology, then loads section context files on demand as it works through each part of the app. For route-level work, run `decantr task <route> "<intent>"` before editing so the assistant gets the active authority block, local law, evidence, and verify command. The split keeps the assistant focused on the right scope at the right time.
 
 ### 4. Make your first change and verify
 
@@ -162,7 +162,10 @@ Source-code suggestions rank both registry patterns and accepted `.decantr/local
 Brownfield adoption:
 
 ```bash
+decantr scan
 decantr adopt --yes
+decantr studio
+decantr doctor
 decantr codify --from-audit --style-bridge
 decantr codify --map-pattern hero
 decantr codify --accept
@@ -178,7 +181,9 @@ In a monorepo, install Decantr at the workspace root, but attach it to an app:
 ```bash
 decantr setup
 decantr workspace list
+decantr scan --project apps/web
 decantr adopt --project apps/web --yes
+cd apps/web && decantr studio
 decantr doctor --project apps/web
 decantr codify --from-audit --style-bridge --project apps/web
 decantr codify --map-pattern hero --project apps/web
@@ -202,7 +207,7 @@ decantr verify --project apps/web --base-url http://localhost:3000 --evidence
 
 `analyze` now writes Brownfield intelligence artifacts in addition to the proposal: `.decantr/brownfield-intelligence.json`, `.decantr/theme-inventory.json`, and `.decantr/enrichment-backlog.md`. Essence V4 stays unchanged; multi-theme apps are observed in the inventory and kept as local task context until the team explicitly promotes that model. When local law, a style bridge, or Decantr CSS is accepted, Decantr calls that out as Hybrid instead of pretending every existing app is still only contract-only.
 
-`adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, first typed Contract graph baseline, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `doctor` explains project/workspace state, generated artifacts, typed graph freshness, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`, with source evidence, confidence tiers, likely variants for button/card/form/theme families, and optional `behavior_obligations` for observed forms or destructive confirmation dialogs; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS; `codify --map-pattern <slug>` maps a hosted or bundled registry pattern into an advisory local-law proposal without changing source. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, Project Health, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. When typed graph artifacts exist, `task` and MCP task context rank route graph nodes with the task text so matching components, local rules, behavior obligations, findings, evidence, and source artifacts rise before the edit. The primitive commands remain available for advanced and scripted workflows.
+`scan` is the safe first look: it is read-only and tells you whether Decantr sees a plausible UI app before anything is written. `adopt` orchestrates the primitive Brownfield flow (`analyze`, proposal acceptance, hosted pack hydration when online, first typed Contract graph baseline, Project Health, optional browser evidence, optional CI) so users do not need to memorize the internal command chain. In contract-only/offline adoption, hosted packs can be deferred; `doctor`, `health`, and `refresh --check` treat missing hosted packs as optional context unless a present `pack-manifest.json` references missing files. `studio` gives a local visual view of what Decantr found, while `doctor` explains project/workspace state, generated artifacts, typed graph freshness, CI wiring, and the active adoption lane: Brownfield contract-only, Hybrid local law, Hybrid style bridge, Hybrid Decantr CSS, Hybrid composition, or Greenfield. `codify --from-audit` proposes project-owned local law in `.decantr/local-patterns.proposal.json` and `.decantr/rules.proposal.json`, with source evidence, confidence tiers, likely variants for button/card/form/theme families, and optional `behavior_obligations` for observed forms or destructive confirmation dialogs; `codify --style-bridge` proposes `.decantr/style-bridge.proposal.json`, mapping Decantr intent to project-owned tokens/classes without installing Decantr CSS; `codify --map-pattern <slug>` maps a hosted or bundled registry pattern into an advisory local-law proposal without changing source. After review, `codify --accept` promotes whichever proposals exist so `task`, `suggest`, `ci`, Project Health, and MCP task context treat them as Hybrid authority, while hosted registry patterns remain optional guidance until mapped into project-owned law. When typed graph artifacts exist, `task` and MCP task context rank route graph nodes with the task text so matching components, local rules, behavior obligations, findings, evidence, and source artifacts rise before the edit. The primitive commands remain available for advanced and scripted workflows.
 
 Registry and verification:
 

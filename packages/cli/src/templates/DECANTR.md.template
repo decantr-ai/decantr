@@ -2,6 +2,8 @@
 
 This project uses **Decantr** for AI Frontend Governance. Read this file before generating or editing UI code.
 
+**Before editing any route, run `decantr task <route> "<intent>"`.** Use that task context as the working contract for the edit. If you are an AI assistant, do not start route-level source changes until task context has been loaded or the user explicitly tells you to proceed without it.
+
 ---
 
 ## What is Decantr?
@@ -16,13 +18,13 @@ Decantr is a Contract / Context / Evidence layer that sits between you (the AI c
 
 ### DNA (Design Axioms)
 
-DNA defines the foundational design rules. **DNA violations are errors** -- they must never happen without updating the essence first.
+DNA defines the foundational design rules. **DNA violations are blocking contract errors** -- they must never happen without updating the essence first.
 
 DNA axioms include: Theme (id, mode, shape), Spacing (density, content gap), Typography (scale, weights), Color (palette, accent count), Radius (philosophy, base), Elevation (system, levels), Motion (preference, reduce-motion), Accessibility (WCAG level, focus-visible), and Personality traits.
 
 ### Blueprint (Structural Layout)
 
-Blueprint defines sections, pages, routes, features, and pattern layouts. **Blueprint deviations are warnings** -- they should be corrected but do not block generation.
+Blueprint defines sections, pages, routes, features, and pattern layouts. **Blueprint deviations are usually advisory structural warnings** -- they should be corrected or reviewed, but they do not normally block generation unless the active workflow makes them strict.
 
 Blueprint includes: Sections (grouped by archetype with role, shell, and scoped features), Page definitions with layouts and pattern references, Routes (URL mapping), and Features (resolved from archetype union + blueprint overrides).
 
@@ -82,6 +84,15 @@ When a user request would violate guard rules:
 
 `decantr.essence.json` is the structural spec. Tools and guards read this.
 
+Authority order for this project:
+
+1. In Brownfield and Hybrid workflows, the existing production source is the observed implementation truth.
+2. Accepted `.decantr/local-patterns.json`, `.decantr/rules.json`, and `.decantr/style-bridge.json` are project-owned local law where present.
+3. `decantr.essence.json` is the structural contract for routes, sections, DNA, guard mode, and intended product shape.
+4. Hosted registry patterns and execution packs are guidance unless the project maps them into accepted local law.
+
+When runtime source and Decantr context disagree, report the drift and run `decantr doctor` or `decantr verify --brownfield --local-patterns`; do not guess which side wins.
+
 ### Initial scaffolding
 
 This project is using Decantr in **{{WORKFLOW_MODE}}** mode.
@@ -94,6 +105,8 @@ Read `.decantr/context/section-{name}-pack.md` for the compact compiled section 
 Then read `.decantr/context/section-{name}.md` for the fuller context. Prefer the compiled section pack if the two sources differ, and do not invent section features, shells, or themes that are not present in the compiled contract.
 
 ### Working on a route
+
+Run `decantr task <route> "<intent>"` before editing. Read the files it lists first and preserve the authority block it prints.
 
 Read `.decantr/context/page-{name}-pack.md` for the most local compiled route contract before editing a specific page. Route-local packs should win over broader narrative docs when there is any mismatch.
 
@@ -114,21 +127,20 @@ Read `.decantr/context/page-{name}-pack.md` for the most local compiled route co
 
 ### Validation
 
-Run `decantr check` to detect drift violations while editing and `decantr audit` to audit the whole project contract after implementation.
-Run `decantr health` for the broader Project Health view before handoff, pull requests, or CI. Use `decantr health init-ci` to install the default GitHub Actions health gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` to inspect local drift, routes, findings, remediation, CI, and pack state in a localhost dashboard.
+Run `decantr verify` for the broader Project Health view before handoff, pull requests, or CI. Use `decantr ci init` to install the default GitHub Actions gate, `decantr health --prompt <finding-id>` to generate a scoped remediation prompt for a specific issue, and `decantr studio` to inspect local drift, routes, findings, remediation, CI, and pack state in a localhost dashboard.
 Declared command palettes and hotkeys must be implemented, not merely acknowledged.
 
 ### Quick Commands
 
 ```bash
-decantr status          # Project status overview
-decantr health          # Local contract health report
-decantr health init-ci  # Install GitHub Actions health gate
-decantr studio          # Local health dashboard
-decantr check           # Detect drift violations
-decantr get pattern X   # Fetch a pattern spec from registry
-decantr get theme X     # Fetch theme details and decorators
-decantr search <query>  # Search the registry
+decantr setup                         # Detect project state and next workflow step
+decantr scan                          # Read-only Brownfield preview; writes no files
+decantr adopt --yes                   # Attach Decantr to an existing app
+decantr doctor                        # Explain current state, authority, and next steps
+decantr task <route> "<intent>"       # Load route/task context before AI edits
+decantr verify --brownfield           # Run local Project Health and drift checks
+decantr ci init                       # Install the pinned CI gate
+decantr studio                        # Open the local health dashboard
 ```
 
 ---

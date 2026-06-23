@@ -46,6 +46,11 @@ describe('scan command', () => {
     expect(output).toContain('not attached');
     expect(output).toContain('strong fit');
     expect(output).toContain('npx @decantr/cli adopt --yes');
+    expect(output).toContain('This scan was read-only');
+    expect(output).toContain('When ready to attach Decantr, run');
+    expect(output).toContain('decantr adopt --yes');
+    expect(output).toContain('After adoption, inspect what Decantr found with');
+    expect(output).toContain('decantr studio');
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
   });
 

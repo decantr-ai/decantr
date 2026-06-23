@@ -2422,6 +2422,39 @@ function colorForStatus(status: ProjectHealthStatus): string {
   return RED;
 }
 
+const DNA_RULES = new Set(['style', 'density', 'accessibility', 'theme-mode', 'theme']);
+const BLUEPRINT_RULES = new Set([
+  'structure',
+  'layout',
+  'pattern-exists',
+  'page-route-required',
+  'page-pack-count-mismatch',
+]);
+
+function formatHumanFindingLabel(finding: ProjectHealthFinding): string {
+  const severity = finding.severity;
+  const rule = finding.rule?.toLowerCase() ?? '';
+  const category = finding.category.toLowerCase();
+  const source = finding.source;
+
+  if (source === 'brownfield' || rule.startsWith('brownfield-')) {
+    return 'Brownfield drift';
+  }
+  if (source === 'style-bridge') {
+    return `Style bridge ${severity}`;
+  }
+  if (source === 'interaction') {
+    return `Interaction ${severity}`;
+  }
+  if (DNA_RULES.has(rule) || category.includes('dna')) {
+    return `DNA ${severity}`;
+  }
+  if (BLUEPRINT_RULES.has(rule) || category.includes('blueprint')) {
+    return `Blueprint ${severity === 'error' ? 'error' : 'warning'}`;
+  }
+  return severity.toUpperCase();
+}
+
 export function formatProjectHealthText(report: ProjectHealthReport): string {
   const color = colorForStatus(report.status);
   const commandContext = commandContextForProject(report.projectRoot);
@@ -2461,7 +2494,7 @@ export function formatProjectHealthText(report: ProjectHealthReport): string {
       const findingColor =
         finding.severity === 'error' ? RED : finding.severity === 'warn' ? YELLOW : CYAN;
       lines.push(
-        `  ${findingColor}[${finding.severity.toUpperCase()}]${RESET} ${finding.id}: ${finding.message}`,
+        `  ${findingColor}[${formatHumanFindingLabel(finding)}]${RESET} ${finding.id}: ${finding.message}`,
       );
       if (finding.evidence.length > 0) {
         lines.push(`    ${DIM}${finding.evidence[0]}${RESET}`);

@@ -3746,6 +3746,20 @@ function printWorkflowPlan(title: string, steps: string[]): void {
   console.log('');
 }
 
+function studioCommandForProject(projectArg?: string): string {
+  return projectArg ? `cd ${projectArg} && decantr studio` : 'decantr studio';
+}
+
+function formatWhichCommandFirst(projectArg?: string): string {
+  return [
+    `${BOLD}Which command first?${RESET}`,
+    `  ${cyan(withProject('decantr scan', projectArg))}          Existing app, read-only preview`,
+    `  ${cyan(withProject('decantr adopt --yes', projectArg))}   Existing app, attach Decantr`,
+    `  ${cyan('decantr new my-app --blueprint=<slug>')}  New runnable app`,
+    `  ${cyan(withProject('decantr init --existing', projectArg))}  Advanced attach primitive`,
+  ].join('\n');
+}
+
 function scanSeverityColor(finding: ScanFindingV1): string {
   if (finding.severity === 'success') return success('ok');
   if (finding.severity === 'error') return error('error');
@@ -3904,7 +3918,7 @@ function printScanGraphPreview(preview?: ScanGraphPreviewV1): void {
   console.log('');
 }
 
-function printScanReport(report: ScanReportV1): void {
+function printScanReport(report: ScanReportV1, projectArg?: string): void {
   console.log(heading('Decantr Scan'));
   console.log(dim('Read-only Brownfield reconnaissance. No files were written.'));
   console.log('');
@@ -3982,6 +3996,19 @@ function printScanReport(report: ScanReportV1): void {
   }
   console.log('');
   console.log(dim(report.privacy.notes[0] ?? 'Scan completed without writing files.'));
+  console.log(
+    dim(
+      'This scan was read-only: no Decantr files, dependencies, scripts, uploads, or reports were created.',
+    ),
+  );
+  if (report.applicability.status !== 'not_applicable') {
+    console.log(
+      `When ready to attach Decantr, run ${cyan(withProject('decantr adopt --yes', projectArg))}.`,
+    );
+    console.log(
+      `After adoption, inspect what Decantr found with ${cyan(studioCommandForProject(projectArg))}.`,
+    );
+  }
 }
 
 async function cmdScanWorkflow(args: string[]): Promise<void> {
@@ -4001,7 +4028,7 @@ async function cmdScanWorkflow(args: string[]): Promise<void> {
     console.log(JSON.stringify(reportWithGraph, null, 2));
     return;
   }
-  printScanReport(reportWithGraph);
+  printScanReport(reportWithGraph, projectArg);
 }
 
 async function cmdSetupWorkflow(args: string[]): Promise<void> {
@@ -4262,6 +4289,9 @@ async function cmdAdoptWorkflow(args: string[]): Promise<void> {
   );
   console.log(
     `  ${cyan(withProject('decantr verify --brownfield --local-patterns', projectArg))}  Check contract, health, and local law after edits`,
+  );
+  console.log(
+    `  ${cyan(studioCommandForProject(projectArg))}                      Inspect routes, findings, and attention areas visually`,
   );
   console.log(
     `  ${cyan(withProject('decantr verify --since-baseline', projectArg))}      Compare future work against this baseline`,
@@ -5281,6 +5311,8 @@ ${BOLD}Usage:${RESET}
   decantr codify [--from-audit] [--style-bridge] [--map-pattern <slug>] [--accept] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
+${formatWhichCommandFirst()}
+
 ${BOLD}Advanced primitives:${RESET}
   decantr init [options]
   decantr analyze
@@ -5510,6 +5542,8 @@ ${BOLD}Behavior:${RESET}
   and prints a terminal report. It does not write .decantr files, install dependencies,
   build the app, execute scripts, upload source, or open pull requests.
 
+${formatWhichCommandFirst()}
+
 ${BOLD}Examples:${RESET}
   decantr scan
   decantr scan --project apps/web
@@ -5675,6 +5709,8 @@ ${BOLD}decantr setup${RESET} — Detect the project state and recommend the righ
 
 ${BOLD}Usage:${RESET}
   decantr setup [--project <path>]
+
+${formatWhichCommandFirst()}
 
 ${BOLD}Examples:${RESET}
   decantr setup

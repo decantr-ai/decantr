@@ -30,10 +30,13 @@ export function buildAssistantBridgeContent(input: {
   lines.push('');
   lines.push(START);
   lines.push(
+    'Before editing any route, run `decantr task <route> "<intent>"` and use the printed authority block, read targets, local law, evidence, and verify command as the working contract.',
+  );
+  lines.push(
     'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/brownfield-report.md`, `.decantr/doctrine-map.json`, `.decantr/ambient-context.json`, and the compiled packs in `.decantr/context/`.',
   );
   lines.push(
-    'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if they conflict, stop and report the conflict instead of guessing.',
+    'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if runtime source and Decantr context conflict, stop and report the drift instead of guessing which side wins.',
   );
   lines.push(
     'For brownfield adoption, preserve existing framework, routing, styling, package manager, data boundaries, and build conventions unless the Decantr contract explicitly records a reviewed change.',
@@ -62,8 +65,9 @@ export function writeAssistantBridgePreview(input: {
 function bridgeBlock(): string {
   return [
     START,
+    'Before editing any route, run `decantr task <route> "<intent>"` and use the printed authority block, read targets, local law, evidence, and verify command as the working contract.',
     'Before implementing Decantr-scoped work, read `decantr.essence.json`, `.decantr/brownfield-report.md`, `.decantr/doctrine-map.json`, `.decantr/ambient-context.json`, and `.decantr/context/scaffold-pack.md` first.',
-    'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if they conflict, stop and report the conflict instead of guessing.',
+    'Treat Decantr as the reconciled contract layer and the original project docs/rules as cited evidence; if runtime source and Decantr context conflict, stop and report the drift instead of guessing which side wins.',
     'For brownfield adoption, preserve existing framework, routing, styling, package manager, data boundaries, and build conventions unless the Decantr contract explicitly records a reviewed change.',
     'Do not install `@decantr/css` or rewrite styling unless the project adoption mode says `decantr-css` or the task explicitly asks for it.',
     END,

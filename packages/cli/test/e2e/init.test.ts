@@ -87,6 +87,12 @@ describe('init command', () => {
       expect(content).toContain('## How To Use This Project');
       expect(content).toContain('## Styling Adoption');
       expect(content).toContain('contract and governance layer only');
+      expect(content).toContain('Before editing any route, run `decantr task <route> "<intent>"`');
+      expect(content).toContain('Authority order for this project:');
+      expect(content).toContain('decantr task <route> "<intent>"');
+      expect(content).toContain('decantr verify --brownfield');
+      expect(content).toContain('decantr ci init');
+      expect(content).not.toContain('decantr health init-ci');
     },
     INIT_TIMEOUT_MS,
   );
@@ -287,6 +293,7 @@ describe('init command', () => {
       expect(output).toContain('Found .decantr/init-seed.json brownfield guidance.');
       expect(output).toContain('Brownfield proposal accepted.');
       expect(content).toContain('This project is using Decantr in **brownfield attach** mode.');
+      expect(content).toContain('existing production source is the observed implementation truth');
       expect(content).toContain(
         'Read `.decantr/analysis.json` first for the detected framework, routes, styling, layout, and dependency facts.',
       );
@@ -483,7 +490,15 @@ describe('init command', () => {
       const cursor = readFileSync(join(testDir, '.cursor', 'rules', 'decantr.mdc'), 'utf-8');
       const claudeRule = readFileSync(join(testDir, '.claude', 'rules', 'decantr.md'), 'utf-8');
       const copilot = readFileSync(join(testDir, '.github', 'copilot-instructions.md'), 'utf-8');
+      const preview = readFileSync(
+        join(testDir, '.decantr', 'context', 'assistant-bridge.md'),
+        'utf-8',
+      );
       expect((claude.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
+      expect(claude).toContain('decantr task <route> "<intent>"');
+      expect(claude).toContain('runtime source and Decantr context conflict');
+      expect(preview).toContain('decantr task <route> "<intent>"');
+      expect(preview).toContain('report the drift instead of guessing');
       expect(cursor).toContain('alwaysApply: true');
       expect((claudeRule.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
       expect((copilot.match(/decantr:assistant-bridge:start/g) || []).length).toBe(1);
