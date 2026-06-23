@@ -408,10 +408,10 @@ describe('typed graph foundation', () => {
       'src:src/app/settings/page.tsx',
     ]);
     expect(context?.ranked.slice(0, 4)).toEqual([
-      { id: 'rt:/settings', type: 'Route', score: 1, reason: 'requested_route' },
-      { id: 'pg:settings', type: 'Page', score: 0.95, reason: 'route_page' },
-      { id: 'sh:settings', type: 'Shell', score: 0.86, reason: 'route_shell' },
-      { id: 'pat:settings-form', type: 'Pattern', score: 0.8, reason: 'page_pattern' },
+      { id: 'rt:/settings', type: 'Route', score: 1, reason: 'requested_route+pagerank' },
+      { id: 'pg:settings', type: 'Page', score: 0.853, reason: 'route_page+pagerank' },
+      { id: 'sh:settings', type: 'Shell', score: 0.632, reason: 'route_shell+pagerank' },
+      { id: 'pat:settings-form', type: 'Pattern', score: 0.603, reason: 'page_pattern+pagerank' },
     ]);
     expect(context?.summary).toMatchObject({
       pages: 1,
@@ -427,20 +427,20 @@ describe('typed graph foundation', () => {
       task: 'Update the settings filter and source evidence.',
     });
     expect(taskContext?.ranking).toEqual({
-      method: 'weighted_traversal_with_task_boost',
+      method: 'hybrid_weighted_pagerank_with_task_boost',
       seed: 'rt:/settings',
       task_keywords: ['update', 'settings', 'filter', 'source', 'evidence'],
     });
     expect(taskContext?.ranked.find((node) => node.id === 'cmp:settingsfilter')).toMatchObject({
       id: 'cmp:settingsfilter',
-      reason: 'pattern_component+task_match',
+      reason: 'pattern_component+pagerank+task_match',
       matched_terms: ['settings', 'filter'],
     });
     expect(
       taskContext?.ranked.find((node) => node.id === 'src:src/app/settings/page.tsx'),
     ).toMatchObject({
       id: 'src:src/app/settings/page.tsx',
-      reason: 'source_provenance+task_match',
+      reason: 'source_provenance+pagerank+task_match',
       matched_terms: ['settings', 'source'],
     });
   });
@@ -504,7 +504,7 @@ describe('typed graph foundation', () => {
     });
 
     expect(tokenImpact?.ranking).toEqual({
-      method: 'impact_traversal_with_task_boost',
+      method: 'hybrid_impact_pagerank_with_task_boost',
       seed: ['tkn:surface.elevated'],
       task_keywords: ['change', 'elevated', 'surface', 'token'],
     });
@@ -519,7 +519,7 @@ describe('typed graph foundation', () => {
     expect(tokenImpact?.ids.sourceArtifacts).toEqual(['src:src/Card.tsx']);
     expect(tokenImpact?.ranked[0]).toMatchObject({
       id: 'tkn:surface.elevated',
-      reason: 'seed_node+task_match',
+      reason: 'seed_node+pagerank+task_match',
       matched_terms: ['elevated', 'surface', 'token'],
     });
 

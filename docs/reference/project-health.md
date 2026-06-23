@@ -19,6 +19,7 @@ decantr verify --base-url http://localhost:3000 --evidence
 decantr verify --since-baseline
 decantr verify --workspace --changed --since origin/main
 decantr doctor --project apps/web
+decantr resolve --project apps/web
 decantr ci --project apps/web
 decantr ci --workspace --changed --since origin/main
 decantr ci init --project apps/web
@@ -42,7 +43,18 @@ decantr studio --workspace
 decantr studio --report decantr-health.json
 ```
 
-`decantr verify` should be the default command in local agent loops. `decantr ci` is the non-mutating automation gate for CI and required validation scripts; `--json` emits a `DecantrCiReport` matching `https://decantr.ai/schemas/decantr-ci-report.v1.json`. CI reports include accepted local-rule findings from `.decantr/rules.json` with file/line evidence when Hybrid local law is active, plus behavior-obligation findings from `.decantr/local-patterns.json` when Project Health can verify them statically, plus accepted style bridge status, mapping count, styling approach, and theme modes when `.decantr/style-bridge.json` exists. `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, CI wiring, and the ordered next-step queue. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v1.json`, including a first-class `graph` block for readiness, stale artifacts, snapshot/capsule identity, source artifact counts, and capsule source-handle bounds. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v1.json`. The v2 Evidence Bundle and runtime probe schemas are documented in [Report Schemas](report-schemas.md) for dashboard/proof-corpus work; v1 remains the emitted Project Health contract until implementation intentionally switches a command. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. Project Health findings include optional stable `code`, typed `repair`, and agent-actionable `repairPlan` fields; see [Diagnostic Codes](diagnostic-codes.md) for the curated code and repair catalog. Use `decantr health --diagnostics --json` or `decantr health --diagnostics --markdown` when automation or agents need the catalog without running a project audit. Attached projects also receive a `GRAPH001` / `regenerate-typed-graph` warning when `.decantr/graph` artifacts are missing, stale, or cannot be derived. When `.decantr/graph/graph.snapshot.json` exists, findings include an optional `graph` anchor with the snapshot ID, source hash, node ID, node type, route when known, confidence, and anchor reason. Text/markdown output, repair prompts, and Evidence Bundles carry the same fields. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
+`decantr verify` should be the default command in local agent loops. `decantr ci` is the non-mutating automation gate for CI and required validation scripts; `--json` emits a `DecantrCiReport` matching `https://decantr.ai/schemas/decantr-ci-report.v2.json`. CI reports include accepted local-rule findings from `.decantr/rules.json` with file/line evidence when Hybrid local law is active, behavior-obligation findings from `.decantr/local-patterns.json` when Project Health can verify them statically, accepted style bridge status when `.decantr/style-bridge.json` exists, and the same v2 loop verdict as local verification. `decantr doctor` explains project/workspace state, adoption mode, generated artifacts, local law, CI wiring, and the ordered next-step queue. `decantr resolve` is read-only by default and groups source-vs-contract conflicts with explicit next commands; only drift-log actions write, and contract/source/local-law changes still go through existing explicit workflows. `decantr health` defaults to a human-readable text summary. `--json` emits a `ProjectHealthReport` matching `https://decantr.ai/schemas/project-health-report.v2.json`, including first-class `graph`, `evidenceTier`, `authority`, and `loop` blocks. `--markdown` is designed for pull request or CI summaries. `--evidence` emits an `EvidenceBundle` matching `https://decantr.ai/schemas/evidence-bundle.v2.json`. `--prompt <finding-id>` prints a scoped remediation prompt for one actionable finding. Project Health findings include stable `code`, typed `repair`, agent-actionable `repairPlan`, graph anchors when available, evidence-tier metadata, authority lane, resolution actions, privacy posture, and loop verdict. See [Diagnostic Codes](diagnostic-codes.md) for the curated code and repair catalog. Use `decantr health --diagnostics --json` or `decantr health --diagnostics --markdown` when automation or agents need the catalog without running a project audit. Attached projects also receive a `GRAPH001` / `regenerate-typed-graph` warning when `.decantr/graph` artifacts are missing, stale, or cannot be derived. When `.decantr/graph/graph.snapshot.json` exists, findings include an optional `graph` anchor with the snapshot ID, source hash, node ID, node type, route when known, confidence, and anchor reason. Text/markdown output, repair prompts, Evidence Bundles, Studio, and MCP loop responses carry the same fields. `--save-baseline` writes `.decantr/health-baseline.json`; `--since-baseline` writes `.decantr/health-baseline-diff.json` and, for text output, prints the continuity summary. It does not edit files; give the printed prompt to the AI assistant or developer doing the repair.
+
+The v2 loop state tells agents and humans what to do next:
+
+- `needs_context`: run `decantr task` before editing.
+- `ready_to_edit`: context is prepared and the maker can implement.
+- `verify_required`: source changed or context is sufficient, but verification has not closed the loop.
+- `repair_required`: findings need a scoped repair pass.
+- `human_resolution_required`: authority conflicts require a person to choose the source of truth.
+- `blocked_missing_context`: Decantr cannot prepare enough route/context evidence.
+- `blocked_missing_graph`: generate or refresh `.decantr/graph` before relying on graph-backed proof.
+- `verified`: the current contract/context/evidence loop is closed.
 
 When `.decantr/evidence/latest.json` exists, `decantr graph` can ingest the saved Evidence Bundle as graph nodes: findings become `Finding` nodes, evidence strings become `Evidence` nodes, repair IDs become `Repair` nodes, and graph anchors become typed edges back to the contract node that produced the finding. Evidence and repair read targets that point at existing project files become `SourceArtifact` nodes, so findings without a prior graph anchor can still attach to the file that needs repair. When `.decantr/health-baseline-diff.json` exists, changed files, changed routes, screenshot drift, and contract drift become temporal Evidence nodes linked back to SourceArtifact, Route, or Project nodes. Each graph generation also writes a content-addressed copy under `.decantr/graph/snapshots/`, which gives proof demos and local CI a replayable contract/evidence timeline without hosted storage.
 
@@ -82,7 +94,7 @@ decantr health --evidence --output .decantr/evidence/latest.json
 
 It includes health summary, provenance hashes, contract assertions, findings, stable diagnostic codes, typed repair IDs, typed repair plans, recommended rerun commands, optional graph anchors, optional browser evidence, and optional design-token comparison. Behavior-obligation findings carry the accepted local pattern id, obligation id, source evidence, and repair payload so an agent can repair the specific dialog or form rule without parsing prose. It does not include raw source, prompts, secrets, environment values, raw absolute paths, repository names, or uploaded screenshots by default. Browser screenshots, when produced, stay as local file paths under `.decantr/evidence/screenshots/`.
 
-The v2 schema asset adds evidence-tier coverage, runtime probe embedding, artifact inventory, and dashboard upload posture while keeping the same local-first privacy boundary. Treat it as a new `$schema` contract, not an implicit extension of v1.
+The v2 schema is the active 3.5 Evidence Bundle contract. It adds evidence-tier coverage, runtime probe embedding, artifact inventory, graph-anchor coverage, repair-plan coverage, and dashboard upload posture while keeping the same local-first privacy boundary.
 
 Freshness hashes are emitted for `decantr.essence.json`, `.decantr/context/pack-manifest.json`, `.decantr/context/review-pack.json`, `.decantr/graph/graph.snapshot.json`, `.decantr/graph/graph.manifest.json`, `.decantr/graph/graph.diff.json`, `.decantr/graph/contract-capsule.json`, optional workspace config, and optional design-token source. Missing graph artifacts are represented as provenance entries with `present: false`, so an agent or CI dashboard can distinguish "no graph generated yet" from "finding lacks a graph anchor." This gives AI agents a cheap way to detect stale repair context.
 
@@ -131,7 +143,7 @@ decantr workspace health --json --output .decantr/workspace-health.json
 decantr workspace health --changed --since origin/main
 ```
 
-Before attach, `workspace list` shows app candidates discovered from common monorepo layouts so users know which `--project` path to pass. After attach, projects can be listed in `.decantr/workspace.json`; otherwise Decantr discovers `decantr.essence.json` files while ignoring dependency/build folders. If one app is attached and another candidate remains, the command says to attach another app rather than implying the workspace is empty. Workspace health runs attached projects in deterministic order with concurrency, per-project timeout, failure isolation, and aggregate JSON matching `https://decantr.ai/schemas/workspace-health-report.v1.json`.
+Before attach, `workspace list` shows app candidates discovered from common monorepo layouts so users know which `--project` path to pass. After attach, projects can be listed in `.decantr/workspace.json`; otherwise Decantr discovers `decantr.essence.json` files while ignoring dependency/build folders. If one app is attached and another candidate remains, the command says to attach another app rather than implying the workspace is empty. Workspace health runs attached projects in deterministic order with concurrency, per-project timeout, failure isolation, and aggregate JSON matching `https://decantr.ai/schemas/workspace-health-report.v2.json`, including a workspace-level loop summary and each project's loop state.
 
 Status is intentionally simple:
 
@@ -143,23 +155,29 @@ Score uses `100 - errors*15 - warnings*5 - info*1`, clamped from `0` to `100`. T
 
 ## Studio
 
-`decantr studio` starts a small localhost dashboard powered by the same report. It uses Node built-ins only and exposes:
+`decantr studio` starts a small localhost Control Room powered by the same v2 report. It uses Node built-ins only and exposes:
 
 - `GET /` for the dashboard
 - `GET /api/health` for the current report
+- `GET /api/control-room` for loop state, next action, blocking findings, authority, and evidence tier
+- `GET /api/resolve` for read-only authority resolution
+- `GET /api/evidence` for graph-anchored evidence and runtime probes
+- `GET /api/graph-impact` for route/file/finding blast-radius summaries
+- `GET /api/task-preview` for route task instructions and verify commands
+- `GET /api/proof` for local proof/benchmark report summaries when present
 - `POST /api/refresh` to recompute the report
 
-The Overview is the triage surface: it summarizes status in plain language, lets the user pick the finding to fix first, previews the full AI repair prompt before copying, and offers tabs for manual guidance or verification commands. Route, runtime, pack, workflow, and source-count evidence live under expandable project details so the first screen stays focused.
+The Control Room is the triage surface: it summarizes loop state, next action, authority lane, blocking findings, evidence tier, graph impact, and copyable commands. Route, runtime, pack, workflow, and source-count evidence live under focused panels so the first screen stays about the next decision.
 
-Studio tabs:
+Studio views:
 
-- Overview
+- Control Room
 - Routes
-- Drift
-- Findings
-- Remediation
-- CI
-- Packs
+- Graph Impact
+- Authority Resolver
+- Evidence
+- Repairs
+- CI/Benchmarks
 
 Use Studio while attaching Decantr to an existing project, before asking an AI assistant to remediate drift, or before opening a pull request.
 
@@ -171,7 +189,7 @@ decantr studio --report decantr-health.json
 decantr studio --workspace
 ```
 
-In report mode, `GET /api/health` reads the JSON artifact and `POST /api/refresh` re-reads it. This is the lightweight path for permanent internal reporting today: CI writes `decantr-health.json`, an internal host serves Studio against that artifact, and the report stays under the customer's control. This is distinct from Decantr telemetry and does not create hosted ingestion, auth, retention, or cross-project history.
+In report mode, `GET /api/health` reads a v2 JSON artifact and `POST /api/refresh` re-reads it. This is the lightweight path for permanent internal reporting today: CI writes `decantr-health.json`, an internal host serves Studio against that artifact, and the report stays under the customer's control. This is distinct from Decantr telemetry and does not create hosted ingestion, auth, retention, or cross-project history.
 
 Workspace mode serves `GET /api/workspace` and `POST /api/workspace/refresh` from `decantr workspace health`. It is meant for local triage of repos with many Decantr projects, not hosted ingestion.
 

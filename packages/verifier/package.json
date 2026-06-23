@@ -1,6 +1,6 @@
 {
   "name": "@decantr/verifier",
-  "version": "3.4.1",
+  "version": "3.5.0",
   "description": "Shared verification, typed findings, graph anchors, Project Health, and evidence schemas for Decantr",
   "keywords": [
     "decantr",
@@ -35,14 +35,21 @@
       "types": "./dist/index.d.ts"
     },
     "./schema/verification-report.common.v1.json": "./schema/verification-report.common.v1.json",
+    "./schema/verification-report.common.v2.json": "./schema/verification-report.common.v2.json",
     "./schema/project-audit-report.v1.json": "./schema/project-audit-report.v1.json",
     "./schema/project-health-report.v1.json": "./schema/project-health-report.v1.json",
+    "./schema/project-health-report.v2.json": "./schema/project-health-report.v2.json",
     "./schema/decantr-ci-report.v1.json": "./schema/decantr-ci-report.v1.json",
+    "./schema/decantr-ci-report.v2.json": "./schema/decantr-ci-report.v2.json",
+    "./schema/authority-resolution.v2.json": "./schema/authority-resolution.v2.json",
     "./schema/evidence-bundle.v1.json": "./schema/evidence-bundle.v1.json",
     "./schema/evidence-bundle.v2.json": "./schema/evidence-bundle.v2.json",
+    "./schema/loop-readiness.v2.json": "./schema/loop-readiness.v2.json",
+    "./schema/proof-field-report.v2.json": "./schema/proof-field-report.v2.json",
     "./schema/runtime-probe-payload.v2.json": "./schema/runtime-probe-payload.v2.json",
     "./schema/scan-report.v1.json": "./schema/scan-report.v1.json",
     "./schema/workspace-health-report.v1.json": "./schema/workspace-health-report.v1.json",
+    "./schema/workspace-health-report.v2.json": "./schema/workspace-health-report.v2.json",
     "./schema/file-critique-report.v1.json": "./schema/file-critique-report.v1.json",
     "./schema/showcase-shortlist-report.v1.json": "./schema/showcase-shortlist-report.v1.json"
   },

@@ -51,6 +51,7 @@ decantr studio
 decantr doctor
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
+decantr resolve
 ```
 
 `scan` is the read-only preview. It detects whether the app is a plausible Brownfield UI target and reports framework, route, styling, static-hosting, Decantr, assistant-rule, and GitHub Pages signals without writing files, building the app, running scripts, installing dependencies, uploading source, or saving a report.
@@ -70,6 +71,17 @@ decantr init --existing --replace-essence # explicit destructive replacement wit
 Brownfield defaults to existing-app authority: `theme.id` is `existing`, registry content is optional, Decantr CSS is not written in `contract-only`, and existing rule/docs remain cited evidence. The doctrine map ranks security/data, architecture, design-system, workflow/CI, feature/business, assistant-specific, and stale evidence, then emits resolution suggestions for conflicts and stale sources. Check scoring focuses on actionable evidence; current database migrations remain security/data doctrine instead of stale-doc noise. Direct brownfield init without analysis is still a compatibility path, but the recommended path is inventory → semantic sections → doctrine map → proposal → deterministic acceptance.
 
 Task-time activation is explicit. MCP clients should call `decantr_context` with `{ "action": "task" }` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
+
+In Decantr 3.5, these commands form the Brownfield control loop:
+
+1. `scan` or `doctor` to understand the app state.
+2. `task` to prepare route-scoped maker/checker instructions before editing.
+3. Edit source with the authority order visible.
+4. `verify` or `ci` to produce v2 Project Health, Evidence Bundle, and loop readiness.
+5. `resolve` when source, local law, style bridge, Essence, and hosted guidance disagree.
+6. Repair, regenerate graph/context when requested, and repeat until the loop verdict is `verified`.
+
+Loop states are intentionally explicit: `needs_context`, `ready_to_edit`, `verify_required`, `repair_required`, `human_resolution_required`, `blocked_missing_context`, `blocked_missing_graph`, and `verified`. Decantr guides agents through the loop; it does not invoke agents, edit source, or run autonomous retry cycles.
 
 For CLI-only assistants, prefer:
 
@@ -101,7 +113,9 @@ Hybrid starts when an attached app moves beyond contract-only context and intent
 - **Hybrid with Decantr CSS**: `@decantr/css` and generated Decantr CSS are active where explicitly adopted.
 - **Hybrid composition**: the app selectively adds sections, pages, features, themes, or hosted execution packs while preserving existing source authority.
 
-The authority order is explicit: existing production source first, accepted local patterns/rules next, Essence V4 contract next, and hosted registry patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the public registry owns a contract-only app.
+The authority order is explicit: existing production source first, accepted local patterns/rules and style bridge next, Essence V4 contract next, and hosted registry patterns or execution packs as optional guidance unless the project maps them into local law. This is how Decantr helps with drift like "three different primary buttons" without pretending the public registry owns a contract-only app.
+
+`decantr resolve` makes that order visible when the code and contract disagree. The default command is read-only: it groups conflicts, names the authority lane, and prints exact next commands such as repair source, accept observed source into contract, codify local law, update style bridge, regenerate graph/context, defer to drift log, or mark advisory. Only drift-log flags write directly to `.decantr/drift-log.json`; source, contract, local-law, and style-bridge changes stay in explicit workflows.
 
 `decantr doctor` reports the active adoption lane and the next choice. `decantr task <route> "<task>"` and MCP `decantr_context` with `{ "action": "task" }` return a compact authority block with source authority, style authority, active authorities, runtime boundary, accepted behavior obligations, and warnings when a prompt asks to mix frameworks or add Decantr CSS outside `decantr-css` mode. That block is intended to be pasted into, or automatically surfaced by, the assistant before it edits.
 
@@ -124,7 +138,7 @@ Project Health is the local reliability layer across all workflow modes:
 - Brownfield projects automatically include route coverage and drift checks when `.decantr/project.json` declares `brownfield-attach`.
 - Hybrid projects use `decantr verify` after local-law acceptance, `add`, `remove`, `theme switch`, style bridge changes, Decantr CSS adoption, or registry pack changes to catch contract, rule, and pack drift before implementation continues.
 
-Use `decantr doctor` when the next step is unclear, `decantr verify` after local edits, `decantr ci` inside automation, `decantr verify --evidence` for the privacy-redacted Evidence Bundle, `decantr verify --base-url <url> --evidence` for local screenshots plus `.decantr/evidence/visual-manifest.json`, `decantr verify --save-baseline` / `--since-baseline` for continuity, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. `doctor` prints an ordered next-step queue instead of only a single command, so a Brownfield app can see pinning, local-law codification, CI setup, task-time context, verification, and automation in one short sequence. Monorepos can install the gate from the repository root with `decantr ci init --project <app-path>` so dependency install remains root-scoped while CI evaluates the selected app contract, or `decantr ci init --workspace` for an aggregate workspace gate. `decantr studio` serves the same report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
+Use `decantr doctor` when the next step is unclear, `decantr task` before route edits, `decantr verify` after local edits, `decantr ci` inside automation, `decantr resolve` when authority conflicts need a decision, `decantr verify --evidence` for the privacy-redacted v2 Evidence Bundle, `decantr verify --base-url <url> --evidence` for local screenshots plus `.decantr/evidence/visual-manifest.json`, `decantr verify --save-baseline` / `--since-baseline` for continuity, and `decantr health --prompt <finding-id>` to hand a focused remediation task to an AI assistant. `doctor` prints an ordered next-step queue instead of only a single command, so a Brownfield app can see pinning, local-law codification, CI setup, task-time context, verification, and automation in one short sequence. Monorepos can install the gate from the repository root with `decantr ci init --project <app-path>` so dependency install remains root-scoped while CI evaluates the selected app contract, or `decantr ci init --workspace` for an aggregate workspace gate. `decantr studio` serves the same v2 Control Room report from localhost for visual triage without sending customer project data to Decantr, and `decantr studio --workspace` serves an aggregate health matrix for repos with many Decantr projects. See [Project Health](project-health.md) for the full reference.
 
 ## Assistant Rule Bridge
 
@@ -179,6 +193,9 @@ Use:
 ```bash
 pnpm --filter @decantr/cli certify:workflows
 pnpm --filter @decantr/cli certify:blueprints
+pnpm benchmark:proof-field -- --config fixtures/proof-corpus/proof-apps.json --out /tmp/decantr-proof-field-3.5
 ```
 
 The workflow matrix covers greenfield blueprint, greenfield contract-only, brownfield analyze/proposal/acceptance, direct brownfield compatibility init, adoption modes, offline flows, unsupported target fallback, monorepo `--project`, Next.js adapter, and hybrid composition.
+
+The 3.5 proof harness replays realistic Brownfield fixtures and mutation classes, then writes a v2 proof-field report with pass/fail metrics, false positives, graph-anchor coverage, repair-plan coverage, and loop-verdict quality. It is benchmark evidence, not a hosted telemetry path.

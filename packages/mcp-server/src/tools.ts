@@ -41,9 +41,14 @@ import {
   anchorFindingsToGraph,
   buildProjectHealthRepairPlan,
   type ContractAssertion,
+  createAuthorityResolution,
+  createEvidenceTier,
+  createLoopReadiness,
   deriveVerificationDiagnostic,
   type EvidenceBundle,
   KNOWN_VERIFICATION_DIAGNOSTICS,
+  LOOP_READINESS_V2_SCHEMA_URL,
+  PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
   type ProjectAuditReport,
   type ProjectHealthFinding,
   type ProjectHealthFindingSource,
@@ -52,6 +57,7 @@ import {
   type VerificationFinding,
   type VerificationRepairAction,
   type VerificationSeverity,
+  WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
 } from '@decantr/verifier';
 import type { DriftLogEntry } from './helpers.js';
 import {
@@ -1675,9 +1681,8 @@ const WRITE_TOOL = {
   openWorldHint: false,
 };
 
-const MCP_PROJECT_HEALTH_SCHEMA_URL = 'https://decantr.ai/schemas/project-health-report.v1.json';
-const MCP_WORKSPACE_HEALTH_SCHEMA_URL =
-  'https://decantr.ai/schemas/workspace-health-report.v1.json';
+const MCP_PROJECT_HEALTH_SCHEMA_URL = PROJECT_HEALTH_REPORT_V2_SCHEMA_URL;
+const MCP_WORKSPACE_HEALTH_SCHEMA_URL = WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL;
 const MCP_WORKSPACE_IGNORES = new Set([
   '.git',
   '.next',
@@ -2025,8 +2030,11 @@ function mcpReportFromAudit(
     infoCount: anchoredFindings.filter((finding) => finding.severity === 'info').length,
   };
   const manifest = audit.packManifest;
+  const projectJson = readJsonIfExists<{
+    initialized?: { workflowMode?: string; adoptionMode?: string };
+  }>(join(projectRoot, '.decantr', 'project.json'));
 
-  return {
+  const baseReport = {
     $schema: MCP_PROJECT_HEALTH_SCHEMA_URL,
     generatedAt: new Date().toISOString(),
     projectRoot,
@@ -2035,8 +2043,8 @@ function mcpReportFromAudit(
     summary: {
       ...counts,
       findingCount: anchoredFindings.length,
-      workflowMode: null,
-      adoptionMode: null,
+      workflowMode: projectJson?.initialized?.workflowMode ?? null,
+      adoptionMode: projectJson?.initialized?.adoptionMode ?? null,
       essenceVersion: audit.summary.essenceVersion,
       pageCount: audit.summary.pageCount,
       runtimeAuditChecked: audit.summary.runtimeAuditChecked,
@@ -2075,6 +2083,31 @@ function mcpReportFromAudit(
       failOn: 'error',
     },
     findings: anchoredFindings,
+  };
+  const evidenceTier = createEvidenceTier(baseReport);
+  const authority = createAuthorityResolution(baseReport);
+  const loop = createLoopReadiness(baseReport, authority, evidenceTier);
+
+  return {
+    ...baseReport,
+    evidenceTier,
+    authority,
+    loop,
+    findings: anchoredFindings.map((finding) => {
+      const conflict = authority.conflicts.find((entry) => entry.id === finding.id);
+      return {
+        ...finding,
+        evidenceTier,
+        authorityLane: conflict?.lane ?? authority.activeLane,
+        resolutionActions: conflict?.recommendedActions,
+        privacy: {
+          sourceIncluded: false as const,
+          redacted: true,
+          localOnly: true,
+        },
+        loopVerdict: loop.state,
+      };
+    }),
   };
 }
 
@@ -2126,6 +2159,11 @@ function compactMcpFinding(finding: ProjectHealthFinding, includePrompt: boolean
     graph: finding.graph,
     repair: finding.repair,
     repairPlan: finding.repairPlan,
+    evidenceTier: finding.evidenceTier,
+    authorityLane: finding.authorityLane,
+    resolutionActions: finding.resolutionActions,
+    privacy: finding.privacy,
+    loopVerdict: finding.loopVerdict,
     remediation: {
       summary: finding.remediation.summary,
       commands: finding.remediation.commands,
@@ -2363,6 +2401,8 @@ async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
         changed: false,
         source: 'auto',
         error: null,
+        loopState: state.report.loop.state,
+        loopNextAction: state.report.loop.nextActions[0] ?? null,
       });
     } catch (error) {
       projects.push({
@@ -2378,9 +2418,36 @@ async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
         changed: false,
         source: 'auto',
         error: (error as Error).message,
+        loopState: 'blocked_missing_context',
+        loopNextAction: 'Fix the project health failure, then rerun workspace health.',
       });
     }
   }
+  const summary = {
+    projectCount: discovered.length,
+    checkedCount: projects.length,
+    healthyCount: projects.filter((project) => project.status === 'healthy').length,
+    warningCount: projects.filter((project) => project.status === 'warning').length,
+    errorCount: projects.filter((project) => project.status === 'error').length,
+    failedCount: projects.filter((project) => project.status === 'failed').length,
+  };
+  const blockedCount = projects.filter(
+    (project) =>
+      typeof project.loopState === 'string' &&
+      (project.loopState.startsWith('blocked') ||
+        project.loopState === 'human_resolution_required'),
+  ).length;
+  const repairRequiredCount = projects.filter(
+    (project) => project.loopState === 'repair_required',
+  ).length;
+  const loopState =
+    projects.length === 0
+      ? 'needs_context'
+      : blockedCount > 0
+        ? 'human_resolution_required'
+        : repairRequiredCount > 0 || summary.errorCount > 0 || summary.warningCount > 0
+          ? 'repair_required'
+          : 'verified';
 
   return {
     $schema: MCP_WORKSPACE_HEALTH_SCHEMA_URL,
@@ -2388,13 +2455,25 @@ async function getMcpWorkspaceHealth(args: Record<string, unknown>) {
     workspaceRoot: '<workspace>',
     changedOnly: false,
     since: null,
-    summary: {
-      projectCount: discovered.length,
-      checkedCount: projects.length,
-      healthyCount: projects.filter((project) => project.status === 'healthy').length,
-      warningCount: projects.filter((project) => project.status === 'warning').length,
-      errorCount: projects.filter((project) => project.status === 'error').length,
-      failedCount: projects.filter((project) => project.status === 'failed').length,
+    summary,
+    loop: {
+      state: loopState,
+      status:
+        loopState === 'human_resolution_required' || loopState.startsWith('blocked')
+          ? 'blocked'
+          : summary.errorCount > 0 || summary.failedCount > 0
+            ? 'error'
+            : summary.warningCount > 0
+              ? 'warning'
+              : 'healthy',
+      projectCount: projects.length,
+      blockedCount,
+      repairRequiredCount,
+      nextActions: [
+        loopState === 'verified'
+          ? 'Workspace loop verified.'
+          : 'Open the highest-risk project, prepare task context, repair, and rerun verification.',
+      ],
     },
     projects,
   };
@@ -4450,6 +4529,104 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         },
         patternIds.map((id) => patternToDiscoveryCandidate({ id, name: id, description: id })),
       );
+      const typedGraph = buildTaskTypedGraphContext(projectRoot, resolvedRoute, task, changedFiles);
+      const verifyCommand = projectArg
+        ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
+        : 'decantr verify --brownfield --local-patterns';
+      const loopState = typedGraph?.route_context ? 'ready_to_edit' : 'blocked_missing_graph';
+      const loop = {
+        $schema: LOOP_READINESS_V2_SCHEMA_URL,
+        schemaVersion: 2,
+        state: loopState,
+        status: loopState === 'ready_to_edit' ? 'healthy' : 'blocked',
+        verdict:
+          loopState === 'ready_to_edit'
+            ? 'Task context is ready for an agent edit.'
+            : 'Task context is missing route graph evidence.',
+        summary: `${resolvedRoute ?? pageId} task context for ${task || 'unspecified task'}.`,
+        authority: {
+          activeLane:
+            projectJson?.initialized?.workflowMode === 'brownfield-attach'
+              ? 'production-source'
+              : 'essence-contract',
+          summary:
+            'Use production source first in Brownfield, accepted local law/style bridge next, Essence V4 structure after that, and hosted packs as advisory.',
+          stopRule:
+            'If runtime source and Decantr context disagree, stop and report drift instead of guessing.',
+        },
+        evidenceTier: {
+          schemaVersion: 2,
+          stage: typedGraph?.route_context ? 'graph' : 'static',
+          status: loopState === 'ready_to_edit' ? 'healthy' : 'incomplete',
+          capabilities: typedGraph?.route_context
+            ? ['static-audit', 'project-health', 'typed-graph']
+            : ['static-audit', 'project-health'],
+          coverage: {
+            declaredRoutes: 1,
+            runtimeRoutesChecked: 0,
+            findingsAnchored: typedGraph?.route_context?.summary.openFindings ?? 0,
+            findingsWithRepairPlan: 0,
+            runtimeProbeCount: 0,
+            visualArtifactCount: visualRoute ? 1 : 0,
+          },
+          confidence: {
+            level: typedGraph?.route_context ? 'moderate' : 'low',
+            score: typedGraph?.route_context ? 0.64 : 0.32,
+            reasons: [
+              typedGraph?.route_context
+                ? 'route graph context is present'
+                : 'route graph context is missing',
+              visualRoute
+                ? 'visual evidence reference is available'
+                : 'no visual evidence reference was found',
+            ],
+          },
+        },
+        blockingReasons: loopState === 'ready_to_edit' ? [] : ['Route graph context is missing.'],
+        nextActions:
+          loopState === 'ready_to_edit'
+            ? ['Edit only after reading the returned context, then run the verify command.']
+            : ['Run `decantr graph`, then request task context again.'],
+        maker: {
+          title: 'Maker instructions',
+          instructions: [
+            'Read returned route, section, local-law, style-bridge, and graph context before editing.',
+            'Preserve the active authority lane and production behavior outside this task.',
+            'Stop and report drift when runtime source and Decantr context disagree.',
+          ],
+        },
+        checker: {
+          title: 'Checker instructions',
+          instructions: [
+            'Rerun the verify command after edits.',
+            'Use typed graph impact to decide whether nearby routes need review.',
+            'Treat advisory critique as warning-level unless runtime evidence proves a failure.',
+          ],
+        },
+        readTargets: [
+          pageManifest ? join('.decantr', 'context', pageManifest.markdown) : null,
+          sectionManifest ? join('.decantr', 'context', sectionManifest.markdown) : null,
+          '.decantr/context/scaffold.md',
+          'DECANTR.md',
+          displayedLocalLaw.patterns_path,
+          displayedLocalLaw.rules_path,
+          displayedStyleBridge.path,
+          typedGraph ? '.decantr/graph/graph.snapshot.json' : null,
+        ].filter(Boolean),
+        graphImpact: {
+          status: typedGraph?.route_context ? 'ready' : typedGraph ? 'stale' : 'missing',
+          snapshotId: typedGraph?.snapshot_id ?? null,
+          sourceHash: typedGraph?.source_hash ?? null,
+          sourceArtifactCount: typedGraph?.route_context?.summary.sourceArtifacts ?? 0,
+          staleArtifacts: typedGraph?.stale_sources ?? [],
+        },
+        stopConditions: [
+          'Runtime source and Decantr context disagree.',
+          'The route graph cannot resolve a source file affected by the edit.',
+          'A fix requires contract/source/local-law mutation outside the explicit workflow.',
+        ],
+        verifyCommand,
+      };
 
       return {
         route: resolvedRoute,
@@ -4518,10 +4695,9 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
           changed_file_count: changedFiles.length,
           impacted_routes: changedRoutes,
         },
-        typed_graph: buildTaskTypedGraphContext(projectRoot, resolvedRoute, task, changedFiles),
-        verify_command: projectArg
-          ? `decantr verify --project ${projectArg} --brownfield --local-patterns`
-          : 'decantr verify --brownfield --local-patterns',
+        typed_graph: typedGraph,
+        loop,
+        verify_command: verifyCommand,
         local_files: {
           page_pack: displayProjectFile(
             projectRoot,
@@ -5020,6 +5196,9 @@ async function handleLegacyTool(name: string, args: Record<string, unknown>): Pr
         return {
           project: state.evidence.project,
           health: state.evidence.health,
+          loop: state.report.loop,
+          authority_resolution: state.report.authority,
+          evidence_tier: state.report.evidenceTier,
           report: state.report,
           evidence: state.evidence,
           repair_plan: buildMcpRepairPlan({

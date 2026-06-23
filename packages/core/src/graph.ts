@@ -303,7 +303,11 @@ export interface GraphRouteContext {
   sourceHash: string;
   routeNode: GraphNode;
   ranking: {
-    method: 'weighted_traversal' | 'weighted_traversal_with_task_boost';
+    method:
+      | 'weighted_traversal'
+      | 'weighted_traversal_with_task_boost'
+      | 'hybrid_weighted_pagerank'
+      | 'hybrid_weighted_pagerank_with_task_boost';
     seed: string;
     task_keywords: string[];
   };
@@ -354,7 +358,11 @@ export interface GraphImpactContext {
   seedNodes: GraphNode[];
   missingNodeIds: string[];
   ranking: {
-    method: 'impact_traversal' | 'impact_traversal_with_task_boost';
+    method:
+      | 'impact_traversal'
+      | 'impact_traversal_with_task_boost'
+      | 'hybrid_impact_pagerank'
+      | 'hybrid_impact_pagerank_with_task_boost';
     seed: string[];
     task_keywords: string[];
   };
@@ -878,8 +886,120 @@ export function buildContractCapsuleFromSnapshot(
   };
 }
 
+const PAGERANK_DAMPING = 0.82;
+const PAGERANK_ITERATIONS = 16;
+
+const RELATION_RANK_WEIGHTS: Partial<Record<GraphRelation, number>> = {
+  PAGE_ROUTED_AT_ROUTE: 1,
+  PAGE_USES_SHELL: 0.9,
+  PAGE_COMPOSES_PATTERN: 0.88,
+  PATTERN_NEEDS_COMPONENT: 0.82,
+  COMPONENT_STYLED_WITH_TOKEN: 0.62,
+  LOCAL_RULE_APPLIES_TO: 0.72,
+  STYLE_BRIDGE_MAPS_TO: 0.7,
+  FINDING_ANCHORED_AT: 0.78,
+  EVIDENCE_SUPPORTS_FINDING: 0.58,
+  EVIDENCE_CAPTURED_FOR: 0.56,
+  REPAIR_FIXES_FINDING: 0.54,
+  NODE_DERIVED_FROM_SOURCE: 0.5,
+  SOURCE_IMPORTS_SOURCE: 0.42,
+  TEST_COVERS_NODE: 0.36,
+};
+
+function personalizedPageRank(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  seedIds: Set<string>,
+): Map<string, number> {
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  const seeds = [...seedIds].filter((id) => nodeIds.has(id)).sort();
+  const activeSeeds =
+    seeds.length > 0
+      ? seeds
+      : sortGraphNodes(nodes)
+          .slice(0, 1)
+          .map((node) => node.id);
+  const teleport = new Map<string, number>();
+  for (const node of nodes) teleport.set(node.id, 0);
+  for (const seed of activeSeeds) teleport.set(seed, 1 / activeSeeds.length);
+
+  const adjacency = new Map<string, Array<{ id: string; weight: number }>>();
+  for (const node of nodes) adjacency.set(node.id, []);
+  for (const edge of edges) {
+    if (!nodeIds.has(edge.src) || !nodeIds.has(edge.dst)) continue;
+    const weight = RELATION_RANK_WEIGHTS[edge.relation] ?? 0.32;
+    adjacency.get(edge.src)?.push({ id: edge.dst, weight });
+    adjacency.get(edge.dst)?.push({ id: edge.src, weight: weight * 0.82 });
+  }
+
+  let rank = new Map(teleport);
+  for (let pass = 0; pass < PAGERANK_ITERATIONS; pass += 1) {
+    const next = new Map<string, number>();
+    for (const node of nodes) {
+      next.set(node.id, (1 - PAGERANK_DAMPING) * (teleport.get(node.id) ?? 0));
+    }
+    for (const node of nodes) {
+      const outgoing = adjacency.get(node.id) ?? [];
+      const current = rank.get(node.id) ?? 0;
+      const totalWeight = outgoing.reduce((sum, edge) => sum + edge.weight, 0);
+      if (totalWeight <= 0) {
+        next.set(node.id, (next.get(node.id) ?? 0) + PAGERANK_DAMPING * current);
+        continue;
+      }
+      for (const edge of outgoing) {
+        next.set(
+          edge.id,
+          (next.get(edge.id) ?? 0) + PAGERANK_DAMPING * current * (edge.weight / totalWeight),
+        );
+      }
+    }
+    rank = next;
+  }
+
+  const max = Math.max(...[...rank.values()], 0.00001);
+  return new Map([...rank.entries()].map(([id, value]) => [id, value / max]));
+}
+
+function hybridRankNodes<
+  T extends { id: string; type: GraphNodeType; score: number; reason: string },
+>(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  seedIds: Set<string>,
+  baseRank: (node: GraphNode) => { score: number; reason: string },
+  keywords: string[],
+): Array<T & { matched_terms?: string[] }> {
+  const ppr = personalizedPageRank(nodes, edges, seedIds);
+  return nodes
+    .map((node) => {
+      const ranked = baseRank(node);
+      const searchText = keywords.length > 0 ? graphNodeSearchText(node) : '';
+      const matchedTerms = keywords.filter((keyword) => searchText.includes(keyword));
+      const taskBoost = Math.min(0.12, matchedTerms.length * 0.035);
+      const graphBoost = (ppr.get(node.id) ?? 0) * 0.32;
+      const weightedScore = ranked.score * 0.68 + graphBoost + taskBoost;
+      return {
+        id: node.id,
+        type: node.type,
+        score: Number(Math.min(1, weightedScore).toFixed(3)),
+        reason:
+          matchedTerms.length > 0
+            ? `${ranked.reason}+pagerank+task_match`
+            : `${ranked.reason}+pagerank`,
+        ...(matchedTerms.length > 0 ? { matched_terms: matchedTerms } : {}),
+      } as T & { matched_terms?: string[] };
+    })
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (b.matched_terms?.length ?? 0) - (a.matched_terms?.length ?? 0) ||
+        a.id.localeCompare(b.id),
+    );
+}
+
 function rankGraphRouteContextNodes(
   nodes: GraphNode[],
+  edges: GraphEdge[],
   routeNodeId: string,
   ids: GraphRouteContext['ids'],
   keywords: string[] = [],
@@ -899,26 +1019,7 @@ function rankGraphRouteContextNodes(
     return { score: 0.24, reason: 'included_context' };
   };
 
-  return nodes
-    .map((node) => {
-      const ranked = scoreForNode(node);
-      const searchText = keywords.length > 0 ? graphNodeSearchText(node) : '';
-      const matchedTerms = keywords.filter((keyword) => searchText.includes(keyword));
-      const taskBoost = Math.min(0.12, matchedTerms.length * 0.035);
-      return {
-        id: node.id,
-        type: node.type,
-        score: Number(Math.min(1, ranked.score + taskBoost).toFixed(3)),
-        reason: matchedTerms.length > 0 ? `${ranked.reason}+task_match` : ranked.reason,
-        ...(matchedTerms.length > 0 ? { matched_terms: matchedTerms } : {}),
-      };
-    })
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        (b.matched_terms?.length ?? 0) - (a.matched_terms?.length ?? 0) ||
-        a.id.localeCompare(b.id),
-    );
+  return hybridRankNodes(nodes, edges, new Set([routeNodeId]), scoreForNode, keywords);
 }
 
 export function buildGraphRouteContext(
@@ -1081,7 +1182,10 @@ export function buildGraphRouteContext(
     sourceHash: snapshot.source_hash,
     routeNode,
     ranking: {
-      method: keywords.length > 0 ? 'weighted_traversal_with_task_boost' : 'weighted_traversal',
+      method:
+        keywords.length > 0
+          ? 'hybrid_weighted_pagerank_with_task_boost'
+          : 'hybrid_weighted_pagerank',
       seed: routeNode.id,
       task_keywords: keywords,
     },
@@ -1100,7 +1204,7 @@ export function buildGraphRouteContext(
       sourceArtifacts: graphNodeIdsByType(nodes, 'SourceArtifact').length,
     },
     ids,
-    ranked: rankGraphRouteContextNodes(nodes, routeNode.id, ids, keywords),
+    ranked: rankGraphRouteContextNodes(nodes, edges, routeNode.id, ids, keywords),
     nodes,
     edges,
   };
@@ -1147,6 +1251,7 @@ function impactIds(nodes: GraphNode[]): GraphImpactContext['ids'] {
 
 function rankGraphImpactContextNodes(
   nodes: GraphNode[],
+  edges: GraphEdge[],
   seedIds: Set<string>,
   ids: GraphImpactContext['ids'],
   keywords: string[] = [],
@@ -1168,26 +1273,7 @@ function rankGraphImpactContextNodes(
     return { score: 0.24, reason: 'included_impact' };
   };
 
-  return nodes
-    .map((node) => {
-      const ranked = scoreForNode(node);
-      const searchText = keywords.length > 0 ? graphNodeSearchText(node) : '';
-      const matchedTerms = keywords.filter((keyword) => searchText.includes(keyword));
-      const taskBoost = Math.min(0.12, matchedTerms.length * 0.035);
-      return {
-        id: node.id,
-        type: node.type,
-        score: Number(Math.min(1, ranked.score + taskBoost).toFixed(3)),
-        reason: matchedTerms.length > 0 ? `${ranked.reason}+task_match` : ranked.reason,
-        ...(matchedTerms.length > 0 ? { matched_terms: matchedTerms } : {}),
-      };
-    })
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        (b.matched_terms?.length ?? 0) - (a.matched_terms?.length ?? 0) ||
-        a.id.localeCompare(b.id),
-    );
+  return hybridRankNodes(nodes, edges, seedIds, scoreForNode, keywords);
 }
 
 function shouldTraverseImpactEdge(
@@ -1299,7 +1385,7 @@ export function buildGraphImpactContext(
   const totalEdges = edges.length;
   const keywords = taskKeywords(options.task);
   const fullIds = impactIds(nodes);
-  const fullRanked = rankGraphImpactContextNodes(nodes, seedNodeIds, fullIds, keywords);
+  const fullRanked = rankGraphImpactContextNodes(nodes, edges, seedNodeIds, fullIds, keywords);
   const boundedLimit =
     typeof options.limit === 'number' && Number.isFinite(options.limit) && options.limit > 0
       ? Math.floor(options.limit)
@@ -1320,7 +1406,7 @@ export function buildGraphImpactContext(
   }
 
   const ids = impactIds(nodes);
-  const ranked = rankGraphImpactContextNodes(nodes, seedNodeIds, ids, keywords);
+  const ranked = rankGraphImpactContextNodes(nodes, edges, seedNodeIds, ids, keywords);
 
   return {
     snapshotId: snapshot.id,
@@ -1328,7 +1414,8 @@ export function buildGraphImpactContext(
     seedNodes: sortGraphNodes(seedNodes),
     missingNodeIds,
     ranking: {
-      method: keywords.length > 0 ? 'impact_traversal_with_task_boost' : 'impact_traversal',
+      method:
+        keywords.length > 0 ? 'hybrid_impact_pagerank_with_task_boost' : 'hybrid_impact_pagerank',
       seed: [...seedNodeIds].sort(),
       task_keywords: keywords,
     },

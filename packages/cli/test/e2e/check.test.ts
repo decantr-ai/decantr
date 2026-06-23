@@ -280,6 +280,89 @@ describe('check command (e2e)', () => {
     expect(output).not.toContain('[brownfield-route-drift]');
   });
 
+  it('treats pathname root fallbacks as an observed SPA root route', () => {
+    writeFileSync(
+      join(testDir, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'pathname-root-fallback',
+          dependencies: {
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    mkdirSync(join(testDir, 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'src', 'App.jsx'),
+      'export function App() { const path = typeof window === "undefined" ? "/" : window.location.pathname; return <main><a href="/reports">Reports</a>{path}</main>; }\n',
+    );
+    writeFileSync(
+      join(testDir, 'decantr.essence.json'),
+      JSON.stringify(
+        {
+          version: '4.0.0',
+          dna: {
+            theme: { id: 'existing', mode: 'auto', shape: 'rounded' },
+            spacing: {
+              base_unit: 4,
+              scale: 'linear',
+              density: 'comfortable',
+              content_gap: '_gap4',
+            },
+            typography: { scale: 'modular', heading_weight: 600, body_weight: 400 },
+            color: { palette: 'semantic', accent_count: 1, cvd_preference: 'auto' },
+            radius: { philosophy: 'rounded', base: 8 },
+            elevation: { system: 'layered', max_levels: 3 },
+            motion: { preference: 'subtle', duration_scale: 1, reduce_motion: true },
+            accessibility: { wcag_level: 'AA', focus_visible: true, skip_nav: true },
+            personality: ['observed'],
+          },
+          blueprint: {
+            sections: [
+              {
+                id: 'workspace',
+                role: 'primary',
+                shell: 'top-nav-main',
+                features: ['reports'],
+                description: 'Observed SPA surface',
+                pages: [
+                  { id: 'home', route: '/', layout: ['existing-surface'] },
+                  { id: 'reports', route: '/reports', layout: ['existing-surface'] },
+                ],
+              },
+            ],
+            features: ['reports'],
+            routes: {
+              '/': { section: 'workspace', page: 'home' },
+              '/reports': { section: 'workspace', page: 'reports' },
+            },
+          },
+          meta: {
+            archetype: 'observed-brownfield',
+            target: 'react',
+            platform: { type: 'spa', routing: 'history' },
+            guard: { mode: 'guided', dna_enforcement: 'error', blueprint_enforcement: 'warn' },
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const output = execSync(`node ${cliPath} check --brownfield`, {
+      cwd: testDir,
+      encoding: 'utf-8',
+      timeout: 15000,
+    });
+
+    expect(output).not.toContain('[brownfield-stale-route]');
+    expect(output).not.toContain('[brownfield-route-drift]');
+  });
+
   it('reports unsafe brownfield defaults and doctrine conflicts for style-heavy apps', () => {
     writeFileSync(
       join(testDir, 'package.json'),

@@ -67,6 +67,15 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     consolidation: 'keep',
   },
   {
+    command: 'resolve',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose:
+      'Explain source-vs-contract authority conflicts and explicitly defer/advisory-mark drift-log entries.',
+    consolidation: 'keep',
+  },
+  {
     command: 'ci',
     classification: 'primary',
     mutates: true,

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "status": "accepted",
+  "patterns": [
+    {
+      "id": "token-audit",
+      "status": "accepted",
+      "componentPaths": ["src/App.jsx"]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "apps": [
+    {
+      "id": "fixture-local-law-react",
+      "path": "fixtures/proof-corpus/local-law-react",
+      "expectedRules": ["component-reuse-raw-control"],
+      "mutations": [
+        {
+          "id": "raw-button-drift",
+          "file": "src/StandaloneAction.tsx",
+          "marker": "{/* decantr-proof:actions */}",
+          "mode": "insert-after",
+          "with": "<button className=\"rounded bg-[#123456] px-3 py-2 text-white\">Bypass component</button>"
+        }
+      ]
+    },
+    {
+      "id": "fixture-runtime-vite-visual",
+      "path": "fixtures/proof-corpus/runtime-vite-visual",
+      "healthArgs": ["--browser", "--base-url", "http://127.0.0.1:43191"],
+      "allowedBaselineRules": ["browser-playwright-missing"],
+      "expectedRules": ["AUDIT389"],
+      "mutations": [
+        {
+          "id": "empty-accessible-name",
+          "file": "src/App.jsx",
+          "marker": "{/* decantr-proof:search */}",
+          "mode": "insert-after",
+          "with": "<input aria-label=\"\" placeholder=\"Search records\" />"
+        }
+      ]
+    },
+    {
+      "id": "fixture-route-drift-react",
+      "path": "fixtures/proof-corpus/route-drift-react",
+      "expectedRules": ["brownfield-route-drift", "brownfield-stale-route"],
+      "mutations": [
+        {
+          "id": "rename-observed-route",
+          "file": "src/App.jsx",
+          "replace": "href=\"/reports\"",
+          "with": "href=\"/archived-reports\""
+        }
+      ]
+    },
+    {
+      "id": "fixture-style-bridge-tailwind",
+      "path": "fixtures/proof-corpus/style-bridge-tailwind",
+      "expectedRules": ["brownfield-style-drift"],
+      "mutations": [
+        {
+          "id": "contract-palette-drift",
+          "file": "decantr.essence.json",
+          "replace": "\"color\": { \"palette\": \"tailwind\", \"accent_count\": 1, \"cvd_preference\": \"auto\" }",
+          "with": "\"color\": { \"palette\": \"semantic\", \"accent_count\": 1, \"cvd_preference\": \"auto\" }"
+        }
+      ]
+    },
+    {
+      "id": "fixture-stale-context-nextish",
+      "path": "fixtures/proof-corpus/stale-context-nextish",
+      "expectedRules": []
+    }
+  ]
+}

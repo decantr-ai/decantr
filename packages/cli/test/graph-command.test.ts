@@ -292,7 +292,7 @@ describe('graph command artifacts', () => {
     expect(summary.routeContext?.found).toBe(true);
     expect(summary.routeContext?.route).toBe('/');
     expect(summary.routeContext?.ranking).toEqual({
-      method: 'weighted_traversal',
+      method: 'hybrid_weighted_pagerank',
       seed: 'rt:/',
       task_keywords: [],
     });
@@ -304,7 +304,7 @@ describe('graph command artifacts', () => {
     );
     expect(summary.routeContext?.ranked?.[0]).toMatchObject({
       id: 'rt:/',
-      reason: 'requested_route',
+      reason: 'requested_route+pagerank',
     });
 
     log.mockClear();
@@ -316,13 +316,13 @@ describe('graph command artifacts', () => {
       };
     };
     expect(taskSummary.routeContext?.ranking).toMatchObject({
-      method: 'weighted_traversal_with_task_boost',
+      method: 'hybrid_weighted_pagerank_with_task_boost',
       task_keywords: ['replace', 'raw', 'button', 'surface'],
     });
     expect(
       taskSummary.routeContext?.ranked?.find((node) => node.id === 'rule:no-raw-button'),
     ).toMatchObject({
-      reason: 'applicable_local_rule+task_match',
+      reason: 'applicable_local_rule+pagerank+task_match',
       matched_terms: ['raw', 'button'],
     });
   });
@@ -349,7 +349,7 @@ describe('graph command artifacts', () => {
     expect(summary.impactContext?.found).toBe(true);
     expect(summary.impactContext?.node).toBe('pat:existing-surface');
     expect(summary.impactContext?.ranking).toEqual({
-      method: 'impact_traversal_with_task_boost',
+      method: 'hybrid_impact_pagerank_with_task_boost',
       seed: ['pat:existing-surface'],
       task_keywords: ['change', 'existing', 'surface'],
     });
@@ -358,7 +358,7 @@ describe('graph command artifacts', () => {
     expect(summary.impactContext?.ids?.patterns).toContain('pat:existing-surface');
     expect(summary.impactContext?.ranked?.[0]).toMatchObject({
       id: 'pat:existing-surface',
-      reason: 'seed_node+task_match',
+      reason: 'seed_node+pagerank+task_match',
       matched_terms: ['existing', 'surface'],
     });
   });
@@ -441,7 +441,7 @@ describe('graph command artifacts', () => {
     expect(summary.impactContext?.file).toBe('src/app/page.tsx');
     expect(summary.impactContext?.resolvedNodeIds).toEqual(['src:src/app/page.tsx']);
     expect(summary.impactContext?.ranking).toMatchObject({
-      method: 'impact_traversal_with_task_boost',
+      method: 'hybrid_impact_pagerank_with_task_boost',
       seed: ['src:src/app/page.tsx'],
       task_keywords: ['edit', 'source', 'surface'],
     });
@@ -453,7 +453,7 @@ describe('graph command artifacts', () => {
     );
     expect(summary.impactContext?.ranked?.[0]).toMatchObject({
       id: 'src:src/app/page.tsx',
-      reason: 'seed_node+task_match',
+      reason: 'seed_node+pagerank+task_match',
       matched_terms: ['source'],
     });
   });

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "status": "accepted",
+  "patterns": [
+    {
+      "id": "summary",
+      "status": "accepted",
+      "componentPaths": ["src/App.jsx"]
+    },
+    {
+      "id": "report-list",
+      "status": "accepted",
+      "componentPaths": ["src/App.jsx"]
+    }
+  ]
+}

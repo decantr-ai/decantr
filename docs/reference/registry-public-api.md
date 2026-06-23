@@ -462,13 +462,10 @@ decantr scan --json
 
 ## MCP Equivalents
 
-- `decantr_search_registry`
-- `decantr_get_registry_intelligence_summary`
-- `decantr_get_showcase_benchmarks`
-- `decantr_get_execution_pack`
-- `decantr_compile_execution_packs`
-- `decantr_critique`
-- `decantr_audit_project`
+- `decantr_registry` with `search`, `summary`, `benchmarks`, and registry resolution actions.
+- `decantr_context` with `execution_pack` actions for compiled pack context.
+- `decantr_verify` with `critique`, `audit_project`, and `evidence_bundle` actions.
+- `decantr_repair` with `findings`, `repair_plan`, and `health_loop` actions.
 
 ## Notes
 

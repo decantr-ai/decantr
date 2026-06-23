@@ -83,8 +83,8 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `ci`, `codify`), keeps advanced primitives available, writes Evidence Bundles, runs workspace health, installs CI, opens Studio locally, and audits official-vocabulary supply-chain health |
-| MCP server | Exposes Decantr directly to AI tools - essence reads, vocabulary resolution, context reads, pack compilation, drift checks, critique, audit, evidence bundles, workspace health, and repair prompts |
+| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `resolve`, `ci`, `codify`), keeps advanced primitives available, writes v2 Evidence Bundles, runs workspace health, installs CI, opens Studio Control Room locally, and audits official-vocabulary supply-chain health |
+| MCP server | Exposes Decantr directly to AI tools - essence reads, vocabulary resolution, context reads, pack compilation, drift checks, critique, audit, v2 evidence bundles, workspace health, health-loop guidance, and repair prompts |
 | Hosted registry/API | Certified vocabulary and hosted pack compilation for teams that want official content context, without overriding repo-owned local law |
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | Showcase apps | Audited benchmark corpus and verification targets for Decantr-generated scaffolds |
@@ -98,8 +98,8 @@ Security review starts with the installed npm surface, not the whole monorepo. T
 | `@decantr/essence-spec` | Essence schemas, validation, migration, and TypeScript types |
 | `@decantr/registry` | Certified vocabulary contracts, schemas, content utilities, and API client surfaces |
 | `@decantr/css` | Framework-agnostic CSS atom runtime |
-| `@decantr/core` | Execution-pack compiler primitives, typed Contract graph builders, graph diffs, snapshot history, and Contract capsules |
-| `@decantr/verifier` | Shared audit, critique, Evidence Bundle, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
+| `@decantr/core` | Execution-pack compiler primitives, typed Contract graph builders, graph diffs, snapshot history, hybrid graph ranking, evidence/proof ingestion, and Contract capsules |
+| `@decantr/verifier` | Shared audit, critique, v2 Evidence Bundle, loop readiness, authority resolution, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
 | `@decantr/mcp-server` | MCP delivery surface for assistants and agent tooling |
 | `@decantr/cli` | Local scaffold, registry, Project Health CI/Studio, audit, and maintenance workflows |
 | `@decantr/vite-plugin` | Experimental local guard feedback overlay for Vite |
@@ -171,6 +171,7 @@ decantr codify --map-pattern hero
 decantr codify --accept
 decantr graph
 decantr graph --file src/app/page.tsx --impact --json
+decantr resolve
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
 decantr verify --since-baseline
@@ -189,6 +190,7 @@ decantr codify --from-audit --style-bridge --project apps/web
 decantr codify --map-pattern hero --project apps/web
 decantr graph --project apps/web
 decantr graph --project apps/web --file src/app/page.tsx --impact --json
+decantr resolve --project apps/web
 decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 decantr ci init --project apps/web
@@ -307,7 +309,7 @@ If the default port is busy:
 decantr studio --host 127.0.0.1 --port 4320
 ```
 
-Studio is local-only and shows the same Project Health signal as `decantr health`. Its Overview keeps triage focused: pick the issue to fix first, review the AI prompt before copying it, switch to manual guidance or commands, and expand project details when you need route/runtime/pack evidence. Workspace mode is available with `decantr studio --workspace` when a repo contains many Decantr projects.
+Studio is local-only and shows the same v2 Project Health signal as `decantr health`. Its Control Room keeps triage focused: inspect loop state, next action, authority lane, blocking findings, evidence tier, graph impact, and copyable commands. Workspace mode is available with `decantr studio --workspace` when a repo contains many Decantr projects.
 
 `decantr health --prompt <finding-id>` prints a focused repair prompt for the assistant doing the implementation. It does not edit files by itself; use Studio's copy buttons or paste the printed prompt into your AI coding workflow, then rerun Project Health.
 

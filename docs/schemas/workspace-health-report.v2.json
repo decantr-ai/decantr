@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/workspace-health-report.v2.json",
+  "title": "Decantr Workspace Health Report v2",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "workspaceRoot",
+    "changedOnly",
+    "since",
+    "summary",
+    "loop",
+    "projects"
+  ],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/workspace-health-report.v2.json" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "workspaceRoot": { "type": "string" },
+    "changedOnly": { "type": "boolean" },
+    "since": { "type": ["string", "null"] },
+    "summary": { "type": "object", "additionalProperties": true },
+    "loop": {
+      "type": "object",
+      "required": ["state", "status", "projectCount", "blockedCount", "repairRequiredCount"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "needs_context",
+            "ready_to_edit",
+            "verify_required",
+            "repair_required",
+            "human_resolution_required",
+            "blocked_missing_context",
+            "blocked_missing_graph",
+            "verified"
+          ]
+        },
+        "status": { "type": "string", "enum": ["healthy", "warning", "error", "blocked"] },
+        "projectCount": { "type": "integer", "minimum": 0 },
+        "blockedCount": { "type": "integer", "minimum": 0 },
+        "repairRequiredCount": { "type": "integer", "minimum": 0 },
+        "nextActions": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "projects": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+  },
+  "additionalProperties": false
+}

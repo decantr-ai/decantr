@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/proof-field-report.v2.json",
+  "title": "Decantr Proof Field Report v2",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "schemaVersion",
+    "summary",
+    "apps",
+    "metrics",
+    "honesty"
+  ],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/proof-field-report.v2.json" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "schemaVersion": { "const": 2 },
+    "summary": { "type": "object", "additionalProperties": true },
+    "apps": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "adversarialCatchRate",
+        "falsePositiveRate",
+        "graphAnchorCoverage",
+        "repairPlanCoverage",
+        "loopVerdictQuality"
+      ],
+      "properties": {
+        "adversarialCatchRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "falsePositiveRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "graphAnchorCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+        "repairPlanCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+        "loopVerdictQuality": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "honesty": {
+      "type": "object",
+      "required": ["pass", "knownLimitations", "recommendedNextVersion"],
+      "properties": {
+        "pass": { "type": "boolean" },
+        "knownLimitations": { "type": "array", "items": { "type": "string" } },
+        "recommendedNextVersion": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

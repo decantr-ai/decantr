@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/loop-readiness.v2.json",
+  "title": "Decantr Loop Readiness v2",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "state",
+    "status",
+    "verdict",
+    "summary",
+    "authority",
+    "evidenceTier",
+    "blockingReasons",
+    "nextActions",
+    "maker",
+    "checker",
+    "readTargets",
+    "graphImpact",
+    "stopConditions",
+    "verifyCommand"
+  ],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/loop-readiness.v2.json" },
+    "schemaVersion": { "const": 2 },
+    "state": {
+      "type": "string",
+      "enum": [
+        "needs_context",
+        "ready_to_edit",
+        "verify_required",
+        "repair_required",
+        "human_resolution_required",
+        "blocked_missing_context",
+        "blocked_missing_graph",
+        "verified"
+      ]
+    },
+    "status": { "type": "string", "enum": ["healthy", "warning", "error", "blocked"] },
+    "verdict": { "type": "string" },
+    "summary": { "type": "string" },
+    "authority": {
+      "type": "object",
+      "required": ["activeLane", "summary", "stopRule"],
+      "properties": {
+        "activeLane": { "type": "string" },
+        "summary": { "type": "string" },
+        "stopRule": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "evidenceTier": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v2.json#/$defs/evidenceTier"
+    },
+    "blockingReasons": { "type": "array", "items": { "type": "string" } },
+    "nextActions": { "type": "array", "items": { "type": "string" } },
+    "maker": { "$ref": "#/$defs/instructionBlock" },
+    "checker": { "$ref": "#/$defs/instructionBlock" },
+    "readTargets": { "type": "array", "items": { "type": "string" } },
+    "graphImpact": {
+      "type": "object",
+      "required": ["status", "snapshotId", "sourceHash", "sourceArtifactCount", "staleArtifacts"],
+      "properties": {
+        "status": { "type": "string", "enum": ["ready", "missing", "stale", "not_applicable"] },
+        "snapshotId": { "type": ["string", "null"] },
+        "sourceHash": { "type": ["string", "null"] },
+        "sourceArtifactCount": { "type": "integer", "minimum": 0 },
+        "staleArtifacts": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "stopConditions": { "type": "array", "items": { "type": "string" } },
+    "verifyCommand": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "instructionBlock": {
+      "type": "object",
+      "required": ["title", "instructions"],
+      "properties": {
+        "title": { "type": "string" },
+        "instructions": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    }
+  }
+}

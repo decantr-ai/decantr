@@ -205,11 +205,39 @@ describe('Project Health report', () => {
 
     const report = await createProjectHealthReport(testDir);
 
-    expect(report.$schema).toBe('https://decantr.ai/schemas/project-health-report.v1.json');
+    expect(report.$schema).toBe('https://decantr.ai/schemas/project-health-report.v2.json');
+    expect(report.loop.state).toBe('blocked_missing_graph');
+    expect(report.evidenceTier.schemaVersion).toBe(2);
     expect(report.status).toBe('healthy');
     expect(report.score).toBeGreaterThanOrEqual(99);
     expect(report.routes.declared).toContain('/');
     expect(report.packs.manifestPresent).toBe(true);
+  });
+
+  it('accepts project-owned local patterns as guard registry entries', async () => {
+    writeRegistryCache();
+    writeEssence();
+    const essence = JSON.parse(readFileSync(join(testDir, 'decantr.essence.json'), 'utf-8')) as {
+      blueprint: { sections: Array<{ pages: Array<{ layout: string[] }> }> };
+    };
+    essence.blueprint.sections[0].pages[0].layout = ['project-owned-summary'];
+    writeJson(join(testDir, 'decantr.essence.json'), essence);
+    mkdirSync(join(testDir, '.decantr'), { recursive: true });
+    writeJson(join(testDir, '.decantr', 'local-patterns.json'), {
+      version: 1,
+      status: 'accepted',
+      patterns: [
+        {
+          id: 'project-owned-summary',
+          status: 'accepted',
+          componentPaths: ['src/components/ProjectOwnedSummary.tsx'],
+        },
+      ],
+    });
+
+    const report = await createProjectHealthReport(testDir);
+
+    expect(report.findings.map((finding) => finding.rule)).not.toContain('pattern-exists');
   });
 
   it('reports missing or invalid essence as a CI-blocking error', async () => {
@@ -630,7 +658,9 @@ describe('Project Health report', () => {
     const evidence = await createProjectEvidenceBundle(testDir, report);
     const firstHash = evidence.provenance.essence.hash;
 
-    expect(evidence.$schema).toBe('https://decantr.ai/schemas/evidence-bundle.v1.json');
+    expect(evidence.$schema).toBe('https://decantr.ai/schemas/evidence-bundle.v2.json');
+    expect(evidence.evidenceTier.schemaVersion).toBe(2);
+    expect(evidence.privacy.sourceIncluded).toBe(false);
     expect(firstHash).toMatch(/^[a-f0-9]{64}$/);
     expect(evidence.provenance.graphSnapshot.present).toBe(false);
     expect(evidence.provenance.contractCapsule.present).toBe(false);
@@ -1251,7 +1281,8 @@ exports.chromium = {
     const report = await createWorkspaceHealthReport(testDir, { concurrency: 2 });
 
     expect(projects.map((project) => project.path)).toEqual(['apps/a', 'apps/b']);
-    expect(report.$schema).toBe('https://decantr.ai/schemas/workspace-health-report.v1.json');
+    expect(report.$schema).toBe('https://decantr.ai/schemas/workspace-health-report.v2.json');
+    expect(report.loop.state).toBe('human_resolution_required');
     expect(report.projects.map((project) => project.path)).toEqual(['apps/a', 'apps/b']);
     expect(report.summary.projectCount).toBe(2);
   });

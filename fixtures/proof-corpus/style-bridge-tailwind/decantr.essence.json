@@ -1,0 +1,34 @@
+{
+  "version": "4.0.0",
+  "dna": {
+    "theme": { "id": "existing", "mode": "light", "shape": "rounded" },
+    "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 650, "body_weight": 400 },
+    "color": { "palette": "tailwind", "accent_count": 1, "cvd_preference": "auto" },
+    "radius": { "philosophy": "rounded", "base": 8 },
+    "elevation": { "system": "layered", "max_levels": 3 },
+    "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+    "personality": ["restrained", "data-first", "systematic"]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "admin",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": ["tokens", "review"],
+        "description": "Style bridge fixture with Tailwind-like project-owned classes.",
+        "pages": [{ "id": "tokens", "route": "/", "layout": ["token-audit"] }]
+      }
+    ],
+    "features": ["tokens", "review"],
+    "routes": { "/": { "section": "admin", "page": "tokens" } }
+  },
+  "meta": {
+    "archetype": "admin",
+    "target": "react-vite",
+    "platform": { "type": "spa", "routing": "history" },
+    "guard": { "mode": "guided", "dna_enforcement": "error", "blueprint_enforcement": "warn" }
+  }
+}

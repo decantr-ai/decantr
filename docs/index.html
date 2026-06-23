@@ -1226,7 +1226,7 @@
         <span class="hero-credibility">
           <span class="dot" aria-hidden="true"></span>
           <span>
-            <strong>v3.4.0 shipping today</strong>
+            <strong>v3.5.0 shipping today</strong>
             ·
             <a href="https://github.com/decantr-ai/decantr" target="_blank" rel="noopener" style="color: inherit; border-bottom: 1px dotted var(--soft);">
               <strong data-stat="stars">★ —</strong> on GitHub
@@ -1315,7 +1315,7 @@
           <div class="transcript-head">
             <span class="dot-row" aria-hidden="true"><span></span><span></span><span></span></span>
             <span>~/your-app — npx @decantr/cli scan</span>
-            <span style="margin-left:auto;">decantr v3.4.0</span>
+            <span style="margin-left:auto;">decantr v3.5.0</span>
           </div>
           <div class="transcript-body">
             <div class="transcript-line"><span class="sym prompt">$</span><span class="body">npx @decantr/cli scan</span></div>
@@ -1323,9 +1323,9 @@
             <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Detected <strong>React 18</strong> + <strong>Tailwind 3</strong> + <strong>Vite</strong></span></div>
             <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Indexed <strong>64 components</strong>, <strong>18 routes</strong>, <strong>312 source files</strong></span></div>
             <div class="transcript-line"><span class="sym spin">›</span><span class="body"><span class="soft">analyzing component reuse and token coverage...</span></span></div>
-            <div class="transcript-line"><span class="sym warn">!</span><span class="body">Project Health: <span class="warn-text">42/100</span> · <strong>3 findings</strong> · <em>all repair-ready</em></span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Evidence bundle written → <em>.decantr/evidence/latest.json</em> <span class="soft">(gitignored)</span></span></div>
-            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Done in 4.2s</span> · zero files modified · ready for your agent</span></div>
+            <div class="transcript-line"><span class="sym warn">!</span><span class="body">Brownfield preview: <span class="warn-text">3 attention areas</span> · graph baseline missing · adopt when ready</span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body">Next step → <em>decantr adopt --yes</em>, then <em>decantr studio</em> for the Control Room</span></div>
+            <div class="transcript-line"><span class="sym ok">✓</span><span class="body"><span class="ok-text">Done in 4.2s</span> · zero files modified · ready to attach</span></div>
           </div>
         </div>
       </div>
@@ -1423,8 +1423,8 @@
           <i data-lucide="plug" class="icon" aria-hidden="true"></i>
           <span>
             <strong>Plugs into your agent natively.</strong>
-            Cursor, Claude Code, Continue.dev, Windsurf, and Cline pick up findings via our MCP server.
-            Or pipe to any agent: <code>decantr verify --evidence | claude --apply</code>
+            Cursor, Claude Code, Continue.dev, Windsurf, and Cline pick up context, loop verdicts, and evidence via our MCP server.
+            Decantr guides the loop; your chosen agent or developer still applies the source change explicitly.
           </span>
         </div>
       </div>
@@ -1535,7 +1535,7 @@ action:
               </tr>
               <tr>
                 <td class="row-label">MCP / agent-native protocol</td>
-                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>32 tools</span></td>
+                <td class="col-decantr-cell"><span class="yes"><i data-lucide="check" class="icon"></i>8 tools</span></td>
                 <td><span class="no">No</span></td>
                 <td><span class="no">No</span></td>
                 <td><span class="no">No</span></td>
@@ -1631,7 +1631,7 @@ action:
         <div class="proof reveal">
           <div class="proof-item">
             <span class="label">Packages shipping</span>
-            <span class="big">8 @ v3.4.0</span>
+            <span class="big">4 @ v3.5.0</span>
             <a class="sub link" href="https://www.npmjs.com/org/decantr" target="_blank" rel="noopener">
               <i data-lucide="package" class="icon" aria-hidden="true"></i>npm
             </a>
@@ -1677,14 +1677,14 @@ action:
 
         <div class="roadmap reveal">
           <article class="roadmap-item now">
-            <span class="roadmap-tag"><span class="dot" aria-hidden="true"></span>Shipping now · v3.4.0</span>
-            <h3>Proof-lab hardened Project Health</h3>
-            <p>Route discovery, graph context, shell drift evidence, and MCP task scoping tightened against messy and pristine Brownfield apps.</p>
+            <span class="roadmap-tag"><span class="dot" aria-hidden="true"></span>Shipping now · v3.5.0</span>
+            <h3>Brownfield Control Loop</h3>
+            <p>v2 Project Health, loop readiness, authority resolution, hybrid graph ranking, and a local Studio Control Room for AI-edited apps.</p>
           </article>
           <article class="roadmap-item">
-            <span class="roadmap-tag">Next · v3.2</span>
-            <h3>Hosted Project Health dashboard</h3>
-            <p>Push your local evidence to a team view. PR comments, drift over time, repair throughput — opt-in only.</p>
+            <span class="roadmap-tag">Next</span>
+            <h3>Proof corpus expansion</h3>
+            <p>More real Brownfield fixtures, stronger visual/runtime cases, and sharper benchmark reporting for loop quality.</p>
           </article>
           <article class="roadmap-item">
             <span class="roadmap-tag">Soon · v4.0</span>
@@ -1731,7 +1731,7 @@ action:
         </a>
         <p class="footer-copy">Local-first verifier for production frontends touched by AI agents. Your repo-owned contract stays in charge.</p>
         <div class="footer-meta">
-          <span>v3.4.0</span>
+          <span>v3.5.0</span>
           <span class="footer-meta-sep">·</span>
           <span>MIT licensed</span>
           <span class="footer-meta-sep">·</span>
@@ -1762,11 +1762,11 @@ action:
     <div class="pkg-name">@decantr/essence-spec</div><div class="pkg-version">v3.4.0</div>
     <div class="pkg-name">@decantr/registry</div><div class="pkg-version">v3.4.0</div>
     <div class="pkg-name">@decantr/css</div><div class="pkg-version">v3.4.0</div>
-    <div class="pkg-name">@decantr/core</div><div class="pkg-version">v3.4.0</div>
+    <div class="pkg-name">@decantr/core</div><div class="pkg-version">v3.5.0</div>
     <div class="pkg-name">@decantr/telemetry</div><div class="pkg-version">v3.4.0</div>
-    <div class="pkg-name">@decantr/cli</div><div class="pkg-version">v3.4.0</div>
-    <div class="pkg-name">@decantr/mcp-server</div><div class="pkg-version">v3.4.0</div>
-    <div class="pkg-name">@decantr/verifier</div><div class="pkg-version">v3.4.0</div>
+    <div class="pkg-name">@decantr/cli</div><div class="pkg-version">v3.5.0</div>
+    <div class="pkg-name">@decantr/mcp-server</div><div class="pkg-version">v3.5.0</div>
+    <div class="pkg-name">@decantr/verifier</div><div class="pkg-version">v3.5.0</div>
   </section>
 
   <script src="/analytics-config.js"></script>

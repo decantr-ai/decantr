@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import type { ProjectHealthStatus } from '@decantr/verifier';
+import type { LoopReadinessState, ProjectHealthStatus } from '@decantr/verifier';
+import { WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL } from '@decantr/verifier';
 import { listWorkspaceAppCandidates } from '../workspace.js';
 import { createProjectHealthReport, type HealthFailOn } from './health.js';
 
@@ -12,7 +13,7 @@ const RED = '\x1b[31m';
 const YELLOW = '\x1b[33m';
 const RESET = '\x1b[0m';
 
-const WORKSPACE_HEALTH_SCHEMA_URL = 'https://decantr.ai/schemas/workspace-health-report.v1.json';
+const WORKSPACE_HEALTH_SCHEMA_URL = WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL;
 const DEFAULT_IGNORES = new Set([
   '.git',
   '.next',
@@ -65,6 +66,8 @@ export interface WorkspaceHealthProject {
   changed: boolean;
   source: 'manifest' | 'auto';
   error: string | null;
+  loopState?: LoopReadinessState;
+  loopNextAction?: string | null;
 }
 
 export interface WorkspaceHealthReport {
@@ -80,6 +83,14 @@ export interface WorkspaceHealthReport {
     warningCount: number;
     errorCount: number;
     failedCount: number;
+  };
+  loop: {
+    state: LoopReadinessState;
+    status: 'healthy' | 'warning' | 'error' | 'blocked';
+    projectCount: number;
+    blockedCount: number;
+    repairRequiredCount: number;
+    nextActions: string[];
   };
   projects: WorkspaceHealthProject[];
 }
@@ -306,6 +317,8 @@ export async function createWorkspaceHealthReport(
         changed: options.changedOnly ? projectChanged(project, changed) : false,
         source: project.source,
         error: null,
+        loopState: report.loop.state,
+        loopNextAction: report.loop.nextActions[0] ?? null,
       } satisfies WorkspaceHealthProject;
     } catch (error) {
       return {
@@ -321,9 +334,42 @@ export async function createWorkspaceHealthReport(
         changed: options.changedOnly ? projectChanged(project, changed) : false,
         source: project.source,
         error: (error as Error).message,
+        loopState: 'blocked_missing_context',
+        loopNextAction: 'Fix the project health failure, then rerun workspace health.',
       } satisfies WorkspaceHealthProject;
     }
   });
+  const summary = {
+    projectCount: allProjects.length,
+    checkedCount: checked.length,
+    healthyCount: checked.filter((project) => project.status === 'healthy').length,
+    warningCount: checked.filter((project) => project.status === 'warning').length,
+    errorCount: checked.filter((project) => project.status === 'error').length,
+    failedCount: checked.filter((project) => project.status === 'failed').length,
+  };
+  const blockedCount = checked.filter(
+    (project) =>
+      project.loopState?.startsWith('blocked') || project.loopState === 'human_resolution_required',
+  ).length;
+  const repairRequiredCount = checked.filter(
+    (project) => project.loopState === 'repair_required',
+  ).length;
+  const workspaceLoopState: LoopReadinessState =
+    checked.length === 0
+      ? 'needs_context'
+      : blockedCount > 0
+        ? 'human_resolution_required'
+        : repairRequiredCount > 0 || summary.errorCount > 0 || summary.warningCount > 0
+          ? 'repair_required'
+          : 'verified';
+  const workspaceLoopStatus =
+    workspaceLoopState === 'human_resolution_required' || workspaceLoopState.startsWith('blocked')
+      ? 'blocked'
+      : summary.errorCount > 0 || summary.failedCount > 0
+        ? 'error'
+        : summary.warningCount > 0
+          ? 'warning'
+          : 'healthy';
 
   return {
     $schema: WORKSPACE_HEALTH_SCHEMA_URL,
@@ -331,13 +377,18 @@ export async function createWorkspaceHealthReport(
     workspaceRoot,
     changedOnly: options.changedOnly ?? false,
     since: options.changedOnly ? since : null,
-    summary: {
-      projectCount: allProjects.length,
-      checkedCount: checked.length,
-      healthyCount: checked.filter((project) => project.status === 'healthy').length,
-      warningCount: checked.filter((project) => project.status === 'warning').length,
-      errorCount: checked.filter((project) => project.status === 'error').length,
-      failedCount: checked.filter((project) => project.status === 'failed').length,
+    summary,
+    loop: {
+      state: workspaceLoopState,
+      status: workspaceLoopStatus,
+      projectCount: checked.length,
+      blockedCount,
+      repairRequiredCount,
+      nextActions: [
+        workspaceLoopState === 'verified'
+          ? 'Workspace loop verified.'
+          : 'Open the highest-risk project, run `decantr task <route> "<intent>"`, repair, then rerun `decantr verify`.',
+      ],
     },
     projects: checked,
   };
@@ -349,6 +400,7 @@ export function formatWorkspaceHealthText(report: WorkspaceHealthReport): string
     '',
     `Projects: ${report.summary.checkedCount}/${report.summary.projectCount}`,
     `Healthy: ${report.summary.healthyCount} | Warnings: ${report.summary.warningCount} | Errors: ${report.summary.errorCount} | Failed: ${report.summary.failedCount}`,
+    `Loop: ${report.loop.state} | blocked ${report.loop.blockedCount} | repair ${report.loop.repairRequiredCount}`,
     '',
   ];
   for (const project of report.projects) {

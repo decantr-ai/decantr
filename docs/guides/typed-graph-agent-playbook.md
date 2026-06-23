@@ -45,7 +45,7 @@ Use route context when the task is page-scoped:
 }
 ```
 
-The response returns the route, page, shell, composed patterns, components, tokens, local rules, behavior-obligation local rules, style bridge mappings, findings, evidence, provenance, and ranked nodes boosted by the task text.
+The response returns the route, page, shell, composed patterns, components, tokens, local rules, behavior-obligation local rules, style bridge mappings, findings, evidence, provenance, and ranked nodes. Ranking combines deterministic weighted traversal, local personalized PageRank, and task-text boosts so central nodes and task-relevant nodes both rise.
 
 CLI equivalent:
 
@@ -172,4 +172,4 @@ This is the temporal foundation for proving whether an AI edit introduced, resol
 
 ## Repair Plans
 
-When Project Health findings have graph anchors, `decantr_get_repair_plan` includes the anchor and an impact context for the anchored node. Agents should use that impact context to preserve adjacent routes, components, tokens, local rules, and evidence while applying the typed repair action.
+When Project Health findings have graph anchors, `decantr_repair` with `{ "action": "repair_plan" }` includes the anchor and an impact context for the anchored node. Agents should use that impact context to preserve adjacent routes, components, tokens, local rules, and evidence while applying the typed repair action. Use `decantr_repair` with `{ "action": "health_loop" }` after verification when the agent needs the shared v2 loop verdict, authority resolution, and evidence tier before deciding whether to continue, repair, or ask a human.

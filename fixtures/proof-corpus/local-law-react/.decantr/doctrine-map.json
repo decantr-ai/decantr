@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "generatedAt": "2026-06-23T00:00:00.000Z",
+  "precedenceOrder": [
+    "security-data",
+    "architecture",
+    "design-system",
+    "workflow-ci",
+    "feature-business",
+    "assistant-specific",
+    "stale-or-historical",
+    "unknown"
+  ],
+  "sources": [],
+  "summary": {
+    "security-data": 0,
+    "architecture": 0,
+    "design-system": 0,
+    "workflow-ci": 0,
+    "feature-business": 0,
+    "assistant-specific": 0,
+    "stale-or-historical": 0,
+    "unknown": 0
+  },
+  "conflicts": [],
+  "staleRisks": [],
+  "resolutions": [],
+  "guidance": [
+    "Proof fixture baseline uses source files plus accepted Decantr local law as authority."
+  ]
+}

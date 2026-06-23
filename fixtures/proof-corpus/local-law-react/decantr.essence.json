@@ -1,0 +1,42 @@
+{
+  "version": "4.0.0",
+  "dna": {
+    "theme": { "id": "proof-lab", "mode": "light", "shape": "rounded" },
+    "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 650, "body_weight": 400 },
+    "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+    "radius": { "philosophy": "rounded", "base": 8 },
+    "elevation": { "system": "layered", "max_levels": 3 },
+    "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+    "personality": ["operational", "trustworthy", "quiet"]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "operations",
+        "role": "primary",
+        "shell": "sidebar-main",
+        "features": ["task-review"],
+        "description": "Brownfield operations surface with project-owned controls.",
+        "pages": [
+          {
+            "id": "review",
+            "route": "/",
+            "layout": ["dashboard-summary", "action-panel"]
+          }
+        ]
+      }
+    ],
+    "features": ["task-review"],
+    "routes": {
+      "/": { "section": "operations", "page": "review" }
+    }
+  },
+  "meta": {
+    "archetype": "operations",
+    "target": "react-vite",
+    "platform": { "type": "spa", "routing": "history" },
+    "guard": { "mode": "guided", "dna_enforcement": "error", "blueprint_enforcement": "warn" }
+  }
+}

@@ -131,9 +131,9 @@ The server exposes a hard 8-tool MCP surface. Pass an `action` to select the rou
 | `decantr_context` | Read scaffold, section, page, task, and execution-pack context | `{ "action": "task", "project_path": "apps/web", "route": "/feed", "task": "improve recipe card loading" }` |
 | `decantr_graph` | Read graph snapshots, query graph nodes/edges, or traverse graph relations | `{ "action": "query", "project_path": "apps/web", "file_path": "src/app/page.tsx", "include_impact": true }` |
 | `decantr_registry` | Search and resolve hosted registry content, benchmarks, and execution packs | `{ "action": "resolve_pattern", "id": "data-table", "preset": "product" }` |
-| `decantr_verify` | Run audit, critique, findings, evidence, or health-loop reads | `{ "action": "critique", "file_path": "./src/pages/Overview.tsx" }` |
-| `decantr_repair` | Return typed findings, repair plans, repair prompts, and repair loop guidance | `{ "action": "repair_plan", "project_path": "apps/web", "code": "TOKEN010" }` |
-| `decantr_contract_write` | Explicit write surface for accepting drift or mutating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
+| `decantr_verify` | Run audit, critique, findings, v2 evidence bundles, or health-loop reads | `{ "action": "evidence_bundle", "project_path": "apps/web" }` |
+| `decantr_repair` | Return typed findings, repair plans, repair prompts, and v2 health-loop guidance | `{ "action": "health_loop", "project_path": "apps/web" }` |
+| `decantr_contract_write` | Explicit write surface for accepting drift, deferring drift to the drift log, or mutating Essence v4 | `{ "action": "update_essence", "operation": "add_feature", "payload": { "feature": "billing" } }` |
 
 For the broader product surface and support policy, see the root Decantr docs and package support matrix.
 
@@ -141,7 +141,7 @@ For Decantr 3 assistant prompt migration, see the MCP migration guide: https://d
 
 ## Security And Permissions
 
-The MCP server reads Decantr files, including `.decantr/graph` typed graph artifacts, and selected project files from the active workspace. Write access is limited to the explicit `decantr_contract_write` tool with `accept_drift` and `update_essence` actions, and paths are contained to the active workspace root.
+The MCP server reads Decantr files, including `.decantr/graph` typed graph artifacts, and selected project files from the active workspace. Write access is limited to the explicit `decantr_contract_write` tool with `accept_drift` and `update_essence` actions. `accept_drift` may defer a finding to `.decantr/drift-log.json` when the caller explicitly requests that resolution. Paths are contained to the active workspace root.
 
 Registry and pack-resolution tools may call the configured Decantr API. Source upload fallbacks for hosted critique/audit are disabled unless the tool call explicitly passes `allow_hosted_upload: true`. The MCP server does not emit Decantr telemetry. See [security permissions](https://decantr.ai/reference/security-permissions.md).
 
@@ -155,7 +155,7 @@ Registry and pack-resolution tools may call the configured Decantr API. Source u
 
 ### 3.4 Tool Surface Migration
 
-Decantr 3.4 consolidates legacy MCP tool names into the eight action-based tools above. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
+Decantr 3.4 consolidated legacy MCP tool names into the eight action-based tools above. Decantr 3.5 keeps that surface and upgrades task, evidence, workspace health, and health-loop responses to v2 loop/evidence contracts. For example, `decantr_get_project_state` becomes `decantr_project` with `{ "action": "state" }`, `decantr_get_graph_snapshot` becomes `decantr_graph` with `{ "action": "snapshot" }`, and the legacy write tools become `decantr_contract_write` with `{ "action": "accept_drift" }` or `{ "action": "update_essence" }`.
 
 ## How It Works
 
@@ -172,8 +172,8 @@ The AI assistant calls these tools behind the scenes:
 3. `decantr_context` with `execution_pack` or `task` actions to load the compact task contract before editing
 4. `decantr_project` with `state` to check Essence, packs, graph readiness, local law, diagnostics, and next useful action calls
 5. `decantr_contract` with `capsule` and `decantr_graph` with `snapshot`, `query`, or `traverse` to read typed graph context
-6. `decantr_verify` with `critique`, `audit_project`, or `evidence_bundle` to produce local evidence; hosted upload remains opt-in with `allow_hosted_upload: true`
-7. `decantr_repair` with `findings`, `repair_plan`, or `repair_prompt` to enter a scoped evidence-backed repair loop
+6. `decantr_verify` with `critique`, `audit_project`, or `evidence_bundle` to produce local v2 evidence; hosted upload remains opt-in with `allow_hosted_upload: true`
+7. `decantr_repair` with `findings`, `repair_plan`, `repair_prompt`, or `health_loop` to enter a scoped evidence-backed repair loop
 
 The AI now generates code with the right layout structure, correct components, and consistent styling, then gets a scoped evidence-backed repair loop instead of a generic guess.
 

@@ -1,17 +1,16 @@
 # Decantr Docs
 
-This reset branch treats the active program docs, audits, and implementation specs as current source of truth.
+The Decantr 3 public docs now treat the reference pages, guides, schemas, release notes, and release runbooks as the current source of truth. Historical program docs remain useful background, but the active user-facing model is Decantr 3.5: Contract, Context, Evidence, Authority Resolution, typed graph impact, Studio Control Room, and the Brownfield control loop.
 
-The Decantr 3.0 AI Frontend Governance reset is captured in `programs/2026-05-21-ai-frontend-governance-reset-plan.md`. Treat it as the active strategic planning source for the hard-cut 3.x initiative. The existing Hybrid and Brownfield 2.x docs remain the operational source of truth until a 3.x implementation branch, package line, and public docs are explicitly cut over.
+The Decantr 3.0 AI Frontend Governance reset is captured in `programs/2026-05-21-ai-frontend-governance-reset-plan.md`. Treat it as historical strategy unless a current reference page or release note re-promotes a decision.
 
 For quick setup help, showcase feedback, and live community discussion, join the [Decantr Discord](https://discord.gg/WeDpBd4xFU). GitHub issues, pull requests, and these docs remain the canonical home for bugs, feature requests, and durable decisions.
 
 ## Active Docs
 
 - `programs/`
-  - Branch-level product strategy and program structure.
-  - Current 3.0 reset program: `programs/2026-05-21-ai-frontend-governance-reset-plan.md`.
-  - Current Hybrid program: `programs/2026-05-15-hybrid-fortification-plan.md`.
+  - Historical product strategy, program structure, and planning checkpoints.
+  - Important background: `programs/2026-05-21-ai-frontend-governance-reset-plan.md` and `programs/2026-05-15-hybrid-fortification-plan.md`.
 - `audit/`
   - Baseline audits, keep/cut decisions, package surface review, and platform contract findings.
   - Latest Brownfield confidence report: `audit/2026-05-15-brownfield-2-9-dogfood-confidence.md`.
@@ -28,13 +27,12 @@ For quick setup help, showcase feedback, and live community discussion, join the
   - Human-readable references for active public/runtime contracts such as Project Health, Evidence Bundles, Workspace Health, Content Health, workflow mode, telemetry, and registry API surfaces.
 - `guides/`
   - Focused public entry points for existing-app adoption, monorepos, Project Health CI, AI assistant setup, typed graph agent operation, registry publishing, and design contract basics.
-- Brownfield 2.9 operating-layer guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `guides/typed-graph-agent-playbook.md`, `reference/workflow-model.md`, `reference/project-health.md`, `reference/diagnostic-codes.md`, and `reference/command-surface.md`: `adopt`, automatic online pack hydration, `doctor`, `ci`, monorepo `--project` onboarding, app-scoped primitives, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts and read targets, `task`, `verify`, `codify --from-audit --style-bridge`, analyze artifacts, theme inventory, task-time MCP/CLI context, typed route/impact graph context, optional visual manifest, baselines, local pattern proposals, local rule proposals, project-owned `behavior_obligations`, production-UI interaction evidence, contract-only token-export copy, Brownfield `add page` / `add feature` section aliases, and changed-file impact.
-- Hybrid 2.13 guidance extends the same docs with hosted-pattern-to-local-law mapping, richer source evidence and confidence tiers in `codify --from-audit`, clearer enforceable-versus-advisory Hybrid output in `verify`, `task`, and `ci`, and the Decantr 3 typed graph foundation. The active 2.x implementation note is `releases/2026-05-21-hybrid-local-law-v2-repair-2-13-1.md`; the Decantr 3 reset plan is `programs/2026-05-21-ai-frontend-governance-reset-plan.md`.
+- Decantr 3.5 control-loop guidance lives in `guides/existing-apps.md`, `guides/monorepos.md`, `guides/project-health-ci.md`, `guides/ai-assistant-setup.md`, `guides/typed-graph-agent-playbook.md`, `reference/workflow-model.md`, `reference/project-health.md`, `reference/report-schemas.md`, `reference/diagnostic-codes.md`, `reference/mcp-migration.md`, and `reference/command-surface.md`: `scan`, `adopt`, Studio Control Room, `doctor`, `task`, `verify`, `resolve`, `ci`, monorepo `--project` onboarding, app-scoped primitives, v2 Project Health/CI/Workspace/Evidence schemas, authority resolution, loop readiness, hybrid graph ranking, pinned root CI workflows, generic CI snippets, project-scoped remediation prompts and read targets, `codify --from-audit --style-bridge`, analyze artifacts, theme inventory, task-time MCP/CLI context, typed route/impact graph context, optional visual manifest, baselines, local pattern proposals, local rule proposals, project-owned `behavior_obligations`, production-UI interaction evidence, contract-only token-export copy, Brownfield `add page` / `add feature` section aliases, changed-file impact, and proof-field benchmark reporting.
 - Installed-package security posture is captured in `reference/security-permissions.md`. It is generated from `config/package-permissions.json` and distinguishes published npm surfaces from internal monorepo scripts, showcase fixtures, and release automation.
 - `releases/`
   - Short product release notes for shipped user-facing surfaces.
-  - Current behavior-obligations note: `releases/2026-05-23-behavior-obligations.md`.
-  - Latest Hybrid operating-layer note: `releases/2026-05-21-hybrid-local-law-v2-repair-2-13-1.md`.
+  - Latest 3.5 control-loop note: `releases/2026-06-23-decantr-3-5-0-brownfield-control-loop.md`.
+  - Earlier behavior-obligations note: `releases/2026-05-23-behavior-obligations.md`.
 - `schemas/`
   - Published public schema copies and the schema index surfaced at `https://decantr.ai/schemas/`.
 - `runbooks/`

@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/project-health-report.v2.json",
+  "title": "Decantr Project Health Report v2",
+  "type": "object",
+  "required": [
+    "$schema",
+    "generatedAt",
+    "projectRoot",
+    "status",
+    "score",
+    "summary",
+    "routes",
+    "packs",
+    "graph",
+    "evidenceTier",
+    "authority",
+    "loop",
+    "ci",
+    "findings"
+  ],
+  "properties": {
+    "$schema": { "const": "https://decantr.ai/schemas/project-health-report.v2.json" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "projectRoot": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["healthy", "warning", "error"] },
+    "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "summary": { "type": "object", "additionalProperties": true },
+    "routes": { "type": "object", "additionalProperties": true },
+    "packs": { "type": "object", "additionalProperties": true },
+    "graph": { "type": "object", "additionalProperties": true },
+    "evidenceTier": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v2.json#/$defs/evidenceTier"
+    },
+    "authority": { "$ref": "https://decantr.ai/schemas/authority-resolution.v2.json" },
+    "loop": { "$ref": "https://decantr.ai/schemas/loop-readiness.v2.json" },
+    "ci": {
+      "type": "object",
+      "required": ["recommendedCommand", "failOn"],
+      "properties": {
+        "recommendedCommand": { "type": "string" },
+        "failOn": { "type": "string", "enum": ["error", "warn", "none"] }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/projectHealthFinding" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "projectHealthFinding": {
+      "type": "object",
+      "required": [
+        "id",
+        "source",
+        "category",
+        "severity",
+        "message",
+        "evidence",
+        "remediation"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "source": { "type": "string" },
+        "category": { "type": "string" },
+        "severity": { "type": "string", "enum": ["error", "warn", "info"] },
+        "message": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "target": { "type": "string" },
+        "file": { "type": "string" },
+        "rule": { "type": "string" },
+        "suggestedFix": { "type": "string" },
+        "graph": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor"
+        },
+        "repair": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/repairAction"
+        },
+        "repairPlan": { "type": "object", "additionalProperties": true },
+        "evidenceTier": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v2.json#/$defs/evidenceTier"
+        },
+        "authorityLane": { "type": "string" },
+        "resolutionActions": {
+          "type": "array",
+          "items": { "$ref": "https://decantr.ai/schemas/authority-resolution.v2.json#/$defs/resolutionAction" }
+        },
+        "privacy": {
+          "type": "object",
+          "required": ["sourceIncluded", "redacted", "localOnly"],
+          "properties": {
+            "sourceIncluded": { "const": false },
+            "redacted": { "type": "boolean" },
+            "localOnly": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        },
+        "loopVerdict": {
+          "type": "string",
+          "enum": [
+            "needs_context",
+            "ready_to_edit",
+            "verify_required",
+            "repair_required",
+            "human_resolution_required",
+            "blocked_missing_context",
+            "blocked_missing_graph",
+            "verified"
+          ]
+        },
+        "remediation": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    }
+  }
+}

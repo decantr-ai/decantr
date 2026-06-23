@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/verification-report.common.v2.json",
+  "title": "Decantr Verification Report Common Definitions v2",
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "graphAnchor": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/graphAnchor"
+    },
+    "repairAction": {
+      "$ref": "https://decantr.ai/schemas/verification-report.common.v1.json#/$defs/repairAction"
+    },
+    "evidenceTier": {
+      "type": "object",
+      "required": ["schemaVersion", "stage", "status", "capabilities", "coverage", "confidence"],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "stage": {
+          "type": "string",
+          "enum": ["static", "graph", "runtime", "visual", "repair", "proof"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "warning", "error", "incomplete"]
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "static-audit",
+              "project-health",
+              "typed-graph",
+              "runtime-probe",
+              "browser-evidence",
+              "visual-baseline",
+              "repair-plan",
+              "benchmark-replay"
+            ]
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "required": [
+            "declaredRoutes",
+            "runtimeRoutesChecked",
+            "findingsAnchored",
+            "findingsWithRepairPlan",
+            "runtimeProbeCount",
+            "visualArtifactCount"
+          ],
+          "properties": {
+            "declaredRoutes": { "type": "integer", "minimum": 0 },
+            "runtimeRoutesChecked": { "type": "integer", "minimum": 0 },
+            "findingsAnchored": { "type": "integer", "minimum": 0 },
+            "findingsWithRepairPlan": { "type": "integer", "minimum": 0 },
+            "runtimeProbeCount": { "type": "integer", "minimum": 0 },
+            "visualArtifactCount": { "type": "integer", "minimum": 0 }
+          },
+          "additionalProperties": false
+        },
+        "confidence": {
+          "type": "object",
+          "required": ["level", "score", "reasons"],
+          "properties": {
+            "level": { "type": "string", "enum": ["low", "moderate", "high"] },
+            "score": { "type": "number", "minimum": 0, "maximum": 1 },
+            "reasons": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "authorityResolution": {
+      "$ref": "https://decantr.ai/schemas/authority-resolution.v2.json"
+    },
+    "loopReadiness": {
+      "$ref": "https://decantr.ai/schemas/loop-readiness.v2.json"
+    }
+  }
+}

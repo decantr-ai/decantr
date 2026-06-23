@@ -1,6 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
-import type { ProjectHealthReport } from '@decantr/verifier';
+import type {
+  AuthorityResolution,
+  EvidenceTier,
+  LoopReadiness,
+  ProjectHealthReport,
+} from '@decantr/verifier';
+import { DECANTR_CI_REPORT_V2_SCHEMA_URL } from '@decantr/verifier';
 import { validateLocalLaw } from '../local-law.js';
 import { createStyleBridgeTaskSummary } from '../style-bridge.js';
 import { resolveWorkspaceInfo } from '../workspace.js';
@@ -78,6 +84,9 @@ interface ProjectCiReport {
   projectPath: string | null;
   failOn: HealthFailOn;
   status: ProjectHealthReport['status'];
+  loop: LoopReadiness;
+  authority: AuthorityResolution;
+  evidenceTier: EvidenceTier;
   health: ProjectHealthReport;
   localLaw: LocalLawCiSummary;
   styleBridge: StyleBridgeCiSummary;
@@ -89,10 +98,11 @@ interface WorkspaceCiReport {
   mode: 'workspace';
   failOn: HealthFailOn;
   status: 'healthy' | 'warning' | 'error';
+  loop: WorkspaceHealthReport['loop'];
   workspace: WorkspaceHealthReport;
 }
 
-const CI_SCHEMA = 'https://decantr.ai/schemas/decantr-ci-report.v1.json';
+const CI_SCHEMA = DECANTR_CI_REPORT_V2_SCHEMA_URL;
 
 function readJson(path: string): {
   packageManager?: string;
@@ -429,6 +439,9 @@ function formatProjectCiMarkdown(report: ProjectCiReport): string {
     `- Project: \`${report.projectPath ?? '.'}\``,
     `- Status: **${report.status}**`,
     `- Fail on: \`${report.failOn}\``,
+    `- Loop: **${report.loop.state}**`,
+    `- Evidence tier: **${report.evidenceTier.stage}** / ${report.evidenceTier.confidence.level}`,
+    `- Authority: **${report.authority.activeLane}**`,
     `- Local law: ${
       report.localLaw.checked
         ? `${report.localLaw.errorCount} error(s), ${report.localLaw.warnCount} warning(s)`
@@ -454,6 +467,7 @@ function formatWorkspaceCiMarkdown(report: WorkspaceCiReport): string {
     '- Mode: **workspace**',
     `- Status: **${report.status}**`,
     `- Fail on: \`${report.failOn}\``,
+    `- Loop: **${report.loop.state}**`,
     '',
     formatWorkspaceHealthMarkdown(report.workspace),
   ];
@@ -634,6 +648,7 @@ async function runWorkspaceCi(root: string, options: CiOptions): Promise<number>
     mode: 'workspace',
     failOn,
     status: workspaceStatus(workspace),
+    loop: workspace.loop,
     workspace,
   };
   const json = `${JSON.stringify(report, null, 2)}\n`;
@@ -679,6 +694,9 @@ async function runProjectCi(root: string, options: CiOptions): Promise<number> {
     projectPath,
     failOn,
     status: projectCiStatus(health, localLaw, styleBridge),
+    loop: health.loop,
+    authority: health.authority,
+    evidenceTier: health.evidenceTier,
     health,
     localLaw,
     styleBridge,

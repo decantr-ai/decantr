@@ -44,6 +44,8 @@ import {
   auditProject,
   critiqueFile as critiqueProjectFile,
   type FileCritiqueReport,
+  LOOP_READINESS_V2_SCHEMA_URL,
+  type LoopReadiness,
   type ProjectAuditReport,
   type ScanFindingV1,
   type ScanGraphPreviewV1,
@@ -81,6 +83,7 @@ import { cmdPublish } from './commands/publish.js';
 import { cmdRefresh } from './commands/refresh.js';
 import { cmdRegistryMirror } from './commands/registry-mirror.js';
 import { cmdRemoveFeature, cmdRemovePage, cmdRemoveSection } from './commands/remove.js';
+import { cmdResolve } from './commands/resolve.js';
 import { cmdSyncDrift, resolveDriftEntries } from './commands/sync-drift.js';
 import { cmdTelemetry } from './commands/telemetry.js';
 import { cmdThemeSwitch } from './commands/theme-switch.js';
@@ -4796,6 +4799,132 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     taskSummary,
     hasStyleBridge: existsSync(acceptedStyleBridgePath),
   });
+  const readTargets = [
+    pagePack
+      ? displayProjectPath(workspaceInfo, join('.decantr/context', pagePack.markdown))
+      : null,
+    sectionPack
+      ? displayProjectPath(workspaceInfo, join('.decantr/context', sectionPack.markdown))
+      : null,
+    manifest?.scaffold?.markdown
+      ? displayProjectPath(workspaceInfo, join('.decantr/context', manifest.scaffold.markdown))
+      : null,
+    displayProjectPath(workspaceInfo, '.decantr/context/scaffold.md'),
+    displayProjectPath(workspaceInfo, 'DECANTR.md'),
+    existsSync(localPatternPackPath)
+      ? displayProjectPath(workspaceInfo, '.decantr/local-patterns.json')
+      : null,
+    existsSync(localRuleManifestPath)
+      ? displayProjectPath(workspaceInfo, '.decantr/rules.json')
+      : null,
+    existsSync(acceptedStyleBridgePath)
+      ? displayProjectPath(workspaceInfo, '.decantr/style-bridge.json')
+      : null,
+    contractCapsule
+      ? displayProjectPath(workspaceInfo, '.decantr/graph/contract-capsule.json')
+      : null,
+    routeGraphContext && !contractCapsule
+      ? displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json')
+      : null,
+  ].filter((value): value is string => Boolean(value));
+  const taskLoopState: LoopReadiness['state'] =
+    readTargets.length === 0
+      ? 'blocked_missing_context'
+      : !routeGraphContext
+        ? 'blocked_missing_graph'
+        : 'ready_to_edit';
+  const taskLoop: LoopReadiness = {
+    $schema: LOOP_READINESS_V2_SCHEMA_URL,
+    schemaVersion: 2,
+    state: taskLoopState,
+    status: taskLoopState === 'ready_to_edit' ? 'healthy' : 'blocked',
+    verdict:
+      taskLoopState === 'ready_to_edit'
+        ? 'Task context is ready for an agent edit.'
+        : 'Task context is missing required context or graph evidence.',
+    summary: `${route} task context with ${readTargets.length} read target(s), ${routeGraphContext ? routeGraphContext.summary.nodes : 0} graph node(s), and ${changedRoutes.length} changed-route hint(s).`,
+    authority: {
+      activeLane:
+        projectJson?.initialized?.workflowMode === 'brownfield-attach'
+          ? 'production-source'
+          : 'essence-contract',
+      summary: `${authority.lane}: ${authority.sourceAuthority}`,
+      stopRule:
+        'If runtime source and Decantr context disagree, stop and report drift instead of guessing.',
+    },
+    evidenceTier: {
+      schemaVersion: 2,
+      stage: routeGraphContext ? 'graph' : 'static',
+      status: taskLoopState === 'ready_to_edit' ? 'healthy' : 'incomplete',
+      capabilities: routeGraphContext
+        ? ['static-audit', 'project-health', 'typed-graph']
+        : ['static-audit', 'project-health'],
+      coverage: {
+        declaredRoutes: 1,
+        runtimeRoutesChecked: 0,
+        findingsAnchored: routeGraphContext?.summary.openFindings ?? 0,
+        findingsWithRepairPlan: 0,
+        runtimeProbeCount: 0,
+        visualArtifactCount: screenshot ? 1 : 0,
+      },
+      confidence: {
+        level: routeGraphContext ? 'moderate' : 'low',
+        score: routeGraphContext ? 0.64 : 0.32,
+        reasons: [
+          routeGraphContext ? 'route graph context is present' : 'route graph context is missing',
+          screenshot
+            ? 'visual evidence reference is available'
+            : 'no visual evidence reference was found',
+        ],
+      },
+    },
+    blockingReasons:
+      taskLoopState === 'ready_to_edit'
+        ? []
+        : [
+            taskLoopState === 'blocked_missing_graph'
+              ? 'Route graph context is missing or stale.'
+              : 'Route context read targets are missing.',
+          ],
+    nextActions:
+      taskLoopState === 'ready_to_edit'
+        ? ['Edit only after reading the listed context, then run the verify command.']
+        : [
+            taskLoopState === 'blocked_missing_graph'
+              ? 'Run `decantr graph`, then rerun `decantr task`.'
+              : 'Run `decantr refresh`, then rerun `decantr task`.',
+          ],
+    maker: {
+      title: 'Maker instructions',
+      instructions: [
+        'Read the listed route, section, scaffold, DECANTR, local-law, and graph targets before editing.',
+        'Preserve the active authority lane and existing production behavior outside this task.',
+        'Stop and report drift if source, graph, and contract context disagree.',
+      ],
+    },
+    checker: {
+      title: 'Checker instructions',
+      instructions: [
+        'Rerun the verify command after edits.',
+        'Use changed-file graph impact and route findings to decide whether more routes need review.',
+        'Do not treat advisory critique as blocking without T1/T2 evidence.',
+      ],
+    },
+    readTargets,
+    graphImpact: {
+      status: routeGraphContext ? 'ready' : graphSnapshot ? 'stale' : 'missing',
+      snapshotId: routeGraphContext?.snapshotId ?? graphSnapshot?.id ?? null,
+      sourceHash: routeGraphContext?.sourceHash ?? graphSnapshot?.source_hash ?? null,
+      sourceArtifactCount: routeGraphContext?.summary.sourceArtifacts ?? 0,
+      staleArtifacts: [],
+    },
+    stopConditions: [
+      'Runtime source and Decantr context disagree.',
+      'The route graph cannot resolve a source file affected by the edit.',
+      'A fix requires contract/source/local-law mutation outside the explicit workflow.',
+    ],
+    verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
+  };
 
   const context = {
     route,
@@ -4804,34 +4933,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     page: target.page,
     shell: page?.shell ?? section?.shell ?? null,
     patterns: routePatterns,
-    read: [
-      pagePack
-        ? displayProjectPath(workspaceInfo, join('.decantr/context', pagePack.markdown))
-        : null,
-      sectionPack
-        ? displayProjectPath(workspaceInfo, join('.decantr/context', sectionPack.markdown))
-        : null,
-      manifest?.scaffold?.markdown
-        ? displayProjectPath(workspaceInfo, join('.decantr/context', manifest.scaffold.markdown))
-        : null,
-      displayProjectPath(workspaceInfo, '.decantr/context/scaffold.md'),
-      displayProjectPath(workspaceInfo, 'DECANTR.md'),
-      existsSync(localPatternPackPath)
-        ? displayProjectPath(workspaceInfo, '.decantr/local-patterns.json')
-        : null,
-      existsSync(localRuleManifestPath)
-        ? displayProjectPath(workspaceInfo, '.decantr/rules.json')
-        : null,
-      existsSync(acceptedStyleBridgePath)
-        ? displayProjectPath(workspaceInfo, '.decantr/style-bridge.json')
-        : null,
-      contractCapsule
-        ? displayProjectPath(workspaceInfo, '.decantr/graph/contract-capsule.json')
-        : null,
-      routeGraphContext && !contractCapsule
-        ? displayProjectPath(workspaceInfo, '.decantr/graph/graph.snapshot.json')
-        : null,
-    ].filter(Boolean),
+    read: readTargets,
     graph:
       contractCapsule || graphSnapshot
         ? {
@@ -4890,6 +4992,7 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
     styleBridge: displayedStyleBridge,
     changedFiles: currentChangedFiles,
     changedRoutes,
+    loop: taskLoop,
     verifyCommand: withProject('decantr verify --brownfield --local-patterns', projectArg),
   };
 
@@ -5079,6 +5182,13 @@ async function cmdTaskWorkflow(args: string[]): Promise<void> {
       console.log(`  Impacted routes: ${context.changedRoutes.join(', ')}`);
     }
   }
+  console.log('');
+  console.log(`${BOLD}Control loop:${RESET}`);
+  console.log(
+    `  State: ${context.loop.state} | evidence ${context.loop.evidenceTier.confidence.level}`,
+  );
+  console.log(`  Next: ${context.loop.nextActions[0]}`);
+  console.log(`  Stop: ${context.loop.stopConditions[0]}`);
   console.log('');
   console.log(`${BOLD}LLM instruction:${RESET}`);
   console.log(
@@ -5305,6 +5415,7 @@ ${BOLD}Usage:${RESET}
   decantr adopt [--project <path>] [--base-url <url>] [--evidence] [--ci] [--no-packs] [--yes]
   decantr task <route> ["task summary"] [--project <path>] [--since origin/main] [--json]
   decantr verify [--project <path>] [--brownfield] [--local-patterns] [health options]
+  decantr resolve [--project <path>] [--json] [--defer <finding-id>] [--mark-advisory <finding-id>]
   decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
   decantr doctor [--project <path>] [--workspace] [--json]
@@ -5324,6 +5435,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr check
   decantr check --brownfield
   decantr sync-drift
+  decantr resolve [--json]
   decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
   decantr search <query> [--type <type>] [--sort <recommended|recent|name>] [--recommended] [--source <authored|benchmark|hybrid>]
   decantr suggest <query> [--type <type>] [--route <route>] [--file <path>] [--from-code]
@@ -5387,6 +5499,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('adopt')}       Brownfield one-liner: analyze, attach, verify, and show next steps
   ${cyan('task')}        Prepare route/task context, local law, behavior obligations, evidence, and changed-file impact for an AI coding assistant
   ${cyan('verify')}      One reliability gate over Project Health, Brownfield checks, baselines, and evidence
+  ${cyan('resolve')}     Read authority conflicts and explicitly defer/advisory-mark drift
   ${cyan('graph')}       Build typed Contract graph artifacts and the agent cache capsule
   ${cyan('ci')}          Non-mutating CI gate and CI integration generator
   ${cyan('doctor')}      Explain Decantr state, artifact ownership, and the next command
@@ -5406,6 +5519,7 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('migrate')}     Migrate older essence files to v4 format (with .pre-v4.backup.json backup)
   ${cyan('check')}       Detect drift issues (validate + guard rules) [--telemetry] [--brownfield]
   ${cyan('sync-drift')}  Review and resolve drift log entries
+  ${cyan('resolve')}     Group source-vs-contract conflicts and print exact resolution actions
   ${cyan('graph')}       Generate .decantr/graph snapshot, history, manifest, diff, and contract capsule
   ${cyan('search')}      Search official/community vocabulary
   ${cyan('suggest')}     Suggest patterns or alternatives for a query
@@ -5435,6 +5549,7 @@ ${BOLD}Examples:${RESET}
   decantr adopt --project apps/web --yes
   decantr task /feed "add saved recipe actions"
   decantr verify --brownfield --local-patterns
+  decantr resolve
   decantr graph --project apps/web
   decantr graph --project apps/web --route /feed --task "improve loading" --json
   decantr graph --project apps/web --file src/app/page.tsx --impact --json
@@ -5497,6 +5612,7 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
   ${cyan('Brownfield monorepo')}    decantr adopt --project apps/web --yes
   ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify --brownfield --local-patterns
+  ${cyan('Drift resolution')}        decantr resolve -> codify/init/graph/repair source explicitly
   ${cyan('Typed contract graph')}    decantr graph -> agent session loads .decantr/graph/contract-capsule.json
   ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
   ${cyan('Hybrid composition')}     decantr add/remove, decantr theme switch, decantr registry, decantr upgrade
@@ -5663,6 +5779,12 @@ ${BOLD}Options:${RESET}
 ${BOLD}Endpoints:${RESET}
   GET  /
   GET  /api/health
+  GET  /api/control-room
+  GET  /api/resolve
+  GET  /api/evidence
+  GET  /api/graph-impact
+  GET  /api/task-preview
+  GET  /api/proof
   POST /api/refresh
 
 ${BOLD}Examples:${RESET}
@@ -5791,6 +5913,29 @@ ${BOLD}Examples:${RESET}
 `);
 }
 
+function cmdResolveHelp() {
+  console.log(`
+${BOLD}decantr resolve${RESET} — Explain source-vs-contract authority conflicts
+
+${BOLD}Usage:${RESET}
+  decantr resolve [--project <path>] [--json]
+  decantr resolve --defer <finding-id>
+  decantr resolve --mark-advisory <finding-id>
+
+${BOLD}Behavior:${RESET}
+  Read-only by default. Writes are limited to .decantr/drift-log.json and require
+  --defer or --mark-advisory. Contract, source, local-law, and style-bridge changes
+  still go through explicit commands such as codify, init --existing --merge-proposal,
+  graph, or contract_write over MCP.
+
+${BOLD}Examples:${RESET}
+  decantr resolve
+  decantr resolve --json
+  decantr resolve --project apps/web
+  decantr resolve --defer brownfield-route-drift
+`);
+}
+
 function cmdCodifyHelp() {
   console.log(`
 ${BOLD}decantr codify${RESET} — Propose or accept project-owned Brownfield UI law, behavior obligations, and style bridges
@@ -5853,6 +5998,9 @@ function printCommandHelp(command: string, args: string[]): boolean {
       return true;
     case 'task':
       cmdTaskHelp();
+      return true;
+    case 'resolve':
+      cmdResolveHelp();
       return true;
     case 'codify':
       cmdCodifyHelp();
@@ -5952,6 +6100,17 @@ async function main() {
 
     case 'verify': {
       await cmdVerifyWorkflow(args);
+      break;
+    }
+
+    case 'resolve': {
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['project', 'json', 'defer', 'mark-advisory'], 'resolve')) {
+        break;
+      }
+      const workspaceInfo = resolveWorkflowProject(flags, 'resolve');
+      if (!workspaceInfo) break;
+      await cmdResolve(workspaceInfo.appRoot, args);
       break;
     }
 

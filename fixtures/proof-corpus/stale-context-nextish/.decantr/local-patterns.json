@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "status": "accepted",
+  "patterns": [
+    {
+      "id": "overview",
+      "status": "accepted",
+      "componentPaths": ["app/page.tsx"]
+    },
+    {
+      "id": "settings-form",
+      "status": "accepted",
+      "componentPaths": ["app/settings/page.tsx"]
+    }
+  ]
+}

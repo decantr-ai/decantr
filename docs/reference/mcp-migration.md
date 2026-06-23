@@ -12,7 +12,8 @@ For an existing app, MCP clients should prefer this sequence:
 4. `decantr_graph` with `{ "action": "snapshot" }`, `{ "action": "query" }`, or `{ "action": "traverse" }`
 5. `decantr_repair` with `{ "action": "findings" }` or `{ "action": "repair_plan" }`
 6. `decantr_verify` with `{ "action": "evidence_bundle" }`
-7. `decantr_project` with `{ "action": "workspace_health" }` for monorepos
+7. `decantr_repair` with `{ "action": "health_loop" }`
+8. `decantr_project` with `{ "action": "workspace_health" }` for monorepos
 
 This keeps the assistant grounded in the adopted app contract, route-local context, active authority lane, typed graph anchors, stable diagnostic codes, and repairable evidence before it edits source.
 
@@ -26,7 +27,7 @@ Older prompts often started with registry or essence generation tools:
 - `decantr_check_drift`
 - broad `decantr_audit_project` calls without project state
 
-In Decantr 3.4 these direct names are no longer callable. Use the migration table below to route the same behavior through the eight consolidated tools. For existing apps, first discover the project state, then prepare task context for the route and task at hand.
+In Decantr 3.4 and later these direct names are no longer callable. Use the migration table below to route the same behavior through the eight consolidated tools. For existing apps, first discover the project state, then prepare task context for the route and task at hand.
 
 | Older direct tool | 3.4 consolidated call |
 | --- | --- |
@@ -66,7 +67,7 @@ Then use MCP for agent-time context:
 }
 ```
 
-`decantr_context` with `action: "task"` should return the selected route context, task-ranked graph nodes, accepted local law, behavior obligations, style bridge mappings, changed-file impact when available, and the recommended verification loop.
+`decantr_context` with `action: "task"` returns the selected route context, task-ranked graph nodes, accepted local law, behavior obligations, style bridge mappings, changed-file impact when available, and a v2 loop block with maker instructions, checker instructions, authority summary, read targets, graph impact, stop conditions, and the verify command.
 
 ## Contract Capsule Use
 
@@ -78,9 +79,10 @@ After an edit or failed check:
 
 - use `decantr_repair` with `action: "findings"` to filter by code, severity, source, or category
 - use `decantr_repair` with `action: "repair_plan"` for structured repair actions, graph anchors, read targets, preserve/avoid constraints, and rerun commands
-- use `decantr_verify` with `action: "evidence_bundle"` for the privacy-redacted artifact that can be saved in CI or used by a dashboard
+- use `decantr_repair` with `action: "health_loop"` for the shared v2 loop verdict, authority resolution, and evidence tier
+- use `decantr_verify` with `action: "evidence_bundle"` for the privacy-redacted v2 artifact that can be saved in CI or used by a dashboard
 
-The v1 Evidence Bundle remains the active emitted payload. The v2 Evidence Bundle and runtime probe schemas are documented in [Report Schemas](report-schemas.md) for the upcoming dashboard/proof-corpus lanes.
+The v2 Project Health, Evidence Bundle, runtime probe, authority resolution, and loop-readiness schemas are the active 3.5 payloads for MCP loop integrations. See [Report Schemas](report-schemas.md).
 
 ## Security Boundary
 
@@ -88,4 +90,4 @@ The MCP server reads Decantr contract, context, graph, and selected project file
 
 ## Compatibility Policy
 
-Decantr 3.4 intentionally removes the older direct MCP tool names from the advertised and callable surface. The supported 3.4 contract is the eight consolidated tools plus explicit `action` routing. Future Decantr 3 releases may add actions or tools compatibly, but the legacy direct names should be treated as migrated, not hidden compatibility entry points.
+Decantr 3.4 intentionally removed the older direct MCP tool names from the advertised and callable surface. The supported 3.5 contract remains the eight consolidated tools plus explicit `action` routing, with v2 loop/evidence payloads on task, evidence, workspace health, and health-loop actions. Future Decantr 3 releases may add actions compatibly, but the legacy direct names should be treated as migrated, not hidden compatibility entry points.

@@ -899,7 +899,7 @@ describe('MCP tool handlers', () => {
           id: 'rt:/feed',
           type: 'Route',
           score: 1,
-          reason: 'requested_route',
+          reason: 'requested_route+pagerank',
         });
 
         const taskRankedRouteGraph = (await callTool('decantr_get_graph_snapshot', {
@@ -910,13 +910,13 @@ describe('MCP tool handlers', () => {
           ranked?: Array<{ id: string; reason: string; matched_terms?: string[] }>;
         };
         expect(taskRankedRouteGraph.ranking).toMatchObject({
-          method: 'weighted_traversal_with_task_boost',
+          method: 'hybrid_weighted_pagerank_with_task_boost',
           task_keywords: ['repair', 'raw', 'button', 'local', 'law', 'drift'],
         });
         expect(
           taskRankedRouteGraph.ranked?.find((node) => node.id === 'find:check-no-raw-button'),
         ).toMatchObject({
-          reason: 'open_finding+task_match',
+          reason: 'open_finding+pagerank+task_match',
           matched_terms: ['raw', 'button', 'local', 'law'],
         });
 
@@ -931,7 +931,7 @@ describe('MCP tool handlers', () => {
         };
         expect(nodeImpactGraph.node_id).toBe('cmp:recipecard');
         expect(nodeImpactGraph.ranking).toMatchObject({
-          method: 'impact_traversal_with_task_boost',
+          method: 'hybrid_impact_pagerank_with_task_boost',
           seed: ['cmp:recipecard'],
           task_keywords: ['change', 'recipe', 'card', 'surface'],
         });
@@ -941,7 +941,7 @@ describe('MCP tool handlers', () => {
         expect(nodeImpactGraph.ids?.components).toEqual(['cmp:recipecard']);
         expect(nodeImpactGraph.ranked?.[0]).toMatchObject({
           id: 'cmp:recipecard',
-          reason: 'seed_node+task_match',
+          reason: 'seed_node+pagerank+task_match',
           matched_terms: ['recipe', 'card'],
         });
 
@@ -958,7 +958,7 @@ describe('MCP tool handlers', () => {
         expect(fileImpactGraph.file_path).toBe('src/app/feed/page.tsx');
         expect(fileImpactGraph.resolved_node_ids).toEqual(['src:src/app/feed/page.tsx']);
         expect(fileImpactGraph.ranking).toMatchObject({
-          method: 'impact_traversal_with_task_boost',
+          method: 'hybrid_impact_pagerank_with_task_boost',
           seed: ['src:src/app/feed/page.tsx'],
           task_keywords: ['edit', 'feed', 'source'],
         });
@@ -967,7 +967,7 @@ describe('MCP tool handlers', () => {
         expect(fileImpactGraph.ids?.sourceArtifacts).toEqual(['src:src/app/feed/page.tsx']);
         expect(fileImpactGraph.ranked?.[0]).toMatchObject({
           id: 'src:src/app/feed/page.tsx',
-          reason: 'seed_node+task_match',
+          reason: 'seed_node+pagerank+task_match',
           matched_terms: ['feed', 'source'],
         });
 
@@ -1028,7 +1028,7 @@ describe('MCP tool handlers', () => {
           } | null;
         };
         expect(impactQuery.impact?.ranking).toMatchObject({
-          method: 'impact_traversal_with_task_boost',
+          method: 'hybrid_impact_pagerank_with_task_boost',
           seed: ['cmp:recipecard'],
           task_keywords: ['change', 'recipe', 'card', 'surface'],
         });
@@ -1038,7 +1038,7 @@ describe('MCP tool handlers', () => {
         expect(impactQuery.impact?.ids?.components).toEqual(['cmp:recipecard']);
         expect(impactQuery.impact?.ranked?.[0]).toMatchObject({
           id: 'cmp:recipecard',
-          reason: 'seed_node+task_match',
+          reason: 'seed_node+pagerank+task_match',
           matched_terms: ['recipe', 'card'],
         });
 
@@ -1654,12 +1654,21 @@ describe('MCP tool handlers', () => {
         expect(result.typed_graph.route_context.ids.patterns).toContain('pat:content-feed');
         expect(result.typed_graph.route_context.ids.components).toContain('cmp:recipecard');
         expect(result.typed_graph.route_context.ranking).toMatchObject({
-          method: 'weighted_traversal_with_task_boost',
+          method: 'hybrid_weighted_pagerank_with_task_boost',
           task_keywords: ['improve', 'recipe', 'feed', 'loading'],
         });
         expect(result.typed_graph.route_context.ranked[0]).toMatchObject({
+          id: 'pg:app:feed',
+          reason: 'route_page+pagerank+task_match',
+          matched_terms: ['feed'],
+        });
+        expect(
+          result.typed_graph.route_context.ranked.find(
+            (node: { id: string }) => node.id === 'rt:/feed',
+          ),
+        ).toMatchObject({
           id: 'rt:/feed',
-          reason: 'requested_route+task_match',
+          reason: 'requested_route+pagerank+task_match',
           matched_terms: ['feed'],
         });
         expect(result.typed_graph.changed_file_context.changed_files).toContain(

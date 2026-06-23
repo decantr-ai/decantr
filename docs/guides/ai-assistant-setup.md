@@ -10,9 +10,9 @@ Use the MCP server when your editor or agent supports MCP tools:
 npx @decantr/mcp-server
 ```
 
-The MCP server exposes Decantr tools for essence reads, vocabulary search, pattern resolution, execution-pack access, critique, project audit, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
+The MCP server exposes the eight consolidated Decantr tools for essence reads, vocabulary search, pattern resolution, execution-pack access, critique, project audit, v2 evidence bundles, health-loop guidance, and Brownfield/Hybrid task-time context. It works with MCP-compatible assistants such as Claude Desktop, Cursor, Windsurf, VS Code agent mode, Zed, and Continue.dev.
 
-For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and the task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, accepted `behavior_obligations`, accepted style bridge mappings, and an authority block when available. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
+For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and the task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, accepted `behavior_obligations`, accepted style bridge mappings, an authority block, and a v2 loop block with maker/checker instructions, stop conditions, graph impact, and the verify command. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
 
 ## CLI Context
 
@@ -63,6 +63,14 @@ npx @decantr/cli verify --brownfield --local-patterns
 pnpm exec decantr verify --brownfield --local-patterns --project apps/web
 ```
 
+If `verify` reports `human_resolution_required`, stop the coding loop and run:
+
+```bash
+pnpm exec decantr resolve --project apps/web
+```
+
+Do not guess whether source or Decantr context wins. The resolver prints the explicit next commands for repairing source, accepting observed source into the contract, codifying local law, updating the style bridge, regenerating graph/context, or deferring a finding to the drift log.
+
 For discovery prompts such as "standardize all buttons/cards on this page", ask the assistant to run `decantr suggest "button card" --from-code --file src/App.tsx` from the app root, or add `--project apps/web` from a monorepo root. Accepted local patterns are shown before registry patterns so the assistant starts from project-owned law. If a hosted registry pattern is useful vocabulary, map it first with `decantr codify --map-pattern <slug>`; that creates an advisory local-law proposal and does not change source.
 
 When an assistant asks for a Project Health repair prompt from a monorepo root, keep the app path on the prompt command: `decantr health --project apps/web --prompt <finding-id>`.
@@ -85,6 +93,6 @@ pnpm exec decantr ci --project apps/web
 
 The generated GitHub workflow runs the pinned local CLI through the detected package manager, such as `pnpm exec decantr ci --project apps/web`. If Decantr is not pinned in the root manifest, `ci init` prints the exact install command before writing the workflow. For Jenkins, Please, Buildkite, GitLab, Azure DevOps, or internal deployment systems, use `decantr ci init --provider generic --project apps/web` and paste the snippet into the authoritative pipeline.
 
-When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence, and Project Health carries accepted behavior-obligation findings with stable codes such as `A11Y010`, `A11Y011`, `INT010`, and `COMP020`. When a style bridge is active, the same report includes bridge status, mapping count, styling approach, and theme modes so assistants can see the project-owned styling lane in automation output. The output distinguishes enforceable accepted local rules and statically verifiable behavior obligations from advisory style-bridge or hosted-pattern mappings. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
+When Hybrid local law is active, `decantr ci` prints `.decantr/rules.json` findings with file and line evidence, and Project Health carries accepted behavior-obligation findings with stable codes such as `A11Y010`, `A11Y011`, `INT010`, and `COMP020`. When a style bridge is active, the same v2 report includes bridge status, mapping count, styling approach, theme modes, evidence tier, authority resolution, and loop readiness so assistants can see the project-owned styling lane in automation output. The output distinguishes enforceable accepted local rules and statically verifiable behavior obligations from advisory style-bridge or hosted-pattern mappings. Keep `--fail-on error` while the team is still tuning warnings; switch to `--fail-on warn` when those warnings should block pull requests.
 
 See also: [MCP package](https://www.npmjs.com/package/@decantr/mcp-server), [Workflow Model](../reference/workflow-model.md), [Monorepos](monorepos.md), [Project Health CI](project-health-ci.md).

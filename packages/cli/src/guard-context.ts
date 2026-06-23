@@ -19,6 +19,25 @@ function loadJsonEntries(dir: string): Record<string, unknown>[] {
   }
 }
 
+function readJson(path: string): Record<string, unknown> | null {
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8')) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function addPattern(
+  registry: Map<string, unknown>,
+  id: unknown,
+  source: string,
+  data: unknown = null,
+): void {
+  if (typeof id !== 'string' || !id.trim() || registry.has(id)) return;
+  registry.set(id, data ?? { id, source });
+}
+
 export function buildGuardRegistryContext(
   projectRoot: string = process.cwd(),
 ): GuardRegistryContext {
@@ -48,23 +67,25 @@ export function buildGuardRegistryContext(
   }
 
   for (const data of loadJsonEntries(join(cacheDir, '@official', 'patterns'))) {
-    if (typeof data.id === 'string' && !patternRegistry.has(data.id)) {
-      patternRegistry.set(data.id, data);
-    }
+    addPattern(patternRegistry, data.id, 'cache', data);
   }
 
   for (const entry of loadBundledContentList('patterns')) {
     const data = entry.data as Record<string, unknown>;
     const id = typeof data.id === 'string' ? data.id : entry.id;
-    if (!patternRegistry.has(id)) {
-      patternRegistry.set(id, data);
-    }
+    addPattern(patternRegistry, id, 'bundled', data);
   }
 
   for (const data of loadJsonEntries(join(customDir, 'patterns'))) {
-    if (typeof data.id === 'string') {
-      patternRegistry.set(data.id, data);
-    }
+    addPattern(patternRegistry, data.id, 'custom', data);
+  }
+
+  const localPatterns = readJson(join(projectRoot, '.decantr', 'local-patterns.json'));
+  const patterns = Array.isArray(localPatterns?.patterns) ? localPatterns.patterns : [];
+  for (const pattern of patterns) {
+    if (!pattern || typeof pattern !== 'object') continue;
+    const data = pattern as Record<string, unknown>;
+    addPattern(patternRegistry, data.id, 'local-law', data);
   }
 
   return { themeRegistry, patternRegistry };

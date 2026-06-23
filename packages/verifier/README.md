@@ -23,14 +23,15 @@ npm install @decantr/verifier
 - `critiqueFile()` for file-level review against compiled review-pack contracts
 - `createContractAssertions()` for explicit route, shell, accessibility, context, and design-token assertions derived from Essence/context
 - `createEvidenceBundle()` for privacy-redacted local evidence artifacts used by AI repair loops and CI
+- `createEvidenceTier()`, `createAuthorityResolution()`, and `createLoopReadiness()` for the shared v2 Brownfield control-loop blocks used by CLI, MCP, Studio, and verifier consumers
 - `resolveGraphAnchorForFinding()` and `anchorFindingsToGraph()` for attaching verifier/Project Health findings to typed Contract graph nodes when a graph snapshot exists
 - `deriveVerificationDiagnostic()` and `KNOWN_VERIFICATION_DIAGNOSTICS` for stable finding codes and typed repair IDs used by Project Health, MCP health, and Evidence Bundles
-- schema-backed report types for project audits, Project Health, Decantr CI reports, Evidence Bundles, Workspace Health, file critiques, and showcase verification
+- schema-backed report types for project audits, v2 Project Health, v2 Decantr CI reports, v2 Evidence Bundles, v2 Workspace Health, v2 authority resolution, v2 loop readiness, v2 proof field reports, file critiques, and showcase verification
 - `ProjectHealthReport`, `ProjectHealthFinding`, and `ProjectHealthRemediation` types for the CLI's end-user health surface
 - Project Health and Evidence Bundle finding schemas include optional `code`, `repair`, `repairPlan`, and `graph` fields so agents can identify, anchor, and act on findings without parsing prose; Evidence Bundle provenance also records graph snapshot, manifest, diff, and contract-capsule hashes when present
 - interaction findings now include scanned file counts, file line ranges, and expected signal evidence where available, so CLI health/check output can point agents at source-grounded remediation
 - contract-only and style-bridge Brownfield critique avoids requiring Decantr treatments/decorators when the project keeps its own styling authority
-- Decantr CI report schemas include accepted style bridge status, mapping count, styling approach, and theme modes alongside local-law findings
+- Decantr CI report schemas include accepted style bridge status, mapping count, styling approach, theme modes, evidence tier, authority resolution, and loop readiness alongside local-law findings
 - project audits check that `pack-manifest.json` references real pack markdown/JSON files on disk
 - project audits tolerate partial or malformed generated review packs without crashing Project Health, so half-attached Brownfield projects still receive actionable findings
 - Next.js static/document outputs are treated as framework-rendered documents instead of requiring a Vite-style `id="root"` mount element
@@ -81,20 +82,25 @@ function isBlocking(report: ProjectHealthReport) {
 ## Schema Exports
 
 - `@decantr/verifier/schema/verification-report.common.v1.json`
+- `@decantr/verifier/schema/verification-report.common.v2.json`
 - `@decantr/verifier/schema/project-audit-report.v1.json`
 - `@decantr/verifier/schema/project-health-report.v1.json`
+- `@decantr/verifier/schema/project-health-report.v2.json`
 - `@decantr/verifier/schema/decantr-ci-report.v1.json`
+- `@decantr/verifier/schema/decantr-ci-report.v2.json`
 - `@decantr/verifier/schema/evidence-bundle.v1.json`
 - `@decantr/verifier/schema/evidence-bundle.v2.json`
 - `@decantr/verifier/schema/runtime-probe-payload.v2.json`
+- `@decantr/verifier/schema/authority-resolution.v2.json`
+- `@decantr/verifier/schema/loop-readiness.v2.json`
+- `@decantr/verifier/schema/proof-field-report.v2.json`
 - `@decantr/verifier/schema/scan-report.v1.json`
 - `@decantr/verifier/schema/workspace-health-report.v1.json`
+- `@decantr/verifier/schema/workspace-health-report.v2.json`
 - `@decantr/verifier/schema/file-critique-report.v1.json`
 - `@decantr/verifier/schema/showcase-shortlist-report.v1.json`
 
-The v2 schema assets support the Decantr 3 proof-train dashboard and runtime probe lanes.
-
-v1 schemas remain the active emitted contracts until a command explicitly changes its `$schema` URL. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
+The v2 schema assets are the active Decantr 3.5 contracts for Project Health, CI, Workspace Health, Evidence Bundles, runtime probes, authority resolution, loop readiness, and proof field reports. v1 health/evidence schemas remain published for stored-artifact compatibility; audit, scan, file-critique, and showcase reports remain v1 until those wires need to change. See [Report Schemas](https://decantr.ai/reference/report-schemas.md).
 
 ## Security And Permissions
 
@@ -105,8 +111,8 @@ The verifier is a local library. It reads selected project source, Decantr conte
 `@decantr/verifier` is stable in the Decantr 3 line for the documented verifier APIs and published report-schema assets.
 
 - new checks and additive report fields may appear in compatible releases
-- breaking report-shape or exported API changes require a major version
-- hosted and CLI verifier consumers should treat the published schemas as the supported contract surface
+- report-shape changes are versioned through explicit `$schema` URLs
+- hosted, CLI, MCP, and Studio consumers should treat the published schemas as the supported contract surface
 
 ## License
 

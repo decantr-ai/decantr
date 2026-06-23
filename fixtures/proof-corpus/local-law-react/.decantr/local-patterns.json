@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "status": "accepted",
+  "patterns": [
+    {
+      "id": "dashboard-summary",
+      "status": "accepted",
+      "componentPaths": ["src/App.tsx"]
+    },
+    {
+      "id": "action-panel",
+      "status": "accepted",
+      "componentPaths": ["src/StandaloneAction.tsx", "src/components/PrimaryButton.tsx"]
+    }
+  ]
+}

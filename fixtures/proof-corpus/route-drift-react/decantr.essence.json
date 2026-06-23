@@ -1,0 +1,40 @@
+{
+  "version": "4.0.0",
+  "dna": {
+    "theme": { "id": "proof-lab", "mode": "light", "shape": "rounded" },
+    "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 650, "body_weight": 400 },
+    "color": { "palette": "semantic", "accent_count": 1, "cvd_preference": "auto" },
+    "radius": { "philosophy": "rounded", "base": 8 },
+    "elevation": { "system": "layered", "max_levels": 3 },
+    "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+    "personality": ["direct", "operational", "plainspoken"]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "workspace",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": ["routing", "review"],
+        "description": "Route drift fixture with explicit source route constants.",
+        "pages": [
+          { "id": "home", "route": "/", "layout": ["summary"] },
+          { "id": "reports", "route": "/reports", "layout": ["report-list"] }
+        ]
+      }
+    ],
+    "features": ["routing", "review"],
+    "routes": {
+      "/": { "section": "workspace", "page": "home" },
+      "/reports": { "section": "workspace", "page": "reports" }
+    }
+  },
+  "meta": {
+    "archetype": "workspace",
+    "target": "react-vite",
+    "platform": { "type": "spa", "routing": "history" },
+    "guard": { "mode": "guided", "dna_enforcement": "error", "blueprint_enforcement": "warn" }
+  }
+}

@@ -326,6 +326,17 @@ function detectPathnameBranchRoutes(content: string): string[] {
     collectRouteLiterals(/\b(?:href|to)\s*=\s*["'`](\/[^"'`]+)["'`]/g, content, routes);
   }
 
+  if (
+    hasPathnameSignal &&
+    (/\?\s*["'`]\/["'`]\s*:/.test(content) ||
+      /\|\|\s*["'`]\/["'`]/.test(content) ||
+      /\b(?:defaultRoute|defaultPath|fallbackRoute|fallbackPath)\s*[:=]\s*["'`]\/["'`]/.test(
+        content,
+      ))
+  ) {
+    routes.add('/');
+  }
+
   return [...routes];
 }
 

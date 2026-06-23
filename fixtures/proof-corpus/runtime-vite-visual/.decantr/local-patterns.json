@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "status": "accepted",
+  "patterns": [
+    {
+      "id": "hero-summary",
+      "status": "accepted",
+      "componentPaths": ["src/App.jsx"]
+    },
+    {
+      "id": "record-search",
+      "status": "accepted",
+      "componentPaths": ["src/App.jsx"]
+    }
+  ]
+}

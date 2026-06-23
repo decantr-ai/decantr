@@ -256,12 +256,22 @@ function runCliSmokeChecks(version, distTag) {
   addCheck(checks, 'health JSON smoke', () => {
     const tempDir = mkdtempSync(join(tmpdir(), 'decantr-release-health-'));
     try {
-      writeFileSync(join(tempDir, 'decantr.essence.json'), `${JSON.stringify(sampleEssence(), null, 2)}\n`);
+      writeFileSync(
+        join(tempDir, 'decantr.essence.json'),
+        `${JSON.stringify(sampleEssence(), null, 2)}\n`,
+      );
       const output = runNpx(packageSpec, ['health', '--json'], { cwd: tempDir });
       const report = JSON.parse(output);
-      assert(report?.$schema === 'https://decantr.ai/schemas/project-health-report.v1.json', 'missing Project Health schema');
+      assert(
+        report?.$schema === 'https://decantr.ai/schemas/project-health-report.v2.json',
+        'missing Project Health v2 schema',
+      );
+      assert(report.schemaVersion === 2, 'missing Project Health v2 schemaVersion');
       assert(typeof report.status === 'string', 'missing health status');
       assert(Array.isArray(report.findings), 'missing findings array');
+      assert(report.loop?.schemaVersion === 2, 'missing loop readiness v2 block');
+      assert(report.evidenceTier?.schemaVersion === 2, 'missing evidence tier v2 block');
+      assert(report.authority?.schemaVersion === 2, 'missing authority resolution v2 block');
       return `${report.status} report with ${report.findings.length} findings`;
     } finally {
       rmSync(tempDir, { recursive: true, force: true });

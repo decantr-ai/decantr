@@ -12,6 +12,20 @@ import {
   type ComponentReuseAudit,
   RAW_CONTROL_REUSE_RULE_ID,
 } from './component-reuse.js';
+import {
+  type AuthorityResolution,
+  type AuthorityResolutionAction,
+  createAuthorityResolution,
+  createEvidenceTier,
+  createLoopReadiness,
+  DECANTR_CI_REPORT_V2_SCHEMA_URL,
+  EVIDENCE_BUNDLE_V2_SCHEMA_URL,
+  type EvidenceTier,
+  type LoopReadiness,
+  PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
+  VERIFICATION_COMMON_V2_SCHEMA_URL,
+  WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
+} from './contracts-v2.js';
 import type { VerificationRepairAction } from './diagnostics.js';
 import type { VerificationGraphAnchor } from './graph-anchors.js';
 import { auditBuiltDist, emptyRuntimeAudit, type RuntimeAudit } from './runtime.js';
@@ -31,6 +45,41 @@ export {
   RAW_CONTROL_REUSE_RULE_ID,
   type RawControlReuseFinding,
 } from './component-reuse.js';
+export type {
+  AuthorityConflict,
+  AuthorityLaneId,
+  AuthorityOrderEntry,
+  AuthorityResolution,
+  AuthorityResolutionAction,
+  AuthorityResolutionActionKind,
+  EvidenceConfidenceLevel,
+  EvidenceTier,
+  EvidenceTierCapability,
+  EvidenceTierOptions,
+  EvidenceTierStage,
+  EvidenceTierStatus,
+  GraphImpactSummary,
+  LoopInstructionBlock,
+  LoopReadiness,
+  LoopReadinessState,
+  ProjectHealthFindingLike,
+  ProjectHealthReportLike,
+} from './contracts-v2.js';
+export {
+  AUTHORITY_RESOLUTION_V2_SCHEMA_URL,
+  createAuthorityOrder,
+  createAuthorityResolution,
+  createEvidenceTier,
+  createLoopReadiness,
+  DECANTR_CI_REPORT_V2_SCHEMA_URL,
+  EVIDENCE_BUNDLE_V2_SCHEMA_URL,
+  LOOP_READINESS_V2_SCHEMA_URL,
+  PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
+  PROOF_FIELD_REPORT_V2_SCHEMA_URL,
+  RUNTIME_PROBE_PAYLOAD_V2_SCHEMA_URL,
+  VERIFICATION_COMMON_V2_SCHEMA_URL,
+  WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
+} from './contracts-v2.js';
 export type {
   VerificationDiagnosticCatalogEntry,
   VerificationDiagnosticInput,
@@ -126,13 +175,13 @@ export {
 } from './style-bridge-drift.js';
 
 export const VERIFICATION_SCHEMA_URLS = {
-  common: 'https://decantr.ai/schemas/verification-report.common.v1.json',
+  common: VERIFICATION_COMMON_V2_SCHEMA_URL,
   projectAudit: 'https://decantr.ai/schemas/project-audit-report.v1.json',
-  projectHealth: 'https://decantr.ai/schemas/project-health-report.v1.json',
-  decantrCi: 'https://decantr.ai/schemas/decantr-ci-report.v1.json',
-  evidenceBundle: 'https://decantr.ai/schemas/evidence-bundle.v1.json',
+  projectHealth: PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
+  decantrCi: DECANTR_CI_REPORT_V2_SCHEMA_URL,
+  evidenceBundle: EVIDENCE_BUNDLE_V2_SCHEMA_URL,
   scanReport: 'https://decantr.ai/schemas/scan-report.v1.json',
-  workspaceHealth: 'https://decantr.ai/schemas/workspace-health-report.v1.json',
+  workspaceHealth: WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL,
   fileCritique: 'https://decantr.ai/schemas/file-critique-report.v1.json',
   showcaseShortlist: 'https://decantr.ai/schemas/showcase-shortlist-report.v1.json',
 } as const;
@@ -268,6 +317,15 @@ export interface ProjectHealthFinding {
   graph?: VerificationGraphAnchor;
   repair?: VerificationRepairAction;
   repairPlan?: EvidenceRepairPlan;
+  evidenceTier?: EvidenceTier;
+  authorityLane?: string;
+  resolutionActions?: AuthorityResolutionAction[];
+  privacy?: {
+    sourceIncluded: false;
+    redacted: boolean;
+    localOnly: boolean;
+  };
+  loopVerdict?: LoopReadiness['state'];
   remediation: ProjectHealthRemediation;
 }
 
@@ -331,6 +389,9 @@ export interface ProjectHealthReport {
   routes: ProjectHealthRouteSummary;
   packs: ProjectHealthPackSummary;
   graph: ProjectHealthGraphSummary;
+  evidenceTier: EvidenceTier;
+  authority: AuthorityResolution;
+  loop: LoopReadiness;
   ci: {
     recommendedCommand: string;
     failOn: 'error' | 'warn' | 'none';
@@ -373,15 +434,23 @@ export interface EvidenceBundle {
   project: {
     id: string;
     rootLabel: string;
+    projectPath?: string | null;
+    workflowMode?: string | null;
+    adoptionMode?: string | null;
   };
   toolchain: {
     verifierVersion: string | null;
+    cliVersion?: string | null;
+    mcpServerVersion?: string | null;
   };
   privacy: {
     localOnly: boolean;
+    sourceIncluded: false;
     redactedFields: string[];
     screenshotsLocalOnly: boolean;
+    hostedUploadAllowed: boolean;
   };
+  evidenceTier: EvidenceTier;
   health: {
     status: ProjectHealthStatus;
     score: number;
@@ -400,6 +469,8 @@ export interface EvidenceBundle {
     contractCapsule: EvidenceProvenanceEntry;
     workspaceConfig?: EvidenceProvenanceEntry;
     designTokens?: EvidenceProvenanceEntry;
+    runtimeProbe?: EvidenceProvenanceEntry;
+    visualManifest?: EvidenceProvenanceEntry;
   };
   assertions: ContractAssertion[];
   findings: Array<{
@@ -416,10 +487,35 @@ export interface EvidenceBundle {
     graph?: VerificationGraphAnchor;
     repair?: VerificationRepairAction;
     repairPlan?: EvidenceRepairPlan;
+    evidenceTier?: EvidenceTier;
+    authorityLane?: string;
+    resolutionActions?: AuthorityResolutionAction[];
+    privacy?: {
+      sourceIncluded: false;
+      redacted: boolean;
+      localOnly: boolean;
+    };
+    loopVerdict?: LoopReadiness['state'];
     remediationSummary: string;
     commands: string[];
     promptCommand: string;
   }>;
+  runtimeProbe?: unknown | null;
+  artifacts?: Array<{
+    id: string;
+    kind: string;
+    path: string;
+    hash?: string | null;
+    route?: string | null;
+    findingId?: string | null;
+    localOnly: boolean;
+    redacted: boolean;
+  }>;
+  dashboard?: {
+    safeToUpload: boolean;
+    retentionClass: 'local-only' | 'team-report' | 'public-benchmark';
+    redactionNotes: string[];
+  };
   browser?: {
     enabled: boolean;
     status: 'not_requested' | 'unavailable' | 'passed' | 'failed';
@@ -442,13 +538,19 @@ export interface EvidenceBundleInput {
   audit?: ProjectAuditReport | null;
   assertions?: ContractAssertion[];
   verifierVersion?: string | null;
+  cliVersion?: string | null;
+  mcpServerVersion?: string | null;
   workspaceConfigPath?: string | null;
   designTokensPath?: string | null;
+  runtimeProbePath?: string | null;
+  visualManifestPath?: string | null;
+  runtimeProbe?: unknown | null;
+  artifacts?: EvidenceBundle['artifacts'];
   browser?: EvidenceBundle['browser'];
   designTokens?: EvidenceBundle['designTokens'];
 }
 
-export const EVIDENCE_BUNDLE_SCHEMA_URL = 'https://decantr.ai/schemas/evidence-bundle.v1.json';
+export const EVIDENCE_BUNDLE_SCHEMA_URL = EVIDENCE_BUNDLE_V2_SCHEMA_URL;
 
 function hashString(value: string): string {
   return createHash('sha256').update(value).digest('hex').slice(0, 16);
@@ -827,6 +929,8 @@ export function createContractAssertions(
 
 export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle {
   const assertions = input.assertions ?? createContractAssertions(input.projectRoot, input.audit);
+  const evidenceTier = input.report.evidenceTier ?? createEvidenceTier(input.report);
+  const authority = input.report.authority ?? createAuthorityResolution(input.report);
   let resolvedProjectRoot = input.projectRoot;
   try {
     resolvedProjectRoot = realpathSync(input.projectRoot);
@@ -841,12 +945,17 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
     project: {
       id: projectId,
       rootLabel: basename(input.projectRoot) || 'project',
+      workflowMode: input.report.summary.workflowMode,
+      adoptionMode: input.report.summary.adoptionMode,
     },
     toolchain: {
       verifierVersion: input.verifierVersion ?? null,
+      cliVersion: input.cliVersion ?? null,
+      mcpServerVersion: input.mcpServerVersion ?? null,
     },
     privacy: {
       localOnly: true,
+      sourceIncluded: false,
       redactedFields: [
         'source',
         'prompt',
@@ -856,7 +965,9 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
         'repository_name',
       ],
       screenshotsLocalOnly: true,
+      hostedUploadAllowed: false,
     },
+    evidenceTier,
     health: {
       status: input.report.status,
       score: input.report.score,
@@ -879,6 +990,12 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
       ...(input.designTokensPath
         ? { designTokens: provenanceForPath(input.projectRoot, input.designTokensPath) }
         : {}),
+      ...(input.runtimeProbePath
+        ? { runtimeProbe: provenanceForPath(input.projectRoot, input.runtimeProbePath) }
+        : {}),
+      ...(input.visualManifestPath
+        ? { visualManifest: provenanceForPath(input.projectRoot, input.visualManifestPath) }
+        : {}),
     },
     assertions,
     findings: input.report.findings.map((finding) => ({
@@ -895,10 +1012,42 @@ export function createEvidenceBundle(input: EvidenceBundleInput): EvidenceBundle
       graph: finding.graph,
       repair: redactRepairAction(input.projectRoot, finding.repair),
       repairPlan: buildProjectHealthRepairPlan(input.projectRoot, finding),
+      evidenceTier: finding.evidenceTier ?? evidenceTier,
+      authorityLane:
+        finding.authorityLane ??
+        authority.conflicts.find((conflict) => conflict.id === finding.id)?.lane ??
+        authority.activeLane,
+      resolutionActions:
+        finding.resolutionActions ??
+        authority.conflicts.find((conflict) => conflict.id === finding.id)?.recommendedActions,
+      privacy: finding.privacy ?? {
+        sourceIncluded: false,
+        redacted: true,
+        localOnly: true,
+      },
+      loopVerdict: finding.loopVerdict ?? input.report.loop?.state,
       remediationSummary: finding.remediation.summary,
       commands: finding.remediation.commands,
       promptCommand: `decantr health --prompt ${finding.id}`,
     })),
+    runtimeProbe: input.runtimeProbe ?? null,
+    artifacts: input.artifacts ?? [
+      {
+        id: 'artifact:project-health',
+        kind: 'project-health',
+        path: 'decantr-health.json',
+        hash: null,
+        localOnly: true,
+        redacted: true,
+      },
+    ],
+    dashboard: {
+      safeToUpload: false,
+      retentionClass: 'local-only',
+      redactionNotes: [
+        'Evidence Bundle v2 does not include raw source, prompts, secrets, absolute paths, or uploaded screenshots by default.',
+      ],
+    },
     ...(input.browser ? { browser: input.browser } : {}),
     ...(input.designTokens ? { designTokens: input.designTokens } : {}),
   };
@@ -1956,6 +2105,11 @@ function buildRegistryContext(projectRoot: string): {
   const cacheDir = join(projectRoot, '.decantr', 'cache');
   const customDir = join(projectRoot, '.decantr', 'custom');
 
+  const addPattern = (id: unknown, source: string, data: unknown = null) => {
+    if (typeof id !== 'string' || !id.trim() || patternRegistry.has(id)) return;
+    patternRegistry.set(id, data ?? { id, source });
+  };
+
   const cachedThemesDir = join(cacheDir, '@official', 'themes');
   try {
     if (existsSync(cachedThemesDir)) {
@@ -2001,19 +2155,36 @@ function buildRegistryContext(projectRoot: string): {
         const data = JSON.parse(readFileSync(join(cachedPatternsDir, file), 'utf-8')) as {
           id?: string;
         };
-        if (data.id && !patternRegistry.has(data.id)) {
-          patternRegistry.set(data.id, data);
-        }
+        addPattern(data.id, 'cache', data);
       }
     }
   } catch {
     /* best effort */
   }
 
-  for (const id of ['content-section', 'footer', 'form-basic', 'hero', 'nav-header']) {
-    if (!patternRegistry.has(id)) {
-      patternRegistry.set(id, { id, source: 'bundled' });
+  const customPatternsDir = join(customDir, 'patterns');
+  try {
+    if (existsSync(customPatternsDir)) {
+      for (const file of readdirSync(customPatternsDir).filter((name) => name.endsWith('.json'))) {
+        const data = JSON.parse(readFileSync(join(customPatternsDir, file), 'utf-8')) as {
+          id?: string;
+        };
+        addPattern(data.id, 'custom', data);
+      }
     }
+  } catch {
+    /* best effort */
+  }
+
+  const localPatterns = readJsonIfExists<{
+    patterns?: Array<{ id?: string; status?: string; componentPaths?: string[] }>;
+  }>(join(projectRoot, '.decantr', 'local-patterns.json'));
+  for (const pattern of localPatterns?.patterns ?? []) {
+    addPattern(pattern.id, 'local-law', pattern);
+  }
+
+  for (const id of ['content-section', 'footer', 'form-basic', 'hero', 'nav-header']) {
+    addPattern(id, 'bundled');
   }
 
   return { themeRegistry, patternRegistry };

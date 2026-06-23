@@ -1,0 +1,40 @@
+{
+  "version": "4.0.0",
+  "dna": {
+    "theme": { "id": "existing", "mode": "light", "shape": "rounded" },
+    "spacing": { "base_unit": 4, "scale": "linear", "density": "comfortable", "content_gap": "_gap4" },
+    "typography": { "scale": "modular", "heading_weight": 650, "body_weight": 400 },
+    "color": { "palette": "css", "accent_count": 1, "cvd_preference": "auto" },
+    "radius": { "philosophy": "rounded", "base": 8 },
+    "elevation": { "system": "layered", "max_levels": 3 },
+    "motion": { "preference": "subtle", "duration_scale": 1, "reduce_motion": true },
+    "accessibility": { "wcag_level": "AA", "focus_visible": true, "skip_nav": true },
+    "personality": ["calm", "enterprise", "clear"]
+  },
+  "blueprint": {
+    "sections": [
+      {
+        "id": "portal",
+        "role": "primary",
+        "shell": "top-nav-main",
+        "features": ["account", "settings"],
+        "description": "Next-like app fixture for stale context and graph readiness checks.",
+        "pages": [
+          { "id": "home", "route": "/", "layout": ["overview"] },
+          { "id": "settings", "route": "/settings", "layout": ["settings-form"] }
+        ]
+      }
+    ],
+    "features": ["account", "settings"],
+    "routes": {
+      "/": { "section": "portal", "page": "home" },
+      "/settings": { "section": "portal", "page": "settings" }
+    }
+  },
+  "meta": {
+    "archetype": "portal",
+    "target": "next-app",
+    "platform": { "type": "ssr", "routing": "pathname" },
+    "guard": { "mode": "guided", "dna_enforcement": "error", "blueprint_enforcement": "warn" }
+  }
+}

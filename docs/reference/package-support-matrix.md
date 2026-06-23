@@ -8,7 +8,7 @@ Package surface audit: `pnpm audit:package-surface`
 Package permissions audit: `pnpm audit:package-permissions`
 Security permissions reference: `docs/reference/security-permissions.md`
 
-This matrix defines which npm packages are part of the active Decantr vNext product surface on the reset branch.
+This matrix defines which npm packages are part of the active Decantr 3 product surface.
 
 ## Active Packages
 
@@ -108,7 +108,7 @@ The active Decantr product surface is:
 
 ## Explicitly Not Part of the Active Product Story
 
-These lines were removed from the monorepo reset branch and should not be treated as current product surfaces:
+These lines were removed from the active Decantr 3 product surface and should not be treated as current product surfaces:
 
 - `@decantr/ui` -> replacement: @decantr/css, @decantr/cli, and the hosted Decantr registry/API surfaces
 - `@decantr/ui-catalog` -> replacement: registry.decantr.ai and the hosted registry/API surfaces

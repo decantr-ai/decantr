@@ -66,7 +66,7 @@ function writeMinimalProject(): void {
 
 function projectHealthReport(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    $schema: 'https://decantr.ai/schemas/project-health-report.v1.json',
+    $schema: 'https://decantr.ai/schemas/project-health-report.v2.json',
     generatedAt: '2026-05-11T00:00:00.000Z',
     projectRoot: testDir,
     status: 'error',
@@ -100,6 +100,117 @@ function projectHealthReport(overrides: Record<string, unknown> = {}): Record<st
       pagePackCount: 3,
       mutationPackCount: 0,
       generatedAt: '2026-05-11T00:00:00.000Z',
+    },
+    graph: {
+      present: true,
+      ready: true,
+      current: true,
+      snapshotPresent: true,
+      manifestPresent: true,
+      diffPresent: true,
+      capsulePresent: true,
+      snapshotId: 'graph:test',
+      sourceHash: 'hash:test',
+      contractHash: 'fnv1a32:test',
+      contractCacheKey: 'decantr-contract:fnv1a32:test',
+      sourceArtifactCount: 4,
+      capsuleSourceArtifactLimit: 200,
+      capsuleSourceArtifactsTruncated: false,
+      staleArtifacts: [],
+      error: null,
+    },
+    evidenceTier: {
+      schemaVersion: 2,
+      stage: 'runtime',
+      status: 'error',
+      capabilities: ['static-audit', 'project-health', 'typed-graph', 'runtime-probe'],
+      coverage: {
+        declaredRoutes: 2,
+        runtimeRoutesChecked: 1,
+        findingsAnchored: 0,
+        findingsWithRepairPlan: 0,
+        runtimeProbeCount: 1,
+        visualArtifactCount: 0,
+      },
+      confidence: {
+        level: 'moderate',
+        score: 0.62,
+        reasons: ['fixture'],
+      },
+    },
+    authority: {
+      schemaVersion: 2,
+      order: [
+        {
+          id: 'production-source',
+          label: 'Production source',
+          role: 'Existing source wins.',
+          rank: 1,
+        },
+        { id: 'local-law', label: 'Accepted local law', role: 'Accepted project law.', rank: 2 },
+        {
+          id: 'style-bridge',
+          label: 'Accepted style bridge',
+          role: 'Accepted style mappings.',
+          rank: 3,
+        },
+        {
+          id: 'essence-contract',
+          label: 'Essence V4 contract',
+          role: 'Structural contract.',
+          rank: 4,
+        },
+        { id: 'registry-guidance', label: 'Hosted packs and registry', role: 'Advisory.', rank: 5 },
+      ],
+      activeLane: 'essence-contract',
+      summary: 'Contract authority fixture.',
+      conflicts: [],
+      stopRule: 'Stop on source/context disagreement.',
+    },
+    loop: {
+      schemaVersion: 2,
+      state: 'repair_required',
+      status: 'error',
+      verdict: 'Loop needs repair.',
+      summary: 'Fixture loop.',
+      authority: {
+        activeLane: 'essence-contract',
+        summary: 'Contract authority fixture.',
+        stopRule: 'Stop on source/context disagreement.',
+      },
+      evidenceTier: {
+        schemaVersion: 2,
+        stage: 'runtime',
+        status: 'error',
+        capabilities: ['static-audit', 'project-health', 'typed-graph', 'runtime-probe'],
+        coverage: {
+          declaredRoutes: 2,
+          runtimeRoutesChecked: 1,
+          findingsAnchored: 0,
+          findingsWithRepairPlan: 0,
+          runtimeProbeCount: 1,
+          visualArtifactCount: 0,
+        },
+        confidence: {
+          level: 'moderate',
+          score: 0.62,
+          reasons: ['fixture'],
+        },
+      },
+      blockingReasons: ['Fixture finding.'],
+      nextActions: ['Repair fixture finding.'],
+      maker: { title: 'Maker instructions', instructions: ['Read context.'] },
+      checker: { title: 'Checker instructions', instructions: ['Rerun verify.'] },
+      readTargets: ['DECANTR.md'],
+      graphImpact: {
+        status: 'ready',
+        snapshotId: 'graph:test',
+        sourceHash: 'hash:test',
+        sourceArtifactCount: 4,
+        staleArtifacts: [],
+      },
+      stopConditions: ['Stop on drift.'],
+      verifyCommand: 'decantr verify --brownfield --local-patterns',
     },
     ci: {
       recommendedCommand: 'decantr health --ci --fail-on error',
@@ -163,18 +274,16 @@ describe('Decantr Studio server', () => {
       (response) => response.json(),
     );
 
-    expect(html).toContain('Decantr Project Health');
-    expect(html).toContain('Recommended path');
-    expect(html).toContain('AI Prompt');
-    expect(html).toContain('Manual Fix');
-    expect(html).toContain('Finding details');
-    expect(html).toContain('Verification');
-    expect(html).toContain('Copy AI prompt');
-    expect(html).toContain('does not edit files');
-    expect(html).toContain('Project details');
-    expect(html).toContain('function esc');
-    expect(health.$schema).toBe('https://decantr.ai/schemas/project-health-report.v1.json');
-    expect(refreshed.$schema).toBe('https://decantr.ai/schemas/project-health-report.v1.json');
+    expect(html).toContain('Decantr Control Room');
+    expect(html).toContain('Authority Resolver');
+    expect(html).toContain('Graph Impact');
+    expect(html).toContain('Evidence');
+    expect(html).toContain('Repairs');
+    expect(html).toContain('/api/control-room');
+    expect(html).toContain('const esc');
+    expect(health.$schema).toBe('https://decantr.ai/schemas/project-health-report.v2.json');
+    expect(health.loop.schemaVersion).toBe(2);
+    expect(refreshed.$schema).toBe('https://decantr.ai/schemas/project-health-report.v2.json');
   });
 
   it('serves a read-only Project Health JSON artifact in report mode', async () => {
@@ -184,7 +293,7 @@ describe('Decantr Studio server', () => {
     const html = await fetch(handle.url).then((response) => response.text());
     const health = await fetch(`${handle.url}/api/health`).then((response) => response.json());
 
-    expect(html).toContain('Report mode');
+    expect(html).toContain('Report artifact');
     expect(health.score).toBe(72);
     expect(health.findings).toHaveLength(2);
   });

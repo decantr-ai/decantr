@@ -9,13 +9,17 @@ import {
   auditProject,
   buildProjectHealthRepairPlan,
   type ContractAssertion,
+  createAuthorityResolution,
   createContractAssertions,
   createEvidenceBundle,
+  createEvidenceTier,
+  createLoopReadiness,
   deriveVerificationDiagnostic,
   type EvidenceBundle,
   type GraphAnchorSnapshot,
   KNOWN_VERIFICATION_DIAGNOSTICS,
   type PackManifest,
+  PROJECT_HEALTH_REPORT_V2_SCHEMA_URL,
   type ProjectHealthFinding,
   type ProjectHealthFindingSource,
   type ProjectHealthReport,
@@ -41,7 +45,7 @@ const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const YELLOW = '\x1b[33m';
-const PROJECT_HEALTH_SCHEMA_URL = 'https://decantr.ai/schemas/project-health-report.v1.json';
+const PROJECT_HEALTH_SCHEMA_URL = PROJECT_HEALTH_REPORT_V2_SCHEMA_URL;
 const DEFAULT_HEALTH_CI_WORKFLOW_PATH = '.github/workflows/decantr-health.yml';
 const DEFAULT_HEALTH_CI_REPORT_PATH = 'decantr-health.md';
 const DEFAULT_HEALTH_CI_JSON_PATH = 'decantr-health.json';
@@ -2371,7 +2375,7 @@ export async function createProjectHealthReport(
   const finalCounts = countFindings(repairPlanFindings);
   const commandContext = commandContextForProject(projectRoot);
 
-  return {
+  const baseReport = {
     $schema: PROJECT_HEALTH_SCHEMA_URL,
     generatedAt: new Date().toISOString(),
     projectRoot,
@@ -2413,6 +2417,36 @@ export async function createProjectHealthReport(
       failOn: 'error',
     },
     findings: repairPlanFindings,
+  };
+  const evidenceTier = createEvidenceTier(baseReport, {
+    runtimeProbeCount: browserVerification
+      ? Math.max(1, browserVerification.evidence.screenshots.length)
+      : undefined,
+    visualArtifactCount: browserVerification?.evidence.screenshots.length ?? 0,
+  });
+  const authority = createAuthorityResolution(baseReport);
+  const loop = createLoopReadiness(baseReport, authority, evidenceTier);
+
+  return {
+    ...baseReport,
+    evidenceTier,
+    authority,
+    loop,
+    findings: repairPlanFindings.map((finding) => {
+      const conflict = authority.conflicts.find((entry) => entry.id === finding.id);
+      return {
+        ...finding,
+        evidenceTier,
+        authorityLane: conflict?.lane ?? authority.activeLane,
+        resolutionActions: conflict?.recommendedActions,
+        privacy: {
+          sourceIncluded: false as const,
+          redacted: true,
+          localOnly: true,
+        },
+        loopVerdict: loop.state,
+      };
+    }),
   };
 }
 
@@ -2484,6 +2518,11 @@ export function formatProjectHealthText(report: ProjectHealthReport): string {
       report.graph.sourceArtifactCount
     }`,
     '',
+    `${BOLD}Control loop:${RESET}`,
+    `  State: ${report.loop.state} | evidence ${report.evidenceTier.confidence.level} (${report.evidenceTier.confidence.score})`,
+    `  Authority: ${report.authority.activeLane} — ${report.authority.summary}`,
+    `  Next: ${report.loop.nextActions[0] ?? report.loop.verifyCommand}`,
+    '',
     `${BOLD}Findings:${RESET}`,
   ];
 
@@ -2519,6 +2558,7 @@ export function formatProjectHealthText(report: ProjectHealthReport): string {
 
   lines.push('');
   lines.push(`${BOLD}CI:${RESET} ${report.ci.recommendedCommand}`);
+  lines.push(`${BOLD}Loop verify:${RESET} ${report.loop.verifyCommand}`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -2546,6 +2586,9 @@ export function formatProjectHealthMarkdown(report: ProjectHealthReport): string
     }, capsule ${report.graph.capsulePresent ? 'present' : 'missing'}, sources ${
       report.graph.sourceArtifactCount
     }`,
+    `- Loop: **${report.loop.state}** (${report.loop.status})`,
+    `- Evidence tier: **${report.evidenceTier.stage}** / ${report.evidenceTier.confidence.level}`,
+    `- Authority: **${report.authority.activeLane}**`,
     '',
     '## Findings',
     '',
@@ -2644,6 +2687,12 @@ export async function createProjectEvidenceBundle(
 ): Promise<EvidenceBundle> {
   const audit = await auditProject(projectRoot);
   const assertions: ContractAssertion[] = createContractAssertions(projectRoot, audit);
+  const visualManifestPath = join(projectRoot, '.decantr', 'evidence', 'visual-manifest.json');
+  const browserEvidence = await browserEvidenceFromOptions(
+    projectRoot,
+    options,
+    report.routes.declared,
+  );
   return createEvidenceBundle({
     projectRoot,
     report,
@@ -2653,7 +2702,38 @@ export async function createProjectEvidenceBundle(
       ? join(projectRoot, '.decantr', 'workspace.json')
       : null,
     designTokensPath: resolveOptionalPath(projectRoot, options.designTokensPath) ?? null,
-    browser: await browserEvidenceFromOptions(projectRoot, options, report.routes.declared),
+    visualManifestPath: existsSync(visualManifestPath) ? visualManifestPath : null,
+    artifacts: [
+      {
+        id: 'artifact:evidence-bundle',
+        kind: 'evidence-bundle',
+        path: '.decantr/evidence/evidence-bundle.json',
+        hash: null,
+        localOnly: true,
+        redacted: true,
+      },
+      ...(existsSync(visualManifestPath)
+        ? [
+            {
+              id: 'artifact:visual-manifest',
+              kind: 'visual-manifest',
+              path: '.decantr/evidence/visual-manifest.json',
+              hash: null,
+              localOnly: true,
+              redacted: true,
+            },
+          ]
+        : []),
+      ...(browserEvidence?.screenshots ?? []).map((screenshot, index) => ({
+        id: `artifact:screenshot:${index + 1}`,
+        kind: 'screenshot',
+        path: screenshot,
+        hash: null,
+        localOnly: true,
+        redacted: false,
+      })),
+    ],
+    browser: browserEvidence,
     designTokens: collectDesignTokenEvidence(projectRoot, options.designTokensPath),
   });
 }

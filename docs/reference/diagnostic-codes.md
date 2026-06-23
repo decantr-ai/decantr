@@ -4,6 +4,8 @@ Decantr findings use stable diagnostic codes and typed repair IDs so agents can 
 
 Use `decantr health --diagnostics --json` for a machine-readable catalog, or `decantr health --diagnostics --markdown` for a compact human reference.
 
+In v2 Project Health and Evidence Bundle payloads, findings may also carry evidence tier, authority lane, resolution actions, privacy posture, graph anchor, repair plan, and loop verdict metadata. The diagnostic code still identifies the drift class; the loop and authority fields tell an agent whether to edit, verify, repair, regenerate graph/context, or ask a human to resolve source-of-truth drift.
+
 | Family | Meaning |
 | --- | --- |
 | `CONTRACT` | Essence or contract presence/version issues |

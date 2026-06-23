@@ -1,0 +1,6 @@
+{
+  "initialized": {
+    "workflowMode": "brownfield-attach",
+    "adoptionMode": "contract-only"
+  }
+}

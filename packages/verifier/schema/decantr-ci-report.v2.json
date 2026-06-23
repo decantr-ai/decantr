@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decantr.ai/schemas/decantr-ci-report.v2.json",
+  "title": "Decantr CI Report v2",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "$schema",
+        "generatedAt",
+        "mode",
+        "projectPath",
+        "failOn",
+        "status",
+        "loop",
+        "authority",
+        "evidenceTier",
+        "health",
+        "localLaw",
+        "styleBridge"
+      ],
+      "properties": {
+        "$schema": { "const": "https://decantr.ai/schemas/decantr-ci-report.v2.json" },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "mode": { "const": "project" },
+        "projectPath": { "type": ["string", "null"] },
+        "failOn": { "type": "string", "enum": ["error", "warn", "none"] },
+        "status": { "type": "string", "enum": ["healthy", "warning", "error"] },
+        "loop": { "$ref": "https://decantr.ai/schemas/loop-readiness.v2.json" },
+        "authority": { "$ref": "https://decantr.ai/schemas/authority-resolution.v2.json" },
+        "evidenceTier": {
+          "$ref": "https://decantr.ai/schemas/verification-report.common.v2.json#/$defs/evidenceTier"
+        },
+        "health": { "$ref": "https://decantr.ai/schemas/project-health-report.v2.json" },
+        "localLaw": { "type": "object", "additionalProperties": true },
+        "styleBridge": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["$schema", "generatedAt", "mode", "failOn", "status", "loop", "workspace"],
+      "properties": {
+        "$schema": { "const": "https://decantr.ai/schemas/decantr-ci-report.v2.json" },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "mode": { "const": "workspace" },
+        "failOn": { "type": "string", "enum": ["error", "warn", "none"] },
+        "status": { "type": "string", "enum": ["healthy", "warning", "error"] },
+        "loop": { "type": "object", "additionalProperties": true },
+        "workspace": { "$ref": "https://decantr.ai/schemas/workspace-health-report.v2.json" }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import { isAbsolute, resolve } from 'node:path';
-import type { ProjectHealthReport } from '@decantr/verifier';
+import { isAbsolute, join, resolve } from 'node:path';
+import { PROJECT_HEALTH_REPORT_V2_SCHEMA_URL, type ProjectHealthReport } from '@decantr/verifier';
 import { sendStudioHealthRefreshedTelemetry, sendStudioStartedTelemetry } from '../telemetry.js';
 import { createProjectHealthReport } from './health.js';
 import { createWorkspaceHealthReport } from './workspace.js';
@@ -9,7 +9,7 @@ import { createWorkspaceHealthReport } from './workspace.js';
 const GREEN = '\x1b[32m';
 const CYAN = '\x1b[36m';
 const RESET = '\x1b[0m';
-const PROJECT_HEALTH_SCHEMA_URL = 'https://decantr.ai/schemas/project-health-report.v1.json';
+const PROJECT_HEALTH_SCHEMA_URL = PROJECT_HEALTH_REPORT_V2_SCHEMA_URL;
 
 export interface StudioCommandOptions {
   host?: string;
@@ -59,7 +59,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function readProjectHealthReport(reportPath: string): ProjectHealthReport {
   const parsed = JSON.parse(readFileSync(reportPath, 'utf-8')) as unknown;
   if (!isRecord(parsed) || parsed.$schema !== PROJECT_HEALTH_SCHEMA_URL) {
-    throw new Error('Report file is not a Decantr Project Health JSON document.');
+    throw new Error('Report file is not a Decantr Project Health v2 JSON document.');
   }
   if (
     typeof parsed.generatedAt !== 'string' ||
@@ -69,6 +69,9 @@ function readProjectHealthReport(reportPath: string): ProjectHealthReport {
     !isRecord(parsed.summary) ||
     !isRecord(parsed.routes) ||
     !isRecord(parsed.packs) ||
+    !isRecord(parsed.loop) ||
+    !isRecord(parsed.authority) ||
+    !isRecord(parsed.evidenceTier) ||
     !isRecord(parsed.ci) ||
     !Array.isArray(parsed.findings)
   ) {
@@ -1174,6 +1177,307 @@ function workspaceStudioHtml(): string {
 </html>`;
 }
 
+function studioControlRoomPayload(report: ProjectHealthReport) {
+  return {
+    generatedAt: report.generatedAt,
+    projectRoot: report.projectRoot,
+    status: report.status,
+    score: report.score,
+    summary: report.summary,
+    loop: report.loop,
+    authority: report.authority,
+    evidenceTier: report.evidenceTier,
+    graph: report.graph,
+    blockingFindings: report.findings
+      .filter((finding) => finding.severity === 'error' || finding.loopVerdict !== 'verified')
+      .slice(0, 12)
+      .map((finding) => ({
+        id: finding.id,
+        severity: finding.severity,
+        source: finding.source,
+        category: finding.category,
+        message: finding.message,
+        graph: finding.graph,
+        authorityLane: finding.authorityLane,
+        loopVerdict: finding.loopVerdict,
+        commands: finding.repairPlan?.commands ?? finding.remediation.commands,
+      })),
+  };
+}
+
+function studioTaskPreview(projectRoot: string, route: string | null, intent: string | null) {
+  return {
+    route,
+    intent,
+    command:
+      route && intent
+        ? `decantr task ${JSON.stringify(route)} ${JSON.stringify(intent)}`
+        : 'decantr task <route> "<intent>"',
+    notes: [
+      'Run this before editing a route.',
+      'If runtime source and Decantr context disagree, stop and report drift.',
+    ],
+    projectRoot,
+  };
+}
+
+function readStudioProofReport(projectRoot: string): unknown {
+  const candidates = [
+    join(projectRoot, '.decantr', 'benchmarks', 'proof-field-report.v2.json'),
+    join(projectRoot, '.decantr', 'proof-field-report.v2.json'),
+    join(projectRoot, 'docs', 'benchmarks', 'decantr-3-5-proof-field-report.json'),
+  ];
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return JSON.parse(readFileSync(candidate, 'utf-8')) as unknown;
+    }
+  }
+  return {
+    $schema: 'https://decantr.ai/schemas/proof-field-report.v2.json',
+    schemaVersion: 2,
+    status: 'missing',
+    message: 'No local proof field report was found for this project.',
+    searched: candidates,
+  };
+}
+
+function controlRoomHtml(
+  reportMode = false,
+  legacyRenderer?: (reportMode: boolean) => string,
+): string {
+  void legacyRenderer;
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Decantr Control Room</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111315;
+      --surface: #181b1f;
+      --surface-2: #20242a;
+      --line: rgba(238, 241, 238, 0.13);
+      --text: #eef1ee;
+      --muted: #a9b1ac;
+      --good: #6ae3a1;
+      --warn: #f4c768;
+      --bad: #ff7782;
+      --accent: #8fd7ff;
+      --ink: #0b0d0f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.45;
+    }
+    button { font: inherit; }
+    code {
+      display: inline-block;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      border: 1px solid var(--line);
+      background: #0e1012;
+      color: var(--accent);
+      padding: 0.25rem 0.4rem;
+      border-radius: 6px;
+    }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: minmax(220px, 280px) 1fr; }
+    .rail { border-right: 1px solid var(--line); padding: 1rem; background: #14171a; position: sticky; top: 0; height: 100vh; }
+    .brand { display: grid; gap: 0.2rem; margin-bottom: 1rem; }
+    .brand h1 { font-size: 1.15rem; margin: 0; letter-spacing: 0; }
+    .brand p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .tabs { display: grid; gap: 0.3rem; }
+    .tab {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.6rem 0.7rem;
+      border-radius: 7px;
+      cursor: pointer;
+    }
+    .tab.active, .tab:hover { color: var(--text); background: var(--surface-2); border-color: var(--line); }
+    .main { padding: 1rem; display: grid; gap: 1rem; align-content: start; }
+    .topbar { display: flex; justify-content: space-between; gap: 1rem; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 1rem; }
+    .topbar h2 { margin: 0; font-size: 1.25rem; letter-spacing: 0; }
+    .topbar p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.9rem; }
+    .refresh {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 0 0.8rem;
+      cursor: pointer;
+    }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 0.8rem; }
+    .panel {
+      grid-column: span 6;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.9rem;
+      min-width: 0;
+    }
+    .panel.wide { grid-column: 1 / -1; }
+    .panel h3 { margin: 0 0 0.6rem; font-size: 0.95rem; letter-spacing: 0; }
+    .metric { display: flex; align-items: baseline; gap: 0.45rem; margin: 0.2rem 0; }
+    .metric strong { font-size: 1.65rem; letter-spacing: 0; }
+    .muted { color: var(--muted); }
+    .status-healthy { color: var(--good); }
+    .status-warning { color: var(--warn); }
+    .status-error, .status-blocked { color: var(--bad); }
+    .list { display: grid; gap: 0.55rem; }
+    .row { border-top: 1px solid var(--line); padding-top: 0.55rem; min-width: 0; }
+    .row:first-child { border-top: 0; padding-top: 0; }
+    .row-title { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .pill { border: 1px solid var(--line); border-radius: 999px; padding: 0.1rem 0.45rem; color: var(--muted); font-size: 0.78rem; }
+    .pre { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); margin: 0; }
+    .hide { display: none; }
+    @media (max-width: 820px) {
+      .shell { grid-template-columns: 1fr; }
+      .rail { position: static; height: auto; }
+      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .panel { grid-column: 1 / -1; }
+      .topbar { align-items: stretch; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">
+        <h1>Decantr Control Room</h1>
+        <p>${reportMode ? 'Report artifact' : 'Local project'}</p>
+      </div>
+      <nav class="tabs" aria-label="Studio views">
+        <button class="tab active" data-view="control">Control</button>
+        <button class="tab" data-view="routes">Routes</button>
+        <button class="tab" data-view="graph">Graph</button>
+        <button class="tab" data-view="authority">Authority</button>
+        <button class="tab" data-view="evidence">Evidence</button>
+        <button class="tab" data-view="repairs">Repairs</button>
+        <button class="tab" data-view="ci">CI</button>
+      </nav>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2 id="title">Control</h2>
+          <p id="subtitle">Loading local health state...</p>
+        </div>
+        <button class="refresh" id="refresh" type="button">Refresh</button>
+      </header>
+      <section id="content" class="grid" aria-live="polite"></section>
+    </main>
+  </div>
+  <script>
+    const state = { view: 'control', health: null, control: null, resolve: null, evidence: null, graph: null, proof: null };
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const cls = (status) => 'status-' + String(status || 'warning').replace(/_/g, '-');
+    async function getJson(path, options) {
+      const response = await fetch(path, options);
+      if (!response.ok) throw new Error(await response.text());
+      return response.json();
+    }
+    async function load(refresh = false) {
+      state.health = await getJson(refresh ? '/api/refresh' : '/api/health', refresh ? { method: 'POST' } : undefined);
+      state.control = await getJson('/api/control-room');
+      state.resolve = await getJson('/api/resolve');
+      state.evidence = await getJson('/api/evidence');
+      state.graph = await getJson('/api/graph-impact');
+      state.proof = await getJson('/api/proof');
+      render();
+    }
+    function panel(title, body, wide = false) {
+      return '<article class="panel' + (wide ? ' wide' : '') + '"><h3>' + esc(title) + '</h3>' + body + '</article>';
+    }
+    function rows(items, empty) {
+      if (!items || items.length === 0) return '<p class="muted">' + esc(empty) + '</p>';
+      return '<div class="list">' + items.map((item) => '<div class="row">' + item + '</div>').join('') + '</div>';
+    }
+    function renderControl() {
+      const report = state.health;
+      const loop = report.loop || {};
+      return [
+        panel('Project Health', '<div class="metric"><strong class="' + cls(report.status) + '">' + esc(report.score) + '</strong><span>/100</span></div><p class="muted">' + esc(report.status) + ' | ' + esc(report.summary.findingCount) + ' finding(s)</p>'),
+        panel('Loop State', '<div class="metric"><strong class="' + cls(loop.status) + '">' + esc(loop.state) + '</strong></div><p class="muted">' + esc(loop.nextActions?.[0] || loop.verdict) + '</p>'),
+        panel('Authority Lane', '<p><strong>' + esc(report.authority?.activeLane) + '</strong></p><p class="muted">' + esc(report.authority?.summary) + '</p>', true),
+        panel('Blocking Findings', rows(state.control?.blockingFindings?.map((finding) => '<div class="row-title"><strong>' + esc(finding.id) + '</strong><span class="pill">' + esc(finding.severity) + '</span><span class="pill">' + esc(finding.authorityLane) + '</span></div><p class="muted">' + esc(finding.message) + '</p>'), 'No blocking findings.'), true)
+      ].join('');
+    }
+    function renderRoutes() {
+      const routes = state.health.routes || {};
+      const items = (routes.declared || []).map((route) => '<div class="row-title"><strong>' + esc(route) + '</strong><code>decantr task ' + esc(JSON.stringify(route)) + ' "&lt;intent&gt;"</code></div>');
+      return [
+        panel('Declared Routes', rows(items, 'No declared routes.'), true),
+        panel('Runtime Coverage', '<p class="muted">Checked ' + esc((routes.runtimeChecked || []).length) + ' route(s), matched ' + esc(routes.runtimeMatched) + '.</p><pre class="pre">' + esc((routes.issues || []).join('\\n')) + '</pre>', true)
+      ].join('');
+    }
+    function renderGraph() {
+      const graph = state.graph?.graph || state.health.graph || {};
+      const findings = state.graph?.findings || [];
+      return [
+        panel('Graph Impact', '<p><strong>' + esc(graph.current === false ? 'stale' : graph.ready ? 'ready' : 'missing') + '</strong></p><p class="muted">Snapshot ' + esc(graph.snapshotId || 'none') + ' | sources ' + esc(graph.sourceArtifactCount || 0) + '</p>'),
+        panel('Anchored Findings', rows(findings.map((finding) => '<strong>' + esc(finding.id) + '</strong><p class="muted">' + esc(finding.graph?.node_type) + ' ' + esc(finding.graph?.node_id) + '</p>'), 'No graph-anchored findings.'))
+      ].join('');
+    }
+    function renderAuthority() {
+      const resolution = state.resolve || {};
+      return [
+        panel('Order', rows((resolution.order || []).map((item) => '<strong>' + esc(item.rank) + '. ' + item.label + '</strong><p class="muted">' + esc(item.role) + '</p>'), 'No authority order.'), true),
+        panel('Conflicts', rows((resolution.conflicts || []).map((item) => '<div class="row-title"><strong>' + esc(item.id) + '</strong><span class="pill">' + esc(item.status) + '</span></div><p class="muted">' + esc(item.message) + '</p><pre class="pre">' + esc((item.recommendedActions || []).map((action) => action.kind + (action.command ? ' -> ' + action.command : '')).join('\\n')) + '</pre>'), 'No authority conflicts.'), true)
+      ].join('');
+    }
+    function renderEvidence() {
+      const tier = state.evidence?.evidenceTier || state.health.evidenceTier || {};
+      return [
+        panel('Evidence Tier', '<div class="metric"><strong>' + esc(tier.stage) + '</strong><span>' + esc(tier.confidence?.level) + ' ' + esc(tier.confidence?.score) + '</span></div><p class="muted">' + esc((tier.capabilities || []).join(', ')) + '</p>'),
+        panel('Coverage', '<pre class="pre">' + esc(JSON.stringify(tier.coverage || {}, null, 2)) + '</pre>'),
+        panel('Evidence Findings', rows((state.evidence?.findings || []).map((finding) => '<strong>' + esc(finding.id) + '</strong><p class="muted">' + esc(finding.source) + ' | ' + esc(finding.severity) + '</p>'), 'No evidence findings.'), true)
+      ].join('');
+    }
+    function renderRepairs() {
+      return panel('Repair Plans', rows((state.health.findings || []).map((finding) => '<div class="row-title"><strong>' + esc(finding.id) + '</strong><span class="pill">' + esc(finding.severity) + '</span></div><p class="muted">' + esc(finding.remediation?.summary || finding.message) + '</p><pre class="pre">' + esc((finding.repairPlan?.commands || finding.remediation?.commands || []).join('\\n')) + '</pre>'), 'No repair plans.'), true);
+    }
+    function renderCi() {
+      const proof = state.proof || {};
+      return [
+        panel('CI Command', '<code>' + esc(state.health.ci?.recommendedCommand) + '</code><p class="muted">Loop verify: ' + esc(state.health.loop?.verifyCommand) + '</p>', true),
+        panel('Proof Report', '<pre class="pre">' + esc(JSON.stringify(proof.summary || proof.message || proof, null, 2)) + '</pre>', true)
+      ].join('');
+    }
+    function render() {
+      const titles = { control: 'Control', routes: 'Routes', graph: 'Graph Impact', authority: 'Authority Resolver', evidence: 'Evidence', repairs: 'Repairs', ci: 'CI / Benchmarks' };
+      document.getElementById('title').textContent = titles[state.view] || 'Control';
+      document.getElementById('subtitle').textContent = (state.health?.projectRoot || '') + ' | ' + (state.health?.generatedAt || '');
+      const renderers = { control: renderControl, routes: renderRoutes, graph: renderGraph, authority: renderAuthority, evidence: renderEvidence, repairs: renderRepairs, ci: renderCi };
+      document.getElementById('content').innerHTML = (renderers[state.view] || renderControl)();
+    }
+    for (const button of document.querySelectorAll('.tab')) {
+      button.addEventListener('click', () => {
+        state.view = button.dataset.view;
+        for (const tab of document.querySelectorAll('.tab')) tab.classList.toggle('active', tab === button);
+        render();
+      });
+    }
+    document.getElementById('refresh').addEventListener('click', () => load(true).catch((error) => alert(error.message)));
+    load().catch((error) => {
+      document.getElementById('subtitle').textContent = 'Load failed';
+      document.getElementById('content').innerHTML = panel('Error', '<pre class="pre">' + esc(error.message) + '</pre>', true);
+    });
+  </script>
+</body>
+</html>`;
+}
+
 export function createStudioRequestHandler(
   projectRoot: string,
   options: StudioCommandOptions = {},
@@ -1194,7 +1498,7 @@ export function createStudioRequestHandler(
           sendHtml(res, workspaceStudioHtml());
           return;
         }
-        sendHtml(res, studioHtml(Boolean(reportPath)));
+        sendHtml(res, controlRoomHtml(Boolean(reportPath), studioHtml));
         return;
       }
       if (options.workspace && req.method === 'GET' && url.pathname === '/api/workspace') {
@@ -1207,6 +1511,62 @@ export function createStudioRequestHandler(
       }
       if (req.method === 'GET' && url.pathname === '/api/health') {
         sendJson(res, 200, await loadReport());
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/control-room') {
+        sendJson(res, 200, studioControlRoomPayload(await loadReport()));
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/resolve') {
+        const report = await loadReport();
+        sendJson(res, 200, report.authority);
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/evidence') {
+        const report = await loadReport();
+        sendJson(res, 200, {
+          evidenceTier: report.evidenceTier,
+          findings: report.findings.map((finding) => ({
+            id: finding.id,
+            severity: finding.severity,
+            source: finding.source,
+            graph: finding.graph,
+            evidenceTier: finding.evidenceTier,
+            repairPlan: finding.repairPlan,
+          })),
+        });
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/graph-impact') {
+        const report = await loadReport();
+        sendJson(res, 200, {
+          graph: report.graph,
+          loopImpact: report.loop.graphImpact,
+          findings: report.findings
+            .filter((finding) => finding.graph)
+            .map((finding) => ({
+              id: finding.id,
+              severity: finding.severity,
+              message: finding.message,
+              graph: finding.graph,
+            })),
+        });
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/task-preview') {
+        sendJson(
+          res,
+          200,
+          studioTaskPreview(
+            projectRoot,
+            url.searchParams.get('route'),
+            url.searchParams.get('intent'),
+          ),
+        );
+        return;
+      }
+      if (req.method === 'GET' && url.pathname === '/api/proof') {
+        sendJson(res, 200, readStudioProofReport(projectRoot));
         return;
       }
       if (req.method === 'POST' && url.pathname === '/api/refresh') {
