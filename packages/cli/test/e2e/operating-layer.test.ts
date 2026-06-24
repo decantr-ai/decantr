@@ -168,6 +168,21 @@ describe('operating layer commands', () => {
     expect(output).toContain('Next steps:');
   });
 
+  it('does not crash when CI scan candidates are directories', () => {
+    mkdirSync(join(testDir, 'BUILD'), { recursive: true });
+    mkdirSync(join(testDir, 'node_modules', 'pkg', '.github', 'workflows'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'node_modules', 'pkg', '.github', 'workflows', 'ci.yml'),
+      'name: dependency\nrun: decantr verify\n',
+    );
+
+    const output = runCli(testDir, ['doctor', '--project', 'apps/web']);
+
+    expect(output).toContain('Decantr Doctor');
+    expect(output).not.toContain('BUILD');
+    expect(output).not.toContain('node_modules/pkg/.github/workflows/ci.yml');
+  });
+
   it('reports current typed Contract graph artifacts in doctor after graph generation', () => {
     runCli(testDir, ['graph', '--project', 'apps/web']);
 

@@ -1559,30 +1559,35 @@ export function buildGraphArtifacts(
   const sources = sourceArtifacts(projectRoot, componentReuseAudit);
   const combinedSourceHash = sourceHash(sources);
   const previousSnapshot = readJsonFile<GraphSnapshot>(paths.snapshot);
-  const createdAt =
-    previousSnapshot?.source_hash === combinedSourceHash
-      ? previousSnapshot.created_at
-      : new Date().toISOString();
+  const previousDiff = readJsonFile<GraphDiff>(paths.diff);
+  const sourceUnchanged = previousSnapshot?.source_hash === combinedSourceHash;
+  const createdAt = sourceUnchanged ? previousSnapshot.created_at : new Date().toISOString();
   const snapshotId = `graph:${combinedSourceHash.replace(/^sha256:/, '').slice(0, 12)}`;
   paths = withSnapshotHistoryPath(paths, snapshotId);
   const baseSnapshot = buildGraphSnapshotFromEssence(essence, {
     snapshotId,
-    parentId:
-      previousSnapshot && previousSnapshot.id !== snapshotId ? previousSnapshot.id : undefined,
+    parentId: sourceUnchanged
+      ? previousSnapshot.parent_id
+      : previousSnapshot
+        ? previousSnapshot.id
+        : undefined,
     sourceHash: combinedSourceHash,
     createdAt,
     sourceArtifact: sources[0],
   });
   const snapshot = augmentProjectGraph(baseSnapshot, projectRoot, sources, componentReuseAudit);
-  const diff = previousSnapshot
-    ? diffGraphSnapshots(previousSnapshot, snapshot)
-    : {
-        $schema: GRAPH_DIFF_SCHEMA_URL,
-        id: `diff:${snapshot.id}:${snapshot.id}`,
-        from: snapshot.id,
-        to: snapshot.id,
-        ops: [],
-      };
+  const diff =
+    sourceUnchanged && previousDiff?.to === snapshot.id
+      ? previousDiff
+      : previousSnapshot
+        ? diffGraphSnapshots(previousSnapshot, snapshot)
+        : {
+            $schema: GRAPH_DIFF_SCHEMA_URL,
+            id: `diff:${snapshot.id}:${snapshot.id}`,
+            from: snapshot.id,
+            to: snapshot.id,
+            ops: [],
+          };
   const capsule = buildContractCapsuleFromSnapshot(snapshot, {
     createdAt: snapshot.created_at,
     sourceArtifactLimit: options.capsuleSourceLimit,

@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-06-09T20:15:34-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -98,7 +98,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/benchmarks/2026-06-23-decantr-3-5-proof-field-report.md</loc>
-    <lastmod>2026-06-23T17:18:59.364Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -122,7 +122,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/ai-assistant-setup.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -146,7 +146,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/project-health-ci.md</loc>
-    <lastmod>2026-05-27T10:47:49-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -158,7 +158,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/guides/typed-graph-agent-playbook.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -236,7 +236,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/command-surface.md</loc>
-    <lastmod>2026-06-23T11:46:23-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -248,49 +248,49 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/diagnostic-codes.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/mcp-migration.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/package-support-matrix.md</loc>
-    <lastmod>2026-05-27T17:00:54-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/project-health.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/registry-public-api.html</loc>
-    <lastmod>2026-05-12T10:57:30-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/registry-public-api.md</loc>
-    <lastmod>2026-05-18T21:55:41-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/report-schemas.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://decantr.ai/reference/security-permissions.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -314,7 +314,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-06-23T11:46:23-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -590,7 +590,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-06-23-decantr-3-5-0-brownfield-control-loop.md</loc>
-    <lastmod>2026-06-23T16:37:56.521Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-24-decantr-3-5-1-external-dogfood-hardening.md</loc>
+    <lastmod>2026-06-24T22:14:33.293Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -680,7 +686,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/</loc>
-    <lastmod>2026-05-23T11:19:37-04:00</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -692,7 +698,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/authority-resolution.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.780Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -734,7 +740,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/decantr-ci-report.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.780Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -764,7 +770,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/evidence-bundle.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.781Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -812,7 +818,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/loop-readiness.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.781Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -854,13 +860,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/project-health-report.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.782Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://decantr.ai/schemas/proof-field-report.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.782Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -896,7 +902,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/runtime-probe-payload.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.782Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -974,7 +980,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/verification-report.common.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.783Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -986,7 +992,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/workspace-health-report.v2.json</loc>
-    <lastmod>2026-06-23T16:29:45.784Z</lastmod>
+    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isV4 } from '@decantr/essence-spec';
@@ -262,7 +262,7 @@ function detectDesignAuthority(workspaceRoot: string, appRoot: string): string[]
 function findCiFiles(root: string): string[] {
   const files: string[] = [];
   const workflows = join(root, '.github', 'workflows');
-  if (existsSync(workflows)) {
+  if (pathIsDirectory(workflows)) {
     for (const entry of readdirSync(workflows, { withFileTypes: true })) {
       if (!entry.isFile()) continue;
       const path = join(workflows, entry.name);
@@ -272,11 +272,27 @@ function findCiFiles(root: string): string[] {
   }
   for (const candidate of ['Jenkinsfile', '.gitlab-ci.yml', 'azure-pipelines.yml', 'BUILD']) {
     const path = join(root, candidate);
-    if (existsSync(path) && readFileSync(path, 'utf-8').includes('decantr')) {
+    if (pathIsFile(path) && readFileSync(path, 'utf-8').includes('decantr')) {
       files.push(candidate);
     }
   }
   return files.sort();
+}
+
+function pathIsFile(path: string): boolean {
+  try {
+    return statSync(path).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function pathIsDirectory(path: string): boolean {
+  try {
+    return statSync(path).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 function statusFromIssues(issues: DoctorIssue[], essenceVersion: string | null): DoctorStatus {

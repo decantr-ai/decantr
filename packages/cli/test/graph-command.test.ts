@@ -1062,6 +1062,10 @@ describe('graph command artifacts', () => {
         '/.decantr/graph/graph.diff.json',
       ]),
     );
+
+    await cmdGraph(testDir, { json: true });
+
+    expect(buildGraphArtifacts(testDir)?.staleArtifacts).toEqual([]);
   });
 
   it('does not mark graph artifacts stale for timestamp-only evidence churn', async () => {
