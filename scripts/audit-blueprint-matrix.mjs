@@ -197,6 +197,14 @@ function hasCheckAndAuditGuidance(text) {
     && normalized.includes('and decantr audit');
 }
 
+function hasCurrentDecantrWorkflowGuidance(text) {
+  const normalized = normalizePromptText(text);
+  return normalized.includes('Before editing any route, run decantr task <route> "<intent>".')
+    && normalized.includes('Treat the compiled execution-pack files as the primary source of truth.')
+    && normalized.includes('Run decantr verify for the broader Project Health view before handoff')
+    && normalized.includes('decantr ci init');
+}
+
 function certifyBlueprint(entry, contentRoot) {
   const projectRoot = mkdtempSync(join(tmpdir(), `decantr-blueprint-${entry.id}-`));
 
@@ -222,9 +230,7 @@ function certifyBlueprint(entry, contentRoot) {
       hasCheckAndAuditGuidance(initResult.stdout);
 
     const decantrContent = existsSync(paths.decantr) ? readFileSync(paths.decantr, 'utf-8') : '';
-    const decantrAligned =
-      hasExecutionPackPrimarySourceGuidance(decantrContent) &&
-      decantrContent.includes('Run `decantr check` to detect drift violations while editing');
+    const decantrAligned = hasCurrentDecantrWorkflowGuidance(decantrContent);
 
     let checkResult = { status: 1, durationMs: 0, stdout: '', stderr: '' };
     let auditResult = { status: 1, durationMs: 0, stdout: '', stderr: '' };

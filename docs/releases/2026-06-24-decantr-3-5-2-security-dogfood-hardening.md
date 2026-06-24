@@ -9,6 +9,7 @@ Decantr 3.5.2 is a CLI-focused hardening patch for the Brownfield control loop. 
 - Added regression coverage for repeated wildcard alias expansion, including replacement metacharacters such as `$&`.
 - Raised vulnerable transitive dependency floors for Vite, Hono, Undici, Babel, esbuild, and blueprint harness `ws`.
 - Added a five-project external dogfood report covering scan, adopt, doctor, graph, task, verify, ci, resolve, and unhappy-path commands.
+- Realigned the blueprint certification matrix with current generated `DECANTR.md` workflow guidance so CI checks task-first, verify/ci handoff, and compiled-pack authority instead of stale wording.
 - Kept Essence V4, MCP tools, hosted upload behavior, telemetry, and report schemas unchanged.
 
 ## Release Scope
