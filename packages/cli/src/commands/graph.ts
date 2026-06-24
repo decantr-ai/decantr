@@ -545,7 +545,7 @@ function existingImportCandidate(projectRoot: string, candidate: string): string
   return null;
 }
 
-function pathAliasTargetCandidates(
+export function pathAliasTargetCandidates(
   source: string,
   config: CompilerImportResolutionConfig,
 ): string[] {
@@ -562,7 +562,7 @@ function pathAliasTargetCandidates(
     if (!source.startsWith(prefix) || !source.endsWith(suffix)) continue;
     const matched = source.slice(prefix.length, source.length - suffix.length);
     for (const target of alias.targets) {
-      candidates.push(target.replace('*', matched));
+      candidates.push(target.split('*').join(matched));
     }
   }
   if (config.baseUrl) {

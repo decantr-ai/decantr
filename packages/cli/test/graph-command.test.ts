@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildGraphArtifacts, cmdGraph } from '../src/commands/graph.js';
+import { buildGraphArtifacts, cmdGraph, pathAliasTargetCandidates } from '../src/commands/graph.js';
 
 function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, 'utf-8');
@@ -361,6 +361,20 @@ describe('graph command artifacts', () => {
       reason: 'seed_node+pagerank+task_match',
       matched_terms: ['existing', 'surface'],
     });
+  });
+
+  it('expands repeated wildcard path aliases literally', () => {
+    expect(
+      pathAliasTargetCandidates('@/components/$&/Button', {
+        baseUrl: null,
+        paths: [
+          {
+            pattern: '@/*',
+            targets: ['./src/mirrors/*/*.tsx'],
+          },
+        ],
+      }),
+    ).toContain('./src/mirrors/components/$&/Button/components/$&/Button.tsx');
   });
 
   it('prints source-file impact graph context in JSON output', async () => {

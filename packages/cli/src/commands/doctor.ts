@@ -480,13 +480,17 @@ function inspectGraphArtifacts(
   }
 }
 
-function buildDoctorReport(root: string, args: string[]): DoctorReport {
-  let projectArg: string | undefined;
+function parseDoctorProjectArg(args: string[]): string | undefined {
   for (let index = 1; index < args.length; index += 1) {
     const arg = args[index];
-    if (arg === '--project' && args[index + 1]) projectArg = args[++index];
-    else if (arg.startsWith('--project=')) projectArg = arg.slice('--project='.length);
+    if (arg === '--project' && args[index + 1]) return args[index + 1];
+    if (arg.startsWith('--project=')) return arg.slice('--project='.length);
   }
+  return undefined;
+}
+
+function buildDoctorReport(root: string, args: string[]): DoctorReport {
+  const projectArg = parseDoctorProjectArg(args);
   const workspaceMode = args.includes('--workspace');
   const workspaceInfo = resolveWorkspaceInfo(root, projectArg);
   const workspaceRoot = workspaceInfo.workspaceRoot;
@@ -972,6 +976,18 @@ export async function cmdDoctor(
   args: string[] = ['doctor'],
   root: string = process.cwd(),
 ): Promise<void> {
+  const projectArg = parseDoctorProjectArg(args);
+  const workspaceMode = args.includes('--workspace');
+  if (projectArg && !args.includes('--json')) {
+    const workspaceInfo = resolveWorkspaceInfo(root, projectArg);
+    const appRoot = workspaceMode ? workspaceInfo.workspaceRoot : workspaceInfo.appRoot;
+    if (!existsSync(appRoot)) {
+      console.error(`${RED}Project path does not exist: ${projectArg}${RESET}`);
+      console.error(`${DIM}Run decantr workspace list to see detected app candidates.${RESET}`);
+      process.exitCode = 1;
+      return;
+    }
+  }
   const report = buildDoctorReport(root, args);
   if (args.includes('--json')) {
     console.log(JSON.stringify(report, null, 2));

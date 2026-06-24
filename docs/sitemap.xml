@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
+    <lastmod>2026-06-24T18:27:37-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -99,6 +99,12 @@
   <url>
     <loc>https://decantr.ai/benchmarks/2026-06-23-decantr-3-5-proof-field-report.md</loc>
     <lastmod>2026-06-23T13:46:37-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/benchmarks/2026-06-24-external-dogfood-3-5-2.md</loc>
+    <lastmod>2026-06-24T22:45:42.758Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -596,7 +602,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-06-24-decantr-3-5-1-external-dogfood-hardening.md</loc>
-    <lastmod>2026-06-24T22:14:33.293Z</lastmod>
+    <lastmod>2026-06-24T18:27:37-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-24-decantr-3-5-2-security-dogfood-hardening.md</loc>
+    <lastmod>2026-06-24T22:45:47.217Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
