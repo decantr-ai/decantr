@@ -118,7 +118,7 @@ See [Decantr 3 Prerelease Runbook](decantr-3-prerelease.md) for the hard-cut rel
 
 ## Community Announcement
 
-Discord release announcements are a distribution step, not release truth. Run them only after `release:verify` and `release:closeout` pass.
+Community release announcements are a distribution step, not release truth. Run them only after `release:verify` and `release:closeout` pass.
 
 `pnpm release:announce` builds a `repository_dispatch` payload for `decantr-ai/community-ops`, including the version, tag, release-note path, changelog markdown, and selected package versions. It dry-runs by default:
 
@@ -132,7 +132,7 @@ To post through the community automation, set `COMMUNITY_OPS_DISPATCH_TOKEN` to 
 pnpm release:announce -- --version 3.0.0-next.0 --only=@decantr/cli,@decantr/mcp-server,@decantr/verifier --send
 ```
 
-`community-ops` owns the Discord webhook secret and message formatting. Decantr only sends the release facts after closeout.
+`community-ops` owns Discord and X credentials plus message formatting. Decantr only sends the release facts after closeout. A live community announcement posts to both Discord and the official Decantr X account; it should fail before posting if either required channel credential set is missing.
 
 The same dispatch is also available from the `Community Release Announcement` GitHub workflow. Prefer this workflow when the dispatch token lives in GitHub Actions secrets instead of the local shell:
 
@@ -150,7 +150,7 @@ gh workflow run community-release-announcement.yml \
 
 Run it in dry-run mode first, then rerun with `send=true` after closeout has passed. If that workflow fails with `403 Resource not accessible by personal access token`, the `COMMUNITY_OPS_DISPATCH_TOKEN` secret exists but does not have cross-repo `repository_dispatch` access to `decantr-ai/community-ops`.
 
-To test the token without posting to Discord, dispatch a probe event type that `community-ops` does not listen to:
+To test the token without posting a community announcement, dispatch a probe event type that `community-ops` does not listen to:
 
 ```bash
 gh workflow run community-release-announcement.yml \
@@ -162,7 +162,7 @@ gh workflow run community-release-announcement.yml \
   -f send=true
 ```
 
-When cross-repo dispatch is blocked, trigger the receiver workflow directly from `community-ops`:
+When cross-repo dispatch is blocked, trigger the receiver workflow directly from `community-ops`. The workflow file is still `discord-release.yml` for compatibility, but the live workflow posts both Discord and X:
 
 ```bash
 gh workflow run discord-release.yml \
@@ -180,7 +180,7 @@ gh workflow run discord-release.yml \
 
 Always pass `changelog_markdown` on the receiver fallback. Prerelease tags can point at the package release commit while release notes continue to evolve on `main`; passing the markdown directly keeps `community-ops` from fetching a release note from a tag that may not contain it.
 
-That direct receiver path uses `community-ops` repository secrets, including `DISCORD_RELEASE_WEBHOOK_URL`, and does not require the source repo dispatch token.
+That direct receiver path uses `community-ops` repository secrets, including `DISCORD_RELEASE_WEBHOOK_URL`, `X_API_KEY`, `X_API_SECRET`, `X_ACCESS_TOKEN`, and `X_ACCESS_TOKEN_SECRET`, and does not require the source repo dispatch token.
 
 ## Closeout Audit
 
