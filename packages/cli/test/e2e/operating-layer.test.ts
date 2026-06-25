@@ -1,5 +1,13 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -600,6 +608,20 @@ describe('operating layer commands', () => {
 
     expect(output).toContain('Generated Decantr context looks fresh');
     expect(output).not.toContain('pack-manifest.json is missing');
+  });
+
+  it('does not treat project-owned styles as generated files in contract-only Brownfield', () => {
+    const stylesDir = join(testDir, 'apps', 'web', 'src', 'styles');
+    const globalCssPath = join(stylesDir, 'global.css');
+    mkdirSync(stylesDir, { recursive: true });
+    writeFileSync(globalCssPath, ':root { --app-surface: #ffffff; }\n');
+    const oldTimestamp = new Date('2026-01-01T00:00:00.000Z');
+    utimesSync(globalCssPath, oldTimestamp, oldTimestamp);
+
+    const output = runCli(testDir, ['refresh', '--project', 'apps/web', '--check']);
+
+    expect(output).toContain('Generated Decantr context looks fresh');
+    expect(output).not.toContain('src/styles/global.css');
   });
 
   it('prints monorepo-scoped paths in refresh change summaries', () => {

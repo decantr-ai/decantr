@@ -194,6 +194,74 @@ describe('scanProject', () => {
     expect(report.routes.items.map((route) => route.path)).not.toContain('*');
   });
 
+  it('normalizes React Router wrapper paths from mature brownfield apps', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          dependencies: {
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            'react-router-dom': '^5.3.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    mkdirSync(join(projectRoot, 'src'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'PrivateRoutesContainer.tsx'),
+      [
+        'import { Switch } from "react-router";',
+        'import PrivateRoute from "../components/PrivateRoute";',
+        'export function PrivateRoutesContainer() {',
+        '  return <Switch>',
+        '    <PrivateRoute exact path={"/(public|contacts|personal)?"}><Transactions /></PrivateRoute>',
+        '    <PrivateRoute exact path="/user/settings"><Settings /></PrivateRoute>',
+        '    <PrivateRoute path="/bankaccounts*"><BankAccounts /></PrivateRoute>',
+        '    <Route path="/*"><Fallback /></Route>',
+        '  </Switch>;',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const report = await scanProject(projectRoot);
+    const paths = report.routes.items.map((route) => route.path);
+
+    expect(report.routes.strategy).toBe('react-router');
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        '/',
+        '/public',
+        '/contacts',
+        '/personal',
+        '/user/settings',
+        '/bankaccounts',
+      ]),
+    );
+    expect(paths).not.toContain('/*');
+    expect(paths).not.toContain('/(public|contacts|personal)');
+  });
+
+  it('does not expose Next Pages Router internals as taskable routes', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ dependencies: { next: '^16.0.0', react: '^19.0.0' } }, null, 2),
+    );
+    const pagesDir = join(projectRoot, 'pages');
+    mkdirSync(pagesDir, { recursive: true });
+    for (const file of ['index.tsx', '_app.tsx', '_document.tsx', '_error.tsx']) {
+      writeFileSync(join(pagesDir, file), 'export default function Page() { return null; }');
+    }
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.routes.strategy).toBe('pages-router');
+    expect(report.routes.items.map((route) => route.path)).toEqual(['/']);
+  });
+
   it('handles static HTML projects', async () => {
     writeFileSync(
       join(projectRoot, 'index.html'),

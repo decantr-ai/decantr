@@ -56,13 +56,18 @@ function walkFiles(dir: string): string[] {
 }
 
 function trackedGeneratedFiles(projectRoot: string): string[] {
-  return [
+  const files = [
     join(projectRoot, 'DECANTR.md'),
     ...walkFiles(join(projectRoot, '.decantr', 'context')),
-    ...['global.css', 'tokens.css', 'treatments.css', 'decantr-bridge.css']
-      .map((file) => join(projectRoot, 'src', 'styles', file))
-      .filter((path) => existsSync(path)),
-  ].filter((path) => existsSync(path));
+  ];
+  if (!isContractOnlyProject(projectRoot)) {
+    files.push(
+      ...['global.css', 'tokens.css', 'treatments.css', 'decantr-bridge.css']
+        .map((file) => join(projectRoot, 'src', 'styles', file))
+        .filter((path) => existsSync(path)),
+    );
+  }
+  return files.filter((path) => existsSync(path));
 }
 
 function snapshotGeneratedFiles(projectRoot: string): Map<string, RefreshFileState> {

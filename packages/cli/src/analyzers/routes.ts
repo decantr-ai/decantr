@@ -188,6 +188,9 @@ const ROUTE_VARIABLE_NAMES =
   '(?:path|pathname|route|currentPath|currentRoute|locationPath|activePath)';
 const ROUTE_ASSET_EXTENSION_RE =
   /\.(?:avif|bmp|css|gif|ico|jpeg|jpg|js|json|map|mp4|pdf|png|svg|webp|woff2?)$/i;
+const JSX_ROUTE_PATH_RE =
+  /<(?:Route|[A-Z][\w.]*Route)\b[^>]*\bpath\s*=\s*(?:"([^"]+)"|'([^']+)'|{\s*"([^"]+)"\s*}|{\s*'([^']+)'\s*}|{\s*`([^`]+)`\s*})/g;
+const OBJECT_ROUTE_PATH_RE = /\bpath\s*:\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`)/g;
 
 function collectRouteCandidateFiles(dir: string, files: string[], depth = 0): void {
   if (depth > 5) return;
@@ -248,12 +251,14 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
     const pathMatches = new Set<string>();
 
     if (isReactRouterFile) {
-      for (const match of content.matchAll(/<Route\b[^>]*\bpath=["'`]([^"'`]+)["'`]/g)) {
-        pathMatches.add(match[1]);
+      for (const match of content.matchAll(JSX_ROUTE_PATH_RE)) {
+        const route = firstRouteLiteralMatch(match);
+        if (route) pathMatches.add(route);
       }
 
-      for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]+)["'`]/g)) {
-        pathMatches.add(match[1]);
+      for (const match of content.matchAll(OBJECT_ROUTE_PATH_RE)) {
+        const route = firstRouteLiteralMatch(match);
+        if (route) pathMatches.add(route);
       }
     }
 
@@ -275,35 +280,64 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
     }
 
     for (const path of pathMatches) {
-      const routePath = normalizeDetectedRouteLiteral(path);
-      if (!routePath || routeMap.has(routePath)) continue;
-      routeMap.set(routePath, {
-        path: routePath,
-        file: relativePath,
-        hasLayout: false,
-      });
+      for (const routePath of normalizeDetectedRouteLiterals(path)) {
+        if (routeMap.has(routePath)) continue;
+        routeMap.set(routePath, {
+          path: routePath,
+          file: relativePath,
+          hasLayout: false,
+        });
+      }
     }
   }
 
   return [...routeMap.values()];
 }
 
-function normalizeDetectedRouteLiteral(value: string): string | null {
-  const cleaned = value.trim().split(/[?#]/)[0];
-  if (!cleaned || cleaned === '/') return '/';
-  if (cleaned === '*' || cleaned === '**' || cleaned.startsWith('#')) return null;
-  if (!cleaned.startsWith('/') || cleaned.startsWith('//')) return null;
-  if (ROUTE_ASSET_EXTENSION_RE.test(cleaned)) return null;
-  return cleaned.replace(/\/+$/g, '') || '/';
+function firstRouteLiteralMatch(match: RegExpMatchArray): string | null {
+  return match.slice(1).find((value): value is string => typeof value === 'string') ?? null;
+}
+
+function normalizeDetectedRouteLiterals(value: string): string[] {
+  const withoutHash = value.trim().split('#')[0];
+  const cleaned =
+    withoutHash.includes('?') && !withoutHash.endsWith(')?')
+      ? withoutHash.split('?')[0]
+      : withoutHash;
+  if (!cleaned || cleaned === '/') return ['/'];
+  if (cleaned === '*' || cleaned === '**' || cleaned.startsWith('#')) return [];
+  if (cleaned === '/*' || cleaned === '/**') return [];
+  if (!cleaned.startsWith('/') || cleaned.startsWith('//')) return [];
+  if (ROUTE_ASSET_EXTENSION_RE.test(cleaned)) return [];
+
+  const optionalGroup = cleaned.match(/^\/\(([^()]+)\)\?$/);
+  if (optionalGroup) {
+    return [
+      '/',
+      ...optionalGroup[1]
+        .split('|')
+        .map((segment) => segment.trim())
+        .filter(Boolean)
+        .map((segment) => `/${segment}`),
+    ];
+  }
+
+  const withoutTrailingWildcard =
+    cleaned.endsWith('*') && !cleaned.endsWith('/*') && !/:\w+\*$/.test(cleaned)
+      ? cleaned.slice(0, -1)
+      : cleaned;
+  const normalized = withoutTrailingWildcard.replace(/\/+$/g, '') || '/';
+  if (normalized === '/*' || normalized === '/**') return [];
+  return [normalized];
 }
 
 function collectRouteLiterals(pattern: RegExp, content: string, routes: Set<string>): number {
   let count = 0;
   for (const match of content.matchAll(pattern)) {
-    const route = normalizeDetectedRouteLiteral(match[1] ?? '');
-    if (!route) continue;
-    routes.add(route);
-    count += 1;
+    for (const route of normalizeDetectedRouteLiterals(match[1] ?? '')) {
+      routes.add(route);
+      count += 1;
+    }
   }
   return count;
 }

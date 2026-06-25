@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-06-24T18:27:37-04:00</lastmod>
+    <lastmod>2026-06-24T18:49:07-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -104,7 +104,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/benchmarks/2026-06-24-external-dogfood-3-5-2.md</loc>
-    <lastmod>2026-06-24T22:45:42.758Z</lastmod>
+    <lastmod>2026-06-24T18:49:07-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -320,7 +320,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/reference/workflow-model.md</loc>
-    <lastmod>2026-06-23T13:46:37-04:00</lastmod>
+    <lastmod>2026-06-24T21:30:35-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -608,7 +608,19 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-06-24-decantr-3-5-2-security-dogfood-hardening.md</loc>
-    <lastmod>2026-06-24T22:45:47.217Z</lastmod>
+    <lastmod>2026-06-24T18:55:16-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-24-decantr-3-5-3-route-discovery-hardening.md</loc>
+    <lastmod>2026-06-24T21:30:35-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-25-decantr-3-5-4-brownfield-route-normalization.md</loc>
+    <lastmod>2026-06-25T02:25:34.965Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -686,7 +698,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/runbooks/release-stewardship.md</loc>
-    <lastmod>2026-05-28T17:46:32-04:00</lastmod>
+    <lastmod>2026-06-24T19:27:37-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

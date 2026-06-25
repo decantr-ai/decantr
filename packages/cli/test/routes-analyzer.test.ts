@@ -112,4 +112,79 @@ describe('route analyzer', () => {
     );
     expect(analysis.routes.map((route) => route.path)).not.toContain('*');
   });
+
+  it('normalizes React Router wrapper paths from mature brownfield apps', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          private: true,
+          dependencies: {
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+            'react-router-dom': '^5.3.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'PrivateRoutesContainer.tsx'),
+      [
+        'import { Switch } from "react-router";',
+        'import PrivateRoute from "../components/PrivateRoute";',
+        'export function PrivateRoutesContainer() {',
+        '  return <Switch>',
+        '    <PrivateRoute exact path={"/(public|contacts|personal)?"}><Transactions /></PrivateRoute>',
+        '    <PrivateRoute exact path="/user/settings"><Settings /></PrivateRoute>',
+        '    <PrivateRoute path="/bankaccounts*"><BankAccounts /></PrivateRoute>',
+        '    <Route path="/*"><Fallback /></Route>',
+        '  </Switch>;',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    const analysis = scanRoutes(projectRoot);
+    const paths = analysis.routes.map((route) => route.path);
+
+    expect(analysis.strategy).toBe('react-router');
+    expect(paths).toEqual(
+      expect.arrayContaining([
+        '/',
+        '/public',
+        '/contacts',
+        '/personal',
+        '/user/settings',
+        '/bankaccounts',
+      ]),
+    );
+    expect(paths).not.toContain('/*');
+    expect(paths).not.toContain('/(public|contacts|personal)');
+  });
+
+  it('does not expose Next Pages Router internals as taskable routes', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          private: true,
+          dependencies: { next: '^16.0.0', react: '^19.0.0', 'react-dom': '^19.0.0' },
+        },
+        null,
+        2,
+      ),
+    );
+    const pagesDir = join(projectRoot, 'pages');
+    mkdirSync(pagesDir, { recursive: true });
+    for (const file of ['index.tsx', '_app.tsx', '_document.tsx', '_error.tsx']) {
+      writeFileSync(join(pagesDir, file), 'export default function Page() { return null; }');
+    }
+
+    const analysis = scanRoutes(projectRoot);
+
+    expect(analysis.strategy).toBe('pages-router');
+    expect(analysis.routes.map((route) => route.path)).toEqual(['/']);
+  });
 });
