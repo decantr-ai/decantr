@@ -28,6 +28,14 @@ For each app:
 
 The baseline is valid only when the app has a Decantr contract, generated context, graph artifacts, Project Health output, and an Evidence Bundle.
 
+For external first-mile dogfood runs that should clone public repositories and avoid target-repo package-manager policy leaks, use:
+
+```bash
+pnpm benchmark:realworld-corpus -- --cli-package @decantr/cli@<version> --out /tmp/decantr-realworld-corpus --keep-repos
+```
+
+This harness measures clone, scan, adopt, graph, task, verify, CI, resolver, freshness, and unhappy-path command behavior. It is compatibility evidence, not a replacement for mutation replay or browser/runtime proof.
+
 ## Edit History
 
 Each benchmark app should receive a synthetic AI edit history of 20 to 50 commits or replay steps.

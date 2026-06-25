@@ -76,6 +76,7 @@
     "showcase:dogfood-promote": "node scripts/dogfood-showcase-promotion.mjs",
     "showcase": "pnpm run showcase:build && pnpm run showcase:copy",
     "benchmark:proof-field": "node scripts/run-proof-field-report.mjs",
+    "benchmark:realworld-corpus": "node scripts/run-realworld-corpus.mjs",
     "npm-surface:normalize": "node scripts/normalize-npm-dist-tags.mjs --write"
   },
   "devDependencies": {
