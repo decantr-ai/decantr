@@ -591,6 +591,10 @@ function scanReactRouter(projectRoot: string): { routes: ScanRouteV1[]; hashRout
     for (const route of detectPathnameBranchRoutes(content)) {
       routes.set(route, { path: route, file, hasLayout: false });
     }
+
+    for (const route of detectDeclarativeRouteSpecRoutes(content)) {
+      routes.set(route, { path: route, file, hasLayout: false });
+    }
   }
 
   return { routes: [...routes.values()], hashRouting };
@@ -638,6 +642,22 @@ function detectPathnameBranchRoutes(content: string): string[] {
     collectRouteLiterals(/\b(?:href|to)\s*=\s*["'`](\/[^"'`]+)["'`]/g, content, routes);
   }
 
+  return [...routes];
+}
+
+function detectDeclarativeRouteSpecRoutes(content: string): string[] {
+  const routes = new Set<string>();
+  const hasRouteSpecSignal =
+    content.includes('@wasp.sh/spec') ||
+    /\b(?:const|export\s+const)\s+\w*Spec\b/.test(content) ||
+    /\bapp\s*\(\s*\{[\s\S]*\bspec\s*:/.test(content);
+  if (!hasRouteSpecSignal) return [];
+
+  collectRouteLiterals(
+    /\broute\s*\(\s*["'`][^"'`]*["'`]\s*,\s*["'`](\/[^"'`]*)["'`]\s*,\s*page\s*\(/g,
+    content,
+    routes,
+  );
   return [...routes];
 }
 

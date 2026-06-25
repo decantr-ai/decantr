@@ -139,6 +139,61 @@ describe('scanProject', () => {
     );
   });
 
+  it('scans declarative TypeScript route specs before falling back to static HTML', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          dependencies: {
+            '@wasp.sh/spec': '^0.25.0',
+            react: '^19.0.0',
+            'react-dom': '^19.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(join(projectRoot, 'index.html'), '<!doctype html><div id="root"></div>\n');
+    writeFileSync(
+      join(projectRoot, 'main.wasp.ts'),
+      [
+        'import { app, page, route } from "@wasp.sh/spec";',
+        'import { LandingPage } from "./src/landing-page/LandingPage" with { type: "ref" };',
+        'export default app({',
+        '  name: "OpenSaaS",',
+        '  spec: [',
+        '    route("LandingPageRoute", "/", page(LandingPage), { prerender: true }),',
+        '    route("NotFoundRoute", "*", page(LandingPage)),',
+        '  ],',
+        '});',
+        '',
+      ].join('\n'),
+    );
+    mkdirSync(join(projectRoot, 'src', 'auth'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'auth', 'auth.wasp.ts'),
+      [
+        'import { page, route, type Spec } from "@wasp.sh/spec";',
+        'import { LoginPage } from "./LoginPage" with { type: "ref" };',
+        'import { SignupPage } from "./SignupPage" with { type: "ref" };',
+        'export const authSpec: Spec = [',
+        '  route("LoginRoute", "/login", page(LoginPage)),',
+        '  route("SignupRoute", "/signup", page(SignupPage)),',
+        '];',
+        '',
+      ].join('\n'),
+    );
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.routes.strategy).toBe('react-router');
+    expect(report.routes.items.map((route) => route.path)).toEqual(
+      expect.arrayContaining(['/', '/login', '/signup']),
+    );
+    expect(report.routes.items.map((route) => route.path)).not.toContain('*');
+  });
+
   it('handles static HTML projects', async () => {
     writeFileSync(
       join(projectRoot, 'index.html'),

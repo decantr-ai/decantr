@@ -257,6 +257,10 @@ function scanReactRouter(projectRoot: string): RouteInfo[] {
       }
     }
 
+    for (const route of detectDeclarativeRouteSpecRoutes(content)) {
+      pathMatches.add(route);
+    }
+
     for (const route of detectPathnameBranchRoutes(content)) {
       pathMatches.add(route);
     }
@@ -337,6 +341,22 @@ function detectPathnameBranchRoutes(content: string): string[] {
     routes.add('/');
   }
 
+  return [...routes];
+}
+
+function detectDeclarativeRouteSpecRoutes(content: string): string[] {
+  const routes = new Set<string>();
+  const hasRouteSpecSignal =
+    content.includes('@wasp.sh/spec') ||
+    /\b(?:const|export\s+const)\s+\w*Spec\b/.test(content) ||
+    /\bapp\s*\(\s*\{[\s\S]*\bspec\s*:/.test(content);
+  if (!hasRouteSpecSignal) return [];
+
+  collectRouteLiterals(
+    /\broute\s*\(\s*["'`][^"'`]*["'`]\s*,\s*["'`](\/[^"'`]*)["'`]\s*,\s*page\s*\(/g,
+    content,
+    routes,
+  );
   return [...routes];
 }
 
