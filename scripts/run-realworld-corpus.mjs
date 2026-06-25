@@ -107,11 +107,12 @@ Config shape:
   {
     "candidates": [
       {
-        "id": "cypress-realworld-app",
-        "repo": "https://github.com/cypress-io/cypress-realworld-app.git",
-        "route": "/transaction/new",
-        "kind": "react-payment-app",
-        "expected": "medium",
+        "id": "dub",
+        "repo": "https://github.com/dubinc/dub.git",
+        "projectPath": "apps/web",
+        "route": "/dashboard",
+        "kind": "link-management-saas-monorepo",
+        "expected": "very-hard",
         "notes": "Why this target matters"
       }
     ]
@@ -127,6 +128,7 @@ function readCandidates(configPath) {
   return parsed.candidates.map((candidate) => ({
     id: safeId(candidate.id ?? basename(String(candidate.repo ?? 'repo'), '.git')),
     repo: String(candidate.repo ?? ''),
+    projectPath: typeof candidate.projectPath === 'string' ? candidate.projectPath : null,
     route: typeof candidate.route === 'string' ? candidate.route : null,
     kind: String(candidate.kind ?? 'unknown'),
     expected: String(candidate.expected ?? 'unknown'),
@@ -255,6 +257,10 @@ function chooseRoute(candidate, scanJson) {
   );
 }
 
+function withProject(candidate, args) {
+  return candidate.projectPath ? [...args, '--project', candidate.projectPath] : args;
+}
+
 function crashSignatures(output) {
   const text = output.toLowerCase();
   const signatures = [
@@ -353,8 +359,8 @@ function runProject(candidate, options, roots) {
   const preCommands = [
     ['version', ['--version'], false],
     ['help', ['--help'], false],
-    ['scan-json', ['scan', '--json'], false],
-    ['scan-text', ['scan'], false],
+    ['scan-json', withProject(candidate, ['scan', '--json']), false],
+    ['scan-text', withProject(candidate, ['scan']), false],
     ['setup-pre', ['setup'], false],
     ['workspace-list-json', ['workspace', 'list', '--json'], false],
   ];
@@ -375,24 +381,33 @@ function runProject(candidate, options, roots) {
   project.selectedRoute = chooseRoute(candidate, scanJson);
 
   const postCommands = [
-    ['adopt', ['adopt', '--yes', '--no-packs'], false],
-    ['doctor', ['doctor'], false],
-    ['graph-json', ['graph', '--json'], false],
-    ['graph-route-json', ['graph', '--route', project.selectedRoute, '--json'], false],
+    ['adopt', withProject(candidate, ['adopt', '--yes', '--no-packs']), false],
+    ['doctor', withProject(candidate, ['doctor']), false],
+    ['graph-json', withProject(candidate, ['graph', '--json']), false],
     [
-      'task-json',
-      ['task', project.selectedRoute, 'Review this route before editing', '--json'],
+      'graph-route-json',
+      withProject(candidate, ['graph', '--route', project.selectedRoute, '--json']),
       false,
     ],
-    ['verify-json', ['verify', '--json'], false],
-    ['ci-json', ['ci', '--json'], false],
-    ['resolve', ['resolve'], false],
-    ['refresh-check', ['refresh', '--check'], false],
-    ['graph-check', ['graph', '--check'], false],
+    [
+      'task-json',
+      withProject(candidate, [
+        'task',
+        project.selectedRoute,
+        'Review this route before editing',
+        '--json',
+      ]),
+      false,
+    ],
+    ['verify-json', withProject(candidate, ['verify', '--json']), false],
+    ['ci-json', withProject(candidate, ['ci', '--json']), false],
+    ['resolve', withProject(candidate, ['resolve']), false],
+    ['refresh-check', withProject(candidate, ['refresh', '--check']), false],
+    ['graph-check', withProject(candidate, ['graph', '--check']), false],
     ['bad-doctor-missing-project', ['doctor', '--project', './definitely-missing-app'], true],
     [
       'bad-task-route',
-      ['task', '/definitely-missing-route', 'Bad route smoke', '--json'],
+      withProject(candidate, ['task', '/definitely-missing-route', 'Bad route smoke', '--json']),
       true,
     ],
   ];
@@ -465,13 +480,13 @@ function renderMarkdown(report) {
     '',
     '## Projects',
     '',
-    '| Project | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
-    '| --- | --- | ---: | --- | --- | --- | ---: | --- |',
+    '| Project | Project Path | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
+    '| --- | --- | --- | ---: | --- | --- | --- | ---: | --- |',
   ];
 
   for (const project of report.projects) {
     lines.push(
-      `| ${project.id} | ${project.kind} | ${project.scanRouteCount} | \`${project.selectedRoute ?? 'n/a'}\` | ${project.unexpectedFailures.join(', ') || 'none'} | ${project.verify?.status ?? 'n/a'} / ${project.verify?.score ?? 'n/a'} | ${project.verify?.findingCount ?? 0} | ${project.crashSignatures.join(', ') || 'none'} |`,
+      `| ${project.id} | ${project.projectPath ? `\`${project.projectPath}\`` : 'root'} | ${project.kind} | ${project.scanRouteCount} | \`${project.selectedRoute ?? 'n/a'}\` | ${project.unexpectedFailures.join(', ') || 'none'} | ${project.verify?.status ?? 'n/a'} / ${project.verify?.score ?? 'n/a'} | ${project.verify?.findingCount ?? 0} | ${project.crashSignatures.join(', ') || 'none'} |`,
     );
   }
 
@@ -479,6 +494,7 @@ function renderMarkdown(report) {
   for (const project of report.projects) {
     lines.push(`### ${project.id}`, '');
     lines.push(`- Repo: ${project.repo}`);
+    lines.push(`- Project path: ${project.projectPath ?? 'root'}`);
     lines.push(`- Expected setup burden: ${project.expected}`);
     lines.push(`- Notes: ${project.notes || 'n/a'}`);
     lines.push(`- Clone: ${project.clone.ok ? 'pass' : 'fail'}`);

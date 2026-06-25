@@ -36,6 +36,8 @@ pnpm benchmark:realworld-corpus -- --cli-package @decantr/cli@<version> --out /t
 
 This harness measures clone, scan, adopt, graph, task, verify, CI, resolver, freshness, and unhappy-path command behavior. It is compatibility evidence, not a replacement for mutation replay or browser/runtime proof.
 
+For monorepos, add `projectPath` per candidate so the command matrix runs app-scoped commands such as `scan --project apps/web`, `adopt --project apps/web`, `task --project apps/web`, and `verify --project apps/web`. Always keep a root-level smoke first when candidate ranking is part of the question.
+
 ## Edit History
 
 Each benchmark app should receive a synthetic AI edit history of 20 to 50 commits or replay steps.

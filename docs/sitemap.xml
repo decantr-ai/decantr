@@ -109,6 +109,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/benchmarks/2026-06-25-hardmode-realworld-corpus-3-5-5.md</loc>
+    <lastmod>2026-06-25T15:58:52.802Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/benchmarks/2026-06-25-legacy-static-dogfood-3-5-5.md</loc>
     <lastmod>2026-06-25T09:28:46-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -116,13 +122,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/benchmarks/2026-06-25-realworld-corpus-3-5-5.md</loc>
-    <lastmod>2026-06-25T15:41:50.227Z</lastmod>
+    <lastmod>2026-06-25T11:47:15-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://decantr.ai/benchmarks/governance-proof-methodology.md</loc>
-    <lastmod>2026-06-09T19:50:12-04:00</lastmod>
+    <lastmod>2026-06-25T11:47:15-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
