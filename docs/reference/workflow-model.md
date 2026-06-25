@@ -72,7 +72,7 @@ Brownfield defaults to existing-app authority: `theme.id` is `existing`, registr
 
 Task-time activation is explicit. MCP clients should call `decantr_context` with `{ "action": "task" }` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
 
-In Decantr 3.5, these commands form the Brownfield control loop:
+In Decantr 3.6, these commands form the Brownfield control loop:
 
 1. `scan` or `doctor` to understand the app state.
 2. `task` to prepare route-scoped maker/checker instructions before editing.
@@ -82,6 +82,8 @@ In Decantr 3.5, these commands form the Brownfield control loop:
 6. Repair, regenerate graph/context when requested, and repeat until the loop verdict is `verified`.
 
 Loop states are intentionally explicit: `needs_context`, `ready_to_edit`, `verify_required`, `repair_required`, `human_resolution_required`, `blocked_missing_context`, `blocked_missing_graph`, and `verified`. Decantr guides agents through the loop; it does not invoke agents, edit source, or run autonomous retry cycles.
+
+In monorepos, Decantr ranks app candidates before suggesting `--project`. Product UI apps receive positive signals from app-folder placement, frontend dependencies/configs, source trees, and names such as `web`, `remix`, `dashboard`, `client`, or `portal`. Docs, Storybook, API/server, MCP helper, workbench/demo, and package/library surfaces are penalized or filtered. `decantr workspace list --json` exposes rank, score, category, and reason metadata so users and agents can see why one app path was suggested first.
 
 For CLI-only assistants, prefer:
 

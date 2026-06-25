@@ -45,6 +45,35 @@ const DEFAULT_CANDIDATES = [
   },
 ];
 
+const DEFAULT_PERFORMANCE_BUDGETS_MS = {
+  version: 5_000,
+  help: 5_000,
+  'scan-json': 20_000,
+  'scan-text': 20_000,
+  'setup-pre': 10_000,
+  'workspace-list-json': 10_000,
+  adopt: 60_000,
+  doctor: 20_000,
+  'graph-json': 45_000,
+  'graph-route-json': 45_000,
+  'task-json': 30_000,
+  'verify-json': 45_000,
+  'ci-json': 45_000,
+  resolve: 45_000,
+  'refresh-check': 20_000,
+  'graph-check': 20_000,
+  'bad-doctor-missing-project': 10_000,
+  'bad-task-route': 20_000,
+};
+
+const FAILURE_CATEGORIES = [
+  'setup_friction',
+  'missing_project_scope',
+  'route_context_failure',
+  'decantr_command_failure',
+  'runtime_proof_gap',
+];
+
 function parseArgs(argv) {
   const options = {
     configPath: null,
@@ -56,6 +85,7 @@ function parseArgs(argv) {
     forceClone: false,
     commandTimeoutMs: 120_000,
     cloneTimeoutMs: 240_000,
+    budgetMultiplier: 1,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -82,6 +112,8 @@ function parseArgs(argv) {
       options.commandTimeoutMs = Number(argv[++index] ?? options.commandTimeoutMs);
     } else if (arg === '--clone-timeout-ms') {
       options.cloneTimeoutMs = Number(argv[++index] ?? options.cloneTimeoutMs);
+    } else if (arg === '--budget-multiplier') {
+      options.budgetMultiplier = Number(argv[++index] ?? options.budgetMultiplier);
     } else if (arg === '--help' || arg === '-h') {
       printHelp();
       process.exit(0);
@@ -102,6 +134,7 @@ function printHelp() {
   node scripts/run-realworld-corpus.mjs
   node scripts/run-realworld-corpus.mjs --cli-package @decantr/cli@3.5.5 --out /tmp/decantr-realworld-corpus
   node scripts/run-realworld-corpus.mjs --config corpus.json --keep-repos
+  node scripts/run-realworld-corpus.mjs --config scripts/realworld-corpus.hard-mode.json --budget-multiplier 1.5
 
 Config shape:
   {
@@ -111,6 +144,7 @@ Config shape:
         "repo": "https://github.com/dubinc/dub.git",
         "projectPath": "apps/web",
         "route": "/dashboard",
+        "runtimeProof": false,
         "kind": "link-management-saas-monorepo",
         "expected": "very-hard",
         "notes": "Why this target matters"
@@ -130,10 +164,43 @@ function readCandidates(configPath) {
     repo: String(candidate.repo ?? ''),
     projectPath: typeof candidate.projectPath === 'string' ? candidate.projectPath : null,
     route: typeof candidate.route === 'string' ? candidate.route : null,
+    runtimeProof: Boolean(candidate.runtimeProof),
     kind: String(candidate.kind ?? 'unknown'),
     expected: String(candidate.expected ?? 'unknown'),
     notes: String(candidate.notes ?? ''),
   }));
+}
+
+function commandBudgetMs(options, id) {
+  const base = DEFAULT_PERFORMANCE_BUDGETS_MS[id] ?? options.commandTimeoutMs;
+  return Math.max(1, Math.round(base * options.budgetMultiplier));
+}
+
+function classifyFailureCategory(id, command) {
+  const output = `${command.stdout}\n${command.stderr}\n${command.error}`.toLowerCase();
+  if (output.includes('needs an app path') || output.includes('--project')) {
+    return 'missing_project_scope';
+  }
+  if (
+    id.includes('task') ||
+    id.includes('route') ||
+    output.includes('route') ||
+    output.includes('no taskable routes')
+  ) {
+    return 'route_context_failure';
+  }
+  if (
+    output.includes('playwright') ||
+    output.includes('browser evidence') ||
+    output.includes('base-url') ||
+    output.includes('screenshot')
+  ) {
+    return 'runtime_proof_gap';
+  }
+  if (id === 'clone' || output.includes('npm error') || output.includes('pnpm error')) {
+    return 'setup_friction';
+  }
+  return 'decantr_command_failure';
 }
 
 function safeId(value) {
@@ -295,14 +362,15 @@ function summarizeVerify(parsed) {
   };
 }
 
-function runDecantrCommand(options, cwd, id, args, expectNonzero = false) {
+function runDecantrCommand(options, cwd, id, args, expectNonzero = false, scope = 'app-scoped') {
   const spec = commandSpec(options, args);
   const result = runProcess(spec.cmd, spec.args, cwd, options.commandTimeoutMs);
   const combinedOutput = `${result.stdout}\n${result.stderr}`;
   const ok = expectNonzero ? result.status !== 0 : result.status === 0;
-  return {
+  const command = {
     id,
     args,
+    scope,
     command: [spec.cmd, ...spec.args].join(' '),
     expectNonzero,
     ok,
@@ -310,10 +378,16 @@ function runDecantrCommand(options, cwd, id, args, expectNonzero = false) {
     signal: result.signal,
     timedOut: result.timedOut,
     durationMs: result.durationMs,
+    budgetMs: commandBudgetMs(options, id),
+    slow: result.durationMs > commandBudgetMs(options, id),
     stdout: result.stdout,
     stderr: result.stderr,
     error: result.error,
     crashSignatures: crashSignatures(combinedOutput),
+  };
+  return {
+    ...command,
+    failureCategory: ok ? null : classifyFailureCategory(id, command),
   };
 }
 
@@ -357,17 +431,17 @@ function runProject(candidate, options, roots) {
   }
 
   const preCommands = [
-    ['version', ['--version'], false],
-    ['help', ['--help'], false],
-    ['scan-json', withProject(candidate, ['scan', '--json']), false],
-    ['scan-text', withProject(candidate, ['scan']), false],
-    ['setup-pre', ['setup'], false],
-    ['workspace-list-json', ['workspace', 'list', '--json'], false],
+    ['version', ['--version'], false, 'root-smoke'],
+    ['help', ['--help'], false, 'root-smoke'],
+    ['scan-json', withProject(candidate, ['scan', '--json']), false, candidate.projectPath ? 'app-scoped' : 'root-smoke'],
+    ['scan-text', withProject(candidate, ['scan']), false, candidate.projectPath ? 'app-scoped' : 'root-smoke'],
+    ['setup-pre', ['setup'], false, 'root-smoke'],
+    ['workspace-list-json', ['workspace', 'list', '--json'], false, 'root-smoke'],
   ];
 
   let scanJson = null;
-  for (const [id, args, expectNonzero] of preCommands) {
-    const command = runDecantrCommand(options, repoDir, id, args, expectNonzero);
+  for (const [id, args, expectNonzero, scope] of preCommands) {
+    const command = runDecantrCommand(options, repoDir, id, args, expectNonzero, scope);
     project.commands.push(command);
     writeCommandLog(projectLogDir, command);
     if (id === 'scan-json') {
@@ -381,13 +455,14 @@ function runProject(candidate, options, roots) {
   project.selectedRoute = chooseRoute(candidate, scanJson);
 
   const postCommands = [
-    ['adopt', withProject(candidate, ['adopt', '--yes', '--no-packs']), false],
-    ['doctor', withProject(candidate, ['doctor']), false],
-    ['graph-json', withProject(candidate, ['graph', '--json']), false],
+    ['adopt', withProject(candidate, ['adopt', '--yes', '--no-packs']), false, 'app-scoped'],
+    ['doctor', withProject(candidate, ['doctor']), false, 'app-scoped'],
+    ['graph-json', withProject(candidate, ['graph', '--json']), false, 'app-scoped'],
     [
       'graph-route-json',
       withProject(candidate, ['graph', '--route', project.selectedRoute, '--json']),
       false,
+      'app-scoped',
     ],
     [
       'task-json',
@@ -398,22 +473,29 @@ function runProject(candidate, options, roots) {
         '--json',
       ]),
       false,
+      'app-scoped',
     ],
-    ['verify-json', withProject(candidate, ['verify', '--json']), false],
-    ['ci-json', withProject(candidate, ['ci', '--json']), false],
-    ['resolve', withProject(candidate, ['resolve']), false],
-    ['refresh-check', withProject(candidate, ['refresh', '--check']), false],
-    ['graph-check', withProject(candidate, ['graph', '--check']), false],
-    ['bad-doctor-missing-project', ['doctor', '--project', './definitely-missing-app'], true],
+    ['verify-json', withProject(candidate, ['verify', '--json']), false, 'app-scoped'],
+    ['ci-json', withProject(candidate, ['ci', '--json']), false, 'app-scoped'],
+    ['resolve', withProject(candidate, ['resolve']), false, 'app-scoped'],
+    ['refresh-check', withProject(candidate, ['refresh', '--check']), false, 'app-scoped'],
+    ['graph-check', withProject(candidate, ['graph', '--check']), false, 'app-scoped'],
+    [
+      'bad-doctor-missing-project',
+      ['doctor', '--project', './definitely-missing-app'],
+      true,
+      'root-smoke',
+    ],
     [
       'bad-task-route',
       withProject(candidate, ['task', '/definitely-missing-route', 'Bad route smoke', '--json']),
       true,
+      'app-scoped',
     ],
   ];
 
-  for (const [id, args, expectNonzero] of postCommands) {
-    const command = runDecantrCommand(options, repoDir, id, args, expectNonzero);
+  for (const [id, args, expectNonzero, scope] of postCommands) {
+    const command = runDecantrCommand(options, repoDir, id, args, expectNonzero, scope);
     project.commands.push(command);
     writeCommandLog(projectLogDir, command);
     if (id === 'verify-json') project.verify = summarizeVerify(parseJsonFromOutput(command.stdout));
@@ -423,6 +505,15 @@ function runProject(candidate, options, roots) {
   project.unexpectedFailures = project.commands
     .filter((command) => !command.ok)
     .map((command) => command.id);
+  project.unexpectedFailureDetails = project.commands
+    .filter((command) => !command.ok)
+    .map((command) => ({
+      id: command.id,
+      scope: command.scope,
+      failureCategory: command.failureCategory,
+      status: command.status,
+      durationMs: command.durationMs,
+    }));
   project.crashSignatures = [
     ...new Set(project.commands.flatMap((command) => command.crashSignatures)),
   ];
@@ -438,12 +529,26 @@ function aggregate(projects) {
   );
   const crashProjects = projects.filter((project) => project.crashSignatures.length > 0);
   const routeMisses = projects.filter((project) => project.scanRouteCount === 0);
+  const commands = projects.flatMap((project) =>
+    project.commands.map((command) => ({ ...command, projectId: project.id })),
+  );
+  const failureCategories = Object.fromEntries(FAILURE_CATEGORIES.map((category) => [category, 0]));
+  for (const command of commands) {
+    if (!command.ok && command.failureCategory) {
+      failureCategories[command.failureCategory] =
+        (failureCategories[command.failureCategory] ?? 0) + 1;
+    }
+  }
   return {
     projectCount: projects.length,
     commandCount,
     unexpectedFailures,
     crashProjectCount: crashProjects.length,
     routeMissCount: routeMisses.length,
+    rootSmokeCommandCount: commands.filter((command) => command.scope === 'root-smoke').length,
+    appScopedCommandCount: commands.filter((command) => command.scope === 'app-scoped').length,
+    slowCommandCount: commands.filter((command) => command.slow).length,
+    failureCategories,
     promotedProjectCount: projects.filter(
       (project) =>
         project.clone.ok &&
@@ -454,10 +559,64 @@ function aggregate(projects) {
   };
 }
 
+function percentile(values, p) {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1);
+  return sorted[index];
+}
+
+function summarizeTimings(projects) {
+  const commands = projects.flatMap((project) =>
+    project.commands.map((command) => ({ ...command, projectId: project.id })),
+  );
+  const durations = commands.map((command) => command.durationMs);
+  const byCommand = new Map();
+  for (const command of commands) {
+    const current = byCommand.get(command.id) ?? [];
+    current.push(command);
+    byCommand.set(command.id, current);
+  }
+  const commandDurations = [...byCommand.entries()]
+    .map(([id, entries]) => {
+      const entryDurations = entries.map((entry) => entry.durationMs);
+      return {
+        id,
+        count: entries.length,
+        budgetMs: entries[0]?.budgetMs ?? null,
+        p50Ms: percentile(entryDurations, 50),
+        p95Ms: percentile(entryDurations, 95),
+        maxMs: Math.max(...entryDurations),
+        slowCount: entries.filter((entry) => entry.slow).length,
+      };
+    })
+    .sort((a, b) => b.p95Ms - a.p95Ms || a.id.localeCompare(b.id));
+
+  return {
+    totalMs: durations.reduce((sum, value) => sum + value, 0),
+    p50Ms: percentile(durations, 50),
+    p95Ms: percentile(durations, 95),
+    maxMs: durations.length > 0 ? Math.max(...durations) : 0,
+    byCommand: commandDurations,
+    slowCommands: commands
+      .filter((command) => command.slow)
+      .sort((a, b) => b.durationMs - a.durationMs)
+      .slice(0, 20)
+      .map((command) => ({
+        project: command.projectId,
+        id: command.id,
+        scope: command.scope,
+        durationMs: command.durationMs,
+        budgetMs: command.budgetMs,
+      })),
+  };
+}
+
 function recommendation(summary) {
   if (summary.crashProjectCount > 0 || summary.routeMissCount > 1) return '3.5.x';
   if (summary.unexpectedFailures > 0) return '3.5.x';
-  return '3.6.0-planning';
+  if (summary.slowCommandCount > 0) return '3.6.x-performance-review';
+  return 'no-compatibility-patch-needed';
 }
 
 function renderMarkdown(report) {
@@ -472,17 +631,61 @@ function renderMarkdown(report) {
     '',
     `- Projects: ${report.summary.projectCount}`,
     `- Commands: ${report.summary.commandCount}`,
+    `- Root-smoke commands: ${report.summary.rootSmokeCommandCount}`,
+    `- App-scoped commands: ${report.summary.appScopedCommandCount}`,
     `- Unexpected failures: ${report.summary.unexpectedFailures}`,
     `- Crash projects: ${report.summary.crashProjectCount}`,
     `- Route misses: ${report.summary.routeMissCount}`,
+    `- Slow commands: ${report.summary.slowCommandCount}`,
     `- Promoted corpus candidates: ${report.summary.promotedProjectCount}`,
     `- Recommended next version: ${report.honesty.recommendedNextVersion}`,
+    '',
+    '## Timing',
+    '',
+    `- Total command time: ${report.timings.totalMs}ms`,
+    `- Command p50: ${report.timings.p50Ms}ms`,
+    `- Command p95: ${report.timings.p95Ms}ms`,
+    `- Command max: ${report.timings.maxMs}ms`,
+    '',
+    '| Command | Count | Budget | p50 | p95 | Max | Slow |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+  ];
+
+  for (const command of report.timings.byCommand.slice(0, 12)) {
+    lines.push(
+      `| \`${command.id}\` | ${command.count} | ${command.budgetMs ?? 'n/a'} | ${command.p50Ms} | ${command.p95Ms} | ${command.maxMs} | ${command.slowCount} |`,
+    );
+  }
+
+  lines.push('', '### Slow Commands', '');
+  if (report.timings.slowCommands.length === 0) {
+    lines.push('- None exceeded the configured performance budget.');
+  } else {
+    for (const command of report.timings.slowCommands.slice(0, 10)) {
+      lines.push(
+        `- ${command.project} \`${command.id}\` (${command.scope}) took ${command.durationMs}ms; budget ${command.budgetMs}ms.`,
+      );
+    }
+  }
+
+  lines.push(
+    '',
+    '## Failure Categories',
+    '',
+    '| Category | Count |',
+    '| --- | ---: |',
+  );
+  for (const category of FAILURE_CATEGORIES) {
+    lines.push(`| \`${category}\` | ${report.summary.failureCategories[category] ?? 0} |`);
+  }
+
+  lines.push(
     '',
     '## Projects',
     '',
     '| Project | Project Path | Kind | Route Count | Selected Route | Unexpected Failures | Verify | Findings | Crash Signatures |',
     '| --- | --- | --- | ---: | --- | --- | --- | ---: | --- |',
-  ];
+  );
 
   for (const project of report.projects) {
     lines.push(
@@ -550,12 +753,14 @@ function main() {
   }
 
   const summary = aggregate(projects);
+  const timings = summarizeTimings(projects);
   const report = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     cliLabel,
     outDir,
     summary,
+    timings,
     honesty: {
       recommendedNextVersion: recommendation(summary),
       knownLimitations: [
@@ -567,6 +772,9 @@ function main() {
           : null,
         summary.crashProjectCount > 0
           ? `${summary.crashProjectCount} project(s) emitted crash-like output signatures.`
+          : null,
+        summary.slowCommandCount > 0
+          ? `${summary.slowCommandCount} command(s) exceeded the configured performance budget.`
           : null,
       ].filter(Boolean),
     },

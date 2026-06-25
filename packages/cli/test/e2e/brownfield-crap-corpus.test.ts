@@ -1,13 +1,5 @@
 import { execSync } from 'node:child_process';
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  realpathSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -297,7 +289,7 @@ describe('brownfield crap corpus', () => {
         (error as { stderr?: Buffer }).stderr?.toString() ?? ''
       }`;
       expect(output).toContain('decantr analyze needs an app path.');
-      expect(output).toContain('decantr adopt --project apps/admin --yes');
+      expect(output).toContain('decantr adopt --project apps/web --yes');
     }
 
     execSync(`node ${cliPath} analyze --project=apps/web`, { cwd: testDir, stdio: 'pipe' });

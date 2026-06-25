@@ -77,7 +77,7 @@ The report composes existing Decantr evidence instead of inventing a parallel ch
 - optional Figma/Tokens Studio token comparison through `--design-tokens <path>`
 - execution-pack and review-pack health from `.decantr/context`
 - typed Contract graph freshness for attached projects with stable `GRAPH001` / `regenerate-typed-graph` findings
-- AST-derived component reuse drift, including primitive reimplementation findings such as `COMP001` / `import-existing-component` and raw-control findings such as `COMP010` / `replace-raw-control-with-local-component`
+- AST-derived component reuse drift, including primitive reimplementation findings such as `COMP001` / `import-existing-component` and generic raw-control findings such as `COMP010` / `replace-raw-control-with-local-component`; specialized file/hidden/checkbox/radio/color/range and Dropzone `getInputProps()` inputs are not treated as generic `Input` drift
 - accepted behavior-obligation drift from `.decantr/local-patterns.json`, including dialog accessible-name findings such as `A11Y010` / `restore-dialog-accessible-name`, form label findings such as `A11Y011` / `restore-label-association`, form button findings such as `INT013` / `set-explicit-button-type`, and project primitive findings such as `COMP020` / `use-project-owned-interaction-primitive`
 - accepted style bridge drift, including arbitrary Tailwind value, hardcoded inline color, and stylesheet color findings such as `TOKEN010` / `replace-arbitrary-style-with-bridge-token`
 - stable diagnostic codes and typed repair IDs for findings

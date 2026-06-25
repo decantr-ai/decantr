@@ -36,7 +36,7 @@ In v2 Project Health and Evidence Bundle payloads, findings may also carry evide
 | `CTX003` | `review-pack-present` / `review-pack-file-missing` | `hydrate-review-pack` | Hydrate or repair the compiled review pack. |
 | `GRAPH001` | `typed-graph-current` | `regenerate-typed-graph` | Run `decantr graph` for missing or stale graph artifacts. |
 | `COMP001` | `component-reuse-primitive-reimplemented` | `import-existing-component` | Replace a local primitive redeclaration with the existing reusable component. |
-| `COMP010` | `component-reuse-raw-control` | `replace-raw-control-with-local-component` | Replace raw JSX controls with project-owned primitives. |
+| `COMP010` | `component-reuse-raw-control` | `replace-raw-control-with-local-component` | Replace generic raw JSX controls with project-owned primitives; specialized inputs such as file, hidden, checkbox, radio, color, range, and Dropzone `getInputProps()` controls are excluded from generic `Input` drift. |
 | `COMP020` | `behavior-project-interaction-primitive` / `behavior-dialog-project-primitive` | `use-project-owned-interaction-primitive` | Replace one-off interaction surfaces with accepted project-owned primitives from local law. |
 | `TOKEN001` | `tokens-file-present` | `restore-design-token-file` | Restore missing token files where Decantr tokens are authoritative. |
 | `TOKEN002` | `design-token-coverage` | `repair-design-token-coverage` | Reconcile exported design tokens with local token usage. |

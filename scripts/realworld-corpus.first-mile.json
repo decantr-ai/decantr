@@ -1,0 +1,44 @@
+{
+  "candidates": [
+    {
+      "id": "cypress-realworld-app",
+      "repo": "https://github.com/cypress-io/cypress-realworld-app.git",
+      "route": "/transaction/new",
+      "kind": "react-payment-app",
+      "expected": "medium",
+      "notes": "Realistic React app with routing, tests, and Brownfield product surface."
+    },
+    {
+      "id": "jira-clone",
+      "repo": "https://github.com/oldboyxx/jira_clone.git",
+      "route": "/authenticate",
+      "kind": "legacy-react-app",
+      "expected": "medium",
+      "notes": "Older React brownfield app with issue-tracker UI and legacy conventions."
+    },
+    {
+      "id": "saas-boilerplate",
+      "repo": "https://github.com/ixartz/SaaS-Boilerplate.git",
+      "route": "/:locale/dashboard",
+      "kind": "next-saas-app",
+      "expected": "medium-hard",
+      "notes": "Modern Next/Tailwind/shadcn SaaS surface with app-router conventions."
+    },
+    {
+      "id": "open-saas",
+      "repo": "https://github.com/wasp-lang/open-saas.git",
+      "route": "/admin",
+      "kind": "wasp-react-saas-app",
+      "expected": "hard",
+      "notes": "Framework-adjacent SaaS app; useful only if Decantr fails clearly or finds UI routes."
+    },
+    {
+      "id": "daedalos",
+      "repo": "https://github.com/DustinBrett/daedalOS.git",
+      "route": "/",
+      "kind": "complex-web-desktop",
+      "expected": "hard",
+      "notes": "Complex desktop-like TypeScript UI; high route/context stress target."
+    }
+  ]
+}

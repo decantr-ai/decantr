@@ -1,0 +1,40 @@
+{
+  "candidates": [
+    {
+      "id": "documenso",
+      "repo": "https://github.com/documenso/documenso.git",
+      "projectPath": "apps/remix",
+      "route": "/settings",
+      "kind": "remix-document-signing-monorepo",
+      "expected": "hard",
+      "notes": "Large Remix monorepo; validates product app ranking above docs."
+    },
+    {
+      "id": "formbricks",
+      "repo": "https://github.com/formbricks/formbricks.git",
+      "projectPath": "apps/web",
+      "route": "/account/settings/notifications",
+      "kind": "next-survey-saas-monorepo",
+      "expected": "hard",
+      "notes": "Large Next monorepo; validates product app ranking above Storybook."
+    },
+    {
+      "id": "dub",
+      "repo": "https://github.com/dubinc/dub.git",
+      "projectPath": "apps/web",
+      "route": "/admin.dub.co/login",
+      "kind": "next-link-management-monorepo",
+      "expected": "very-hard",
+      "notes": "Large production Next app with many taskable routes and slow graph/health paths."
+    },
+    {
+      "id": "midday",
+      "repo": "https://github.com/midday-ai/midday.git",
+      "projectPath": "apps/dashboard",
+      "route": "/:locale",
+      "kind": "dashboard-monorepo",
+      "expected": "very-hard",
+      "notes": "Dashboard monorepo; validates packages/workbench and MCP helper packages do not outrank apps."
+    }
+  ]
+}

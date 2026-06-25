@@ -66,6 +66,19 @@ const RAW_CONTROL_COMPONENT_BY_ELEMENT = {
 
 type RawControlElement = keyof typeof RAW_CONTROL_COMPONENT_BY_ELEMENT;
 
+const NON_GENERIC_INPUT_TYPES = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'hidden',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+]);
+
 export interface CodeComponentDeclaration {
   id: string;
   name: string;
@@ -208,10 +221,16 @@ function jsxAttributeStringValue(
   return null;
 }
 
-function isHiddenInput(node: ts.JsxOpeningLikeElement): boolean {
+function isSpecializedInput(node: ts.JsxOpeningLikeElement): boolean {
   const tagName = jsxIdentifierName(node.tagName);
   if (tagName !== 'input') return false;
-  return jsxAttributeStringValue(node, 'type')?.toLowerCase() === 'hidden';
+  const type = jsxAttributeStringValue(node, 'type')?.toLowerCase();
+  if (type && NON_GENERIC_INPUT_TYPES.has(type)) return true;
+  return node.attributes.properties.some(
+    (property) =>
+      ts.isJsxSpreadAttribute(property) &&
+      /\bgetInputProps\s*\(/.test(property.expression.getText()),
+  );
 }
 
 function isReusableComponentPath(file: string, name: string): boolean {
@@ -350,7 +369,7 @@ function collectRawControls(
         tagName && Object.hasOwn(RAW_CONTROL_COMPONENT_BY_ELEMENT, tagName)
           ? RAW_CONTROL_COMPONENT_BY_ELEMENT[tagName as RawControlElement]
           : null;
-      if (component && !isHiddenInput(node)) {
+      if (component && !isSpecializedInput(node)) {
         rawControls.push({
           element: tagName as RawControlElement,
           component,

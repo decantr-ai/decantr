@@ -31,12 +31,26 @@ The baseline is valid only when the app has a Decantr contract, generated contex
 For external first-mile dogfood runs that should clone public repositories and avoid target-repo package-manager policy leaks, use:
 
 ```bash
-pnpm benchmark:realworld-corpus -- --cli-package @decantr/cli@<version> --out /tmp/decantr-realworld-corpus --keep-repos
+pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.first-mile.json --cli-package @decantr/cli@<version> --out /tmp/decantr-realworld-corpus --keep-repos
 ```
 
-This harness measures clone, scan, adopt, graph, task, verify, CI, resolver, freshness, and unhappy-path command behavior. It is compatibility evidence, not a replacement for mutation replay or browser/runtime proof.
+Use the checked-in hard-mode monorepo set when ranking, route/context scale, and command timing are the question:
+
+```bash
+pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.hard-mode.json --cli-package @decantr/cli@<version> --out /tmp/decantr-hardmode-corpus --keep-repos --budget-multiplier 1.5
+```
+
+This harness measures clone, scan, adopt, graph, task, verify, CI, resolver, freshness, unhappy-path command behavior, root-smoke vs app-scoped command classification, timing percentiles, slow-command budgets, and stable failure categories. It is compatibility evidence, not a replacement for mutation replay or browser/runtime proof.
 
 For monorepos, add `projectPath` per candidate so the command matrix runs app-scoped commands such as `scan --project apps/web`, `adopt --project apps/web`, `task --project apps/web`, and `verify --project apps/web`. Always keep a root-level smoke first when candidate ranking is part of the question.
+
+Failure categories should stay stable across public reports:
+
+- `setup_friction`: clone/install/package-manager/service setup issues outside Decantr's command contract.
+- `missing_project_scope`: monorepo root or bad project-path selection issues.
+- `route_context_failure`: route discovery, route activation, task context, or graph route-context failures.
+- `decantr_command_failure`: Decantr command failures not covered by a narrower class.
+- `runtime_proof_gap`: browser, screenshot, Playwright, base URL, or runnable-app setup gaps.
 
 ## Edit History
 
@@ -95,6 +109,8 @@ Track these metrics for every run:
 - false positive count after manual review
 - fixed-after-repair count
 - replay determinism across repeated runs
+- command p50/p95/max duration and slow-command count against the configured budget
+- root-smoke vs app-scoped command counts
 
 Score proof apps with the smallest useful scale:
 

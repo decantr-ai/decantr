@@ -72,13 +72,66 @@ describe('brownfield monorepo onboarding', () => {
     };
 
     expect(payload.projects).toEqual([]);
-    expect(payload.candidates).toEqual([
+    expect(payload.candidates).toMatchObject([
       {
         path: 'apps/web',
         attached: false,
         suggestedAdoptCommand: 'decantr adopt --project apps/web --yes',
+        rank: 1,
+        category: 'product-ui',
       },
     ]);
+  });
+
+  it('ranks product UI apps above docs, Storybook, and helper packages', () => {
+    mkdirSync(join(testDir, 'apps', 'docs', 'src'), { recursive: true });
+    mkdirSync(join(testDir, 'apps', 'storybook', 'src'), { recursive: true });
+    mkdirSync(join(testDir, 'apps', 'remix', 'app'), { recursive: true });
+    mkdirSync(join(testDir, 'packages', 'workbench', 'src'), { recursive: true });
+    mkdirSync(join(testDir, 'packages', 'mcp-apps', 'src'), { recursive: true });
+    writeFileSync(
+      join(testDir, 'apps', 'docs', 'package.json'),
+      JSON.stringify({ name: 'docs', dependencies: { next: '^16.0.0', react: '^19.0.0' } }),
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'apps', 'storybook', 'package.json'),
+      JSON.stringify({ name: 'storybook', dependencies: { react: '^19.0.0' } }),
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'apps', 'remix', 'package.json'),
+      JSON.stringify({ name: 'remix', dependencies: { '@remix-run/react': '^3.0.0' } }),
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'packages', 'workbench', 'package.json'),
+      JSON.stringify({ name: 'workbench', dependencies: { react: '^19.0.0' } }),
+      'utf-8',
+    );
+    writeFileSync(
+      join(testDir, 'packages', 'mcp-apps', 'package.json'),
+      JSON.stringify({ name: 'mcp-apps', dependencies: { react: '^19.0.0' } }),
+      'utf-8',
+    );
+
+    const payload = JSON.parse(runCli(testDir, ['workspace', 'list', '--json'])) as {
+      candidates: Array<{ path: string; rank: number; category: string; score: number }>;
+    };
+
+    expect(payload.candidates.map((candidate) => candidate.path).slice(0, 2)).toEqual([
+      'apps/remix',
+      'apps/web',
+    ]);
+    expect(
+      payload.candidates.find((candidate) => candidate.path === 'apps/docs')?.rank,
+    ).toBeGreaterThan(2);
+    expect(
+      payload.candidates.find((candidate) => candidate.path === 'apps/storybook')?.rank,
+    ).toBeGreaterThan(2);
+    expect(payload.candidates.some((candidate) => candidate.path.startsWith('packages/'))).toBe(
+      false,
+    );
   });
 
   it('keeps cold adoption local in offline mode and writes app-scoped artifacts', () => {

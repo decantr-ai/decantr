@@ -565,13 +565,13 @@ function main() {
         ? 'Official proof corpus has fewer than five apps in this run.'
         : null,
       report.metrics.adversarialCatchRate < 0.6
-        ? 'Adversarial catch rate is below the 3.5 target threshold.'
+        ? 'Adversarial catch rate is below the 3.6 target threshold.'
         : null,
       report.metrics.graphAnchorCoverage < 0.5
         ? 'Graph-anchor coverage is still incomplete.'
         : null,
       report.metrics.falsePositiveRate > 0.4
-        ? 'Unexpected baseline warning/error rate is above the 3.5 target threshold.'
+        ? 'Unexpected baseline warning/error rate is above the 3.6 target threshold.'
         : null,
       report.metrics.repairPlanCoverage < 0.5
         ? 'Repair-plan coverage is still incomplete.'
@@ -581,7 +581,7 @@ function main() {
       report.metrics.adversarialCatchRate < 0.6 ||
       report.metrics.graphAnchorCoverage < 0.5 ||
       report.metrics.falsePositiveRate > 0.4
-        ? '3.5.x'
+        ? '3.6.x'
         : null,
   };
 

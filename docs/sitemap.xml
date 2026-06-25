@@ -85,6 +85,12 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/audit/2026-06-25-decantr-3-6-0-docs-audit.md</loc>
+    <lastmod>2026-06-25T16:55:59.519Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/audit/decantr-meta-alignment.md</loc>
     <lastmod>2026-03-29T19:05:28-04:00</lastmod>
     <changefreq>monthly</changefreq>
@@ -109,8 +115,14 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://decantr.ai/benchmarks/2026-06-25-decantr-3-6-proof-field-report.md</loc>
+    <lastmod>2026-06-25T16:50:12.468Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://decantr.ai/benchmarks/2026-06-25-hardmode-realworld-corpus-3-5-5.md</loc>
-    <lastmod>2026-06-25T15:58:52.802Z</lastmod>
+    <lastmod>2026-06-25T11:59:33-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -128,7 +140,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/benchmarks/governance-proof-methodology.md</loc>
-    <lastmod>2026-06-25T11:47:15-04:00</lastmod>
+    <lastmod>2026-06-25T11:59:33-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -645,6 +657,12 @@
   <url>
     <loc>https://decantr.ai/releases/2026-06-25-decantr-3-5-5-legacy-static-dogfood.md</loc>
     <lastmod>2026-06-25T09:28:46-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-06-25-decantr-3-6-0-brownfield-proof-quality.md</loc>
+    <lastmod>2026-06-25T16:58:18.783Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>

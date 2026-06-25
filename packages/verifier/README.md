@@ -37,7 +37,7 @@ npm install @decantr/verifier
 - Next.js static/document outputs are treated as framework-rendered documents instead of requiring a Vite-style `id="root"` mount element
 - project source audits ignore test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints and unsafe rendering patterns
 - project audits emit `COMP001` / `import-existing-component` findings when a production source file locally redeclares a primitive such as `Button`, `Card`, or `Dialog` while an exported reusable primitive already exists under common component paths
-- project audits emit `COMP010` / `replace-raw-control-with-local-component` findings when production JSX renders raw controls such as `<button>` or `<input>` while a project-owned primitive already exists
+- project audits emit `COMP010` / `replace-raw-control-with-local-component` findings when production JSX renders generic raw controls such as `<button>` or text-like `<input>` while a project-owned primitive already exists; specialized inputs such as file, hidden, checkbox, radio, color, range, and Dropzone `getInputProps()` controls are not treated as generic `Input` drift
 - project audits emit behavior-obligation findings when accepted `.decantr/local-patterns.json` patterns declare `behavior_obligations` and production source strongly violates statically checkable dialog/form obligations:
   - `A11Y010` / `restore-dialog-accessible-name`
   - `A11Y011` / `restore-label-association`

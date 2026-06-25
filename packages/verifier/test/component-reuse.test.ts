@@ -139,7 +139,7 @@ describe('component reuse drift audit', () => {
     }
   });
 
-  it('does not flag hidden inputs or files already importing the reusable primitive', async () => {
+  it('does not flag specialized inputs or files already importing the reusable primitive', async () => {
     const projectRoot = createProjectRoot();
     try {
       const canonical = writeFile(
@@ -155,7 +155,17 @@ describe('component reuse drift audit', () => {
       const page = writeFile(
         projectRoot,
         'src/app/dashboard/page.tsx',
-        'export function DashboardPage() { return <input type="hidden" />; }\n',
+        [
+          'export function DashboardPage() {',
+          '  return <>',
+          '    <input type="hidden" />',
+          '    <input type="file" />',
+          '    <input type="checkbox" />',
+          '    <input {...getInputProps()} />',
+          '  </>;',
+          '}',
+          '',
+        ].join('\n'),
       );
       const settings = writeFile(
         projectRoot,
@@ -176,6 +186,34 @@ describe('component reuse drift audit', () => {
           }),
         ]),
       );
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('still flags generic raw inputs when a reusable Input primitive exists', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      const canonical = writeFile(
+        projectRoot,
+        'src/components/ui/Input.tsx',
+        'export function Input() { return <input />; }\n',
+      );
+      const page = writeFile(
+        projectRoot,
+        'src/app/dashboard/page.tsx',
+        'export function DashboardPage() { return <input type="email" />; }\n',
+      );
+
+      const audit = auditComponentReuse(projectRoot, [canonical, page]);
+
+      expect(audit.rawControlFindings).toHaveLength(1);
+      expect(audit.rawControlFindings[0]).toMatchObject({
+        element: 'input',
+        component: 'Input',
+        file: 'src/app/dashboard/page.tsx',
+        canonicalFile: 'src/components/ui/Input.tsx',
+      });
     } finally {
       await rm(projectRoot, { recursive: true, force: true });
     }

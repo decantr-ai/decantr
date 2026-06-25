@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, relative, resolve } from 'node:path';
 import type { LoopReadinessState, ProjectHealthStatus } from '@decantr/verifier';
 import { WORKSPACE_HEALTH_REPORT_V2_SCHEMA_URL } from '@decantr/verifier';
-import { listWorkspaceAppCandidates } from '../workspace.js';
+import { listWorkspaceAppCandidateDetails } from '../workspace.js';
 import { createProjectHealthReport, type HealthFailOn } from './health.js';
 
 const BOLD = '\x1b[1m';
@@ -112,6 +112,10 @@ export interface WorkspaceAppCandidate {
   path: string;
   attached: boolean;
   suggestedAdoptCommand: string;
+  rank: number;
+  score: number;
+  category: string;
+  reason: string;
 }
 
 export interface WorkspaceCommandOptions extends WorkspaceHealthOptions {
@@ -212,10 +216,14 @@ export function listWorkspaceCandidates(
   projects: WorkspaceProject[] = listWorkspaceProjects(root),
 ): WorkspaceAppCandidate[] {
   const attached = new Set(projects.map((project) => project.path));
-  return listWorkspaceAppCandidates(root).map((path) => ({
-    path,
-    attached: attached.has(path),
-    suggestedAdoptCommand: `decantr adopt --project ${path} --yes`,
+  return listWorkspaceAppCandidateDetails(root).map((candidate, index) => ({
+    path: candidate.path,
+    attached: attached.has(candidate.path),
+    suggestedAdoptCommand: `decantr adopt --project ${candidate.path} --yes`,
+    rank: index + 1,
+    score: candidate.score,
+    category: candidate.category,
+    reason: candidate.reason,
   }));
 }
 
@@ -509,7 +517,9 @@ export async function cmdWorkspace(
         const status = candidate.attached
           ? `${GREEN}attached${RESET}`
           : `${YELLOW}unattached${RESET}`;
-        console.log(`  ${candidate.path} ${DIM}${status}${RESET}`);
+        console.log(
+          `  #${candidate.rank} ${candidate.path} ${DIM}${status} · ${candidate.category} · score ${candidate.score}${RESET}`,
+        );
       }
     }
     if (unattachedCandidates.length > 0) {
