@@ -277,6 +277,55 @@ describe('scanProject', () => {
     expect(report.routes.count).toBe(1);
   });
 
+  it('handles package-managed static HTML entrypoints under src', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ private: true, scripts: { build: 'webpack' } }, null, 2),
+    );
+    mkdirSync(join(projectRoot, 'src'), { recursive: true });
+    writeFileSync(join(projectRoot, 'src', 'index.html'), '<!doctype html><main>Todo</main>');
+
+    const report = await scanProject(projectRoot);
+
+    expect(report.applicability.status).toBe('strong_fit');
+    expect(report.project.framework).toBe('html');
+    expect(report.project.primaryLanguage).toBe('html');
+    expect(report.routes.strategy).toBe('static-html');
+    expect(report.routes.items).toContainEqual({
+      path: '/',
+      file: 'src/index.html',
+      hasLayout: false,
+    });
+  });
+
+  it('handles nested static demo pages as taskable routes', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ private: true, name: 'jquery-ui-like-demos' }, null, 2),
+    );
+    mkdirSync(join(projectRoot, 'demos', 'accordion'), { recursive: true });
+    mkdirSync(join(projectRoot, 'demos', 'dialog'), { recursive: true });
+    writeFileSync(join(projectRoot, 'demos', 'index.html'), '<!doctype html><main>Demos</main>');
+    writeFileSync(
+      join(projectRoot, 'demos', 'accordion', 'default.html'),
+      '<!doctype html><main>Accordion</main>',
+    );
+    writeFileSync(
+      join(projectRoot, 'demos', 'dialog', 'default.html'),
+      '<!doctype html><main>Dialog</main>',
+    );
+
+    const report = await scanProject(projectRoot);
+    const paths = report.routes.items.map((route) => route.path);
+
+    expect(report.applicability.status).toBe('strong_fit');
+    expect(report.project.framework).toBe('html');
+    expect(report.routes.strategy).toBe('static-html');
+    expect(paths).toEqual(
+      expect.arrayContaining(['/demos', '/demos/accordion/default', '/demos/dialog/default']),
+    );
+  });
+
   it('returns not_applicable for Python backend repositories', async () => {
     writeFileSync(join(projectRoot, 'pyproject.toml'), '[project]\nname = "api"\n');
     writeFileSync(join(projectRoot, 'main.py'), 'print("hello")\n');

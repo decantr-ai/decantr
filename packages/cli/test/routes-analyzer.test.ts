@@ -164,6 +164,45 @@ describe('route analyzer', () => {
     expect(paths).not.toContain('/(public|contacts|personal)');
   });
 
+  it('detects package-managed static HTML entrypoints under src', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ private: true, scripts: { build: 'webpack' } }, null, 2),
+    );
+    writeFileSync(join(projectRoot, 'src', 'index.html'), '<!doctype html><main>Todo</main>');
+
+    const analysis = scanRoutes(projectRoot);
+
+    expect(analysis.strategy).toBe('static-html');
+    expect(analysis.routes).toContainEqual({ path: '/', file: 'src/index.html', hasLayout: false });
+  });
+
+  it('detects nested static demo pages as taskable routes', () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ private: true, name: 'jquery-ui-like-demos' }, null, 2),
+    );
+    mkdirSync(join(projectRoot, 'demos', 'accordion'), { recursive: true });
+    mkdirSync(join(projectRoot, 'demos', 'dialog'), { recursive: true });
+    writeFileSync(join(projectRoot, 'demos', 'index.html'), '<!doctype html><main>Demos</main>');
+    writeFileSync(
+      join(projectRoot, 'demos', 'accordion', 'default.html'),
+      '<!doctype html><main>Accordion</main>',
+    );
+    writeFileSync(
+      join(projectRoot, 'demos', 'dialog', 'default.html'),
+      '<!doctype html><main>Dialog</main>',
+    );
+
+    const analysis = scanRoutes(projectRoot);
+    const paths = analysis.routes.map((route) => route.path);
+
+    expect(analysis.strategy).toBe('static-html');
+    expect(paths).toEqual(
+      expect.arrayContaining(['/demos', '/demos/accordion/default', '/demos/dialog/default']),
+    );
+  });
+
   it('does not expose Next Pages Router internals as taskable routes', () => {
     writeFileSync(
       join(projectRoot, 'package.json'),

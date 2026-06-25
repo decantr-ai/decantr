@@ -238,6 +238,15 @@ const ROUTE_ASSET_EXTENSION_RE =
 const JSX_ROUTE_PATH_RE =
   /<(?:Route|[A-Z][\w.]*Route)\b[^>]*\bpath\s*=\s*(?:"([^"]+)"|'([^']+)'|{\s*"([^"]+)"\s*}|{\s*'([^']+)'\s*}|{\s*`([^`]+)`\s*})/g;
 const OBJECT_ROUTE_PATH_RE = /\bpath\s*:\s*(?:"([^"]+)"|'([^']+)'|`([^`]+)`)/g;
+const STATIC_HTML_ENTRY_FILES = [
+  'index.html',
+  'docs/index.html',
+  'src/index.html',
+  'public/index.html',
+  'dist/index.html',
+];
+const STATIC_HTML_ROUTE_DIRS = ['demos', 'examples'];
+const MAX_STATIC_HTML_CANDIDATES = 1000;
 const MAX_FILE_READ_BYTES = 512 * 1024;
 const MAX_WALK_FILES = 5000;
 const MAX_REPORT_ROUTES = 80;
@@ -355,6 +364,11 @@ function hasAnyFile(projectRoot: string, paths: string[]): boolean {
   return paths.some((path) => existsSync(join(projectRoot, path)));
 }
 
+function hasStaticHtmlSurface(projectRoot: string): boolean {
+  if (hasAnyFile(projectRoot, STATIC_HTML_ENTRY_FILES)) return true;
+  return STATIC_HTML_ROUTE_DIRS.some((dir) => existsSync(join(projectRoot, dir, 'index.html')));
+}
+
 function detectPackageManager(projectRoot: string, pkg: PackageJson | null): string {
   const declared = pkg?.packageManager?.split('@')[0];
   if (declared === 'npm' || declared === 'pnpm' || declared === 'yarn' || declared === 'bun') {
@@ -368,12 +382,12 @@ function detectPackageManager(projectRoot: string, pkg: PackageJson | null): str
 }
 
 function detectPrimaryLanguage(projectRoot: string, packageJsonPresent: boolean): string {
-  if (packageJsonPresent) return 'javascript';
+  if (packageJsonPresent) return hasStaticHtmlSurface(projectRoot) ? 'html' : 'javascript';
   if (hasAnyFile(projectRoot, ['pyproject.toml', 'requirements.txt', 'setup.py', 'Pipfile']))
     return 'python';
   if (hasAnyFile(projectRoot, ['go.mod'])) return 'go';
   if (hasAnyFile(projectRoot, ['Cargo.toml'])) return 'rust';
-  if (hasAnyFile(projectRoot, ['index.html', 'docs/index.html'])) return 'html';
+  if (hasStaticHtmlSurface(projectRoot)) return 'html';
   return 'unknown';
 }
 
@@ -418,7 +432,7 @@ function detectProject(projectRoot: string): ProjectDetection {
   } else if (dependencies.react) {
     framework = 'react';
     frameworkVersion = dependencyVersion(dependencies, ['react']);
-  } else if (hasAnyFile(projectRoot, ['index.html', 'docs/index.html'])) {
+  } else if (hasStaticHtmlSurface(projectRoot)) {
     framework = 'html';
   }
 
@@ -656,6 +670,84 @@ function collectRouteLiterals(pattern: RegExp, content: string, routes: Set<stri
   return count;
 }
 
+function htmlRouteFromFile(file: string): string {
+  let withoutExt = file.slice(0, -extname(file).length).replace(/\\/g, '/');
+  if (withoutExt.endsWith('/index')) withoutExt = withoutExt.slice(0, -'/index'.length);
+  if (
+    withoutExt === 'index' ||
+    withoutExt === 'docs' ||
+    withoutExt === 'src' ||
+    withoutExt === 'public' ||
+    withoutExt === 'dist'
+  ) {
+    return '/';
+  }
+  return `/${withoutExt.split('/').filter(Boolean).join('/')}` || '/';
+}
+
+function collectStaticHtmlFiles(
+  dir: string,
+  projectRoot: string,
+  files: string[],
+  depth = 0,
+): void {
+  if (depth > 5 || files.length >= MAX_STATIC_HTML_CANDIDATES) return;
+
+  let entries: string[];
+  try {
+    entries = readdirSync(dir).sort();
+  } catch {
+    return;
+  }
+
+  for (const entry of entries) {
+    if (files.length >= MAX_STATIC_HTML_CANDIDATES) return;
+    if (entry.startsWith('.') || entry === 'node_modules') continue;
+    const fullPath = join(dir, entry);
+    try {
+      const stat = statSync(fullPath);
+      if (stat.isDirectory()) {
+        collectStaticHtmlFiles(fullPath, projectRoot, files, depth + 1);
+      } else if (stat.isFile() && /\.(?:html|htm)$/i.test(entry)) {
+        files.push(relative(projectRoot, fullPath).replace(/\\/g, '/'));
+      }
+    } catch {}
+  }
+}
+
+function staticHtmlFilePriority(file: string): number {
+  const base = file.split('/').pop()?.toLowerCase();
+  if (base === 'index.html' || base === 'index.htm') return 0;
+  if (base === 'default.html' || base === 'default.htm') return 1;
+  return 2;
+}
+
+function scanStaticHtmlRoutes(projectRoot: string): ScanRouteV1[] {
+  const routes = new Map<string, ScanRouteV1>();
+
+  for (const file of STATIC_HTML_ENTRY_FILES) {
+    if (!existsSync(join(projectRoot, file))) continue;
+    routes.set('/', { path: '/', file, hasLayout: false });
+    break;
+  }
+
+  for (const dir of STATIC_HTML_ROUTE_DIRS) {
+    const fullDir = join(projectRoot, dir);
+    if (!existsSync(fullDir)) continue;
+    const files: string[] = [];
+    collectStaticHtmlFiles(fullDir, projectRoot, files);
+    for (const file of files.sort(
+      (a, b) => staticHtmlFilePriority(a) - staticHtmlFilePriority(b) || a.localeCompare(b),
+    )) {
+      const routePath = htmlRouteFromFile(file);
+      if (routes.has(routePath)) continue;
+      routes.set(routePath, { path: routePath, file, hasLayout: false });
+    }
+  }
+
+  return [...routes.values()].slice(0, MAX_REPORT_ROUTES);
+}
+
 function detectPathnameBranchRoutes(content: string): string[] {
   const routes = new Set<string>();
   const comparison = new RegExp(
@@ -734,18 +826,8 @@ function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan
     return { strategy: 'react-router', routes: reactRouter.routes };
   if (pagesRoutes.length > 0) return { strategy: 'pages-router', routes: pagesRoutes };
 
-  if (existsSync(join(projectRoot, 'index.html'))) {
-    return {
-      strategy: 'static-html',
-      routes: [{ path: '/', file: 'index.html', hasLayout: false }],
-    };
-  }
-  if (existsSync(join(projectRoot, 'docs', 'index.html'))) {
-    return {
-      strategy: 'static-html',
-      routes: [{ path: '/', file: 'docs/index.html', hasLayout: false }],
-    };
-  }
+  const staticHtmlRoutes = scanStaticHtmlRoutes(projectRoot);
+  if (staticHtmlRoutes.length > 0) return { strategy: 'static-html', routes: staticHtmlRoutes };
 
   return { strategy: 'none', routes: [] };
 }

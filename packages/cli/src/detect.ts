@@ -40,6 +40,24 @@ const RULE_FILES = [
   '.windsurfrules',
 ];
 
+const STATIC_HTML_ENTRY_FILES = [
+  'index.html',
+  'docs/index.html',
+  'src/index.html',
+  'public/index.html',
+  'dist/index.html',
+];
+const STATIC_HTML_ROUTE_DIRS = ['demos', 'examples'];
+
+function hasAnyFile(projectRoot: string, relPaths: string[]): boolean {
+  return relPaths.some((relPath) => existsSync(join(projectRoot, relPath)));
+}
+
+function hasStaticHtmlSurface(projectRoot: string): boolean {
+  if (hasAnyFile(projectRoot, STATIC_HTML_ENTRY_FILES)) return true;
+  return STATIC_HTML_ROUTE_DIRS.some((dir) => existsSync(join(projectRoot, dir, 'index.html')));
+}
+
 function readPackageJson(dir: string): PackageJson | null {
   const path = join(dir, 'package.json');
   if (!existsSync(path)) return null;
@@ -191,9 +209,9 @@ export function detectProject(projectRoot: string = process.cwd()): DetectedProj
     }
   }
 
-  // Check for HTML-only project (no package.json but has index.html)
-  if (result.framework === 'unknown' && !existsSync(packageJsonPath)) {
-    if (existsSync(join(projectRoot, 'index.html'))) {
+  // Check for framework-neutral static HTML surfaces, including package-managed legacy apps.
+  if (result.framework === 'unknown') {
+    if (hasStaticHtmlSurface(projectRoot)) {
       result.framework = 'html';
     }
   }
