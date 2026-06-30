@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://decantr.ai/schemas/essence.v4.json",
   "title": "Decantr Essence v4",
-  "description": "Decantr V2 active sectioned design contract",
+  "description": "Decantr Essence V4 active sectioned design contract",
   "type": "object",
   "required": ["version", "dna", "blueprint", "meta"],
   "additionalProperties": false,

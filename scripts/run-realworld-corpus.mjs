@@ -78,7 +78,7 @@ function parseArgs(argv) {
   const options = {
     configPath: null,
     outDir: join('/tmp', `decantr-realworld-corpus-${Date.now()}`),
-    limit: DEFAULT_CANDIDATES.length,
+    limit: null,
     cliPath: existsSync(defaultCli) ? defaultCli : null,
     cliPackage: null,
     keepRepos: false,
@@ -135,6 +135,7 @@ function printHelp() {
   node scripts/run-realworld-corpus.mjs --cli-package @decantr/cli@3.5.5 --out /tmp/decantr-realworld-corpus
   node scripts/run-realworld-corpus.mjs --config corpus.json --keep-repos
   node scripts/run-realworld-corpus.mjs --config scripts/realworld-corpus.hard-mode.json --budget-multiplier 1.5
+  node scripts/run-realworld-corpus.mjs --config corpus.json --limit 5
 
 Config shape:
   {
@@ -151,6 +152,7 @@ Config shape:
       }
     ]
   }`);
+  console.log('\nCustom configs run every candidate by default; pass --limit to sample.');
 }
 
 function readCandidates(configPath) {
@@ -178,6 +180,9 @@ function commandBudgetMs(options, id) {
 
 function classifyFailureCategory(id, command) {
   const output = `${command.stdout}\n${command.stderr}\n${command.error}`.toLowerCase();
+  if (id === 'project-path-preflight') {
+    return 'missing_project_scope';
+  }
   if (output.includes('needs an app path') || output.includes('--project')) {
     return 'missing_project_scope';
   }
@@ -314,14 +319,26 @@ function extractRoutes(scanJson) {
 }
 
 function chooseRoute(candidate, scanJson) {
-  if (candidate.route) return candidate.route;
   const routes = extractRoutes(scanJson);
+  if (candidate.route && (routes.length === 0 || routes.includes(candidate.route))) {
+    return candidate.route;
+  }
   return (
     routes.find((route) => route !== '/' && !route.includes('*') && !route.includes(':')) ??
     routes.find((route) => route !== '/' && !route.includes('*')) ??
     routes[0] ??
     '/'
   );
+}
+
+function routeFallback(candidate, selectedRoute, scanJson) {
+  if (!candidate.route || candidate.route === selectedRoute) return null;
+  return {
+    configured: candidate.route,
+    selected: selectedRoute,
+    reason: 'configured route was not present in scan output',
+    knownRoutes: extractRoutes(scanJson).slice(0, 20),
+  };
 }
 
 function withProject(candidate, args) {
@@ -405,6 +422,31 @@ function writeCommandLog(projectLogDir, command) {
   );
 }
 
+function syntheticFailureCommand(options, id, message, scope = 'app-scoped') {
+  const command = {
+    id,
+    args: [],
+    scope,
+    command: '(harness preflight)',
+    expectNonzero: false,
+    ok: false,
+    status: 1,
+    signal: null,
+    timedOut: false,
+    durationMs: 0,
+    budgetMs: commandBudgetMs(options, id),
+    slow: false,
+    stdout: '',
+    stderr: message,
+    error: message,
+    crashSignatures: [],
+  };
+  return {
+    ...command,
+    failureCategory: classifyFailureCategory(id, command),
+  };
+}
+
 function runProject(candidate, options, roots) {
   const repoDir = join(roots.reposDir, candidate.id);
   const projectLogDir = join(roots.logsDir, candidate.id);
@@ -427,6 +469,27 @@ function runProject(candidate, options, roots) {
   if (!clone.ok) {
     project.unexpectedFailures.push('clone');
     writeFileSync(join(projectLogDir, 'clone.stderr.txt'), clone.stderr || clone.error, 'utf-8');
+    return project;
+  }
+
+  if (candidate.projectPath && !existsSync(join(repoDir, candidate.projectPath))) {
+    const command = syntheticFailureCommand(
+      options,
+      'project-path-preflight',
+      `Configured projectPath does not exist: ${candidate.projectPath}`,
+    );
+    project.commands.push(command);
+    writeCommandLog(projectLogDir, command);
+    project.unexpectedFailures = [command.id];
+    project.unexpectedFailureDetails = [
+      {
+        id: command.id,
+        scope: command.scope,
+        failureCategory: command.failureCategory,
+        status: command.status,
+        durationMs: command.durationMs,
+      },
+    ];
     return project;
   }
 
@@ -453,6 +516,7 @@ function runProject(candidate, options, roots) {
   }
 
   project.selectedRoute = chooseRoute(candidate, scanJson);
+  project.routeFallback = routeFallback(candidate, project.selectedRoute, scanJson);
 
   const postCommands = [
     ['adopt', withProject(candidate, ['adopt', '--yes', '--no-packs']), false, 'app-scoped'],
@@ -704,6 +768,11 @@ function renderMarkdown(report) {
     if (project.detectedRoutes?.length) {
       lines.push(`- First routes: ${project.detectedRoutes.map((route) => `\`${route}\``).join(', ')}`);
     }
+    if (project.routeFallback) {
+      lines.push(
+        `- Route fallback: configured \`${project.routeFallback.configured}\` was not found; used \`${project.routeFallback.selected}\`.`,
+      );
+    }
     if (project.verify?.ruleCounts?.length) {
       lines.push(
         `- Verify rules: ${project.verify.ruleCounts
@@ -740,7 +809,11 @@ function main() {
   mkdirSync(roots.reportsDir, { recursive: true });
   options.resolvedCliPath = materializeCliPackage(options, outDir);
 
-  const candidates = readCandidates(options.configPath).slice(0, options.limit);
+  const allCandidates = readCandidates(options.configPath);
+  const candidates =
+    typeof options.limit === 'number' && Number.isFinite(options.limit)
+      ? allCandidates.slice(0, options.limit)
+      : allCandidates;
   const cliLabel = options.cliPackage ?? resolve(options.cliPath);
   const projects = [];
   for (const candidate of candidates) {

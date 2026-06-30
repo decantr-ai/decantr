@@ -555,6 +555,47 @@ function walkNextAppRoutes(dir: string, projectRoot: string, segments: string[])
   return routes;
 }
 
+function walkSvelteKitRoutes(dir: string, projectRoot: string, segments: string[]): ScanRouteV1[] {
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return [];
+  }
+
+  const routes: ScanRouteV1[] = [];
+  const pageFile = entries.find((entry) => /^\+page\.(svelte|ts|js)$/.test(entry));
+  const hasLayout = entries.some((entry) => /^\+layout\.(svelte|ts|js)$/.test(entry));
+  if (pageFile) {
+    routes.push({
+      path: `/${segments.filter(Boolean).join('/')}` || '/',
+      file: relative(projectRoot, join(dir, pageFile)).replace(/\\/g, '/'),
+      hasLayout,
+    });
+  }
+
+  for (const entry of entries) {
+    if (shouldSkipDir(entry)) continue;
+    const fullPath = join(dir, entry);
+    try {
+      if (!statSync(fullPath).isDirectory()) continue;
+    } catch {
+      continue;
+    }
+
+    const routeSegment = segmentToRoute(entry);
+    routes.push(
+      ...walkSvelteKitRoutes(
+        fullPath,
+        projectRoot,
+        routeSegment === null ? segments : [...segments, routeSegment],
+      ),
+    );
+  }
+
+  return routes;
+}
+
 function fileRouteFromPath(file: string, baseDir: string): string {
   let withoutExt = file.slice(0, -extname(file).length);
   if (withoutExt.endsWith('/index')) withoutExt = withoutExt.slice(0, -'/index'.length);
@@ -620,6 +661,40 @@ function scanReactRouter(projectRoot: string): { routes: ScanRouteV1[]; hashRout
   }
 
   return { routes: [...routes.values()], hashRouting };
+}
+
+function normalizeRouterObjectPath(path: string): string | null {
+  const cleaned = path.trim();
+  if (!cleaned || cleaned === '/') return '/';
+  if (cleaned === '*' || cleaned === '**' || cleaned.startsWith('#')) return null;
+  if (ROUTE_ASSET_EXTENSION_RE.test(cleaned)) return null;
+  return cleaned.startsWith('/') ? cleaned.replace(/\/+$/g, '') || '/' : `/${cleaned}`;
+}
+
+function scanAngularRouter(projectRoot: string): ScanRouteV1[] {
+  const routes = new Map<string, ScanRouteV1>();
+  const files = walkFiles(projectRoot, {
+    extensions: new Set(['.ts', '.tsx', '.js', '.jsx']),
+  });
+
+  for (const file of files) {
+    const content = readTextFile(join(projectRoot, file));
+    if (!content) continue;
+    const isRouterFile =
+      content.includes('@angular/router') ||
+      content.includes('RouterModule.forRoot') ||
+      content.includes('provideRouter') ||
+      /\bRoutes\s*=/.test(content);
+    if (!isRouterFile) continue;
+
+    for (const match of content.matchAll(/\bpath\s*:\s*["'`]([^"'`]*)["'`]/g)) {
+      const routePath = normalizeRouterObjectPath(match[1] ?? '');
+      if (!routePath || routes.has(routePath)) continue;
+      routes.set(routePath, { path: routePath, file, hasLayout: false });
+    }
+  }
+
+  return [...routes.values()];
 }
 
 function firstRouteLiteralMatch(match: RegExpMatchArray): string | null {
@@ -805,7 +880,9 @@ function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan
   }
 
   if (detection.framework === 'svelte') {
-    const routes = scanFileRoutes(projectRoot, 'src/routes', new Set(['.svelte', '.ts', '.js']));
+    const routes = existsSync(join(projectRoot, 'src/routes'))
+      ? walkSvelteKitRoutes(join(projectRoot, 'src/routes'), projectRoot, [])
+      : [];
     if (routes.length > 0) return { strategy: 'sveltekit-router', routes };
   }
 
@@ -819,6 +896,11 @@ function scanRoutes(projectRoot: string, detection: ProjectDetection): RouteScan
   if (detection.framework === 'vue') {
     const router = scanReactRouter(projectRoot);
     if (router.routes.length > 0) return { strategy: 'vue-router', routes: router.routes };
+  }
+
+  if (detection.framework === 'angular') {
+    const routes = scanAngularRouter(projectRoot);
+    if (routes.length > 0) return { strategy: 'angular-router', routes };
   }
 
   const reactRouter = scanReactRouter(projectRoot);

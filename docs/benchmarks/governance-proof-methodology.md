@@ -40,9 +40,9 @@ Use the checked-in hard-mode monorepo set when ranking, route/context scale, and
 pnpm benchmark:realworld-corpus -- --config scripts/realworld-corpus.hard-mode.json --cli-package @decantr/cli@<version> --out /tmp/decantr-hardmode-corpus --keep-repos --budget-multiplier 1.5
 ```
 
-This harness measures clone, scan, adopt, graph, task, verify, CI, resolver, freshness, unhappy-path command behavior, root-smoke vs app-scoped command classification, timing percentiles, slow-command budgets, and stable failure categories. It is compatibility evidence, not a replacement for mutation replay or browser/runtime proof.
+This harness measures clone, scan, adopt, graph, task, verify, CI, resolver, freshness, unhappy-path command behavior, root-smoke vs app-scoped command classification, timing percentiles, slow-command budgets, route fallback, and stable failure categories. It is compatibility evidence, not a replacement for mutation replay or browser/runtime proof. Custom corpus configs run all candidates by default; pass `--limit` only when sampling intentionally.
 
-For monorepos, add `projectPath` per candidate so the command matrix runs app-scoped commands such as `scan --project apps/web`, `adopt --project apps/web`, `task --project apps/web`, and `verify --project apps/web`. Always keep a root-level smoke first when candidate ranking is part of the question.
+For monorepos, add `projectPath` per candidate so the command matrix runs app-scoped commands such as `scan --project apps/web`, `adopt --project apps/web`, `task --project apps/web`, and `verify --project apps/web`. The harness preflights missing project paths as `missing_project_scope` before running the full matrix. Always keep a root-level smoke first when candidate ranking is part of the question.
 
 Failure categories should stay stable across public reports:
 

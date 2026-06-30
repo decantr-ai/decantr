@@ -218,6 +218,40 @@ describe('verifier project and runtime evidence', () => {
     }
   });
 
+  it('accepts semantic static app roots without a framework mount point', async () => {
+    const projectRoot = createProjectRoot();
+    try {
+      mkdirSync(join(projectRoot, 'dist', 'assets'), { recursive: true });
+      writeFileSync(
+        join(projectRoot, 'package.json'),
+        JSON.stringify({ name: 'todo-static', dependencies: { jquery: '^3.7.1' } }, null, 2),
+      );
+      const essence = validV4Essence();
+      essence.meta = {
+        archetype: 'observed-brownfield',
+        target: 'html',
+        platform: { type: 'static', routing: 'hash' },
+        guard: { mode: 'guided', dna_enforcement: 'warn', blueprint_enforcement: 'warn' },
+      };
+      writeFileSync(join(projectRoot, 'decantr.essence.json'), JSON.stringify(essence, null, 2));
+      writeFileSync(
+        join(projectRoot, 'dist', 'index.html'),
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>TodoMVC</title><script src="/assets/app.js"></script></head><body><section id="todoapp" class="todoapp"><header><h1>todos</h1></header></section></body></html>\n',
+      );
+      writeFileSync(join(projectRoot, 'dist', 'assets', 'app.js'), 'console.log("/");\n');
+
+      const report = await auditProject(projectRoot);
+
+      expect(report.summary.runtimeAuditChecked).toBe(true);
+      expect(report.runtimeAudit.rootDocumentOk).toBe(true);
+      expect(
+        report.findings.some((finding) => finding.id === 'runtime-root-document-invalid'),
+      ).toBe(false);
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true });
+    }
+  });
+
   it('reports missing or invalid essence contracts during project audit', async () => {
     const missingEssenceRoot = createProjectRoot();
     const invalidJsonRoot = createProjectRoot();

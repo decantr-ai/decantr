@@ -63,6 +63,7 @@ export interface RuntimeAudit {
 export interface BuiltDistAuditOptions {
   distDir?: string;
   routeHints?: string[];
+  runtimeTarget?: string | null;
 }
 
 export function emptyRuntimeAudit(failures: string[] = []): RuntimeAudit {
@@ -493,6 +494,78 @@ function isNextProject(projectRoot: string): boolean {
   }
 }
 
+function readProjectDependencies(projectRoot: string): Record<string, string> {
+  try {
+    const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    return { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
+  } catch {
+    return {};
+  }
+}
+
+function isFrameworkRuntimeProject(projectRoot: string, runtimeTarget?: string | null): boolean {
+  const normalizedTarget = runtimeTarget?.toLowerCase() ?? '';
+  if (
+    ['angular', 'next', 'nextjs', 'nuxt', 'react', 'solid', 'svelte', 'sveltekit', 'vue'].includes(
+      normalizedTarget,
+    )
+  ) {
+    return true;
+  }
+
+  if (
+    existsSync(join(projectRoot, 'vite.config.js')) ||
+    existsSync(join(projectRoot, 'vite.config.ts')) ||
+    existsSync(join(projectRoot, 'angular.json')) ||
+    existsSync(join(projectRoot, 'svelte.config.js')) ||
+    existsSync(join(projectRoot, 'svelte.config.ts'))
+  ) {
+    return true;
+  }
+
+  const dependencies = readProjectDependencies(projectRoot);
+  return [
+    '@angular/core',
+    '@angular/router',
+    '@sveltejs/kit',
+    'next',
+    'nuxt',
+    'react',
+    'react-dom',
+    'solid-js',
+    'svelte',
+    'vue',
+  ].some((name) => Boolean(dependencies[name]));
+}
+
+function hasFrameworkMountPoint(html: string): boolean {
+  return (
+    /\bid=(["'])(?:root|app|__next)\1/i.test(html) ||
+    /<app-root(?:\s|>)/i.test(html) ||
+    /<[^>]+\bdata-(?:reactroot|sveltekit|astro-cid)\b/i.test(html)
+  );
+}
+
+function hasSemanticStaticAppRoot(html: string): boolean {
+  return (
+    /<main(?:\s|>)/i.test(html) ||
+    /<[^>]+\brole=(["'])main\1/i.test(html) ||
+    /<section\b[^>]*(?:\bid=(["'])todoapp\1|\bclass=(["'])[^"']*\btodoapp\b[^"']*\2)/i.test(html)
+  );
+}
+
+function rootDocumentLooksUsable(
+  html: string,
+  options: { frameworkDocumentOutput: boolean; frameworkRuntimeProject: boolean },
+): boolean {
+  if (options.frameworkDocumentOutput) return true;
+  if (hasFrameworkMountPoint(html)) return true;
+  return !options.frameworkRuntimeProject && hasSemanticStaticAppRoot(html);
+}
+
 async function startStaticServer(
   rootDir: string,
 ): Promise<{ baseUrl: string; close: () => Promise<void> }> {
@@ -577,6 +650,7 @@ export async function auditBuiltDist(
           .slice(0, 8)
       : ['/'];
   const frameworkDocumentOutput = isNextProject(projectRoot);
+  const frameworkRuntimeProject = isFrameworkRuntimeProject(projectRoot, options.runtimeTarget);
   const indexHtml = readFileSync(indexPath, 'utf-8');
   const assetPaths = extractAssetPaths(indexHtml);
   const server = await startStaticServer(distDir);
@@ -586,7 +660,8 @@ export async function auditBuiltDist(
     const rootHtml = await rootResponse.text();
     const failures: string[] = frameworkDocumentOutput ? ['next-build-output'] : [];
     const rootDocumentOk =
-      rootResponse.ok && (frameworkDocumentOutput || /id="root"/.test(rootHtml));
+      rootResponse.ok &&
+      rootDocumentLooksUsable(rootHtml, { frameworkDocumentOutput, frameworkRuntimeProject });
     const titleOk = /<title>[^<]+<\/title>/i.test(rootHtml);
     const langOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(rootHtml);
     const viewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(rootHtml);
@@ -681,7 +756,8 @@ export async function auditBuiltDist(
       const routeResponse = await fetch(`${server.baseUrl}${routeHint}`);
       const routeHtml = await routeResponse.text();
       const routeRootDocumentOk =
-        routeResponse.ok && (frameworkDocumentOutput || /id="root"/.test(routeHtml));
+        routeResponse.ok &&
+        rootDocumentLooksUsable(routeHtml, { frameworkDocumentOutput, frameworkRuntimeProject });
       const routeTitleOk = /<title>[^<]+<\/title>/i.test(routeHtml);
       const routeLangOk = /<html[^>]*\slang=(["'])[^"']+\1/i.test(routeHtml);
       const routeViewportOk = /<meta[^>]+name=(["'])viewport\1[^>]*>/i.test(routeHtml);

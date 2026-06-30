@@ -35,6 +35,7 @@ npm install @decantr/verifier
 - project audits check that `pack-manifest.json` references real pack markdown/JSON files on disk
 - project audits tolerate partial or malformed generated review packs without crashing Project Health, so half-attached Brownfield projects still receive actionable findings
 - Next.js static/document outputs are treated as framework-rendered documents instead of requiring a Vite-style `id="root"` mount element
+- generic static apps can satisfy runtime root proof through semantic app roots such as `main`, `role="main"`, `section.todoapp`, or `#todoapp`, while framework targets still require framework mount/document evidence
 - project source audits ignore test, spec, story, fixture, and mock files for production drift warnings such as localhost endpoints and unsafe rendering patterns
 - project audits emit `COMP001` / `import-existing-component` findings when a production source file locally redeclares a primitive such as `Button`, `Card`, or `Dialog` while an exported reusable primitive already exists under common component paths
 - project audits emit `COMP010` / `replace-raw-control-with-local-component` findings when production JSX renders generic raw controls such as `<button>` or text-like `<input>` while a project-owned primitive already exists; specialized inputs such as file, hidden, checkbox, radio, color, range, and Dropzone `getInputProps()` controls are not treated as generic `Input` drift
@@ -49,7 +50,7 @@ npm install @decantr/verifier
 - project audits emit `TOKEN010` / `replace-arbitrary-style-with-bridge-token` findings when an accepted `.decantr/style-bridge.json` exists and production JSX uses arbitrary Tailwind values such as `bg-[#0f172a]`, values inside `cn()`, `clsx()`, `classnames()`, `cva()`, and `tv()` calls, hardcoded inline color styles such as `style={{ backgroundColor: "#0f172a" }}`, or hardcoded visual values in production CSS/module stylesheets
 - published verifier report schemas are exercised by AJV-backed round-trip tests against real audit, critique, and shortlist-report outputs
 - project audits include runtime evidence when a built `dist/` output is present:
-  - root document
+  - root document, including semantic static app roots for generic static apps
   - document title
   - document `lang` and `viewport` metadata
   - emitted assets

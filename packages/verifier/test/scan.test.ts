@@ -262,6 +262,89 @@ describe('scanProject', () => {
     expect(report.routes.items.map((route) => route.path)).toEqual(['/']);
   });
 
+  it('reports SvelteKit page routes without component/module artifacts', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          dependencies: {
+            '@sveltejs/kit': '^2.0.0',
+            svelte: '^5.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    writeFileSync(join(projectRoot, 'svelte.config.js'), 'export default {};\n');
+    mkdirSync(join(projectRoot, 'src', 'routes', 'login'), { recursive: true });
+    mkdirSync(join(projectRoot, 'src', 'routes', 'article', '[slug]'), { recursive: true });
+    writeFileSync(join(projectRoot, 'src', 'routes', '+layout.svelte'), '<slot />\n');
+    writeFileSync(join(projectRoot, 'src', 'routes', '+page.svelte'), '<main>Home</main>\n');
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', 'login', '+page.svelte'),
+      '<main>Login</main>\n',
+    );
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', 'article', '[slug]', '+page.svelte'),
+      '<main>Article</main>\n',
+    );
+    writeFileSync(join(projectRoot, 'src', 'routes', 'Nav.svelte'), '<nav />\n');
+    writeFileSync(
+      join(projectRoot, 'src', 'routes', 'article', '[slug]', 'Comment.svelte'),
+      '<p />\n',
+    );
+
+    const report = await scanProject(projectRoot);
+    const paths = report.routes.items.map((route) => route.path);
+
+    expect(report.project.framework).toBe('svelte');
+    expect(report.routes.strategy).toBe('sveltekit-router');
+    expect(paths).toEqual(expect.arrayContaining(['/', '/login', '/article/:slug']));
+    expect(paths).not.toEqual(
+      expect.arrayContaining(['/+layout', '/Nav', '/article/:slug/Comment']),
+    );
+  });
+
+  it('reports Angular router arrays during read-only scan', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          dependencies: {
+            '@angular/core': '^21.0.0',
+            '@angular/router': '^21.0.0',
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    mkdirSync(join(projectRoot, 'src', 'app'), { recursive: true });
+    writeFileSync(
+      join(projectRoot, 'src', 'app', 'app.routes.ts'),
+      [
+        'import { Routes } from "@angular/router";',
+        'export const routes: Routes = [',
+        '  { path: "", loadComponent: () => import("./home") },',
+        '  { path: "login", loadComponent: () => import("./login") },',
+        '  { path: "article/:slug", loadComponent: () => import("./article") },',
+        '  { path: "**", redirectTo: "" },',
+        '];',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(join(projectRoot, 'src', 'index.html'), '<!doctype html><app-root></app-root>\n');
+
+    const report = await scanProject(projectRoot);
+    const paths = report.routes.items.map((route) => route.path);
+
+    expect(report.project.framework).toBe('angular');
+    expect(report.routes.strategy).toBe('angular-router');
+    expect(paths).toEqual(expect.arrayContaining(['/', '/login', '/article/:slug']));
+    expect(paths).not.toContain('/**');
+  });
+
   it('handles static HTML projects', async () => {
     writeFileSync(
       join(projectRoot, 'index.html'),

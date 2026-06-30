@@ -17,7 +17,6 @@ import {
   type AuthorityResolutionAction,
   createAuthorityResolution,
   createEvidenceTier,
-  createLoopReadiness,
   DECANTR_CI_REPORT_V2_SCHEMA_URL,
   EVIDENCE_BUNDLE_V2_SCHEMA_URL,
   type EvidenceTier,
@@ -2653,6 +2652,7 @@ async function runRuntimeAudit(
 ): Promise<RuntimeAudit> {
   return auditBuiltDist(projectRoot, {
     routeHints: extractRouteHintsFromEssence(essence),
+    runtimeTarget: typeof essence?.meta?.target === 'string' ? essence.meta.target : null,
   });
 }
 
