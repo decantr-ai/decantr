@@ -94,6 +94,14 @@ export const COMMAND_SURFACE: CommandSurfaceEntry[] = [
     consolidation: 'keep',
   },
   {
+    command: 'connect',
+    classification: 'primary',
+    mutates: true,
+    audience: 'app-developer',
+    purpose: 'Configure editor-specific Decantr activation such as Cursor MCP and project rules.',
+    consolidation: 'keep',
+  },
+  {
     command: 'codify',
     classification: 'primary',
     mutates: true,

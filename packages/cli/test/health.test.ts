@@ -1221,6 +1221,7 @@ exports.chromium = {
       'check',
       'ci',
       'codify',
+      'connect',
       'content',
       'content-health',
       'create',

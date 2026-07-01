@@ -71,6 +71,7 @@ import { loadBundledContentItem, loadBundledContentList } from './bundled-conten
 import { cmdAddFeature, cmdAddPage, cmdAddSection } from './commands/add.js';
 import { cmdAnalyze } from './commands/analyze.js';
 import { cmdCi, cmdCiHelp } from './commands/ci.js';
+import { cmdConnectCursor, cmdConnectHelp } from './commands/connect.js';
 import { cmdCreate } from './commands/create.js';
 import { cmdDoctor, cmdDoctorHelp } from './commands/doctor.js';
 import type { ExportTarget } from './commands/export.js';
@@ -3763,6 +3764,17 @@ function formatWhichCommandFirst(projectArg?: string): string {
   ].join('\n');
 }
 
+function routeHintFromScanReport(report: ScanReportV1): string | null {
+  const routes = report.routes.map((route) => route.path).filter(Boolean);
+  return (
+    routes.find((route) => route !== '/' && !route.includes('*') && !route.includes(':')) ??
+    routes.find((route) => route !== '/' && !route.includes('*')) ??
+    routes.find((route) => route !== '/') ??
+    routes[0] ??
+    null
+  );
+}
+
 function scanSeverityColor(finding: ScanFindingV1): string {
   if (finding.severity === 'success') return success('ok');
   if (finding.severity === 'error') return error('error');
@@ -4032,6 +4044,17 @@ async function cmdScanWorkflow(args: string[]): Promise<void> {
     return;
   }
   printScanReport(reportWithGraph, projectArg);
+}
+
+async function scanRouteHint(projectRoot: string, projectArg?: string): Promise<string | null> {
+  try {
+    const report = await scanProjectReadOnly(projectRoot, {
+      input: { kind: 'local', value: projectArg ?? '.' },
+    });
+    return routeHintFromScanReport(report);
+  } catch {
+    return null;
+  }
 }
 
 async function cmdSetupWorkflow(args: string[]): Promise<void> {
@@ -5419,6 +5442,7 @@ ${BOLD}Usage:${RESET}
   decantr graph [--project <path>] [--route <route>] [--node <id>] [--file <path>] [--task <text>] [--snapshot-id <id>] [--compare-to <id>] [--capsule-source-limit <count>] [--check] [--json]
   decantr ci [--project <path>] [--workspace] [--fail-on error|warn|none]
   decantr doctor [--project <path>] [--workspace] [--json]
+  decantr connect cursor [--project <path>] [--preview]
   decantr codify [--from-audit] [--style-bridge] [--map-pattern <slug>] [--accept] [--project <path>]
   decantr studio [--port 4319] [--host 127.0.0.1] [--report decantr-health.json] [--workspace]
 
@@ -5453,6 +5477,7 @@ ${BOLD}Advanced primitives:${RESET}
   decantr health --save-baseline | --since-baseline
   decantr health init-ci [legacy alias for decantr ci init]
   decantr ci init [--project <path>] [--workspace] [--provider github|generic] [--force]
+  decantr connect cursor [--project <path>] [--preview] [--mcp-only|--rules-only]
   decantr workspace list [--json]
   decantr workspace health [--json] [--changed --since origin/main]
   decantr content check [--json] [--markdown] [--ci]
@@ -5503,6 +5528,7 @@ ${BOLD}Commands:${RESET}
   ${cyan('graph')}       Build typed Contract graph artifacts and the agent cache capsule
   ${cyan('ci')}          Non-mutating CI gate and CI integration generator
   ${cyan('doctor')}      Explain Decantr state, artifact ownership, and the next command
+  ${cyan('connect')}     Connect Decantr to AI coding tools such as Cursor
   ${cyan('codify')}      Propose or accept project-owned Brownfield UI patterns, behavior obligations, and rules
   ${cyan('studio')}      Open a local Project Health dashboard backed by the same report
   ${cyan('content')}     Content-author namespace: check, create, publish
@@ -5537,6 +5563,7 @@ ${BOLD}Advanced commands:${RESET}
   ${cyan('export')}      Export design tokens to framework format (shadcn, tailwind, css-vars)
   ${cyan('registry')}    Registry management and intelligence summary
   ${cyan('rules')}       Preview/apply Decantr assistant bridge blocks to repo rule files
+  ${cyan('connect')}     Configure editor-specific Decantr rules and MCP where supported
   ${cyan('upgrade')}     Check for content updates from registry
   ${cyan('help')}        Show this help
 
@@ -5558,6 +5585,8 @@ ${BOLD}Examples:${RESET}
   decantr verify --base-url http://localhost:3000 --evidence
   decantr verify --since-baseline
   decantr doctor --project apps/web
+  decantr connect cursor --project apps/web
+  decantr connect cursor --preview
   decantr ci --project apps/web
   decantr ci init --project apps/web
   decantr codify --from-audit
@@ -5612,6 +5641,7 @@ ${BOLD}Workflow Model:${RESET}
   ${cyan('Brownfield preview')}     decantr scan -> decantr adopt --yes
   ${cyan('Brownfield monorepo')}    decantr adopt --project apps/web --yes
   ${cyan('Daily LLM work')}          decantr task <route> "<change>" -> decantr verify --brownfield --local-patterns
+  ${cyan('Cursor activation')}       decantr connect cursor -> Cursor Agent calls decantr_context action=task
   ${cyan('Drift resolution')}        decantr resolve -> codify/init/graph/repair source explicitly
   ${cyan('Typed contract graph')}    decantr graph -> agent session loads .decantr/graph/contract-capsule.json
   ${cyan('Project-owned law')}       decantr codify --from-audit -> edit proposal -> decantr codify --accept
@@ -6022,6 +6052,9 @@ function printCommandHelp(command: string, args: string[]): boolean {
       return true;
     case 'rules':
       cmdRulesHelp();
+      return true;
+    case 'connect':
+      cmdConnectHelp();
       return true;
     case 'registry':
       cmdRegistryHelp();
@@ -6910,6 +6943,40 @@ async function main() {
       });
       if (!workspaceInfo) break;
       await cmdAnalyze(workspaceInfo.appRoot, workspaceInfo);
+      break;
+    }
+
+    case 'connect': {
+      const subcommand = args[1];
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || subcommand === 'help') {
+        cmdConnectHelp();
+        break;
+      }
+      if (subcommand !== 'cursor') {
+        console.error(error('Usage: decantr connect cursor [--project <path>] [--preview]'));
+        process.exitCode = 1;
+        break;
+      }
+      const { flags } = parseLooseArgs(args);
+      if (!ensureAllowedFlags(flags, ['project', 'preview', 'mcp-only', 'rules-only'], 'connect')) {
+        break;
+      }
+      const workspaceInfo = resolveWorkflowProject(flags, 'connect');
+      if (!workspaceInfo) break;
+      const projectArg = flagString(flags, 'project');
+      const detected = detectProject(workspaceInfo.appRoot);
+      const routeHint = await scanRouteHint(workspaceInfo.appRoot, projectArg);
+      cmdConnectCursor({
+        connectionRoot: workspaceInfo.cwd,
+        appRoot: workspaceInfo.appRoot,
+        detected,
+        projectArg,
+        preview: flagBoolean(flags, 'preview'),
+        mcpOnly: flagBoolean(flags, 'mcp-only'),
+        rulesOnly: flagBoolean(flags, 'rules-only'),
+        routeHint,
+        attached: existsSync(join(workspaceInfo.appRoot, 'decantr.essence.json')),
+      });
       break;
     }
 

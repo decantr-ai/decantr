@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://decantr.ai/</loc>
-    <lastmod>2026-06-25T13:24:59-04:00</lastmod>
+    <lastmod>2026-06-30T12:39:31-04:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -92,7 +92,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/audit/2026-06-30-decantr-3-6-0-expanded-realworld-corpus.md</loc>
-    <lastmod>2026-06-30T14:36:47.161Z</lastmod>
+    <lastmod>2026-06-30T12:39:31-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -146,7 +146,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/benchmarks/governance-proof-methodology.md</loc>
-    <lastmod>2026-06-25T13:24:59-04:00</lastmod>
+    <lastmod>2026-06-30T12:39:31-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -273,6 +273,12 @@
   <url>
     <loc>https://decantr.ai/programs/2026-06-09-proof-lab-phase-0.md</loc>
     <lastmod>2026-06-09T17:23:09-04:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/programs/2026-06-30-decantr-adoption-proof-showcase-plan.md</loc>
+    <lastmod>2026-06-30T18:07:28.204Z</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -674,7 +680,13 @@
   </url>
   <url>
     <loc>https://decantr.ai/releases/2026-06-30-decantr-3-6-1-static-runtime-proof.md</loc>
-    <lastmod>2026-06-30T14:36:47.162Z</lastmod>
+    <lastmod>2026-06-30T12:39:31-04:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decantr.ai/releases/2026-07-01-decantr-3-6-2-cursor-activation.md</loc>
+    <lastmod>2026-07-01T00:17:52.939Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -836,7 +848,7 @@
   </url>
   <url>
     <loc>https://decantr.ai/schemas/essence.v4.json</loc>
-    <lastmod>2026-05-08T16:33:24-04:00</lastmod>
+    <lastmod>2026-06-30T12:39:31-04:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>

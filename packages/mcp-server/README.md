@@ -38,20 +38,32 @@ Restart Claude Desktop. The Decantr tools will appear automatically.
 
 ### Cursor
 
-Create `.cursor/mcp.json` in your project root:
+Preferred setup:
+
+```bash
+npx @decantr/cli connect cursor
+```
+
+From a monorepo root:
+
+```bash
+pnpm exec decantr connect cursor --project apps/web
+```
+
+The connector preserves existing MCP servers and writes the project rule that tells Cursor Agent to call Decantr task context before route edits. For manual setup, create `.cursor/mcp.json` in your project root:
 
 ```json
 {
   "mcpServers": {
     "decantr": {
       "command": "npx",
-      "args": ["@decantr/mcp-server"]
+      "args": ["-y", "@decantr/mcp-server"]
     }
   }
 }
 ```
 
-Restart Cursor. The tools are available in Agent mode.
+Restart Cursor. The tools are available in Agent mode. Add a project rule equivalent to `decantr connect cursor` if you configure MCP manually.
 
 ### Windsurf
 

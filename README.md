@@ -49,7 +49,7 @@ Decantr produces the contract. Your AI assistant produces the implementation aga
 
 ### 3. Hand it to your AI assistant
 
-Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. Your assistant reads `DECANTR.md` first for the methodology, then loads section context files on demand as it works through each part of the app. For route-level work, run `decantr task <route> "<intent>"` before editing so the assistant gets the active authority block, local law, evidence, and verify command. The split keeps the assistant focused on the right scope at the right time.
+Open the project in Claude Code, Cursor, Windsurf, or any AI-aware editor. For Cursor, run `decantr connect cursor` once from the opened workspace; in monorepos use `decantr connect cursor --project apps/web`. It writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers, so Cursor Agent knows to call Decantr task context before route edits. Other assistants can read `DECANTR.md` first for the methodology, then load section context files on demand. For route-level work, run `decantr task <route> "<intent>"` before editing so the assistant gets the active authority block, local law, evidence, and verify command. The split keeps the assistant focused on the right scope at the right time.
 
 ### 4. Make your first change and verify
 
@@ -83,7 +83,7 @@ Canonical shapes live in the [published schemas](https://decantr.ai/schemas/); t
 
 | Surface | What it does |
 | --- | --- |
-| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `resolve`, `ci`, `codify`), keeps advanced primitives available, writes v2 Evidence Bundles, runs workspace health, installs CI, opens Studio Control Room locally, and audits official-vocabulary supply-chain health |
+| CLI | Guides users through workflow commands (`setup`, `adopt`, `doctor`, `task`, `verify`, `resolve`, `ci`, `codify`, `connect cursor`), keeps advanced primitives available, writes v2 Evidence Bundles, runs workspace health, installs CI, opens Studio Control Room locally, configures Cursor activation, and audits official-vocabulary supply-chain health |
 | MCP server | Exposes Decantr directly to AI tools - essence reads, vocabulary resolution, context reads, pack compilation, drift checks, critique, audit, v2 evidence bundles, workspace health, health-loop guidance, and repair prompts |
 | Hosted registry/API | Certified vocabulary and hosted pack compilation for teams that want official content context, without overriding repo-owned local law |
 | Verifier | Shared audit, critique, Project Health, Evidence Bundle, component reuse drift, behavior-obligation drift, style bridge drift, stable diagnostic code, typed repair ID, graph-anchored finding, contract assertion, and report-schema engine |
@@ -175,6 +175,7 @@ decantr codify --accept
 decantr graph
 decantr graph --file src/app/page.tsx --impact --json
 decantr resolve
+decantr connect cursor
 decantr task /feed "add saved recipe actions"
 decantr verify --brownfield --local-patterns
 decantr verify --since-baseline
@@ -194,6 +195,7 @@ decantr codify --map-pattern hero --project apps/web
 decantr graph --project apps/web
 decantr graph --project apps/web --file src/app/page.tsx --impact --json
 decantr resolve --project apps/web
+decantr connect cursor --project apps/web
 decantr task /feed "add saved recipe actions" --project apps/web
 decantr verify --brownfield --local-patterns --project apps/web
 decantr ci init --project apps/web

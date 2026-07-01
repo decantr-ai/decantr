@@ -151,7 +151,7 @@
       "releaseChannel": "stable",
       "publishOrder": 30,
       "defaultDistTag": "latest",
-      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, read-only Brownfield scan previews, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
+      "summary": "Workflow commands for setup/scan/adopt/doctor/task/verify/ci/codify/connect/content, local workflow/adoption policy resolution, adapter-backed bootstrap/attach, read-only Brownfield scan previews, Cursor activation, Brownfield intelligence, Hybrid authority lanes, monorepo app targeting, artifact ownership guidance, project-owned local law, registry sync, Evidence Bundles, visual manifests, health baselines, workspace health, pinned CI generation, Project Health, Studio, Content Health, and project governance.",
       "releaseReadiness": {
         "stableCandidate": true,
         "docsAligned": true,

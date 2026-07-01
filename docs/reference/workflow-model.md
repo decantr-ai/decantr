@@ -72,6 +72,15 @@ Brownfield defaults to existing-app authority: `theme.id` is `existing`, registr
 
 Task-time activation is explicit. MCP clients should call `decantr_context` with `{ "action": "task" }` before route edits; it resolves the route, section/page packs, directives, patterns, shared components, visual target, baseline evidence, theme inventory, and local screenshot references. CLI-only workflows use `decantr task <route> "<task>"`, which also surfaces accepted local patterns, local rules, changed-file context, and route impact when available.
 
+Cursor users can install that activation in the opened workspace:
+
+```bash
+decantr connect cursor
+decantr connect cursor --project apps/web
+```
+
+The command writes Cursor MCP config plus a Decantr project rule. It preserves existing MCP servers, keeps monorepo app scope in `project_path` / `--project`, and tells Cursor Agent to stop and report drift when runtime source and Decantr context disagree.
+
 In Decantr 3.6, these commands form the Brownfield control loop:
 
 1. `scan` or `doctor` to understand the app state.
@@ -149,7 +158,7 @@ Existing rule files are detected during project analysis and init. Bridge behavi
 - `--assistant-bridge=preview` writes `.decantr/context/assistant-bridge.md`.
 - `decantr rules preview` prints the bridge without mutating files and inherits the package manager from the selected app's workspace root in monorepos.
 - `decantr rules apply` injects idempotent marked blocks into supported rule files.
-- Cursor uses `.cursor/rules/decantr.mdc`.
+- `decantr connect cursor` writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`; use `--preview` to inspect first.
 - Brownfield init never mutates rule files unless `--assistant-bridge=apply` is explicit.
 
 ## Monorepo And Offline

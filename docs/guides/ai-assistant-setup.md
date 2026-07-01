@@ -14,6 +14,22 @@ The MCP server exposes the eight consolidated Decantr tools for essence reads, v
 
 For an existing app, ask the assistant to call `decantr_context` with `{ "action": "task" }` before editing a route. Provide the route and the task, for example `{ "action": "task", "route": "/feed", "task": "improve the recipe feed loading and card layout" }`. The tool returns the route, section, page pack excerpt, directives, patterns, shared components, visual target, theme inventory, health continuity evidence, local screenshot references, accepted local law, accepted `behavior_obligations`, accepted style bridge mappings, an authority block, and a v2 loop block with maker/checker instructions, stop conditions, graph impact, and the verify command. The authority block tells the assistant whether the route is Brownfield contract-only, Hybrid local law, style bridge, Decantr CSS, Hybrid composition, or Greenfield, plus warnings for cross-runtime or Decantr CSS requests.
 
+## Cursor
+
+Cursor is the paved editor path. From the workspace you open in Cursor, run:
+
+```bash
+npx @decantr/cli connect cursor
+```
+
+From a monorepo root, keep the app explicit:
+
+```bash
+pnpm exec decantr connect cursor --project apps/web
+```
+
+The command writes `.cursor/mcp.json` and `.cursor/rules/decantr.mdc`, preserving existing MCP servers. Use `--preview` first if you want to inspect the exact files. The generated rule tells Cursor Agent to call `decantr_context` with `{ "action": "task" }` before route edits, use the returned authority and stop conditions, run `decantr verify --brownfield --local-patterns` after edits, and report drift instead of guessing when runtime source and Decantr context disagree.
+
 ## CLI Context
 
 Use the CLI when you want files in the project that any assistant can read:

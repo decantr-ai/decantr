@@ -72,6 +72,7 @@ describe('command help (e2e)', () => {
     const doctor = runHelp(testDir, ['doctor', '--help']);
     const task = runHelp(testDir, ['task', '--help']);
     const codify = runHelp(testDir, ['codify', '--help']);
+    const connect = runHelp(testDir, ['connect', '--help']);
 
     expect(rootHelp).toContain('Which command first?');
     expect(rootHelp).toContain('Existing app, read-only preview');
@@ -90,7 +91,11 @@ describe('command help (e2e)', () => {
     expect(task).toContain('--since origin/main');
     expect(codify).toContain('decantr codify');
     expect(codify).toContain('--from-audit');
+    expect(connect).toContain('decantr connect cursor');
+    expect(connect).toContain('.cursor/mcp.json');
+    expect(connect).toContain('.cursor/rules/decantr.mdc');
     expect(existsSync(join(testDir, '.decantr'))).toBe(false);
+    expect(existsSync(join(testDir, '.cursor'))).toBe(false);
   }, 15_000);
 
   it('prints content namespace help without requiring a content repository', () => {
