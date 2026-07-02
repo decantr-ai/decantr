@@ -57,10 +57,7 @@ for (const url of [...urls].sort()) {
       signal: AbortSignal.timeout(10_000),
     });
 
-    const host = new URL(url).hostname;
-    const expectedProtectedApi = host === 'api.decantr.ai' && response.status === 401;
-
-    if (!expectedProtectedApi && (response.status < 200 || response.status >= 400)) {
+    if (response.status < 200 || response.status >= 400) {
       failures.push(`${response.status} ${url}${response.headers.get('location') ? ` -> ${response.headers.get('location')}` : ''}`);
     }
   } catch (error) {

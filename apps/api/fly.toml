@@ -1,4 +1,6 @@
-app = "decantr-api"
+# Legacy Fly app name retained because api.decantr.ai currently CNAMEs to
+# decantr-registry.fly.dev. Rename only with a coordinated DNS/token migration.
+app = "decantr-registry"
 primary_region = "iad"
 
 [build]
