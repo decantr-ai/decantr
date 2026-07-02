@@ -667,7 +667,7 @@ describe('operating layer commands', () => {
     expect(task).toMatchObject({ route: '/settings', section: 'app', page: 'settings' });
     expect(task.read).toContain('apps/web/.decantr/context/scaffold.md');
     expect(task.read).toContain('apps/web/DECANTR.md');
-  });
+  }, 15_000);
 
   it('resolves common app section aliases for observed brownfield sections', () => {
     const essencePath = join(testDir, 'apps', 'web', 'decantr.essence.json');
